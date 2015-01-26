@@ -624,8 +624,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # means that if the refresh was needed to do that, then
                         # this isn't useful, but this is as good as it gets.)
                         logger.warning(_("Skipping publisher metadata refresh;"
-                            "image rooted at %s must have its format updated "
-                            "before a refresh can occur.") % self._img.root)
+                            "image rooted at {0} must have its format updated "
+                            "before a refresh can occur.").format(self._img.root))
 
         def _acquire_activity_lock(self):
                 """Private helper method to aqcuire activity lock."""
@@ -1255,13 +1255,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 try:
                                         iter(args[a])
                                 except TypeError:
-                                        raise AssertionError("%s is not an "
-                                            "iterable" % a)
+                                        raise AssertionError("{0} is not an "
+                                            "iterable".format(a))
 
                         else:
                                 assert (args[a] is None or
-                                    isinstance(args[a], a_type)), "%s is " \
-                                    "type %s; expected %s" % (a, type(a),
+                                    isinstance(args[a], a_type)), "{0} is " \
+                                    "type {1}; expected {2}".format(a, type(a),
                                     a_type)
 
                 # check if passed FMRIs are valid
@@ -1396,7 +1396,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # supplied to all api interfaces and the arguments that the
                 # api arguments that caller passed to this function.
                 assert (set(args_common) & set(kwargs)) == set(), \
-                    "%s & %s != set()" % (str(set(args_common)),
+                    "{0} & {1} != set()".format(str(set(args_common)),
                     str(set(kwargs)))
                 kwargs.update(args_common)
 
@@ -1458,7 +1458,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         elif _op == API_OP_UPDATE:
                                 self._img.make_update_plan(**kwargs)
                         else:
-                                raise RuntimeError("Unknown api op: %s" % _op)
+                                raise RuntimeError(
+                                    "Unknown api op: {0}".format(_op))
 
                         self.__api_op = _op
 
@@ -1576,7 +1577,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if pp.destination_fmri:
                                 assert pkg_cat.get_entry(pp.destination_fmri), \
                                      "fmri part of plan, but currently " \
-                                     "unknown: %s" % pp.destination_fmri
+                                     "unknown: {0}".format(pp.destination_fmri)
 
                 # allocate an image plan based on the supplied plan
                 self._img.imageplan = imageplan.ImagePlan(self._img, plan._op,
@@ -2482,16 +2483,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if start > finish:
                                 raise apx.HistoryRequestException(_("Start "
                                     "time must be older than finish time: "
-                                    "%s") % time_val)
+                                    "{0}").format(time_val))
                         files = self.__get_history_range(start, finish)
                 else:
                         # there can be multiple event files per timestamp
                         prefix = self.__utc_format(time_val, utc_now)
                         files = glob.glob(os.path.join(self._img.history.path,
-                            "%s*" % prefix))
+                            "{0}*".format(prefix)))
                 if not files:
                         raise apx.HistoryRequestException(_("No history "
-                            "entries found for %s") % time_val)
+                            "entries found for {0}").format(time_val))
                 return files
 
         def __get_history_range(self, start, finish):
@@ -2545,13 +2546,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if start > finish:
                                         raise apx.HistoryRequestException(
                                             _("Start time must be older than "
-                                            "finish time: %s") % time_val)
+                                            "finish time: {0}").format(
+                                            time_val))
                                 files = self.__get_history_range(start, finish)
                         else:
                                 # There can be multiple entries per timestamp.
                                 prefix = self.__utc_format(time_val, utc_now)
                                 files = glob.glob(os.path.join(
-                                    self._img.history.path, "%s*" % prefix))
+                                    self._img.history.path, "{0}*".format(
+                                    prefix)))
 
                         try:
                                 files = self.__get_history_paths(time_val,
@@ -2559,10 +2562,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 entries.update(files)
                         except ValueError:
                                 raise apx.HistoryRequestException(_("Invalid "
-                                    "time format '%s'.  Please use "
-                                    "%%Y-%%m-%%dT%%H:%%M:%%S or\n"
-                                    "%%Y-%%m-%%dT%%H:%%M:%%S-"
-                                    "%%Y-%%m-%%dT%%H:%%M:%%S") % time_val)
+                                    "time format '{0}'.  Please use "
+                                    "%Y-%m-%dT%H:%M:%S or\n"
+                                    "%Y-%m-%dT%H:%M:%S-"
+                                    "%Y-%m-%dT%H:%M:%S").format(time_val))
 
                 if not times:
                         try:

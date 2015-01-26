@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -98,7 +98,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 self.assert_(dest_dir)
                 self.assert_(self.raw_trust_anchor_dir)
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -117,24 +117,24 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 # Sign the 'signed' package.
                 r = self.get_repo(self.dcs[1].get_repodir())
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
-                    "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                    "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                    "i1": os.path.join(self.chain_certs_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {i6} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                    cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                    i1=os.path.join(self.chain_certs_dir,
                         "ch1_ta1_cert.pem"),
-                    "i2": os.path.join(self.chain_certs_dir,
+                    i2=os.path.join(self.chain_certs_dir,
                         "ch2_ta1_cert.pem"),
-                    "i3": os.path.join(self.chain_certs_dir,
+                    i3=os.path.join(self.chain_certs_dir,
                         "ch3_ta1_cert.pem"),
-                    "i4": os.path.join(self.chain_certs_dir,
+                    i4=os.path.join(self.chain_certs_dir,
                         "ch4_ta1_cert.pem"),
-                    "i5": os.path.join(self.chain_certs_dir,
+                    i5=os.path.join(self.chain_certs_dir,
                         "ch5_ta1_cert.pem"),
-                    "i6": os.path.join(self.chain_certs_dir,
+                    i6=os.path.join(self.chain_certs_dir,
                         "ch1_ta3_cert.pem"),
-                    "pkg": self.signed
-                }
+                    pkg=self.signed
+                )
                 self.pkgsign(self.rurl, sign_args)
 
                 # This is just a test assertion to verify that the package
@@ -152,7 +152,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     "publisher/test",
                     "publisher/test/pkg",
                     "publisher/test/pkg/foo",
-                    "publisher/test/pkg/%s" % self.foo.get_dir_path(),
+                    "publisher/test/pkg/{0}".format(self.foo.get_dir_path()),
                     "publisher/test/file",
                     "publisher/test/file/b2",
                     "publisher/test/file/b2/b265f2ec87c4a55eb2b6b4c926e7c65f7247a27e",
@@ -183,16 +183,16 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     "publisher/test/file/dc/dc84bd4b606fe43fc892eb245d9602b67f8cba38",
                     "publisher/test/pkg",
                     "publisher/test/pkg/foo",
-                    "publisher/test/pkg/%s" % self.foo.get_dir_path(),
+                    "publisher/test/pkg/{0}".format(self.foo.get_dir_path()),
                     "publisher/test/pkg/signed",
-                    "publisher/test/pkg/%s" % self.signed.get_dir_path(),
+                    "publisher/test/pkg/{0}".format(self.signed.get_dir_path()),
                     "publisher/test2",
                     "publisher/test2/file",
                     "publisher/test2/file/80",
                     "publisher/test2/file/80/801eebbfe8c526bf092d98741d4228e4d0fc99ae",
                     "publisher/test2/pkg",
                     "publisher/test2/pkg/quux",
-                    "publisher/test2/pkg/%s" % self.quux.get_dir_path(),
+                    "publisher/test2/pkg/{0}".format(self.quux.get_dir_path()),
                 ]
 
         def test_00_create(self):
@@ -371,8 +371,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
                 )]
                 for hsh in action_certs:
-                        d = "publisher/test/file/%s" % hsh[0:2]
-                        f = "%s/%s" % (d, hsh)
+                        d = "publisher/test/file/{0}".format(hsh[0:2])
+                        f = "{0}/{1}".format(d, hsh)
                         expected.append(d)
                         expected.append(f)
 
@@ -433,8 +433,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
                 )]
                 for hsh in action_certs:
-                        d = "publisher/test/file/%s" % hsh[0:2]
-                        f = "%s/%s" % (d, hsh)
+                        d = "publisher/test/file/{0}".format(hsh[0:2])
+                        f = "{0}/{1}".format(d, hsh)
                         expected.append(d)
                         expected.append(f)
                 actual = sorted(m.name for m in arc.getmembers())
@@ -797,8 +797,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
                 )]
                 for hsh in action_certs:
-                        d = "publisher/test/file/%s" % hsh[0:2]
-                        f = "%s/%s" % (d, hsh)
+                        d = "publisher/test/file/{0}".format(hsh[0:2])
+                        f = "{0}/{1}".format(d, hsh)
                         expected.append(d)
                         expected.append(f)
                 actual = sorted(m.name for m in arc.getmembers())
@@ -931,7 +931,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 bad_arc_path = os.path.join(self.test_root, "bad_arc.p5p")
                 portable.copyfile(arc_path, bad_arc_path)
 
-                self.debug("%s size: %d truncate: %d" % (arc_path,
+                self.debug("{0} size: {1:d} truncate: {2:d}".format(arc_path,
                     os.stat(arc_path).st_size, trunc_sz))
                 with open(bad_arc_path, "ab+") as f:
                         f.truncate(trunc_sz)

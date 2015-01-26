@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -116,8 +116,8 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
 
         @staticmethod
         def __get_pkg_summ_desc(stem, ver):
-                summ = "Summ. is %s %s" % (stem, ver)
-                desc = "Desc. is %s %s" % (stem, ver)
+                summ = "Summ. is {0} {1}".format(stem, ver)
+                desc = "Desc. is {0} {1}".format(stem, ver)
                 return summ, desc
 
         def __get_pkg_states(self, pub, stem, ver, installed=False):
@@ -168,7 +168,7 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
                 try:
                         self.assertTrue(v.startswith(ver + ":"))
                 except AssertionError:
-                        self.debug("\n%s does not start with %s:" % (v, ver))
+                        self.debug("\n{0} does not start with {1}:".format(v, ver))
                         raise
                 return f, v
 
@@ -191,16 +191,16 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
 
                         summ, desc = self.__get_pkg_summ_desc(stem, sver)
                         pkg_data += """
-open %(stem)s@%(ver)s
-add set name=pkg.summary value="%(summ)s"
-add set name=pkg.description value="%(desc)s"
-""" % { "stem": stem, "ver": ver, "summ": summ, "desc": desc }
+open {stem}@{ver}
+add set name=pkg.summary value="{summ}"
+add set name=pkg.description value="{desc}"
+""".format(stem=stem, ver=ver, summ=summ, desc=desc)
 
                         cats = self.__get_pkg_cats(stem, sver)
                         if cats:
                                 pkg_data += "add set name=info.classification"
                                 for cat in cats:
-                                        pkg_data += ' value="%s"' % cat
+                                        pkg_data += ' value="{0}"'.format(cat)
                                 pkg_data += "\n"
 
                         var = self.__get_pkg_variant(stem, sver)
@@ -208,7 +208,7 @@ add set name=pkg.description value="%(desc)s"
                                 adata = "value="
                                 adata += " value=".join(var)
                                 pkg_data += "add set name=variant.mumble " \
-                                    "%s\n" % adata
+                                    "{0}\n".format(adata)
 
                         if stem == "corge" and sver.startswith("1.0"):
                                 pkg_data += "add set name=pkg.renamed " \
@@ -269,7 +269,7 @@ add set name=pkg.description value="%(desc)s"
                 # The fourth should be for test1, but have only the oldest
                 # version of the 'apple' package.
                 self.rurl4 = self.dcs[4].get_repo_url()
-                self.pkgrecv(self.rurl1, "-d %s %s" % (self.rurl4, plist[0]))
+                self.pkgrecv(self.rurl1, "-d {0} {1}".format(self.rurl4, plist[0]))
 
                 # Next, create the image and configure publishers.
                 self.image_create(self.rurl1, prefix="test1",
@@ -1269,7 +1269,7 @@ add set name=pkg.description value="%(desc)s"
                 # Verify the results for LIST_UPGRADABLE when publisher
                 # repository no longer has installed package.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -G '*' -g %s test1" % self.rurl4)
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.rurl4))
                 api_obj = self.get_img_api_obj()
 
                 returned = self.__get_returned(api_obj.LIST_UPGRADABLE,
@@ -1520,7 +1520,7 @@ add set name=pkg.description value="%(desc)s"
                 patterns = ["baz@1.*.a"]
                 expected = [
                     version.IllegalVersion(
-                        "Bad Version: %s" % p.split("@", 1)[-1])
+                        "Bad Version: {0}".format(p.split("@", 1)[-1]))
                     for p in patterns
                 ]
                 try:

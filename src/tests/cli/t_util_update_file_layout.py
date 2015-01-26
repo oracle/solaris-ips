@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -63,7 +63,7 @@ class TestFileManager(pkg5unittest.CliTestCase):
 
         def update_file_layout(self, dir_path, exit=0):
                 """ Run the script from the util directory."""
-                cmdline = "%s/update_file_layout.py %s" % (path_to_pub_util,
+                cmdline = "{0}/update_file_layout.py {1}".format(path_to_pub_util,
                     dir_path)
                 self.cmdline_run(cmdline, exit=exit)
 
@@ -83,29 +83,29 @@ class TestFileManager(pkg5unittest.CliTestCase):
                 self.update_file_layout(self.base_dir)
                 for p in old_paths:
                         if os.path.exists(p):
-                                raise RuntimeError("%s should not exist" % p)
+                                raise RuntimeError("{0} should not exist".format(p))
                         if os.path.exists(os.path.dirname(p)):
-                                raise RuntimeError("directory %s should not "
+                                raise RuntimeError("directory {0} should not "
                                     "exist")
                 l = layout.get_preferred_layout()
                 for h in hashes:
                         if not os.path.exists(os.path.join(self.base_dir,
                             l.lookup(h))):
-                                raise RuntimeError("file for %s is missing" % h)
+                                raise RuntimeError("file for {0} is missing".format(h))
 
                 self.update_file_layout(self.base_dir)
                 for h in hashes:
                         if not os.path.exists(os.path.join(self.base_dir,
                             l.lookup(h))):
-                                raise RuntimeError("file for %s is missing" % h)
+                                raise RuntimeError("file for {0} is missing".format(h))
 
         def test_opts(self):
                 """Test command options work correctly and that migrating an
                 empty directory performs as expected."""
 
                 self.update_file_layout("", exit=2)
-                self.update_file_layout("%s %s" %
-                    (self.base_dir, self.base_dir), exit=2)
+                self.update_file_layout("{0} {1}".format(
+                    self.base_dir, self.base_dir), exit=2)
                 self.update_file_layout("/foo/doesntexist/", exit=2)
 
                 empty_dir = tempfile.mkdtemp(dir=self.base_dir)

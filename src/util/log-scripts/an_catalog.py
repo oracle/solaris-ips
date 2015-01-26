@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """\
@@ -98,13 +98,13 @@ def report_catalog_by_lang():
         print("<pre>")
         for i, n in (sorted(catalog_by_lang.items(), key=lambda(k,v): (v,k))):
                 if labels == "":
-                        labels = "%s" % i
+                        labels = "{0}".format(i)
                 else:
-                        labels += "|%s" %i
+                        labels += "|{0}".format(i)
                 if data == "":
-                        data = "%d" % n
+                        data = "{0:d}".format(n)
                 else:
-                        data += ",%d" % n
+                        data += ",{0:d}".format(n)
 
                 print(i, n)
                 if n > max:
@@ -112,10 +112,9 @@ def report_catalog_by_lang():
 
         print("</pre>")
 
-        url = "cht=p3&chs=800x300&chl=%s&chds=%d,%d&chd=t:%s" % (labels,min,max,data)
-
-        fname = retrieve_chart("http://chart.apis.google.com/chart?%s" % url, "lang")
-        print("<img src=\"%s\" />" % fname)
+        url = "cht=p3&chs=800x300&chl={0}&chds={1:d},{2:d}&chd=t:{3}".format(labels,min,max,data)
+        fname = retrieve_chart("http://chart.apis.google.com/chart?{0}".format(url, "lang"))
+        print ("<img src=\"{0}\" />".format(fname))
 
 def count_catalog(mg, d):
 

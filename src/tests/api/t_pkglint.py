@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -43,7 +43,7 @@ from pkg.lint.engine import lint_fmri_successor
 from pkg.lint.base import linted, DuplicateLintedAttrException
 
 import logging
-log_fmt_string = "%(asctime)s - %(levelname)s - %(message)s"
+log_fmt_string = "{asctime} - {levelname} - {message}"
 
 logger = logging.getLogger("pkglint")
 if not logger.handlers:
@@ -54,7 +54,7 @@ if not logger.handlers:
         ch.setLevel(logging.WARNING)
         logger.addHandler(ch)
 
-pkglintrcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_pkg_path
+pkglintrcfile = "{0}/usr/share/lib/pkg/pkglintrc".format(pkg5unittest.g_pkg_path)
 broken_manifests = {}
 expected_failures = {}
 
@@ -2108,22 +2108,22 @@ class TestLogFormatter(log.LogFormatter):
                                 linted_flag = linted(action=self.action,
                                     manifest=self.manifest, lint_id=msg.msgid)
                         except DuplicateLintedAttrException, err:
-                                self.messages.append("%s\t%s" %
-                                    ("pkglint001.6", "Logging error: %s" % err))
+                                self.messages.append("{0}\t{1}".format(
+                                    "pkglint001.6", "Logging error: {0}".format(err)))
                                 self.ids.append("pkglint001.6")
 
                         if linted_flag and not ignore_linted:
                                 linted_msg = (
-                                    "Linted message: %(id)s  %(msg)s") % \
-                                    {"id": msg.msgid, "msg": msg}
-                                self.messages.append("%s\t%s" %
-                                        ("pkglint001.5", linted_msg))
+                                    "Linted message: {id}  {msg}").format(
+                                    id=msg.msgid, msg=msg)
+                                self.messages.append("{0}\t{1}".format(
+                                        "pkglint001.5", linted_msg))
                                 self.ids.append("pkglint001.5")
                                 return
 
                         if msg.level >= self.level:
-                                self.messages.append("%s\t%s" %
-                                    (msg.msgid, str(msg)))
+                                self.messages.append("{0}\t{1}".format(
+                                    msg.msgid, str(msg)))
                                 self.ids.append(msg.msgid)
 
         def close(self):
@@ -2139,7 +2139,7 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                 paths.sort()
 
                 for manifest in paths:
-                        self.debug("running lint checks on %s" % manifest)
+                        self.debug("running lint checks on {0}".format(manifest))
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
@@ -2158,16 +2158,16 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                         # Checker methods.
                         for message in lint_logger.messages:
                                 self.assert_("pkglint001.3" not in message,
-                                    "Checker exception thrown for %s: %s" %
-                                    (basename, message))
+                                    "Checker exception thrown for {0}: {1}".format(
+                                    basename, message))
 
                         expected = len(expected_failures[basename])
                         actual = len(lint_logger.messages)
                         if (actual != expected):
                                 self.debug("\n".join(lint_logger.messages))
                                 self.assert_(actual == expected,
-                                    "Expected %s failures for %s, got %s: %s" %
-                                    (expected, basename, actual,
+                                    "Expected {0} failures for {1}, got {2}: {3}".format(
+                                    expected, basename, actual,
                                     "\n".join(lint_logger.messages)))
                         else:
                                 reported = lint_logger.ids
@@ -2177,9 +2177,9 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                                 for i in range(0, len(reported)):
                                         self.assert_(reported[i] == known[i],
                                             "Differences in reported vs. "
-                                            "expected lint ids for %s: "
-                                            "%s vs. %s\n%s" %
-                                            (basename, str(reported),
+                                            "expected lint ids for {0}: "
+                                            "{1} vs. {2}\n{3}".format(
+                                            basename, str(reported),
                                             str(known),
                                             "\n".join(lint_logger.messages)))
                         lint_logger.close()
@@ -2191,10 +2191,10 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                     {"info_class_valid.mf":
                     broken_manifests["info_class_valid.mf"]})
 
-                empty_file = "%s/empty_file" % self.test_root
+                empty_file = "{0}/empty_file".format(self.test_root)
                 open(empty_file, "w").close()
 
-                bad_file = "%s/bad_file" % self.test_root
+                bad_file = "{0}/bad_file".format(self.test_root)
                 f = open(bad_file, "w")
                 f.write("nothing here")
                 f.close()
@@ -2220,8 +2220,8 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                         lint_engine.execute()
                         self.assert_(
                             lint_logger.ids == ["pkglint.manifest008.1"],
-                            "Unexpected errors encountered: %s" %
-                            lint_logger.messages)
+                            "Unexpected errors encountered: {0}".format(
+                            lint_logger.messages))
                         lint_logger.close()
 
 
@@ -2709,14 +2709,14 @@ dir group=sys mode=0755 owner=root path=etc
 
                 for item in paths:
                         self.pkgsend(depot_url=self.ref_uri,
-                            command="publish %s" % item)
+                            command="publish {0}".format(item))
                 self.pkgsend(depot_url=self.ref_uri,
                             command="refresh-index")
 
                 paths = self.make_misc_files(self.lint_mf)
                 for item in paths:
                         self.pkgsend(depot_url=self.lint_uri,
-                            command="publish %s" % item)
+                            command="publish {0}".format(item))
                 self.pkgsend(depot_url=self.lint_uri,
                             command="refresh-index")
                 # we should sign the repositories for additional coverage
@@ -2746,8 +2746,8 @@ dir group=sys mode=0755 owner=root path=etc
 
                 self.assert_(len(lint_msgs) == 0,
                     "Unexpected lint errors messages reported against "
-                    "reference repo: %s" %
-                    "\n".join(lint_msgs))
+                    "reference repo: {0}".format(
+                    "\n".join(lint_msgs)))
                 lint_logger.close()
 
                 lint_engine.teardown()
@@ -2811,7 +2811,7 @@ dir group=sys mode=0755 owner=root path=etc
                 paths.sort()
 
                 for manifest in paths:
-                        self.debug("running lint checks on %s" % manifest)
+                        self.debug("running lint checks on {0}".format(manifest))
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
@@ -2832,8 +2832,8 @@ dir group=sys mode=0755 owner=root path=etc
                         if (actual != expected):
                                 self.debug("\n".join(lint_logger.messages))
                                 self.assert_(actual == expected,
-                                    "Expected %s failures for %s, got %s: %s" %
-                                    (expected, basename, actual,
+                                    "Expected {0} failures for {1}, got {2}: {3}".format(
+                                    expected, basename, actual,
                                     "\n".join(lint_logger.messages)))
                         else:
                                 reported = lint_logger.ids
@@ -2843,8 +2843,8 @@ dir group=sys mode=0755 owner=root path=etc
                                 for i in range(0, len(reported)):
                                         self.assert_(reported[i] == known[i],
                                             "Differences in reported vs. expected"
-                                            " lint ids for %s: %s vs. %s" %
-                                            (basename, str(reported),
+                                            " lint ids for {0}: {1} vs. {2}".format(
+                                            basename, str(reported),
                                             str(known)))
                         lint_logger.close()
 
@@ -2869,8 +2869,8 @@ dir group=sys mode=0755 owner=root path=etc
 
                 self.assertFalse(lint_logger.messages,
                     "Unexpected lint messages when linting against old "
-                    "version of reference repo: %s" %
-                    "\n".join(lint_logger.messages))
+                    "version of reference repo: {0}".format(
+                    "\n".join(lint_logger.messages)))
 
                 # ensure we detect the error when linting against the reference
                 # 0.139 repository
@@ -2890,13 +2890,13 @@ dir group=sys mode=0755 owner=root path=etc
                 elif len(lint_logger.ids) != 1:
                         self.assert_(False,
                             "Expected exactly 1 lint message when linting the "
-                            "contents of an old repository, got %s" %
-                            len(lint_logger.ids))
+                            "contents of an old repository, got {0}".format(
+                            len(lint_logger.ids)))
                 elif lint_logger.ids[0] != "pkglint.dupaction001.1":
                         self.assert_(False,
                             "Expected pkglint.dupaction001.1 message when "
                             "linting the contents of an old repository, got "
-                            "%s" % lint_logger.ids[0])
+                            "{0}".format(lint_logger.ids[0]))
 
 
         def test_lint_mf_baseline(self):
@@ -2933,8 +2933,8 @@ dir group=sys mode=0755 owner=root path=etc
 
                         self.assertFalse(lint_msgs,
                             "Unexpected lint messages when linting individual "
-                            "manifests that should contain no errors: %s %s" %
-                            (basename, "\n".join(lint_msgs)))
+                            "manifests that should contain no errors: {0} {1}".format(
+                            basename, "\n".join(lint_msgs)))
 
         def test_broken_legacy_rename(self):
                 """Tests that linting a package where we break the renaming
@@ -2973,8 +2973,8 @@ dir group=sys mode=0755 owner=root path=etc
                                 lint_msgs.append(msg)
 
                 self.assert_(len(lint_msgs) == 2, "Unexpected lint messages "
-                    "%s produced when linting broken renaming with legacy "
-                    "pkgs" % lint_msgs)
+                    "{0} produced when linting broken renaming with legacy "
+                    "pkgs".format(lint_msgs))
 
                 seen_2_3 = False
                 seen_3_4 = False
@@ -2986,7 +2986,7 @@ dir group=sys mode=0755 owner=root path=etc
 
                 self.assert_(seen_2_3 and seen_3_4,
                     "Missing expected broken renaming legacy errors, "
-                    "got %s" % lint_msgs)
+                    "got {0}".format(lint_msgs))
 
                 # make sure we spot renames that depend upon themselves
                 lint_logger = TestLogFormatter()
@@ -3016,7 +3016,7 @@ dir group=sys mode=0755 owner=root path=etc
                                 seen_3_5 = True
                 self.assert_(seen_2_3 and seen_3_4,
                     "Missing expected broken renaming self-dependent errors "
-                    "with legacy pkgs. Got %s" % lint_msgs)
+                    "with legacy pkgs. Got {0}".format(lint_msgs))
 
                 # make sure we can deal with compatibility packages.  We include
                 # the 'renamed_old' package as well as the 'compat_legacy'
@@ -3119,7 +3119,7 @@ dir group=sys mode=0755 owner=root path=etc
                         lint_msgs.append(msg)
 
                 self.assert_(lint_msgs == [], "Unexpected errors during file "
-                    "movement between packages: %s" % "\n".join(lint_msgs))
+                    "movement between packages: {0}".format("\n".join(lint_msgs)))
 
                 # next check that when delivering only the moved-to package,
                 # we report a duplicate error.
@@ -3137,10 +3137,10 @@ dir group=sys mode=0755 owner=root path=etc
 
                 self.assert_(len(lint_msgs) == 1, "Expected duplicate path "
                     "error not seen when moving file between packages, but "
-                    "omitting new source package: %s" % "\n".join(lint_msgs))
+                    "omitting new source package: {0}".format("\n".join(lint_msgs)))
                 self.assert_(lint_logger.ids[0] == "pkglint.dupaction001.1",
-                    "Expected pkglint.dupaction001.1, got %s" %
-                    lint_logger.ids[0])
+                    "Expected pkglint.dupaction001.1, got {0}".format(
+                    lint_logger.ids[0]))
 
 
 class TestVolatileLintEngineDepot(pkg5unittest.ManyDepotTestCase):
@@ -3204,12 +3204,12 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
                 old_ref_mf = os.path.join(self.test_root,
                     "get-manifest-oldref.mf")
                 ref_mf = os.path.join(self.test_root, "get-manifest-ref.mf")
-                ret, ref_fmri =  self.pkgsend(self.ref_uri, "publish %s" %
-                    ref_mf)
-                ret, oldref_fmri =  self.pkgsend(self.ref_uri, "publish %s" %
-                    old_ref_mf)
-                ret, lint_fmri =  self.pkgsend(self.lint_uri, "publish %s" %
-                    lint_mf)
+                ret, ref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
+                    ref_mf))
+                ret, oldref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
+                    old_ref_mf))
+                ret, lint_fmri =  self.pkgsend(self.lint_uri, "publish {0}".format(
+                    lint_mf))
 
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
@@ -3283,7 +3283,7 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
                             self.old = old
 
                     def __repr__(self):
-                            return "FmriPair(%s, %s) " % (self.new, self.old)
+                            return "FmriPair({0}, {1}) ".format(self.new, self.old)
 
             def is_successor(pair):
                     """baseline the standard fmri.is_successor check"""
@@ -3311,179 +3311,179 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
                         ignore_timestamps=ignore_timestamps)
 
             # messages used in assertions
-            fail_msg = "%s do not pass %s check"
-            fail_msg_pubs = "%s do not pass %s check, ignoring publishers"
-            fail_msg_ts = "%s do not pass %s check, ignoring timestamps"
+            fail_msg = "{0} do not pass {1} check"
+            fail_msg_pubs = "{0} do not pass {1} check, ignoring publishers"
+            fail_msg_ts = "{0} do not pass {1} check, ignoring timestamps"
 
-            fail_comm = fail_msg % ("%s", "commutative")
-            fail_comm_pubs = fail_msg_pubs % ("%s", "commutative")
-            fail_newer = fail_msg % ("%s", "newer")
-            fail_newer_pubs = fail_msg_pubs % ("%s", "newer")
-            fail_newer_ts = fail_msg_ts % ("%s", "newer timestamp-sensitive")
-            fail_successor = fail_msg % ("%s", "is_successor")
+            fail_comm = fail_msg.format("{0}", "commutative")
+            fail_comm_pubs = fail_msg_pubs.format("{0}", "commutative")
+            fail_newer = fail_msg.format("{0}", "newer")
+            fail_newer_pubs = fail_msg_pubs.format("{0}", "newer")
+            fail_newer_ts = fail_msg_ts.format("{0}", "newer timestamp-sensitive")
+            fail_successor = fail_msg.format("{0}", "is_successor")
 
             # 1 identical everything
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
                 "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # 2 identical versions
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
                 "pkg://foo.org/tst@1.0,5.11-0.120")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
 
             # 3 identical names
             pair = FmriPair("pkg://foo.org/tst",
                 "pkg://foo.org/tst")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
 
             # 4 differing timestamps, same version (identical, in pkglint's view)
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
                 "pkg://foo.org/tst@1.0,5.11-0.120:20311003T222559Z")
-            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(not is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(not is_successor(pair), fail_successor.format(pair))
             self.assert_(not newer(pair, ignore_timestamps=False),
-                fail_newer_ts % pair)
+                fail_newer_ts.format(pair))
 
             # 5 missing timestamps, same version
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
                 "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
+                fail_comm_pubs.format(pair))
 
             # 6 missing timestamps, different version
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
                 "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
+                fail_newer_pubs.format(pair))
 
             # 7 different versions
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
                 "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
+                fail_newer_pubs.format(pair))
 
             # 8 different versions (where string comparisons won't work since
             # with string comparisons, '0.133' < '0.99' which is not desired
             pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
             "pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
+                fail_newer_pubs.format(pair))
 
             #  Now the same set of tests, this time with different publishers
             # 1.1 identical everything
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
                 "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
              # 2.1 identical versions
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
                 "pkg://bar.org/tst@1.0,5.11-0.120")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # 3.1 identical names
             pair = FmriPair("pkg://foo.org/tst",
                 "pkg://bar.org/tst")
-            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # 4.1 differing timestamps, same version (identical, in pkglint's
             # view unless we specifically look at the timestamp)
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
                 "pkg://bar.org/tst@1.0,5.11-0.120:20311003T222559Z")
-            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(not is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(not is_successor(pair), fail_successor.format(pair))
             self.assert_(not newer(pair, ignore_timestamps=False),
-                fail_newer_ts % pair)
+                fail_newer_ts.format(pair))
 
             # 5.1 missing timestamps, same version
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
                 "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair), fail_comm.format(pair))
             self.assert_(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs % pair)
-            self.assert_(not is_successor(pair), fail_successor % pair)
+                fail_comm_pubs.format(pair))
+            self.assert_(not is_successor(pair), fail_successor.format(pair))
 
             # 6.1 missing timestamps, different version
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
                 "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # 7.1 different versions
             pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
                 "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # 8.1 different versions (where string comparisons won't work
             # with string comparisons, '0.133' < '0.99' which is not desired
             pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
             "pkg://solaris/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
+                fail_newer_pubs.format(pair))
 
             # missing publishers
             pair = FmriPair("pkg:/tst", "pkg://foo.org/tst")
-            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(commutative(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # different publishers
             pair = FmriPair("pkg://bar.org/tst", "pkg://foo.org/tst")
-            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(commutative(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
             # different publishers, missing timestmap, same version
             pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.121",
                 "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
-            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(commutative(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % (pair))
-            self.assert_(not is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(not is_successor(pair), fail_successor.format(pair))
 
             # different publishers, missing timestmap
             pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.122",
                 "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
-            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair), fail_newer.format(pair))
             self.assert_(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs % pair)
-            self.assert_(is_successor(pair), fail_successor % pair)
+                fail_newer_pubs.format(pair))
+            self.assert_(is_successor(pair), fail_successor.format(pair))
 
 def read_manifests(names, lint_logger):
         "Read a list of filenames, return a list of Manifest objects"
@@ -3497,8 +3497,8 @@ def read_manifests(names, lint_logger):
                 try:
                         data = file(filename).read()
                 except IOError, e:
-                        lint_logger.error("Unable to read manifest file %s" %
-                            filename, msgid="lint.manifest001")
+                        lint_logger.error("Unable to read manifest file {0}".format(
+                            filename, msgid="lint.manifest001"))
                         continue
                 lines.append(data)
                 linecnt = len(data.splitlines())
@@ -3518,8 +3518,8 @@ def read_manifests(names, lint_logger):
                                 lineno = "???"
 
                         lint_logger.error(
-                            "Problem reading manifest %s line: %s: %s " %
-                            (filename, lineno, e), "lint.manifest002")
+                            "Problem reading manifest {0} line: {1}: {2} ".format(
+                            filename, lineno, e), "lint.manifest002")
                         continue
 
                 if "pkg.fmri" in manifest:
@@ -3528,7 +3528,7 @@ def read_manifests(names, lint_logger):
                         manifests.append(manifest)
                 else:
                         lint_logger.error(
-                            "Manifest %s does not declare fmri." % filename,
+                            "Manifest {0} does not declare fmri.".format(filename),
                             "lint.manifest003")
         return manifests
 

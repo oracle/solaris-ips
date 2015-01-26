@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -47,12 +47,12 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
 
                         for str in expected:
                                 if str not in msg:
-                                        self.assert_(False, "%s not in %s" %
-                                            (str, msg))
+                                        self.assert_(False, "{0} not in {1}".format(
+                                            str, msg))
                         for str in unexpected:
                                 if str in msg:
-                                        self.assert_(False, "%s in %s" %
-                                            (str, msg))
+                                        self.assert_(False, "{0} in {1}".format(
+                                            str, msg))
 
                 # Full usage text, ensuring we exit 0
                 for option in ["-\?", "--help", "help"]:

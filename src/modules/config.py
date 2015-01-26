@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -86,10 +86,10 @@ class InvalidPropertyNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, prop=prop)
 
         def __str__(self):
-                return _("Property name '%s' is not valid.  Section names "
+                return _("Property name '{0}' is not valid.  Section names "
                     "may not contain: tabs, newlines, carriage returns, "
                     "form feeds, vertical tabs, slashes, backslashes, or "
-                    "non-ASCII characters.") % self.prop
+                    "non-ASCII characters.").format(self.prop)
 
 
 class InvalidPropertyTemplateNameError(PropertyConfigError):
@@ -101,8 +101,8 @@ class InvalidPropertyTemplateNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, prop=prop)
 
         def __str__(self):
-                return _("Property template name '%s' is not valid.") % \
-                    self.prop
+                return _("Property template name '{0}' is not valid.").format(
+                    self.prop)
 
 
 class InvalidPropertyValueError(PropertyConfigError):
@@ -118,21 +118,21 @@ class InvalidPropertyValueError(PropertyConfigError):
 
         def __str__(self):
                 if self.minimum is not None:
-                        return _("'%(value)s' is less than the minimum "
-                            "of '%(minimum)s' permitted for property "
-                            "'%(prop)s' in section '%(section)s'.") % \
-                            self.__dict__
+                        return _("'{value}' is less than the minimum "
+                            "of '{minimum}' permitted for property "
+                            "'{prop}' in section '{section}'.").format(
+                            **self.__dict__)
                 if self.maximum is not None:
-                        return _("'%(value)s' is greater than the maximum "
-                            "of '%(maximum)s' permitted for property "
-                            "'%(prop)s' in section '%(section)s'.") % \
-                            self.__dict__
+                        return _("'{value}' is greater than the maximum "
+                            "of '{maximum}' permitted for property "
+                            "'{prop}' in section '{section}'.").format(
+                            **self.__dict__)
                 if self.section:
-                        return _("Invalid value '%(value)s' for property "
-                            "'%(prop)s' in section '%(section)s'.") % \
-                            self.__dict__
-                return _("Invalid value '%(value)s' for %(prop)s.") % \
-                    self.__dict__
+                        return _("Invalid value '{value}' for property "
+                            "'{prop}' in section '{section}'.").format(
+                            **self.__dict__)
+                return _("Invalid value '{value}' for {prop}.").format(
+                    **self.__dict__)
 
 
 class PropertyMultiValueError(InvalidPropertyValueError):
@@ -141,10 +141,11 @@ class PropertyMultiValueError(InvalidPropertyValueError):
 
         def __str__(self):
                 if self.section:
-                        return _("Property '%(prop)s' in section '%(section)s' "
-                            "doesn't allow multiple values.") % self.__dict__
-                return _("Property %s doesn't allow multiple values.") % \
-                    self.prop
+                        return _("Property '{prop}' in section '{section}' "
+                            "doesn't allow multiple values.").format(
+                            **self.__dict__)
+                return _("Property {0} doesn't allow multiple values.").format(
+                    self.prop)
 
 
 class UnknownPropertyValueError(PropertyConfigError):
@@ -157,11 +158,11 @@ class UnknownPropertyValueError(PropertyConfigError):
 
         def __str__(self):
                 if self.section:
-                        return _("Value '%(value)s' not found in the list of "
-                            "values for property '%(prop)s' in section "
-                            "'%(section)s'.") % self.__dict__
-                return _("Value '%(value)s' not found in the list of values "
-                    "for %(prop)s .") % self.__dict__
+                        return _("Value '{value}' not found in the list of "
+                            "values for property '{prop}' in section "
+                            "'{section}'.").format(**self.__dict__)
+                return _("Value '{value}' not found in the list of values "
+                    "for {prop} .").format(**self.__dict__)
 
 
 class InvalidSectionNameError(PropertyConfigError):
@@ -172,10 +173,10 @@ class InvalidSectionNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, section=section)
 
         def __str__(self):
-                return _("Section name '%s' is not valid.  Section names "
+                return _("Section name '{0}' is not valid.  Section names "
                     "may not contain: tabs, newlines, carriage returns, "
                     "form feeds, vertical tabs, slashes, backslashes, or "
-                    "non-ASCII characters.") % self.section
+                    "non-ASCII characters.").format(self.section)
 
 
 class InvalidSectionTemplateNameError(PropertyConfigError):
@@ -186,8 +187,8 @@ class InvalidSectionTemplateNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, section=section)
 
         def __str__(self):
-                return _("Section template name '%s' is not valid.") % \
-                    self.section
+                return _("Section template name '{0}' is not valid.").format(
+                    self.section)
 
 
 class UnknownPropertyError(PropertyConfigError):
@@ -195,16 +196,17 @@ class UnknownPropertyError(PropertyConfigError):
 
         def __str__(self):
                 if self.section:
-                        return _("Unknown property '%(prop)s' in section "
-                            "'%(section)s'.") % self.__dict__
-                return _("Unknown property %s") % self.prop
+                        return _("Unknown property '{prop}' in section "
+                            "'{section}'.").format(**self.__dict__)
+                return _("Unknown property {0}").format(self.prop)
 
 
 class UnknownSectionError(PropertyConfigError):
         """Exception class used to indicate an invalid section."""
 
         def __str__(self):
-                return _("Unknown property section: %s.") % self.section
+                return _("Unknown property section: {0}.").format(
+                    self.section)
 
 
 class Property(object):
@@ -1038,9 +1040,9 @@ class Config(object):
                 """
                 out = u""
                 for sec, props in self.get_properties():
-                        out += "[%s]\n" % sec.name
+                        out += "[{0}]\n".format(sec.name)
                         for p in props:
-                                out += u"%s = %s\n" % (p.name, unicode(p))
+                                out += u"{0} = {1}\n".format(p.name, unicode(p))
                         out += "\n"
                 return out
 
@@ -1050,9 +1052,9 @@ class Config(object):
                 """
                 out = ""
                 for sec, props in self.get_properties():
-                        out += "[%s]\n" % sec.name
+                        out += "[{0}]\n".format(sec.name)
                         for p in props:
-                                out += "%s = %s\n" % (p.name, str(p))
+                                out += "{0} = {1}\n".format(p.name, str(p))
                         out += "\n"
                 return out
 
@@ -1634,11 +1636,11 @@ class SMFInvalidPropertyNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, prop=prop)
 
         def __str__(self):
-                return _("Property name '%(name)s' is not valid.  Property "
+                return _("Property name '{name}' is not valid.  Property "
                     "names may not contain: tabs, newlines, carriage returns, "
                     "form feeds, vertical tabs, slashes, or backslashes and "
-                    "must also match the regular expression: %(exp)s") % {
-                    "name": self.prop, "exp": _SMF_name_re }
+                    "must also match the regular expression: {exp}").format(
+                    name=self.prop, exp=_SMF_name_re)
 
 
 class SMFInvalidSectionNameError(PropertyConfigError):
@@ -1649,11 +1651,11 @@ class SMFInvalidSectionNameError(PropertyConfigError):
                 PropertyConfigError.__init__(self, section=section)
 
         def __str__(self):
-                return _("Section name '%(name)s' is not valid.  Section names "
+                return _("Section name '{name}' is not valid.  Section names "
                     "may not contain: tabs, newlines, carriage returns, form "
                     "feeds, vertical tabs, slashes, or backslashes and must "
-                    "also match the regular expression: %(exp)s") % {
-                    "name": self.prop, "exp": _SMF_name_re }
+                    "also match the regular expression: {exp}").format(
+                    name=self.prop, exp=_SMF_name_re)
 
 
 class SMFReadError(ConfigError):
@@ -1668,7 +1670,7 @@ class SMFReadError(ConfigError):
 
         def __str__(self):
                 return _("Unable to read configuration data for SMF FMRI "
-                    "'%(fmri)s':\n%(errmsg)s") % self.__dict__
+                    "'{fmri}':\n{errmsg}").format(**self.__dict__)
 
 
 class SMFWriteError(ConfigError):
@@ -1683,7 +1685,7 @@ class SMFWriteError(ConfigError):
 
         def __str__(self):
                 return _("Unable to write configuration data for SMF FMRI "
-                    "'%(fmri)s':\n%(errmsg)s") % self.__dict__
+                    "'{fmri}':\n{errmsg}").format(**self.__dict__)
 
 
 class SMFConfig(Config):
@@ -1751,13 +1753,15 @@ class SMFConfig(Config):
 
                 doorpath = ""
                 if self.__doorpath:
-                        doorpath = "LIBSCF_DOORPATH=%s " % self.__doorpath
+                        doorpath = "LIBSCF_DOORPATH={0} ".format(
+                            self.__doorpath)
 
-                cmd = "%s/usr/bin/svcprop -c -t %s" % (doorpath, self._target)
+                cmd = "{0}/usr/bin/svcprop -c -t {1}".format(doorpath,
+                    self._target)
                 status, result = commands.getstatusoutput(cmd)
                 if status:
-                        raise SMFReadError(self._target, "%(cmd)s: %(result)s" %
-                            locals())
+                        raise SMFReadError(self._target,
+                            "{cmd}: {result}".format(**locals()))
 
                 cfgdata = {}
                 prop = None

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -53,42 +53,36 @@ def pkg_err_verify(string, fmri):
         substring = fmri.split("@", 1)[0]
         if string.find(substring) == -1:
                 raise RuntimeError("""
-Expected "%s" to be contained in:
-%s
-"""
-                % (substring, string))
+Expected "{0}" to be contained in:
+{1}
+""".format(substring, string))
 
 def apx_verify(e, e_type, e_member=None):
 
         if e == None:
                 raise RuntimeError("""
-Expected %s exception.
+Expected {0} exception.
 Didn't get any exception.
-"""
-                % (str(e_type)))
+""".format(str(e_type)))
 
         if type(e) != e_type:
                 raise RuntimeError("""
-Expected %s exception.
-Got a %s exception:
+Expected {0} exception.
+Got a {1} exception:
 
-%s
-"""
-                % (str(e_type),
-                        str(type(e)), traceback.format_exc()))
+{2}
+""".format(str(e_type), str(type(e)), traceback.format_exc()))
 
         if e_member == None:
                 return
 
         if getattr(e, e_member, None) is None:
                 raise RuntimeError("""
-Expected %s exception of type "%s".
-Got a %s exception with a differnt type:
+Expected {0} exception of type "{1}".
+Got a {2} exception with a differnt type:
 
-%s
-"""
-                    % (str(e_type), e_member,
-                        str(type(e)), traceback.format_exc()))
+{3}
+""".format(str(e_type), e_member, str(type(e)), traceback.format_exc()))
 
 def assertRaises(validate_cb, func, *args, **kwargs):
         (validate_func, validate_args) = validate_cb
@@ -191,7 +185,7 @@ This is a license.
         p_foo1_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_foo1_name[i] = p_foo1_name_gen + v
-                p_data = "open %s\n" % p_foo1_name[i]
+                p_data = "open {0}\n".format(p_foo1_name[i])
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=foo1_bar variant.foo=bar
@@ -204,7 +198,7 @@ This is a license.
         p_foo2_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_foo2_name[i] = p_foo2_name_gen + v
-                p_data = "open %s\n" % p_foo2_name[i]
+                p_data = "open {0}\n".format(p_foo2_name[i])
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=foo2_bar variant.foo=bar
@@ -216,11 +210,11 @@ This is a license.
         p_foo_incorp_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_foo_incorp_name[i] = p_foo_incorp_name_gen + v
-                p_data = "open %s\n" % p_foo_incorp_name[i]
-                p_data += "add depend type=incorporate fmri=%s\n" % \
-                    p_foo1_name[i]
-                p_data += "add depend type=incorporate fmri=%s\n" % \
-                    p_foo2_name[i]
+                p_data = "open {0}\n".format(p_foo_incorp_name[i])
+                p_data += "add depend type=incorporate fmri={0}\n".format(
+                    p_foo1_name[i])
+                p_data += "add depend type=incorporate fmri={0}\n".format(
+                    p_foo2_name[i])
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     close\n"""
@@ -231,9 +225,9 @@ This is a license.
         p_sync1_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_sync1_name[i] = p_sync1_name_gen + v
-                p_data = "open %s\n" % p_sync1_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync1_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync1_bar variant.foo=bar
@@ -246,9 +240,9 @@ This is a license.
         p_sync2_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_sync2_name[i] = p_sync2_name_gen + v
-                p_data = "open %s\n" % p_sync2_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync2_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync2_bar variant.foo=bar
@@ -261,9 +255,9 @@ This is a license.
         p_sync3_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_sync3_name[i] = p_sync3_name_gen + v
-                p_data = "open %s\n" % p_sync3_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync3_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync3_bar variant.foo=bar
@@ -276,9 +270,9 @@ This is a license.
         p_sync4_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_sync4_name[i] = p_sync4_name_gen + v
-                p_data = "open %s\n" % p_sync4_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync4_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync4_bar variant.foo=bar
@@ -288,7 +282,7 @@ This is a license.
 
         # create a fake zones package
         p_zones_name = "system/zones@0.5.11,5.11-0.169"
-        p_data = "open %s\n" % p_zones_name
+        p_data = "open {0}\n".format(p_zones_name)
         p_data += """
             add dir mode=0755 owner=root group=bin path=etc
             close\n"""
@@ -299,9 +293,9 @@ This is a license.
         p_sync5_name = dict()
         for i, v in zip(range(len(vers)), vers):
                 p_sync5_name[i] = p_sync5_name_gen + v
-                p_data = "open %s\n" % p_sync5_name[i]
-                p_data += "add depend type=parent fmri=%s\n" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync5_name[i])
+                p_data += "add depend type=parent fmri={0}\n".format(
+                    pkg.actions.depend.DEPEND_SELF)
 
                 p_data += """
                     add dir path=etc mode=0755 owner=root group=root
@@ -360,7 +354,7 @@ This is a license.
                 self.i_lin = []
                 self.i_lin2index = {}
                 for i in range(self.i_count):
-                        lin = li.LinkedImageName("system:img%d" % i)
+                        lin = li.LinkedImageName("system:img{0:d}".format(i))
                         self.i_lin.insert(i, lin)
                         self.i_lin2index[lin] = i
                         self.set_image(i)
@@ -369,11 +363,11 @@ This is a license.
 
         def _cat_update(self):
                 global p_update_index
-                p_update_name = "update@%d.0,5.11-143:19700101T000000Z" % \
-                    p_update_index
+                p_update_name = "update@{0:d}.0,5.11-143:19700101T000000Z".format(
+                    p_update_index)
                 p_update_index += 1
 
-                p_data = "open %s\n" % p_update_name
+                p_data = "open {0}\n".format(p_update_name)
                 p_data += """
                     close\n"""
 
@@ -382,14 +376,14 @@ This is a license.
         def _list_inst_packages(self, apio):
                 pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_INSTALLED)
                 return set(sorted([
-                        "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
+                        "pkg://{0}/{1}@{2}".format(pfmri[0], pfmri[1], pfmri[2])
                         for pfmri, summ, cats, states, attrs in pkg_list
                 ]))
 
         def _list_all_packages(self, apio):
                 pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_ALL)
                 return set(sorted([
-                        "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
+                        "pkg://{0}/{1}@{2}".format(pfmri[0], pfmri[1], pfmri[2])
                         for pfmri, summ, cats, states, attrs in pkg_list
                 ]))
 
@@ -444,10 +438,9 @@ This is a license.
                             self.api_objs[i].attach_linked_child(
                             lin=self.i_lin[c], li_path=self.i_path[c], **args)
                         self.assertEqual(rv, c_rv, """
-Child attach returned unexpected error code.  Expected %d, got: %d.
+Child attach returned unexpected error code.  Expected {0:d}, got: {1:d}.
 Error output:
-%s""" %
-                                   (rv, c_rv, str(c_err)))
+{2}""".format(rv, c_rv, str(c_err)))
                         self.api_objs[c].reset()
 
         def _children_op(self, i, cl, op, rv=None, rvdict=None, **args):
@@ -490,12 +483,11 @@ Error output:
                 for act, err, warn, pinfo in apio.img.verify(pfmri, progtrack,
                     verbose=True):
                         self.assertEqual(len(err), 0, """
-unexpected verification error for pkg: %s
-action: %s
-error: %s
-warning: %s
-pinfo: %s""" %
-                            (pfmri, str(act), str(err), str(warn), str(pinfo)))
+unexpected verification error for pkg: {0}
+action: {1}
+error: {2}
+warning: {3}
+pinfo: {4}""".format(pfmri, str(act), str(err), str(warn), str(pinfo)))
 
 
         def assertKnownPkgCount(self, api_objs, i, pl_init, offset=0):
@@ -506,14 +498,13 @@ pinfo: %s""" %
                 pl_added = pl - pl_init
 
                 self.assertEqual(len(pl_init), len(pl) - offset, """
-unexpected packages known in image[%d]: %s
+unexpected packages known in image[{0:d}]: {1}
 packages removed:
-    %s
+    {2}
 packages added:
-    %s
+    {3}
 packages known:
-    %s""" %
-                    (i, self.i_path[i], "\n    ".join(pl_removed),
+    {4}""".format(i, self.i_path[i], "\n    ".join(pl_removed),
                     "\n    ".join(pl_added), "\n    ".join(pl)))
 
         def test_linked_p2c_recurse_flags_1_no_refresh_via_attach(self):

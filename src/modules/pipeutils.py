@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -146,17 +146,18 @@ class PipeFile(object):
                         return
 
                 if msg is not None:
-                        msg = ": %s" % msg
+                        msg = ": {0}".format(msg)
                 else:
                         msg = ""
 
                 if self.debug_label is not None:
-                        label = "%s: %s" % (os.getpid(), self.debug_label)
+                        label = "{0}: {1}".format(os.getpid(),
+                            self.debug_label)
                 else:
-                        label = "%s" % os.getpid()
+                        label = "{0}".format(os.getpid())
 
-                print("%s: %s.%s(%d)%s" %
-                    (label, op, type(self).__name__, self.__pipefd, msg),
+                print("{0}: {1}.{2}({3:d}){4}".format(
+                    label, op, type(self).__name__, self.__pipefd, msg),
                     file=sys.stderr)
 
         def debug_dumpfd(self, op, fd):
@@ -166,11 +167,11 @@ class PipeFile(object):
 
                 si = os.fstat(fd)
                 if not stat.S_ISREG(si.st_mode):
-                        msg = "fd=%d" % fd
+                        msg = "fd={0:d}".format(fd)
                 else:
                         os.lseek(fd, os.SEEK_SET, 0)
                         msg = "".join(os.fdopen(os.dup(fd)).readlines())
-                        msg = "msg=%s" % (msg)
+                        msg = "msg={0}".format(msg)
                         os.lseek(fd, os.SEEK_SET, 0)
 
                 self.debug_msg(op, msg)
@@ -246,8 +247,8 @@ class PipeFile(object):
                 if self.closed:
                         self.debug_msg("sendfd", "failed (closed)")
                         raise IOError(
-                            "sendfd() called for closed %s" %
-                            type(self).__name__)
+                            "sendfd() called for closed {0}".format(
+                            type(self).__name__))
 
                 self.debug_dumpfd("sendfd", fd)
                 try:
@@ -262,8 +263,8 @@ class PipeFile(object):
                 if self.closed:
                         self.debug_msg("recvfd", "failed (closed)")
                         raise IOError(
-                            "sendfd() called for closed %s" %
-                            type(self).__name__)
+                            "sendfd() called for closed {0}".format(
+                            type(self).__name__))
 
                 try:
                         fcntl_args = struct.pack('i', -1)
@@ -302,7 +303,7 @@ class PipeSocket(PipeFile):
                 # Unused argument; pylint: disable=W0613
 
                 dup_fd = os.dup(self.fileno())
-                self.debug_msg("makefile", "dup fd=%d" % dup_fd)
+                self.debug_msg("makefile", "dup fd={0:d}".format(dup_fd))
                 return PipeFile(dup_fd, self.debug_label, debug=self.debug)
 
         def recv(self, bufsize, flags=0):
@@ -533,10 +534,10 @@ class _PipedRequestHandler(_PipedHTTPRequestHandler):
 
                         # Return the error to the caller.
                         err_lines = traceback.format_exc().splitlines()
-                        trace_string = '%s | %s' % \
-                            (err_lines[-3], err_lines[-1])
+                        trace_string = '{0} | {1}'.format(
+                            err_lines[-3], err_lines[-1])
                         fault = rpclib.Fault(-32603,
-                            'Server error: %s' % trace_string)
+                            'Server error: {0}'.format(trace_string))
                         response = fault.response()
 
                         # tell the server to exit

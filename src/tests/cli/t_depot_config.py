@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+
 #
 # CDDL HEADER START
 #
@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -65,9 +65,9 @@ class _Apache(object):
         # must correspond.
         default_svcprop_conf = [
             # inst_root           readonly  standalone  writable_root
-            ["%(rdir1)s",         "true",   "false",    "\"\""],
-            ["%(rdir2)s",         "true",   "false",    "\"\""],
-            ["%(rdir3)s",         "true",   "false",    "%(index_dir)s"],
+            ["{rdir1}",         "true",   "false",    "\"\""],
+            ["{rdir2}",         "true",   "false",    "\"\""],
+            ["{rdir3}",         "true",   "false",    "{index_dir}"],
             # we intentionally use non-existent repository
             # paths in these services, and check they aren't
             # present in the httpd.conf later.
@@ -108,17 +108,14 @@ class _Apache(object):
 #
 # This script produces false svcs(1) output, using
 # a list of space separated strings, with each string
-# of the format <fmri>%%<state>
-#
-# Since the string here is generated from a Python program, we have to escape
-# all 'percent' characters.
+# of the format <fmri>%<state>
 #
 # eg.
-# SERVICE_STATUS="svc:/application/pkg/server:foo%%online svc:/application/pkg/server:default%%offline svc:/application/pkg/server:usr%%online"
+# SERVICE_STATUS="svc:/application/pkg/server:foo%online svc:/application/pkg/server:default%offline svc:/application/pkg/server:usr%online"
 # We expect to be called with 'svcs -H -o fmri <fmri>' but completely ignore
 # the <fmri> argument.
 #
-SERVICE_STATUS="%s"
+SERVICE_STATUS="{0}"
 
 set -- `getopt o:H $*`
 for i in $* ; do
@@ -129,23 +126,23 @@ for i in $* ; do
     esac
 done
 
-if [ "${minus_o}" ]; then
-    if [ -z "${minus_h}" ]; then
+if [ "${{minus_o}}" ]; then
+    if [ -z "${{minus_h}}" ]; then
         echo "FMRI"
     fi
     for service in $SERVICE_STATUS ; do
-        echo $service | sed -e 's/%%/ /' | read fmri state
+        echo $service | sed -e 's/%/ /' | read fmri state
         echo $fmri
     done
     exit 0
 fi
 
-if [ -z "${minus_h}" ]; then
-    printf "%%-14s%%6s    %%s\n" STATE STIME FMRI
+if [ -z "${{minus_h}}" ]; then
+    printf "%-14s%6s    %s\n" STATE STIME FMRI
 fi
 for service in $SERVICE_STATUS ; do
-    echo $service | sed -e 's/%%/ /' | read fmri state
-    printf "%%-14s%%9s %%s\n" $state 00:00:00 $fmri
+    echo $service | sed -e 's/%/ /' | read fmri state
+    printf "%-14s%9s %s\n" $state 00:00:00 $fmri
 done
 """
 
@@ -154,10 +151,10 @@ done
 #
 # This script produces false svcprop(1) output, using
 # a list of space separated strings, with each string
-# of the format <fmri>%%<state>%%<inst_root>%%<readonly>%%<standalone>%%<writable_root>
+# of the format <fmri>%<state>%<inst_root>%<readonly>%<standalone>%<writable_root>
 #
 # eg.
-# SERVICE_PROPS="svc:/application/pkg/server:foo%%online%%/space/repo%%true%%false%%/space/writable_root"
+# SERVICE_PROPS="svc:/application/pkg/server:foo%online%/space/repo%true%false%/space/writable_root"
 #
 # we expect to be called as "svcprop -c -p <property> <fmri>"
 # which is enough svcprop(1) functionalty for these tests. Any other
@@ -170,9 +167,9 @@ typeset -A prop_inst_root
 typeset -A prop_standalone
 typeset -A prop_writable_root
 
-SERVICE_PROPS="%s"
+SERVICE_PROPS="{0}"
 for service in $SERVICE_PROPS ; do
-        echo $service | sed -e 's/%%/ /g' | \
+        echo $service | sed -e 's/%/ /g' | \
             read fmri state inst_root readonly standalone writable_root
         # create a hashable version of the FMRI
         fmri=$(echo $fmri | sed -e 's/\///g' -e 's/://g')
@@ -187,19 +184,19 @@ done
 FMRI=$(echo $4 | sed -e 's/\///g' -e 's/://g')
 case $3 in
         "pkg/inst_root")
-                echo ${prop_inst_root[$FMRI]}
+                echo ${{prop_inst_root[$FMRI]}}
                 ;;
         "pkg/readonly")
-                echo ${prop_readonly[$FMRI]}
+                echo ${{prop_readonly[$FMRI]}}
                 ;;
         "pkg/standalone")
-                echo ${prop_standalone[$FMRI]}
+                echo ${{prop_standalone[$FMRI]}}
                 ;;
         "pkg/writable_root")
-                echo ${prop_writable_root[$FMRI]}
+                echo ${{prop_writable_root[$FMRI]}}
                 ;;
         "restarter/state")
-                echo ${prop_state[$FMRI]}
+                echo ${{prop_state[$FMRI]}}
                 ;;
         *)
                 echo "Completely bogus svcprop output. Sorry."
@@ -212,8 +209,8 @@ esac
         # for this test case.
         _default_httpd_conf = \
 """ServerRoot "/usr/apache2/2.2"
-PidFile "%(runtime_dir)s/default_httpd.pid"
-Listen %(port)s
+PidFile "{runtime_dir}/default_httpd.pid"
+Listen {port}
 <IfDefine 64bit>
 Include /etc/apache2/2.2/conf.d/modules-64.load
 </IfDefine>
@@ -235,14 +232,14 @@ DocumentRoot "/var/apache2/2.2/htdocs"
 <IfModule dir_module>
     DirectoryIndex index.html
 </IfModule>
-LogFormat \"%%h %%l %%u %%t \\\"%%r\\\" %%>s %%b\" common
-ErrorLog "%(runtime_dir)s/error_log"
-CustomLog "%(runtime_dir)s/access_log" common
+LogFormat \"%h %l %u %t \\\"%r\\\" %>s %b\" common
+ErrorLog "{runtime_dir}/error_log"
+CustomLog "{runtime_dir}/access_log" common
 LogLevel debug
 DefaultType text/plain
 # Reference the depot.conf file generated by pkg.depot-config, which makes this
 # web server into something that can serve pkg(5) repositories.
-Include %(depot_conf)s
+Include {depot_conf}
 SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 # We enable server-status here, using /pkg5test-server-status to it to make the
@@ -313,12 +310,12 @@ SSLRandomSeed connect builtin
                 _svcs_conf = " ".join(["%".join([value for value in item])
                     for item in _svcs_conf])
                 _svcprop_conf = " ".join(["%".join(
-                    [value % rdirs for value in item])
+                    [value.format(**rdirs) for value in item])
                     for item in _svcprop_conf])
 
                 self.smf_cmds = {
-                    "usr/bin/svcs": self._svcs_template % _svcs_conf,
-                    "usr/bin/svcprop": self._svcprop_template % _svcprop_conf
+                    "usr/bin/svcs": self._svcs_template.format(_svcs_conf),
+                    "usr/bin/svcprop": self._svcprop_template.format(_svcprop_conf)
                 }
                 self.make_misc_files(self.smf_cmds, "smf_cmds", mode=0755)
 
@@ -331,7 +328,7 @@ SSLRandomSeed connect builtin
                 if build_indexes:
                         # we won't return until indexes are built
                         u = urllib2.urlopen(
-                            "%s/depot/depot-wait-refresh" % hc.url).close()
+                            "{0}/depot/depot-wait-refresh".format(hc.url)).close()
 
 
 class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
@@ -375,10 +372,10 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 ret, output = self.depotconfig("", fill_missing_args=False,
                     out=True, exit=2)
                 self.assert_("Usage:" in output,
-                    "No usage string printed: %s" % output)
+                    "No usage string printed: {0}".format(output))
                 ret, output = self.depotconfig("--help", out=True, exit=2)
                 self.assert_("Usage:" in output,
-                    "No usage string printed: %s" % output)
+                    "No usage string printed: {0}".format(output))
 
         def test_2_htinvalid_root(self):
                 """We return an error given an invalid image root"""
@@ -390,12 +387,12 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 for invalid_root in ["usr=/dev/null",
                     "foo=/etc/passwd", "alt=/proc"]:
                         ret, output, err = self.depotconfig(
-                            "-d %s -F" % invalid_root, out=True, stderr=True,
+                            "-d {0} -F".format(invalid_root), out=True, stderr=True,
                             exit=1)
                         expected = invalid_root.split("=")[1]
                         self.assert_(expected in err,
-                            "error message did not contain %s: %s" %
-                            (expected, err))
+                            "error message did not contain {0}: {1}".format(
+                            expected, err))
 
                 # ensure we also catch invalid SMF inst_roots
                 svcs_conf = [["svc:/application/pkg/server:default", "online" ]]
@@ -407,45 +404,45 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                     "/tmp")
 
                 # ensure we pick up invalid writable_root directories
-                ret, output, err = self.depotconfig("-d blah=%s=/dev/null" %
-                    self.rdir1, out=True, stderr=True, exit=1)
+                ret, output, err = self.depotconfig("-d blah={0}=/dev/null".format(
+                    self.rdir1), out=True, stderr=True, exit=1)
 
                 # but check that we allow valid writeable_roots
-                ret, output, err = self.depotconfig("-d blah=%s=%s" %
-                    (self.rdir1, self.index_dir), out=True, stderr=True)
+                ret, output, err = self.depotconfig("-d blah={0}={1}".format(
+                    self.rdir1, self.index_dir), out=True, stderr=True)
                 self.file_contains(self.default_depot_conf,
-                    "PKG5_WRITABLE_ROOT_blah %s" % self.index_dir)
+                    "PKG5_WRITABLE_ROOT_blah {0}".format(self.index_dir))
 
         def test_3_invalid_htcache_dir(self):
                 """We return an error given an invalid cache_dir"""
 
                 for invalid_cache in ["/dev/null", "/etc/passwd"]:
-                        ret, output, err = self.depotconfig("-c %s" %
-                            invalid_cache, out=True, stderr=True, exit=1)
+                        ret, output, err = self.depotconfig("-c {0}".format(
+                            invalid_cache), out=True, stderr=True, exit=1)
                         self.assert_(invalid_cache in err, "error message "
-                            "did not contain %s: %s" % (invalid_cache, err))
+                            "did not contain {0}: {1}".format(invalid_cache, err))
 
         def test_4_invalid_hthostname(self):
                 """We return an error given an invalid hostname"""
 
                 for invalid_host in ["1.2.3.4.5.6", "pkgsysrepotestname", "."]:
-                        ret, output, err = self.depotconfig("-h %s" %
-                            invalid_host, out=True, stderr=True, exit=1)
+                        ret, output, err = self.depotconfig("-h {0}".format(
+                            invalid_host), out=True, stderr=True, exit=1)
                         self.assert_(invalid_host in err, "error message "
-                            "did not contain %s: %s" % (invalid_host, err))
+                            "did not contain {0}: {1}".format(invalid_host, err))
 
         def test_5_invalid_htlogs_dir(self):
                 """We return an error given an invalid logs_dir"""
 
                 for invalid_log in ["/dev/null", "/etc/passwd"]:
-                        ret, output, err = self.depotconfig("-l %s" % invalid_log,
+                        ret, output, err = self.depotconfig("-l {0}".format(invalid_log),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_log in err, "error message "
-                            "did not contain %s: %s" % (invalid_log, err))
+                            "did not contain {0}: {1}".format(invalid_log, err))
 
                 for invalid_log in ["/proc"]:
                         port = self.next_free_port
-                        self.depotconfig("-l %s -p %s" % (invalid_log, port),
+                        self.depotconfig("-l {0} -p {1}".format(invalid_log, port),
                             exit=0)
                         self.assertRaises(pkg5unittest.ApacheStateException,
                             self.start_depot)
@@ -454,47 +451,47 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 """We return an error given an invalid port"""
 
                 for invalid_port in [999999, "bobcat", "-1234"]:
-                        ret, output, err = self.depotconfig("-p %s" % invalid_port,
+                        ret, output, err = self.depotconfig("-p {0}".format(invalid_port),
                             out=True, stderr=True, exit=1)
                         self.assert_(str(invalid_port) in err, "error message "
-                            "did not contain %s: %s" % (invalid_port, err))
+                            "did not contain {0}: {1}".format(invalid_port, err))
 
         def test_7_invalid_htruntime_dir(self):
                 """We return an error given an invalid runtime_dir"""
 
                 for invalid_runtime in ["/dev/null", "/etc/passwd", "/proc"]:
-                        ret, output, err = self.depotconfig("-r %s" %
-                            invalid_runtime, out=True, stderr=True, exit=1)
+                        ret, output, err = self.depotconfig("-r {0}".format(
+                            invalid_runtime), out=True, stderr=True, exit=1)
                         self.assert_(invalid_runtime in err, "error message "
-                            "did not contain %s: %s" % (invalid_runtime, err))
+                            "did not contain {0}: {1}".format(invalid_runtime, err))
 
         def test_8_invalid_htcache_size(self):
                 """We return an error given an invalid cache_size"""
 
                 for invalid_csize in ["cats", "-1234"]:
                         ret, output, err = self.depotconfig(
-                            "-s %s" % invalid_csize, out=True, stderr=True,
+                            "-s {0}".format(invalid_csize), out=True, stderr=True,
                             exit=1)
                         self.assert_(str(invalid_csize) in err, "error message "
-                            "did not contain %s: %s" % (invalid_csize, err))
+                            "did not contain {0}: {1}".format(invalid_csize, err))
 
         def test_9_invalid_httemplates_dir(self):
                 """We return an error given an invalid templates_dir"""
 
                 for invalid_tmp in ["/dev/null", "/etc/passwd", "/proc"]:
-                        ret, output, err = self.depotconfig("-T %s" % invalid_tmp,
+                        ret, output, err = self.depotconfig("-T {0}".format(invalid_tmp),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_tmp in err, "error message "
-                            "did not contain %s: %s" % (invalid_tmp, err))
+                            "did not contain {0}: {1}".format(invalid_tmp, err))
 
         def test_10_httype(self):
                 """We return an error given an invalid type option."""
 
                 invalid_type = "weblogic"
-                ret, output, err = self.depotconfig("-t %s" % invalid_type,
+                ret, output, err = self.depotconfig("-t {0}".format(invalid_type),
                     out=True, stderr=True, exit=2)
                 self.assert_(invalid_type in err, "error message "
-                    "did not contain %s: %s" % (invalid_type, err))
+                    "did not contain {0}: {1}".format(invalid_type, err))
                 # ensure we work with the supported type
                 self.depotconfig("-t apache2")
 
@@ -522,9 +519,9 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                         "/default/en/index.shtml",
                         "/default/en/catalog.shtml",
                         "/default/p5i/0/new.p5i",
-                        "/default/info/0/%(esc_full_fmri)s",
-                        "/default/test1/info/0/%(esc_full_fmri)s",
-                        "/default/manifest/0/%(esc_full_fmri)s",
+                        "/default/info/0/{esc_full_fmri}",
+                        "/default/test1/info/0/{esc_full_fmri}",
+                        "/default/manifest/0/{esc_full_fmri}",
                         "/default/en/search.shtml",
                         "/usr/test2/en/catalog.shtml",
                         "/depot/default/en/search.shtml?token=pkg&action=Search"
@@ -534,16 +531,16 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                         try:
                                 url_obj = urllib2.urlopen(url_path, timeout=10)
                                 self.assert_(url_obj.code == 200,
-                                    "Failed to open %s: %s" % (url_path,
+                                    "Failed to open {0}: {1}".format(url_path,
                                     url_obj.code))
                                 url_obj.close()
                         except urllib2.HTTPError, e:
-                                self.debug("Failed to open %s: %s" %
-                                    (url_path, e))
+                                self.debug("Failed to open {0}: {1}".format(
+                                    url_path, e))
                                 raise
 
                 for p in paths:
-                        get_url("%s%s" % (self.ac.url, p % conf))
+                        get_url("{0}{1}".format(self.ac.url, p.format(**conf)))
 
                 self.ac.stop()
 
@@ -565,7 +562,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 get_url(self.ac.url)
 
                 # and check that we get a 404 for the missing repo
-                bad_url = "%s/usr/test2/en/catalog.shtml" % self.ac.url
+                bad_url = "{0}/usr/test2/en/catalog.shtml".format(self.ac.url)
                 raised_404 = False
                 try:
                         url_obj = urllib2.urlopen(bad_url, timeout=10)
@@ -573,8 +570,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 except urllib2.HTTPError, e:
                         if e.code == 404:
                                 raised_404 = True
-                self.assert_(raised_404, "Didn't get a 404 opening %s" %
-                    bad_url)
+                self.assert_(raised_404, "Didn't get a 404 opening {0}".format(
+                    bad_url))
 
                 # check that we can still reach other valid paths
                 paths = [
@@ -584,14 +581,14 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                         "/default/en/index.shtml",
                         "/default/en/catalog.shtml",
                         "/default/p5i/0/new.p5i",
-                        "/default/info/0/%(esc_full_fmri)s",
-                        "/default/test1/info/0/%(esc_full_fmri)s",
-                        "/default/manifest/0/%(esc_full_fmri)s",
+                        "/default/info/0/{esc_full_fmri}",
+                        "/default/test1/info/0/{esc_full_fmri}",
+                        "/default/manifest/0/{esc_full_fmri}",
                         "/default/en/search.shtml",
                 ]
                 for p in paths:
                         self.debug(p)
-                        get_url("%s%s" % (self.ac.url, p % conf))
+                        get_url("{0}{1}".format(self.ac.url, p.format(**conf)))
                 os.rename(broken_rdir, self.rdir2)
 
         def test_12_htpkgclient(self):
@@ -604,13 +601,13 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                         self.pkgsend_bulk(rurl, self.sample_pkg)
                         self.pkgsend_bulk(rurl, self.sample_pkg_11)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(), self.new_pkg)
-                self.pkgrepo("-s %s refresh" % self.dcs[2].get_repo_url())
+                self.pkgrepo("-s {0} refresh".format(self.dcs[2].get_repo_url()))
 
                 self.depotconfig("")
                 self.image_create()
                 self.start_depot()
                 # test that we can access the default publisher
-                self.pkg("set-publisher -p %s/default" % self.ac.url)
+                self.pkg("set-publisher -p {0}/default".format(self.ac.url))
                 self.pkg("publisher")
                 self.pkg("install sample@1.0")
                 self.file_contains("usr/bin/sample", "tmp/sample")
@@ -619,11 +616,11 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 # test that we can access specific publishers, this time from
                 # a different repository, served by the same depot-config.
-                self.pkg("set-publisher -p %s/usr/test2" % self.ac.url)
+                self.pkg("set-publisher -p {0}/usr/test2".format(self.ac.url))
                 self.pkg("contents -r new")
                 self.pkg("set-publisher -G '*' test2")
                 ret, output = self.pkg(
-                    "search -o action.raw -s %s/usr new" % self.ac.url,
+                    "search -o action.raw -s {0}/usr new".format(self.ac.url),
                     out=True)
                 self.assert_("path=usr/bin/new" in output)
 
@@ -635,13 +632,13 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 # add a new publisher to an existing repository and ensure it
                 # is visible from the repository
                 self.ac.stop()
-                self.pkgrepo("-s %s add-publisher carrots" % self.rdir1)
+                self.pkgrepo("-s {0} add-publisher carrots".format(self.rdir1))
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(), self.carrots_pkg)
                 self.depotconfig("")
                 self.start_depot()
 
-                self.pkg("set-publisher -g %s/default/carrots carrots" %
-                    self.ac.url)
+                self.pkg("set-publisher -g {0}/default/carrots carrots".format(
+                    self.ac.url))
 
         def test_13_htpkgrecv(self):
                 """A depot-config can act as a repository server for pkgrecv(1)
@@ -662,8 +659,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 self.image_create()
                 self.start_depot()
 
-                ret, output = self.pkgrecv(command="-s %s/default --newest" %
-                    self.ac.url, out=True)
+                ret, output = self.pkgrecv(command="-s {0}/default --newest".format(
+                    self.ac.url), out=True)
                 sec_fmri_nobuild = pkg.fmri.PkgFmri(second[0]).get_fmri(
                     include_build=False)
                 self.assert_(sec_fmri_nobuild in output)
@@ -671,8 +668,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 os.mkdir(dest)
 
                 # pull down raw package contents
-                self.pkgrecv(command="-s %s/default -m all-versions --raw "
-                    "-d %s '*'" % (self.ac.url, dest))
+                self.pkgrecv(command="-s {0}/default -m all-versions --raw "
+                    "-d {1} '*'".format(self.ac.url, dest))
 
                 # Quickly sanity check the contents
                 self.assert_(os.listdir(dest) == ["sample"])
@@ -704,7 +701,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 self.pkgsend_bulk(rurl, self.sample_pkg)
                 # we have a search index on rurl
-                self.pkgrepo("-s %s refresh" % rurl)
+                self.pkgrepo("-s {0} refresh".format(rurl))
                 self.pkgsend_bulk(writable_rurl, self.sample_pkg)
 
                 # we have no search index on nosearch_rurl
@@ -716,71 +713,71 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 self.start_depot()
                 self.image_create()
 
-                depot_url = "%s/default" % self.ac.url
-                windex_url = "%s/windex" % self.ac.url
-                nosearch_url = "%s/usr" % self.ac.url
+                depot_url = "{0}/default".format(self.ac.url)
+                windex_url = "{0}/windex".format(self.ac.url)
+                nosearch_url = "{0}/usr".format(self.ac.url)
 
                 # verify that list commands work
-                ret, output = self.pkgrepo("-s %s list -F tsv" % depot_url,
+                ret, output = self.pkgrepo("-s {0} list -F tsv".format(depot_url),
                     out=True)
                 self.assert_("pkg://test1/sample@1.0" in output)
                 self.assert_("pkg://test1/new@1.0" not in output)
 
                 # rebuild, remove and set commands should fail, the latter two
                 # with exit code 2
-                self.pkgrepo("-s %s rebuild" % depot_url, exit=1)
-                self.pkgrepo("-s %s remove sample" % depot_url, exit=2)
-                self.pkgrepo("-s %s set -p test1 foo/bar=baz" % depot_url,
+                self.pkgrepo("-s {0} rebuild".format(depot_url), exit=1)
+                self.pkgrepo("-s {0} remove sample".format(depot_url), exit=2)
+                self.pkgrepo("-s {0} set -p test1 foo/bar=baz".format(depot_url),
                     exit=2)
 
                 # verify that status works
-                self.pkgrepo("-s %s info" % depot_url)
+                self.pkgrepo("-s {0} info".format(depot_url))
                 self.assert_("test1 1 online" in self.reduceSpaces(self.output))
 
                 # verify search works for packages in the repository
-                self.pkg("set-publisher -p %s" % depot_url)
-                self.pkg("search -s %s msgsh" % "%s" % depot_url,
+                self.pkg("set-publisher -p {0}".format(depot_url))
+                self.pkg("search -s {0} msgsh".format("{0}".format(depot_url)),
                     exit=1)
-                self.pkg("search -s %s /usr/bin/sample" % depot_url)
+                self.pkg("search -s {0} /usr/bin/sample".format(depot_url))
 
                 # Can't refresh this repo since it doesn't have a writable root
-                self.pkgrepo("-s %s refresh" % depot_url, exit=1)
+                self.pkgrepo("-s {0} refresh".format(depot_url), exit=1)
 
                 # verify that search fails for repositories that don't have
                 # a pre-existing search index in the repository
-                self.pkg("search -s %s /usr/bin/sample" % nosearch_url, exit=1)
+                self.pkg("search -s {0} /usr/bin/sample".format(nosearch_url), exit=1)
 
                 # publish a new package, and verify it doesn't appear in the
                 # search results for the repo with the writable_root
                 self.pkgsend_bulk(writable_rurl, self.new_pkg)
-                self.pkg("search -s %s /usr/bin/new" % windex_url, exit=1)
+                self.pkg("search -s {0} /usr/bin/new".format(windex_url), exit=1)
 
                 # now refresh the index
-                self.pkgrepo("-s %s refresh" % windex_url)
+                self.pkgrepo("-s {0} refresh".format(windex_url))
 
                 # there isn't a synchronous option to pkgrepo, so wait a bit
                 # then make sure we do see this new package.
                 time.sleep(3)
 
                 # we should now get search results for that new package
-                ret, output = self.pkg("search -s %s /usr/bin/new" % windex_url,
+                ret, output = self.pkg("search -s {0} /usr/bin/new".format(windex_url),
                     out=True)
                 self.assert_("usr/bin/new" in output)
-                ret, output = self.pkgrepo("-s %s list -F tsv" % windex_url,
+                ret, output = self.pkgrepo("-s {0} list -F tsv".format(windex_url),
                     out=True)
                 self.assert_("pkg://test3/sample@1.0" in output)
                 self.assert_("pkg://test3/new@1.0" in output)
 
                 # ensure that refresh --no-catalog works, but refresh --no-index
                 # does not.
-                self.pkgrepo("-s %s refresh --no-catalog" % windex_url)
-                self.pkgrepo("-s %s refresh --no-index" % windex_url, exit=1)
+                self.pkgrepo("-s {0} refresh --no-catalog".format(windex_url))
+                self.pkgrepo("-s {0} refresh --no-index".format(windex_url), exit=1)
 
                 # check that when we start the depot without -A, we cannot
                 # issue refresh commands.
                 self.depotconfig("")
                 self.start_depot()
-                self.pkgrepo("-s %s refresh" % windex_url, exit=1)
+                self.pkgrepo("-s {0} refresh".format(windex_url), exit=1)
 
         def test_15_htheaders(self):
                 """Test that the correct Content-Type and Cache-control headers
@@ -788,7 +785,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 fmris = self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
-                self.pkgrepo("-s %s refresh" % self.dcs[1].get_repo_url())
+                self.pkgrepo("-s {0} refresh".format(self.dcs[1].get_repo_url()))
                 self.depotconfig("")
                 self.start_depot()
 
@@ -800,8 +797,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 # modify it) Creating an image is just the easier thing to do
                 # here.
                 self.image_create()
-                ret, output = self.pkg("search -s %s/default -H -o action.hash "
-                     "-r /usr/bin/sample" % self.ac.url, out=True)
+                ret, output = self.pkg("search -s {0}/default -H -o action.hash "
+                     "-r /usr/bin/sample".format(self.ac.url), out=True)
                 file_hash = output.strip()
 
                 fmri = pkg.fmri.PkgFmri(fmris[0])
@@ -817,14 +814,14 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                     [("Content-Type", "application/vnd.pkg5.info")],
                     "/default/catalog/1/catalog.attrs":
                     [("Cache-Control", "no-cache")],
-                    "/default/manifest/0/%s" % esc_short_fmri:
+                    "/default/manifest/0/{0}".format(esc_short_fmri):
                     [("Cache-Control",
                     "must-revalidate, no-transform, max-age=31536000"),
                     ("Content-Type", "text/plain;charset=utf-8")],
                     "/default/search/1/False_2_None_None_%3a%3a%3asample":
                     [("Cache-Control", "no-cache"),
                     ("Content-Type", "text/plain;charset=utf-8")],
-                    "/default/file/1/%s" % file_hash:
+                    "/default/file/1/{0}".format(file_hash):
                     [("Cache-Control",
                     "must-revalidate, no-transform, max-age=31536000"),
                     ("Content-Type", "application/data")]
@@ -840,17 +837,17 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                                 if value in h:
                                         return True
                         except Exception, e:
-                                self.assert_(False, "Error opening %s: %s" %
-                                    (url, e))
+                                self.assert_(False, "Error opening {0}: {1}".format(
+                                    url, e))
                         return ret
 
                 for path in paths:
                         for headers in paths[path]:
                                 name, value = headers
-                                url = "%s%s" % (self.ac.url, path)
+                                url = "{0}{1}".format(self.ac.url, path)
                                 self.assert_(header_contains(url, name, value),
-                                    "%s did not contain the header %s=%s" %
-                                    (url, name, value))
+                                    "{0} did not contain the header {1}={2}".format(
+                                    url, name, value))
 
         def test_16_htfragment(self):
                 """Test that the fragment httpd.conf generated by pkg.depot-config
@@ -859,8 +856,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
-                self.pkgrepo("-s %s add-publisher carrots" %
-                    self.dcs[1].get_repo_url())
+                self.pkgrepo("-s {0} add-publisher carrots".format(
+                    self.dcs[1].get_repo_url()))
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
@@ -868,21 +865,21 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 # We shouldn't be able to supply a writable root when running
                 # in fragment mode
-                self.depotconfig("-l %s -F -d usr=%s -d spaghetti=%s=%s "
-                    "-P testpkg5" %
-                    (self.default_depot_runtime, self.rdir1, self.rdir2,
+                self.depotconfig("-l {0} -F -d usr={1} -d spaghetti={2}={3} "
+                    "-P testpkg5".format(
+                    self.default_depot_runtime, self.rdir1, self.rdir2,
                     self.index_dir), exit=2)
-                self.depotconfig("-l %s -F -d usr=%s -d spaghetti=%s "
-                    "-P testpkg5" %
-                    (self.default_depot_runtime, self.rdir1, self.rdir2))
+                self.depotconfig("-l {0} -F -d usr={1} -d spaghetti={2} "
+                    "-P testpkg5".format(
+                    self.default_depot_runtime, self.rdir1, self.rdir2))
 
                 default_httpd_conf_path = os.path.join(self.test_root,
                     "default_httpd.conf")
                 httpd_conf = open(default_httpd_conf_path, "w")
-                httpd_conf.write(self._default_httpd_conf %
-                    {"port": self.depot_port,
-                    "depot_conf": self.depot_conf_fragment,
-                    "runtime_dir": self.default_depot_runtime})
+                httpd_conf.write(self._default_httpd_conf.format(
+                    port=self.depot_port,
+                    depot_conf=self.depot_conf_fragment,
+                    runtime_dir=self.default_depot_runtime))
                 httpd_conf.close()
 
                 # Start an Apache instance
@@ -893,15 +890,15 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 # verify the instance is definitely the one using our custom
                 # httpd.conf
-                u = urllib2.urlopen("%s/pkg5test-server-status" % self.ac.url)
+                u = urllib2.urlopen("{0}/pkg5test-server-status".format(self.ac.url))
                 self.assert_(u.code == httplib.OK,
                     "Error getting pkg5-server-status")
 
                 self.image_create()
                 # add publishers for the two repositories being served by this
                 # Apache instance
-                self.pkg("set-publisher -p %s/testpkg5/usr" % self.ac.url)
-                self.pkg("set-publisher -p %s/testpkg5/spaghetti" % self.ac.url)
+                self.pkg("set-publisher -p {0}/testpkg5/usr".format(self.ac.url))
+                self.pkg("set-publisher -p {0}/testpkg5/spaghetti".format(self.ac.url))
                 # install packages from the two different publishers in the
                 # first repository
                 self.pkg("install sample")
@@ -911,8 +908,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 # we can't perform remote search or admin operations, since
                 # we've no supporting mod_wsgi process.
                 self.pkg("search -r new", exit=1)
-                self.pkgrepo("-s %s/testpkg5/usr refresh" %
-                    self.ac.url, exit=1)
+                self.pkgrepo("-s {0}/testpkg5/usr refresh".format(
+                    self.ac.url), exit=1)
 
 
 class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
@@ -935,21 +932,21 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 # Test that without --https, providing certs or keys will fail.
                 dummy_ret, dummy_output, err = self.depotconfig(
-                    "--cert %s --key %s" % (cert, key),
+                    "--cert {0} --key {1}".format(cert, key),
                     out=True, stderr=True, exit=2)
                 self.assert_(len(err), "error message: Without --https, "
                             "providing cert or key should fail but succeeded "
                             "instead.")
 
                 dummy_ret, dummy_output, err = self.depotconfig(
-                    "--ca-cert %s --ca-key %s" % (cert, key),
+                    "--ca-cert {0} --ca-key {1}".format(cert, key),
                     out=True, stderr=True, exit=2)
                 self.assert_(len(err), "error message: Without --https, "
                             "providing cert or key should fail but succeeded "
                             "instead.")
 
                 dummy_ret, dummy_output, err = self.depotconfig(
-                    "--cert-chain %s" % cert, out=True, stderr=True, exit=2)
+                    "--cert-chain {0}".format(cert), out=True, stderr=True, exit=2)
                 self.assert_(len(err), "error message: Without --https, "
                             "providing cert or key should fail but succeeded "
                             "instead.")
@@ -972,21 +969,21 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                 self.make_misc_files(["tmp/ido_exist_cert",
                     "tmp/ido_exist_key"])
 
-                self.depotconfig("--https --cert %s" % cert, exit=2)
-                self.depotconfig("--https --key %s" % key, exit=2)
-                self.depotconfig("--https --ca-cert %s" % cert, exit=2)
-                self.depotconfig("--https --ca-key %s" % key, exit=2)
-                self.depotconfig("--https --cert-chain %s" % cert, exit=2)
+                self.depotconfig("--https --cert {0}".format(cert), exit=2)
+                self.depotconfig("--https --key {0}".format(key), exit=2)
+                self.depotconfig("--https --ca-cert {0}".format(cert), exit=2)
+                self.depotconfig("--https --ca-key {0}".format(key), exit=2)
+                self.depotconfig("--https --cert-chain {0}".format(cert), exit=2)
 
         def test_2_invalid_cert_key_dir(self):
                 """We return an error given an invalid cer_key_dir."""
 
                 for invalid_certkey_dir in ["/dev/null", "/etc/passwd"]:
                         ret, output, err = self.depotconfig("--https "
-                            "--cert-key-dir %s" %
-                            invalid_certkey_dir, out=True, stderr=True, exit=1)
+                            "--cert-key-dir {0}".format(
+                            invalid_certkey_dir), out=True, stderr=True, exit=1)
                         self.assert_(invalid_certkey_dir in err, "error message "
-                           "did not contain %s: %s" % (invalid_certkey_dir, err))
+                           "did not contain {0}: {1}".format(invalid_certkey_dir, err))
 
         def test_3_non_exist_cert_key(self):
                 """We return an error given an non-exist cert or key."""
@@ -1004,42 +1001,42 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 # Test checking user provided server cert works.
                 dummy_ret, dummy_output, err = self.depotconfig("--https "
-                    "--cert %s --key %s" % (non_exist_cert, exist_key),
+                    "--cert {0} --key {1}".format(non_exist_cert, exist_key),
                     out=True, stderr=True, exit=1)
                 self.assert_(non_exist_cert in err, "error message "
-                    "did not contain %s: %s" % (non_exist_cert, err))
+                    "did not contain {0}: {1}".format(non_exist_cert, err))
 
                 # Test checking user provided server key works.
                 dummy_ret, dummy_output, err = self.depotconfig("--https "
-                    "--cert %s --key %s" % (exist_cert, non_exist_key),
+                    "--cert {0} --key {1}".format(exist_cert, non_exist_key),
                     out=True, stderr=True, exit=1)
                 self.assert_(non_exist_key in err, "error message "
-                    "did not contain %s: %s" % (non_exist_key, err))
+                    "did not contain {0}: {1}".format(non_exist_key, err))
 
                 # Test checking user provided cert chain file works.
                 dummy_ret, dummy_output, err = self.depotconfig("--https "
-                    "--cert %s --key %s --cert-chain %s" %
-                    (exist_cert, exist_key, non_exist_cert),
+                    "--cert {0} --key {1} --cert-chain {2}".format(
+                    exist_cert, exist_key, non_exist_cert),
                     out=True, stderr=True, exit=1)
                 self.assert_(non_exist_cert in err, "error message "
-                    "did not contain %s: %s" % (non_exist_cert, err))
+                    "did not contain {0}: {1}".format(non_exist_cert, err))
 
                 # Test checking user provided CA cert file works.
                 tmp_dir = os.path.join(self.test_root, "tmp")
                 dummy_ret, dummy_output, err = self.depotconfig("--https "
-                    "--ca-cert %s --ca-key %s --cert-key-dir %s" %
-                    (non_exist_cert, exist_key, tmp_dir),
+                    "--ca-cert {0} --ca-key {1} --cert-key-dir {2}".format(
+                    non_exist_cert, exist_key, tmp_dir),
                     out=True, stderr=True, exit=1)
                 self.assert_(non_exist_cert in err, "error message "
-                    "did not contain %s: %s" % (non_exist_cert, err))
+                    "did not contain {0}: {1}".format(non_exist_cert, err))
 
                 # Test checking user provided CA key file works.
                 dummy_ret, dummy_output, err = self.depotconfig("--https "
-                    "--ca-cert %s --ca-key %s --cert-key-dir %s" %
-                    (exist_cert, non_exist_key, tmp_dir),
+                    "--ca-cert {0} --ca-key {1} --cert-key-dir {2}".format(
+                    exist_cert, non_exist_key, tmp_dir),
                     out=True, stderr=True, exit=1)
                 self.assert_(non_exist_key in err, "error message "
-                    "did not contain %s: %s" % (non_exist_key, err))
+                    "did not contain {0}: {1}".format(non_exist_key, err))
 
         def test_4_invalid_smf_fmri(self):
                 """We return an error given an invalid pkg/depot smf fmri."""
@@ -1051,16 +1048,16 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                 # Test with invalid fmri.
                 for invalid_fmri in ["svc:", "svc://notexist", some_fake_file]:
                         dummy_ret, dummy_output, err = self.depotconfig(
-                            "--https --cert-key-dir %s --smf-fmri %s" %
-                            (tmp_dir, invalid_fmri), out=True, stderr=True)
+                            "--https --cert-key-dir {0} --smf-fmri {1}".format(
+                            tmp_dir, invalid_fmri), out=True, stderr=True)
                         self.assert_(len(err), "error message: SMF FMRI "
                             "setting should fail but succeeded instead.")
 
                 # Test with wrong fmri.
                 wrong_fmri = "pkg/server:default"
                 dummy_ret, dummy_output, err = self.depotconfig(
-                    "--https --cert-key-dir %s --smf-fmri %s" %
-                    (tmp_dir, wrong_fmri), out=True, stderr=True, exit=1)
+                    "--https --cert-key-dir {0} --smf-fmri {1}".format(
+                    tmp_dir, wrong_fmri), out=True, stderr=True, exit=1)
                 self.assert_(len(err), "error message: SMF FMRI "
                     "setting should fail but succeeded instead.")
 
@@ -1069,8 +1066,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
-                self.pkgrepo("-s %s add-publisher carrots" %
-                    self.dcs[1].get_repo_url())
+                self.pkgrepo("-s {0} add-publisher carrots".format(
+                    self.dcs[1].get_repo_url()))
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
@@ -1082,14 +1079,14 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                         shutil.rmtree(cert_key_dir)
 
                 cache_dir = os.path.join(self.test_root, "cache_test_dir")
-                self.depotconfig("-l %s -r %s -c %s -d usr=%s -d spa=%s -p %s "
-                    "--https -T %s -h localhost --cert-key-dir %s" %
-                    (self.default_depot_runtime, self.default_depot_runtime,
+                self.depotconfig("-l {0} -r {1} -c {2} -d usr={3} -d spa={4} -p {5} "
+                    "--https -T {6} -h localhost --cert-key-dir {7}".format(
+                    self.default_depot_runtime, self.default_depot_runtime,
                     cache_dir, self.rdir1, self.rdir2, self.depot_port,
                     self.depot_template_dir, cert_key_dir))
-                server_id = "localhost_%s" % self.depot_port
-                ca_cert_file = os.path.join(cert_key_dir, "ca_%s_cert.pem" %
-                    server_id)
+                server_id = "localhost_{0}".format(self.depot_port)
+                ca_cert_file = os.path.join(cert_key_dir, "ca_{0}_cert.pem".format(
+                    server_id))
                 DebugValues["ssl_ca_file"] = ca_cert_file
 
                 # Start an Apache instance
@@ -1104,8 +1101,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 # add publishers for the two repositories being served by this
                 # Apache instance.
-                self.pkg("set-publisher -p %s/usr" % self.ac.url)
-                self.pkg("set-publisher -p %s/spa" % self.ac.url)
+                self.pkg("set-publisher -p {0}/usr".format(self.ac.url))
+                self.pkg("set-publisher -p {0}/spa".format(self.ac.url))
                 # install packages from the two different publishers in the
                 # first repository
                 self.pkg("install sample")
@@ -1115,8 +1112,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                 # we can't perform remote search or admin operations, since
                 # we've no supporting mod_wsgi process.
                 self.pkg("search -r new", exit=1)
-                self.pkgrepo("-s %s/testpkg5/usr refresh" %
-                    self.ac.url, exit=1)
+                self.pkgrepo("-s {0}/testpkg5/usr refresh".format(
+                    self.ac.url), exit=1)
 
         def test_6_https_cert_chain(self):
                 """Test that https functionality with cert chain works as
@@ -1124,8 +1121,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
-                self.pkgrepo("-s %s add-publisher carrots" %
-                    self.dcs[1].get_repo_url())
+                self.pkgrepo("-s {0} add-publisher carrots".format(
+                    self.dcs[1].get_repo_url()))
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
@@ -1150,10 +1147,10 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                 cs_key_file = os.path.join(cg.keys_dir, "cs_ta_key.pem")
 
                 cache_dir = os.path.join(self.test_root, "cache_test_dir")
-                self.depotconfig("-l %s -r %s -c %s -d usr=%s -d spa=%s -p %s "
-                    "--https -T %s -h localhost --cert %s --key %s "
-                    "--cert-chain %s" %
-                    (self.default_depot_runtime, self.default_depot_runtime,
+                self.depotconfig("-l {0} -r {1} -c {2} -d usr={3} -d spa={4} -p {5} "
+                    "--https -T {6} -h localhost --cert {7} --key {8} "
+                    "--cert-chain {9}".format(
+                    self.default_depot_runtime, self.default_depot_runtime,
                     cache_dir, self.rdir1, self.rdir2, self.depot_port,
                     self.depot_template_dir, cs_cert_file, cs_key_file,
                     ca_cert_file))
@@ -1172,8 +1169,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 # add publishers for the two repositories being served by this
                 # Apache instance.
-                self.pkg("set-publisher -p %s/usr" % self.ac.url)
-                self.pkg("set-publisher -p %s/spa" % self.ac.url)
+                self.pkg("set-publisher -p {0}/usr".format(self.ac.url))
+                self.pkg("set-publisher -p {0}/spa".format(self.ac.url))
                 # install packages from the two different publishers in the
                 # first repository
                 self.pkg("install sample")
@@ -1187,8 +1184,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
-                self.pkgrepo("-s %s add-publisher carrots" %
-                    self.dcs[1].get_repo_url())
+                self.pkgrepo("-s {0} add-publisher carrots".format(
+                    self.dcs[1].get_repo_url()))
                 self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
@@ -1208,10 +1205,10 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
                 ta_key_file = os.path.join(cg.keys_dir, "ta_key.pem")
 
                 cache_dir = os.path.join(self.test_root, "cache_test_dir")
-                self.depotconfig("-l %s -r %s -c %s -d usr=%s -d spa=%s -p %s "
-                    "--https -T %s -h localhost --ca-cert %s --ca-key %s "
-                    "--cert-key-dir %s" %
-                    (self.default_depot_runtime, self.default_depot_runtime,
+                self.depotconfig("-l {0} -r {1} -c {2} -d usr={3} -d spa={4} -p {5} "
+                    "--https -T {6} -h localhost --ca-cert {7} --ca-key {8} "
+                    "--cert-key-dir {9}".format(
+                    self.default_depot_runtime, self.default_depot_runtime,
                     cache_dir, self.rdir1, self.rdir2, self.depot_port,
                     self.depot_template_dir, ta_cert_file, ta_key_file,
                     cert_key_dir))
@@ -1230,8 +1227,8 @@ class TestHttpsDepot(_Apache, pkg5unittest.HTTPSTestClass):
 
                 # add publishers for the two repositories being served by this
                 # Apache instance.
-                self.pkg("set-publisher -p %s/usr" % self.ac.url)
-                self.pkg("set-publisher -p %s/spa" % self.ac.url)
+                self.pkg("set-publisher -p {0}/usr".format(self.ac.url))
+                self.pkg("set-publisher -p {0}/spa".format(self.ac.url))
                 # install packages from the two different publishers in the
                 # first repository
                 self.pkg("install sample")

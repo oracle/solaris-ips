@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import inspect
@@ -96,10 +96,10 @@ class Checker(object):
                         try:
                                 i = arg_spec.args.index("pkglint_id")
                         except ValueError:
-                                return "%s.?" % name
+                                return "{0}.?".format(name)
                         # arg_spec.defaults are the default values for
                         # any keyword args, in order.
-                        return "%s%s" % (name, arg_spec.defaults[c - i])
+                        return "{0}{1}".format(name, arg_spec.defaults[c - i])
 
                 excl = self.config.get("pkglint", "pkglint.exclude").split()
                 for item in inspect.getmembers(self, inspect.ismethod):
@@ -107,7 +107,7 @@ class Checker(object):
                         # register the methods in the object that correspond
                         # to lint checks
                         if "pkglint_id" in inspect.getargspec(method)[0]:
-                                value = "%s.%s.%s" % (
+                                value = "{0}.{1}.{2}".format(
                                     self.__module__,
                                     self.__class__.__name__, method.__name__)
                                 pkglint_id = get_pkglint_id(method)
@@ -186,21 +186,21 @@ class ActionChecker(Checker):
                                 if engine.linted(action=action,
                                     manifest=manifest, lint_id=pkglint_id):
                                         engine.info("Checker exception ignored "
-                                            "from %(check)s on linted action "
-                                            "%(action)s in %(mf)s: %(err)s" %
-                                            {"check": pkglint_id,
-                                            "action": action,
-                                            "mf": manifest.fmri,
-                                            "err": err},
+                                            "from {check} on linted action "
+                                            "{action} in {mf}: {err}".format(
+                                            check=pkglint_id,
+                                            action=action,
+                                            mf=manifest.fmri,
+                                            err=err),
                                             msgid="pkglint001.3")
                                 else:
                                         engine.error("Checker exception from "
-                                            "%(check)s on action "
-                                            "%(action)s in %(mf)s: %(err)s"
-                                            % {"check": pkglint_id,
-                                            "action": action,
-                                            "mf": manifest.fmri,
-                                            "err": err}, msgid="lint.error")
+                                            "{check} on action "
+                                            "{action} in {mf}: "
+                                            "{err}".format(check=pkglint_id,
+                                            action=action,
+                                            mf=manifest.fmri,
+                                            err=err), msgid="lint.error")
                                         engine.debug(traceback.format_exc(err),
                                             msgid="lint.error")
 
@@ -238,7 +238,7 @@ class ManifestChecker(Checker):
                 # a default error message used if we've parsed the
                 # data file, but haven't thrown any exceptions
                 self.bad_classification_data = _("no sections found in data "
-                    "file %s") % self.classification_path
+                    "file {0}").format(self.classification_path)
 
                 if os.path.exists(self.classification_path):
                         try:
@@ -251,14 +251,14 @@ class ManifestChecker(Checker):
                                 # classification_data object.  We deal with that
                                 # later.
                                 self.bad_classification_data = _(
-                                    "unable to parse data file %(path)s: "
-                                    "%(err)s") % \
-                                    {"path": self.classification_path,
-                                    "err": err}
+                                    "unable to parse data file {path}: "
+                                    "{err}").format(
+                                    path=self.classification_path,
+                                    err=err)
                                 pass
                 else:
-                        self.bad_classification_data = _("missing file %s") % \
-                            self.classification_path
+                        self.bad_classification_data = _("missing file {0}").format(
+                            self.classification_path)
                 super(ManifestChecker, self).__init__(config)
 
         def check(self, manifest, engine):
@@ -273,18 +273,18 @@ class ManifestChecker(Checker):
                                 if engine.linted(manifest=manifest,
                                     lint_id=pkglint_id):
                                         engine.info("Checker exception ignored "
-                                            "from %(check)s on linted manifest "
-                                            "%(mf)s: %(err)s" %
-                                            {"check": pkglint_id,
-                                            "mf": manifest.fmri,
-                                            "err": err},
+                                            "from {check} on linted manifest "
+                                            "{mf}: {err}".format(
+                                            check=pkglint_id,
+                                            mf=manifest.fmri,
+                                            err=err),
                                             msgid="pkglint001.3")
                                 else:
                                         engine.error("Checker exception from "
-                                            "%(check)s on %(mf)s: %(err)s"
-                                            % {"check": pkglint_id,
-                                            "mf": manifest.fmri,
-                                            "err": err}, msgid="lint.error")
+                                            "{check} on {mf}: "
+                                            "{err}".format(check=pkglint_id,
+                                            mf=manifest.fmri,
+                                            err=err), msgid="lint.error")
                                         engine.debug(traceback.format_exc(err),
                                             msgid="lint.error")
 
@@ -302,7 +302,8 @@ def get_checkers(module, config):
                 myclass = cl[1]
                 if issubclass(myclass, Checker):
                         obj = myclass(config)
-                        name = "%s.%s" % (myclass.__module__, myclass.__name__)
+                        name = "{0}.{1}".format(myclass.__module__,
+                            myclass.__name__)
                         if not (name in exclude or
                             myclass.__module__ in exclude):
                                 checkers.append(obj)
@@ -333,7 +334,7 @@ def linted(manifest=None, action=None, lint_id=None):
 
 def _linted_action(action, lint_id):
         """Determine whether a given action is marked as linted"""
-        linted = "pkg.linted.%s" % lint_id
+        linted = "pkg.linted.{0}".format(lint_id)
         for key in action.attrs.keys():
                 if key.startswith("pkg.linted") and linted.startswith(key):
                         val = action.attrs.get(key, "false")
@@ -342,14 +343,14 @@ def _linted_action(action, lint_id):
                                         return True
                         else:
                                 raise DuplicateLintedAttrException(
-                                    _("Multiple values for %(key)s "
-                                    "in %(actions)s") % {"key": key,
-                                    "action": str(action)})
+                                    _("Multiple values for {key} "
+                                    "in {actions}").format(key=key,
+                                    action=str(action)))
         return False
 
 def _linted_manifest(manifest, lint_id):
         """Determine whether a given manifest is marked as linted"""
-        linted = "pkg.linted.%s" % lint_id
+        linted = "pkg.linted.{0}".format(lint_id)
         for key in manifest.attributes.keys():
                 if key.startswith("pkg.linted") and linted.startswith(key):
                         val = manifest.attributes.get(key, "false")
@@ -358,7 +359,7 @@ def _linted_manifest(manifest, lint_id):
                                         return True
                         else:
                                 raise DuplicateLintedAttrException(
-                                    _("Multiple values for %(key)s "
-                                    "in %(manifest)s") % {"key": key,
-                                    "manifest": manifest.fmri})
+                                    _("Multiple values for {key} "
+                                    "in {manifest}").format(key=key,
+                                    manifest=manifest.fmri))
         return False

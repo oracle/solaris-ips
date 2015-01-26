@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -69,8 +69,8 @@ class CfgFile(object):
         assert(set(self.column_names) >= set(self.keys))
 
     def __str__(self):
-        return "CfgFile(%s):%s:%s:%s" % \
-            (self.filename, self.keys, self.column_names, self.index)
+        return "CfgFile({0}):{1}:{2}:{3}".format(
+            self.filename, self.keys, self.column_names, self.index)
 
     def getcolumnnames(self):
         return self.column_names
@@ -147,7 +147,7 @@ class CfgFile(object):
             if field not in template:
                 if self.default_values[field] is None:
                     raise RuntimeError, \
-                        "Required attribute %s is missing" % field
+                        "Required attribute {0} is missing".format(field)
                 elif callable(self.default_values[field]):
                     template[field] = self.default_values[field]()
                 else:
@@ -173,10 +173,10 @@ class CfgFile(object):
 
     def valuetostr(self, template):
         """ print out values in file format """
-        return("%s" % self.separator.join(
+        return("{0}".format(self.separator.join(
             [
-                "%s" % template[key] for key in self.column_names
-                ]))
+                "{0}".format(template[key]) for key in self.column_names
+            ])))
 
     def writefile(self):
 
@@ -239,7 +239,8 @@ class PasswordFile(CfgFile):
         self.password_file.default_values["uid"] = self.getnextuid()
 
     def __str__(self):
-        return "PasswordFile: [%s %s]" % (self.password_file, self.shadow_file)
+        return "PasswordFile: [{0} {1}]".format(self.password_file,
+            self.shadow_file)
 
     def getvalue(self, template):
         """ merge dbs... do passwd file first to get right passwd value"""
@@ -352,10 +353,10 @@ class GroupFile(CfgFile):
         """ remove named user from group """
         group = self.getvalue({"groupname": groupname})
         if not group:
-            raise RuntimeError, "subuser: No such group %s" % groupname
+            raise RuntimeError, "subuser: No such group {0}".format(groupname)
         users = set(group["user-list"].replace(","," ").split())
         if username not in users:
-            raise RuntimeError, "User %s not in group %s" % (
+            raise RuntimeError, "User {0} not in group {1}".format(
                 username, groupname)
         users.remove(username)
         group["user-list"] = ",".join(users)
@@ -461,10 +462,11 @@ class UserattrFile(CfgFile):
         c = template.copy() # since we're mucking w/ this....
         attrdict = c["attributes"]
 
-        str = "%s" % ";".join(
+        str = "{0}".format(";".join(
             [
-                "%s=%s" % (key, ",".join(attrdict[key])) for key in attrdict
-                ])
+                "{0}={1}".format(key, ",".join(attrdict[key]))
+                for key in attrdict
+                ]))
         c["attributes"] = str
         return CfgFile.valuetostr(self, c)
 

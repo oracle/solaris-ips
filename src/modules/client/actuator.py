@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.smf as smf
@@ -211,7 +211,7 @@ class Actuator(object):
                     if smf not in ["true", "false"]]
 
         def __str__(self):
-                return "\n".join("  %16s: %s" % (fmri, smf)
+            return "\n".join("  {0:>16}: {1:}".format(fmri, smf)
                     for fmri, smf in self.get_list())
 
         def reboot_advised(self):

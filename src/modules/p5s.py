@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -56,8 +56,8 @@ def parse(proxy_host, data):
                 for val in urls:
                         # If the URI contains <sysrepo> then it's served
                         # directly by the system-repository.
-                        if val.startswith("http://%s" %
-                            publisher.SYSREPO_PROXY):
+                        if val.startswith("http://{0}".format(
+                            publisher.SYSREPO_PROXY)):
                                 scheme, netloc, path, params, query, fragment =\
                                     urlparse.urlparse(val)
                                 r = publisher.RepositoryURI(
@@ -188,14 +188,14 @@ def write(fileobj, pubs, cfg):
                                 # file repositories.  The token <sysrepo> will
                                 # be replaced in the client with the url it uses
                                 # to communicate with the system repository.
-                                res.append("http://%s/%s/%s" %
-                                    (publisher.SYSREPO_PROXY, prefix,
+                                res.append("http://{0}/{1}/{2}".format(
+                                    publisher.SYSREPO_PROXY, prefix,
                                     digest.DEFAULT_HASH_FUNC(
                                     m.uri.rstrip("/")).hexdigest()
                                     ))
                         else:
-                                assert False, "%s is an unknown scheme." % \
-                                    u.scheme
+                                assert False, "{0} is an unknown scheme.".format(
+                                    u.scheme)
 
                 # Remove duplicates, since the system-repository can only
                 # provide one path to a given origin. This can happen if the

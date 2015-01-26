@@ -18,7 +18,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -278,7 +278,7 @@ if __name__ == "__main__":
                 return self.__suite_name
 
         def __str__(self):
-                return "%s.py %s.%s" % (self.__class__.__module__,
+                return "{0}.py {1}.{2}".format(self.__class__.__module__,
                     self.__class__.__name__, self._testMethodName)
 
         def __set_base_port(self, port):
@@ -307,7 +307,7 @@ if __name__ == "__main__":
                 if re.search(regexp, text):
                         return
                 raise self.failureException, \
-                    "\"%s\" does not match \"%s\"" % (regexp, text)
+                    "\"{0}\" does not match \"{1}\"".format(regexp, text)
 
         def assertRaisesRegexp(self, excClass, regexp,
             callableObj, *args, **kwargs):
@@ -324,10 +324,10 @@ if __name__ == "__main__":
                         if re.search(regexp, str(e)):
                                 return
                         raise self.failureException, \
-                            "\"%s\" does not match \"%s\"" % (regexp, str(e))
+                            "\"{0}\" does not match \"{1}\"".format(regexp, str(e))
 
                 raise self.failureException, \
-                    "%s not raised" % excClass
+                    "{0} not raised".format(excClass)
 
         def assertRaisesStringify(self, excClass, callableObj, *args, **kwargs):
                 """Perform the same logic as assertRaises, but then verify that
@@ -339,7 +339,7 @@ if __name__ == "__main__":
                         str(e)
                         return
                 else:
-                        raise self.failureException, "%s not raised" % excClass
+                        raise self.failureException, "{0} not raised".format(excClass)
 
         #
         # Uses property() to implements test_root as a read-only attribute.
@@ -445,7 +445,7 @@ if __name__ == "__main__":
                                 cmdline.insert(0, prefix)
                 else:
                         # Space needed between su_wrap and wrapper.
-                        cmdline = "%s%s %s %s%s" % (prefix, su_wrap, wrapper,
+                        cmdline = "{0}{1} {2} {3}{4}".format(prefix, su_wrap, wrapper,
                             cmdline, su_end)
 
                 self.debugcmd(cmdline)
@@ -498,7 +498,7 @@ if __name__ == "__main__":
                 s = str(s)
                 for x in s.splitlines():
                         if self.debug_output:
-                                print("# %s" % x, file=sys.stderr)
+                                print("# {0}".format(x), file=sys.stderr)
                         self.__debug_buf += x + "\n"
 
         def debugcmd(self, cmdline):
@@ -517,13 +517,13 @@ if __name__ == "__main__":
                 if lines == []:
                         lines = [""]
                 if len(lines) > 1:
-                        ins = " [+%d lines...]" % (len(lines) - 1)
+                        ins = " [+{0:d} lines...]".format(len(lines) - 1)
                 else:
                         ins = ""
                 if isinstance(lines[0], unicode):
                         lines[0] = lines[0].encode("utf-8")
                 self.debugcmd(
-                    "echo '%s%s' > %s" % (lines[0], ins, path))
+                    "echo '{0}{1}' > {2}".format(lines[0], ins, path))
 
         def debugresult(self, retcode, expected, output):
                 if output.strip() != "":
@@ -532,8 +532,8 @@ if __name__ == "__main__":
                         expected = [expected]
                 if retcode is None or retcode != 0 or \
                     retcode not in expected:
-                        self.debug("[exited %s, expected %s]" %
-                            (retcode, ", ".join(str(e) for e in expected)))
+                        self.debug("[exited {0}, expected {1}]".format(
+                            retcode, ", ".join(str(e) for e in expected)))
 
         def get_debugbuf(self):
                 return self.__debug_buf
@@ -557,7 +557,7 @@ if __name__ == "__main__":
                         su_user = ""
 
                 cov_env = [
-                    "%s=%s" % e
+                    "{0}={1}".format(*e)
                     for e in self.coverage_env.items()
                 ]
 
@@ -567,14 +567,14 @@ if __name__ == "__main__":
                         su_wrap.append(su_user)
 
                 if shell:
-                        su_wrap.append("-c 'env LD_LIBRARY_PATH=%s" %
-                            os.getenv("LD_LIBRARY_PATH", ""))
+                        su_wrap.append("-c 'env LD_LIBRARY_PATH={0}".format(
+                            os.getenv("LD_LIBRARY_PATH", "")))
                 else:
                         # If this ever changes, cmdline_run must be updated.
                         su_wrap.append("-c")
                         su_wrap.append("env")
-                        su_wrap.append("LD_LIBRARY_PATH=%s" %
-                            os.getenv("LD_LIBRARY_PATH", ""))
+                        su_wrap.append("LD_LIBRARY_PATH={0}".format(
+                            os.getenv("LD_LIBRARY_PATH", "")))
 
                 su_wrap.extend(cov_env)
 
@@ -595,7 +595,7 @@ if __name__ == "__main__":
         def setUp(self):
                 assert self.ident is not None
                 self.__test_root = os.path.join(g_tempdir,
-                    "ips.test.%d" % self.__pid, "%d" % self.ident)
+                    "ips.test.{0:d}".format(self.__pid), "{0:d}".format(self.ident))
                 self.__didtearDown = False
                 try:
                         os.makedirs(self.__test_root, 0755)
@@ -678,7 +678,7 @@ if __name__ == "__main__":
                     os.path.exists(self.__test_root):
                         for d in os.listdir(self.__test_root):
                                 path = os.path.join(self.__test_root, d)
-                                self.debug("removing: %s" % path)
+                                self.debug("removing: {0}".format(path))
                                 if os.path.isdir(path):
                                         shutil.rmtree(path)
                                 else:
@@ -825,10 +825,10 @@ if __name__ == "__main__":
                                         try: os.remove(c_path)
                                         except OSError: pass
                                         raise RuntimeError(
-                                            "Compile failed: %s --> %d\n%s" % \
-                                            (cmd, rc, sout))
+                                            "Compile failed: {0} --> {1:d}\n{2}".format(
+                                            cmd, rc, sout))
                                 if rc == 127:
-                                        self.debug("[%s not found]" % compiler)
+                                        self.debug("[{0} not found]".format(compiler))
                                         continue
                                 # so rc == 0
                                 found = True
@@ -842,8 +842,8 @@ if __name__ == "__main__":
                 if not found:
                         raise TestSkippedException(
                             "No suitable Sun Studio compiler found. "
-                            "Tried: %s.  Try setting $CC to a valid"
-                            "compiler." % compilers)
+                            "Tried: {0}.  Try setting $CC to a valid"
+                            "compiler.".format(compilers))
 
         def make_file(self, path, content, mode=0644):
                 if not os.path.exists(os.path.dirname(path)):
@@ -888,7 +888,7 @@ if __name__ == "__main__":
                 for f in sorted(files):
                         content = files[f]
                         assert not f.startswith("/"), \
-                            ("%s: misc file paths must be relative!" % f)
+                            ("{0}: misc file paths must be relative!".format(f))
                         path = os.path.join(prefix, f)
                         self.make_file(path, content, mode)
                         outpaths.append(path)
@@ -908,7 +908,7 @@ if __name__ == "__main__":
                     dir=manifest_dir)
                 t_fh = os.fdopen(t_fd, "w")
                 if pfmri:
-                        t_fh.write("set name=pkg.fmri value=%s\n" % pfmri)
+                        t_fh.write("set name=pkg.fmri value={0}\n".format(pfmri))
                 t_fh.write(content)
                 t_fh.close()
                 self.debugfilecreate(content, t_path)
@@ -936,8 +936,8 @@ if __name__ == "__main__":
                 expected_lines = expected.splitlines()
                 actual_lines = actual.splitlines()
                 if bound_white_space:
-                        expected_lines = ["'%s'" % l for l in expected_lines]
-                        actual_lines = ["'%s'" % l for l in actual_lines]
+                        expected_lines = ["'{0}'".format(l) for l in expected_lines]
+                        actual_lines = ["'{0}'".format(l) for l in actual_lines]
                 if msg:
                         msg += "\n"
                 self.assertEqual(expected, actual, msg +
@@ -953,8 +953,8 @@ if __name__ == "__main__":
                 onames = [d["image-name"] for d in ov]
                 if sorted(enames) != sorted(onames):
                         raise RuntimeError("Got a different set of image names "
-                            "than was expected.\nExpected:\n%s\nSeen:\n%s" %
-                            (" ".join(enames), " ".join(onames)))
+                            "than was expected.\nExpected:\n{0}\nSeen:\n{1}".format(
+                            " ".join(enames), " ".join(onames)))
                 for ed in ev:
                         for od in ov:
                                 if ed["image_name"] == od["image-name"]:
@@ -978,8 +978,8 @@ if __name__ == "__main__":
                                 outd = json.loads(output)
                         except Exception, e:
                                 raise RuntimeError("JSON couldn't parse the "
-                                    "output.\nError was: %s\nOutput was:\n%s" %
-                                    (e, output))
+                                    "output.\nError was: {0}\nOutput was:\n{1}".format(
+                                    e, output))
                 else:
                         self.assert_(isinstance(output, dict))
                         outd = output
@@ -997,8 +997,8 @@ if __name__ == "__main__":
                 # Add 4 to account for self, output, include, and outd.
                 self.assertEqual(len(expected), len(outd) + 4, "Got a "
                     "different set of keys for expected and outd.  Those in "
-                    "expected but not in outd:\n%s\nThose in outd but not in "
-                    "expected:\n%s" % (
+                    "expected but not in outd:\n{0}\nThose in outd but not in "
+                    "expected:\n{1}".format(
                         sorted(set([k.replace("_", "-") for k in expected]) -
                         set(outd)),
                         sorted(set(outd) -
@@ -1017,9 +1017,9 @@ if __name__ == "__main__":
                         if ek == "child_images" and ev != []:
                                 self.__compare_child_images(ev, outd[k])
                                 continue
-                        self.assertEqual(ev, outd[k], "In image %s, the value "
-                            "of %s was expected to be\n%s but was\n%s" %
-                            (image_name, k, ev, outd[k]))
+                        self.assertEqual(ev, outd[k], "In image {0}, the value "
+                            "of {1} was expected to be\n{2} but was\n{3}".format(
+                            image_name, k, ev, outd[k]))
 
                 if include:
                         # Assert all sections expicitly requested were matched.
@@ -1038,7 +1038,7 @@ if __name__ == "__main__":
                 to /.
                 """
 
-                new_rcfile = file("%s/%s%s" % (test_root, os.path.basename(rcfile),
+                new_rcfile = file("{0}/{1}{2}".format(test_root, os.path.basename(rcfile),
                     suffix), "w")
 
                 conf = ConfigParser.RawConfigParser()
@@ -1087,10 +1087,10 @@ class _OverTheWireResults(object):
         def printErrorList(self, flavour, errors):
                 for test, err in errors:
                         self.stream.write(self.separator1 + "\n")
-                        self.stream.write("%s: %s\n" %
-                            (flavour, test))
+                        self.stream.write("{0}: {1}\n".format(
+                            flavour, test))
                         self.stream.write(self.separator2 + "\n")
-                        self.stream.write("%s\n" % err)
+                        self.stream.write("{0}\n".format(err))
 
 
 class _CombinedResult(_OverTheWireResults):
@@ -1174,14 +1174,14 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         mstr = "MATCH"
                 else:
                         mstr = "MISMATCH"
-                return "%s|%s|%s" % (mstr, actual, expected)
+                return "{0}|{1}|{2}".format(mstr, actual, expected)
 
 
         @staticmethod
         def fmt_prefix_with(instr, prefix):
                 res = ""
                 for s in instr.splitlines():
-                        res += "%s%s\n" % (prefix, s)
+                        res += "{0}{1}\n".format(prefix, s)
                 return res
 
         @staticmethod
@@ -1191,7 +1191,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 for s in instr.splitlines():
                         if s.strip() == "":
                                 continue
-                        res += "| %s\n" % s
+                        res += "| {0}\n".format(s)
                 res += "`---" + len(title) * "-" + trailingdashes
                 return _Pkg5TestResult.fmt_prefix_with(res, prefix)
 
@@ -1201,12 +1201,12 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         os.makedirs(self.archive_dir, mode=0755)
 
                 archive_path = os.path.join(self.archive_dir,
-                    "%d" % os.getpid())
+                    "{0:d}".format(os.getpid()))
                 if not os.path.exists(archive_path):
                         os.makedirs(archive_path, mode=0755)
                 archive_path = os.path.join(archive_path, test.id())
                 if test.debug_output:
-                        self.stream.write("# Archiving to %s\n" % archive_path)
+                        self.stream.write("# Archiving to {0}\n".format(archive_path))
 
                 if os.path.exists(test.test_root):
                         try:
@@ -1246,8 +1246,8 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         if bresult == baseline.BASELINE_MATCH:
                                 res = "match pass"
                         else:
-                                res = "MISMATCH pass (expected: %s)" % \
-                                    expected
+                                res = "MISMATCH pass (expected: {0})".format(
+                                    expected)
                                 res = self.fmt_box(errinfo,
                                     "Successful Test", "# ")
                 else:
@@ -1295,7 +1295,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 if self.output == OUTPUT_PARSEABLE:
                         if errtype in ELIDABLE_ERRORS:
                                 res = self.fmt_parseable(bresult, "ERROR", expected)
-                                res += "\n# %s\n" % str(errval).strip()
+                                res += "\n# {0}\n".format(str(errval).strip())
                         else:
                                 res = self.fmt_parseable(bresult, "ERROR", expected)
                                 res += "\n"
@@ -1310,10 +1310,10 @@ class _Pkg5TestResult(unittest._TextTestResult):
                                 b = "MISMATCH"
 
                         if errtype in ELIDABLE_ERRORS:
-                                res = "%s ERROR\n" % b
-                                res += "#\t%s" % str(errval)
+                                res = "{0} ERROR\n".format(b)
+                                res += "#\t{0}".format(str(errval))
                         else:
-                                res = "%s ERROR\n" % b
+                                res = "{0} ERROR\n".format(b)
                                 if bresult == baseline.BASELINE_MISMATCH \
                                    or self.show_on_expected_fail:
                                         res += self.fmt_box(errinfo,
@@ -1372,7 +1372,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                                 res += self.fmt_prefix_with(errinfo, "# ")
                 elif self.output == OUTPUT_VERBOSE:
                         if bresult == baseline.BASELINE_MISMATCH:
-                                res = "MISMATCH FAIL (expected: %s)" % expected
+                                res = "MISMATCH FAIL (expected: {0})".format(expected)
                         else:
                                 res = "match FAIL (expected: FAIL)"
 
@@ -1416,7 +1416,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
 
                 errinfo = self.format_output_and_exc(test, err)
 
-                res = "# ERROR during persistent setup for %s\n" % test.id()
+                res = "# ERROR during persistent setup for {0}\n".format(test.id())
                 res += "# As a result, all test cases in this class will " \
                     "result in errors!\n#\n"
 
@@ -1432,7 +1432,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
 
                 errinfo = self.format_output_and_exc(test, err)
 
-                res = "# ERROR during persistent teardown for %s\n" % test.id()
+                res = "# ERROR during persistent teardown for {0}\n".format(test.id())
                 if errtype in ELIDABLE_ERRORS:
                         res += "#   " + str(errval)
                 else:
@@ -1453,8 +1453,8 @@ class _Pkg5TestResult(unittest._TextTestResult):
         def startTest(self, test):
                 unittest.TestResult.startTest(self, test)
                 test.debug("_" * 75)
-                test.debug("Start:   %s" % \
-                    self.getDescription(test))
+                test.debug("Start:   {0}".format(
+                    self.getDescription(test)))
                 if test._testMethodDoc is not None:
                         docs = ["  " + x.strip() \
                             for x in test._testMethodDoc.splitlines()]
@@ -1476,10 +1476,10 @@ class _Pkg5TestResult(unittest._TextTestResult):
         def printErrorList(self, flavour, errors):
                 for test, err in errors:
                         self.stream.write(self.separator1 + "\n")
-                        self.stream.write("%s: %s\n" %
-                            (flavour, self.getDescription(test)))
+                        self.stream.write("{0}: {1}\n".format(
+                            flavour, self.getDescription(test)))
                         self.stream.write(self.separator2 + "\n")
-                        self.stream.write("%s\n" % err)
+                        self.stream.write("{0}\n".format(err))
 
 
 def find_names(s):
@@ -1510,7 +1510,7 @@ def q_run(inq, outq, i, o, baseline_filepath, bail_on_fail,
         cov_cmd, cov_env = cov
         cov_inst = None
         if cov_env:
-                cov_env["COVERAGE_FILE"] += ".%s.%s" % (suite_name, i)
+                cov_env["COVERAGE_FILE"] += ".{0}.{1}".format(suite_name, i)
                 import coverage
                 cov_inst = coverage.coverage(
                     data_file=cov_env["COVERAGE_FILE"], data_suffix=True)
@@ -1592,24 +1592,24 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 if not class_list and not method_list:
                         return
                 tot = 0
-                print("Tests run for '%s' Suite, broken down by class:\n" %
-                    suite_name, file=stream)
+                print("Tests run for '{0}' Suite, broken down by class:\n".format(
+                    suite_name), file=stream)
                 for secs, cname in class_list:
-                        print("%6.2f %s.%s" %
-                            (secs, suite_name, cname), file=stream)
+                        print("{0:>6.2f} {1}.{2}".format(
+                            secs, suite_name, cname), file=stream)
                         tot += secs
                         for secs, mcname, mname in method_list:
                                 if mcname != cname:
                                         continue
-                                print("    %6.2f %s" % (secs, mname), file=stream)
+                                print("    {0:>6.2f} {1}".format(secs, mname), file=stream)
                         print(file=stream)
-                print("%6.2f Total time\n" % tot, file=stream)
+                print("{0:>6.2f} Total time\n".format(tot), file=stream)
                 print("=" * 60, file=stream)
-                print("\nTests run for '%s' Suite, " \
-                    "sorted by time taken:\n" % suite_name, file=stream)
+                print("\nTests run for '{0}' Suite, " \
+                    "sorted by time taken:\n".format(suite_name), file=stream)
                 for secs, cname, mname in method_list:
-                        print("%6.2f %s %s" % (secs, cname, mname), file=stream)
-                print("%6.2f Total time\n" % tot, file=stream)
+                        print("{0:>6.2f} {1} {2}".format(secs, cname, mname), file=stream)
+                print("{0:>6.2f} Total time\n".format(tot), file=stream)
                 print("=" * 60, file=stream)
                 print("", file=stream)
 
@@ -1760,12 +1760,13 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 print("\n\n", file=self.stream)
                 print("Tests in progress:", file=self.stream)
                 for p in sorted(started_tests.keys()):
-                        print("\t%s\t%s\t%s %s" % \
-                            (p, p_dict[p].pid, started_tests[p][0],
+                        print("\t{0}\t{1}\t{2} {3}".format(
+                            p, p_dict[p].pid, started_tests[p][0],
                             started_tests[p][1]), file=self.stream)
                 if remaining_time is not None:
-                        print("Estimated time remaining %d " \
-                            "seconds" % round(remaining_time), file=self.stream)
+                        print("Estimated time remaining {0:d} " \
+                            "seconds".format(int(round(remaining_time))),
+                            file=self.stream)
 
         def test_done_display(self, result, all_tests, finished_tests,
             started_tests, total_tests, quiet, remaining_time, output_text,
@@ -1774,22 +1775,22 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         self.stream.write(output_text)
                         return
                 if g_debug_output:
-                        print("\n%s" % comm[3].debug_buf, file=sys.stderr)
+                        print("\n{0}".format(comm[3].debug_buf), file=sys.stderr)
                 print("\n\n", file=self.stream)
-                print("Finished %s %s in process %s" %
-                    (comm[1][0], comm[1][1], comm[2]), file=self.stream)
-                print("Total test classes:%s Finished test "
-                    "classes:%s Running tests:%s" %
-                    (len(all_tests), len(finished_tests), len(started_tests)),
+                print("Finished {0} {1} in process {2}".format(
+                    comm[1][0], comm[1][1], comm[2]), file=self.stream)
+                print("Total test classes:{0} Finished test "
+                    "classes:{1} Running tests:{2}".format(
+                    len(all_tests), len(finished_tests), len(started_tests)),
                     file=self.stream)
-                print("Total tests:%s Tests run:%s "
-                    "Errors:%s Failures:%s Skips:%s" %
-                    (total_tests, result.testsRun, len(result.errors),
+                print("Total tests:{0} Tests run:{1} "
+                    "Errors:{2} Failures:{3} Skips:{4}".format(
+                    total_tests, result.testsRun, len(result.errors),
                     len(result.failures), len(result.skips)),
                     file=self.stream)
                 if remaining_time and all_tests - finished_tests:
-                        print("Estimated time remaining %d "
-                            "seconds" % round(remaining_time), file=self.stream)
+                        print("Estimated time remaining {0:d} "
+                            "seconds".format(int(round(remaining_time))), file=self.stream)
 
         @staticmethod
         def __terminate_processes(jobs):
@@ -1812,7 +1813,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 while not finished and retry < 10:
                         try:
                                 shutil.rmtree(os.path.join(g_tempdir,
-                                    "ips.test.%s" % os.getpid()))
+                                    "ips.test.{0}".format(os.getpid())))
                         except OSError, e:
                                 if e.errno == errno.ENOENT:
                                         #
@@ -1873,8 +1874,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 else:
                                         assert suite_name == test.suite_name
                                 if tmp[0] != mod or tmp[1] != c:
-                                        raise RuntimeError("tmp:%s mod:%s "
-                                            "c:%s" % (tmp, mod, c))
+                                        raise RuntimeError("tmp:{0} mod:{1} "
+                                            "c:{2}".format(tmp, mod, c))
                         all_tests.add((mod, c))
                         t.pkg_cmdpath = fakeroot_cmdpath
                         if jobs > 1:
@@ -1887,7 +1888,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 if not all_tests:
                         try:
                                 shutil.rmtree(os.path.join(g_tempdir,
-                                    "ips.test.%s" % os.getpid()))
+                                    "ips.test.{0}".format(os.getpid())))
                         except OSError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
@@ -1925,7 +1926,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                         if comm[1] not in all_tests:
                                                 raise RuntimeError("Got "
                                                     "unexpected start "
-                                                    "comm:%s" % (comm,))
+                                                    "comm:{0}".format(comm))
                                         started_tests[comm[2]] = comm[1]
                                         start_times[comm[1]] = time.time()
                                         self.test_start_display(started_tests,
@@ -1948,7 +1949,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                             comm)
                                 else:
                                         raise RuntimeError("unexpected "
-                                            "communication:%s" % (comm,))
+                                            "communication:{0}".format(comm))
                                 if self.bailonfail and \
                                     (result.errors or result.failures):
                                         raise TestStopException()
@@ -1962,11 +1963,11 @@ class Pkg5TestRunner(unittest.TextTestRunner):
 
                                         print("The following "
                                             "processes have died, "
-                                            "terminating the others: %s" %
+                                            "terminating the others: {0}".format(
                                             ",".join([
                                                 str(p_dict[i].pid)
                                                 for i in sorted(broken)
-                                            ]), file=sys.stderr)
+                                            ])), file=sys.stderr)
                                         raise TestStopException()
                         for i in range(0, jobs * 2):
                                 inq.put("STOP")
@@ -1975,6 +1976,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 except KeyboardInterrupt, TestStopException:
                         terminate = True
                 except Exception, e:
+                        print(e)
+                        print("dfdfdf")
                         terminate = True
                         raise
                 finally:
@@ -1989,9 +1992,9 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                                 result.printErrors()
                                                 self.stream.write("# " +
                                                     result.separator2 + "\n")
-                                        self.stream.write("\n# Ran %d test%s "
-                                            "in %.3fs - skipped %d tests.\n" %
-                                            (run, run != 1 and "s" or "",
+                                        self.stream.write("\n# Ran {0:d} test{1} "
+                                            "in {2:>.3f}s - skipped {3:d} tests.\n".format(
+                                            run, run != 1 and "s" or "",
                                             timeTaken, len(result.skips)))
 
                                         if result.wasSkipped() and \
@@ -2000,8 +2003,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                                     "tests:\n")
                                                 for test,reason in result.skips:
                                                         self.stream.write(
-                                                            "%s: %s\n" %
-                                                            (test, reason))
+                                                            "{0}: {1}\n".format(
+                                                            test, reason))
                                         self.stream.write("\n")
                                 if not result.wasSuccessful():
                                         self.stream.write("FAILED (")
@@ -2009,14 +2012,14 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                         mismatches = result.mismatches
                                         failed, errored = map(len,
                                             (result.failures, result.errors))
-                                        self.stream.write("successes=%d, " %
-                                            success)
-                                        self.stream.write("failures=%d, " %
-                                            failed)
-                                        self.stream.write("errors=%d, " %
-                                            errored)
-                                        self.stream.write("mismatches=%d" %
-                                            mismatches)
+                                        self.stream.write("successes={0:d}, ".format(
+                                            success))
+                                        self.stream.write("failures={0:d}, ".format(
+                                            failed))
+                                        self.stream.write("errors={0:d}, ".format(
+                                            errored))
+                                        self.stream.write("mismatches={0:d}".format(
+                                            mismatches))
                                         self.stream.write(")\n")
 
                                 self._do_timings(result, time_estimates)
@@ -2024,7 +2027,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 if terminate:
                                         self.__terminate_processes(jobs)
                                 shutil.rmtree(os.path.join(g_tempdir,
-                                    "ips.test.%s" % os.getpid()))
+                                    "ips.test.{0}".format(os.getpid())))
                 return result
 
 
@@ -2053,7 +2056,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                 reload(sys)
 
         def cleanup_and_die(self, inst, info):
-                print("\nCtrl-C: Attempting cleanup during %s" % info,
+                print("\nCtrl-C: Attempting cleanup during {0}".format(info),
                     file=sys.stderr)
 
                 if hasattr(inst, "killalldepots"):
@@ -2216,7 +2219,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                 res = ""
                 for t in self._tests:
                         res += "\n".join(
-                            ["# %s" % l for l in t.get_debugbuf().splitlines()])
+                            ["# {0}".format(l) for l in t.get_debugbuf().splitlines()])
                         res += "\n"
                 return res
 
@@ -2242,7 +2245,7 @@ class DepotTracebackException(Pkg5CommonException):
 
         def __str__(self):
                 str = "During this test, a depot Traceback was detected.\n"
-                str += "Log file: %s.\n" % self.__logfile
+                str += "Log file: {0}.\n".format(self.__logfile)
                 str += "Log file output is:\n"
                 str += self.format_output(None, self.__output)
                 return str
@@ -2282,9 +2285,9 @@ class UnexpectedExitCodeException(Pkg5CommonException):
                 str = ""
                 str += self.format_comment(self.__comment)
 
-                str += "  Invoked: %s\n" % self.__command
-                str += "  Expected exit status: %s.  Got: %d." % \
-                    (self.__expected, self.__got)
+                str += "  Invoked: {0}\n".format(self.__command)
+                str += "  Expected exit status: {0}.  Got: {1:d}.".format(
+                    self.__expected, self.__got)
 
                 str += self.format_output(self.__command, self.__output)
                 return str
@@ -2309,7 +2312,7 @@ class CliTestCase(Pkg5TestCase):
                 self.__imgs_index = -1
 
                 for i in range(0, image_count):
-                        path = os.path.join(self.test_root, "image%d" % i)
+                        path = os.path.join(self.test_root, "image{0:d}".format(i))
                         self.__imgs_path[i] = path
 
                 self.set_image(0)
@@ -2330,7 +2333,7 @@ class CliTestCase(Pkg5TestCase):
                 path = self.__imgs_path[self.__imgs_index]
                 assert path and path != "/"
 
-                self.debug("image %d selected: %s" % (ii, path))
+                self.debug("image {0:d} selected: {1}".format(ii, path))
 
         def set_img_path(self, path):
                 self.__imgs_path[self.__imgs_index] = path
@@ -2402,7 +2405,7 @@ class CliTestCase(Pkg5TestCase):
                         if path.lstrip(os.path.sep) == "var":
                                 force = True
 
-                self.debug("image_create %s" % img_path)
+                self.debug("image_create {0}".format(img_path))
                 progtrack = pkg.client.progress.NullProgressTracker()
                 api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
                     CLIENT_API_VERSION, img_path,
@@ -2423,11 +2426,11 @@ class CliTestCase(Pkg5TestCase):
 
                 self.image_destroy()
                 os.mkdir(self.img_path())
-                cmdline = "%s image-create -F " % self.pkg_cmdpath
+                cmdline = "{0} image-create -F ".format(self.pkg_cmdpath)
                 if repourl:
-                        cmdline = "%s -p %s=%s " % (cmdline, prefix, repourl)
+                        cmdline = "{0} -p {1}={2} ".format(cmdline, prefix, repourl)
                 cmdline += additional_args
-                cmdline = "%s %s" % (cmdline, self.img_path())
+                cmdline = "{0} {1}".format(cmdline, self.img_path())
 
                 retcode = self.cmdline_run(cmdline, exit=exit, env_arg=env_arg)
 
@@ -2450,7 +2453,7 @@ class CliTestCase(Pkg5TestCase):
                 self.set_image(src)
 
                 # populate the destination image
-                cmdline = "cd %s; find . | cpio -pdm %s" % (src_path, dst_path)
+                cmdline = "cd {0}; find . | cpio -pdm {1}".format(src_path, dst_path)
                 retcode = self.cmdline_run(cmdline, coverage=False)
 
         def image_destroy(self, img_path=None):
@@ -2459,7 +2462,7 @@ class CliTestCase(Pkg5TestCase):
                         img_path = self.img_path()
 
                 if os.path.exists(img_path):
-                        self.debug("image_destroy %s" % img_path)
+                        self.debug("image_destroy {0}".format(img_path))
                         # Make sure we're not in the image.
                         os.chdir(self.test_root)
                         for path in getattr(self, "fs", set()).copy():
@@ -2493,11 +2496,11 @@ class CliTestCase(Pkg5TestCase):
                 cmdline.extend(("-D", "manifest_validate=Always"))
 
                 if debug_smf and "smf_cmds_dir" not in cmdstr:
-                        cmdline.extend(("-D", "smf_cmds_dir=%s" %
-                            DebugValues["smf_cmds_dir"]))
+                        cmdline.extend(("-D", "smf_cmds_dir={0}".format(
+                            DebugValues["smf_cmds_dir"])))
 
                 if not isinstance(command, list):
-                        cmdline = "%s %s" % (" ".join(cmdline), command)
+                        cmdline = "{0} {1}".format(" ".join(cmdline), command)
                 else:
                         cmdline.extend(command)
 
@@ -2524,7 +2527,7 @@ class CliTestCase(Pkg5TestCase):
                 does not contain the string 'Unexpected Exception', indicating
                 something has gone wrong during package verification."""
 
-                cmd = "verify %s" % command
+                cmd = "verify {0}".format(command)
                 res = self.pkg(command=cmd, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
                     cmd_path=cmd_path, use_img_root=use_img_root,
@@ -2538,40 +2541,40 @@ class CliTestCase(Pkg5TestCase):
             env_arg=None):
                 ops = ""
                 if "-R" not in args:
-                        ops = "-R %s" % self.get_img_path()
+                        ops = "-R {0}".format(self.get_img_path())
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgdepend %s resolve %s" % (ops, args))
+                    "usr/bin/pkgdepend {0} resolve {1}".format(ops, args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False,
             env_arg=None):
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgdepend generate %s" % args)
+                    "usr/bin/pkgdepend generate {0}".format(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdiff(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgdiff %s" % command)
+                    "usr/bin/pkgdiff {0}".format(command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgfmt(self, args, exit=0, su_wrap=False, env_arg=None):
-                cmd= os.path.join(g_pkg_path, "usr/bin/pkgfmt %s" % args)
+                cmd= os.path.join(g_pkg_path, "usr/bin/pkgfmt {0}".format(args))
                 self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap,
                     env_arg=env_arg)
 
         def pkglint(self, args, exit=0, comment="", testrc=True,
             env_arg=None):
                 if testrc:
-                        rcpath = "%s/pkglintrc" % self.test_root
+                        rcpath = "{0}/pkglintrc".format(self.test_root)
                         cmdline = os.path.join(g_pkg_path,
-                            "usr/bin/pkglint -f %s %s" % (rcpath, args))
+                            "usr/bin/pkglint -f {0} {1}".format(rcpath, args))
                 else:
                         cmdline = os.path.join(g_pkg_path,
-                            "usr/bin/pkglint %s" % args)
+                            "usr/bin/pkglint {0}".format(args))
                 return self.cmdline_run(cmdline, exit=exit, out=True,
                     comment=comment, stderr=True, env_arg=env_arg)
 
@@ -2579,13 +2582,13 @@ class CliTestCase(Pkg5TestCase):
             comment="", env_arg=None, su_wrap=False):
                 args = []
                 if server_url:
-                        args.append("-s %s" % server_url)
+                        args.append("-s {0}".format(server_url))
 
                 if command:
                         args.append(command)
 
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgrecv %s" % " ".join(args))
+                    "usr/bin/pkgrecv {0}".format(" ".join(args)))
 
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     out=out, su_wrap=su_wrap, env_arg=env_arg)
@@ -2593,29 +2596,29 @@ class CliTestCase(Pkg5TestCase):
         def pkgmerge(self, args, comment="", exit=0, su_wrap=False,
             env_arg=None):
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgmerge %s" % args)
+                    "usr/bin/pkgmerge {0}".format(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgrepo(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False, debug_hash=None):
                 if debug_hash:
-                        debug_arg = "-D hash=%s " % debug_hash
+                        debug_arg = "-D hash={0} ".format(debug_hash)
                 else:
                         debug_arg = ""
 
                 # Always add the current ignored_deps dir path.
-                debug_arg += "-D ignored_deps=%s " % os.path.join(
-                    g_pkg_path, "usr/share/pkg/ignored_deps")
+                debug_arg += "-D ignored_deps={0} ".format(os.path.join(
+                    g_pkg_path, "usr/share/pkg/ignored_deps"))
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgrepo %s%s" % (debug_arg, command))
+                    "usr/bin/pkgrepo {0}{1}".format(debug_arg, command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgsurf(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgsurf %s" % command)
+                    "usr/bin/pkgsurf {0}".format(command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
@@ -2623,16 +2626,16 @@ class CliTestCase(Pkg5TestCase):
             env_arg=None, debug_hash=None):
                 args = []
                 if depot_url:
-                        args.append("-s %s" % depot_url)
+                        args.append("-s {0}".format(depot_url))
 
                 if debug_hash:
-                        args.append("-D hash=%s" % debug_hash)
+                        args.append("-D hash={0}".format(debug_hash))
 
                 if command:
                         args.append(command)
 
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgsign %s" % " ".join(args))
+                    "usr/bin/pkgsign {0}".format(" ".join(args)))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     env_arg=env_arg)
 
@@ -2640,12 +2643,12 @@ class CliTestCase(Pkg5TestCase):
             debug_hash=None):
                 chain_cert_path = os.path.join(self.chain_certs_dir,
                     "ch1_ta3_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
-                    "name": pkg_name,
-                    "key": os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem"),
-                    "cert": os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem"),
-                    "ch1": chain_cert_path,
-                }
+                sign_args = "-k {key} -c {cert} -i {ch1} {name}".format(
+                    name=pkg_name,
+                    key=os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem"),
+                    cert=os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem"),
+                    ch1=chain_cert_path,
+               )
                 return self.pkgsign(depot_url, sign_args, exit=exit,
                     env_arg=env_arg, debug_hash=debug_hash)
 
@@ -2662,14 +2665,14 @@ class CliTestCase(Pkg5TestCase):
                 # should be added to this package on publication. Valid values
                 # are: sha1, sha256, sha1+sha256, sha512_256, sha1+sha512_256
                 if debug_hash:
-                        args.append("-D hash=%s" % debug_hash)
+                        args.append("-D hash={0}".format(debug_hash))
 
                 if command:
                         args.append(command)
 
-                prefix = "cd %s;" % self.test_root
+                prefix = "cd {0};".format(self.test_root)
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/bin/pkgsend %s" % " ".join(args))
+                    "usr/bin/pkgsend {0}".format(" ".join(args)))
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,
                     exit=exit, out=True, prefix=prefix, raise_error=False,
@@ -2684,7 +2687,7 @@ class CliTestCase(Pkg5TestCase):
                         assert arr
                         out = arr[1]
                         os.environ["PKG_TRANS_ID"] = out
-                        self.debug("$ export PKG_TRANS_ID=%s" % out)
+                        self.debug("$ export PKG_TRANS_ID={0}".format(out))
                         # retcode != 0 will be handled below
 
                 published = None
@@ -2755,14 +2758,14 @@ class CliTestCase(Pkg5TestCase):
                                 if current_fmri: # send any content seen so far (can be 0)
                                         fd, f_path = tempfile.mkstemp(dir=self.test_root)
                                         for l in accumulate:
-                                                os.write(fd, "%s\n" % l)
+                                                os.write(fd, "{0}\n".format(l))
                                         os.close(fd)
                                         if su_wrap:
                                                 os.chown(f_path,
                                                     *get_su_wrap_user(
                                                     uid_gid=True))
                                         try:
-                                                cmd = "publish %s -d %s %s" % (
+                                                cmd = "publish {0} -d {1} {2}".format(
                                                     extra_opts, self.test_root,
                                                     f_path)
                                                 current_fmri = None
@@ -2790,12 +2793,12 @@ class CliTestCase(Pkg5TestCase):
                                                 # If no explicit pkg.fmri set
                                                 # action was found, add one.
                                                 accumulate.append("set "
-                                                    "name=pkg.fmri value=%s" %
-                                                    current_fmri)
+                                                    "name=pkg.fmri value={0}".format(
+                                                    current_fmri))
 
                         if exit == 0 and refresh_index:
-                                self.pkgrepo("-s %s refresh --no-catalog" %
-                                    depot_url, su_wrap=su_wrap,
+                                self.pkgrepo("-s {0} refresh --no-catalog".format(
+                                    depot_url), su_wrap=su_wrap,
                                     debug_hash=debug_hash)
                 except UnexpectedExitCodeException, e:
                         if e.exitcode != exit:
@@ -2810,30 +2813,30 @@ class CliTestCase(Pkg5TestCase):
 
         def merge(self, args=EmptyI, exit=0):
                 cmd = os.path.join(g_pkg_path,
-                    "usr/bin/pkgmerge %s" % " ".join(args))
+                    "usr/bin/pkgmerge {0}".format(" ".join(args)))
                 self.cmdline_run(cmd, exit=exit)
 
         def sysrepo(self, args, exit=0, out=False, stderr=False, comment="",
             env_arg=None, fill_missing_args=True):
                 ops = ""
                 if "-R" not in args:
-                        args += " -R %s" % self.get_img_path()
+                        args += " -R {0}".format(self.get_img_path())
                 if "-c" not in args:
-                        args += " -c %s" % os.path.join(self.test_root,
-                            "sysrepo_cache")
+                        args += " -c {0}".format(os.path.join(self.test_root,
+                            "sysrepo_cache"))
                 if "-l" not in args:
-                        args += " -l %s" % os.path.join(self.test_root,
-                            "sysrepo_logs")
+                        args += " -l {0}".format(os.path.join(self.test_root,
+                            "sysrepo_logs"))
                 if "-p" not in args and fill_missing_args:
-                        args += " -p %s" % self.next_free_port
+                        args += " -p {0}".format(self.next_free_port)
                 if "-r" not in args:
-                        args += " -r %s" % os.path.join(self.test_root,
-                            "sysrepo_runtime")
+                        args += " -r {0}".format(os.path.join(self.test_root,
+                            "sysrepo_runtime"))
                 if "-t" not in args:
-                        args += " -t %s" % self.sysrepo_template_dir
+                        args += " -t {0}".format(self.sysrepo_template_dir)
 
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/lib/pkg.sysrepo %s" % args)
+                    "usr/lib/pkg.sysrepo {0}".format(args))
                 if env_arg is None:
                         env_arg = {}
                 env_arg["PKG5_TEST_ENV"] = "1"
@@ -2860,25 +2863,25 @@ class CliTestCase(Pkg5TestCase):
                 if "-S" not in args and "-d " not in args and fill_missing_args:
                         args += " -S "
                 if "-c " not in args and fill_missing_args:
-                        args += " -c %s" % os.path.join(self.test_root,
-                            "depot_cache")
+                        args += " -c {0}".format(os.path.join(self.test_root,
+                            "depot_cache"))
                 if "-l" not in args:
-                        args += " -l %s" % os.path.join(self.test_root,
-                            "depot_logs")
+                        args += " -l {0}".format(os.path.join(self.test_root,
+                            "depot_logs"))
                 if "-p" not in args and "-F" not in args and fill_missing_args:
-                        args += " -p %s" % self.depot_port
+                        args += " -p {0}".format(self.depot_port)
                 if "-r" not in args:
-                        args += " -r %s" % os.path.join(self.test_root,
-                            "depot_runtime")
+                        args += " -r {0}".format(os.path.join(self.test_root,
+                            "depot_runtime"))
                 if "-T" not in args:
-                        args += " -T %s" % self.depot_template_dir
+                        args += " -T {0}".format(self.depot_template_dir)
 
                 if debug_smf and "smf_cmds_dir" not in args:
-                        args += " --debug smf_cmds_dir=%s" % \
-                            DebugValues["smf_cmds_dir"]
+                        args += " --debug smf_cmds_dir={0}".format(
+                            DebugValues["smf_cmds_dir"])
 
                 cmdline = os.path.join(g_pkg_path,
-                    "usr/lib/pkg.depot-config %s" % args)
+                    "usr/lib/pkg.depot-config {0}".format(args))
                 if env_arg is None:
                         env_arg = {}
                 env_arg["PKG5_TEST_PROTO"] = g_pkg_path
@@ -3075,12 +3078,12 @@ class CliTestCase(Pkg5TestCase):
                         tfname = fname + ".tmp"
                         os.rename(fname, tfname)
                         moptions = options + " --drop-proprietary-attributes y"
-                        cmdline = "tidy %s %s > %s" % (moptions, tfname, fname)
+                        cmdline = "tidy {0} {1} > {2}".format(moptions, tfname, fname)
                         self.cmdline_run(cmdline, comment=comment,
                             coverage=False, exit=exit, raise_error=False)
                         os.unlink(tfname)
 
-                cmdline = "tidy %s %s" % (options, fname)
+                cmdline = "tidy {0} {1}".format(options, fname)
                 return self.cmdline_run(cmdline, comment=comment,
                     coverage=False, exit=exit)
 
@@ -3095,7 +3098,7 @@ class CliTestCase(Pkg5TestCase):
                 try:
                         repo = sr.repository_create(repodir,
                             properties=properties, version=version)
-                        self.debug("created repository %s" % repodir)
+                        self.debug("created repository {0}".format(repodir))
                 except sr.RepositoryExistsError:
                         # Already exists.
                         repo = sr.Repository(root=repodir,
@@ -3121,9 +3124,9 @@ class CliTestCase(Pkg5TestCase):
                 # is set up.
                 import pkg.depotcontroller as depotcontroller
 
-                self.debug("prep_depot: set depot port %d" % port)
-                self.debug("prep_depot: set depot repository %s" % repodir)
-                self.debug("prep_depot: set depot log to %s" % logpath)
+                self.debug("prep_depot: set depot port {0:d}".format(port))
+                self.debug("prep_depot: set depot repository {0}".format(repodir))
+                self.debug("prep_depot: set depot log to {0}".format(logpath))
 
                 dc = depotcontroller.DepotController(
                     wrapper_start=self.coverage_cmd.split(),
@@ -3152,9 +3155,9 @@ class CliTestCase(Pkg5TestCase):
                                 dc.start()
                         except Exception, e:
                                 self.debug("prep_depot: failed to start "
-                                    "depot!: %s" % e)
+                                    "depot!: {0}".format(e))
                                 raise
-                        self.debug("depot on port %s started" % port)
+                        self.debug("depot on port {0} started".format(port))
                 else:
                         # Otherwise, create the repository with the assumption
                         # that the caller wants that at the least, but doesn't
@@ -3195,19 +3198,19 @@ class CliTestCase(Pkg5TestCase):
                             "timeout exceeded.")
 
         def _api_attach(self, api_obj, catch_wsie=True, **kwargs):
-                self.debug("attach: %s" % str(kwargs))
+                self.debug("attach: {0}".format(str(kwargs)))
                 for pd in api_obj.gen_plan_attach(**kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_detach(self, api_obj, catch_wsie=True, **kwargs):
-                self.debug("detach: %s" % str(kwargs))
+                self.debug("detach: {0}".format(str(kwargs)))
                 for pd in api_obj.gen_plan_detach(**kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_sync(self, api_obj, catch_wsie=True, **kwargs):
-                self.debug("sync: %s" % str(kwargs))
+                self.debug("sync: {0}".format(str(kwargs)))
                 for pd in api_obj.gen_plan_sync(**kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
@@ -3215,7 +3218,7 @@ class CliTestCase(Pkg5TestCase):
         def _api_install(self, api_obj, pkg_list, catch_wsie=True,
             show_licenses=False, accept_licenses=False, noexecute=False,
             **kwargs):
-                self.debug("install %s" % " ".join(pkg_list))
+                self.debug("install {0}".format(" ".join(pkg_list)))
 
                 plan = None
                 for pd in api_obj.gen_plan_install(pkg_list,
@@ -3240,7 +3243,7 @@ class CliTestCase(Pkg5TestCase):
 
         def _api_revert(self, api_obj, args, catch_wsie=True, noexecute=False,
             **kwargs):
-                self.debug("revert %s" % " ".join(args))
+                self.debug("revert {0}".format(" ".join(args)))
                 for pd in api_obj.gen_plan_revert(args, **kwargs):
                         continue
                 if noexecute:
@@ -3249,7 +3252,7 @@ class CliTestCase(Pkg5TestCase):
 
         def _api_dehydrate(self, api_obj, publishers=[], catch_wsie=True,
             noexecute=False, **kwargs):
-                self.debug("dehydrate %s" % " ".join(publishers))
+                self.debug("dehydrate {0}".format(" ".join(publishers)))
                 for pd in api_obj.gen_plan_dehydrate(publishers, **kwargs):
                         continue
                 if noexecute:
@@ -3258,7 +3261,7 @@ class CliTestCase(Pkg5TestCase):
 
         def _api_rehydrate(self, api_obj, publishers=[], catch_wsie=True,
             noexecute=False, **kwargs):
-                self.debug("rehydrate %s" % " ".join(publishers))
+                self.debug("rehydrate {0}".format(" ".join(publishers)))
                 for pd in api_obj.gen_plan_rehydrate(publishers, **kwargs):
                         continue
                 if noexecute:
@@ -3275,7 +3278,7 @@ class CliTestCase(Pkg5TestCase):
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
-                self.debug("uninstall %s" % " ".join(pkg_list))
+                self.debug("uninstall {0}".format(" ".join(pkg_list)))
                 for pd in api_obj.gen_plan_uninstall(pkg_list, **kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
@@ -3291,7 +3294,7 @@ class CliTestCase(Pkg5TestCase):
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_change_varcets(self, api_obj, catch_wsie=True, **kwargs):
-                self.debug("change varcets: %s" % str(kwargs))
+                self.debug("change varcets: {0}".format(str(kwargs)))
                 for pd in api_obj.gen_plan_change_varcets(**kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
@@ -3331,14 +3334,14 @@ class CliTestCase(Pkg5TestCase):
 
                 file_path = os.path.join(self.get_img_path(), path)
                 if not os.path.isfile(file_path):
-                        self.assert_(False, "File %s does not exist" % path)
+                        self.assert_(False, "File {0} does not exist".format(path))
 
         def file_doesnt_exist(self, path):
                 """Assert the non-existence of a file in the image."""
 
                 file_path = os.path.join(self.get_img_path(), path)
                 if os.path.exists(file_path):
-                        self.assert_(False, "File %s exists" % path)
+                        self.assert_(False, "File {0} exists".format(path))
 
         def files_are_all_there(self, paths):
                 """"Assert that files are there in the image."""
@@ -3348,10 +3351,10 @@ class CliTestCase(Pkg5TestCase):
                                 if not os.path.isdir(file_path):
                                         if not os.path.exists(file_path):
                                                 self.assert_(False,
-                                                    "missing dir %s" % file_path)
+                                                    "missing dir {0}".format(file_path))
                                         else:
                                                 self.assert_(False,
-                                                    "not dir: %s" % file_path)
+                                                    "not dir: {0}".format(file_path))
                         else:
                                 self.file_exists(p)
 
@@ -3374,8 +3377,8 @@ class CliTestCase(Pkg5TestCase):
                         f = file(file_path)
                 except:
                         self.assert_(False,
-                            "File %s does not exist or contain %s" %
-                            (path, string))
+                            "File {0} does not exist or contain {1}".format(
+                            path, string))
 
                 for line in f:
                         if string in line:
@@ -3385,8 +3388,8 @@ class CliTestCase(Pkg5TestCase):
                                         break
                 else:
                         f.close()
-                        self.assert_(False, "File %s does not contain %s" %
-                            (path, string))
+                        self.assert_(False, "File {0} does not contain {1}".format(
+                            path, string))
 
         def file_doesnt_contain(self, path, string):
                 """Assert the non-existence of a string in a file in the
@@ -3397,8 +3400,8 @@ class CliTestCase(Pkg5TestCase):
                 for line in f:
                         if string in line:
                                 f.close()
-                                self.assert_(False, "File %s contains %s" %
-                                    (path, string))
+                                self.assert_(False, "File {0} contains {1}".format(
+                                    path, string))
                 else:
                         f.close()
 
@@ -3407,7 +3410,7 @@ class CliTestCase(Pkg5TestCase):
 
                 file_path = os.path.join(self.get_img_path(), path)
                 with open(file_path, "a+") as f:
-                        f.write("\n%s\n" % string)
+                        f.write("\n{0}\n".format(string))
 
         def seed_ta_dir(self, certs, dest_dir=None):
                 if isinstance(certs, basestring):
@@ -3417,7 +3420,7 @@ class CliTestCase(Pkg5TestCase):
                 self.assert_(dest_dir)
                 self.assert_(self.raw_trust_anchor_dir)
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -3450,10 +3453,10 @@ class ManyDepotTestCase(CliTestCase):
             image_count=1):
                 CliTestCase.setUp(self, image_count=image_count)
 
-                self.debug("setup: %s" % self.id())
-                self.debug("creating %d repo(s)" % len(publishers))
-                self.debug("publishers: %s" % publishers)
-                self.debug("debug_features: %s" % list(debug_features))
+                self.debug("setup: {0}".format(self.id()))
+                self.debug("creating {0:d} repo(s)".format(len(publishers)))
+                self.debug("publishers: {0}".format(publishers))
+                self.debug("debug_features: {0}".format(list(debug_features)))
                 self.dcs = {}
 
                 for n, pub in enumerate(publishers):
@@ -3467,13 +3470,13 @@ class ManyDepotTestCase(CliTestCase):
                                         raise e
 
                         depot_logfile = os.path.join(testdir,
-                            "depot_logfile%d" % i)
+                            "depot_logfile{0:d}".format(i))
 
                         props = { "publisher": { "prefix": pub } }
 
                         # We pick an arbitrary base port.  This could be more
                         # automated in the future.
-                        repodir = os.path.join(testdir, "repo_contents%d" % i)
+                        repodir = os.path.join(testdir, "repo_contents{0:d}".format(i))
                         self.dcs[i] = self.prep_depot(self.next_free_port,
                             repodir,
                             depot_logfile, debug_features=debug_features,
@@ -3484,7 +3487,7 @@ class ManyDepotTestCase(CliTestCase):
                 """ Scan logpath looking for tracebacks.
                     Raise a DepotTracebackException if one is seen.
                 """
-                self.debug("check for depot tracebacks in %s" % logpath)
+                self.debug("check for depot tracebacks in {0}".format(logpath))
                 logfile = open(logpath, "r")
                 output = logfile.read()
                 for line in output.splitlines():
@@ -3492,12 +3495,12 @@ class ManyDepotTestCase(CliTestCase):
                                 raise DepotTracebackException(logpath, output)
 
         def restart_depots(self):
-                self.debug("restarting %d depot(s)" % len(self.dcs))
+                self.debug("restarting {0:d} depot(s)".format(len(self.dcs)))
                 for i in sorted(self.dcs.keys()):
                         dc = self.dcs[i]
-                        self.debug("stopping depot at url: %s" % dc.get_depot_url())
+                        self.debug("stopping depot at url: {0}".format(dc.get_depot_url()))
                         dc.stop()
-                        self.debug("starting depot at url: %s" % dc.get_depot_url())
+                        self.debug("starting depot at url: {0}".format(dc.get_depot_url()))
                         dc.start()
 
         def killall_sighandler(self, signum, frame):
@@ -3508,7 +3511,7 @@ class ManyDepotTestCase(CliTestCase):
 
         def killalldepots(self):
                 self.signalled = False
-                self.debug("killalldepots: %s" % self.id())
+                self.debug("killalldepots: {0}".format(self.id()))
 
                 oldhdlr = signal.signal(signal.SIGINT, self.killall_sighandler)
 
@@ -3520,8 +3523,8 @@ class ManyDepotTestCase(CliTestCase):
                                         continue
                                 check_dc.append(dc)
                                 path = dc.get_repodir()
-                                self.debug("stopping depot at url: %s, %s" % \
-                                    (dc.get_depot_url(), path))
+                                self.debug("stopping depot at url: {0}, {1}".format(
+                                    dc.get_depot_url(), path))
 
                                 status = 0
                                 try:
@@ -3530,7 +3533,7 @@ class ManyDepotTestCase(CliTestCase):
                                         pass
 
                                 if status:
-                                        self.debug("depot: %s" % status)
+                                        self.debug("depot: {0}".format(status))
 
                         for dc in check_dc:
                                 try:
@@ -3545,7 +3548,7 @@ class ManyDepotTestCase(CliTestCase):
                         raise KeyboardInterrupt("Ctrl-C while killing depots.")
 
         def tearDown(self):
-                self.debug("ManyDepotTestCase.tearDown: %s" % self.id())
+                self.debug("ManyDepotTestCase.tearDown: {0}".format(self.id()))
 
                 self.killalldepots()
                 CliTestCase.tearDown(self)
@@ -3603,20 +3606,20 @@ class ApacheDepotTestCase(ManyDepotTestCase):
                         ManyDepotTestCase.killalldepots(self)
                 finally:
                         for name, ac in self.acs.items():
-                                self.debug("stopping apache controller %s" %
-                                    name)
+                                self.debug("stopping apache controller {0}".format(
+                                    name))
                                 try:
                                         ac.stop()
                                 except Exception, e :
                                         try:
                                                 self.debug("killing apache "
-                                                    "instance %s" % name)
+                                                    "instance {0}".format(name))
                                                 ac.kill()
                                         except Exception, e:
                                                 self.debug("Unable to kill "
-                                                    "apache instance %s. This "
+                                                    "apache instance {0}. This "
                                                     "could cause subsequent "
-                                                    "tests to fail." % name)
+                                                    "tests to fail.".format(name))
 
         # ac is a readonly property which returns a registered ApacheController
         # provided there is exactly one registered, for convenience of writing
@@ -3631,8 +3634,8 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 # The value for ssl_ca_file is pulled from DebugValues because
                 # ssl_ca_file needs to be set there so the api object calls work
                 # as desired.
-                command = "--debug ssl_ca_file=%s %s" % \
-                    (DebugValues["ssl_ca_file"], command)
+                command = "--debug ssl_ca_file={0} {1}".format(
+                    DebugValues["ssl_ca_file"], command)
                 return ApacheDepotTestCase.pkg(self, command,
                     *args, **kwargs)
 
@@ -3640,8 +3643,8 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 # The value for ssl_ca_file is pulled from DebugValues because
                 # ssl_ca_file needs to be set there so the api object calls work
                 # as desired.
-                command = "%s --debug ssl_ca_file=%s" % \
-                    (command, DebugValues["ssl_ca_file"])
+                command = "{0} --debug ssl_ca_file={1}".format(
+                    command, DebugValues["ssl_ca_file"])
                 return ApacheDepotTestCase.pkgrecv(self, command,
                     *args, **kwargs)
 
@@ -3649,8 +3652,8 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 # The value for ssl_ca_file is pulled from DebugValues because
                 # ssl_ca_file needs to be set there so the api object calls work
                 # as desired.
-                command = "%s --debug ssl_ca_file=%s" % \
-                    (command, DebugValues["ssl_ca_file"])
+                command = "{0} --debug ssl_ca_file={1}".format(
+                    command, DebugValues["ssl_ca_file"])
                 return ApacheDepotTestCase.pkgsend(self, command,
                     *args, **kwargs)
 
@@ -3658,8 +3661,8 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 # The value for ssl_ca_file is pulled from DebugValues because
                 # ssl_ca_file needs to be set there so the api object calls work
                 # as desired.
-                command = "--debug ssl_ca_file=%s %s" % \
-                    (DebugValues["ssl_ca_file"], command)
+                command = "--debug ssl_ca_file={0} {1}".format(
+                    DebugValues["ssl_ca_file"], command)
                 return ApacheDepotTestCase.pkgrepo(self, command,
                     *args, **kwargs)
 
@@ -3671,7 +3674,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 self.assert_(dest_dir)
                 self.assert_(self.raw_trust_anchor_dir)
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -3680,15 +3683,15 @@ class HTTPSTestClass(ApacheDepotTestCase):
 
         def get_cli_cert(self, publisher):
                 ta = self.pub_ta_map[publisher]
-                return "cs1_ta%d_cert.pem" % ta
+                return "cs1_ta{0:d}_cert.pem".format(ta)
 
         def get_cli_key(self, publisher):
                 ta = self.pub_ta_map[publisher]
-                return "cs1_ta%d_key.pem" % ta
+                return "cs1_ta{0:d}_key.pem".format(ta)
 
         def get_pub_ta(self, publisher):
                 ta = self.pub_ta_map[publisher]
-                return "ta%d" % ta
+                return "ta{0:d}".format(ta)
 
         def setUp(self, publishers, start_depots=True):
 
@@ -3755,12 +3758,12 @@ class HTTPSTestClass(ApacheDepotTestCase):
                         self.pub_ta_map[dc_pub] = count
                         loc_dict = {
                             "server-path":dc_pub,
-                            "server-ca-taname":"ta%d" % count,
+                            "server-ca-taname":"ta{0:d}".format(count),
                             "ssl-special":"%{SSL_CLIENT_I_DN_OU}",
                             "proxied-server":self.dcs[dc].get_depot_url(),
                         }
 
-                        location_tags += loc_tag % (loc_dict)
+                        location_tags += loc_tag.format(**loc_dict)
                         count += 1
 
                 conf_dict = {
@@ -3783,7 +3786,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
                 self.https_conf_path = os.path.join(self.test_root,
                     "https.conf")
                 with open(self.https_conf_path, "wb") as fh:
-                        fh.write(self.https_conf % conf_dict)
+                        fh.write(self.https_conf.format(**conf_dict))
                 
                 ac = ApacheController(self.https_conf_path,
                     self.https_port, self.common_config_dir, https=True,
@@ -3809,7 +3812,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
 #
 ServerRoot "/usr/apache2/2.2"
 
-PidFile "%(pidfile)s"
+PidFile "{pidfile}"
 
 #
 # Listen: Allows you to bind Apache to specific IP addresses and/or
@@ -3819,13 +3822,13 @@ PidFile "%(pidfile)s"
 # Change this to Listen on specific IP addresses as shown below to 
 # prevent Apache from glomming onto all bound IP addresses.
 #
-Listen 0.0.0.0:%(https_port)s
+Listen 0.0.0.0:{https_port}
 
 # We also make ourselves a general-purpose proxy. This is not needed for the
 # SSL reverse-proxying to the pkg.depotd, but allows us to test that pkg(1)
 # can communicate to HTTPS origins using a proxy.
-Listen 0.0.0.0:%(proxy_port)s
-Listen 0.0.0.0:%(bad_proxy_port)s
+Listen 0.0.0.0:{proxy_port}
+Listen 0.0.0.0:{bad_proxy_port}
 
 #
 # Dynamic Shared Object (DSO) Support
@@ -3935,7 +3938,7 @@ DocumentRoot "/"
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog "%(log_locs)s/error_log"
+ErrorLog "{log_locs}/error_log"
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
@@ -3951,8 +3954,8 @@ LogLevel debug
     # The following directives define some format nicknames for use with
     # a CustomLog directive (see below).
     #
-    LogFormat "%(common_log_format)s" common
-    LogFormat "PROXY %(common_log_format)s" proxylog
+    LogFormat "{common_log_format}" common
+    LogFormat "PROXY {common_log_format}" proxylog
 
     #
     # The location and format of the access logfile (Common Logfile Format).
@@ -3961,7 +3964,7 @@ LogLevel debug
     # define per-<VirtualHost> access logfiles, transactions will be
     # logged therein and *not* in this file.
     #
-    CustomLog "%(log_locs)s/access_log" common
+    CustomLog "{log_locs}/access_log" common
 </IfModule>
 
 #
@@ -4004,7 +4007,7 @@ SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
 
-<VirtualHost 0.0.0.0:%(https_port)s>
+<VirtualHost 0.0.0.0:{https_port}>
         AllowEncodedSlashes On
         ProxyRequests Off
         MaxKeepAliveRequests 10000
@@ -4012,15 +4015,15 @@ SSLRandomSeed connect builtin
         SSLEngine On
 
         # Cert paths
-        SSLCertificateFile %(server-ssl-cert)s
-        SSLCertificateKeyFile %(server-ssl-key)s
+        SSLCertificateFile {server-ssl-cert}
+        SSLCertificateKeyFile {server-ssl-key}
 
         # Combined product CA certs for client verification
-        SSLCACertificateFile %(server-ca-cert)s
+        SSLCACertificateFile {server-ca-cert}
 
 	SSLVerifyClient require
 
-        %(location-tags)s
+        {location-tags}
 
 </VirtualHost>
 
@@ -4028,18 +4031,18 @@ SSLRandomSeed connect builtin
 # We configure this Apache instance as a general-purpose HTTP proxy, accepting
 # requests from localhost, and allowing CONNECTs to our HTTPS port
 #
-<VirtualHost 0.0.0.0:%(proxy_port)s>
+<VirtualHost 0.0.0.0:{proxy_port}>
         <Proxy *>
                 Order Deny,Allow
                 Deny from all
                 Allow from 127.0.0.1
         </Proxy>
-        AllowCONNECT %(https_port)s
+        AllowCONNECT {https_port}
         ProxyRequests on
-        CustomLog "%(log_locs)s/proxy_access_log" proxylog
+        CustomLog "{log_locs}/proxy_access_log" proxylog
 </VirtualHost>
 
-<VirtualHost 0.0.0.0:%(bad_proxy_port)s>
+<VirtualHost 0.0.0.0:{bad_proxy_port}>
         <Proxy *>
                 Order Deny,Allow
                 Deny from all
@@ -4048,23 +4051,23 @@ SSLRandomSeed connect builtin
 #  We purposely prevent this proxy from being able to connect to our SSL
 #  port, making sure that when we point pkg(1) to this bad proxy, operations
 #  will fail - the following line is commented out:
-#        AllowCONNECT %(https_port)s
+#        AllowCONNECT {https_port}
         ProxyRequests on
-        CustomLog "%(log_locs)s/badproxy_access_log" proxylog
+        CustomLog "{log_locs}/badproxy_access_log" proxylog
 
 </VirtualHost>
 """
 
 loc_tag = """
-        <Location /%(server-path)s>
+        <Location /{server-path}>
                 SSLVerifyDepth 1
 
 	        # The client's certificate must pass verification, and must have
 	        # a CN which matches this repository.
-                SSLRequire ( %(ssl-special)s =~ m/%(server-ca-taname)s/ )
+                SSLRequire ( {ssl-special} =~ m/{server-ca-taname}/ )
 
                 # set max to number of threads in depot
-                ProxyPass %(proxied-server)s nocanon max=500
+                ProxyPass {proxied-server} nocanon max=500
         </Location>
 """
 
@@ -4150,14 +4153,14 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
 
                 for s in subdirs:
                         if s == "var/pkg":
-                                cmdline = "image-create -F -p %s=%s %s" % \
-                                    (prefix, repourl, self.img_path())
+                                cmdline = "image-create -F -p {0}={1} {2}".format(
+                                    prefix, repourl, self.img_path())
                         elif s == ".org.opensolaris,pkg":
-                                cmdline = "image-create -U -p %s=%s %s" % \
-                                    (prefix, repourl, self.img_path())
+                                cmdline = "image-create -U -p {0}={1} {2}".format(
+                                    prefix, repourl, self.img_path())
                         else:
                                 raise RuntimeError("Got unknown subdir option:"
-                                    "%s\n" % s)
+                                    "{0}\n".format(s))
 
                         cmdline = self.pkg_cmdpath + " " + cmdline
                         self.cmdline_run(cmdline, exit=0)
@@ -4196,7 +4199,7 @@ def debug(s):
         s = str(s)
         for x in s.splitlines():
                 if g_debug_output:
-                        print("# %s" % x, file=sys.stderr)
+                        print("# {0}".format(x), file=sys.stderr)
 
 def mkdir_eexist_ok(p):
         try:
@@ -4255,7 +4258,7 @@ def env_sanitize(pkg_cmdpath, dv_keep=None):
 
 def fakeroot_create():
 
-        test_root = os.path.join(g_tempdir, "ips.test.%d" % os.getpid())
+        test_root = os.path.join(g_tempdir, "ips.test.{0:d}".format(os.getpid()))
         fakeroot = os.path.join(test_root, "fakeroot")
         cmd_path = os.path.join(fakeroot, "pkg")
 
@@ -4266,7 +4269,7 @@ def fakeroot_create():
         else:
                 # fakeroot already exists
                 raise RuntimeError("The fakeroot shouldn't already exist.\n"
-                    "Path is:%s" % cmd_path)
+                    "Path is:{0}".format(cmd_path))
 
         # when creating the fakeroot we want to make sure pkg doesn't
         # touch the real root.
@@ -4287,7 +4290,7 @@ def fakeroot_create():
         mkdir_eexist_ok(test_root)
         mkdir_eexist_ok(fakeroot)
 
-        debug("fakeroot image create %s" % fakeroot)
+        debug("fakeroot image create {0}".format(fakeroot))
         progtrack = pkg.client.progress.NullProgressTracker()
         api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
             CLIENT_API_VERSION, fakeroot,
@@ -4346,7 +4349,7 @@ class ApacheController(object):
                 prefix = "http"
                 if https:
                         prefix = "https"
-                self.__url = "%s://localhost:%d" % (prefix, self.__port)
+                self.__url = "{0}://localhost:{1:d}".format(prefix, self.__port)
                 portable.copyfile(conf, self.__conf_path)
 
         def __set_conf(self, path):
@@ -4388,13 +4391,13 @@ class ApacheController(object):
                         # other tests to fail. We don't allow that to happen.
                         raise RuntimeError(
                             "This ApacheController has not been registered with"
-                            " the ApacheDepotTestCase %s using "
-                            "set_apache_controller(name, ac)" % self.__tc)
+                            " the ApacheDepotTestCase {0} using "
+                            "set_apache_controller(name, ac)".format(self.__tc))
 
                 if self._network_ping():
                         raise ApacheStateException("A depot (or some " +
                             "other network process) seems to be " +
-                            "running on port %d already!" % self.__port)
+                            "running on port {0:d} already!".format(self.__port))
                 cmdline = ["/usr/bin/setpgrp", self.apachectl, "-f",
                     self.__conf_path, "-k", "start", "-DFOREGROUND"]
                 try:
@@ -4421,7 +4424,7 @@ class ApacheController(object):
                                         self.__state = "stopped"
                                         raise ApacheStateException("Apache "
                                             "exited unexpectedly while "
-                                            "starting (exit code %d)" % rc)
+                                            "starting (exit code {0:d})".format(rc))
 
                                 if self.is_alive():
                                         contact = True

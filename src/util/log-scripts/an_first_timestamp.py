@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -49,9 +49,9 @@ for l in fileinput.input(sys.argv[1:]):
                 continue
 
         mg = m.groupdict()
-        
+
         d = datetime.datetime(*(time.strptime(mg["date"] + ":" + mg["time"], "%d/%b/%Y:%H:%M:%S")[0:6]))
 
-        print("%d" % time.mktime(d.timetuple()))
+        print("{0:d}".format(time.mktime(d.timetuple())))
         sys.exit(0)
 

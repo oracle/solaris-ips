@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -129,7 +129,7 @@ class ImagePlan(object):
                         s = "UNEVALUATED:\n"
                         return s
 
-                s = "%s\n" % self.pd._solver_summary
+                s = "{0}\n".format(self.pd._solver_summary)
 
                 if self.pd.state < plandesc.EVALUATED_PKGS:
                         return s
@@ -137,18 +137,18 @@ class ImagePlan(object):
                 s += "Package version changes:\n"
 
                 for oldfmri, newfmri in self.pd._fmri_changes:
-                        s += "%s -> %s\n" % (oldfmri, newfmri)
+                        s += "{0} -> {1}\n".format(oldfmri, newfmri)
 
                 if self.pd._actuators:
-                        s = s + "\nActuators:\n%s\n" % self.pd._actuators
+                        s = s + "\nActuators:\n{0}\n".format(self.pd._actuators)
 
                 if self.__old_excludes != self.__new_excludes:
-                        s = s + "\nVariants/Facet changes:\n %s -> %s\n" % \
-                            (self.__old_excludes, self.__new_excludes)
+                        s = s + "\nVariants/Facet changes:\n {0} -> {1}\n".format(
+                            self.__old_excludes, self.__new_excludes)
 
                 if self.pd._mediators_change:
-                        s = s + "\nMediator changes:\n %s" % \
-                            "\n".join(self.pd.get_mediators())
+                        s = s + "\nMediator changes:\n {0}".format(
+                            "\n".join(self.pd.get_mediators()))
 
                 return s
 
@@ -187,7 +187,7 @@ class ImagePlan(object):
         def skip_preexecute(self):
                 assert self.pd.state in \
                     [plandesc.PREEXECUTED_OK, plandesc.EVALUATED_OK], \
-                    "%s not in [%s, %s]" % (self.pd.state,
+                    "{0} not in [{1}, {2}]".format(self.pd.state,
                     plandesc.PREEXECUTED_OK, plandesc.EVALUATED_OK)
 
                 if self.pd.state == plandesc.PREEXECUTED_OK:
@@ -919,14 +919,14 @@ class ImagePlan(object):
                                                 # Any mediators being set this
                                                 # way are forced to be marked as
                                                 # being set by local administrator.
-                                                self.pd._new_mediators[m]["%s-source" % k] = \
+                                                self.pd._new_mediators[m]["{0}-source".format(k)] = \
                                                     "local"
                                                 continue
 
                                         # Explicit reset requested.
                                         del self.pd._new_mediators[m][k]
                                         self.pd._new_mediators[m].pop(
-                                            "%s-source" % k, None)
+                                            "{0}-source".format(k), None)
                                         if k == "implementation":
                                                 self.pd._new_mediators[m].pop(
                                                     "implementation-version",
@@ -943,13 +943,13 @@ class ImagePlan(object):
                                 # This is necessary since callers are only
                                 # required to specify the components they want
                                 # to change.
-                                med_source = cfg_mediators[m].get("%s-source" % k)
+                                med_source = cfg_mediators[m].get("{0}-source".format(k))
                                 if med_source != "local":
                                         continue
 
                                 self.pd._new_mediators[m][k] = \
                                     cfg_mediators[m].get(k)
-                                self.pd._new_mediators[m]["%s-source" % k] = "local"
+                                self.pd._new_mediators[m]["{0}-source".format(k)] = "local"
 
                                 if k == "implementation" and \
                                     "implementation-version" in cfg_mediators[m]:
@@ -1484,9 +1484,9 @@ class ImagePlan(object):
                                         pinfo))
 
                         self.pd.add_item_message(ffmri, timestamp,
-                            msg_type, _("%(pkg_name)-70s %(result)7s") % {
-                            "pkg_name": pfmri.get_pkg_stem(),
-                            "result": result })
+                            msg_type, _("{pkg_name:70} {result:>7}").format(
+                            pkg_name=pfmri.get_pkg_stem(),
+                            result=result))
 
                         for act, errors, warnings, info in entries:
                                     if act:
@@ -1500,20 +1500,21 @@ class ImagePlan(object):
 
                                             self.pd.add_item_message(ffmri,
                                                 timestamp, msg_type,
-                                                "\t%s" % act.distinguished_name())
+                                                "\t{0}".format(
+                                                act.distinguished_name()))
 
                                     for x in errors:
                                             self.pd.add_item_message(ffmri,
                                                 timestamp, MSG_ERROR,
-                                                "\t\tERROR: %s" % x)
+                                                "\t\tERROR: {0}".format(x))
                                     for x in warnings:
                                             self.pd.add_item_message(ffmri,
                                                 timestamp, MSG_WARNING,
-                                                "\t\tWARNING: %s" % x)
+                                                "\t\tWARNING: {0}".format(x))
                                     for x in info:
                                             self.pd.add_item_message(ffmri,
                                                 timestamp, MSG_INFO,
-                                                "\t\t%s" % x)
+                                                "\t\t{0}".format(x))
 
                         if not needs_fix:
                                 continue
@@ -1590,7 +1591,7 @@ class ImagePlan(object):
 
                 output = ""
                 for t in self.pd._fmri_changes:
-                        output += "%s -> %s\n" % t
+                        output += "{0} -> {1}\n".format(*t)
                 return output
 
         def gen_new_installed_pkgs(self):
@@ -2116,7 +2117,7 @@ class ImagePlan(object):
                                         continue
 
                                 orig_name = attrs.get("original_name",
-                                    "%s:%s" % (ap.p.origin_fmri.get_name(),
+                                    "{0}:{1}".format(ap.p.origin_fmri.get_name(),
                                         attrs["path"]))
                                 if orig_name in moved:
                                         # File has moved locations; removal will
@@ -2150,9 +2151,9 @@ class ImagePlan(object):
                 elif msg == "error":
                         errs.append(errclass(actions))
                 else:
-                        assert False, "%s() returned something other than " \
-                            "'nothing', 'overlay', 'error', or 'fixup': '%s'" % \
-                            (func.__name__, msg)
+                        assert False, "{0}() returned something other than " \
+                            "'nothing', 'overlay', 'error', or 'fixup': '{1}'".format(
+                            func.__name__, msg)
 
                 return True
 
@@ -2736,10 +2737,10 @@ class ImagePlan(object):
                     "reference": reference
                 }
 
-                s = "(%s)" % ";".join([
-                    "%s=%s" % (key, info[key]) for key in info
+                s = "({0})".format(";".join([
+                    "{0}={1}".format(key, info[key]) for key in info
                     if info[key] is not None
-                ])
+                ]))
 
                 if new_fmri:
                         return None, s    # only report new on upgrade
@@ -3839,7 +3840,8 @@ class ImagePlan(object):
                                     hashify(attrs[ap.src.key_attr]))] = re
                                 if ap.src.name == "file":
                                         fname = attrs.get("original_name",
-                                            "%s:%s" % (ap.p.origin_fmri.get_name(),
+                                            "{0}:{1}".format(
+                                            ap.p.origin_fmri.get_name(),
                                             attrs["path"]))
                                         cons_named[fname] = re
                                         fname = None
@@ -4122,8 +4124,8 @@ class ImagePlan(object):
                             self.pd._new_variants or
                             (self.pd._new_facets is not None) or
                             self.pd._mediators_change)
-                assert 0, "Shouldn't call nothingtodo() for state = %d" % \
-                    self.pd.state
+                assert 0, "Shouldn't call nothingtodo() for state = {0:d}".format(
+                    self.pd.state)
 
         def preexecute(self):
                 """Invoke the evaluated image plan
@@ -4513,9 +4515,10 @@ class ImagePlan(object):
                                         raise api_errors.ActionExecutionError(
                                             act, _("A link targeting itself or "
                                             "part of a link loop was found at "
-                                            "'%s'; a file or directory was "
+                                            "'{0}'; a file or directory was "
                                             "expected.  Please remove the link "
-                                            "and try again.") % e.filename)
+                                            "and try again.").format(
+                                            e.filename))
                                 raise
                 except pkg.actions.ActionError:
                         exc_type, exc_value, exc_tb = sys.exc_info()

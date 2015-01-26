@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
@@ -99,9 +99,9 @@ class PackageCategory(object):
 
         def __str__(self, verbose=False):
                 if verbose:
-                        return "%s (%s)" % (self.category, self.scheme)
+                        return "{0} ({1})".format(self.category, self.scheme)
                 else:
-                        return "%s" % self.category
+                        return "{0}".format(self.category)
 
 
 class PackageInfo(object):

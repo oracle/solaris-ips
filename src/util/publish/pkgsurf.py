@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -103,10 +103,10 @@ def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
         if cmd:
-                text = "\n%s: %s" % (cmd, text)
+                text = "\n{0}: {1}".format(cmd, text)
 
         else:
-                text = "\n%s: %s" % (PKG_CLIENT_NAME, text)
+                text = "\n{0}: {1}".format(PKG_CLIENT_NAME, text)
 
 
         # If the message starts with whitespace, assume that it should come
@@ -130,9 +130,9 @@ The target repository has been modified but the operation did not finish
 successfully. It is now in an inconsistent state.
 
 To re-try the operation, run the following commands:
-  /usr/bin/pkgrepo rebuild -s %(repo)s --no-index
-  %(argv)s
-""") % {"repo": repo_uri, "argv": " ".join(sys.argv)})
+  /usr/bin/pkgrepo rebuild -s {repo} --no-index
+  {argv}
+""").format(repo=repo_uri, argv=" ".join(sys.argv)))
 
         if temp_root:
                 shutil.rmtree(temp_root)
@@ -249,10 +249,10 @@ def get_manifest(repo, pub, pfmri):
         try:
                 mani.set_content(pathname=path)
         except Exception, e:
-                abort(err=_("Can not open manifest file %(file)s: %(err)s\n"
-                    "Please run 'pkgrepo verify -s %(rroot)s' to check the "
-                    "integrity of the repository.") \
-                    % {"file": path, "err": str(e), "rroot": repo.root})
+                abort(err=_("Can not open manifest file {file}: {err}\n"
+                    "Please run 'pkgrepo verify -s {rroot}' to check the "
+                    "integrity of the repository.").format(
+                    file=path, err=str(e), rroot=repo.root))
         return mani
 
 def get_tracker():
@@ -534,8 +534,8 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
                         # Let's make sure we don't run into any
                         # recursion limits. If the dep chain is too deep
                         # just treat as changed pkg.
-                        error(_("Dependency chain depth of >%(md)d detected for"
-                            " %(p)s." % {"md": MAX_DEPTH, "p": p}))
+                        error(_("Dependency chain depth of >{md:d} detected for"
+                            " {p}.").format(md=MAX_DEPTH, p=p))
                         return True
 
                 # Pkg has no change at all.
@@ -591,7 +591,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
         rjust_status = max(len(s[0]) for s in status)
         rjust_value = max(len(s[1]) for s in status)
         for s in status:
-                msg("%s %s" % (s[0].rjust(rjust_status),
+                msg("{0} {1}".format(s[0].rjust(rjust_status),
                     s[1].rjust(rjust_value)))
 
         if not reversioned_pkgs:
@@ -634,7 +634,8 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
                                 portable.rename(rmani.pathname, path)
                         except OSError, e:
                                 abort(err=_("Could not reversion manifest "
-                                    "%(path)s: %(err)s") % (path, str(e)))
+                                    "{path}: {err}").format(path=path,
+                                    err=str(e)))
                         continue
 
                 # For packages we don't reversion we have to check if they 
@@ -679,7 +680,7 @@ def main_func():
                 opts, pargs = getopt.getopt(sys.argv[1:], "?c:i:np:r:s:",
                     ["help"])
         except getopt.GetoptError, e:
-                usage(_("illegal option -- %s") % e.opt)
+                usage(_("illegal option -- {0}").format(e.opt))
 
         dry_run = False
         ref_repo_uri = None
@@ -707,7 +708,7 @@ def main_func():
                         usage(retcode=pkgdefs.EXIT_OK)
 
         if pargs:
-                usage(_("Unexpected argument(s): %s") % " ".join(pargs))
+                usage(_("Unexpected argument(s): {0}").format(" ".join(pargs)))
 
         if not repo_uri:
                 usage(_("A target repository must be provided."))
@@ -744,15 +745,15 @@ def main_func():
                     and '*' not in publishers:
                         continue
 
-                msg(_("Processing packages for publisher %s ...") % pub)
+                msg(_("Processing packages for publisher {0} ...").format(pub))
                 # Find the matching pub in the ref repo.
                 for ref_pub in ref_xport_cfg.gen_publishers():
                         if ref_pub.prefix == pub:
                                 found = True
                                 break
                 else:
-                        txt = _("Publisher %s not found in reference "
-                            "repository.") % pub
+                        txt = _("Publisher {0} not found in reference "
+                            "repository.").format(pub)
                         if publishers:
                                 abort(err=txt)
                         else:

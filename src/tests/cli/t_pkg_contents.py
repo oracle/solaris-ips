@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -211,7 +211,7 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 their contents aren't comingled."""
 
                 self.image_create(self.rurl)
-                self.pkg("contents -r -m %s" % " ".join(self.plist))
+                self.pkg("contents -r -m {0}".format(" ".join(self.plist)))
                 expected_res = reduce(lambda x, y: x + y,
                     [
                         self.get_img_manifest(pfmri.PkgFmri(s))
@@ -228,20 +228,20 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 # Create an isolated repository for this test
                 repodir = os.path.join(self.test_root, "test-ranked")
                 self.create_repo(repodir)
-                self.pkgrepo("add-publisher -s %s test" % repodir)
+                self.pkgrepo("add-publisher -s {0} test".format(repodir))
                 self.pkgsend_bulk(repodir, self.bronze10)
 
-                self.pkgrepo("add-publisher -s %s test2" % repodir)
-                self.pkgrepo("set -s %s publisher/prefix=test2" % repodir)
+                self.pkgrepo("add-publisher -s {0} test2".format(repodir))
+                self.pkgrepo("set -s {0} publisher/prefix=test2".format(repodir))
                 self.pkgsend_bulk(repodir, self.bronze10)
 
-                self.pkgrepo("add-publisher -s %s test3" % repodir)
-                self.pkgrepo("set -s %s publisher/prefix=test3" % repodir)
+                self.pkgrepo("add-publisher -s {0} test3".format(repodir))
+                self.pkgrepo("set -s {0} publisher/prefix=test3".format(repodir))
                 self.pkgsend_bulk(repodir, self.bronze10)
 
                 # Create a test image.
                 self.image_create()
-                self.pkg("set-publisher -p %s" % repodir)
+                self.pkg("set-publisher -p {0}".format(repodir))
 
                 # Test should be higher ranked than test2 since the default
                 # for auto-configuration is to use lexical order when

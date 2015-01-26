@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -212,7 +212,7 @@ class DepotController(object):
                         host = self.__address
                         if ":" in host:
                                 # Special syntax needed for IPv6 addresses.
-                                host = "[%s]" % host
+                                host = "[{0}]".format(host)
                 else:
                         host = "localhost"
 
@@ -221,7 +221,7 @@ class DepotController(object):
                 else:
                         scheme = "http"
 
-                return "%s://%s:%d" % (scheme, host, self.__port)
+                return "{0}://{1}:{2:d}".format(scheme, host, self.__port)
 
         def set_writable_root(self, wr):
                 self.__writable_root = wr
@@ -253,7 +253,7 @@ class DepotController(object):
                 self.__nasty = nastiness
                 if self.__depot_handle != None:
                         nastyurl = urlparse.urljoin(self.get_depot_url(),
-                            "nasty/%d" % self.__nasty)
+                            "nasty/{0:d}".format(self.__nasty))
                         url = urllib2.urlopen(nastyurl)
                         url.close()
 
@@ -330,15 +330,15 @@ class DepotController(object):
                         args.append(self.__depot_content_root)
                 if self.__address:
                         args.append("-a")
-                        args.append("%s" % self.__address)
+                        args.append("{0}".format(self.__address))
                 if self.__port != -1:
                         args.append("-p")
-                        args.append("%d" % self.__port)
+                        args.append("{0:d}".format(self.__port))
                 if self.__dir != None:
                         args.append("-d")
                         args.append(self.__dir)
                 if self.__file_root != None:
-                        args.append("--file-root=%s" % self.__file_root)
+                        args.append("--file-root={0}".format(self.__file_root))
                 if self.__readonly:
                         args.append("--readonly")
                 if self.__rebuild:
@@ -352,32 +352,32 @@ class DepotController(object):
                 if self.__exit_ready:
                         args.append("--exit-ready")
                 if self.__cfg_file:
-                        args.append("--cfg-file=%s" % self.__cfg_file)
+                        args.append("--cfg-file={0}".format(self.__cfg_file))
                 if self.__ssl_cert_file:
-                        args.append("--ssl-cert-file=%s" % self.__ssl_cert_file)
+                        args.append("--ssl-cert-file={0}".format(self.__ssl_cert_file))
                 if self.__ssl_key_file:
-                        args.append("--ssl-key-file=%s" % self.__ssl_key_file)
+                        args.append("--ssl-key-file={0}".format(self.__ssl_key_file))
                 if self.__ssl_dialog:
-                        args.append("--ssl-dialog=%s" % self.__ssl_dialog)
+                        args.append("--ssl-dialog={0}".format(self.__ssl_dialog))
                 if self.__debug_features:
-                        args.append("--debug=%s" % ",".join(
-                            self.__debug_features))
+                        args.append("--debug={0}".format(",".join(
+                            self.__debug_features)))
                 if self.__disable_ops:
-                        args.append("--disable-ops=%s" % ",".join(
-                            self.__disable_ops))
+                        args.append("--disable-ops={0}".format(",".join(
+                            self.__disable_ops)))
                 if self.__nasty:
-                        args.append("--nasty %d" % self.__nasty)
+                        args.append("--nasty {0:d}".format(self.__nasty))
                 if self.__nasty_sleep:
-                        args.append("--nasty-sleep %d" % self.__nasty_sleep)
+                        args.append("--nasty-sleep {0:d}".format(self.__nasty_sleep))
                 for section in self.__props:
                         for prop, val in self.__props[section].iteritems():
-                                args.append("--set-property=%s.%s='%s'" %
-                                    (section, prop, val))
+                                args.append("--set-property={0}.{1}='{2}'".format(
+                                    section, prop, val))
                 if self.__writable_root:
-                        args.append("--writable-root=%s" % self.__writable_root)
+                        args.append("--writable-root={0}".format(self.__writable_root))
 
                 if self.__sort_file_max_size:
-                        args.append("--sort-file-max-size=%s" % self.__sort_file_max_size)
+                        args.append("--sort-file-max-size={0}".format(self.__sort_file_max_size))
 
                 # Always log access and error information.
                 args.append("--log-access=stdout")
@@ -400,7 +400,7 @@ class DepotController(object):
                 if self.__network_ping():
                         raise DepotStateException("A depot (or some " +
                             "other network process) seems to be " +
-                            "running on port %d already!" % self.__port)
+                            "running on port {0:d} already!".format(self.__port))
 
                 self.__state = self.STARTING
 
@@ -440,9 +440,9 @@ class DepotController(object):
                                             errf:
                                                 err = errf.read()
                                         raise DepotStateException("Depot exited "
-                                            "with exit code %d unexpectedly "
+                                            "with exit code {0:d} unexpectedly "
                                             "while starting.  Output follows:\n"
-                                            "%s\n" % (rc, err))
+                                            "{1}\n".format(rc, err))
 
                                 if self.is_alive():
                                         contact = True
@@ -543,8 +543,8 @@ def test_func(testdir):
         dc.set_repodir(testdir)
 
         for j in range(0, 10):
-                print("%4d: Starting Depot... (%s)" %
-                    (j, " ".join(dc.get_args())), end=" ")
+                print("{0:>4d}: Starting Depot... ({1})".format(
+                    j, " ".join(dc.get_args())), end=" ")
                 try:
                         dc.start()
                         print(" Done.    ", end=" ")
@@ -557,12 +557,14 @@ def test_func(testdir):
 
                         print("Stopping Depot...", end=" ")
                         status = dc.stop()
-                        if status == 0:
+                        if status is None:
+                                print(" Result: Exited {0}".format(status), end=" ")
+                        elif status == 0:
                                 print(" Done.", end=" ")
                         elif status < 0:
-                                print(" Result: Signal %d" % (-1 * status), end=" ")
+                                print(" Result: Signal {0:d}".format(-1 * status), end=" ")
                         else:
-                                print(" Result: Exited %d" % status, end=" ")
+                                print(" Result: Exited {0:d}".format(status), end=" ")
                         print()
                         f = open("/tmp/depot.log", "r")
                         print(f.read())
@@ -573,11 +575,11 @@ def test_func(testdir):
                         raise
 
 if __name__ == "__main__":
-        __testdir = "/tmp/depotcontrollertest.%d" % os.getpid()
+        __testdir = "/tmp/depotcontrollertest.{0:d}".format(os.getpid())
         try:
                 test_func(__testdir)
         except KeyboardInterrupt:
                 pass
-        os.system("rm -fr %s" % __testdir)
+        os.system("rm -fr {0}".format(__testdir))
         print("\nDone")
 

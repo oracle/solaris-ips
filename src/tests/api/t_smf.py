@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import testutils
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "cp:")
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
 
         found_c = False
         prop = None

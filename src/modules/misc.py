@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 
 """
 Misc utility functions used by the packaging system.
@@ -92,9 +92,9 @@ def get_traceback_message():
         setup."""
 
         return _("""\n
-This is an internal error in pkg(5) version %(version)s.  Please log a
+This is an internal error in pkg(5) version {version}.  Please log a
 Service Request about this issue including the information above and this
-message.""") % { "version": VERSION }
+message.""").format(version=VERSION)
 
 def get_release_notes_url():
         """Return a release note URL pointing to the correct release notes
@@ -163,7 +163,7 @@ def copytree(src, dst):
                         # The s11 fcs version of python doesn't have os.mknod()
                         # but sock.bind has a path length limitation that we can
                         # hit when archiving the test suite.
-                        # E1101 Module '%s' has no '%s' member
+                        # E1101 Module '{0}' has no '{1}' member
                         # pylint: disable=E1101
                         if hasattr(os, "mknod"):
                                 os.mknod(d_path, s.st_mode, s.st_dev)
@@ -181,7 +181,7 @@ def copytree(src, dst):
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
                         # the s11 fcs version of python doesn't have os.mknod()
-                        # E1101 Module '%s' has no '%s' member
+                        # E1101 Module '{0}' has no '{1}' member
                         # pylint: disable=E1101
                         if hasattr(os, "mknod"):
                                 os.mknod(d_path, s.st_mode, s.st_dev)
@@ -224,11 +224,11 @@ def move(src, dst):
                                 os.utime(dst, (s.st_atime, s.st_mtime))
                                 os.unlink(src)
                 elif e.errno == errno.EINVAL and S_ISDIR(s.st_mode):
-                        raise shutil.Error, "Cannot move a directory '%s' " \
-                            "into itself '%s'." % (src, dst)
+                        raise shutil.Error, "Cannot move a directory '{0}' " \
+                            "into itself '{1}'.".format(src, dst)
                 elif e.errno == errno.ENOTDIR and S_ISDIR(s.st_mode):
-                        raise shutil.Error, "Destination path '%s' already " \
-                            "exists" % dst
+                        raise shutil.Error, "Destination path '{0}' already " \
+                            "exists".format(dst)
                 else:
                         raise
 
@@ -251,8 +251,8 @@ def url_affix_trailing_slash(u):
 
         return u
 
-_client_version = "pkg/%s (%s %s; %s %s; %%s; %%s)" % \
-    (VERSION, portable.util.get_canonical_os_name(), platform.machine(),
+_client_version = "pkg/{0} ({1} {2}; {3} {4}; {{0}}; {{1}}".format(
+    VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
 
 def user_agent_str(img, client_name):
@@ -263,7 +263,7 @@ def user_agent_str(img, client_name):
         else:
                 imgtype = img.type
 
-        useragent = _client_version % (img_type_names[imgtype], client_name)
+        useragent = _client_version.format(img_type_names[imgtype], client_name)
 
         return useragent
 
@@ -478,18 +478,18 @@ def setlocale(category, loc=None, printer=None):
                 locale.getdefaultlocale()
         except (locale.Error, ValueError):
                 try:
-                        dl = " '%s.%s'" % locale.getdefaultlocale()
+                        dl = " '{0}.{1}'".format(*locale.getdefaultlocale())
                 except ValueError:
                         dl = ""
-                printer("Unable to set locale%s; locale package may be broken "
-                    "or\nnot installed.  Reverting to C locale." % dl)
+                printer("Unable to set locale{0}; locale package may be broken "
+                    "or\nnot installed.  Reverting to C locale.".format(dl))
                 locale.setlocale(category, "C")
 def N_(message):
         """Return its argument; used to mark strings for localization when
         their use is delayed by the program."""
         return message
 
-def bytes_to_str(nbytes, fmt="%(num).2f %(unit)s"):
+def bytes_to_str(nbytes, fmt="{num:>.2f} {unit}"):
         """Returns a human-formatted string representing the number of bytes
         in the largest unit possible.
 
@@ -514,11 +514,18 @@ def bytes_to_str(nbytes, fmt="%(num).2f %(unit)s"):
                         # unit of measure's range.
                         continue
 
-                return fmt % {
-                    "num": round(nbytes / float(limit / 2**10), 2),
-                    "unit": uom,
-                    "shortunit": shortuom
-                }
+                if "{num:d}" in fmt:
+                        return fmt.format(
+                            num=int(nbytes / float(limit / 2**10)),
+                            unit=uom,
+                            shortunit=shortuom
+                        )
+                else:
+                        return fmt.format(
+                            num=round(nbytes / float(limit / 2**10), 2),
+                            unit=uom,
+                            shortunit=shortuom
+                        )
 
 def get_rel_path(request, uri, pub=None):
         """Calculate the depth of the current request path relative to our
@@ -527,7 +534,7 @@ def get_rel_path(request, uri, pub=None):
 
         rpath = request.path_info
         if pub:
-                rpath = rpath.replace("/%s/" % pub, "/")
+                rpath = rpath.replace("/{0}/".format(pub), "/")
         depth = rpath.count("/") - 1
         return ("../" * depth) + uri
 
@@ -880,7 +887,7 @@ def out_of_memory():
         try:
                 vmusage = __getvmusage()
                 if vmusage is not None:
-                        vsz = bytes_to_str(vmusage, fmt="%(num).0f%(unit)s")
+                        vsz = bytes_to_str(vmusage, fmt="{num}.0f{unit}")
         except (MemoryError, EnvironmentError), __e:
                 if isinstance(__e, EnvironmentError) and \
                     __e.errno != errno.ENOMEM:
@@ -889,7 +896,7 @@ def out_of_memory():
         if vsz is not None:
                 error = """\
 There is not enough memory to complete the requested operation.  At least
-%(vsz)s of virtual memory was in use by this command before it ran out of memory.
+{vsz} of virtual memory was in use by this command before it ran out of memory.
 You must add more memory (swap or physical) or allow the system to access more
 existing memory, or quit other programs that may be consuming memory, and try
 the operation again."""
@@ -900,7 +907,7 @@ add more memory (swap or physical) or allow the system to access more existing
 memory, or quit other programs that may be consuming memory, and try the
 operation again."""
 
-        return _(error) % locals()
+        return _(error).format(**locals())
 
 
 # EmptyI for argument defaults
@@ -1363,22 +1370,22 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                 assert sopt or lopt
                 if lopt != "":
                         if default is None or type(default) == list:
-                                opts_l_list.append("%s=" % lopt)
+                                opts_l_list.append("{0}=".format(lopt))
                         else:
-                                opts_l_list.append("%s" % lopt)
-                        opts_keys["--%s" % lopt] = opt
+                                opts_l_list.append("{0}".format(lopt))
+                        opts_keys["--{0}".format(lopt)] = opt
                 if sopt != "":
                         if default is None or type(default) == list:
-                                opts_s_str += "%s:" % sopt
+                                opts_s_str += "{0}:".format(sopt)
                         else:
-                                opts_s_str += "%s" % sopt
-                        opts_keys["-%s" % sopt] = opt
+                                opts_s_str += "{0}".format(sopt)
+                        opts_keys["-{0}".format(sopt)] = opt
 
         # Parse options.
         try:
                 opts, pargs = getopt.getopt(args, opts_s_str, opts_l_list)
         except getopt.GetoptError, e:
-                usage_cb(_("illegal option -- %s") % e.opt, cmd=op)
+                usage_cb(_("illegal option -- {0}").format(e.opt), cmd=op)
 
         def get_default(option):
                 """Find the default value for a given option from opts_table."""
@@ -1470,7 +1477,7 @@ def api_pkgcmd():
         # propagate debug options
         for k, v in DebugValues.iteritems():
                 pkg_cmd.append("-D")
-                pkg_cmd.append("%s=%s" % (k, v))
+                pkg_cmd.append("{0}={1}".format(k, v))
 
         return pkg_cmd
 
@@ -1611,7 +1618,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                 val = " ".join(nval)
                 nval = None
                 if multi_value:
-                        val = "(%s)" % val
+                        val = "({0})".format(val)
                 entry[0][2] = val
 
         if out_format == "default":
@@ -1626,7 +1633,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                     1 for k in field_data
                     if filter_tsv(field_data[k])
                 )
-                fmt = "\t".join('%s' for x in xrange(num_fields))
+                fmt = "\t".join('{{{0}}}'.format(x) for x in xrange(num_fields))
                 filter_func = filter_tsv
         elif out_format == "json" or out_format == "json-formatted":
                 args = { "sort_keys": True }
@@ -1670,7 +1677,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         # Output a header if desired.
         output = ""
         if not omit_headers:
-                output += fmt % tuple(hdrs)
+                output += fmt.format(*hdrs)
                 output += "\n"
 
         for entry in field_values:
@@ -1681,7 +1688,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                 ))
                 values = map(get_value, sorted(filter(filter_func,
                     field_data.values()), sort_fields))
-                output += fmt % tuple(values)
+                output += fmt.format(*values)
                 output += "\n"
 
         return output
@@ -1849,15 +1856,15 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
         # sanity check that the data type matches the description
         assert issubclass(data_type, desc_type), \
-            "unexpected %s for %s, expected: %s, value: %s" % \
-                (data_type, name, desc_type, data)
+            "unexpected {0} for {1}, expected: {2}, value: {3}".format(
+                data_type, name, desc_type, data)
 
         # We should not see unicode strings getting passed in. The assert is
         # necessary since we force unicode objects back into escaped str
         # objects during json_decode which would convert unicode to str objects
         # unintentionally.
         assert not isinstance(data_type, unicode), \
-            "unexpected unicode string: %s" % data
+            "unexpected unicode string: {0}".format(data)
 
         # we don't need to do anything for basic types
         for t in json_types_immediates:
@@ -1890,12 +1897,12 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                         # encode all key / value pairs
                         for k, v in data.iteritems():
                                 # encode the key
-                                name2 = "%s[%s].key()" % (name, desc_k)
+                                name2 = "{0}[{1}].key()".format(name, desc_k)
                                 k2 = json_encode(name2, k, desc_k,
                                     je_state=je_state)
 
                                 # encode the value
-                                name2 = "%s[%s].value()" % (name, desc_k)
+                                name2 = "{0}[{1}].value()".format(name, desc_k)
                                 v2 = json_encode(name2, v, desc_v,
                                     je_state=je_state)
 
@@ -1912,7 +1919,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                                 continue
 
                         # encode the value
-                        name2 = "%s[%s].value()" % (name, desc_k)
+                        name2 = "{0}[{1}].value()".format(name, desc_k)
                         rv[desc_k] = json_encode(name2, rv[desc_k], desc_v,
                             je_state=je_state)
                 return je_return(name, rv, finish, je_state)
@@ -1935,12 +1942,12 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
                 # don't accidentally generate data via izip_longest
                 assert len(data) >= len(desc), \
-                    "%d >= %d" % (len(data), len(desc))
+                    "{0:d} >= {1:d}".format(len(data), len(desc))
 
                 i = 0
                 for data2, desc2 in itertools.izip_longest(data, desc,
                     fillvalue=list(desc)[0]):
-                        name2 = "%s[%i]" % (name, i)
+                        name2 = "{0}[{1:d}]".format(name, i)
                         i += 1
                         rv.append(json_encode(name2, data2, desc2,
                             je_state=je_state))
@@ -1955,11 +1962,12 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
         # find an encoder for this class, which should be:
         #     <class>.getstate(obj, je_state)
         encoder = getattr(desc_type, "getstate", None)
-        assert encoder is not None, "no json encoder for: %s" % desc_type
+        assert encoder is not None, "no json encoder for: {0}".format(desc_type)
 
         # encode the data
         rv = encoder(data, je_state)
-        assert rv is not None, "json encoder returned none for: %s" % desc_type
+        assert rv is not None, "json encoder returned none for: {0}".format(
+            desc_type)
 
         # if we're commonizing this object, then assign it an object id and
         # save that object id and the encoded object into the object cache
@@ -2036,7 +2044,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                         jd_state = [obj_cache, commonize]
 
         # verify state
-        assert type(name) == str, "type(name) == %s" % type(name)
+        assert type(name) == str, "type(name) == {0}".format(type(name))
         assert type(obj_cache) == dict
         assert type(commonize) == frozenset
         assert type(jd_state) == list and len(jd_state) == 2
@@ -2057,8 +2065,8 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
                 # sanity check that the data type matches the description
                 assert issubclass(data_type, desc_type), \
-                    "unexpected %s for %s, expected: %s, value: %s" % \
-                        (data_type, name, desc_type, rv)
+                    "unexpected {0} for {1}, expected: {2}, value: {3}".format(
+                        data_type, name, desc_type, rv)
 
                 # Pkg handles unicode strings as escaped ascii strings but JSON
                 # will return them as unicode objects. Convert back to ascii.
@@ -2119,12 +2127,12 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                         # decode all key / value pairs
                         for k, v in data.iteritems():
                                 # decode the key
-                                name2 = "%s[%s].key()" % (name, desc_k)
+                                name2 = "{0}[{1}].key()".format(name, desc_k)
                                 k2 = json_decode(name2, k, desc_k,
                                     jd_state=jd_state)
 
                                 # decode the value
-                                name2 = "%s[%s].value()" % (name, desc_k)
+                                name2 = "{0}[{1}].value()".format(name, desc_k)
                                 v2 = json_decode(name2, v, desc_v,
                                     jd_state=jd_state)
 
@@ -2141,7 +2149,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                                 continue
 
                         # decode the value
-                        name2 = "%s[%s].value()" % (name, desc_k)
+                        name2 = "{0}[{1}].value()".format(name, desc_k)
                         rv[desc_k] = json_decode(name2, rv[desc_k],
                             desc_v, jd_state=jd_state)
                 return jd_return(name, rv, desc, finish, jd_state)
@@ -2164,13 +2172,13 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
                 # don't accidentally generate data via izip_longest
                 assert len(data) >= len(desc), \
-                    "%d >= %d" % (len(data), len(desc))
+                    "{0:d} >= {1:d}".format(len(data), len(desc))
 
                 rv = []
                 i = 0
                 for data2, desc2 in itertools.izip_longest(data, desc,
                     fillvalue=list(desc)[0]):
-                        name2 = "%s[%i]" % (name, i)
+                        name2 = "{0}[{1:d}]".format(name, i)
                         i += 1
                         rv.append(json_decode(name2, data2, desc2,
                             jd_state=jd_state))
@@ -2180,7 +2188,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
         # find a decoder for this data, which should be:
         #     <class>.fromstate(state, jd_state)
         decoder = getattr(desc_type, "fromstate", None)
-        assert decoder is not None, "no json decoder for: %s" % desc_type
+        assert decoder is not None, "no json decoder for: {0}".format(desc_type)
 
         # if this object was commonized then get a reference to it from the
         # object cache.
@@ -2220,8 +2228,8 @@ def json_validate(name, data):
         the specified depth."""
 
         assert isinstance(data, json_types), \
-            "invalid json type \"%s\" for \"%s\", value: %s" % \
-            (type(data), name, str(data))
+            "invalid json type \"{0}\" for \"{1}\", value: {2}".format(
+            type(data), name, str(data))
 
         if type(data) == dict:
                 for k in data:
@@ -2229,17 +2237,18 @@ def json_validate(name, data):
                         # strings, which is a bit unexpected.  so make sure we
                         # don't have any of those.
                         assert type(k) != int, \
-                            "integer dictionary keys detected for: %s" % name
+                            "integer dictionary keys detected for: {0}".format(
+                                name)
 
                         # validate the key and the value
-                        new_name = "%s[%s].key()" % (name, k)
+                        new_name = "{0}[{1}].key()".format(name, k)
                         json_validate(new_name, k)
-                        new_name = "%s[%s].value()" % (name, k)
+                        new_name = "{0}[{1}].value()".format(name, k)
                         json_validate(new_name, data[k])
 
         if type(data) == list:
                 for i in range(len(data)):
-                        new_name = "%s[%i]" % (name, i)
+                        new_name = "{0}[{1:d}]".format(name, i)
                         json_validate(new_name, data[i])
 
 def json_diff(name, d0, d1, alld0, alld1):
@@ -2254,29 +2263,30 @@ def json_diff(name, d0, d1, alld0, alld1):
                 return "\n--- d0\n" + d(d0) + "\n+++ d1\n" + d(d1) + \
                     "\n--- alld0\n" + d(alld0) + "\n+++ alld1\n" + d(alld1)
 
-        assert type(d0) == type(d1), ("Json data types differ for \"%s\":\n"
-                "type 1: %s\ntype 2: %s\n") % (name, type(d0), type(d1)) + dbg()
+        assert type(d0) == type(d1), ("Json data types differ for \"{0}\":\n"
+                "type 1: {1}\ntype 2: {2}\n").format(name, type(d0),
+                    type(d1)) + dbg()
 
         if type(d0) == dict:
                 assert set(d0) == set(d1), (
-                   "Json dictionary keys differ for \"%s\":\n"
-                   "dict 1 missing: %s\n"
-                   "dict 2 missing: %s\n") % (name,
+                   "Json dictionary keys differ for \"{0}\":\n"
+                   "dict 1 missing: {1}\n"
+                   "dict 2 missing: {2}\n").format(name,
                    set(d1) - set(d0), set(d0) - set(d1)) + dbg()
 
                 for k in d0:
-                        new_name = "%s[%s]" % (name, k)
+                        new_name = "{0}[{1}]".format(name, k)
                         json_diff(new_name, d0[k], d1[k], alld0, alld1)
 
         if type(d0) == list:
                 assert len(d0) == len(d1), (
-                   "Json list lengths differ for \"%s\":\n"
-                   "list 1 length: %s\n"
-                   "list 2 length: %s\n") % (name,
+                   "Json list lengths differ for \"{0}\":\n"
+                   "list 1 length: {1}\n"
+                   "list 2 length: {2}\n").format(name,
                    len(d0), len(d1)) + dbg()
 
                 for i in range(len(d0)):
-                        new_name = "%s[%i]" % (name, i)
+                        new_name = "{0}[{1:d}]".format(name, i)
                         json_diff(new_name, d0[i], d1[i], alld0, alld1)
 
 class Timer(object):
@@ -2284,7 +2294,8 @@ class Timer(object):
         system, and wait)."""
 
         __precision = 3
-        __log_fmt = "utime: %7.3f; stime: %7.3f; wtime: %7.3f"
+        __log_fmt = "utime: {0:>7.3f}; stime: {1:>7.3f}; wtime: {2:>7.3f}"
+        __log_fmt_shift = "utime: {1:>7.3f}; stime: {2:>7.3f}; wtime: {3:>7.3f}"
 
         def __init__(self, module):
                 self.__module = module
@@ -2310,19 +2321,20 @@ class Timer(object):
                     self.__zero1(wdelta)
 
         def __str__(self):
-                s = "\nTimings for %s: [\n" % self.__module
+                s = "\nTimings for {0}: [\n".format(self.__module)
                 utotal = stotal = wtotal = 0
                 phases = [i[0] for i in self.__timings] + ["total"]
                 phase_width = max([len(i) for i in phases]) + 1
-                fmt = "  %%-%ss %s;\n" % (phase_width, Timer.__log_fmt)
+                fmt = "  {{0:{0}}} {1};\n".format(phase_width,
+                    Timer.__log_fmt_shift)
                 for phase, udelta, sdelta, wdelta in self.__timings:
                         if self.__zero(udelta, sdelta, wdelta):
                                 continue
                         utotal += udelta
                         stotal += sdelta
                         wtotal += wdelta
-                        s += fmt % (phase + ":", udelta, sdelta, wdelta)
-                s += fmt % ("total:", utotal, stotal, wtotal)
+                        s += fmt.format(phase + ":", udelta, sdelta, wdelta)
+                s += fmt.format("total:", utotal, stotal, wtotal)
                 s += "]\n"
                 return s
 
@@ -2355,8 +2367,8 @@ class Timer(object):
                 self.__timings.append((phase, udelta, sdelta, wdelta))
                 self.__utime, self.__stime, self.__wtime = utime, stime, wtime
 
-                rv = "%s: %s: " % (self.__module, phase)
-                rv += Timer.__log_fmt % (udelta, sdelta, wdelta)
+                rv = "{0}: {1}: ".format(self.__module, phase)
+                rv += Timer.__log_fmt.format(udelta, sdelta, wdelta)
                 if logger:
                         logger.debug(rv)
                 return rv
@@ -2589,8 +2601,8 @@ def signame(signal_number):
                         if name.startswith("SIG") and "_" not in name:
                                 sigdict[getattr(signal, name)].append(name)
 
-        return "/".join(sigdict.get(signal_number, ["Unnamed signal: %d" %
-            signal_number]))
+        return "/".join(sigdict.get(signal_number,
+            ["Unnamed signal: {0:d}".format(signal_number)]))
 
 def list_actions_by_attrs(actionlist, attrs, show_all=False,
     remove_consec_dup_lines=False, last_res=None):

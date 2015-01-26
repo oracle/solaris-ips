@@ -74,18 +74,18 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
 
-                self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
+                self.pkg("set-publisher -O http://{0}1 test1".format(self.bogus_url),
                     exit=1)
 
                 # Verify that a publisher can be added initially disabled.
-                self.pkg("set-publisher -d --no-refresh -O http://%s1 test1" %
-                    self.bogus_url)
+                self.pkg("set-publisher -d --no-refresh -O http://{0}1 test1".format(
+                    self.bogus_url))
 
                 self.pkg("publisher | grep test")
-                self.pkg("set-publisher -P -O http://%s2 test2" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher -P --no-refresh -O http://%s2 test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher -P -O http://{0}2 test2".format(
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher -P --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url))
                 self.pkg("publisher | grep test2")
                 self.pkg("unset-publisher test1")
                 self.pkg("publisher | grep test1", exit=1)
@@ -95,8 +95,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 # publishers only results in some of them being removed:
 
                 # ...when one of two provided is unknown.
-                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test3".format(
+                    self.bogus_url))
                 self.pkg("unset-publisher test3 test4", exit=3)
 
                 # ...when all provided are unknown.
@@ -107,15 +107,15 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 # one or more publishers:
 
                 # ...when one is provided and not preferred.
-                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test3".format(
+                    self.bogus_url))
                 self.pkg("unset-publisher test3")
 
                 # ...when two are provided and not preferred.
-                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -O http://%s2 test4" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test3".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test4".format(
+                    self.bogus_url))
                 self.pkg("unset-publisher test3 test4")
 
         def test_publisher_uuid(self):
@@ -123,11 +123,11 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 publisher"""
 
                 self.image_create(self.rurl)
-                self.pkg("set-publisher -O http://%s1 --no-refresh --reset-uuid test1" %
-                    self.bogus_url)
+                self.pkg("set-publisher -O http://{0}1 --no-refresh --reset-uuid test1".format(
+                    self.bogus_url))
                 self.pkg("set-publisher --no-refresh --reset-uuid test1")
-                self.pkg("set-publisher -O http://%s1 --no-refresh test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher -O http://{0}1 --no-refresh test2".format(
+                    self.bogus_url))
                 self.pkg("publisher test2 | grep 'Client UUID: '")
                 self.pkg("publisher test2 | grep -v 'Client UUID: None'")
 
@@ -140,24 +140,24 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
                 self.pkg(
-                    "set-publisher -O http://%s1 test1 -O http://%s2 test2" %
-                    (self.bogus_url, self.bogus_url), exit=2)
+                    "set-publisher -O http://{0}1 test1 -O http://{1}2 test2".format(
+                    self.bogus_url, self.bogus_url), exit=2)
 
-                self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
+                self.pkg("set-publisher -O http://{0}1 test1".format(self.bogus_url),
                     exit=1)
-                self.pkg("set-publisher -O http://%s2 test2" % self.bogus_url,
+                self.pkg("set-publisher -O http://{0}2 test2".format(self.bogus_url),
                     exit=1)
-                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O https://{0}1 test1".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url))
 
                 # Set key for test1.
-                self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
+                self.pkg("set-publisher --no-refresh -k {0} test1".format(key_path))
 
                 # This should fail since test2 doesn't have any SSL origins or
                 # mirrors.
-                self.pkg("set-publisher --no-refresh -k %s test2" % key_path,
+                self.pkg("set-publisher --no-refresh -k {0} test2".format(key_path),
                     exit=2)
 
                 # Listing publishers should succeed even if key file is gone.
@@ -172,22 +172,22 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 # This should fail since key has been removed even though test2
                 # has an https origin.
-                self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -k %s test2" %
-                    img_key_path, exit=1)
+                self.pkg("set-publisher --no-refresh -O https://{0}2 test2".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -k {0} test2".format(
+                    img_key_path), exit=1)
 
                 # Reset for next test.
                 self.pkg("set-publisher --no-refresh -k '' test1")
-                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url))
 
                 # Set cert for test1.
-                self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
+                self.pkg("set-publisher --no-refresh -c {0} test1".format(cert_path))
 
                 # This should fail since test2 doesn't have any SSL origins or
                 # mirrors.
-                self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
+                self.pkg("set-publisher --no-refresh -c {0} test2".format(cert_path),
                     exit=2)
 
                 # Listing publishers should be possible if cert file is gone.
@@ -199,14 +199,14 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 # This should fail since cert has been removed even though test2
                 # has an https origin.
-                self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -c %s test2" %
-                    img_cert_path, exit=1)
+                self.pkg("set-publisher --no-refresh -O https://{0}2 test2".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -c {0} test2".format(
+                    img_cert_path), exit=1)
 
                 # Reset for next test.
-                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url))
 
                 # Expect partial failure since cert file is gone for test1.
                 self.pkg("publisher test1", exit=3)
@@ -230,7 +230,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "test1", exit=1)
 
                 key_fh, key_path = tempfile.mkstemp()
-                self.pkg("set-publisher --approve-ca-cert %s test1" % key_path,
+                self.pkg("set-publisher --approve-ca-cert {0} test1".format(key_path),
                     exit=1, su_wrap=True)
                 os.unlink(key_path)
 
@@ -262,19 +262,19 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl, prefix="test")
 
-                self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
+                self.pkg("set-publisher -O http://{0}1 test1".format(self.bogus_url),
                     exit=1)
-                self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}1 test1".format(
+                    self.bogus_url))
 
-                self.pkg(("set-publisher -O http://%s2 " % self.bogus_url) +
+                self.pkg(("set-publisher -O http://{0}2 ".format(self.bogus_url)) +
                     "$%^8", exit=1)
-                self.pkg(("set-publisher -O http://%s2 " % self.bogus_url) +
+                self.pkg(("set-publisher -O http://{0}2 ".format(self.bogus_url)) +
                     "8^$%", exit=1)
                 self.pkg("set-publisher -O http://*^5$% test2", exit=1)
-                self.pkg("set-publisher -O http://%s1:abcde test2" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher -O ftp://%s2 test2" % self.bogus_url,
+                self.pkg("set-publisher -O http://{0}1:abcde test2".format(
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher -O ftp://{0}2 test2".format(self.bogus_url),
                     exit=1)
 
                 # Verify single character in hostname is valid publisher
@@ -287,35 +287,35 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl, prefix="test")
 
-                self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
-                    self.bogus_url, su_wrap=True, exit=1)
-                self.pkg("set-publisher --no-refresh -O http://%s1 foo" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://{0}1 test1".format(
+                    self.bogus_url), su_wrap=True, exit=1)
+                self.pkg("set-publisher --no-refresh -O http://{0}1 foo".format(
+                    self.bogus_url))
                 self.pkg("publisher | grep foo")
-                self.pkg("set-publisher -P --no-refresh -O http://%s2 test2" %
-                    self.bogus_url, su_wrap=True, exit=1)
+                self.pkg("set-publisher -P --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url), su_wrap=True, exit=1)
                 self.pkg("unset-publisher foo", su_wrap=True, exit=1)
                 self.pkg("unset-publisher foo")
 
-                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url,
+                self.pkg("set-publisher -m http://{0}1 test".format(self.bogus_url),
                     su_wrap=True, exit=1)
-                self.pkg("set-publisher -m http://%s2 test" %
-                    self.bogus_url)
+                self.pkg("set-publisher -m http://{0}2 test".format(
+                    self.bogus_url))
 
-                self.pkg("set-publisher -M http://%s2 test" %
-                    self.bogus_url, su_wrap=True, exit=1)
-                self.pkg("set-publisher -M http://%s2 test" %
-                    self.bogus_url)
+                self.pkg("set-publisher -M http://{0}2 test".format(
+                    self.bogus_url), su_wrap=True, exit=1)
+                self.pkg("set-publisher -M http://{0}2 test".format(
+                    self.bogus_url))
 
                 # Now change the first publisher to a https URL so that
                 # certificate failure cases can be tested.
                 key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
                 cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
-                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
-                self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
+                self.pkg("set-publisher --no-refresh -O https://{0}1 test1".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -c {0} test1".format(cert_path))
+                self.pkg("set-publisher --no-refresh -k {0} test1".format(key_path))
 
                 # This test relies on using the same implementation used in
                 # image.py __store_publisher_ssl() which sets the paths to the
@@ -346,17 +346,17 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
 
-                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
-                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O https://{0}1 test1".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -O http://{0}2 test2".format(
+                    self.bogus_url))
 
                 base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "%s/\t-\n"
+                    "{0}/\t-\n"
                     "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "https://%s1/\t-\n"
+                    "https://{1}1/\t-\n"
                     "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "http://%s2/\t-\n" % (self.rurl, self.bogus_url,
+                    "http://{2}2/\t-\n".format(self.rurl, self.bogus_url,
                     self.bogus_url))
                 # With headers
                 self.pkg("publisher -F tsv")
@@ -389,37 +389,37 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 rev2_h = self.calc_pem_hash(rev2)
                 self.image_create(self.rurl)
                 self.pkg("set-publisher "
-                    "--approve-ca-cert %s "
-                    "--approve-ca-cert %s --revoke-ca-cert %s "
-                    "--revoke-ca-cert %s test " % (
+                    "--approve-ca-cert {0} "
+                    "--approve-ca-cert {1} --revoke-ca-cert {2} "
+                    "--revoke-ca-cert {3} test ".format(
                     app1, app2, rev1_h, rev2_h))
                 self.pkg("publisher test")
-                r1 = "         Approved CAs: %s"
-                r2 = "                     : %s"
-                r3 = "          Revoked CAs: %s"
+                r1 = "         Approved CAs: {0}"
+                r2 = "                     : {0}"
+                r3 = "          Revoked CAs: {0}"
                 ls = self.output.splitlines()
                 found_approved = False
                 found_revoked = False
                 for i in range(0, len(ls)):
                         if "Approved CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r1 % app1_h == ls[i] and
-                                    r2 % app2_h == ls[i+1]) or \
-                                    (r1 % app2_h == ls[i] and
-                                    r2 % app1_h == ls[i+1])):
+                                if not ((r1.format(app1_h) == ls[i] and
+                                    r2.format(app2_h) == ls[i+1] or \
+                                    (r1.format(app2_h) == ls[i]) and
+                                    r2.format(app1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as approved certs. "
-                                            "Output was:\n%s" % (app1_h,
+                                            "{0} and {1} as approved certs. "
+                                            "Output was:\n{2}".format(app1_h,
                                             app2_h, self.output))
                         elif "Revoked CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r3 % rev1_h == ls[i] and
-                                    r2 % rev2_h == ls[i+1]) or \
-                                    (r3 % rev2_h == ls[i] and
-                                    r2 % rev1_h == ls[i+1])):
+                                if not ((r3.format(rev1_h) == ls[i] and
+                                    r2.format(rev2_h) == ls[i+1]) or \
+                                    (r3.format(rev2_h) == ls[i] and
+                                    r2.format(rev1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as revoked certs. "
-                                            "Output was:\n%s" % (rev1_h,
+                                            "{0} and {1} as revoked certs. "
+                                            "Output was:\n{2}".format(rev1_h,
                                             rev2_h, self.output))
 
         def test_publisher_properties(self):
@@ -454,7 +454,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create()
                 self.pkg("publisher -P", exit=0)
 
-                self.pkg("set-publisher -g %s test" % self.durl1)
+                self.pkg("set-publisher -g {0} test".format(self.durl1))
                 self.pkg("install foo")
                 self.pkg("unset-publisher test")
                 self.pkg("publisher -P", exit=0)
@@ -471,65 +471,65 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 for add, remove in [("-g", "-G"), ("-m", "-M")]:
                         self.image_create(self.rurl)
                         # we can't proxy file repositories
-                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
-                            "--proxy http://foo test" %
-                            {"add": add, "url": self.rurl}, exit=1)
+                        self.pkg("set-publisher --no-refresh {add} {url} "
+                            "--proxy http://foo test".format(
+                            add=add, url=self.rurl), exit=1)
                         self.pkg("publisher test")
                         self.assert_("Proxy:" not in self.output)
 
                         # we can set the proxy for http repos
-                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
-                            "--proxy http://foo test" %
-                            {"add": add, "url": self.durl})
+                        self.pkg("set-publisher --no-refresh {add} {url} "
+                            "--proxy http://foo test".format(
+                            add=add, url=self.durl))
 
                         self.pkg("publisher test")
                         self.assert_("Proxy: http://foo" in self.output)
 
                         # remove the file-based repository and ensure we still
                         # have a proxied http-based publisher
-                        self.pkg("set-publisher --no-refresh -G %s test" %
-                            self.rurl)
+                        self.pkg("set-publisher --no-refresh -G {0} test".format(
+                            self.rurl))
                         self.pkg("publisher -F tsv")
-                        self.assert_("%s/\thttp://foo" %
-                            self.durl in self.output)
+                        self.assert_("{0}/\thttp://foo".format(
+                            self.durl in self.output))
                         self.assert_(self.rurl not in self.output)
 
                         # ensure we can't add duplicate proxied or unproxied
                         # repositories
-                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
-                            "--proxy http://foo test" %
-                            {"add": add, "url": self.durl}, exit=1)
-                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
-                            "test" % {"add": add, "url": self.durl}, exit=1)
+                        self.pkg("set-publisher --no-refresh {add} {url} "
+                            "--proxy http://foo test".format(
+                            add=add, url=self.durl), exit=1)
+                        self.pkg("set-publisher --no-refresh {add} {url} "
+                            "test".format(add=add, url=self.durl), exit=1)
 
                         # we should have 1 proxied occurrence of our http url
                         self.pkg("publisher -F tsv")
-                        self.assert_("%s/\thttp://foo" %
-                            self.durl in self.output)
-                        self.assert_("\t\t%s" % self.durl not in self.output)
+                        self.assert_("{0}/\thttp://foo".format(
+                            self.durl in self.output))
+                        self.assert_("\t\t{0}".format(self.durl not in self.output))
 
                         # when removing a proxied url, then adding the same url
                         # unproxied, the proxy configuration does get removed
-                        self.pkg("set-publisher --no-refresh %(remove)s %(url)s"
-                            " test" % {"remove": remove, "url": self.durl},
+                        self.pkg("set-publisher --no-refresh {remove} {url}"
+                            " test".format(remove=remove, url=self.durl),
                             exit=0)
-                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
-                            "test" % {"add": add, "url": self.durl}, exit=0)
+                        self.pkg("set-publisher --no-refresh {add} {url} "
+                            "test".format(add=add, url=self.durl), exit=0)
                         self.pkg("publisher -F tsv")
-                        self.assert_("%s/\thttp://foo" %
-                            self.durl not in self.output)
-                        self.pkg("set-publisher --no-refresh %(remove)s "
-                            "%(url)s test" %
-                            {"remove": remove, "url": self.durl})
+                        self.assert_("{0}/\thttp://foo".format(
+                            self.durl not in self.output))
+                        self.pkg("set-publisher --no-refresh {remove} "
+                            "{url} test".format(
+                            remove=remove, url=self.durl))
 
                         # when we add multiple urls, and they all get the same
                         # proxy value, leaving an existing non-proxied url
                         # as non-proxied.
-                        self.pkg("set-publisher --no-refresh %(add)s http://a "
-                            "test" % {"add": add})
-                        self.pkg("set-publisher --no-refresh %(add)s http://b "
-                            "%(add)s http://c --proxy http://foo test" %
-                            {"add": add})
+                        self.pkg("set-publisher --no-refresh {add} http://a "
+                            "test".format(add=add))
+                        self.pkg("set-publisher --no-refresh {add} http://b "
+                            "{add} http://c --proxy http://foo test".format(
+                            add=add))
                         self.pkg("publisher -F tsv")
                         self.assert_("http://a/\t-" in self.output)
                         self.assert_("http://b/\thttp://foo" in self.output)
@@ -543,10 +543,10 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 # "%" is a special character in SafeConfigParser, but needs
                 # to be supported anyway.
-                repo_dir = os.path.join(self.test_root, "repotest%symbol")
+                repo_dir = os.path.join(self.test_root, "repotest{0}ymbol")
                 self.create_repo(repo_dir, properties={ "publisher": {
                     "prefix": "test1" } })
-                self.pkg("set-publisher -p %s test1" % repo_dir)
+                self.pkg("set-publisher -p {0} test1".format(repo_dir))
                 shutil.rmtree(repo_dir)
 
                 # "+" will be converted into "%2B" by URL quoting routines.
@@ -555,15 +555,15 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 repo_dir = os.path.join(self.test_root, "repotest+symbol")
                 self.create_repo(repo_dir, properties={ "publisher": {
                     "prefix": "test2" } })
-                self.pkg("set-publisher -g %s test2" % repo_dir)
+                self.pkg("set-publisher -g {0} test2".format(repo_dir))
                 shutil.rmtree(repo_dir)
 
                 # "%()" is the syntax of expansion language in SafeConfigParser
                 # but needs to be raw characters here.
-                repo_dir = os.path.join(self.test_root, "%(junkrepo)s")
+                repo_dir = os.path.join(self.test_root, "{junkrepo}")
                 self.create_repo(repo_dir, properties={ "publisher": {
                     "prefix": "test3" } })
-                self.pkg("set-publisher -g %s test3" % repo_dir)
+                self.pkg("set-publisher -g {0} test3".format(repo_dir))
                 shutil.rmtree(repo_dir)
 
         def test_remove_unused_cert_key(self):
@@ -704,77 +704,77 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 # Test single add; --no-refresh must be used here since the URI
                 # being added is for a non-existent repository.
-                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
-                    (add_opt, self.bogus_url))
-                self.pkg("set-publisher --no-refresh %s http://%s2 test1" %
-                    (add_opt, self.bogus_url))
-                self.pkg("set-publisher --no-refresh %s http://%s5" % (add_opt,
+                self.pkg("set-publisher --no-refresh {0} http://{1}1 test1".format(
+                    add_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh {0} http://{1}2 test1".format(
+                    add_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh {0} http://{1}5".format(add_opt,
                     self.bogus_url), exit=2)
-                self.pkg("set-publisher %s test1" % add_opt, exit=2)
-                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
-                    (add_opt, self.bogus_url), exit=1)
-                self.pkg("set-publisher %s http://%s5 test11" % (add_opt,
+                self.pkg("set-publisher {0} test1".format(add_opt), exit=2)
+                self.pkg("set-publisher --no-refresh {0} http://{1}1 test1".format(
+                    add_opt, self.bogus_url), exit=1)
+                self.pkg("set-publisher {0} http://{1}5 test11".format(add_opt,
                     self.bogus_url), exit=1)
                 if etype == "origin":
-                        self.pkg("set-publisher %s %s7 test1" %
-                            (add_opt, self.bogus_url), exit=1)
+                        self.pkg("set-publisher {0} {1}7 test1".format(
+                            add_opt, self.bogus_url), exit=1)
 
                 # Test single remove.
-                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
-                    (remove_opt, self.bogus_url))
-                self.pkg("set-publisher --no-refresh %s http://%s2 test1" %
-                    (remove_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh {0} http://{1}1 test1".format(
+                    remove_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh {0} http://{1}2 test1".format(
+                    remove_opt, self.bogus_url))
                 # URIs to remove not specified using options, so they are seen
                 # as publisher names -- only one publisher name may be
                 # specified at a time.
-                self.pkg("set-publisher %s test11 http://%s2 http://%s4" % (
+                self.pkg("set-publisher {0} test11 http://{1}2 http://{2}4".format(
                     remove_opt, self.bogus_url, self.bogus_url), exit=2)
-                self.pkg("set-publisher %s http://%s5" % (remove_opt,
+                self.pkg("set-publisher {0} http://{1}5".format(remove_opt,
                     self.bogus_url), exit=2)
                 # publisher name specified to remove as URI.
-                self.pkg("set-publisher %s test1" % remove_opt, exit=2)
+                self.pkg("set-publisher {0} test1".format(remove_opt), exit=2)
                 # URI already removed or never existed.
-                self.pkg("set-publisher %s http://%s5 test11" % (remove_opt,
+                self.pkg("set-publisher {0} http://{1}5 test11".format(remove_opt,
                     self.bogus_url), exit=1)
-                self.pkg("set-publisher %s http://%s6 test1" % (remove_opt,
+                self.pkg("set-publisher {0} http://{1}6 test1".format(remove_opt,
                     self.bogus_url), exit=1)
-                self.pkg("set-publisher %s %s7 test1" % (remove_opt,
+                self.pkg("set-publisher {0} {1}7 test1".format(remove_opt,
                     self.bogus_url), exit=1)
 
                 # Test a combined add and remove.
-                self.pkg("set-publisher %s %s test1" % (add_opt, durl4))
-                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl5,
+                self.pkg("set-publisher {0} {1} test1".format(add_opt, durl4))
+                self.pkg("set-publisher {0} {1} {2} {3} test1".format(add_opt, durl5,
                     remove_opt, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
-                self.pkg("set-publisher %s %s test1" % (remove_opt, durl5))
-                self.pkg("set-publisher %s %s %s %s %s \* test1" % (add_opt,
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl5))
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
+                self.pkg("set-publisher {0} {1} test1".format(remove_opt, durl5))
+                self.pkg("set-publisher {0} {1} {2} {3} {4} \* test1".format(add_opt,
                     durl4, add_opt, durl5, remove_opt))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
-                self.pkg("set-publisher %s \* test1" % remove_opt)
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4))
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl5))
+                self.pkg("set-publisher {0} \* test1".format(remove_opt))
                 if etype == "origin":
-                        self.pkg("set-publisher %s %s test1" % (add_opt, durl1))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
-                self.pkg("publisher | grep %s.*%s" % (etype, durl5), exit=1)
+                        self.pkg("set-publisher {0} {1} test1".format(add_opt, durl1))
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl5), exit=1)
 
                 # Verify that if one of multiple URLs is not a valid URL, pkg
                 # will exit with an error, and does not add the valid one.
-                self.pkg("set-publisher %s %s %s http://b^^^/ogus test1" % (
+                self.pkg("set-publisher {0} {1} {2} http://b^^^/ogus test1".format(
                     add_opt, durl4, add_opt), exit=1)
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
 
                 # Verify that multiple can be added at one time.
-                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl4,
+                self.pkg("set-publisher {0} {1} {2} {3} test1".format(add_opt, durl4,
                     add_opt, durl5))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4))
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl5))
 
                 # Verify that multiple can be removed at one time.
-                self.pkg("set-publisher %s %s %s %s test1" % (remove_opt, durl4,
+                self.pkg("set-publisher {0} {1} {2} {3} test1".format(remove_opt, durl4,
                     remove_opt, durl5))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
-                self.pkg("publisher | grep %s.*%s" % (etype, durl5), exit=1)
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
+                self.pkg("publisher | grep {0}.*{1}".format(etype, durl5), exit=1)
 
         def __verify_pub_cfg(self, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""
@@ -826,15 +826,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                                         continue
                                 pname = pname.replace("_", "-")
                                 if isinstance(pval, list):
-                                        props += "%s/%s='(%s)' " % \
-                                            (sname, pname, " ".join(pval))
+                                        props += "{0}/{1}='({2})' ".format(
+                                            sname, pname, " ".join(pval))
                                 else:
-                                        props += "%s/%s='%s' " % \
-                                            (sname, pname, pval)
+                                        props += "{0}/{1}='{2}' ".format(
+                                            sname, pname, pval)
 
                 pfx = pubcfg["publisher"]["prefix"]
-                self.pkgrepo("set -s %s -p %s %s" % (rpath, pfx, props))
-                self.pkgrepo("get -p all -s %s" % rpath)
+                self.pkgrepo("set -s {0} -p {1} {2}".format(rpath, pfx, props))
+                self.pkgrepo("get -p all -s {0}".format(rpath))
 
         def test_set_auto(self):
                 """Verify that set-publisher -p works as expected."""
@@ -849,7 +849,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher test3", exit=1)
 
                 # Should fail because repository is for test3 not test2.
-                self.pkg("set-publisher -p %s test2" % durl3, exit=1)
+                self.pkg("set-publisher -p {0} test2".format(durl3), exit=1)
 
                 # Verify that a publisher can be configured even if the
                 # the repository's publisher configuration does not
@@ -865,7 +865,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                         "origins": [durl3],
                     },
                 }
-                self.pkg("set-publisher -p %s" % durl3)
+                self.pkg("set-publisher -p {0}".format(durl3))
 
                 # Load image configuration to verify publisher was configured
                 # as expected.
@@ -884,7 +884,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.dcs[3].start()
 
                 # Should succeed and configure test3 publisher.
-                self.pkg("set-publisher -p %s" % durl3)
+                self.pkg("set-publisher -p {0}".format(durl3))
 
                 # Load image configuration to verify publisher was configured
                 # as expected.
@@ -913,18 +913,18 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.__update_repo_pub_cfg(self.dcs[6], t6cfg)
                 self.dcs[6].start()
 
-                self.pkg("set-publisher -p %s" % durl6)
+                self.pkg("set-publisher -p {0}".format(durl6))
 
                 # Load image configuration to verify publisher was configured
                 # as expected.
                 self.__verify_pub_cfg("test3", t6cfg)
 
                 # Test multi-publisher add case.
-                self.pkgrepo("set -s %s -p test2 publisher/alias=''" %
-                    self.dcs[6].get_repodir())
+                self.pkgrepo("set -s {0} -p test2 publisher/alias=''".format(
+                    self.dcs[6].get_repodir()))
                 self.pkg("unset-publisher test3")
                 self.dcs[6].refresh()
-                self.pkg("set-publisher -P -p %s" % durl6)
+                self.pkg("set-publisher -P -p {0}".format(durl6))
 
                 # Determine publisher order from output and then verify it
                 # matches expected.
@@ -946,7 +946,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --search-after=test1 test2")
                 self.pkg("set-publisher --search-after=test2 test3")
                 self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
-                self.pkg("set-publisher -P -p %s" % durl6)
+                self.pkg("set-publisher -P -p {0}".format(durl6))
                 self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
 
                 # Check that --proxy arguments are set on all auto-configured
@@ -956,8 +956,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # publisher/ response.
                 self.pkg("unset-publisher test3")
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -P --proxy http://myproxy -p %s" %
-                    durl6, env_arg={"no_proxy": "*"})
+                self.pkg("set-publisher -P --proxy http://myproxy -p {0}".format(
+                    durl6), env_arg={"no_proxy": "*"})
                 self.assertEqual(get_pubs(), ["test2", "test3", "test1"])
 
                 # Verify that only test2 and test3 have proxies set, since
@@ -980,7 +980,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 # Verify that https origins can be mixed with other types
                 # of origins.
-                self.pkg("set-publisher -g %s test1" % rurl1)
+                self.pkg("set-publisher -g {0} test1".format(rurl1))
                 self.pkg("set-publisher --no-refresh -g https://test.invalid1 "
                     "test1")
 
@@ -989,8 +989,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
                 cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
-                self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
-                    (key_path, cert_path))
+                self.pkg("set-publisher --no-refresh -k {0} -c {1} test1".format(
+                    key_path, cert_path))
                 self.pkg("publisher test1")
 
                 # This test relies on using the same implementation used in
@@ -1007,22 +1007,22 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 # Verify that removing all SSL origins does not leave key
                 # and cert information intact.
-                self.pkg("set-publisher -G '*' -g %s test1" % durl1)
+                self.pkg("set-publisher -G '*' -g {0} test1".format(durl1))
                 self.pkg("publisher test1")
                 self.assert_(img_key_path not in self.output)
                 self.assert_(img_cert_path not in self.output)
 
                 # Verify that https mirrors can be mixed with other types of
                 # origins.
-                self.pkg("set-publisher -m %s test1" % rurl1)
+                self.pkg("set-publisher -m {0} test1".format(rurl1))
                 self.pkg("set-publisher --no-refresh -m https://test.invalid1 "
                     "test1")
-                self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
-                    (key_path, cert_path))
+                self.pkg("set-publisher --no-refresh -k {0} -c {1} test1".format(
+                    key_path, cert_path))
 
                 # Verify that removing all SSL mirrors does not leave key
                 # and cert information intact.
-                self.pkg("set-publisher -M '*' -m %s test1" % durl1)
+                self.pkg("set-publisher -M '*' -m {0} test1".format(durl1))
                 self.pkg("publisher test1")
                 self.assert_(img_key_path not in self.output)
                 self.assert_(img_cert_path not in self.output)
@@ -1045,25 +1045,25 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # discard all others.
                 durl4 = self.dcs[4].get_depot_url()
                 durl5 = self.dcs[5].get_depot_url()
-                self.pkg("set-publisher -g %s -g %s test1" % (durl4, durl5))
-                self.pkg("set-publisher -O %s test1" % durl4)
-                self.pkg("publisher | grep origin.*%s" % durl1, exit=1)
-                self.pkg("publisher | grep origin.*%s" % durl5, exit=1)
+                self.pkg("set-publisher -g {0} -g {1} test1".format(durl4, durl5))
+                self.pkg("set-publisher -O {0} test1".format(durl4))
+                self.pkg("publisher | grep origin.*{0}".format(durl1), exit=1)
+                self.pkg("publisher | grep origin.*{0}".format(durl5), exit=1)
 
                 # Verify that if a publisher is set to use a file repository
                 # that removing that repository will not prevent the pkg(1)
                 # command from operating or the set-publisher commands
                 # from working.
                 repo_path = os.path.join(self.test_root, "badrepo")
-                repo_uri = "file:%s" % repo_path
+                repo_uri = "file:{0}".format(repo_path)
                 self.create_repo(repo_path, properties={ "publisher": {
                     "prefix": "test1" } })
-                self.pkg("set-publisher -O %s test1" % repo_uri)
+                self.pkg("set-publisher -O {0} test1".format(repo_uri))
                 shutil.rmtree(repo_path)
 
                 self.pkg("publisher")
-                self.pkg("set-publisher -O %s test1" %
-                    self.dcs[1].get_repo_url())
+                self.pkg("set-publisher -O {0} test1".format(
+                    self.dcs[1].get_repo_url()))
 
                 # Now verify that publishers using origins or mirrors that have
                 # IPv6 addresses can be added and removed.
@@ -1175,9 +1175,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher")
 
                 # set publishers to expected configuration
-                self.pkg("set-publisher -p %s" % self.durl1)
-                self.pkg("set-publisher -p %s" % self.durl2)
-                self.pkg("set-publisher -p %s" % self.durl3)
+                self.pkg("set-publisher -p {0}".format(self.durl1))
+                self.pkg("set-publisher -p {0}".format(self.durl2))
+                self.pkg("set-publisher -p {0}".format(self.durl3))
 
         def test_bug_18283(self):
                 """Test that having a unset publisher with packages installed
@@ -1187,16 +1187,16 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("unset-publisher test2")
                 self.pkg("install foo")
                 self.pkg("unset-publisher test1")
-                self.pkg("set-publisher -P -p %s" % self.durl2)
+                self.pkg("set-publisher -P -p {0}".format(self.durl2))
 
                 # Test what happens when no publishers are configured
                 self.pkg("unset-publisher test2")
                 self.pkg("unset-publisher test3")
-                self.pkg("set-publisher -P -p %s" % self.durl2)
+                self.pkg("set-publisher -P -p {0}".format(self.durl2))
 
                 # set publishers to expected configuration
-                self.pkg("set-publisher -P -p %s" % self.durl1)
-                self.pkg("set-publisher -p %s" % self.durl3)
+                self.pkg("set-publisher -P -p {0}".format(self.durl1))
+                self.pkg("set-publisher -p {0}".format(self.durl3))
 
 
 class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
@@ -1229,8 +1229,8 @@ class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
                 repository works."""
 
                 self.image_create(self.rurl2)
-                self.pkg("set-publisher --search-before test2 -p %s" %
-                    self.rurl1)
+                self.pkg("set-publisher --search-before test2 -p {0}".format(
+                    self.rurl1))
                 self.pkg("publisher -HF tsv")
                 lines = self.output.splitlines()
                 self.assertEqual(lines[0].split()[0], "another-pub")
@@ -1241,7 +1241,7 @@ class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
                 """Verify that providing multiple repositories using
                 -p option fails"""
                 self.image_create()
-                self.pkg("set-publisher -p %s -p %s" % (self.rurl1,
+                self.pkg("set-publisher -p {0} -p {1}".format(self.rurl1,
                     self.rurl2), exit=2)
 
 
@@ -1273,38 +1273,38 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 app2_h = self.calc_pem_hash(app2)
                 rev1_h = self.calc_pem_hash(rev1)
                 rev2_h = self.calc_pem_hash(rev2)
-                self.pkg("set-publisher -O %s "
-                    "--approve-ca-cert %s "
-                    "--approve-ca-cert %s --revoke-ca-cert %s "
-                    "--revoke-ca-cert %s test2 " % (self.dcs[2].get_repo_url(),
+                self.pkg("set-publisher -O {0} "
+                    "--approve-ca-cert {1} "
+                    "--approve-ca-cert {2} --revoke-ca-cert {3} "
+                    "--revoke-ca-cert {4} test2 ".format(self.dcs[2].get_repo_url(),
                     app1, app2, rev1_h, rev2_h))
                 self.pkg("publisher test2")
-                r1 = "         Approved CAs: %s"
-                r2 = "                     : %s"
-                r3 = "          Revoked CAs: %s"
+                r1 = "         Approved CAs: {0}"
+                r2 = "                     : {0}"
+                r3 = "          Revoked CAs: {0}"
                 ls = self.output.splitlines()
                 found_approved = False
                 found_revoked = False
                 for i in range(0, len(ls)):
                         if "Approved CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r1 % app1_h == ls[i] and
-                                    r2 % app2_h == ls[i+1]) or \
-                                    (r1 % app2_h == ls[i] and
-                                    r2 % app1_h == ls[i+1])):
+                                if not ((r1.format(app1_h) == ls[i] and
+                                    r2.format(app2_h) == ls[i+1]) or \
+                                    (r1.format(app2_h) == ls[i] and
+                                    r2.format(app1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as approved certs. "
-                                            "Output was:\n%s" % (app1_h,
+                                            "{0} and {1} as approved certs. "
+                                            "Output was:\n{2}".format(app1_h,
                                             app2_h, self.output))
                         elif "Revoked CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r3 % rev1_h == ls[i] and
-                                    r2 % rev2_h == ls[i+1]) or \
-                                    (r3 % rev2_h == ls[i] and
-                                    r2 % rev1_h == ls[i+1])):
+                                if not ((r3.format(rev1_h) == ls[i] and
+                                    r2.format(rev2_h) == ls[i+1]) or \
+                                    (r3.format(rev2_h) == ls[i] and
+                                    r2.format(rev1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as revoked certs. "
-                                            "Output was:\n%s" % (rev1_h,
+                                            "{0} and {1} as revoked certs. "
+                                            "Output was:\n{2}".format(rev1_h,
                                             rev2_h, self.output))
 
         def test_new_publisher_ca_certs_no_refresh(self):
@@ -1323,38 +1323,38 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 app2_h = self.calc_pem_hash(app2)
                 rev1_h = self.calc_pem_hash(rev1)
                 rev2_h = self.calc_pem_hash(rev2)
-                self.pkg("set-publisher -O %s --no-refresh "
-                    "--approve-ca-cert %s "
-                    "--approve-ca-cert %s --revoke-ca-cert %s "
-                    "--revoke-ca-cert %s test2 " % (self.dcs[2].get_repo_url(),
+                self.pkg("set-publisher -O {0} --no-refresh "
+                    "--approve-ca-cert {1} "
+                    "--approve-ca-cert {2} --revoke-ca-cert {3} "
+                    "--revoke-ca-cert {4} test2 ".format(self.dcs[2].get_repo_url(),
                     app1, app2, rev1_h, rev2_h))
                 self.pkg("publisher test2")
-                r1 = "         Approved CAs: %s"
-                r2 = "                     : %s"
-                r3 = "          Revoked CAs: %s"
+                r1 = "         Approved CAs: {0}"
+                r2 = "                     : {0}"
+                r3 = "          Revoked CAs: {0}"
                 ls = self.output.splitlines()
                 found_approved = False
                 found_revoked = False
                 for i in range(0, len(ls)):
                         if "Approved CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r1 % app1_h == ls[i] and
-                                    r2 % app2_h == ls[i+1]) or \
-                                    (r1 % app2_h == ls[i] and
-                                    r2 % app1_h == ls[i+1])):
+                                if not ((r1.format(app1_h) == ls[i] and
+                                    r2.format(app2_h) == ls[i+1]) or \
+                                    (r1.format(app2_h) == ls[i] and
+                                    r2.format(app1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as approved certs. "
-                                            "Output was:\n%s" % (app1_h,
+                                            "{0} and {1} as approved certs. "
+                                            "Output was:\n{2}".format(app1_h,
                                             app2_h, self.output))
                         elif "Revoked CAs" in ls[i]:
                                 found_approved = True
-                                if not ((r3 % rev1_h == ls[i] and
-                                    r2 % rev2_h == ls[i+1]) or \
-                                    (r3 % rev2_h == ls[i] and
-                                    r2 % rev1_h == ls[i+1])):
+                                if not ((r3.format(rev1_h) == ls[i] and
+                                    r2.format(rev2_h) == ls[i+1]) or \
+                                    (r3.format(rev2_h) == ls[i] and
+                                    r2.format(rev1_h) == ls[i+1])):
                                         raise RuntimeError("Expected to see "
-                                            "%s and %s as revoked certs. "
-                                            "Output was:\n%s" % (rev1_h,
+                                            "{0} and {1} as revoked certs. "
+                                            "Output was:\n{2}".format(rev1_h,
                                             rev2_h, self.output))
 
 

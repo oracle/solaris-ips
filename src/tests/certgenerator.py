@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -37,7 +37,7 @@ class CertGenerator(object):
                 conf_dict = {"base_dir": self.base_dir}
                 self.cnf_file = os.path.join(self.base_dir, "openssl.cnf")
                 with open(self.cnf_file, "wb") as fh:
-                        fh.write(self.openssl_conf % conf_dict)
+                        fh.write(self.openssl_conf.format(**conf_dict))
 
                 # Set up the needed files.
                 fh = open(os.path.join(self.base_dir, "index"), "wb")
@@ -94,21 +94,21 @@ class CertGenerator(object):
                 if https:
                         subj_str_to_use = self.https_subj_str
                 cmd = ["openssl", "req", "-new", "-nodes",
-                    "-keyout", "%s/%s_key.pem" % (self.keys_dir, new_name),
-                    "-out", "%s/%s.csr" % (self.chain_certs_dir, new_name),
-                    "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
+                    "-keyout", "{0}/{1}_key.pem".format(self.keys_dir, new_name),
+                    "-out", "{0}/{1}.csr".format(self.chain_certs_dir, new_name),
+                    "-sha256", "-subj", subj_str_to_use.format(new_name, new_name)]
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
 
                 cmd = ["openssl", "ca", "-policy", "policy_anything",
                     "-extensions", ext,
-                    "-out", "%s/%s_cert.pem" % (self.chain_certs_dir,
+                    "-out", "{0}/{1}_cert.pem".format(self.chain_certs_dir,
                         new_name),
-                    "-in", "%s/%s.csr" % (self.chain_certs_dir, new_name),
-                    "-cert", "%s/%s/%s_cert.pem" % (ta_path, parent_loc,
+                    "-in", "{0}/{1}.csr".format(self.chain_certs_dir, new_name),
+                    "-cert", "{0}/{1}/{2}_cert.pem".format(ta_path, parent_loc,
                         parent_name),
-                    "-outdir", "%s" % self.chain_certs_dir,
-                    "-keyfile", "%s/%s/%s_key.pem" % (ta_path, self.keys_loc,
+                    "-outdir", "{0}".format(self.chain_certs_dir),
+                    "-keyfile", "{0}/{1}/{2}_key.pem".format(ta_path, self.keys_loc,
                         parent_name),
                     "-config", self.cnf_file,
                     "-batch"]
@@ -140,36 +140,36 @@ class CertGenerator(object):
                 subj_str_to_use = self.subj_str
                 if https:
                         subj_str_to_use = self.https_subj_str
-                cmd = ["openssl", "genrsa", "-out", "%s/%s_key.pem" % \
-                    (self.keys_dir, new_name), "1024"]
+                cmd = ["openssl", "genrsa", "-out", "{0}/{1}_key.pem".format(
+                    self.keys_dir, new_name), "1024"]
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
 
                 cmd = ["openssl", "req", "-new", "-nodes",
-                    "-key", "%s/%s_key.pem" % (self.keys_dir, new_name),
-                    "-out", "%s/%s.csr" % (self.cs_dir, new_name),
-                    "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
+                    "-key", "{0}/{1}_key.pem".format(self.keys_dir, new_name),
+                    "-out", "{0}/{1}.csr".format(self.cs_dir, new_name),
+                    "-sha256", "-subj", subj_str_to_use.format(new_name, new_name)]
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
 
                 if passphrase:
                         # Add a passphrase to the key just created using a new filename.
                         cmd = ["openssl", "rsa", "-des3",
-                            "-in", "%s/%s_key.pem" % (self.keys_dir, new_name),
-                            "-out", "%s/%s_reqpass_key.pem" % (self.keys_dir,
+                            "-in", "{0}/{1}_key.pem".format(self.keys_dir, new_name),
+                            "-out", "{0}/{1}_reqpass_key.pem".format(self.keys_dir,
                                 new_name),
-                            "-passout", "pass:%s" % passphrase]
+                            "-passout", "pass:{0}".format(passphrase)]
                         p = subprocess.Popen(cmd)
                         assert p.wait() == 0
 
                 cmd = ["openssl", "ca", "-policy", "policy_anything",
                     "-extensions", ext,
-                    "-out", "%s/%s_cert.pem" % (self.cs_dir, new_name),
-                    "-in", "%s/%s.csr" % (self.cs_dir, new_name),
-                    "-cert", "%s/%s/%s_cert.pem" % (ca_path, parent_loc,
+                    "-out", "{0}/{1}_cert.pem".format(self.cs_dir, new_name),
+                    "-in", "{0}/{1}.csr".format(self.cs_dir, new_name),
+                    "-cert", "{0}/{1}/{2}_cert.pem".format(ca_path, parent_loc,
                         parent_name),
-                    "-outdir", "%s" % self.cs_dir,
-                    "-keyfile", "%s/%s/%s_key.pem" % (ca_path, self.keys_loc,
+                    "-outdir", "{0}".format(self.cs_dir),
+                    "-keyfile", "{0}/{1}/{2}_key.pem".format(ca_path, self.keys_loc,
                         parent_name),
                     "-config", self.cnf_file,
                     "-batch"]
@@ -199,26 +199,26 @@ class CertGenerator(object):
                 if https:
                         subj_str_to_use = self.https_subj_str
                 cmd = ["openssl", "req", "-new", "-x509", "-nodes",
-                    "-keyout", "%s/%s_key.pem" % (self.keys_dir, name),
-                    "-subj", subj_str_to_use % (name, name),
-                    "-out", "%s/%s/%s_cert.tmp" % (self.base_dir, name, name),
+                    "-keyout", "{0}/{1}_key.pem".format(self.keys_dir, name),
+                    "-subj", subj_str_to_use.format(name, name),
+                    "-out", "{0}/{1}/{2}_cert.tmp".format(self.base_dir, name, name),
                     "-days", "1000",
                     "-sha256"]
 
-                os.mkdir("%s/%s" % (self.base_dir, name))
+                os.mkdir("{0}/{1}".format(self.base_dir, name))
 
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
-                self.convert_pem_to_text("%s/%s/%s_cert.tmp" % (self.base_dir,
-                    name, name), "%s/%s/%s_cert.pem" % (self.base_dir, name,
+                self.convert_pem_to_text("{0}/{1}/{2}_cert.tmp".format(self.base_dir,
+                    name, name), "{0}/{1}/{2}_cert.pem".format(self.base_dir, name,
                         name))
 
                 try:
-                        os.link("%s/%s/%s_cert.pem" % (self.base_dir, name, name),
-                            "%s/%s_cert.pem" % (self.raw_trust_anchor_dir, name))
+                        os.link("{0}/{1}/{2}_cert.pem".format(self.base_dir, name, name),
+                            "{0}/{1}_cert.pem".format(self.raw_trust_anchor_dir, name))
                 except:
-                        shutil.copy("%s/%s/%s_cert.pem" % (self.base_dir, name,
-                            name), "%s/%s_cert.pem" % (self.raw_trust_anchor_dir,
+                        shutil.copy("{0}/{1}/{2}_cert.pem".format(self.base_dir, name,
+                            name), "{0}/{1}_cert.pem".format(self.raw_trust_anchor_dir,
                                 name))
 
         def revoke_cert(self, ca, revoked_cert, ca_dir=None, cert_dir=None,
@@ -231,29 +231,29 @@ class CertGenerator(object):
                         cert_dir = self.cs_loc
                 if not ca_path:
                         ca_path = self.base_dir
-                cmd = ["openssl", "ca", "-keyfile", "%s/%s/%s_key.pem" % \
-                    (ca_path, self.keys_loc, ca),
-                    "-cert", "%s/%s/%s_cert.pem" % (ca_path, ca_dir, ca),
+                cmd = ["openssl", "ca", "-keyfile", "{0}/{1}/{2}_key.pem".format(
+                    ca_path, self.keys_loc, ca),
+                    "-cert", "{0}/{1}/{2}_cert.pem".format(ca_path, ca_dir, ca),
                     "-config", self.cnf_file,
-                    "-revoke", "%s/%s/%s_cert.pem" % (self.base_dir, cert_dir,
+                    "-revoke", "{0}/{1}/{2}_cert.pem".format(self.base_dir, cert_dir,
                     revoked_cert)]
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
 
                 cmd = ["openssl", "ca", "-gencrl",
-                    "-keyfile", "%s/%s/%s_key.pem" % (ca_path, self.keys_loc, ca),
-                    "-cert", "%s/%s/%s_cert.pem" % (ca_path, ca_dir, ca),
+                    "-keyfile", "{0}/{1}/{2}_key.pem".format(ca_path, self.keys_loc, ca),
+                    "-cert", "{0}/{1}/{2}_cert.pem".format(ca_path, ca_dir, ca),
                     "-config", self.cnf_file,
-                    "-out", "%s/%s_crl.tmp" % (self.crl_dir, ca),
+                    "-out", "{0}/{1}_crl.tmp".format(self.crl_dir, ca),
                     "-crldays", "1000"]
                 p = subprocess.Popen(cmd)
                 assert p.wait() == 0
-                self.convert_pem_to_text("%s/%s_crl.tmp" % (self.crl_dir, ca),
-                    "%s/%s_crl.pem" % (self.crl_dir, ca), kind="crl")
+                self.convert_pem_to_text("{0}/{1}_crl.tmp".format(self.crl_dir, ca),
+                    "{0}/{1}_crl.pem".format(self.crl_dir, ca), kind="crl")
 
-        subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/CN=%s/emailAddress=%s"
-        https_subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/OU=%s/" \
-            "CN=localhost/emailAddress=%s"
+        subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/CN={0}/emailAddress={1}"
+        https_subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/OU={0}/" \
+            "CN=localhost/emailAddress={1}"
 
         openssl_conf = """\
 HOME                    = .
@@ -263,7 +263,7 @@ RANDFILE                = $ENV::HOME/.rnd
 default_ca      = CA_default
 
 [ CA_default ]
-dir             = %(base_dir)s
+dir             = {base_dir}
 crl_dir         = $dir/crl
 database        = $dir/index
 serial          = $dir/serial

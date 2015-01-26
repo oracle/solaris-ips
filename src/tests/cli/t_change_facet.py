@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -111,10 +111,10 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 except IOError, e:
                         if e.errno == errno.ENOENT and negate:
                                 return
-                        self.assert_(False, "File %s is missing" % path)
+                        self.assert_(False, "File {0} is missing".format(path))
                 # file is there
                 if negate:
-                        self.assert_(False, "File %s should not exist" % path)
+                        self.assert_(False, "File {0} should not exist".format(path))
                 return
 
         def test_01_facets(self):
@@ -230,7 +230,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
 
                 for i in range(8):
-                        self.assert_file_is_there("%d" % i)
+                        self.assert_file_is_there("{0:d}".format(i))
 
                 # zap all the locales
                 self.pkg("change-facet -v facet.locale*=False facet.locale.nl_ZA=None")
@@ -238,7 +238,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("facet")
 
                 for i in range(8):
-                        self.assert_file_is_there("%d" % i, negate=(i != 0))
+                        self.assert_file_is_there("{0:d}".format(i), negate=(i != 0))
 
                 # Verify that effective value is shown for facets that are
                 # implicity false due to wildcards whether they're known to the

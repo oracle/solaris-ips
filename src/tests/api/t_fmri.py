@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -198,25 +198,25 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
 
         def test_pkgname_grammar(self):
                 for char in self.pkg_name_valid_chars["never"]:
-                        invalid_name = "invalid%spkg@1.0,5.11-0" % char
+                        invalid_name = "invalid{0}pkg@1.0,5.11-0".format(char)
                         self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                             invalid_name)
 
                 for char in self.pkg_name_valid_chars["after-first"]:
-                        invalid_name = "%sinvalidpkg@1.0,5.11-0" % char
+                        invalid_name = "{0}invalidpkg@1.0,5.11-0".format(char)
                         self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                             invalid_name)
 
                 for char in self.pkg_name_valid_chars["after-first"]:
-                        invalid_name = "test/%spkg@1.0,5.11-0" % char
+                        invalid_name = "test/{0}pkg@1.0,5.11-0".format(char)
                         self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                             invalid_name)
 
                 # Some positive tests
                 for char in self.pkg_name_valid_chars["always"]:
                         for char2 in self.pkg_name_valid_chars["after-first"]:
-                                valid_name = "%s%stest@1.0,5.11-0" % \
-                                    (char, char2)
+                                valid_name = "{0}{1}test@1.0,5.11-0".format(
+                                    char, char2)
                                 fmri.PkgFmri(valid_name)
 
                 # Test '/' == 'pkg:/'; '//' == 'pkg://'.

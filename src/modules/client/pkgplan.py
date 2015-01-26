@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -186,9 +186,10 @@ class PkgPlan(object):
                 return rv
 
         def __str__(self):
-                s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
+                s = "{0} -> {1}\n".format(self.origin_fmri,
+                    self.destination_fmri)
                 for src, dest in itertools.chain(*self.actions):
-                        s += "  %s -> %s\n" % (src, dest)
+                        s += "  {0} -> {1}\n".format(src, dest)
                 return s
 
         def __add_license(self, src, dest):
@@ -519,10 +520,10 @@ class PkgPlan(object):
                         # handled by the caller.
                         raise
                 except Exception, e:
-                        logger.error("Action install failed for '%s' (%s):\n  "
-                            "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
-                             self.destination_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e))
+                        logger.error("Action install failed for '{0}' ({1}):\n  "
+                            "{2}: {3}".format(dest.attrs.get(dest.key_attr,
+                            id(dest)), self.destination_fmri.get_pkg_stem(),
+                            e.__class__.__name__, e))
                         raise
 
         def execute_update(self, src, dest):
@@ -535,10 +536,10 @@ class PkgPlan(object):
                         # handled by the caller.
                         raise
                 except Exception, e:
-                        logger.error("Action upgrade failed for '%s' (%s):\n "
-                            "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
-                             self.destination_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e))
+                        logger.error("Action upgrade failed for '{0}' ({1}):\n "
+                            "{2}: {3}".format(dest.attrs.get(dest.key_attr,
+                            id(dest)), self.destination_fmri.get_pkg_stem(),
+                            e.__class__.__name__, e))
                         raise
 
         def execute_removal(self, src, dest):
@@ -551,10 +552,10 @@ class PkgPlan(object):
                         # handled by the caller.
                         raise
                 except Exception, e:
-                        logger.error("Action removal failed for '%s' (%s):\n "
-                            "%s: %s" % (src.attrs.get(src.key_attr, id(src)),
-                             self.origin_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e))
+                        logger.error("Action removal failed for '{0}' ({1}):\n "
+                            "{2}: {3}".format(src.attrs.get(src.key_attr,
+                            id(src)), self.origin_fmri.get_pkg_stem(),
+                            e.__class__.__name__, e))
                         raise
 
         def postexecute(self):

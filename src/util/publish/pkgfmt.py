@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -536,11 +536,11 @@ def main_func():
                         elif opt in ("--help", "-?"):
                                 usage(exitcode=0)
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
         if len(opt_set - set(["-f"])) > 1:
                 usage(_("only one of [cdu] may be specified"))
         if opt_format not in (FMT_V1, FMT_V2):
-                usage(_("unsupported format '%s'") % opt_format)
+                usage(_("unsupported format '{0}'").format(opt_format))
 
 
         def difference(in_file):
@@ -624,9 +624,9 @@ def main_func():
                                                 continue
 
                                 ret = 1
-                                error(_("%s is not in pkgfmt form; run pkgfmt "
+                                error(_("{0} is not in pkgfmt form; run pkgfmt "
                                     "on file without -c or -d to reformat "
-                                    "manifest in place") % fname, exitcode=None)
+                                    "manifest in place").format(fname), exitcode=None)
                                 continue
                         elif opt_diffs:
                                 # Display differences (explicit 'end' needed to

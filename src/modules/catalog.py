@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -468,8 +468,8 @@ class CatalogPart(CatalogPartBase):
                 for entry in ver_list:
                         if entry["version"] == ver:
                                 if not pfmri:
-                                        pfmri = "pkg://%s/%s@%s" % (pub, stem,
-                                            ver)
+                                        pfmri = "pkg://{0}/{1}@{2}".format(pub,
+                                            stem, ver)
                                 raise api_errors.DuplicateCatalogEntry(
                                     pfmri, operation="add",
                                     catalog_name=self.pathname)
@@ -596,7 +596,7 @@ class CatalogPart(CatalogPartBase):
 
                 for pub, stem, entry in self.__iter_entries(last=last,
                     ordered=ordered, pubs=pubs):
-                        yield "pkg://%s/%s@%s" % (pub,
+                        yield "pkg://{0}/{1}@{2}".format(pub,
                             stem, entry["version"])
                 return
 
@@ -729,7 +729,7 @@ class CatalogPart(CatalogPartBase):
                 # Results have to be sorted by stem first, and by
                 # publisher prefix second.
                 pkg_list = [
-                        "%s!%s" % (stem, pub)
+                        "{0}!{1}".format(stem, pub)
                         for pub in self.publishers(pubs=pubs)
                         for stem in self.__data[pub]
                 ]
@@ -1261,8 +1261,8 @@ class CatalogAttrs(CatalogPartBase):
                                         if subpart != os.path.basename(subpart):
                                                 raise api_errors.\
                                                     UnrecognizedCatalogPart(
-                                                    "%s {%s: %s}" % (self.name,
-                                                    key, subpart))
+                                                    "{0} {{{1}: {2}}}".format(
+                                                    self.name, key, subpart))
 
                                 # Build datetimes from timestamps.
                                 for e in val:
@@ -1545,8 +1545,8 @@ class Catalog(object):
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
-                                    must_exist=True)
+                                    "{0}.{1}".format(self.__SUMM_PART_PFX,
+                                    locale), must_exist=True)
                                 if part is None:
                                         # Data not available for this
                                         # locale.
@@ -1682,7 +1682,7 @@ class Catalog(object):
                         atypes = ("set",)
                 else:
                         raise RuntimeError(_("Unknown info_needed "
-                            "type: %s" % info_needed))
+                            "type: {0}".format(info_needed)))
 
                 for a, attr_name in self.__gen_manifest_actions(m, atypes,
                     excludes):
@@ -1795,7 +1795,7 @@ class Catalog(object):
 
                 logdate = datetime_to_update_ts(op_time)
                 for locale, metadata in updates.iteritems():
-                        name = "update.%s.%s" % (logdate, locale)
+                        name = "update.{0}.{1}".format(logdate, locale)
                         ulog = self.__get_update(name)
                         ulog.add(pfmri, operation, metadata=metadata,
                             op_time=op_time)
@@ -1893,7 +1893,7 @@ class Catalog(object):
                                     "last-modified": ulog.last_modified
                                 }
                                 for n, v in ulog.signatures.iteritems():
-                                        entry["signature-%s" % n] = v
+                                        entry["signature-{0}".format(n)] = v
 
                 # Save any CatalogParts that are currently in-memory,
                 # updating their related information in catalog.attrs
@@ -1916,7 +1916,7 @@ class Catalog(object):
                             "last-modified": part.last_modified
                         }
                         for n, v in part.signatures.iteritems():
-                                entry["signature-%s" % n] = v
+                                entry["signature-{0}".format(n)] = v
 
                 # Finally, save the catalog attributes.
                 attrs.save()
@@ -1968,8 +1968,9 @@ class Catalog(object):
                                             pathname).st_mode)
                                         if fmode != self.__file_mode:
                                                 bad_modes.append((pathname,
-                                                    "%o" % self.__file_mode,
-                                                    "%o" % fmode))
+                                                    "{0:o}".format(
+                                                    self.__file_mode),
+                                                    "{0:o}".format(fmode)))
                                 else:
                                         os.chmod(pathname, self.__file_mode)
                         except EnvironmentError, e:
@@ -1984,8 +1985,8 @@ class Catalog(object):
                                     pathname).st_mode)
                                 if fmode != self.__file_mode:
                                         bad_modes.append((pathname,
-                                            "%o" % self.__file_mode,
-                                            "%o" % fmode))
+                                            "{0:o}".format(self.__file_mode),
+                                            "{0:o}".format(fmode)))
 
                 if bad_modes:
                         raise api_errors.BadCatalogPermissions(bad_modes)
@@ -2151,7 +2152,7 @@ class Catalog(object):
                                 entry["metadata"] = metadata
                         if manifest:
                                 for k, v in manifest.signatures.iteritems():
-                                        entry["signature-%s" % k] = v
+                                        entry["signature-{0}".format(k)] = v
                         part = self.get_part(self.__BASE_PART)
                         entries[part.name] = part.add(pfmri, metadata=entry,
                             op_time=op_time)
@@ -2179,7 +2180,8 @@ class Catalog(object):
                                                         continue
 
                                                 part = self.get_part("catalog"
-                                                    ".%s.%s" % (ctype, locale))
+                                                    ".{0}.{1}".format(ctype,
+                                                    locale))
                                                 entry = { "actions": acts }
                                                 entries[part.name] = part.add(
                                                     pfmri, metadata=entry,
@@ -2514,8 +2516,8 @@ class Catalog(object):
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
-                                    must_exist=True)
+                                    "{0}.{1}".format(self.__SUMM_PART_PFX,
+                                    locale), must_exist=True)
                                 if part is None:
                                         # Data not available for this
                                         # locale.
@@ -2773,8 +2775,8 @@ class Catalog(object):
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
-                                    must_exist=True)
+                                    "{0}.{1}".format(self.__SUMM_PART_PFX,
+                                    locale), must_exist=True)
                                 if part is None:
                                         # Data not available for this
                                         # locale.
@@ -3464,7 +3466,7 @@ class Catalog(object):
                         # does not, then an incremental update cannot be safely
                         # performed since updates may be missing.
                         logdate = datetime_to_update_ts(old_lm)
-                        logname = "update.%s.%s" % (logdate, locale)
+                        logname = "update.{0}.{1}".format(logdate, locale)
 
                         if logname not in new_attrs.updates:
                                 incremental = False

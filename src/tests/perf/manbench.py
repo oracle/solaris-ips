@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -124,12 +124,12 @@ for act in mf.gen_actions(attr_match={ "mode": "0444" }):
                 print("manifest gen_actions")
                 for i in (1, 2, 3):
                         t = timeit.Timer(str1, setup1).timeit(n)
-                        print("%20f %8d manifest gen_actions()/sec " \
-                            "(%d actions/sec)" % (t, n / t, (n * 60) / t))
+                        print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
+                            "({2:d} actions/sec)".format(t, int(round(n / t)), int(round((n * 60) / t))))
                 print("manifest gen_actions - attr_match")
                 for i in (1, 2, 3):
                         t = timeit.Timer(str2, setup1).timeit(n)
-                        print("%20f %8d manifest gen_actions()/sec " \
-                            "(%d actions/sec)" % (t, n / t, (n * 60) / t))
+                        print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
+                            "({2:d} actions/sec)".format(t, int(round(n / t)), int(round((n * 60) / t))))
         except KeyboardInterrupt:
                 sys.exit(0)

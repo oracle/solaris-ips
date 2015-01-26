@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -315,7 +315,7 @@ class PkgDupActionChecker(base.ActionChecker):
                         if p in processed_dic:
                                 continue
 
-                        lint_id = "%s%s" % (self.name, pkglint_id)
+                        lint_id = "{0}{1}".format(self.name, pkglint_id)
 
                         fmris = set()
                         targ = action
@@ -366,8 +366,9 @@ class PkgDupActionChecker(base.ActionChecker):
                                                                 attr[val] = \
                                                                     [pfmri]
                                         for val in sorted(attr):
-                                                suspects.append("%s: %s -> %s" %
-                                                    (key, val,
+                                                suspects.append(
+                                                    "{0}: {1} -> {2}".format(
+                                                    key, val,
                                                     " ".join([pfmri.get_name()
                                                     for pfmri in
                                                     sorted(attr[val])
@@ -379,15 +380,15 @@ class PkgDupActionChecker(base.ActionChecker):
                                         processed_dic[p] = True
                                         continue
 
-                                engine.error(_("%(type)s action for %(attr)s "
+                                engine.error(_("{type} action for {attr} "
                                     "is reference-counted but has different "
-                                    "attributes across %(count)s duplicates: "
-                                    "%(suspects)s") %
-                                    {"type": action.name,
-                                    "attr": p,
-                                    "count": len(fmris),
-                                    "suspects":
-                                    " ".join([key for key in suspects])},
+                                    "attributes across {count} duplicates: "
+                                    "{suspects}").format(
+                                    type=action.name,
+                                    attr=p,
+                                    count=len(fmris),
+                                    suspects=
+                                    " ".join([key for key in suspects])),
                                     msgid=lint_id, ignore_linted=True)
                         processed_dic[p] = True
 
@@ -454,8 +455,9 @@ class PkgDupActionChecker(base.ActionChecker):
                             conflict_actions, ref_dic, pkg_vars)
                         if only_overlays:
                                 for error, sub_id in errors:
-                                        engine.error(error, msgid="%s%s.%s" %
-                                            (self.name, msgid, sub_id))
+                                        engine.error(error,
+                                            msgid="{0}{1}.{2}".format(
+                                            self.name, msgid, sub_id))
                                 processed_dic[name] = True
                                 return
 
@@ -467,27 +469,28 @@ class PkgDupActionChecker(base.ActionChecker):
                         plist = [f.get_fmri() for f in sorted(fmris)]
 
                         if not conflict_vars:
-                                engine.error(_("%(attr_name)s %(name)s is "
-                                    "a duplicate delivered by %(pkgs)s "
-                                    "under all variant combinations") %
-                                    {"attr_name": attr_name,
-                                    "name": name,
-                                    "pkgs": " ".join(plist)},
-                                    msgid="%s%s.1" % (self.name, msgid))
+                                engine.error(_("{attr_name} {name} is "
+                                    "a duplicate delivered by {pkgs} "
+                                    "under all variant combinations").format(
+                                    attr_name=attr_name,
+                                    name=name,
+                                    pkgs=" ".join(plist)),
+                                    msgid="{0}{1}.1".format(self.name, msgid))
                         else:
                                 for fz in conflict_vars:
-                                        engine.error(_("%(attr_name)s %(name)s "
+                                        engine.error(_("{attr_name} {name} "
                                             "is a duplicate delivered by "
-                                            "%(pkgs)s declaring overlapping "
-                                            "variants %(vars)s") %
-                                            {"attr_name": attr_name,
-                                            "name": name,
-                                            "pkgs": " ".join(plist),
-                                            "vars":
-                                            " ".join(["%s=%s" % (k, v)
+                                            "{pkgs} declaring overlapping "
+                                            "variants {vars}").format(
+                                            attr_name=attr_name,
+                                            name=name,
+                                            pkgs=" ".join(plist),
+                                            vars=
+                                            " ".join(["{0}={1}".format(k, v)
                                                 for (k, v)
-                                                in sorted(fz)])},
-                                            msgid="%s%s.2" % (self.name, msgid))
+                                                in sorted(fz)])),
+                                            msgid="{0}{1}.2".format(self.name,
+                                                msgid))
                 processed_dic[name] = True
 
         def duplicate_path_types(self, action, manifest, engine,
@@ -503,7 +506,7 @@ class PkgDupActionChecker(base.ActionChecker):
                 if p in self.seen_dup_types:
                         return
 
-                lint_id = "%s%s" % (self.name, pkglint_id)
+                lint_id = "{0}{1}".format(self.name, pkglint_id)
                 types = set()
                 fmris = set()
                 actions = set()
@@ -529,11 +532,11 @@ class PkgDupActionChecker(base.ActionChecker):
                                 plist = [f.get_fmri() for f in sorted(fmris)]
                                 plist.sort()
                                 engine.error(
-                                    _("path %(path)s is delivered by multiple "
-                                    "action types across %(pkgs)s") %
-                                    {"path": p,
-                                    "pkgs":
-                                    " ".join(plist)},
+                                    _("path {path} is delivered by multiple "
+                                    "action types across {pkgs}").format(
+                                    path=p,
+                                    pkgs=
+                                    " ".join(plist)),
                                     msgid=lint_id, ignore_linted=True)
                 self.seen_dup_types[p] = True
 
@@ -594,9 +597,9 @@ class PkgDupActionChecker(base.ActionChecker):
                 different_namespaces = []
                 missing_mediators = []
 
-                types_id = "%s%s.1" % (self.name, pkglint_id)
-                missing_id = "%s%s.2" % (self.name, pkglint_id)
-                diff_id = "%s%s.3" % (self.name, pkglint_id)
+                types_id = "{0}{1}.1".format(self.name, pkglint_id)
+                missing_id = "{0}{1}.2".format(self.name, pkglint_id)
+                diff_id = "{0}{1}.3".format(self.name, pkglint_id)
 
                 # gather the actions and their fmris that have either
                 # different namespaces, or missing mediators.  We ignore
@@ -644,10 +647,10 @@ class PkgDupActionChecker(base.ActionChecker):
                                 action_types.add((action, pfmri))
 
                         plist = sorted(set(plist))
-                        engine.error(_("path %(path)s uses different "
+                        engine.error(_("path {path} uses different "
                             "mediator namespaces across actions in "
-                            "%(fmris)s") % {"fmris": " ".join(plist),
-                            "path": p}, msgid=diff_id)
+                            "{fmris}").format(fmris=" ".join(plist),
+                            path=p), msgid=diff_id)
 
                 if missing_mediators:
                         seen_conflicts = variant_conflicts(missing_mediators,
@@ -667,11 +670,11 @@ class PkgDupActionChecker(base.ActionChecker):
                                 # to their dir action would fix things.
                                 if len(ac_names) == 1:
                                         plist = sorted(set(plist))
-                                        engine.error(_("path %(path)s has "
+                                        engine.error(_("path {path} has "
                                             "missing mediator attributes "
-                                            "across actions in %(fmris)s") %
-                                            {"fmris": " ".join(plist),
-                                            "path": p}, msgid=missing_id)
+                                            "across actions in {fmris}").format(
+                                            fmris=" ".join(plist),
+                                            path=p), msgid=missing_id)
 
                 if len(set([ac.name for ac, pfmri in action_types])) > 1:
                         plist = set([])
@@ -682,10 +685,10 @@ class PkgDupActionChecker(base.ActionChecker):
                                 self.seen_mediated_links.append(p)
                                 return
                         plist = sorted(plist)
-                        engine.error(_("path %(path)s uses multiple action "
+                        engine.error(_("path {path} uses multiple action "
                             "types for potentially mediated links across "
-                            "actions in %(fmris)s") % {"fmris": " ".join(plist),
-                            "path": p}, msgid=types_id)
+                            "actions in {fmris}").format(fmris=" ".join(plist),
+                            path=p), msgid=types_id)
 
                 self.seen_mediated_links.append(p)
 
@@ -796,12 +799,12 @@ class PkgDupActionChecker(base.ActionChecker):
                         if overlay_attr and overlay_attr == "allow":
                                 if not action.attrs.get("preserve", None):
                                         errors.add(
-                                            (_("path %(path)s missing "
+                                            (_("path {path} missing "
                                             "'preserve' attribute for "
                                             "'overlay=allow' action "
-                                            "in %(fmri)s") % {"path": path,
-                                            "fmri": _get_fmri(
-                                            action, action_fmris)}, "1"))
+                                            "in {fmri}").format(path=path,
+                                            fmri=_get_fmri(
+                                            action, action_fmris)), "1"))
                                 else:
                                         allow_overlay.append(action)
 
@@ -818,7 +821,7 @@ class PkgDupActionChecker(base.ActionChecker):
                         vars = set()
                         for group in conflict_vars:
                                 for key, val in group:
-                                        vars.add("%s=%s" % (key, val))
+                                        vars.add("{0}={1}".format(key, val))
                         return ", ".join(list(vars))
 
                 def _unique_attrs(action):
@@ -837,11 +840,11 @@ class PkgDupActionChecker(base.ActionChecker):
                     overlay, pkg_vars)
                 if conflict_vars:
                         errors.add(
-                            (_("path %(path)s has duplicate 'overlay=true' "
+                            (_("path {path} has duplicate 'overlay=true' "
                             "actions for the following variants across across "
-                            "%(fmris)s: %(var)s") %
-                            {"path": path, "fmris": ", ".join(list(fmris)),
-                            "var": _render_variants(conflict_vars)}, "2"))
+                            "{fmris}: {var}").format(
+                            path=path, fmris=", ".join(list(fmris)),
+                            var=_render_variants(conflict_vars)), "2"))
 
                 # verify that if we're only delivering overlay=allow actions,
                 # none of them conflict with each other (we check corresponding
@@ -851,13 +854,13 @@ class PkgDupActionChecker(base.ActionChecker):
                             self.conflicting_variants(allow_overlay, pkg_vars)
                         if conflict_vars:
                                 errors.add(
-                                    (_("path %(path)s has duplicate "
+                                    (_("path {path} has duplicate "
                                     "'overlay=allow' actions for the following "
                                     "variants across across "
-                                    "%(fmris)s: %(var)s") %
-                                    {"path": path, "fmris": ", ".join(
+                                    "{fmris}: {var}").format(
+                                    path=path, fmris=", ".join(
                                     list(fmris)),
-                                    "var": _render_variants(conflict_vars)},
+                                    var=_render_variants(conflict_vars)),
                                     "3"))
 
                 # Check for valid, complimentary sets of overlay and
@@ -890,15 +893,15 @@ class PkgDupActionChecker(base.ActionChecker):
 
                                 if conflict_actions_allow:
                                         errors.add(
-                                            (_("path %(path)s uses "
+                                            (_("path {path} uses "
                                             "overlay='true' actions but has "
                                             "duplicate 'overlay=allow' actions "
                                             "for the following variants across "
-                                            "%(fmris)s: %(vars)s") %
-                                            {"path": path,
-                                            "fmris": ", ".join(list(fmris)),
-                                            "vars": _render_variants(
-                                            conflict_vars_sub)}, "4"))
+                                            "{fmris}: {vars}").format(
+                                            path=path,
+                                            fmris=", ".join(list(fmris)),
+                                            vars=_render_variants(
+                                            conflict_vars_sub)), "4"))
                                 else:
                                         # check that none of the attributes
                                         # required to be the same between
@@ -910,25 +913,25 @@ class PkgDupActionChecker(base.ActionChecker):
                                                         seen_mismatch = True
                         else:
                                 errors.add(
-                                    (_("path %(path)s uses 'overlay=true' "
+                                    (_("path {path} uses 'overlay=true' "
                                     "actions but has no corresponding "
-                                    "'overlay=allow' actions across %(fmris)s"
-                                    ) %
-                                    {"path": path, "fmris": ", ".join(
-                                    list(fmris))}, "5"))
+                                    "'overlay=allow' actions across {fmris}"
+                                    ).format(
+                                    path=path, fmris=", ".join(
+                                    list(fmris))), "5"))
 
                 if seen_mismatch:
                         errors.add(
-                            (_("path %(path)s has mismatching attributes for "
+                            (_("path {path} has mismatching attributes for "
                             "'overlay=true' and 'overlay=allow' action-pairs "
-                            "across %(fmris)s") % {"path": path,
-                            "fmris": ", ".join(list(fmris))}, "6"))
+                            "across {fmris}").format(path=path,
+                            fmris=", ".join(list(fmris))), "6"))
 
                 if (overlay or allow_overlay) and ret_actions:
                         errors.add(
-                            (_("path %(path)s has both overlay and non-overlay "
-                            "actions across %(fmris)s") %
-                            {"path": path, "fmris": ", ".join(list(fmris))},
+                            (_("path {path} has both overlay and non-overlay "
+                            "actions across {fmris}").format(
+                            path=path, fmris=", ".join(list(fmris))),
                             "7"))
 
                 return ret_actions, errors
@@ -957,15 +960,15 @@ class PkgDupActionChecker(base.ActionChecker):
                         if not conflict_actions:
                                 continue
                         engine.error(_("Expecting a dir action for "
-                            "%(parent_path)s, but %(parent_fmri)s delivers it "
-                            "as a %(parent_type)s. %(child_path)s is delivered "
-                            "by %(child_fmri)s") %
-                            {"parent_path": parent_path,
-                            "parent_fmri": parent_pfmri,
-                            "parent_type": parent_action.name,
-                            "child_path": path,
-                            "child_fmri": manifest.fmri},
-                            "%s%s" % (self.name, pkglint_id))
+                            "{parent_path}, but {parent_fmri} delivers it "
+                            "as a {parent_type}. {child_path} is delivered "
+                            "by {child_fmri}").format(
+                            parent_path=parent_path,
+                            parent_fmri=parent_pfmri,
+                            parent_type=parent_action.name,
+                            child_path=path,
+                            child_fmri=manifest.fmri),
+                            "{0}{1}".format(self.name, pkglint_id))
 
         dir_parents.pkglint_desc = _("Parent paths should be directories.")
 
@@ -1037,11 +1040,12 @@ class PkgActionChecker(base.ActionChecker):
                                         key.startswith("facet.version-lock."):
                                         continue
                                 engine.warning(
-                                    _("underscore in attribute name %(key)s in "
-                                    "%(fmri)s") %
-                                    {"key": key,
-                                    "fmri": manifest.fmri},
-                                    msgid="%s%s.1" % (self.name, pkglint_id))
+                                    _("underscore in attribute name {key} in "
+                                    "{fmri}").format(
+                                    key=key,
+                                    fmri=manifest.fmri),
+                                    msgid="{0}{1}.1".format(self.name,
+                                    pkglint_id))
 
                 if action.name != "set":
                         return
@@ -1065,18 +1069,18 @@ class PkgActionChecker(base.ActionChecker):
                 # bit nicer about it.
                 if name in obs_map:
                         engine.warning(_("underscore in obsolete 'set' action "
-                            "name %(name)s should be %(new)s in %(fmri)s") % {
-                                "name": name,
-                                "new": obs_map[name],
-                                "fmri": manifest.fmri
-                            },
-                            msgid="%s%s.3" % (self.name, pkglint_id))
+                            "name {name} should be {new} in {fmri}").format(
+                                name=name,
+                                new=obs_map[name],
+                                fmri=manifest.fmri
+                           ),
+                            msgid="{0}{1}.3".format(self.name, pkglint_id))
                         return
 
-                engine.warning(_("underscore in 'set' action name %(name)s in "
-                    "%(fmri)s") % {"name": name,
-                    "fmri": manifest.fmri},
-                    msgid="%s%s.2" % (self.name, pkglint_id))
+                engine.warning(_("underscore in 'set' action name {name} in "
+                    "{fmri}").format(name=name,
+                    fmri=manifest.fmri),
+                    msgid="{0}{1}.2".format(self.name, pkglint_id))
 
         underscores.pkglint_desc = _(
             "Underscores are discouraged in action attributes.")
@@ -1101,31 +1105,33 @@ class PkgActionChecker(base.ActionChecker):
                                         pass
                                 elif st:
                                         engine.warning(_("directory action for "
-                                            "%(path)s delivered in %(pkg)s with "
-                                            "mode=%(mode)s "
-                                            "that has no executable bits") %
-                                            {"path": path,
-                                            "pkg": manifest.fmri,
-                                            "mode": mode},
-                                            msgid="%s%s.1" %
-                                            (self.name, pkglint_id))
+                                            "{path} delivered in {pkg} with "
+                                            "mode={mode} "
+                                            "that has no executable bits").format(
+                                            path=path,
+                                            pkg=manifest.fmri,
+                                            mode=mode),
+                                            msgid="{0}{1}.1".format(
+                                            self.name, pkglint_id))
 
                         if not st:
-                                engine.error(_("broken mode mode=%(mode)s "
-                                    "delivered in action for %(path)s in "
-                                    "%(pkg)s") %
-                                    {"path": path,
-                                    "pkg": manifest.fmri,
-                                    "mode": mode},
-                                    msgid="%s%s.2" % (self.name, pkglint_id))
+                                engine.error(_("broken mode mode={mode} "
+                                    "delivered in action for {path} in "
+                                    "{pkg}").format(
+                                    path=path,
+                                    pkg=manifest.fmri,
+                                    mode=mode),
+                                    msgid="{0}{1}.2".format(self.name,
+                                    pkglint_id))
 
                         if len(mode) < 3:
-                                engine.error(_("mode=%(mode)s is too short in "
-                                    "action for %(path)s in %(pkg)s") %
-                                    {"path": path,
-                                    "pkg": manifest.fmri,
-                                    "mode": mode},
-                                    msgid="%s%s.3" % (self.name, pkglint_id))
+                                engine.error(_("mode={mode} is too short in "
+                                    "action for {path} in {pkg}").format(
+                                    path=path,
+                                    pkg=manifest.fmri,
+                                    mode=mode),
+                                    msgid="{0}{1}.3".format(self.name,
+                                    pkglint_id))
                                 return
 
                         # now check for individual access permissions
@@ -1136,13 +1142,14 @@ class PkgActionChecker(base.ActionChecker):
                         if (other > group or
                             group > user or
                             other > user):
-                                engine.warning(_("unusual mode mode=%(mode)s "
-                                    "delivered in action for %(path)s in "
-                                    "%(pkg)s") %
-                                    {"path": path,
-                                    "pkg": manifest.fmri,
-                                    "mode": mode},
-                                    msgid="%s%s.4" % (self.name, pkglint_id))
+                                engine.warning(_("unusual mode mode={mode} "
+                                    "delivered in action for {path} in "
+                                    "{pkg}").format(
+                                    path=path,
+                                    pkg=manifest.fmri,
+                                    mode=mode),
+                                    msgid="{0}{1}.4".format(self.name,
+                                    pkglint_id))
 
         unusual_perms.pkglint_desc = _(
             "Paths should not have unusual permissions.")
@@ -1162,11 +1169,12 @@ class PkgActionChecker(base.ActionChecker):
                     "pkg", "vendor", "version" ]:
                         if required not in action.attrs:
                                 engine.error(
-                                    _("%(attr)s missing from legacy "
-                                    "action in %(pkg)s") %
-                                    {"attr": required,
-                                    "pkg": manifest.fmri},
-                                    msgid="%s%s.1" % (self.name, pkglint_id))
+                                    _("{attr} missing from legacy "
+                                    "action in {pkg}").format(
+                                    attr=required,
+                                    pkg=manifest.fmri),
+                                    msgid="{0}{1}.1".format(self.name,
+                                    pkglint_id))
 
                 if "pkg" in action.attrs:
 
@@ -1182,9 +1190,11 @@ class PkgActionChecker(base.ActionChecker):
                         # this could be refined
                         if "REV=" not in action.attrs["version"]:
                                 engine.warning(
-                                    _("legacy action in %s does not "
-                                    "contain a REV= string") % manifest.fmri,
-                                    msgid="%s%s.3" % (self.name, pkglint_id))
+                                    _("legacy action in {0} does not "
+                                    "contain a REV= string").format(
+                                    manifest.fmri),
+                                    msgid="{0}{1}.3".format(self.name,
+                                    pkglint_id))
 
         def check_legacy_rename(self, legacy, action, manifest, engine,
             lint_id):
@@ -1215,27 +1225,28 @@ class PkgActionChecker(base.ActionChecker):
                                     legacy=True)
                         except base.LintException, e:
                                 # we've tried to rename to ourselves
-                                engine.error(_("legacy renaming: %s") % str(e),
-                                    msgid="%s%s.5" % (self.name, lint_id))
+                                engine.error(
+                                    _("legacy renaming: {0}").format(str(e)),
+                                    msgid="{0}{1}.5".format(self.name, lint_id))
                                 return
 
                         if mf is None:
-                                engine.error(_("legacy package %(legacy)s did "
-                                    "not result in a dependency on %(pkg)s when"
-                                    " following package renames") %
-                                    {"legacy": legacy.fmri,
-                                    "pkg": manifest.fmri},
-                                    msgid="%s%s.4" %
-                                    (self.name, lint_id))
+                                engine.error(_("legacy package {legacy} did "
+                                    "not result in a dependency on {pkg} when"
+                                    " following package renames").format(
+                                    legacy=legacy.fmri,
+                                    pkg=manifest.fmri),
+                                    msgid="{0}{1}.4".format(
+                                    self.name, lint_id))
 
                         elif not lint_fmri_successor(manifest.fmri, mf.fmri,
                             ignore_pubs=engine.ignore_pubs):
-                                engine.error(_("legacy package %(legacy)s did "
-                                    "not result in a dependency on %(pkg)s") %
-                                    {"legacy": legacy.fmri,
-                                    "pkg": manifest.fmri},
-                                    msgid="%s%s.2" %
-                                    (self.name, lint_id))
+                                engine.error(_("legacy package {legacy} did "
+                                    "not result in a dependency on {pkg}").format(
+                                    legacy=legacy.fmri,
+                                    pkg=manifest.fmri),
+                                    msgid="{0}{1}.2".format(
+                                    self.name, lint_id))
 
         legacy.pkglint_desc = _(
             "'legacy' actions should have valid attributes.")
@@ -1244,9 +1255,9 @@ class PkgActionChecker(base.ActionChecker):
                 """We should never have actions called 'unknown'."""
 
                 if action.name is "unknown":
-                        engine.error(_("unknown action found in %s") %
-                            manifest.fmri,
-                            msgid="%s%s" % (self.name, pkglint_id))
+                        engine.error(_("unknown action found in {0}").format(
+                            manifest.fmri),
+                            msgid="{0}{1}".format(self.name, pkglint_id))
 
         unknown.pkglint_desc = _("'unknown' actions should never occur.")
 
@@ -1267,7 +1278,7 @@ class PkgActionChecker(base.ActionChecker):
                 are not available.
                 """
 
-                msg = _("dependency on obsolete package in %s:")
+                msg = _("dependency on obsolete package in {0}:")
 
                 if action.name != "depend":
                         return
@@ -1287,7 +1298,7 @@ class PkgActionChecker(base.ActionChecker):
 
                 # normalize the fmri
                 if not dep_fmri.startswith("pkg:/"):
-                        dep_fmri = "pkg:/%s" % dep_fmri
+                        dep_fmri = "pkg:/{0}".format(dep_fmri)
 
                 try:
                         declared_fmri = pkg.fmri.PkgFmri(dep_fmri)
@@ -1324,7 +1335,7 @@ class PkgActionChecker(base.ActionChecker):
                 # A non-obsolete dependency wasn't found in the local cache,
                 # or the one in the cache was found not to be a successor of
                 # the fmri in the depend action.
-                lint_id = "%s%s" % (self.name, pkglint_id)
+                lint_id = "{0}{1}".format(self.name, pkglint_id)
 
                 mf = None
                 found_obsolete = False
@@ -1333,8 +1344,8 @@ class PkgActionChecker(base.ActionChecker):
                             dep_fmri, old_mfs=[], warn_on_obsolete=True)
                 except base.LintException, err:
                         found_obsolete = True
-                        engine.error("%s %s" % (msg % manifest.fmri, err),
-                            msgid=lint_id)
+                        engine.error("{0} {1}".format(msg.format(manifest.fmri),
+                            err), msgid=lint_id)
 
                 # We maintain a whitelist of dependencies which may be missing
                 # during this lint run (eg. packages that are present in a
@@ -1344,8 +1355,9 @@ class PkgActionChecker(base.ActionChecker):
                 # If unversioned FMRIs are present in the list, versioned
                 # dependencies will match those if their package name and
                 # publisher match.
-                known_missing_deps = engine.get_param("%s.1.missing-deps" %
-                    lint_id, action=action, manifest=manifest)
+                known_missing_deps = engine.get_param(
+                    "{0}.1.missing-deps".format(lint_id), action=action,
+                    manifest=manifest)
                 if known_missing_deps:
                         known_missing_deps = known_missing_deps.split(" ")
                 else:
@@ -1359,11 +1371,11 @@ class PkgActionChecker(base.ActionChecker):
                             dep_fmri.split("@")[0] in known_missing_deps:
                                 return
                         engine.warning(_("obsolete dependency check "
-                            "skipped: unable to find dependency %(dep)s"
-                            " for %(pkg)s") %
-                            {"dep": dep_fmri,
-                            "pkg": manifest.fmri},
-                            msgid="%s.1" % lint_id)
+                            "skipped: unable to find dependency {dep}"
+                            " for {pkg}").format(
+                            dep=dep_fmri,
+                            pkg=manifest.fmri),
+                            msgid="{0}.1".format(lint_id))
 
         dep_obsolete.pkglint_desc = _(
             "Packages should not have dependencies on obsolete packages.")
@@ -1388,11 +1400,11 @@ class PkgActionChecker(base.ActionChecker):
                                         pfmri = pkg.fmri.PkgFmri(fmri)
                                 except pkg.fmri.IllegalFmri:
                                         engine.error("invalid FMRI in action "
-                                            "%(action)s in %(pkg)s" %
-                                            {"pkg": manifest.fmri,
-                                            "action": action},
-                                            msgid="%s%s" %
-                                            (self.name, pkglint_id))
+                                            "{action} in {pkg}".format(
+                                            pkg=manifest.fmri,
+                                            action=action),
+                                            msgid="{0}{1}".format(
+                                            self.name, pkglint_id))
 
         valid_fmri.pkglint_desc = _("pkg(5) FMRIs should be valid.")
 
@@ -1401,11 +1413,11 @@ class PkgActionChecker(base.ActionChecker):
 
                 if action.name is "license" and "path" in action.attrs:
                         engine.error(
-                            _("license action in %(pkg)s has a path attribute, "
-                            "%(path)s") %
-                            {"pkg": manifest.fmri,
-                            "path": action.attrs["path"]},
-                            msgid="%s%s" % (self.name, pkglint_id))
+                            _("license action in {pkg} has a path attribute, "
+                            "{path}").format(
+                            pkg=manifest.fmri,
+                            path=action.attrs["path"]),
+                            msgid="{0}{1}".format(self.name, pkglint_id))
 
         license.pkglint_desc = _("'license' actions should not have paths.")
 
@@ -1422,12 +1434,12 @@ class PkgActionChecker(base.ActionChecker):
 
                 if linted_attrs:
                         engine.info(_("pkg.linted attributes detected for "
-                            "%(pkg)s %(action)s: %(linted)s") %
-                            {"pkg": manifest.fmri,
-                            "action": str(action),
-                            "linted": ", ".join(["%s=%s" % (key, val)
-                             for key,val in linted_attrs])},
-                             msgid="%s%s" % (self.name, pkglint_id),
+                            "{pkg} {action}: {linted}").format(
+                            pkg=manifest.fmri,
+                            action=str(action),
+                            linted=", ".join(["{0}={1}".format(key, val)
+                             for key,val in linted_attrs])),
+                             msgid="{0}{1}".format(self.name, pkglint_id),
                              ignore_linted=True)
 
         linted.pkglint_desc = _("Show actions with pkg.linted attributes.")
@@ -1445,10 +1457,10 @@ class PkgActionChecker(base.ActionChecker):
                         details = "; ".join([val.lstrip()
                             for val in str(err).split("\n")])
                         engine.error(
-                            _("Publication error with action in %(pkg)s: "
-                            "%(details)s") %
-                            {"pkg": manifest.fmri, "details": details},
-                            msgid="%s%s" % (self.name, pkglint_id))
+                            _("Publication error with action in {pkg}: "
+                            "{details}").format(
+                            pkg=manifest.fmri, details=details),
+                            msgid="{0}{1}".format(self.name, pkglint_id))
 
         validate.pkglint_desc = _("Publication checks for actions.")
 
@@ -1461,26 +1473,26 @@ class PkgActionChecker(base.ActionChecker):
                 username = action.attrs["username"]
                 if len(username) > 8:
                         engine.error(
-                            _("Username %(name)s in %(pkg)s > 8 chars") %
-                            {"name": username,
-                            "pkg": manifest.fmri},
-                            msgid="%s%s.1" % (self.name, pkglint_id))
+                            _("Username {name} in {pkg} > 8 chars").format(
+                            name=username,
+                            pkg=manifest.fmri),
+                            msgid="{0}{1}.1".format(self.name, pkglint_id))
 
                 if len(username) == 0 or not re.match("[a-z]", username[0]):
                         engine.error(
-                            _("Username %(name)s in %(pkg)s does not have an "
-                            "initial lower-case alphabetical character") %
-                            {"name": username,
-                            "pkg": manifest.fmri},
-                            msgid="%s%s.2" % (self.name, pkglint_id))
+                            _("Username {name} in {pkg} does not have an "
+                            "initial lower-case alphabetical character").format(
+                            name=username,
+                            pkg=manifest.fmri),
+                            msgid="{0}{1}.2".format(self.name, pkglint_id))
 
                 if not re.match("^[a-z]([a-zA-Z1-9._-])*$", username):
                         engine.error(
-                            _("Username %(name)s in %(pkg)s is invalid - see "
-                            "passwd(4)") %
-                            {"name": username,
-                            "pkg": manifest.fmri},
-                            msgid="%s%s.3" % (self.name, pkglint_id))
+                            _("Username {name} in {pkg} is invalid - see "
+                            "passwd(4)").format(
+                            name=username,
+                            pkg=manifest.fmri),
+                            msgid="{0}{1}.3".format(self.name, pkglint_id))
 
         username_format.pkglint_desc = _("User names should be valid.")
 
@@ -1497,11 +1509,11 @@ class PkgActionChecker(base.ActionChecker):
                 pfmri = pkg.fmri.PkgFmri(fmri)
                 if not pfmri.version:
                         engine.error(
-                            _("'incorporate' depend action on %(fmri)s in "
-                            "%(pkg)s does not have a version.") %
-                            {"fmri": fmri,
-                            "pkg": manifest.fmri},
-                            msgid="%s%s" % (self.name, pkglint_id))
+                            _("'incorporate' depend action on {fmri} in "
+                            "{pkg} does not have a version.").format(
+                            fmri=fmri,
+                            pkg=manifest.fmri),
+                            msgid="{0}{1}".format(self.name, pkglint_id))
 
         version_incorporate.pkglint_desc = _("'incorporate' dependencies should"
             " have a version.")
@@ -1516,11 +1528,11 @@ class PkgActionChecker(base.ActionChecker):
                                         engine.warning(
                                             _("facet value should be set to "
                                             "'true', 'false' or 'all' in "
-                                            "attribute name %(key)s "
-                                            "in %(fmri)s") %
-                                           {"key": key,
-                                           "fmri": manifest.fmri},
-                                           msgid="%s%s" % (self.name,
+                                            "attribute name {key} "
+                                            "in {fmri}").format(
+                                           key=key,
+                                           fmri=manifest.fmri),
+                                           msgid="{0}{1}".format(self.name,
                                            pkglint_id))
 
         facet_value.pkglint_desc = _("facet value should be set to "

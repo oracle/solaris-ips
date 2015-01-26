@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Provides a set of publishing interfaces for interacting with a pkg(5)
@@ -74,13 +74,13 @@ class TransactionRepositoryURLError(TransactionError):
 
         def __str__(self):
                 if "scheme" in self._args:
-                        return _("Unsupported scheme '%(scheme)s' in URL: "
-                            "'%(url)s'.") % { "scheme": self._args["scheme"],
-                            "url": self.data }
+                        return _("Unsupported scheme '{scheme}' in URL: "
+                            "'{url}'.").format(scheme=self._args["scheme"],
+                            url=self.data)
                 elif "netloc" in self._args:
-                        return _("Malformed URL: '%s'.") % self.data
-                return _("Invalid repository URL: '%(url)s': %(msg)s") % {
-                    "url": self.data, "msg": self._args.get("msg", "") }
+                        return _("Malformed URL: '{0}'.").format(self.data)
+                return _("Invalid repository URL: '{url}': {msg}").format(
+                    url=self.data, msg=self._args.get("msg", ""))
 
 
 class TransactionOperationError(TransactionError):
@@ -91,24 +91,24 @@ class TransactionOperationError(TransactionError):
 
         def __str__(self):
                 if "status" in self._args:
-                        return _("'%(op)s' failed for transaction ID "
-                            "'%(trans_id)s'; status '%(status)s': "
-                            "%(msg)s") % { "op": self.data,
-                            "trans_id": self._args.get("trans_id", ""),
-                            "status": self._args["status"],
-                            "msg": self._args.get("msg", "") }
+                        return _("'{op}' failed for transaction ID "
+                            "'{trans_id}'; status '{status}': "
+                            "{msg}").format(op=self.data,
+                            trans_id=self._args.get("trans_id", ""),
+                            status=self._args["status"],
+                            msg=self._args.get("msg", ""))
                 if self._args.get("trans_id", None):
-                        return _("'%(op)s' failed for transaction ID "
-                            "'%(trans_id)s': %(msg)s") % { "op": self.data,
-                            "trans_id": self._args["trans_id"],
-                            "msg": self._args.get("msg", ""),
-                            }
+                        return _("'{op}' failed for transaction ID "
+                            "'{trans_id}': {msg}").format(op=self.data,
+                            trans_id=self._args["trans_id"],
+                            msg=self._args.get("msg", ""),
+                           )
                 if self.data:
-                        return _("'%(op)s' failed; unable to initiate "
-                            "transaction:\n%(msg)s") % { "op": self.data,
-                            "msg": self._args.get("msg", "") }
-                return _("Unable to initiate transaction:\n%s") % \
-                    self._args.get("msg", "")
+                        return _("'{op}' failed; unable to initiate "
+                            "transaction:\n{msg}").format(op=self.data,
+                            msg=self._args.get("msg", ""))
+                return _("Unable to initiate transaction:\n{0}").format(
+                    self._args.get("msg", ""))
 
 
 class TransactionRepositoryInvalidError(TransactionError):
@@ -121,9 +121,9 @@ class UnsupportedRepoTypeOperationError(TransactionError):
         type of repository being operated on (http, file, etc.)."""
 
         def __str__(self):
-                return _("Unsupported operation '%(op)s' for the specified "
-                    "repository type '%(type)s'.") % { "op": self.data,
-                    "type": self._args.get("type", "") }
+                return _("Unsupported operation '{op}' for the specified "
+                    "repository type '{type}'.").format(op=self.data,
+                    type=self._args.get("type", ""))
 
 
 class NullTransaction(object):
@@ -159,8 +159,8 @@ class NullTransaction(object):
                 if not os.path.isfile(pth):
                         raise TransactionOperationError("add_file",
                             trans_id=self.trans_id, msg=str(_("The file to "
-                            "be added is not a file.  The path given was %s.") %
-                            pth))
+                            "be added is not a file.  The path given was {0}.").format(
+                            pth)))
 
         def close(self, abandon=False, add_to_catalog=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
@@ -246,7 +246,7 @@ class TransportTransaction(object):
                         raise TransactionOperationError(None, msg=_(
                             "An error occurred while trying to "
                             "initialize the repository directory "
-                            "structures:\n%s") % e)
+                            "structures:\n{0}").format(e))
                 except cfg.ConfigError, e:
                         raise TransactionRepositoryConfigError(str(e))
                 except sr.RepositoryInvalidError, e:
@@ -287,8 +287,8 @@ class TransportTransaction(object):
                 if not os.path.isfile(pth):
                         raise TransactionOperationError("add_file",
                             trans_id=self.trans_id, msg=str(_("The file to "
-                            "be added is not a file.  The path given was %s.") %
-                            pth))
+                            "be added is not a file.  The path given was {0}.").format(
+                            pth)))
 
                 try:
                         self.transport.publish_add_file(self.publisher,
@@ -447,9 +447,9 @@ class Transaction(object):
                 if scheme.startswith("file"):
                         if netloc:
                                 raise TransactionRepositoryURLError(origin_url,
-                                    msg="'%s' contains host information, which "
+                                    msg="'{0}' contains host information, which "
                                     "is not supported for filesystem "
-                                    "operations." % netloc)
+                                    "operations.".format(netloc))
                         # as we're urlunparsing below, we need to ensure that
                         # the path starts with only one '/' character, if any
                         # are present

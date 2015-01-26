@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import hashlib
@@ -292,8 +292,8 @@ def get_preferred_hash(action, hash_type=HASH):
 
         rank_tuple, hash_dic = _get_hash_dics(hash_type)
         if not (rank_tuple and hash_dic):
-                raise ValueError("Unknown hash_type %s passed to "
-                    "get_preferred_hash" % hash_type)
+                raise ValueError("Unknown hash_type {0} passed to "
+                    "get_preferred_hash".format(hash_type))
 
         for hash_attr_name in rank_tuple:
                 if hash_attr_name in action.attrs:
@@ -318,8 +318,8 @@ def get_preferred_hash(action, hash_type=HASH):
                 return None, None, None
 
         # This should never happen.
-        raise Exception("Error determining the preferred hash for %s %s" %
-            (action, hash_type))
+        raise Exception("Error determining the preferred hash for {0} {1}".format(
+            action, hash_type))
 
 
 def get_least_preferred_hash(action, hash_type=HASH):
@@ -340,8 +340,8 @@ def get_least_preferred_hash(action, hash_type=HASH):
 
         rank_list, hash_dic = _get_hash_dics(hash_type, reverse=True)
         if not (rank_list and hash_dic):
-                raise ValueError("Unknown hash_type %s passed to "
-                    "get_preferred_hash" % hash_type)
+                raise ValueError("Unknown hash_type {0} passed to "
+                    "get_preferred_hash".format(hash_type))
 
         if not action:
                 return rank_list[0], None, hash_dic[rank_list[0]]
@@ -363,8 +363,8 @@ def get_least_preferred_hash(action, hash_type=HASH):
                 return None, None, None
 
         # This should never happen.
-        raise Exception("Error determining the least preferred hash for %s %s" %
-            (action, hash_type))
+        raise Exception("Error determining the least preferred hash for {0} {1}".format(
+            action, hash_type))
 
 
 def get_common_preferred_hash(action, old_action, hash_type=HASH):
@@ -383,8 +383,8 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH):
 
         rank_list, hash_dic = _get_hash_dics(hash_type)
         if not (rank_list and hash_dic):
-                raise ValueError("Unknown hash_type %s passed to "
-                    "get_preferred_common_hash" % hash_type)
+                raise ValueError("Unknown hash_type {0} passed to "
+                    "get_preferred_common_hash".format(hash_type))
 
         common_attrs = set(
             action.attrs.keys()).intersection(set(old_action.attrs.keys()))

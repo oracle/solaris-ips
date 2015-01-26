@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a directory packaging object
@@ -103,12 +103,12 @@ class DirectoryAction(generic.Action):
                                 # that won't restore the files that
                                 # are supposed to be contained within.
                                 err_txt = _("Unable to create "
-                                    "directory %s; it has been "
+                                    "directory {0}; it has been "
                                     "replaced with a link.  To "
                                     "continue, please remove the "
                                     "link or restore the directory "
                                     "to its original location and "
-                                    "try again.") % path
+                                    "try again.").format(path)
                                 raise apx.ActionExecutionError(
                                     self, details=err_txt, error=e,
                                     fmri=pkgplan.destination_fmri)
@@ -232,11 +232,12 @@ class DirectoryAction(generic.Action):
                                 # User has replaced directory with mountpoint,
                                 # or a package has been poorly implemented.
 				if not self.attrs.get("implicit"):
-                                        err_txt = _("Unable to remove %s; it is "
+                                        err_txt = _("Unable to remove {0}; it is "
                                             "in use as a mountpoint. To "
                                             "continue, please unmount the "
                                             "filesystem at the target "
-                                            "location and try again.") % path
+                                            "location and try again.").format(
+                                            path)
                                         raise apx.ActionExecutionError(self,
                                             details=err_txt, error=e,
                                             fmri=pkgplan.origin_fmri) 
@@ -245,10 +246,10 @@ class DirectoryAction(generic.Action):
                                 # filesystems, so give a more generic
                                 # error.
 				if not self.attrs.get("implicit"):
-                                        err_txt = _("Unable to remove %s; it "
+                                        err_txt = _("Unable to remove {0}; it "
                                             "is in use by the system, another "
-                                            "process, or as a mountpoint.") \
-                                            % path
+                                            "process, or as a "
+                                            "mountpoint.").format(path)
                                         raise apx.ActionExecutionError(self,
                                             details=err_txt, error=e,
                                             fmri=pkgplan.origin_fmri)

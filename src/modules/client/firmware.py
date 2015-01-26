@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 import os.path
 import sys
@@ -53,7 +53,7 @@ class Firmware(object):
 
                 args = [os.path.join(firmware_dir, firmware_name[len("feature/firmware/"):])]
                 args.extend([
-                    "%s=%s" % (k, quote_attr_value(v))
+                    "{0}={1}".format(k, quote_attr_value(v))
                     for k,v in sorted(dep_action.attrs.iteritems())
                     if k not in ["type", "root-image", "fmri"]
                 ])

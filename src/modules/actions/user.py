@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -191,8 +191,8 @@ class UserAction(generic.Action):
                 except KeyError, e:
                         # cannot find group
                         self.validate() # should raise error if no group in action
-                        txt = _("%(group)s is an unknown or invalid group") % {
-                                "group": self.attrs.get("group", "None")}
+                        txt = _("{group} is an unknown or invalid group").format(
+                            group=self.attrs.get("group", "None"))
                         raise apx.ActionExecutionError(self,
                             details=txt, fmri=pkgplan.destination_fmri)
 
@@ -228,11 +228,11 @@ class UserAction(generic.Action):
                         if e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission denied"))
                         else:
-                                errors.append(_("Unexpected Error: %s") % e)
+                                errors.append(_("Unexpected Error: {0}").format(e))
                         return errors, warnings, info
                 except KeyError, e:
-                        errors.append(_("%(group)s is an unknown or invalid group") % {
-                                "group": self.attrs.get("group", "None")})
+                        errors.append(_("{group} is an unknown or invalid group").format(
+                            group=self.attrs.get("group", "None")))
                         return errors, warnings, info
 
                 if "group-list" in self.attrs:
@@ -271,9 +271,9 @@ class UserAction(generic.Action):
                                 should_be.setdefault(k, "<empty>")
 
                 errors.extend(
-                    _("%(entry)s: '%(found)s' should be '%(expected)s'") % {
-                        "entry": a, "found": cur_attrs[a],
-                        "expected": should_be[a] }
+                    _("{entry}: '{found}' should be '{expected}'").format(
+                        entry=a, found=cur_attrs[a],
+                        expected=should_be[a])
                     for a in should_be
                     if cur_attrs[a] != should_be[a]
                 )

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -71,8 +71,8 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 use to validate the package.  Only the attributes present
                 on each action will be compared."""
 
-                self.pkg("install %s" % pfmri)
-                self.pkg("verify %s" % pfmri)
+                self.pkg("install {0}".format(pfmri))
+                self.pkg("verify {0}".format(pfmri))
 
                 m = manifest.Manifest()
                 content = self.get_img_manifest(pfmri)
@@ -105,7 +105,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         for attr in exp.attrs:
                                 self.assertEqual(exp.attrs[attr], a.attrs[attr])
 
-                self.pkg("uninstall %s" % pfmri)
+                self.pkg("uninstall {0}".format(pfmri))
 
         def test_0_pkgsend_bad_opts(self):
                 """Verify that non-existent or invalid option combinations
@@ -128,7 +128,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 """Verify that an abandoned tranasaction is not published."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://%s" % self.dc.get_repodir()
+                dfurl = "file://{0}".format(self.dc.get_repodir())
 
                 for url in (dhurl, dfurl):
                         for line in \
@@ -192,7 +192,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 """Verify that invalid Transaction IDs are handled correctly."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://%s" % self.dc.get_repodir()
+                dfurl = "file://{0}".format(self.dc.get_repodir())
 
                 os.environ["PKG_TRANS_ID"] = "foobarbaz"
 
@@ -208,7 +208,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 gracefully."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://%s" % self.dc.get_repodir()
+                dfurl = "file://{0}".format(self.dc.get_repodir())
                 imaginary_file = os.path.join(self.test_root, "imaginary_file")
 
                 # Must open transaction using HTTP url first so that transaction
@@ -276,7 +276,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                         # Should fail because the file does not exist.
                         self.pkgsend(url,
-                            "add file %s path=/bin/ls" % imaginary_file, exit=1)
+                            "add file {0} path=/bin/ls".format(imaginary_file), exit=1)
 
                         # Should fail because path=/bin/ls will be interpreted
                         # as the filename and is not a valid file.
@@ -300,7 +300,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 }
 
                 try:
-                        url = "%s/%s/0/%s" % (dhurl, "add", "/".join((trx_id,
+                        url = "{0}/{1}/0/{2}".format(dhurl, "add", "/".join((trx_id,
                             "set")))
                         req = urllib2.Request(url=url, headers=headers)
                         urllib2.urlopen(req)
@@ -318,7 +318,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 reasons."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://%s" % self.dc.get_repodir()
+                dfurl = "file://{0}".format(self.dc.get_repodir())
 
                 for url in (dhurl, dfurl):
                         # Should fail because no fmri was specified.
@@ -350,7 +350,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                 # ensure we fail when presented with a file://host/path/example_repo
                 # which includes a hostname, bug 14022
-                self.pkgsend("file:/%s" % rpath, "create-repository"
+                self.pkgsend("file:/{0}".format(rpath), "create-repository"
                     " --set-property publisher.prefix=test", exit=1)
 
                 # check that we can create a repository using URIs with varying
@@ -358,7 +358,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 for slashes in [ "", "//", "///", "////" ]:
                         if os.path.exists(rpath):
                                 shutil.rmtree(rpath)
-                        self.pkgsend("file:%s%s" % (slashes, rpath), "create-repository"
+                        self.pkgsend("file:{0}{1}".format(slashes, rpath), "create-repository"
                             " --set-property publisher.prefix=test")
 
                         # Assert that create-repository creates as version 3
@@ -403,9 +403,9 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 dhurl = self.dc.get_depot_url()
                 self.pkgsend_bulk(dhurl,
                     """open testlinkedfile@1.0
-                    add file %s mode=0755 owner=root group=bin path=/tmp/f.foo
-                    add file %s mode=0755 owner=root group=bin path=/tmp/l.foo
-                    close""" % (os.path.basename(fpath), os.path.basename(lpath)))
+                    add file {0} mode=0755 owner=root group=bin path=/tmp/f.foo
+                    add file {1} mode=0755 owner=root group=bin path=/tmp/l.foo
+                    close""".format(os.path.basename(fpath), os.path.basename(lpath)))
 
                 # Finally, verify that both files were published.
                 self.image_create(dhurl)
@@ -431,7 +431,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                             """)
 
                 dhurl = self.dc.get_depot_url()
-                self.pkgsend(dhurl, """publish -d %s -d %s < %s""" % (dir_1,
+                self.pkgsend(dhurl, """publish -d {0} -d {1} < {2}""".format(dir_1,
                     dir_2, mfpath))
 
                 self.image_create(dhurl)
@@ -470,56 +470,56 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         name = os.path.basename(src_dir)
 
                         # File at top level in source directory.
-                        top_file = os.path.join(src_dir, "file-%s" % name)
+                        top_file = os.path.join(src_dir, "file-{0}".format(name))
                         self.make_misc_files(os.path.relpath(top_file, src_dir),
                             prefix=name, mode=0644)
 
                         # Link at top level in source directory.
                         os.chdir(src_dir)
-                        os.symlink(os.path.basename(top_file), "link-%s" % name)
+                        os.symlink(os.path.basename(top_file), "link-{0}".format(name))
                         os.chdir(cwd)
 
                         # Hard link at top level in source directory.
                         os.link(top_file, os.path.join(src_dir,
-                            "hardlink-%s" % name))
+                            "hardlink-{0}".format(name)))
 
                         # Directory at top level in source directory.
-                        top_dir = os.path.join(src_dir, "dir-%s" % name)
+                        top_dir = os.path.join(src_dir, "dir-{0}".format(name))
                         os.mkdir(top_dir, 0755)
 
                         # File in top_dir.
                         top_dir_file = os.path.join(top_dir,
-                            "subfile-%s" % name)
+                            "subfile-{0}".format(name))
                         self.make_misc_files(os.path.relpath(top_dir_file,
                             src_dir), prefix=name, mode=0444)
 
                         # Link in top_dir to file in parent dir.
                         os.chdir(top_dir)
                         os.symlink(os.path.relpath(top_file, top_dir),
-                            "sublink-%s" % name)
+                            "sublink-{0}".format(name))
                         os.chdir(cwd)
 
                         # Link in top_dir to file in top_dir.
                         os.chdir(top_dir)
                         os.symlink(os.path.basename(top_dir_file),
-                            "subfilelink-%s" % name)
+                            "subfilelink-{0}".format(name))
                         os.chdir(cwd)
 
                         # Hard link in top_dir to file in parent dir.
                         os.link(top_file, os.path.join(top_dir,
-                            "subhardlink-%s" % name))
+                            "subhardlink-{0}".format(name)))
 
                         # Hard link in top_dir to file in top_dir.
                         os.link(top_dir_file, os.path.join(top_dir,
-                            "subfilehardlink-%s" % name))
+                            "subfilehardlink-{0}".format(name)))
 
                         # Directory in top_dir.
-                        sub_dir = os.path.join(top_dir, "subdir-%s" % name)
+                        sub_dir = os.path.join(top_dir, "subdir-{0}".format(name))
                         os.mkdir(sub_dir, 0750)
 
                         # File in sub_dir.
                         sub_dir_file = os.path.join(sub_dir,
-                            "subdirfile-%s" % name)
+                            "subdirfile-{0}".format(name))
                         self.make_misc_files(os.path.relpath(sub_dir_file,
                             src_dir), prefix=name, mode=0400)
 
@@ -553,31 +553,31 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 # support import.
                 url = self.dc.get_depot_url()
                 self.pkgsend(url, "open foo@1.0")
-                self.pkgsend(url, "import %s" % src_dir1)
-                self.pkgsend(url, "import %s/" % src_dir2)
+                self.pkgsend(url, "import {0}".format(src_dir1))
+                self.pkgsend(url, "import {0}/".format(src_dir2))
                 ret, sfmri = self.pkgsend(url, "close")
                 foo_fmri = fmri.PkgFmri(sfmri)
 
                 # Test with and without trailing slash on generate path.
                 # This cannot be done using pkgsend_bulk, which doesn't
                 # support generate.
-                rc, out1 = self.pkgsend(url, "generate %s" % src_dir1)
-                rc, out2 = self.pkgsend(url, "generate %s/" % src_dir2)
+                rc, out1 = self.pkgsend(url, "generate {0}".format(src_dir1))
+                rc, out2 = self.pkgsend(url, "generate {0}/".format(src_dir2))
 
                 # Test with non existing bundle
                 non_existing_bundle = os.path.join(self.test_root,
                     "non_existing_bundle.tar")
-                rc, out3 = self.pkgsend(url, "generate %s" % non_existing_bundle,
+                rc, out3 = self.pkgsend(url, "generate {0}".format(non_existing_bundle),
                     exit=1)
 
                 # Test with unknown bundle
                 unknown_bundle = self.make_misc_files("tmp/unknown_file")
-                rc, out3 = self.pkgsend(url, "generate %s" % unknown_bundle,
+                rc, out3 = self.pkgsend(url, "generate {0}".format(unknown_bundle),
                     exit=1)
 
                 self.pkgsend(url, "open bar@1.0")
                 mpath = self.make_misc_files({ "bar.mfst": out1 + out2 })[0]
-                self.pkgsend(url, "include -d %s -d %s %s" % (src_dir1,
+                self.pkgsend(url, "include -d {0} -d {1} {2}".format(src_dir1,
                     src_dir2, mpath))
                 ret, sfmri = self.pkgsend(url, "close")
                 bar_fmri = fmri.PkgFmri(sfmri)
@@ -721,8 +721,8 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 prototype.write(prototype_contents)
                 prototype.close()
 
-                self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
-                         (pkgroot, rootdir, prototypepath), coverage=False)
+                self.cmdline_run("pkgmk -o -r {0} -d {1} -f {2}".format(
+                         pkgroot, rootdir, prototypepath), coverage=False)
 
                 shutil.rmtree(pkgroot)
 
@@ -730,7 +730,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """Private helper function to test pkgsend import."""
 
                 self.pkgsend(url, "open nopkg@1.0")
-                self.pkgsend(url, "import %s" % spath)
+                self.pkgsend(url, "import {0}".format(spath))
                 self.pkgsend(url, "close")
 
                 self.image_create(url)
@@ -748,14 +748,14 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.create_repo(rpath,
                     properties={ "publisher": { "prefix": "test" }})
 
-                self.pkgsend(None, "generate %s > %s" % (spath, mpath))
+                self.pkgsend(None, "generate {0} > {1}".format(spath, mpath))
                 with open(mpath, "a+") as mf:
                         mf.write("set name=pkg.fmri value=nopkg@1.0\n")
                 with open(mpath, "r") as mf:
                         self.debug(mf.read())
-                self.pkgsend(rpath, "publish -b %s %s" % (spath, mpath))
+                self.pkgsend(rpath, "publish -b {0} {1}".format(spath, mpath))
 
-                self.image_create("file://%s" % rpath)
+                self.image_create("file://{0}".format(rpath))
                 self.pkg("install nopkg")
                 self.validate_sysv_contents("nopkg", contents)
                 self.pkg("verify")
@@ -816,7 +816,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 published to a repo and installed to an image."""
                 self.create_sysv_package(self.test_root, self.sysv_prototype,
                     self.sysv_contents)
-                self.cmdline_run("pkgtrans -s %s %s nopkg" % (self.test_root,
+                self.cmdline_run("pkgtrans -s {0} {1} nopkg".format(self.test_root,
                         os.path.join(self.test_root, "nopkg.pkg")),
                         coverage=False)
 
@@ -837,7 +837,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """
 
                 # verify we have copyright text
-                self.pkg("info --license %s" % pkgname)
+                self.pkg("info --license {0}".format(pkgname))
 
                 for entry in contents_dict:
                         name = os.path.join(self.img_path(), entry)
@@ -863,7 +863,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                     name, return_content=True,
                                     hash_func=DEFAULT_HASH_FUNC)
                                 self.assertEqual(digest, pkg5_digest,
-                                    "%s: %s != %s, '%s'" % (name, digest,
+                                    "{0}: {1} != {2}, '{3}'".format(name, digest,
                                     pkg5_digest, contents))
 
                         st = os.stat(os.path.join(self.img_path(), name))
@@ -878,7 +878,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """Verify that "pkgsend refresh-index" triggers indexing."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://%s" % urllib.pathname2url(self.dc.get_repodir())
+                dfurl = "file://{0}".format(urllib.pathname2url(self.dc.get_repodir()))
 
                 fd, fpath = tempfile.mkstemp(dir=self.test_root)
 
@@ -888,8 +888,8 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.dc.set_readonly()
 
                 self.pkgsend(dfurl, "open file@1.0")
-                self.pkgsend(dfurl, "add file %s %s path=/tmp/f.foo" \
-                    % ( fpath, "mode=0755 owner=root group=bin" ))
+                self.pkgsend(dfurl, "add file {0} {1} path=/tmp/f.foo" \
+                   .format(fpath, "mode=0755 owner=root group=bin"))
 
                 # Verify that --no-index (even though it is now ignored) can be
                 # specified and doesn't cause pkgsend failure.
@@ -909,8 +909,8 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.dc.start()
 
                 self.pkgsend(dhurl, "open http@1.0")
-                self.pkgsend(dhurl, "add file %s %s path=/tmp/f.foo" \
-                    % (fpath, "mode=0755 owner=root group=bin" ))
+                self.pkgsend(dhurl, "add file {0} {1} path=/tmp/f.foo" \
+                   .format(fpath, "mode=0755 owner=root group=bin"))
                 self.pkgsend(dhurl, "close")
 
                 self.wait_repo(self.dc.get_repodir())
@@ -1004,8 +1004,8 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 try:
                                         self.pkgsend_bulk(url, p2, exit=exit)
                                 except:
-                                        self.debug("Expected exit code %s "
-                                            "while publishing %s" % (exit,
+                                        self.debug("Expected exit code {0} "
+                                            "while publishing {1}".format(exit,
                                             p2))
                                         raise
 
@@ -1035,21 +1035,21 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 f = file(fpath, "w")
                 f.write(pkg_manifest)
                 f.close()
-                self.pkgsend("file://%s" % rpath,
+                self.pkgsend("file://{0}".format(rpath),
                     "create-repository --set-property publisher.prefix=test")
 
                 repo = self.dc.get_repo()
                 cat_path = repo.catalog_1("catalog.attrs")
                 mtime = os.stat(cat_path).st_mtime
-                self.pkgsend("file://%s" % rpath, "publish --fmri-in-manifest "
-                    "--no-catalog %s" % fpath)
+                self.pkgsend("file://{0}".format(rpath), "publish --fmri-in-manifest "
+                    "--no-catalog {0}".format(fpath))
                 new_mtime = os.stat(cat_path).st_mtime
                 # Check that modified times are the same before and after
                 # publication.
                 self.assertEqual(mtime, new_mtime)
 
-                self.pkgsend("file://%s" % rpath, "open bar@1.0")
-                self.pkgsend("file://%s" % rpath, "close --no-catalog")
+                self.pkgsend("file://{0}".format(rpath), "open bar@1.0")
+                self.pkgsend("file://{0}".format(rpath), "close --no-catalog")
                 new_mtime = os.stat(cat_path).st_mtime
                 # Check that modified times are the same before and after
                 # publication
@@ -1078,8 +1078,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                         manfpath = path + ".manifest"
                         self.make_misc_files({
                             manfpath:
-                                "file %s mode=0644 owner=root group=bin "
-                                "path=/foo%s" % (path, path)})
+                                "file {0} mode=0644 owner=root group=bin "
+                                "path=/foo{1}".format(path, path)})
 
                 # publish
                 url = self.dc.get_depot_url()
@@ -1092,7 +1092,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.image_create(url)
                 for path in test_files:
                         self.pkg("contents -r -H -o action.raw -t file multiple_mf |"
-                            " grep %s" % path)
+                            " grep {0}".format(path))
                 self.image_destroy()
 
         def test_17_include_errors(self):
@@ -1112,7 +1112,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                     "invalid": "!%^$%^@*&$ bobcat",
                     "empty": "",
                 })
-                self.pkgsend(url, "include %s" % " ".join(misc), exit=1)
+                self.pkgsend(url, "include {0}".format(" ".join(misc)), exit=1)
 
         def test_18_broken_sysv_dir(self):
                 """ A SVR4 directory-format package containing class action
@@ -1123,11 +1123,11 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 url = self.dc.get_depot_url()
 
                 self.pkgsend(url, "open nopkg@1.0")
-                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"),
+                self.pkgsend(url, "import {0}".format(os.path.join(rootdir, "nopkg")),
                     exit=1)
                 self.check_sysv_scripting(self.errout)
 
-                self.pkgsend(url, "generate %s" % os.path.join(rootdir, "nopkg"),
+                self.pkgsend(url, "generate {0}".format(os.path.join(rootdir, "nopkg")),
                     exit=1)
                 self.check_sysv_scripting(self.errout)
                 self.check_sysv_parameters(self.output)
@@ -1138,7 +1138,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 rootdir = self.test_root
                 self.create_sysv_package(rootdir, self.sysv_classes_prototype,
                     self.sysv_contents)
-                self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
+                self.cmdline_run("pkgtrans -s {0} {1} nopkg".format(rootdir,
                         os.path.join(rootdir, "nopkg.pkg")), coverage=False)
 
                 url = self.dc.get_depot_url()
@@ -1149,12 +1149,12 @@ dir path=foo/bar mode=0755 owner=root group=bin
                         self.assert_("ERROR: script present in nopkg: postinstall" in err)
 
                 self.pkgsend(url, "open nopkg@1.0")
-                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg.pkg"),
+                self.pkgsend(url, "import {0}".format(os.path.join(rootdir, "nopkg.pkg")),
                     exit=1)
                 self.check_sysv_scripting(self.errout)
 
-                self.pkgsend(url, "generate %s" % os.path.join(rootdir,
-                    "nopkg.pkg"), exit=1)
+                self.pkgsend(url, "generate {0}".format(os.path.join(rootdir,
+                    "nopkg.pkg")), exit=1)
                 self.check_sysv_scripting(self.errout)
                 self.check_sysv_parameters(self.output)
 
@@ -1187,10 +1187,10 @@ dir path=foo/bar mode=0755 owner=root group=bin
                     self.sysv_contents, pkginfo_contents=self.sysv_pkginfo_2)
                 url = self.dc.get_depot_url()
 
-                self.cmdline_run("pkgtrans -s %s %s nopkg nopkgtwo" % (rootdir,
+                self.cmdline_run("pkgtrans -s {0} {1} nopkg nopkgtwo".format(rootdir,
                     os.path.join(rootdir, "nopkg.pkg")), coverage=False)
-                self.pkgsend(url, "generate %s" % os.path.join(rootdir,
-                    "nopkg.pkg"), exit=1)
+                self.pkgsend(url, "generate {0}".format(os.path.join(rootdir,
+                    "nopkg.pkg")), exit=1)
                 self.assert_("Multi-package datastreams are not supported." in
                     self.errout)
 
@@ -1230,7 +1230,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 dhurl = self.dc.get_depot_url()
                 # -s may be specified either as a global option or as a local
                 # option for the publish subcommand.
-                self.pkgsend("", "-s %s publish -d %s -d %s < %s" % (dhurl,
+                self.pkgsend("", "-s {0} publish -d {1} -d {2} < {3}".format(dhurl,
                     dir_1, dir_2, mfpath))
 
                 self.image_create(dhurl)
@@ -1241,7 +1241,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkg("verify")
                 self.image_destroy()
 
-                self.pkgsend("", "publish -s %s -d %s -d %s < %s" % (dhurl,
+                self.pkgsend("", "publish -s {0} -d {1} -d {2} < {3}".format(dhurl,
                     dir_1, dir_2, mfpath))
 
                 self.image_create(dhurl)
@@ -1263,7 +1263,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                             """)
 
                 dhurl = self.dc.get_depot_url()
-                self.pkgsend("", "-s %s publish -d %s < %s" % (dhurl,
+                self.pkgsend("", "-s {0} publish -d {1} < {2}".format(dhurl,
                     dir_1, mfpath), exit=1)
 
         def test_24_pkgsend_publish_payloaded_link(self):
@@ -1274,17 +1274,17 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 with open(mfpath, "wb") as mf:
                         mf.write("""set name=pkg.fmri value=foo@1
 link payload-pathname path=/usr/bin/foo target=bar""")
-                self.pkgsend("", "-s %s publish %s" %
-                    (self.dc.get_depot_url(), mfpath), exit=1)
-                self.pkgsend("", "-s %s publish %s" %
-                    (self.dc.get_repo_url(), mfpath), exit=1)
+                self.pkgsend("", "-s {0} publish {1}".format(
+                    self.dc.get_depot_url(), mfpath), exit=1)
+                self.pkgsend("", "-s {0} publish {1}".format(
+                    self.dc.get_repo_url(), mfpath), exit=1)
                 with open(mfpath, "wb") as mf:
                         mf.write("""set name=pkg.fmri value=foo@1
 dir path=/usr/bin/foo target=bar hash=payload-pathname""")
-                self.pkgsend("", "-s %s publish %s" %
-                    (self.dc.get_depot_url(), mfpath), exit=1)
-                self.pkgsend("", "-s %s publish %s" %
-                    (self.dc.get_repo_url(), mfpath), exit=1)
+                self.pkgsend("", "-s {0} publish {1}".format(
+                    self.dc.get_depot_url(), mfpath), exit=1)
+                self.pkgsend("", "-s {0} publish {1}".format(
+                    self.dc.get_repo_url(), mfpath), exit=1)
 
         def test_25_pkgsend_publish_nohash_license(self):
                 """Verify that publishing a manifest with hash attribute
@@ -1319,20 +1319,20 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 with open(mfpath, "wb") as mf:
                         mf.write("""
 set name=pkg.fmri value=pkg:/multihash@1.0
-file %s path=/foo owner=root group=sys mode=0644 pkg.hash.%s=spaghetti \
+file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
     pkg.hash.rot13=caesar
-""" % (payload, hash_alg))
-                self.pkgsend("", "-s %s publish %s" % (furi, mfpath))
+""".format(payload, hash_alg))
+                self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath))
                 self.image_create(furi)
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.%s=spaghetti" % hash_alg in self.output)
+                self.assert_("pkg.hash.{0}=spaghetti".format(hash_alg in self.output))
 
-                self.pkgsend("", "-s %s publish %s" % (furi, mfpath),
-                    debug_hash="sha1+%s" % hash_alg)
+                self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath),
+                    debug_hash="sha1+{0}".format(hash_alg))
                 self.pkg("refresh")
 
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.%s=spaghetti" % hash_alg
+                self.assert_("pkg.hash.{0}=spaghetti".format(hash_alg)
                     not in self.output)
                 self.assert_("pkg.hash.rot13=caesar" in self.output)
 
@@ -1430,12 +1430,12 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
                         res = []
                         for a1, a2 in added:
-                                res.append("+ %s" % a2)
+                                res.append("+ {0}".format(a2))
                         for a1, a2 in changed:
-                                res.append("- %s" % a1)
-                                res.append("+ %s" % a2)
+                                res.append("- {0}".format(a1))
+                                res.append("+ {0}".format(a2))
                         for a1, a2 in removed:
-                                res.append("- %s" % a1)
+                                res.append("- {0}".format(a1))
 
                         return "\n".join(res)
 
@@ -1448,7 +1448,7 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
                 def do_test(*pathnames):
                         self.debug("=" * 70)
-                        self.debug("Testing: %s" % (pathnames,))
+                        self.debug("Testing: {0}".format(pathnames,))
                         for i in xrange(len(pathnames)):
                                 l = list(pathnames)
                                 p = l.pop(i)
@@ -1456,9 +1456,9 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
                 def do_test_one(target, links):
                         self.debug("-" * 70)
-                        self.debug("Testing: %s %s" % (target, links))
+                        self.debug("Testing: {0} {1}".format(target, links))
                         tpath = self.make_misc_files(target, rootdir)[0]
-                        expected_mf = "file %s path=%s\n" % (target, target)
+                        expected_mf = "file {0} path={1}\n".format(target, target)
                         dirs = set()
 
                         # Iterate over the links, creating them and adding them
@@ -1469,7 +1469,7 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                                 if not os.path.exists(ldir):
                                         os.makedirs(ldir)
                                 os.link(tpath, lpath)
-                                expected_mf += "hardlink path=%s target=%s\n" % (
+                                expected_mf += "hardlink path={0} target={1}\n".format(
                                     link, os.path.relpath(tpath, ldir))
                                 # Add the directories implied by the link
                                 dirs.update(dirlist(os.path.dirname(link)))
@@ -1478,12 +1478,12 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                         dirs.update(dirlist(os.path.dirname(target)))
                         dirs.discard(""); dirs.discard(".")
                         for d in dirs:
-                                expected_mf += "dir path=%s\n" % d
+                                expected_mf += "dir path={0}\n".format(d)
 
                         self.debug("EXPECTED:\n" + expected_mf + 40 * "=")
 
                         # Generate the manifest
-                        targetargs = "".join(("--target %s " % t for t in
+                        targetargs = "".join(("--target {0} ".format(t) for t in
                             [target]))
                         rc, out = self.pkgsend(command="generate " +
                             targetargs + rootdir)
@@ -1542,11 +1542,11 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 pkg5unittest.HTTPSTestClass.setUp(self, [pub],
                     start_depots=True)
 
-                self.url = self.ac.url + "/%s" % pub
+                self.url = self.ac.url + "/{0}".format(pub)
                 self.make_misc_files(self.misc_files)
                 #set permissions of tmp/verboten to make it non-readable
                 self.verboten = os.path.join(self.test_root, "tmp/verboten")
-                os.system("chmod 600 %s" % self.verboten)
+                os.system("chmod 600 {0}".format(self.verboten))
 
         def test_01_basics(self):
                 """Test that publishing to an SSL-secured repo works"""
@@ -1583,48 +1583,48 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 # Add the trust anchor needed to verify the server's identity.
                 self.seed_ta_dir("ta7")
 
-                # Try to publish a simple package to SSL-secured repo
-                self.pkgsend(self.url, "publish --key %(key)s --cert %(cert)s "
-                    "-d %(dir)s %(mani)s" % arg_dict)
+                # Try to publish a simple package to SSL-secured repo  
+                self.pkgsend(self.url, "publish --key {key} --cert {cert} "
+                    "-d {dir} {mani}".format(**arg_dict))
 
                 # Try to publish a simple package to SSL-secured repo without
-                # prvoviding certs (should fail).
-                self.pkgsend(self.url, "publish -d %(dir)s %(mani)s" % arg_dict,
+                # prvoviding certs (should fail).  
+                self.pkgsend(self.url, "publish -d {dir} {mani}".format(**arg_dict),
                     exit=1)
 
                 # Make sure we don't traceback when credential files are invalid
                 # Certificate option missing
-                self.pkgsend(self.url, "publish --key %(key)s "
-                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --key {key} "
+                    "-d {dir} {mani}".format(**arg_dict), exit=1)
 
                 # Key option missing
-                self.pkgsend(self.url, "publish --cert %(cert)s "
-                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --cert {cert} "
+                    "-d {dir} {mani}".format(**arg_dict), exit=1)
 
                 # Certificate not found
-                self.pkgsend(self.url, "publish --key %(key)s "
-                    "--cert %(noexist)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --key {key} "
+                    "--cert {noexist} -d {dir} {mani}".format(**arg_dict), exit=1)
 
                 # Key not found
-                self.pkgsend(self.url, "publish --key %(noexist)s "
-                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --key {noexist} "
+                    "--cert {cert} -d {dir} {mani}".format(**arg_dict), exit=1)
 
                 # Certificate is empty file
-                self.pkgsend(self.url, "publish --key %(key)s --cert %(empty)s "
-                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --key {key} --cert {empty} "
+                    "-d {dir} {mani}".format(**arg_dict), exit=1)
 
                 # Key is empty file
-                self.pkgsend(self.url, "publish --key %(empty)s "
-                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+                self.pkgsend(self.url, "publish --key {empty} "
+                    "--cert {cert} -d {dir} {mani}".format(**arg_dict), exit=1)
 
-                # No permissions to read certificate
-                self.pkgsend(self.url, "publish --key %(key)s "
-                    "--cert %(verboten)s -d %(dir)s %(mani)s" % arg_dict,
+                # No permissions to read certificate 
+                self.pkgsend(self.url, "publish --key {key} "
+                    "--cert {verboten} -d {dir} {mani}".format(**arg_dict),
                     su_wrap=True, exit=1)
 
-                # No permissions to read key
-                self.pkgsend(self.url, "publish --key %(verboten)s "
-                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict,
+                # No permissions to read key 
+                self.pkgsend(self.url, "publish --key {verboten} "
+                    "--cert {cert} -d {dir} {mani}".format(**arg_dict),
                     su_wrap=True, exit=1)
 
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import M2Crypto as m2
@@ -328,9 +328,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not loc_is_dir and os.path.exists(trust_anchor_loc):
                         raise apx.InvalidPropertyValue(_("The trust "
                             "anchors for the image were expected to be found "
-                            "in %s, but that is not a directory.  Please set "
+                            "in {0}, but that is not a directory.  Please set "
                             "the image property 'trust-anchor-directory' to "
-                            "the correct path.") % trust_anchor_loc)
+                            "the correct path.").format(trust_anchor_loc))
                 self.__trust_anchors = {}
                 if loc_is_dir:
                         for fn in os.listdir(trust_anchor_loc):
@@ -361,9 +361,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """A list of strings decribing errors encountered while parsing
                 trust anchors."""
 
-                return [_("%(path)s is expected to be a certificate but could "
-                    "not be parsed.  The error encountered was:\n\t%(err)s") %
-                    {"path": p, "err": e}
+                return [_("{path} is expected to be a certificate but could "
+                    "not be parsed.  The error encountered "
+                    "was:\n\t{err}").format(path=p, err=e)
                     for p, e in self.__bad_trust_anchors
                 ]
 
@@ -737,8 +737,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 startd = root
                         raise RuntimeError, \
                            "Live root image access is disabled but was \
-                           attempted.\nliveroot: %s\nimage path: %s" % \
-                           (misc.liveroot(), startd)
+                           attempted.\nliveroot: {0}\nimage path: {1}".format(
+                           misc.liveroot(), startd)
 
                 self.__root = root
                 self.type = imgtype
@@ -916,7 +916,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if self.__user_cache_dir:
                         self._incoming_cache_dir = os.path.join(
                             self.__user_cache_dir,
-                            "incoming-%d" % os.getpid())
+                            "incoming-{0:d}".format(os.getpid()))
 
                 if self.version < 4:
                         self.__action_cache_dir = self.temporary_dir()
@@ -930,13 +930,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     self.imgdir, "download")
                                 self._incoming_cache_dir = os.path.join(
                                     self.__write_cache_dir,
-                                    "incoming-%d" % os.getpid())
+                                    "incoming-{0:d}".format(os.getpid()))
                         self.__read_cache_dirs.append(os.path.normpath(
                             os.path.join(self.imgdir, "download")))
                 elif not self._incoming_cache_dir:
                         # Only a global incoming cache exists for newer images.
                         self._incoming_cache_dir = os.path.join(self.imgdir,
-                            "cache", "incoming-%d" % os.getpid())
+                            "cache", "incoming-{0:d}".format(os.getpid()))
 
                 # Test if we have the permissions to create the cache
                 # incoming directory in this hierarchy.  If not, we'll need to
@@ -946,10 +946,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__write_cache_dir = tempfile.mkdtemp(
-                                    prefix="download-%d-" % os.getpid())
+                                    prefix="download-{0:d}-".format(
+                                    os.getpid()))
                                 self._incoming_cache_dir = os.path.normpath(
                                     os.path.join(self.__write_cache_dir,
-                                    "incoming-%d" % os.getpid()))
+                                    "incoming-{0:d}".format(os.getpid())))
                                 self.__read_cache_dirs.append(
                                     self.__write_cache_dir)
                                 # There's no image cleanup hook, so we'll just
@@ -1040,7 +1041,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if os.path.exists(orig_root):
                                 # Ensure all output is discarded; it really
                                 # doesn't matter if this succeeds.
-                                subprocess.Popen("rm -rf %s" % orig_root,
+                                subprocess.Popen("rm -rf {0}".format(orig_root),
                                     shell=True, stdout=nullf, stderr=nullf)
                         return False
 
@@ -1104,10 +1105,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if flines:
                                         pub = flines[0]
                                         pub = pub.strip()
-                                        newpub = "%s_%s" % (
+                                        newpub = "{0}_{1}".format(
                                             pkg.fmri.PREF_PUB_PFX, pub)
                                 else:
-                                        newpub = "%s_%s" % (
+                                        newpub = "{0}_{1}".format(
                                             pkg.fmri.PREF_PUB_PFX,
                                             self.get_highest_ranked_publisher())
                                 pub = newpub
@@ -1115,7 +1116,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return pub
 
                 # First, load the old package state information.
-                installed_state_dir = "%s/state/installed" % self.imgdir
+                installed_state_dir = "{0}/state/installed".format(self.imgdir)
 
                 # If the state directory structure has already been created,
                 # loading information from it is fast.  The directory is
@@ -1124,14 +1125,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # directory under /var/pkg.
                 installed = {}
                 def add_installed_entry(f):
-                        path = "%s/pkg/%s/installed" % \
-                            (self.imgdir, f.get_dir_path())
+                        path = "{0}/pkg/{1}/installed".format(
+                            self.imgdir, f.get_dir_path())
                         pub = installed_file_publisher(path)
                         f.set_publisher(pub)
                         installed[f.pkg_name] = f
 
                 for pl in os.listdir(installed_state_dir):
-                        fmristr = "%s" % urllib.unquote(pl)
+                        fmristr = "{0}".format(urllib.unquote(pl))
                         f = pkg.fmri.PkgFmri(fmristr)
                         add_installed_entry(f)
 
@@ -1980,8 +1981,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not pub:
                         pub = self.get_publisher(prefix=prefix, alias=alias)
                 if not self.cfg.allowed_to_move(pub):
-                        raise apx.ModifyingSyspubException(_("Publisher '%s' "
-                            "is a system publisher and cannot be moved.") % pub)
+                        raise apx.ModifyingSyspubException(_("Publisher '{0}' "
+                            "is a system publisher and cannot be "
+                            "moved.").format(pub))
 
                 pubs = self.get_sorted_publishers()
                 relative = None
@@ -1994,8 +1996,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if self.cfg.allowed_to_move(p):
                                 relative = p
                                 break
-                assert relative, "Expected %s to already be part of the " + \
-                    "search order:%s" % (relative, ranks)
+                assert relative, "Expected {0} to already be part of the " + \
+                    "search order:{1}".format(relative, ranks)
                 self.cfg.change_publisher_search_order(pub.prefix,
                     relative.prefix, after=False)
 
@@ -2664,10 +2666,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 for elist in e.args:
                                         for entry in elist:
                                                 if type(entry) == tuple:
-                                                        msg += "%s\n" % \
-                                                            entry[-1]
+                                                        msg += "{0}\n".format(
+                                                            entry[-1])
                                                 else:
-                                                        msg += "%s\n" % entry
+                                                        msg += "{0}\n".format(
+                                                            entry)
                                 raise apx.UnknownErrors(msg)
                         raise apx._convert_error(e)
                 finally:
@@ -3428,7 +3431,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for f in cat.fmris(objects=False):
                         if anarchy:
                                 # Catalog entries always have publisher prefix.
-                                yield "pkg:/%s" % f[6:].split("/", 1)[-1]
+                                yield "pkg:/{0}".format(f[6:].split("/", 1)[-1])
                                 continue
                         yield f
 
@@ -3532,8 +3535,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         # We need to make sure the files are coordinated.
                         timestamp = int(time.time())
-                        sf.write("VERSION 1\n%s\n" % timestamp)
-                        of.write("VERSION 2\n%s\n" % timestamp)
+                        sf.write("VERSION 1\n{0}\n".format(timestamp))
+                        of.write("VERSION 2\n{0}\n".format(timestamp))
                         # The conflicting keys file doesn't need a timestamp
                         # because it's not coordinated with the stripped or
                         # offsets files and the result of loading it isn't
@@ -3560,8 +3563,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 last_key = key
                                         else:
                                                 assert cnt > 0
-                                                of.write("%s %s %s %s\n" %
-                                                    (last_name, last_offset,
+                                                of.write("{0} {1} {2} {3}\n".format(
+                                                    last_name, last_offset,
                                                     cnt, last_key))
                                                 actdict[(last_name, last_key)] = last_offset, cnt
                                                 last_name, last_key, last_offset = \
@@ -3569,13 +3572,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 cnt = 1
                                 else:
                                         cnt += 1
-                                sf.write("%s %s\n" % (fmri, act))
+                                sf.write("{0} {1}\n".format(fmri, act))
                         if last_name is not None:
                                 assert last_key is not None
                                 assert last_offset is not None
                                 assert cnt > 0
-                                of.write("%s %s %s %s\n" %
-                                    (last_name, last_offset, cnt, last_key))
+                                of.write("{0} {1} {2} {3}\n".format(
+                                    last_name, last_offset, cnt, last_key))
                                 actdict[(last_name, last_key)] = \
                                     last_offset, cnt
 
@@ -3583,7 +3586,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         bad_keys = imageplan.ImagePlan._check_actions(nsd)
                         for k in sorted(bad_keys):
-                                bf.write("%s\n" % k)
+                                bf.write("{0}\n".format(k))
 
                         progtrack.job_add_progress(progtrack.JOB_FAST_LOOKUP)
                         sf.close()
@@ -4262,7 +4265,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         ip.plan_update(**kwargs)
                                 else:
                                         raise RuntimeError(
-                                            "Unknown api op: %s" % _op)
+                                            "Unknown api op: {0}".format(_op))
 
                         except apx.ActionExecutionError, e:
                                 raise
@@ -4648,7 +4651,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         portable.rename(tmp_file, state_file)
 
                 except Exception, e:
-                        logger.warn("Cannot save avoid list: %s" % str(e))
+                        logger.warn("Cannot save avoid list: {0}".format(
+                            str(e)))
                         return
 
                 self.__avoid_set_altered = False

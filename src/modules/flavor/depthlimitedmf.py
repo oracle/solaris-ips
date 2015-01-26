@@ -2,7 +2,7 @@
 # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 
 
 """A standalone version of ModuleFinder which limits the depth of exploration
@@ -73,10 +73,10 @@ class ModuleInfo(object):
                 """Return all the file names under which this module might be
                 found."""
 
-                return ["%s%s" % (self.name, suf) for suf in self.suffixes]
+                return ["{0}{1}".format(self.name, suf) for suf in self.suffixes]
 
         def __str__(self):
-                return "name:%s suffixes:%s dirs:%s" % (self.name,
+                return "name:{0} suffixes:{1} dirs:{2}".format(self.name,
                     " ".join(self.suffixes), len(self.dirs))
 
 
@@ -351,7 +351,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         i = tail.find('.')
                         if i < 0: i = len(tail)
                         head, tail = tail[:i], tail[i+1:]
-                        new_name = "%s.%s" % (name, head)
+                        new_name = "{0}.{1}".format(name, head)
                         r = self.import_module(head, new_name, cur_parent)
                         res.append(r)
                         name = new_name
@@ -379,10 +379,10 @@ if __name__ == "__main__":
                     (tuple(m.get_file_names()), tuple(m.dirs))
                     for m in loaded_modules
                 ]):
-                        sys.stdout.write("DEP %s\n" % (res,))
+                        sys.stdout.write("DEP {0}\n".format(res))
                 missing, maybe =  mf.any_missing_maybe()
-                sys.stdout.writelines(("ERR %s\n" % name for name in missing))
+                sys.stdout.writelines(("ERR {0}\n".format(name) for name in missing))
         except ValueError as e:
-                sys.stdout.write("ERR %s\n" % e)
+                sys.stdout.write("ERR {0}\n".format(e))
         except MultipleDefaultRunPaths as e:
-                sys.stdout.write("%s\n" % e)
+                sys.stdout.write("{0}\n".format(e))

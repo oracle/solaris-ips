@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -84,11 +84,11 @@ group=bin mode=0755 owner=root path=usr/lib/python2.6/foo/bar.py
 """
 
         elf_sub_manf = """\
-file %(file_loc)s group=bin mode=0755 owner=root path=bar/foo
+file {file_loc} group=bin mode=0755 owner=root path=bar/foo
 """
 
         kernel_manf = """\
-file %(file_loc)s group=bin mode=0755 owner=root path=kernel/foobar
+file {file_loc} group=bin mode=0755 owner=root path=kernel/foobar
 """
 
         miss_payload_manf = """\
@@ -108,7 +108,7 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                 tests, it's necessary to discover what the sys.path is for the
                 version of python the test uses."""
 
-                cur_ver = "%s.%s" % sys.version_info[0:2]
+                cur_ver = "{0}.{1}".format(*sys.version_info[0:2])
                 if cur_ver == ver:
                         # Remove any paths that start with the defined python
                         # paths.
@@ -120,12 +120,12 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                         return res
 
                 sp = subprocess.Popen(
-                    "python%s -c 'import sys; print(sys.path)'" % ver,
+                    "python{0} -c 'import sys; print(sys.path)'".format(ver),
                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = sp.communicate()
                 if err:
-                        raise RuntimeError("Error running python%s:%s" %
-                            (ver, err))
+                        raise RuntimeError("Error running python{0}:{1}".format(
+                            ver, err))
                 # The first item in sys.path is empty when sys.path is examined
                 # by running python via the -c option. When running an
                 # executable python script, the first item is the directory
@@ -142,37 +142,37 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                 the paths in the list "paths" """
 
                 return " ".join([
-                    ("%(pfx)s.path=%(p)s/%(added)s" % {
+                    ("{pfx}.path={p}/{added}".format(**{
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "p": p.lstrip("/"),
                         "added": added
-                    }).rstrip("/")
+                    })).rstrip("/")
                     for p in paths
-                ] + [("%(pfx)s.path=%(p)s/%(added)s" % {
+                ] + [("{pfx}.path={p}/{added}".format(**{
                     "pfx":
                         base.Dependency.DEPEND_DEBUG_PREFIX,
                     "p": os.path.dirname(install_path),
                     "added": added,
-                }).rstrip("/")])
+                })).rstrip("/")])
 
         def make_res_manf_1(self, proto_area, reason, include_os=False):
-                return ("depend %(pfx)s.file=python "
-                    "%(pfx)s.path=usr/bin fmri=%(dummy_fmri)s "
-                    "type=require %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=script\n"
+                return ("depend {pfx}.file=python "
+                    "{pfx}.path=usr/bin fmri={dummy_fmri} "
+                    "type=require {pfx}.reason={reason} "
+                    "{pfx}.type=script\n"
 
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=authlog "
-                    "%(pfx)s.path=var/log "
-                    "type=require %(pfx)s.reason=baz "
-                    "%(pfx)s.type=hardlink\n" +
+                    "depend fmri={dummy_fmri} "
+                    "{pfx}.file=authlog "
+                    "{pfx}.path=var/log "
+                    "type=require {pfx}.reason=baz "
+                    "{pfx}.type=hardlink\n" +
                     self.make_pyver_python_res("2.6", proto_area, reason,
-                        include_os=include_os)) % {
-                    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
-                    "dummy_fmri": base.Dependency.DUMMY_FMRI,
-                    "reason": reason
-                }
+                        include_os=include_os)).format(
+                    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+                    dummy_fmri=base.Dependency.DUMMY_FMRI,
+                    reason=reason
+               )
 
         def make_full_res_manf_1(self, proto_area, reason, include_os=False):
                 return self.make_res_manf_1(proto_area, reason,
@@ -180,25 +180,25 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
 
         err_manf_1 = """\
 Couldn't find 'usr/xpg4/lib/libcurses.so.1' in any of the specified search directories:
-	%s
+	{0}
 """
         res_manf_2 = """\
-depend %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo %(pfx)s.type=elf
-""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+depend {pfx}.file=libc.so.1 {pfx}.path=lib {pfx}.path=usr/lib fmri={dummy_fmri} type=require {pfx}.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo {pfx}.type=elf
+""".format(pfx=base.Dependency.DEPEND_DEBUG_PREFIX, dummy_fmri=base.Dependency.DUMMY_FMRI)
 
         res_int_manf = """\
-depend %(pfx)s.file=syslog %(pfx)s.path=var/log fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/foo %(pfx)s.type=hardlink
-""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+depend {pfx}.file=syslog {pfx}.path=var/log fmri={dummy_fmri} type=require {pfx}.reason=usr/foo {pfx}.type=hardlink
+""".format(pfx=base.Dependency.DEPEND_DEBUG_PREFIX, dummy_fmri=base.Dependency.DUMMY_FMRI)
 
         res_manf_2_missing = "ascii text"
 
         resolve_error = """\
-%(manf_path)s has unresolved dependency '
-    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 \\
-        %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 \\
-        %(pfx)s.type=elf \\
-        %(pfx)s.path=lib \\
-        %(pfx)s.path=usr/lib
+{manf_path} has unresolved dependency '
+    depend type=require fmri={dummy_fmri} {pfx}.file=libc.so.1 \\
+        {pfx}.reason=usr/xpg4/lib/libcurses.so.1 \\
+        {pfx}.type=elf \\
+        {pfx}.path=lib \\
+        {pfx}.path=usr/lib
 ' under the following combinations of variants:
 variant.arch:foo
 """
@@ -208,24 +208,24 @@ variant.arch:foo
                 return self.make_full_res_manf_1(proto_area, reason,
                     include_os=include_os) + \
                     """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=usr/xpg4/lib/libcurses.so.1 {pfx}.type=elf type=require
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         def make_res_payload_1(self, proto_area, reason):
-                return ("depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=python "
-                    "%(pfx)s.path=usr/bin "
-                    "%(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=script type=require\n" +
-                    self.make_pyver_python_res("2.6", proto_area, reason)) % {
+                return ("depend fmri={dummy_fmri} "
+                    "{pfx}.file=python "
+                    "{pfx}.path=usr/bin "
+                    "{pfx}.reason={reason} "
+                    "{pfx}.type=script type=require\n" +
+                    self.make_pyver_python_res("2.6", proto_area, reason)).format(**{
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "dummy_fmri":base.Dependency.DUMMY_FMRI,
                         "reason": reason
-                    }
+                    })
 
         two_variant_deps = """\
 set name=variant.foo value=bar value=baz
@@ -257,25 +257,25 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
 """
 
         two_v_deps_verbose_output = """\
-# %(m1_path)s
+# {m1_path}
 depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.path-id=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
 
 
-# %(m2_path)s
+# {m2_path}
 
 
 
-# %(m3_path)s
+# {m3_path}
 
 
 
-# %(m4_path)s
+# {m4_path}
 """
 
         two_v_deps_output = """\
-# %(m1_path)s
+# {m1_path}
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=three value=two
 depend fmri=pkg:/s-v-bar type=require
@@ -283,16 +283,16 @@ depend fmri=pkg:/s-v-baz-one type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two type=require variant.foo=baz variant.num=two
 
 
-# %(m2_path)s
-%(m2_fmt)s
+# {m2_path}
+{m2_fmt}
 
 
-# %(m3_path)s
-%(m3_fmt)s
+# {m3_path}
+{m3_fmt}
 
 
-# %(m4_path)s
-%(m4_fmt)s
+# {m4_path}
+{m4_fmt}
 """
 
         dup_variant_deps = """\
@@ -351,16 +351,16 @@ depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.f
 """
 
         payload_elf_sub_error = """\
-%(payload_path)s (which will be installed at %(installed_path)s) had this token, %(tok)s, in its run path: %(rp)s.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+{payload_path} (which will be installed at {installed_path}) had this token, {tok}, in its run path: {rp}.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         payload_elf_sub_stdout = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1%(replaced_path)s %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI,
-    "replaced_path":"%(replaced_path)s"
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1{replaced_path} {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=bar/foo {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI,
+    replaced_path="{replaced_path}"
+)
 
         #
         # You may wonder why libc.so.1 is here as a dependency-- it's an
@@ -370,64 +370,64 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1%(replaced_path)s %(pfx)s.path=
         # depend on another kernel module.
         #
         kernel_manf_stdout = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=kernel %(pfx)s.path=usr/kernel %(pfx)s.reason=kernel/foobar %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=kernel {pfx}.path=usr/kernel {pfx}.reason=kernel/foobar {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         kernel_manf_stdout2 = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=baz %(pfx)s.path=foo/bar %(pfx)s.reason=kernel/foobar %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=baz {pfx}.path=foo/bar {pfx}.reason=kernel/foobar {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         kernel_manf_stdout_platform = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=platform/baz/kernel %(depend_debug_prefix)s.path=platform/tp/kernel %(depend_debug_prefix)s.path=kernel %(depend_debug_prefix)s.path=usr/kernel %(depend_debug_prefix)s.reason=kernel/foobar %(depend_debug_prefix)s.type=elf type=require\
-""" % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {depend_debug_prefix}.file=libc.so.1 {depend_debug_prefix}.path=platform/baz/kernel {depend_debug_prefix}.path=platform/tp/kernel {depend_debug_prefix}.path=kernel {depend_debug_prefix}.path=usr/kernel {depend_debug_prefix}.reason=kernel/foobar {depend_debug_prefix}.type=elf type=require\
+""".format(
+    depend_debug_prefix=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         miss_payload_manf_error = """\
 Couldn't find 'foo/bar.py' in any of the specified search directories:
-	%(path_pref)s
+	{path_pref}
 """
 
         double_plat_error = """\
-%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
-%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
+{proto_dir}/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
+{proto_dir}/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
 
         double_plat_stdout = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=bar/foo {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         double_plat_isa_error = """\
-%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path: /$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+{proto_dir}/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path: /$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         double_plat_isa_stdout = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=platform/pfoo/foo %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=platform/pfoo/foo {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=bar/foo {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         double_double_stdout = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=platform/pfoo/foo %(pfx)s.path=platform/pfoo2/foo %(pfx)s.path=isadir/pfoo/baz %(pfx)s.path=isadir/pfoo2/baz %(pfx)s.path=isadir/pfoo/baz %(pfx)s.path=isadir/pfoo2/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI
-}
+depend fmri={dummy_fmri} {pfx}.file=libc.so.1 {pfx}.path=platform/pfoo/foo {pfx}.path=platform/pfoo2/foo {pfx}.path=isadir/pfoo/baz {pfx}.path=isadir/pfoo2/baz {pfx}.path=isadir/pfoo/baz {pfx}.path=isadir/pfoo2/baz {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=bar/foo {pfx}.type=elf type=require\
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI
+)
 
         two_v_deps_resolve_error = """\
-%(manf_path)s has unresolved dependency '
-    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=var/log/authlog \\
-        %(pfx)s.reason=baz %(pfx)s.type=hardlink
+{manf_path} has unresolved dependency '
+    depend type=require fmri={dummy_fmri} {pfx}.file=var/log/authlog \\
+        {pfx}.reason=baz {pfx}.type=hardlink
 ' under the following combinations of variants:
 variant.foo:baz variant.num:three
 """
@@ -468,44 +468,44 @@ file NOHASH path=platform/foo/baz/no_such_named_file
 """
 
         run_path_errors = """\
-The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require delivered in pkg:/collision_manf has paths which resolve to multiple packages.
+The file dependency depend fmri={dummy_fmri} {pfx}.file=no_such_named_file {pfx}.path=platform/foo/baz {pfx}.path=platform/bar/baz {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=foo/bar {pfx}.type=elf type=require delivered in pkg:/collision_manf has paths which resolve to multiple packages.
 The actions are:
-	depend fmri=pkg:/sat_bar_libc %(pfx)s.file=platform/bar/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
-	depend fmri=pkg:/sat_foo_libc %(pfx)s.file=platform/foo/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
-%(unresolved_path)s has unresolved dependency '
-    depend type=require fmri=__TBD %(pfx)s.file=no_such_named_file \\
-        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
-        %(pfx)s.path=lib \\
-        %(pfx)s.path=platform/bar/baz \\
-        %(pfx)s.path=platform/foo/baz \\
-        %(pfx)s.path=usr/lib'.
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI,
-    "unresolved_path":"%(unresolved_path)s",
-}
+	depend fmri=pkg:/sat_bar_libc {pfx}.file=platform/bar/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
+	depend fmri=pkg:/sat_foo_libc {pfx}.file=platform/foo/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
+{unresolved_path} has unresolved dependency '
+    depend type=require fmri=__TBD {pfx}.file=no_such_named_file \\
+        {pfx}.reason=foo/bar {pfx}.type=elf \\
+        {pfx}.path=lib \\
+        {pfx}.path=platform/bar/baz \\
+        {pfx}.path=platform/foo/baz \\
+        {pfx}.path=usr/lib'.
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI,
+    unresolved_path="{unresolved_path}"
+)
 
         amb_path_errors = """\
 The file dependency
-    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file \\
-        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
-        %(pfx)s.path=platform/foo/baz \\
-        %(pfx)s.path=platform/bar/baz \\
-        %(pfx)s.path=lib \\
-        %(pfx)s.path=usr/lib
+    depend type=require fmri={dummy_fmri} {pfx}.file=no_such_named_file \\
+        {pfx}.reason=foo/bar {pfx}.type=elf \\
+        {pfx}.path=platform/foo/baz \\
+        {pfx}.path=platform/bar/baz \\
+        {pfx}.path=lib \\
+        {pfx}.path=usr/lib
 depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
-%(unresolved_path)s has unresolved dependency '
-    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file \\
-        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
-        %(pfx)s.path=lib \\
-        %(pfx)s.path=platform/foo/baz \\
-        %(pfx)s.path=platform/bar/baz \\
-        %(pfx)s.path=usr/lib'.
-""" % {
-    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri":base.Dependency.DUMMY_FMRI,
-    "unresolved_path":"%(unresolved_path)s"
-}
+{unresolved_path} has unresolved dependency '
+    depend type=require fmri={dummy_fmri} {pfx}.file=no_such_named_file \\
+        {pfx}.reason=foo/bar {pfx}.type=elf \\
+        {pfx}.path=lib \\
+        {pfx}.path=platform/foo/baz \\
+        {pfx}.path=platform/bar/baz \\
+        {pfx}.path=usr/lib'.
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI,
+    unresolved_path="{unresolved_path}"
+)
 
         python_text = """\
 #!/usr/bin/python
@@ -544,7 +544,7 @@ file NOHASH group=bin mode=0644 owner=root path=usr/bin/pkg \
 """
 
         # The #! line has lots of spaces to test for bug 14632.
-        pyver_python_text = "#!                  /usr/bin/python%s     -S  " + \
+        pyver_python_text = "#!                  /usr/bin/python{0}     -S  " + \
 """
 import pkg.indexer as indexer
 import pkg.search_storage as ss
@@ -553,15 +553,15 @@ from pkg.misc import EmptyI
 """
 
         pyver_test_manf_1 = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/client/indexer.py \
 """
 
         pyver_test_manf_1_run_path = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py pkg.depend.runpath=$PKGDEPEND_RUNPATH \
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/client/indexer.py pkg.depend.runpath=$PKGDEPEND_RUNPATH \
 """
 
         pyver_test_manf_1_non_ex = """\
-file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
+file NOHASH group=bin mode=0644 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/client/indexer.py \
 """
 
         inst_pkg = """\
@@ -587,14 +587,14 @@ depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bi
 """
 
         unsatisfied_error_1 = """\
-%s has unresolved dependency '
+{0} has unresolved dependency '
     depend type=require fmri=__TBD pkg.debug.depend.file=unsatisfied \\
         pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar \\
         pkg.debug.depend.type=elf'.
 """
 
         unsatisfied_error_2 = """\
-%s has unresolved dependency '
+{0} has unresolved dependency '
     depend  type=require fmri=__TBD pkg.debug.depend.file=unsatisfied \\
         pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar \\
         pkg.debug.depend.type=elf
@@ -629,75 +629,75 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                 discovered.
                 """
                 vp = self.get_ver_paths(ver, proto_area)
-                self.debug("ver_paths is %s" % vp)
+                self.debug("ver_paths is {0}".format(vp))
                 pkg_path = self.__make_paths("pkg", vp, reason)
-                res = ("depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=indexer.py "
-                    "%(pfx)s.file=indexer.pyc "
-                    "%(pfx)s.file=indexer.pyo "
-                    "%(pfx)s.file=indexer.so "
-                    "%(pfx)s.file=indexer/__init__.py "
-                    "%(pfx)s.file=indexermodule.so " +
+                res = ("depend fmri={dummy_fmri} "
+                    "{pfx}.file=indexer.py "
+                    "{pfx}.file=indexer.pyc "
+                    "{pfx}.file=indexer.pyo "
+                    "{pfx}.file=indexer.so "
+                    "{pfx}.file=indexer/__init__.py "
+                    "{pfx}.file=indexermodule.so " +
                     pkg_path +
-                    " %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=python type=require\n"
+                    " {pfx}.reason={reason} "
+                    "{pfx}.type=python type=require\n"
 
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=misc.py "
-                    "%(pfx)s.file=misc.pyc "
-                    "%(pfx)s.file=misc.pyo "
-                    "%(pfx)s.file=misc.so "
-                    "%(pfx)s.file=misc/__init__.py "
-                    "%(pfx)s.file=miscmodule.so " +
+                    "depend fmri={dummy_fmri} "
+                    "{pfx}.file=misc.py "
+                    "{pfx}.file=misc.pyc "
+                    "{pfx}.file=misc.pyo "
+                    "{pfx}.file=misc.so "
+                    "{pfx}.file=misc/__init__.py "
+                    "{pfx}.file=miscmodule.so " +
                     pkg_path +
-                    " %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=python type=require\n"
+                    " {pfx}.reason={reason} "
+                    "{pfx}.type=python type=require\n"
 
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=pkg/__init__.py " +
+                    "depend fmri={dummy_fmri} "
+                    "{pfx}.file=pkg/__init__.py " +
                     self.__make_paths("", vp, reason) +
-                    " %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=python type=require\n"
+                    " {pfx}.reason={reason} "
+                    "{pfx}.type=python type=require\n"
 
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=search_storage.py "
-                    "%(pfx)s.file=search_storage.pyc "
-                    "%(pfx)s.file=search_storage.pyo "
-                    "%(pfx)s.file=search_storage.so "
-                    "%(pfx)s.file=search_storage/__init__.py "
-                    "%(pfx)s.file=search_storagemodule.so " +
+                    "depend fmri={dummy_fmri} "
+                    "{pfx}.file=search_storage.py "
+                    "{pfx}.file=search_storage.pyc "
+                    "{pfx}.file=search_storage.pyo "
+                    "{pfx}.file=search_storage.so "
+                    "{pfx}.file=search_storage/__init__.py "
+                    "{pfx}.file=search_storagemodule.so " +
                     pkg_path +
-                    " %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=python type=require\n")
+                    " {pfx}.reason={reason} "
+                    "{pfx}.type=python type=require\n")
 
                 if include_os:
                         res += (
-                            "depend fmri=%(dummy_fmri)s "
-                            "%(pfx)s.file=os.py "
-                            "%(pfx)s.file=os.pyc "
-                            "%(pfx)s.file=os.pyo "
-                            "%(pfx)s.file=os.so "
-                            "%(pfx)s.file=os/__init__.py "
-                            "%(pfx)s.file=osmodule.so " +
+                            "depend fmri={dummy_fmri} "
+                            "{pfx}.file=os.py "
+                            "{pfx}.file=os.pyc "
+                            "{pfx}.file=os.pyo "
+                            "{pfx}.file=os.so "
+                            "{pfx}.file=os/__init__.py "
+                            "{pfx}.file=osmodule.so " +
                             self.__make_paths("", vp, reason) +
-                            " %(pfx)s.reason=%(reason)s "
-                            "%(pfx)s.type=python type=require\n")
-                return res % {
-                    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
-                    "dummy_fmri": base.Dependency.DUMMY_FMRI,
-                    "reason": reason
-                }
+                            " {pfx}.reason={reason} "
+                            "{pfx}.type=python type=require\n")
+                return res.format(
+                    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+                    dummy_fmri=base.Dependency.DUMMY_FMRI,
+                    reason=reason
+               )
 
         pyver_27_script_full_manf_1 = """\
-file NOHASH group=bin mode=0755 owner=root path=%(reason)s %(run_path)s
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %(pfx)s.reason=%(reason)s %(pfx)s.type=script type=require
-""" % {
-    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri": base.Dependency.DUMMY_FMRI,
-    "reason": "%(reason)s",
-    "bin_ver": "%(bin_ver)s",
-    "run_path": "%(run_path)s"
-}
+file NOHASH group=bin mode=0755 owner=root path={reason} {run_path}
+depend fmri={dummy_fmri} {pfx}.file=python{bin_ver} {pfx}.path=usr/bin {pfx}.reason={reason} {pfx}.type=script type=require
+""".format(
+    pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+    dummy_fmri=base.Dependency.DUMMY_FMRI,
+    reason="{reason}",
+    bin_ver="{bin_ver}",
+    run_path="{run_path}"
+)
 
         def pyver_res_full_manf_1(self, ver, proto, reason, include_os=False):
                 """Build the full manifest results for the pyver tests."""
@@ -706,15 +706,15 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %
                         tmp = self.pyver_27_script_full_manf_1
                 else:
                         raise RuntimeError("Unexcepted version for "
-                            "pyver_res_full_manf_1 %s" % ver)
+                            "pyver_res_full_manf_1 {0}".format(ver))
                 return tmp + self.make_pyver_python_res(ver, proto, reason,
                     include_os=include_os)
 
         pyver_resolve_dep_manf = """
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/indexer.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/__init__.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/lib-tk/pkg/search_storage.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/misc.py
 file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
 """
 
@@ -732,10 +732,10 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                 # in a different location than the other files, so it needs a
                 # different path attached to it.
                 rel_paths = [
-                    "usr/lib/python%(py_ver)s/vendor-packages/pkg/" + f + ".py"
+                    "usr/lib/python{py_ver}/vendor-packages/pkg/" + f + ".py"
                     for f in files + ["__init__"] if f != "search_storage"
                 ] + ["usr/bin/python",
-                    "usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py"]
+                    "usr/lib/python{py_ver}/lib-tk/pkg/search_storage.py"]
 
                 # Find the potential locations an imported python module might
                 # be found.
@@ -750,31 +750,31 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                 # where merged together to form a particular final dependency.
                 # The __init__.py file follows a different pattern than the
                 # other files, so it's handled separately.
-                return "depend fmri=pkg:/%(res_manf)s " + \
-                    " ".join(["%(pfx)s.file=" + rp for rp in rel_paths]) + \
-                    " " + " ".join(["%(pfx)s.path-id=" + ":".join(sorted([
+                return "depend fmri=pkg:/{res_manf} " + \
+                    " ".join(["{pfx}.file=" + rp for rp in rel_paths]) + \
+                    " " + " ".join(["{pfx}.path-id=" + ":".join(sorted([
                         proto_str + f + s
                         for proto_str in vps
                         for s in suffixes
                         ]))
                         for f in files
-                    ]) + " %(pfx)s.path-id=" + ":".join(sorted(
+                    ]) + " {pfx}.path-id=" + ":".join(sorted(
                         [vp + "__init__.py" for vp in vps])) + \
-                    " %(pfx)s.path-id=usr/bin/python " + \
-                    "%(pfx)s.reason=usr/lib/python%(py_ver)s/" + \
+                    " {pfx}.path-id=usr/bin/python " + \
+                    "{pfx}.reason=usr/lib/python{py_ver}/" + \
                     "vendor-packages/pkg/client/indexer.py " + \
-                    "%(pfx)s.type=script %(pfx)s.type=python type=require"
+                    "{pfx}.type=script {pfx}.type=python type=require"
         
         pyver_mismatch_results = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python2.6 %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
-""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+depend fmri={dummy_fmri} {pfx}.file=python2.6 {pfx}.path=usr/bin {pfx}.reason=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py {pfx}.type=script type=require
+""".format(pfx=base.Dependency.DEPEND_DEBUG_PREFIX, dummy_fmri=base.Dependency.DUMMY_FMRI)
 
         pyver_mismatch_errs = """
-The file to be installed at usr/lib/python2.7/vendor-packages/pkg/client/indexer.py declares a python version of 2.6.  However, the path suggests that the version should be 2.7.  The text of the file can be found at %s/usr/lib/python2.7/vendor-packages/pkg/client/indexer.py
+The file to be installed at usr/lib/python2.7/vendor-packages/pkg/client/indexer.py declares a python version of 2.6.  However, the path suggests that the version should be 2.7.  The text of the file can be found at {0}/usr/lib/python2.7/vendor-packages/pkg/client/indexer.py
 """
 
         pyver_unspecified_ver_err = """
-The file to be installed in usr/bin/pkg does not specify a specific version of python either in its installed path nor in its text.  Such a file cannot be analyzed for dependencies since the version of python it will be used with is unknown.  The text of the file is here: %s/usr/bin/pkg.
+The file to be installed in usr/bin/pkg does not specify a specific version of python either in its installed path nor in its text.  Such a file cannot be analyzed for dependencies since the version of python it will be used with is unknown.  The text of the file is here: {0}/usr/bin/pkg.
 """
 
         bug_16808_manf = """\
@@ -874,7 +874,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     "pkg:/c@0.5.11-0.151", "pkg:/b_file@0.5.11-0.151"])
                 for d in deps[a_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         res_fmris.remove(d.attrs["fmri"])
                         if d.attrs["fmri"] == \
                             "pkg:/b_link@0.5.11-0.151":
@@ -910,7 +910,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     "pkg:/b_file@0.5.11-0.151"])
                 for d in deps[a_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         res_fmris.remove(d.attrs["fmri"])
                         if d.attrs["fmri"] in \
                             ("pkg:/b_link@0.5.11-0.151",
@@ -923,7 +923,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                                     d.attrs[dependencies.type_prefix],
                                     "script",
                                     "Was expecting type=script, " +
-                                    "d:%s" % d)
+                                    "d:{0}".format(d))
 
         def bug_16013_check_res_var_files_links_deps(self, deps, errs, a_pth):
                 """A common method used by tests for verifying correct
@@ -945,7 +945,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     "pkg:/c@0.5.11-0.151", "pkg:/b_file@0.5.11-0.151"])
                 for d in deps[a_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         res_fmris.remove(d.attrs["fmri"])
                         if d.attrs["fmri"] == \
                             "pkg:/b_link@0.5.11-0.151":
@@ -1024,7 +1024,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
                 # Make sure to quote the runpaths, as they may contain tokens
                 # like $PLATFORM which we do not want the shell to evaluate.
-                opts = ["-R'%s'" % rp for rp in run_paths]
+                opts = ["-R'{0}'".format(rp) for rp in run_paths]
                 if bit64:
                         opts.append("-m64")
                 if shared_lib:
@@ -1034,12 +1034,12 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 if no_link:
                         opts.append("-c")
                 if mapfile:
-                        opts.append("-M%s" % mapfile)
-                opts.extend(["-F%s" % f for f in filter_files])
-                opts.extend(["-f%s" % f for f in optional_filters])
+                        opts.append("-M{0}".format(mapfile))
+                opts.extend(["-F{0}".format(f) for f in filter_files])
+                opts.extend(["-f{0}".format(f) for f in optional_filters])
                 opts.extend(["-z deferred"] +  list(deferred_libs) +
                     ["-z nodeferred"])
-                opts.extend(["-z lazyload %s" % f for f in lazy_libs])
+                opts.extend(["-z lazyload {0}".format(f) for f in lazy_libs])
                 self.c_compile(program_text, opts, out_file,
                     obj_files=obj_files)
 
@@ -1047,8 +1047,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
         def pkgsend_with_fmri(self, pth):
                 plist = self.pkgsend(self.rurl1,
-                    "publish -d %s %s" %
-                    (self.test_proto_dir, pth))
+                    "publish -d {0} {1}".format(
+                    self.test_proto_dir, pth))
 
         def check_res(self, expected, seen):
                 def pick_file(act):
@@ -1093,16 +1093,16 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                         conflicting = set()
                         for a in seen:
                                 n = pick_file(a)
-                                t = "the results for %s differ in the " \
-                                    "following attributes:\n" % n
+                                t = "the results for {0} differ in the " \
+                                    "following attributes:\n".format(n)
                                 if n in exp:
                                         ea = exp[n]
                                         for ak in a.attrs.keys():
                                                 if ak not in ea.attrs:
                                                         t += "\thas an " \
                                                             "unexpected " \
-                                                            "attribute %s\n" % \
-                                                            ak
+                                                            "attribute {0}\n".format(
+                                                            ak)
                                                         continue
                                                 av = a.attrs[ak]
                                                 ev = ea.attrs[ak]
@@ -1113,20 +1113,20 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                                                 av = set(av)
                                                 ev = set(ev)
                                                 diffs = sorted([
-                                                    "%s:S" % d
+                                                    "{0}:S".format(d)
                                                     for d in
                                                     (av - ev)
                                                     ] + [
-                                                    "%s:E" % d
+                                                    "{0}:E".format(d)
                                                     for d in (ev - av)
                                                 ])
                                                 if diffs:
-                                                        t += "\t%s has " \
+                                                        t += "\t{0} has " \
                                                             "different " \
-                                                            "values:\n" % ak
+                                                            "values:\n".format(ak)
                                                         for d in diffs:
-                                                                t += "\t\t%s" \
-                                                                    "\n" % d
+                                                                t += "\t\t{0}" \
+                                                                    "\n".format(d)
                                 res += t
                         raise RuntimeError(res)
 
@@ -1284,15 +1284,15 @@ SYMBOL_SCOPE {
                 cause a traceback."""
 
                 proto = pkg5unittest.g_proto_area
-                self.pkgdepend_generate("-d %s" % proto, exit=2)
+                self.pkgdepend_generate("-d {0}".format(proto), exit=2)
                 self.pkgdepend_generate("foo", exit=2)
-                self.pkgdepend_generate("-d %s -z foo bar" % proto, exit=2)
-                self.pkgdepend_generate("-d %s no_such_file_should_exist" %
-                    proto, exit=2)
+                self.pkgdepend_generate("-d {0} -z foo bar".format(proto), exit=2)
+                self.pkgdepend_generate("-d {0} no_such_file_should_exist".format(
+                    proto), exit=2)
                 self.pkgdepend_generate("-\?")
                 self.pkgdepend_generate("--help")
                 tp = self.make_manifest(self.test_manf_1)
-                self.pkgdepend_generate("-d %s %s" % (proto, tp),
+                self.pkgdepend_generate("-d {0} {1}".format(proto, tp),
                     su_wrap=True, exit=1)
 
         def test_output(self):
@@ -1301,28 +1301,28 @@ SYMBOL_SCOPE {
                 tp = self.make_manifest(self.test_manf_1)
                 fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py"
 
-                self.pkgdepend_generate("-d %s %s" %
-                    (pkg5unittest.g_proto_area, tp), exit=1)
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    pkg5unittest.g_proto_area, tp), exit=1)
                 self.check_res(self.make_res_manf_1(
                         pkg5unittest.g_proto_area, fp),
                     self.output)
-                self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
+                self.check_res(self.err_manf_1.format(pkg5unittest.g_proto_area),
                     self.errout)
 
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (pkg5unittest.g_proto_area, tp), exit=1)
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    pkg5unittest.g_proto_area, tp), exit=1)
                 self.check_res(
                     self.make_full_res_manf_1(
                         pkg5unittest.g_proto_area, fp),
                     self.output)
-                self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
+                self.check_res(self.err_manf_1.format(pkg5unittest.g_proto_area),
                     self.errout)
 
                 self.make_proto_text_file(fp, self.python_text)
                 self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
 
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(
                     self.make_full_res_manf_1_mod_proto(
                         pkg5unittest.g_proto_area, fp),
@@ -1332,25 +1332,24 @@ SYMBOL_SCOPE {
                 tp = self.make_manifest(self.test_manf_2)
                 self.make_proto_text_file("etc/pam.conf", "text")
 
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(self.res_manf_2 + self.test_manf_2, self.output)
                 self.check_res("", self.errout)
 
                 res_path = self.make_manifest(self.output)
 
                 # Check that -S doesn't prevent the resolution from happening.
-                self.pkgdepend_resolve("-S -o %s" % res_path, exit=1)
-                self.check_res("# %s" % res_path, self.output)
-                self.check_res(self.resolve_error % {
-                        "manf_path": res_path,
-                        "pfx":
-                            base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI
-                    }, self.errout)
+                self.pkgdepend_resolve("-S -o {0}".format(res_path), exit=1)
+                self.check_res("# {0}".format(res_path), self.output)
+                self.check_res(self.resolve_error.format(
+                        manf_path=res_path,
+                        pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+                        dummy_fmri=base.Dependency.DUMMY_FMRI
+                    ), self.errout)
 
-                self.pkgdepend_generate("-M -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-M -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res(self.res_manf_2_missing, self.errout)
 
@@ -1361,12 +1360,12 @@ SYMBOL_SCOPE {
 
                 self.make_proto_text_file("var/log/syslog", "text")
 
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
-                self.pkgdepend_generate("-I -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-I -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(self.res_int_manf, self.output)
                 self.check_res("", self.errout)
 
@@ -1384,36 +1383,35 @@ SYMBOL_SCOPE {
                 self.pkgfmt(m1_path)
                 with open(m1_path, "rb") as fh:
                         m1_fmt = fh.read()
-                self.pkgdepend_resolve("-o -m %s" %
-                    " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
+                self.pkgdepend_resolve("-o -m {0}".format(
+                    " ".join([m1_path, m2_path, m3_path, m4_path])), exit=1)
 
-                self.check_res(self.two_v_deps_output % {
-                        "m1_path": m1_path,
-                        "m2_path": m2_path,
-                        "m3_path": m3_path,
-                        "m4_path": m4_path,
-                        "m1_fmt": m1_fmt,
-                        "m2_fmt": self.two_v_deps_bar,
-                        "m3_fmt": self.two_v_deps_baz_one,
-                        "m4_fmt": self.two_v_deps_baz_two,
-                    }, self.output)
+                self.check_res(self.two_v_deps_output.format(
+                        m1_path=m1_path,
+                        m2_path=m2_path,
+                        m3_path=m3_path,
+                        m4_path=m4_path,
+                        m1_fmt=m1_fmt,
+                        m2_fmt=self.two_v_deps_bar,
+                        m3_fmt=self.two_v_deps_baz_one,
+                        m4_fmt=self.two_v_deps_baz_two,
+                   ), self.output)
 
-                self.check_res(self.two_v_deps_resolve_error % {
-                        "manf_path": m1_path,
-                        "pfx":
-                            base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI
-                    }, self.errout)
+                self.check_res(self.two_v_deps_resolve_error.format(
+                        manf_path=m1_path,
+                        pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+                        dummy_fmri=base.Dependency.DUMMY_FMRI
+                    ), self.errout)
 
-                self.pkgdepend_resolve("-vo %s" %
-                    " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
+                self.pkgdepend_resolve("-vo {0}".format(
+                    " ".join([m1_path, m2_path, m3_path, m4_path])), exit=1)
 
-                self.check_res(self.two_v_deps_verbose_output % {
-                        "m1_path": m1_path,
-                        "m2_path": m2_path,
-                        "m3_path": m3_path,
-                        "m4_path": m4_path
-                    }, self.output)
+                self.check_res(self.two_v_deps_verbose_output.format(
+                        m1_path=m1_path,
+                        m2_path=m2_path,
+                        m3_path=m3_path,
+                        m4_path=m4_path
+                   ), self.output)
 
         def test_bug_10518(self):
                 """ pkgdepend should exit 2 on input args of the wrong type """
@@ -1440,7 +1438,7 @@ SYMBOL_SCOPE {
                 try:
                         m_path = self.make_manifest(self.test_manf_1)
 
-                        self.pkgdepend_resolve("-M -o %s " % m_path, exit=2)
+                        self.pkgdepend_resolve("-M -o {0} ".format(m_path), exit=2)
                         self.check_res(ill_usage + self.usage_msg,
                             self.errout)
                 finally:
@@ -1456,7 +1454,7 @@ SYMBOL_SCOPE {
 
                 proto = pkg5unittest.g_proto_area
                 tp = self.make_manifest(self.payload_manf)
-                self.pkgdepend_generate("-d %s %s" % (proto, tp))
+                self.pkgdepend_generate("-d {0} {1}".format(proto, tp))
                 self.check_res(self.make_res_payload_1(proto,
                     "usr/lib/python2.6/foo/bar.py"), self.output)
                 self.check_res("", self.errout)
@@ -1469,15 +1467,15 @@ SYMBOL_SCOPE {
                 nonsense = "This is a nonsense manifest"
                 m_path = self.make_manifest(nonsense)
 
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
                 self.debug(self.errout)
-                self.check_res("unknown action type '%s' in action '%s'" %
-                    (atype, nonsense), self.errout)
+                self.check_res("unknown action type '{0}' in action '{1}'".format(
+                    atype, nonsense), self.errout)
 
-                self.pkgdepend_resolve("-o %s " % m_path, exit=1)
-                self.check_res("unknown action type '%s' in action '%s'" %
-                    (atype, nonsense), self.errout)
+                self.pkgdepend_resolve("-o {0} ".format(m_path), exit=1)
+                self.check_res("unknown action type '{0}' in action '{1}'".format(
+                    atype, nonsense), self.errout)
 
         def __run_dyn_tok_test(self, run_paths, replaced_path, dep_args):
                 """Using the provided run paths, produces a elf binary with
@@ -1485,15 +1483,14 @@ SYMBOL_SCOPE {
                 the provided arguments performs the substitution correctly."""
 
                 elf_path = self.make_elf(run_paths)
-                m_path = self.make_manifest(self.elf_sub_manf %
-                    {"file_loc": elf_path})
-                self.pkgdepend_generate("%s -d %s %s" %
-                    (dep_args, self.test_proto_dir, m_path))
-                self.check_res(self.payload_elf_sub_stdout %
-                    {"replaced_path": \
-                        (" %s.path=%s" %
-                        (base.Dependency.DEPEND_DEBUG_PREFIX, replaced_path))
-                    },
+                m_path = self.make_manifest(self.elf_sub_manf.format(
+                    file_loc=elf_path))
+                self.pkgdepend_generate("{0} -d {1} {2}".format(
+                    dep_args, self.test_proto_dir, m_path))
+                self.check_res(self.payload_elf_sub_stdout.format(
+                    replaced_path=\
+                        " {0}.path={1}".format(
+                        base.Dependency.DEPEND_DEBUG_PREFIX, replaced_path)),
                     self.output)
 
         def test_bug_12697(self):
@@ -1504,15 +1501,15 @@ SYMBOL_SCOPE {
                 to use for kernel module run paths."""
 
                 elf_path = self.make_elf([])
-                m_path = self.make_manifest(self.kernel_manf %
-                    {"file_loc":elf_path})
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, m_path))
+                m_path = self.make_manifest(self.kernel_manf.format(
+                    file_loc=elf_path))
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m_path))
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout, self.output)
 
-                self.pkgdepend_generate("-k baz -k foo/bar -d %s %s" %
-                    (self.test_proto_dir, m_path))
+                self.pkgdepend_generate("-k baz -k foo/bar -d {0} {1}".format(
+                    self.test_proto_dir, m_path))
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout2, self.output)
 
@@ -1520,8 +1517,8 @@ SYMBOL_SCOPE {
                     "module paths. Bug 13057")
 
                 self.pkgdepend_generate(
-                    "-D PLATFORM=baz -D PLATFORM=tp -d %s %s" %
-                    (self.test_proto_dir, m_path))
+                    "-D PLATFORM=baz -D PLATFORM=tp -d {0} {1}".format(
+                    self.test_proto_dir, m_path))
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout_platform, self.output)
 
@@ -1529,23 +1526,22 @@ SYMBOL_SCOPE {
 
                 rp = ["/platform/$PLATFORM/foo"]
                 elf_path = self.make_elf(rp)
-                m_path = self.make_manifest(self.elf_sub_manf %
-                    {"file_loc": elf_path})
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
-                self.check_res((self.payload_elf_sub_error %
-                    {
-                        "payload_path": os.path.join(self.test_proto_dir,
+                m_path = self.make_manifest(self.elf_sub_manf.format(
+                    file_loc=elf_path))
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
+                self.check_res((self.payload_elf_sub_error.format(
+                        payload_path=os.path.join(self.test_proto_dir,
                             elf_path),
-                        "installed_path": "bar/foo",
-                        "tok": "$PLATFORM",
-                        "rp": rp[0]
-                    }), self.errout)
-                self.check_res(self.payload_elf_sub_stdout %
-                    {"replaced_path": ""}, self.output)
+                        installed_path="bar/foo",
+                        tok="$PLATFORM",
+                        rp=rp[0]
+                    )), self.errout)
+                self.check_res(self.payload_elf_sub_stdout.format(
+                    replaced_path=""), self.output)
 
-                self.check_res(self.payload_elf_sub_stdout %
-                    {"replaced_path": ""}, self.output)
+                self.check_res(self.payload_elf_sub_stdout.format(
+                    replaced_path=""), self.output)
 
                 # Test token expansion
                 self.debug("test token expansion: $PLATFORM")
@@ -1569,23 +1565,23 @@ SYMBOL_SCOPE {
                 self.debug("Test multiple run paths and multiple subs")
                 rp = ["/platform/$PLATFORM/foo", "/$ISALIST/$PLATFORM/baz"]
                 elf_path = self.make_elf(rp)
-                m_path = self.make_manifest(self.elf_sub_manf %
-                    {"file_loc": elf_path})
-                self.pkgdepend_generate("-D ISALIST=isadir -d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
-                self.check_res(self.double_plat_error %
-                    {"proto_dir": self.test_proto_dir}, self.errout)
+                m_path = self.make_manifest(self.elf_sub_manf.format(
+                    file_loc=elf_path))
+                self.pkgdepend_generate("-D ISALIST=isadir -d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
+                self.check_res(self.double_plat_error.format(
+                    proto_dir=self.test_proto_dir), self.errout)
                 self.check_res(self.double_plat_stdout, self.output)
 
-                self.pkgdepend_generate("-D PLATFORM=pfoo -d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
-                self.check_res(self.double_plat_isa_error %
-                    {"proto_dir": self.test_proto_dir}, self.errout)
+                self.pkgdepend_generate("-D PLATFORM=pfoo -d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
+                self.check_res(self.double_plat_isa_error.format(
+                    proto_dir=self.test_proto_dir), self.errout)
                 self.check_res(self.double_plat_isa_stdout, self.output)
 
                 self.pkgdepend_generate("-D PLATFORM=pfoo -D PLATFORM=pfoo2 "
-                    "-D ISALIST=isadir -D ISALIST=isadir -d %s %s" %
-                    (self.test_proto_dir, m_path))
+                    "-D ISALIST=isadir -D ISALIST=isadir -d {0} {1}".format(
+                    self.test_proto_dir, m_path))
                 self.check_res("", self.errout)
                 self.check_res(self.double_double_stdout, self.output)
 
@@ -1594,22 +1590,22 @@ SYMBOL_SCOPE {
                 uses the right path."""
 
                 m_path = self.make_manifest(self.miss_payload_manf)
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
-                self.check_res(self.miss_payload_manf_error %
-                    {"path_pref":self.test_proto_dir}, self.errout)
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
+                self.check_res(self.miss_payload_manf_error.format(
+                    path_pref=self.test_proto_dir), self.errout)
                 self.check_res("", self.output)
 
         def test_bug_14116(self):
                 foo_path = self.make_proto_text_file("bar/foo", "#!perl -w\n\n")
-                m_path = self.make_manifest(self.elf_sub_manf %
-                    {"file_loc": "bar/foo"})
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, m_path), exit=1)
+                m_path = self.make_manifest(self.elf_sub_manf.format(
+                    file_loc="bar/foo"))
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m_path), exit=1)
                 self.check_res(self.output, "")
-                self.check_res(self.errout, "%s/bar/foo says it should be run "
-                    "with 'perl' which is a relative path." %
-                    self.test_proto_dir)
+                self.check_res(self.errout, "{0}/bar/foo says it should be run "
+                    "with 'perl' which is a relative path.".format(
+                    self.test_proto_dir))
 
         def test_unsatisfied_deps(self):
                 """Test resolution behaviour with various unsatisfied
@@ -1619,25 +1615,25 @@ SYMBOL_SCOPE {
                 satisfying = self.make_manifest(self.satisfying_manf)
 
                 # Generally unsatisfied dependency
-                self.pkgdepend_resolve(" -o %s" % unsat, exit=1)
-                self.check_res(self.unsatisfied_error_1 % unsat, self.errout)
+                self.pkgdepend_resolve(" -o {0}".format(unsat), exit=1)
+                self.check_res(self.unsatisfied_error_1.format(unsat), self.errout)
 
                 # Dependency that would be satisfied were it not for
                 # mismatched variants
-                self.pkgdepend_resolve(" -o %s %s" % (unsat, satisfying),
+                self.pkgdepend_resolve(" -o {0} {1}".format(unsat, satisfying),
                     exit=1)
-                self.check_res(self.unsatisfied_error_1 % unsat, self.errout)
+                self.check_res(self.unsatisfied_error_1.format(unsat), self.errout)
 
                 # Partially satisfied dependency (for one variant
                 # value, not another)
-                self.pkgdepend_resolve(" -o %s %s" % (partial, satisfying),
+                self.pkgdepend_resolve(" -o {0} {1}".format(partial, satisfying),
                     exit=1)
-                self.check_res(self.unsatisfied_error_2 % partial, self.errout)
-                self.check_res("# %s\n%s\n\n# %s\n" % (partial,
+                self.check_res(self.unsatisfied_error_2.format(partial), self.errout)
+                self.check_res("# {0}\n{1}\n\n# {2}\n".format(partial,
                     self.satisfying_out, satisfying), self.output)
 
                 # No dependencies at all
-                self.pkgdepend_resolve(" -o %s" % satisfying)
+                self.pkgdepend_resolve(" -o {0}".format(satisfying))
 
         def test_bug_14118(self):
                 """Check that duplicate dependency actions are consolitdated
@@ -1700,8 +1696,8 @@ SYMBOL_SCOPE {
                 # echoing the manifest.  Bug 18740
                 self.pkgfmt(m1_path)
                 
-                self.pkgdepend_resolve(" -vm %s" % " ".join([m1_path, m2_path,
-                        m3_path, m4_path, m5_path, m6_path, m7_path, m8_path]))
+                self.pkgdepend_resolve(" -vm {0}".format(" ".join([m1_path, m2_path,
+                        m3_path, m4_path, m5_path, m6_path, m7_path, m8_path])))
                 fh = open(m1_path + ".res")
                 res = fh.read()
                 fh.close()
@@ -1722,7 +1718,7 @@ SYMBOL_SCOPE {
                 for mpath, pfmri in pfmris.items():
                         lines = open(mpath + ".res", "rb").readlines()
                         with open(mpath + ".res", "wb") as mf:
-                                mf.write("set name=pkg.fmri value=%s\n" % pfmri)
+                                mf.write("set name=pkg.fmri value={0}\n".format(pfmri))
                                 for l in lines:
                                         if "pkg.fmri" in l:
                                                 continue
@@ -1741,22 +1737,22 @@ SYMBOL_SCOPE {
                     "platform/i86pc/kernel/dacf/amd64/consconfig_dacf")
                 self.make_proto_text_file(
                     "platform/i86pc/kernel/dacf/consconfig_dacf")
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m1_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m2_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m3_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m4_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m5_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m6_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m7_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s %s" %
-                    (self.test_proto_dir, m8_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m1_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m2_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m3_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m4_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m5_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m6_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m7_path + ".res"))
+                self.pkgsend(self.rurl, "publish -d {0} {1}".format(
+                    self.test_proto_dir, m8_path + ".res"))
                 foo_vars = ["bar", "baz"]
                 num_vars = ["one", "two"]
                 for fv in foo_vars:
@@ -1780,8 +1776,8 @@ SYMBOL_SCOPE {
                 m1_path = self.make_manifest(self.multi_deps)
                 m2_path = self.make_manifest(self.misc_manf)
 
-                self.pkgdepend_resolve("-o %s %s" % (m1_path, m2_path))
-                self.pkgdepend_resolve("-o -S %s %s" % (m1_path, m2_path),
+                self.pkgdepend_resolve("-o {0} {1}".format(m1_path, m2_path))
+                self.pkgdepend_resolve("-o -S {0} {1}".format(m1_path, m2_path),
                     exit=1)
 
         def test_bug_15843(self):
@@ -1789,23 +1785,23 @@ SYMBOL_SCOPE {
 
                 curses = "usr/xpg4/lib/libcurses.so.1"
                 pam = "etc/pam.conf"
-                self.make_elf([], "d1/%s" % curses)
-                self.make_proto_text_file("d2/%s" % pam, "text")
+                self.make_elf([], "d1/{0}".format(curses))
+                self.make_proto_text_file("d2/{0}".format(pam), "text")
                 tp = self.make_manifest(self.test_manf_2)
 
                 # Check that files are not found.
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp),
                     exit=1)
                 self.check_res("", self.output)
                 self.check_res("\n".join([
-                    "Couldn't find '%s' in any of the specified search "
-                    "directories:\n\t%s" % (d, self.test_proto_dir)
+                    "Couldn't find '{0}' in any of the specified search "
+                    "directories:\n\t{1}".format(d, self.test_proto_dir)
                     for d in (curses, pam)]),
                     self.errout)
 
                 # Check that the files are now correctly found.
-                self.pkgdepend_generate("-d %s -d %s -d %s %s" %
-                    (self.test_proto_dir,
+                self.pkgdepend_generate("-d {0} -d {1} -d {2} {3}".format(
+                    self.test_proto_dir,
                     os.path.join(self.test_proto_dir, "d1"),
                     os.path.join(self.test_proto_dir, "d2"), tp))
                 self.check_res(self.res_manf_2, self.output)
@@ -1815,8 +1811,8 @@ SYMBOL_SCOPE {
                 # This should produce no dependencies because the text file
                 # in self.test_proto_dir should be found first.
                 self.make_proto_text_file("usr/xpg4/lib/libcurses.so.1", "text")
-                self.pkgdepend_generate("-d %s -d %s -d %s %s" %
-                    (self.test_proto_dir,
+                self.pkgdepend_generate("-d {0} -d {1} -d {2} {3}".format(
+                    self.test_proto_dir,
                     os.path.join(self.test_proto_dir, "d1"),
                     os.path.join(self.test_proto_dir, "d2"), tp))
                 self.check_res("", self.output)
@@ -1825,16 +1821,16 @@ SYMBOL_SCOPE {
                 # This should produce the normal results for this manifest
                 # because the compiled elf file should be found before the
                 # text file.
-                self.pkgdepend_generate("-d %s -d %s -d %s %s" %
-                    (os.path.join(self.test_proto_dir, "d2"),
+                self.pkgdepend_generate("-d {0} -d {1} -d {2} {3}".format(
+                    os.path.join(self.test_proto_dir, "d2"),
                     os.path.join(self.test_proto_dir, "d1"),
                     self.test_proto_dir, tp))
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res("", self.errout)
 
                 # Check the ordering among -d dirs is correct.
-                self.pkgdepend_generate("-d %s -d %s -d %s %s" %
-                    (os.path.join(self.test_proto_dir, "d2"),
+                self.pkgdepend_generate("-d {0} -d {1} -d {2} {3}".format(
+                    os.path.join(self.test_proto_dir, "d2"),
                     self.test_proto_dir,
                     os.path.join(self.test_proto_dir, "d1"), tp))
                 self.check_res("", self.output)
@@ -1846,7 +1842,7 @@ SYMBOL_SCOPE {
 
                 tp = self.make_manifest(self.bug_15958_manf)
                 self.make_proto_text_file("var/log/syslog", "text")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.errout)
                 self.check_res(self.res_bug_15958, self.output)
 
@@ -2011,7 +2007,7 @@ file NOHASH group=bin mode=0555 owner=root path=usr/bin/perl variant.foo=c
                     "pkg:/b_file@0.5.11-0.151", "pkg:/c@0.5.11-0.151"])
                 for d in deps[a_var_b_dep_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         res_fmris.remove(d.attrs["fmri"])
                         if d.attrs["fmri"] == "pkg:/b_link@0.5.11-0.151":
                                 self.assertEqual(
@@ -2114,7 +2110,7 @@ depend fmri=__TBD pkg.debug.depend.file=perl pkg.debug.depend.path=usr/bin pkg.d
                     "pkg:/c@0.5.11-0.151", "pkg:/b_file@0.5.11-0.151"])
                 for d in deps[a_var_limited_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         res_fmris.remove(d.attrs["fmri"])
                         if d.attrs["fmri"] == "pkg:/b_link@0.5.11-0.151":
                                 self.assertEqual(
@@ -2224,7 +2220,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 b_y_file_var = set(["y"])
                 for d in deps[twod_a_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
-                            "Unexpected fmri for:%s" % d)
+                            "Unexpected fmri for:{0}".format(d))
                         if d.attrs["fmri"] == "pkg:/b_vw_link@0.5.11-0.151":
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
@@ -2379,7 +2375,7 @@ dir group=bin mode=0755 owner=root path=bad_b/bin variant.foo=b
                         res_fmris = set(["pkg:/c@0.5.11-0.151"])
                         for d in deps[a_pth]:
                                 self.assert_(d.attrs["fmri"] in res_fmris,
-                                    "Unexpected fmri for:%s" % d)
+                                    "Unexpected fmri for:{0}".format(d))
                                 res_fmris.remove(d.attrs["fmri"])
                                 self.assertEqual(d.attrs["variant.foo"], "c")
                                 self.assertEqual(
@@ -2561,7 +2557,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
 
                 tp = self.make_manifest(self.bug_16808_manf)
                 self.make_proto_text_file("var/log/syslog", "text")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp),
                     exit=1)
                 self.check_res(self.bug_16808_error, self.errout)
 
@@ -2587,7 +2583,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
                 tp = self.make_manifest(self.test_elf_warning_manf)
                 self.make_proto_text_file("etc/libc.so.1", "text")
                 self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.errout)
                 self.check_res(self.res_elf_warning, self.output)
 
@@ -2598,7 +2594,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
                 self.make_proto_text_file("etc/libc.so.1", "text")
                 self.make_elf(["$ORIGIN/../../../etc/"],
                     "usr/xpg4/lib/libcurses.so.1")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.errout)
                 self.check_res("", self.output)
 
@@ -2637,7 +2633,7 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
     """
                 self.make_proto_text_file("etc/file.py", "#!/usr/bin/python2.6")
                 tp = self.make_manifest(mf)
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp),
                     exit=1)
                 expected = (
                     "More than one $PKGDEPEND_RUNPATH token was set on the "
@@ -2690,13 +2686,13 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
                 bar_dir = os.path.join(self.test_proto_dir, "bar")
                 os.makedirs(foo_dir)
                 os.makedirs(bar_dir)
-                self.pkgdepend_generate("-d %s -d %s -d %s %s" % (
+                self.pkgdepend_generate("-d {0} -d {1} -d {2} {3}".format(
                     self.test_proto_dir,foo_dir, bar_dir, mp), exit=1)
                 self.assertEqual("Couldn't find "
                     "'usr/bin/amd64/python2.6-config' in any of the specified "
-                    "search directories:\n%s\n" % "\n".join(
+                    "search directories:\n{0}\n".format("\n".join(
                     "\t" + d for d in sorted(
-                        [foo_dir, bar_dir, self.test_proto_dir])),
+                        [foo_dir, bar_dir, self.test_proto_dir]))),
                     self.errout)
 
         def test_bug_18101(self):
@@ -2705,17 +2701,17 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
 
                 # Set up the files for generate.
                 fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py"
-                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
-                mp = self.make_manifest(self.pyver_test_manf_1_non_ex %
-                    {"py_ver": "2.6"})
+                self.make_proto_text_file(fp, self.pyver_python_text.format("2.6"))
+                mp = self.make_manifest(self.pyver_test_manf_1_non_ex.format(
+                    py_ver="2.6"))
 
                 # Run generate and check the output.
-                self.pkgdepend_generate("-d %s %s" %
-                    (self.test_proto_dir, mp))
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, mp))
                 self.check_res(
                     self.make_pyver_python_res("2.6",
-                        pkg5unittest.g_proto_area, fp, include_os=True) %
-                        {"bin_ver": "2.6"},
+                        pkg5unittest.g_proto_area, fp, include_os=True).format(
+                        bin_ver="2.6"),
                     self.output)
                 self.check_res("", self.errout)
 
@@ -2768,65 +2764,65 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 # test_bug_13059.
 
                 # Test line 1 (X D F) with mismatched versions.
-                tp = self.make_manifest(self.pyver_test_manf_1 %
-                    {"py_ver":"2.7"})
+                tp = self.make_manifest(self.pyver_test_manf_1.format(
+                    py_ver="2.7"))
                 fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
-                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                self.make_proto_text_file(fp, self.pyver_python_text.format("2.6"))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp),
                      exit=1)
                 self.check_res(self.pyver_mismatch_results +
                     self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
-                        include_os=True) % {"bin_ver": "2.6"},
+                        include_os=True).format(bin_ver="2.6"),
                     self.output)
-                self.check_res(self.pyver_mismatch_errs % self.test_proto_dir,
+                self.check_res(self.pyver_mismatch_errs.format(self.test_proto_dir),
                     self.errout)
 
                 # Test line 2 (X D !F)
-                tp = self.make_manifest(self.pyver_test_manf_1 %
-                    {"py_ver":"2.7"})
+                tp = self.make_manifest(self.pyver_test_manf_1.format(
+                    py_ver="2.7"))
                 fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
-                self.make_proto_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format(""))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(
                     self.pyver_res_full_manf_1("2.7", self.test_proto_dir, fp,
-                        include_os=True) % \
-                        {"reason": fp, "bin_ver": "", "run_path":""},
+                        include_os=True).format(
+                        reason=fp, bin_ver="", run_path=""),
                     self.output)
                 self.check_res("", self.errout)
 
                 # Test line 3 (X !D F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf)
                 fp = "usr/bin/pkg"
-                self.make_proto_text_file(fp, self.pyver_python_text % "2.7")
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format("2.7"))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(
                     self.pyver_res_full_manf_1("2.7", self.test_proto_dir, fp,
-                        include_os=True) % \
-                        {"reason": fp, "bin_ver": "2.7", "run_path":""},
+                        include_os=True).format(
+                        reason=fp, bin_ver="2.7", run_path=""),
                     self.output)
                 self.check_res("", self.errout)
 
                 # Test line 4 (X !D !F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf)
                 fp = "usr/bin/pkg"
-                self.make_proto_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp), exit=1)
+                self.make_proto_text_file(fp, self.pyver_python_text.format(""))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp), exit=1)
                 self.check_res(
-                    self.pyver_27_script_full_manf_1 %
-                        {"reason": fp, "bin_ver": "", "run_path":""},
+                    self.pyver_27_script_full_manf_1.format(
+                        reason=fp, bin_ver="", run_path=""),
                     self.output)
-                self.check_res(self.pyver_unspecified_ver_err %
-                    self.test_proto_dir, self.errout)
+                self.check_res(self.pyver_unspecified_ver_err.format(
+                    self.test_proto_dir), self.errout)
 
                 # Test line 5 (!X D F)
-                tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
-                    {"py_ver":"2.7"})
+                tp = self.make_manifest(self.pyver_test_manf_1_non_ex.format(
+                    py_ver="2.7"))
                 fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
-                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format("2.6"))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res(
                     self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
                         include_os=True),
@@ -2834,11 +2830,11 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 self.check_res("", self.errout)
 
                 # Test line 6 (!X D !F)
-                tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
-                    {"py_ver":"2.7"})
+                tp = self.make_manifest(self.pyver_test_manf_1_non_ex.format(
+                    py_ver="2.7"))
                 fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
-                self.make_proto_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format(""))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res(
                     self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
                         include_os=True),
@@ -2848,16 +2844,16 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 # Test line 7 (!X !D F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
                 fp = "usr/bin/pkg"
-                self.make_proto_text_file(fp, self.pyver_python_text % "2.7")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format("2.7"))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
                 # Test line 8 (!X !D !F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
                 fp = "usr/bin/pkg"
-                self.make_proto_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.make_proto_text_file(fp, self.pyver_python_text.format(""))
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
@@ -2869,18 +2865,18 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
 
                 # Set up the files for generate.
                 tp = self.make_manifest(
-                    self.pyver_test_manf_1 % {"py_ver":py_ver})
-                fp = "usr/lib/python%s/vendor-packages/pkg/" \
-                    "client/indexer.py" % py_ver
+                    self.pyver_test_manf_1.format(py_ver=py_ver))
+                fp = "usr/lib/python{0}/vendor-packages/pkg/" \
+                    "client/indexer.py".format(py_ver)
                 self.make_proto_text_file(fp, self.python_text)
 
                 # Run generate and check the output.
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(
                     self.pyver_res_full_manf_1(py_ver,
-                        self.test_proto_dir, fp) %
-                        {"bin_ver": "", "reason":fp, "run_path":""},
+                        self.test_proto_dir, fp).format(
+                        bin_ver="", reason=fp, run_path=""),
                     self.output)
                 self.check_res("", self.errout)
 
@@ -2888,24 +2884,23 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 # for the resolver to use.
                 dependency_mp = self.make_manifest(self.output)
                 provider_mp = self.make_manifest(
-                    self.pyver_resolve_dep_manf % {"py_ver":py_ver})
+                    self.pyver_resolve_dep_manf.format(py_ver=py_ver))
 
                 # Run resolver and check the output.
                 self.pkgdepend_resolve(
-                    "-v %s %s" % (dependency_mp, provider_mp))
+                    "-v {0} {1}".format(dependency_mp, provider_mp))
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
                 dependency_res_p = dependency_mp + ".res"
                 provider_res_p = provider_mp + ".res"
                 lines = self.__read_file(dependency_res_p)
                 self.check_res(self.make_pyver_resolve_results(
-                    pkg5unittest.g_proto_area) % {
-                        "res_manf": os.path.basename(provider_mp),
-                        "pfx":
-                            base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "py_ver": py_ver,
-                        "reason": fp
-                    }, lines)
+                    pkg5unittest.g_proto_area).format(
+                        res_manf=os.path.basename(provider_mp),
+                        pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
+                        py_ver=py_ver,
+                        reason=fp
+                    ), lines)
                 lines = self.__read_file(provider_res_p)
                 self.check_res("", lines)
 
@@ -2916,23 +2911,21 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 # Now test that generating dependencies when runpaths
                 # have been set works.
                 tp = self.make_manifest(
-                    self.pyver_test_manf_1_run_path % {"py_ver":py_ver})
-                fp = "usr/lib/python%s/vendor-packages/pkg/" \
-                    "client/indexer.py" % py_ver
+                    self.pyver_test_manf_1_run_path.format(py_ver=py_ver))
+                fp = "usr/lib/python{0}/vendor-packages/pkg/" \
+                    "client/indexer.py".format(py_ver)
                 self.make_proto_text_file(fp, self.python_text)
 
                 # Run generate and check the output.
-                self.pkgdepend_generate("-m -d %s %s" %
-                    (self.test_proto_dir, tp))
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
                 self.check_res(
                     self.pyver_res_full_manf_1(py_ver,
-                        self.test_proto_dir, fp) %
-                        {
-                            "bin_ver": "",
-                            "reason":fp,
-                            "run_path":\
-                                "pkg.depend.runpath=$PKGDEPEND_RUNPATH"
-                        },
+                        self.test_proto_dir, fp).format(
+                            bin_ver="",
+                            reason=fp,
+                            run_path=\
+                                "pkg.depend.runpath=$PKGDEPEND_RUNPATH"),
                     self.output)
                 self.check_res("", self.errout)
 

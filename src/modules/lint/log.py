@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -127,7 +127,8 @@ class LogFormatter(object):
                 if isinstance(value, str):
                         if value.upper() not in LEVELS:
                                 raise ValueError(
-                                   _("%(value)s is not a valid level") % value)
+                                    _("{0} is not a valid level").format(
+                                    value))
                         self._level = LEVELS[value]
                 else:
                         self._level = value
@@ -201,7 +202,7 @@ class PlainLogFormatter(LogFormatter):
                                 msg.msgid = "unknown"
 
                         # Format the message level and message identifier
-                        key = "%s %s" % (LEVELS[msg.level], msg.msgid)
+                        key = "{0} {1}".format(LEVELS[msg.level], msg.msgid)
                         if not ignore_linted:
                                 linted_flag = False
                                 try:
@@ -209,11 +210,12 @@ class PlainLogFormatter(LogFormatter):
                                             manifest=self.manifest,
                                             lint_id=msg.msgid)
                                 except DuplicateLintedAttrException, err:
-                                        lint_key = ("%s pkglint001.6" %
-                                            LEVELS[ERROR])
-                                        self.logger.warning("%s%s" %
-                                            (lint_key.ljust(34),
-                                            _("Logging error: %s") % err))
+                                        lint_key = ("{0} pkglint001.6".format(
+                                            LEVELS[ERROR]))
+                                        self.logger.warning("{0}{1}".format(
+                                            lint_key.ljust(34),
+                                            _("Logging error: {0}").format(
+                                            err)))
 
                                 if linted_flag:
                                         # we may have asked not to report errors
@@ -224,16 +226,18 @@ class PlainLogFormatter(LogFormatter):
                                                 if report and \
                                                     report.lower() == "false":
                                                         return
-                                        key = ("%s pkglint001.5" % LEVELS[INFO])
+                                        key = ("{0} pkglint001.5".format(
+                                            LEVELS[INFO]))
                                         linted_msg = _(
-                                            "Linted message: %(id)s  "
-                                            "%(msg)s") % \
-                                            {"id": msg.msgid, "msg": msg}
-                                        self.logger.warning("%s%s" %
-                                        (key.ljust(34), linted_msg))
+                                            "Linted message: {id}  "
+                                            "{msg}").format(
+                                            id=msg.msgid, msg=msg)
+                                        self.logger.warning("{0}{1}".format(
+                                        key.ljust(34), linted_msg))
                                         return
 
-                        self.logger.warning("%s%s" % (key.ljust(34), msg.msg))
+                        self.logger.warning("{0}{1}".format(key.ljust(34),
+                            msg.msg))
 
                         # We only treat errors, and criticals as being worthy
                         # of a flag (pkglint returns non-zero if self.emitted)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -351,7 +351,7 @@ class LinkedImageName(object):
                 return LinkedImageName(state)
 
         def __str__(self):
-                return "%s:%s" % (self.lin_type, self.lin_name)
+                return "{0}:{1}".format(self.lin_type, self.lin_name)
 
         def __len__(self):
                 return len(self.__str__())
@@ -469,9 +469,9 @@ class LinkedImage(object):
                 change."""
 
                 assert self.__img.root, \
-                    "root = %s" % str(self.__img.root)
+                    "root = {0}".format(str(self.__img.root))
                 assert self.__img.imgdir, \
-                    "imgdir = %s" % str(self.__img.imgdir)
+                    "imgdir = {0}".format(str(self.__img.imgdir))
 
                 # Check if this is our first time accessing the current image
                 # or if we're just re-initializing ourselves.
@@ -539,7 +539,7 @@ class LinkedImage(object):
                                     PROP_PARENT_PATH not in props:
                                         continue
                                 assert p in props, \
-                                    "'%s' not in %s" % (p, set(props))
+                                    "'{0}' not in {1}".format(p, set(props))
 
                 # update state
                 self.__props = props
@@ -603,10 +603,10 @@ class LinkedImage(object):
 
                 if update:
                         assert (set(props) & temporal_props), \
-                            "no temporal properties are set: %s" % props
+                            "no temporal properties are set: {0}".format(props)
                 else:
                         assert not (set(props) & temporal_props), \
-                            "temporal properties already set: %s" % props
+                            "temporal properties already set: {0}".format(props)
 
                 # Either 'path' or 'current_path' must be specified.
                 assert path is None or current_path is None
@@ -702,7 +702,7 @@ class LinkedImage(object):
                 versions (which have ".<runid>" appended to them."""
 
                 path = self.__path_prop
-                path_tmp = "%s.%d" % (self.__path_prop,
+                path_tmp = "{0}.{1:d}".format(self.__path_prop,
                     global_settings.client_runid)
 
                 # read the linked image properties from disk
@@ -740,7 +740,7 @@ class LinkedImage(object):
                 versions (which have ".<runid>" appended to them."""
 
                 pfacets = misc.EmptyDict
-                path = "%s.%d" % (self.__path_pfacets,
+                path = "{0}.{1:d}".format(self.__path_pfacets,
                     global_settings.client_runid)
                 if tmp and path_exists(path):
                         pfacets = load_data(path)
@@ -767,7 +767,7 @@ class LinkedImage(object):
                 versions (which have ".<runid>" appended to them."""
 
                 fmri_strs = None
-                path = "%s.%d" % (self.__path_ppkgs,
+                path = "{0}.{1:d}".format(self.__path_ppkgs,
                     global_settings.client_runid)
                 if tmp and path_exists(path):
                         fmri_strs = load_data(path)
@@ -792,7 +792,7 @@ class LinkedImage(object):
                 versions (which have ".<runid>" appended to them."""
 
                 ppubs = None
-                path = "%s.%d" % (self.__path_ppubs,
+                path = "{0}.{1:d}".format(self.__path_ppubs,
                     global_settings.client_runid)
                 if tmp and path_exists(path):
                         ppubs = load_data(path)
@@ -1095,7 +1095,7 @@ class LinkedImage(object):
 
                 # cleanup any temporary files
                 for path in paths:
-                        path = "%s.%d" % (path,
+                        path = "{0}.{1:d}".format(path,
                             global_settings.client_runid)
                         path_unlink(path, noent_ok=True)
 
@@ -1228,7 +1228,7 @@ class LinkedImage(object):
                 """Check if a specific child image exists."""
 
                 assert type(lin) == LinkedImageName, \
-                    "%s == LinkedImageName" % type(lin)
+                    "{0} == LinkedImageName".format(type(lin))
 
                 for i in self.__list_children():
                         if i[0] == lin:
@@ -1243,8 +1243,8 @@ class LinkedImage(object):
                 the children exist."""
 
                 assert isinstance(lin_list, list), \
-                    "type(lin_list) == %s, str(lin_list) == %s" % \
-                    (type(lin_list), str(lin_list))
+                    "type(lin_list) == {0}, str(lin_list) == {1}".format(
+                    type(lin_list), str(lin_list))
 
                 for lin in lin_list:
                         self.__verify_child_name(lin, raise_except=True)
@@ -1373,7 +1373,7 @@ class LinkedImage(object):
                 assert type(lin) == LinkedImageName
                 assert type(path) == str
                 assert props == None or type(props) == dict, \
-                    "type(props) == %s" % type(props)
+                    "type(props) == {0}".format(type(props))
                 if props == None:
                         props = dict()
 
@@ -1794,7 +1794,7 @@ class LinkedImage(object):
                 assert type(lin) == LinkedImageName
                 assert type(path) == str
                 assert props == None or type(props) == dict, \
-                    "type(props) == %s" % type(props)
+                    "type(props) == {0}".format(type(props))
                 if props == None:
                         props = dict()
 
@@ -2693,9 +2693,9 @@ class LinkedImageChild(object):
 
         def __init__(self, li, lin):
                 assert isinstance(li, LinkedImage), \
-                    "isinstance(%s, LinkedImage)" % type(li)
+                    "isinstance({0}, LinkedImage)".format(type(li))
                 assert isinstance(lin, LinkedImageName), \
-                    "isinstance(%s, LinkedImageName)" % type(lin)
+                    "isinstance({0}, LinkedImageName)".format(type(lin))
 
                 # globals
                 self.__linked = li
@@ -2753,7 +2753,7 @@ class LinkedImageChild(object):
 
                 try:
                         # first save our data to a temporary file
-                        path_tmp = "%s.%s" % (path,
+                        path_tmp = "{0}.{1}".format(path,
                             global_settings.client_runid)
                         save_data(path_tmp, data, root=root,
                             catch_exception=False)
@@ -3127,7 +3127,8 @@ class LinkedImageChild(object):
                         varcet_dict = facets
 
                 # need to transform varcets back to string list
-                varcets = [ "%s=%s" % (a, b) for (a, b) in varcet_dict.items()]
+                varcets = [ "{0}={1}".format(a, b) for (a, b) in
+                    varcet_dict.items()]
 
                 self.__pkg_remote.setup(self.child_path,
                     op,
@@ -3241,7 +3242,8 @@ class LinkedImageChild(object):
                             _syncmd_tmp, **kwargs)
                 else:
                         raise RuntimeError(
-                            "Unsupported package client op: %s" % _pkg_op)
+                            "Unsupported package client op: {0}".format(
+                            _pkg_op))
 
         def child_op_start(self):
                 """Public interface to start an operation on a child image."""
@@ -3541,7 +3543,7 @@ def save_data(path, data, root="/", catch_exception=True):
 
         # make sure the directory we're about to save data into exists.
         path_dir = os.path.dirname(path)
-        pathtmp = "%s.%d.tmp" % (path, os.getpid())
+        pathtmp = "{0}.{1:d}.tmp".format(path, os.getpid())
 
         try:
                 if not ar.ar_exists(root, path_dir):
@@ -3663,30 +3665,30 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
 
         if bad_cp:
                 assert err == None
-                err = "Invalid linked content policy: %s" % bad_cp
+                err = "Invalid linked content policy: {0}".format(bad_cp)
         elif bad_iup:
                 assert err == None
-                err = "Invalid linked image update policy: %s" % bad_iup
+                err = "Invalid linked image update policy: {0}".format(bad_iup)
         elif bad_lin_type:
                 assert err == None
-                err = "Invalid linked image type: %s" % bad_lin_type
+                err = "Invalid linked image type: {0}".format(bad_lin_type)
         elif bad_prop:
                 assert err == None
-                err = "Invalid linked property value: %s=%s" % bad_prop
+                err = "Invalid linked property value: {0}={1}".format(bad_prop)
         elif missing_props:
                 assert err == None
-                err = "Missing required linked properties: %s" % \
-                    ", ".join(missing_props)
+                err = "Missing required linked properties: {0}".format(
+                    ", ".join(missing_props))
         elif multiple_transforms:
                 assert err == None
                 err = "Multiple plugins reported different path transforms:"
                 for plugin, transform in multiple_transforms:
-                        err += "\n\t%s = %s -> %s" % (plugin,
+                        err += "\n\t{0} = {1} -> {2}".format(plugin,
                             transform[0], transform[1])
         elif saved_temporal_props:
                 assert err == None
-                err = "Found saved temporal linked properties: %s" % \
-                    ", ".join(saved_temporal_props)
+                err = "Found saved temporal linked properties: {0}".format(
+                    ", ".join(saved_temporal_props))
         else:
                 assert err != None
 
@@ -3701,16 +3703,17 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
 
         err_prefix = "Linked image error: "
         if lin:
-                err_prefix = "Linked image (%s) error: " % (str(lin))
+                err_prefix = "Linked image ({0}) error: ".format(str(lin))
 
         err_suffix = ""
         if path and lin:
-                err_suffix = "\nLinked image (%s) path: %s" % (str(lin), path)
+                err_suffix = "\nLinked image ({0}) path: {1}".format(str(lin),
+                    path)
         elif path:
-                err_suffix = "\nLinked image path: %s" % (path)
+                err_suffix = "\nLinked image path: {0}".format(path)
 
         raise RuntimeError(
-            "%s: %s%s" % (err_prefix, err, err_suffix))
+            "{0}: {1}{2}".format(err_prefix, err, err_suffix))
 
 # ---------------------------------------------------------------------------
 # Functions for accessing files in the current root
@@ -3763,7 +3766,7 @@ def path_transform_applicable(path, path_transform):
         """Check if 'path_transform' can be applied to 'path'."""
 
         # Make sure path has a leading and trailing os.sep.
-        assert os.path.isabs(path), "path is not absolute: %s" % path
+        assert os.path.isabs(path), "path is not absolute: {0}".format(path)
         path = path.rstrip(os.sep) + os.sep
 
         # If there is no transform, then any any translation is valid.
@@ -3779,7 +3782,7 @@ def path_transform_applied(path, path_transform):
         """Check if 'path_transform' has been applied to 'path'."""
 
         # Make sure path has a leading and trailing os.sep.
-        assert os.path.isabs(path), "path is not absolute: %s" % path
+        assert os.path.isabs(path), "path is not absolute: {0}".format(path)
         path = path.rstrip(os.sep) + os.sep
 
         # Reverse the transform.
@@ -3790,7 +3793,7 @@ def path_transform_apply(path, path_transform):
         """Apply the 'path_transform' to 'path'."""
 
         # Make sure path has a leading and trailing os.sep.
-        assert os.path.isabs(path), "path is not absolute: %s" % path
+        assert os.path.isabs(path), "path is not absolute: {0}".format(path)
         path = path.rstrip(os.sep) + os.sep
 
         if path_transform == PATH_TRANSFORM_NONE:
@@ -3812,8 +3815,8 @@ def compute_path_transform(opath, npath):
         between them."""
 
         # Make sure all paths have a leading and trailing os.sep.
-        assert os.path.isabs(opath), "opath is not absolute: %s" % opath
-        assert os.path.isabs(npath), "npath is not absolute: %s" % npath
+        assert os.path.isabs(opath), "opath is not absolute: {0}".format(opath)
+        assert os.path.isabs(npath), "npath is not absolute: {0}".format(npath)
         opath = opath.rstrip(os.sep) + os.sep
         npath = npath.rstrip(os.sep) + os.sep
 

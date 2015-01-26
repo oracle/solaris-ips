@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some pkg(5) specific lint manifest checks
@@ -128,11 +128,12 @@ class PkgManifestChecker(base.ManifestChecker):
                                 action = engine.get_attr_action(key, manifest)
                                 engine.advise_loggers(action=action,
                                     manifest=manifest)
-                                engine.error(_("obsolete package %(pkg)s has "
-                                    "%(key)s attribute") %
-                                    {"pkg": manifest.fmri,
-                                    "key": key},
-                                    msgid="%s%s.1" % (self.name, pkglint_id))
+                                engine.error(_("obsolete package {pkg} has "
+                                    "{key} attribute").format(
+                                    pkg=manifest.fmri,
+                                    key=key),
+                                    msgid="{0}{1}.1".format(self.name,
+                                    pkglint_id))
 
                 # the loggers are no longer concerned about actions
                 engine.advise_loggers(manifest=manifest)
@@ -140,7 +141,7 @@ class PkgManifestChecker(base.ManifestChecker):
                 has_invalid_action = False
                 linted_action = None
 
-                lint_id = "%s%s.2" % (self.name, pkglint_id)
+                lint_id = "{0}{1}.2".format(self.name, pkglint_id)
                 for action in manifest.gen_actions():
                         # since we only emit the error once, after iterating
                         # over all actions, we may lose the action that could
@@ -157,8 +158,8 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if has_invalid_action:
                         engine.error(
-                            _("obsolete package %s contains actions other than "
-                            "set or signature actions") % manifest.fmri,
+                            _("obsolete package {0} contains actions other than "
+                            "set or signature actions").format(manifest.fmri),
                             msgid=lint_id)
 
                 # report that we bypassed a check
@@ -166,14 +167,14 @@ class PkgManifestChecker(base.ManifestChecker):
                         engine.advise_loggers(action=linted_action,
                             manifest=manifest)
                         engine.error(
-                            _("obsolete package %s contains actions other than "
-                            "set or signature actions") % manifest.fmri,
+                            _("obsolete package {0} contains actions other than "
+                            "set or signature actions").format(manifest.fmri),
                             msgid=lint_id)
 
                 # determine whether other packages we know about have
                 # dependencies on this obsolete package.
                 obsolete_depends = set()
-                lint_id = "%s%s.3" % (self.name, pkglint_id)
+                lint_id = "{0}{1}.3".format(self.name, pkglint_id)
 
                 depends = set(
                     self.dependencies.get(manifest.fmri.get_name(), []))
@@ -187,10 +188,10 @@ class PkgManifestChecker(base.ManifestChecker):
                         # this is only a warning, because at install-time the
                         # solver may still be able to find a non-obsolete
                         # version of a package.
-                        engine.warning("obsolete package %(pkg)s is depended "
-                            "upon by the following packages: %(deps)s"
-                            % {"pkg": manifest.fmri, "deps": " ".join(
-                            [str(fmri) for fmri in obsolete_depends])},
+                        engine.warning("obsolete package {pkg} is depended "
+                            "upon by the following packages: "
+                            "{deps}".format(pkg=manifest.fmri, deps=" ".join(
+                            [str(fmri) for fmri in obsolete_depends])),
                             msgid=lint_id)
 
         obsoletion.pkglint_desc = _(
@@ -209,7 +210,7 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 has_invalid_action = False
                 seen_linted_action = False
-                invalid_action_id = "%s%s.1" % (self.name, pkglint_id)
+                invalid_action_id = "{0}{1}.1".format(self.name, pkglint_id)
                 count_depends = 0
 
                 for action in manifest.gen_actions():
@@ -228,9 +229,9 @@ class PkgManifestChecker(base.ManifestChecker):
                                         count_depends = count_depends + 1
 
                 if has_invalid_action:
-                        engine.error(_("renamed package %s contains actions "
-                            "other than set, depend or signature actions") %
-                            manifest.fmri, msgid=invalid_action_id)
+                        engine.error(_("renamed package {0} contains actions "
+                            "other than set, depend or signature actions").format(
+                            manifest.fmri), msgid=invalid_action_id)
 
                 # if all actions in the manifest that would have caused errors
                 # were marked as linted, we need to advise the logging mechanism
@@ -239,36 +240,37 @@ class PkgManifestChecker(base.ManifestChecker):
                 if seen_linted_action and not has_invalid_action:
                         engine.advise_loggers(action=seen_linted_action,
                             manifest=manifest)
-                        engine.error(_("renamed package %s contains actions "
-                            "other than set, depend or signature actions") %
-                            manifest.fmri, msgid=invalid_action_id)
+                        engine.error(_("renamed package {0} contains actions "
+                            "other than set, depend or signature actions").format(
+                            manifest.fmri), msgid=invalid_action_id)
 
                 if count_depends == 0:
-                        engine.error(_("renamed package %s does not declare a "
+                        engine.error(_("renamed package {0} does not declare a "
                             "'require' dependency indicating what it was "
-                            "renamed to") %
-                            manifest.fmri, msgid="%s%s.2" %
-                            (self.name, pkglint_id))
+                            "renamed to").format(
+                            manifest.fmri), msgid="{0}{1}.2".format(
+                            self.name, pkglint_id))
 
                 try:
                         mf = engine.follow_renames(str(manifest.fmri),
                             old_mfs=[])
                         if not mf:
                                 engine.warning(_("unable to follow renames for "
-                                    "%s: possible missing package") %
-                                    manifest.fmri, msgid="%s%s.3" %
-                                    (self.name, pkglint_id))
+                                    "{0}: possible missing package").format(
+                                    manifest.fmri), msgid="{0}{1}.3".format(
+                                    self.name, pkglint_id))
                         else:
                                 if "pkg.obsolete" not in mf:
                                         return
-                                engine.error(_("package %(pkg)s was renamed "
-                                    "to an obsolete package %(obs)s") %
-                                    {"pkg": manifest.fmri, "obs": mf.fmri},
-                                    msgid="%s%s.5" % (self.name, pkglint_id))
+                                engine.error(_("package {pkg} was renamed "
+                                    "to an obsolete package {obs}").format(
+                                    pkg=manifest.fmri, obs=mf.fmri),
+                                    msgid="{0}{1}.5".format(self.name,
+                                    pkglint_id))
 
                 except base.LintException, err:
-                        engine.error(_("package renaming: %s") % str(err),
-                            msgid="%s%s.4" % (self.name, pkglint_id) )
+                        engine.error(_("package renaming: {0}").format(str(err)),
+                            msgid="{0}{1}.4".format(self.name, pkglint_id))
 
         renames.pkglint_desc = _("Renamed packages should have valid contents.")
 
@@ -291,9 +293,9 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 pkg_vars = manifest.get_all_variants()
 
-                undefined_lint_id = "%s%s.1" % (self.name, pkglint_id)
-                unknown_lint_id = "%s%s.2" % (self.name, pkglint_id)
-                missing_arch_lint_id = "%s%s.3" % (self.name, pkglint_id)
+                undefined_lint_id = "{0}{1}.1".format(self.name, pkglint_id)
+                unknown_lint_id = "{0}{1}.2".format(self.name, pkglint_id)
+                missing_arch_lint_id = "{0}{1}.3".format(self.name, pkglint_id)
 
                 def ignore_variant(varname):
                         """check whether we can ignore this variant."""
@@ -323,27 +325,28 @@ class PkgManifestChecker(base.ManifestChecker):
                                     lint_id=unknown_lint_id):
                                         if ignore_variant(k):
                                                 continue
-                                        unknown_variants.add("%s=%s" % (k, v))
+                                        unknown_variants.add("{0}={1}".format(k,
+                                            v))
 
                 if len(undefined_variants) > 0:
                         vlist = sorted((v for v in undefined_variants))
-                        engine.error(_("variant(s) %(vars)s not defined by "
-                            "%(pkg)s") %
-                            {"vars": " ".join(vlist),
-                            "pkg": manifest.fmri}, msgid=undefined_lint_id)
+                        engine.error(_("variant(s) {vars} not defined by "
+                            "{pkg}").format(
+                            vars=" ".join(vlist),
+                            pkg=manifest.fmri), msgid=undefined_lint_id)
 
                 if len(unknown_variants) > 0:
                         vlist = sorted((v for v in unknown_variants))
-                        engine.error(_("variant(s) %(vars)s not in list "
-                            "of known values for variants in %(pkg)s") %
-                            {"vars": " ".join(vlist),
-                            "pkg": manifest.fmri}, msgid=unknown_lint_id)
+                        engine.error(_("variant(s) {vars} not in list "
+                            "of known values for variants in {pkg}").format(
+                            vars=" ".join(vlist),
+                            pkg=manifest.fmri), msgid=unknown_lint_id)
 
                 if has_arch_file and "variant.arch" not in manifest and \
                     not engine.linted(manifest=manifest,
                     lint_id=missing_arch_lint_id):
-                        engine.error(_("variant.arch not declared in %s") %
-                            manifest.fmri, msgid=missing_arch_lint_id)
+                        engine.error(_("variant.arch not declared in {0}").format(
+                            manifest.fmri), msgid=missing_arch_lint_id)
 
         variants.pkglint_desc = _("Variants used by packages should be valid.")
 
@@ -369,14 +372,14 @@ class PkgManifestChecker(base.ManifestChecker):
                 if len(self.ref_lastnames[lastname]) > 1:
                         plist = sorted((f.get_fmri() for f in fmris))
                         engine.warning(
-                            _("last name component %(name)s in package name "
-                            "clashes across %(pkgs)s") %
-                            {"name": lastname,
-                            "pkgs": " ".join(plist)},
-                            msgid="%s%s" % (self.name, pkglint_id))
+                            _("last name component {name} in package name "
+                            "clashes across {pkgs}").format(
+                            name=lastname,
+                            pkgs=" ".join(plist)),
+                            msgid="{0}{1}".format(self.name, pkglint_id))
 
-                if not engine.linted(manifest=manifest, lint_id="%s%s" %
-                    (self.name, pkglint_id)):
+                if not engine.linted(manifest=manifest,
+                    lint_id="{0}{1}".format(self.name, pkglint_id)):
                         self.processed_lastnames.append(lastname)
 
         naming.pkglint_desc = _(
@@ -389,7 +392,7 @@ class PkgManifestChecker(base.ManifestChecker):
                 seen_deps = {}
                 duplicates = []
                 dup_msg = _(
-                    "duplicate depend actions in %(pkg)s %(actions)s")
+                    "duplicate depend actions in {pkg} {actions}")
                 duplicates = []
                 for action in manifest.gen_actions_by_type("depend"):
                         # this only checks require and require-any actions
@@ -397,16 +400,17 @@ class PkgManifestChecker(base.ManifestChecker):
                                 continue
 
                         if "fmri" not in action.attrs:
-                                lint_id = "%s%s.1" % (self.name, pkglint_id)
+                                lint_id = "{0}{1}.1".format(self.name,
+                                    pkglint_id)
                                 if not engine.linted(action=action,
                                     manifest=manifest, lint_id=lint_id):
                                         engine.critical(
                                             _("no fmri attribute in depend "
-                                            "action in %s") % manifest.fmri,
-                                            msgid=lint_id)
+                                            "action in {0}").format(
+                                            manifest.fmri), msgid=lint_id)
                                 continue
 
-                        lint_id = "%s%s.2" % (self.name, pkglint_id)
+                        lint_id = "{0}{1}.2".format(self.name, pkglint_id)
                         if engine.linted(action=action, manifest=manifest,
                             lint_id=lint_id):
                                     continue
@@ -433,10 +437,10 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if duplicates:
                         dlist = sorted((str(d) for d in duplicates))
-                        engine.error(dup_msg %
-                            {"pkg": manifest.fmri,
-                            "actions": " ".join(dlist)},
-                            msgid="%s%s.2" % (self.name, pkglint_id))
+                        engine.error(dup_msg.format(
+                            pkg=manifest.fmri,
+                            actions=" ".join(dlist)),
+                            msgid="{0}{1}.2".format(self.name, pkglint_id))
 
         duplicate_deps.pkglint_desc = _(
             "Packages should not have duplicate 'depend' actions.")
@@ -444,11 +448,11 @@ class PkgManifestChecker(base.ManifestChecker):
         def duplicate_sets(self, manifest, engine, pkglint_id="006"):
                 """Checks for duplicate set actions."""
                 seen_sets = {}
-                dup_set_msg = _("duplicate set actions on %(names)s in %(pkg)s")
+                dup_set_msg = _("duplicate set actions on {names} in {pkg}")
                 duplicates = []
-                lint_id = "%s%s" % (self.name, pkglint_id)
+                lint_id = "{0}{1}".format(self.name, pkglint_id)
                 for action in manifest.gen_actions_by_type("set"):
-                        lint_id = "%s%s" % (self.name, pkglint_id)
+                        lint_id = "{0}{1}".format(self.name, pkglint_id)
                         if engine.linted(action=action, manifest=manifest,
                             lint_id=lint_id):
                                 continue
@@ -468,9 +472,9 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if duplicates:
                         dlist = sorted((str(d) for d in duplicates))
-                        engine.error(dup_set_msg %
-                            {"names": " ".join(dlist),
-                            "pkg": manifest.fmri},
+                        engine.error(dup_set_msg.format(
+                            names=" ".join(dlist),
+                            pkg=manifest.fmri),
                             msgid=lint_id)
 
         duplicate_sets.pkglint_desc = _(
@@ -486,10 +490,10 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if linted_attrs:
                         engine.info(_("pkg.linted attributes detected for "
-                            "%(pkg)s: %(linted)s") % {"pkg": manifest.fmri,
-                            "linted": ", ".join(["%s=%s" % (key, val)
-                             for key,val in linted_attrs])},
-                             msgid="%s%s" % (self.name, pkglint_id),
+                            "{pkg}: {linted}").format(pkg=manifest.fmri,
+                            linted=", ".join(["{0}={1}".format(key, val)
+                             for key,val in linted_attrs])),
+                             msgid="{0}{1}".format(self.name, pkglint_id),
                              ignore_linted=True)
 
         linted.pkglint_desc = _("Show manifests with pkg.linted attributes.")
@@ -504,9 +508,9 @@ class PkgManifestChecker(base.ManifestChecker):
                 if not self.classification_data or \
                     not self.classification_data.sections():
                         engine.error(_("Unable to perform manifest checks "
-                            "for info.classification attribute: %s") %
-                            self.bad_classification_data,
-                            msgid="%s%s.1" % (self.name, pkglint_id))
+                            "for info.classification attribute: {0}").format(
+                            self.bad_classification_data),
+                            msgid="{0}{1}.1".format(self.name, pkglint_id))
                         self.skip_classification_check = True
                         return
 
@@ -515,7 +519,7 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 for item in action.attrlist("value"):
                         self._check_info_classification_value(engine, item,
-                            manifest.fmri, "%s%s" % (self.name, pkglint_id))
+                            manifest.fmri, "{0}{1}".format(self.name, pkglint_id))
 
         info_classification.pkglint_desc = _(
             "info.classification attribute should be valid.")
@@ -526,18 +530,18 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if not prefix in value:
                         engine.error(_("info.classification attribute "
-                            "does not contain '%(prefix)s' for %(fmri)s") %
-                            locals(), msgid="%s.2" % msgid)
+                            "does not contain '{prefix}' for {fmri}").format(
+                            **locals()), msgid="{0}.2".format(msgid))
                         return
 
                 classification = value.replace(prefix, "")
 
                 components = classification.split("/", 1)
                 if len(components) != 2:
-                        engine.error(_("info.classification value %(value)s "
+                        engine.error(_("info.classification value {value} "
                             "does not match "
-                            "%(prefix)s<Section>/<Category> for %(fmri)s") %
-                            locals(), msgid="%s.3" % msgid)
+                            "{prefix}<Section>/<Category> for {fmri}").format(
+                            **locals()), msgid="{0}.3".format(msgid))
                         return
 
                 # the data file looks like:
@@ -557,36 +561,36 @@ class PkgManifestChecker(base.ManifestChecker):
                                 valid_value = False
                 except ConfigParser.NoSectionError:
                         sections = self.classification_data.sections()
-                        engine.error(_("info.classification value %(value)s "
+                        engine.error(_("info.classification value {value} "
                             "does not contain one of the valid sections "
-                            "%(ref_sections)s for %(fmri)s.") %
-                            {"value": value,
-                            "ref_sections": ", ".join(sorted(sections)),
-                            "fmri": fmri},
-                            msgid="%s.4" % msgid)
+                            "{ref_sections} for {fmri}.").format(
+                            value=value,
+                            ref_sections=", ".join(sorted(sections)),
+                            fmri=fmri),
+                            msgid="{0}.4".format(msgid))
                         return
                 except ConfigParser.NoOptionError:
                         engine.error(_("Invalid info.classification value for "
-                            "%(fmri)s: data file %(file)s does not have a "
-                            "'category' key for section %(section)s.") %
-                            {"file": self.classification_path,
-                            "section": section,
-                            "fmri": fmri},
-                             msgid="%s.5" % msgid)
+                            "{fmri}: data file {file} does not have a "
+                            "'category' key for section {section}.").format(
+                            file=self.classification_path,
+                            section=section,
+                            fmri=fmri),
+                             msgid="{0}.5".format(msgid))
                         return
 
                 if valid_value:
                         return
 
                 ref_cats = self.classification_data.get(section, "category")
-                engine.error(_("info.classification attribute in %(fmri)s "
+                engine.error(_("info.classification attribute in {fmri} "
                     "does not contain one of the values defined for the "
-                    "section %(section)s: %(ref_cats)s from %(path)s") %
-                    {"section": section,
-                    "fmri": fmri,
-                    "path": self.classification_path,
-                    "ref_cats": ref_cats },
-                    msgid="%s.6" % msgid)
+                    "section {section}: {ref_cats} from {path}").format(
+                    section=section,
+                    fmri=fmri,
+                    path=self.classification_path,
+                    ref_cats=ref_cats),
+                    msgid="{0}.6".format(msgid))
 
         def bogus_description(self, manifest, engine, pkglint_id="009"):
                 """Warns when a package has an empty summary or description,
@@ -599,24 +603,24 @@ class PkgManifestChecker(base.ManifestChecker):
                         action = engine.get_attr_action("pkg.description",
                             manifest)
                         engine.advise_loggers(action=action, manifest=manifest)
-                        engine.warning(_("Empty pkg.description in %s") %
-                            manifest.fmri,
-                            msgid="%s%s.1" % (self.name, pkglint_id))
+                        engine.warning(_("Empty pkg.description in {0}").format(
+                            manifest.fmri),
+                            msgid="{0}{1}.1".format(self.name, pkglint_id))
 
                 if summ == "":
                         action = engine.get_attr_action("pkg.summary",
                             manifest)
                         engine.advise_loggers(action=action, manifest=manifest)
-                        engine.warning(_("Empty pkg.summary in %s") %
-                            manifest.fmri,
-                            msgid="%s%s.3" % (self.name, pkglint_id))
+                        engine.warning(_("Empty pkg.summary in {0}").format(
+                            manifest.fmri),
+                            msgid="{0}{1}.3".format(self.name, pkglint_id))
 
                 if desc == summ and desc:
                         action = engine.get_attr_action("pkg.summary", manifest)
                         engine.advise_loggers(action=action, manifest=manifest)
                         engine.warning(_("pkg.description matches pkg.summary "
-                            "in %s") % manifest.fmri,
-                            msgid="%s%s.2" % (self.name, pkglint_id))
+                            "in {0}").format(manifest.fmri),
+                            msgid="{0}{1}.2".format(self.name, pkglint_id))
 
         bogus_description.pkglint_desc = _(
             "A package's description should not match its summary.")
@@ -635,9 +639,9 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if "pkg.summary" not in manifest:
                         engine.error(
-                            _("Missing attribute 'pkg.summary' in %s") %
-                            manifest.fmri,
-                            msgid="%s%s.2" % (self.name, pkglint_id))
+                            _("Missing attribute 'pkg.summary' in {0}").format(
+                            manifest.fmri),
+                            msgid="{0}{1}.2".format(self.name, pkglint_id))
 
         missing_attrs.pkglint_desc = _(
             "Standard package attributes should be present.")
@@ -672,12 +676,12 @@ class PkgManifestChecker(base.ManifestChecker):
                         return
 
                 engine.warning(
-                    _("SMF manifests were delivered by %(pkg)s, but no "
+                    _("SMF manifests were delivered by {pkg}, but no "
                     "org.opensolaris.smf.fmri attribute was found. "
-                    "Manifests found were: %(manifests)s") %
-                    {"manifests": " ".join(smf_manifests),
-                    "pkg": manifest.fmri},
-                    msgid="%s%s" % (self.name, pkglint_id))
+                    "Manifests found were: {manifests}").format(
+                    manifests=" ".join(smf_manifests),
+                    pkg=manifest.fmri),
+                    msgid="{0}{1}".format(self.name, pkglint_id))
 
         missing_smf_fmri.pkglint_desc = _(
             "Packages delivering SMF services should have "

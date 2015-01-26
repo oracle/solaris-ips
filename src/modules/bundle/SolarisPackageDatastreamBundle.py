@@ -167,7 +167,7 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                             target=mapline.target)
                 elif mapline.type == "i" and mapline.pathname == "copyright":
                         act = license.LicenseAction(ci.extractfile(),
-                            license="%s.copyright" % self.pkgname)
+                            license="{0}.copyright".format(self.pkgname))
                         act.hash = "install/copyright"
                 elif mapline.type == "i":
                         if mapline.pathname not in ["depend", "pkginfo"]:

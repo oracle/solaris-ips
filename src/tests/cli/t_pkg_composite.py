@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 
 
 import testutils
@@ -110,7 +110,7 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
                 self.assert_(dest_dir)
                 self.assert_(self.raw_trust_anchor_dir)
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -128,24 +128,24 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Sign the 'signed' package.
                 r = self.get_repo(self.dcs[1].get_repodir())
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "i1": os.path.join(self.chain_certs_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {i6} {pkg}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      i1=os.path.join(self.chain_certs_dir,
                           "ch1_ta1_cert.pem"),
-                      "i2": os.path.join(self.chain_certs_dir,
+                      i2=os.path.join(self.chain_certs_dir,
                           "ch2_ta1_cert.pem"),
-                      "i3": os.path.join(self.chain_certs_dir,
+                      i3=os.path.join(self.chain_certs_dir,
                           "ch3_ta1_cert.pem"),
-                      "i4": os.path.join(self.chain_certs_dir,
+                      i4=os.path.join(self.chain_certs_dir,
                           "ch4_ta1_cert.pem"),
-                      "i5": os.path.join(self.chain_certs_dir,
+                      i5=os.path.join(self.chain_certs_dir,
                           "ch5_ta1_cert.pem"),
-                      "i6": os.path.join(self.chain_certs_dir,
+                      i6=os.path.join(self.chain_certs_dir,
                           "ch1_ta3_cert.pem"),
-                      "pkg": plist[3]
-                    }
+                      pkg=plist[3]
+                    )
                 self.pkgsign(rurl, sign_args)
 
                 # This is just a test assertion to verify that the
@@ -192,11 +192,11 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Fourth will be empty.
                 self.empty_rurl = self.dcs[4].get_repo_url()
-                self.pkgrepo("refresh -s %s" % self.empty_rurl)
+                self.pkgrepo("refresh -s {0}".format(self.empty_rurl))
 
                 # Fifth will have a publisher named 'void', but no packages.
                 self.void_rurl = self.dcs[5].get_repo_url()
-                self.pkgrepo("refresh -s %s" % self.void_rurl)
+                self.pkgrepo("refresh -s {0}".format(self.void_rurl))
 
                 # Setup base test paths.
                 self.path_to_certs = os.path.join(self.ro_data_root,
@@ -216,15 +216,15 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Publish packages.
                 plist = self.__publish_packages(self.all_rurl)
-                self.pkgrepo("refresh -s %s" % self.all_rurl)
+                self.pkgrepo("refresh -s {0}".format(self.all_rurl))
 
                 # Copy foo to second repository and build index.
-                self.pkgrecv(self.all_rurl, "-d %s foo" % self.foo_rurl)
-                self.pkgrepo("refresh -s %s" % self.foo_rurl)
+                self.pkgrecv(self.all_rurl, "-d {0} foo".format(self.foo_rurl))
+                self.pkgrepo("refresh -s {0}".format(self.foo_rurl))
 
                 # Copy incorp and quux to third repository and build index.
-                self.pkgrecv(self.all_rurl, "-d %s signed" % self.signed_rurl)
-                self.pkgrepo("refresh -s %s" % self.signed_rurl)
+                self.pkgrecv(self.all_rurl, "-d {0} signed".format(self.signed_rurl))
+                self.pkgrepo("refresh -s {0}".format(self.signed_rurl))
 
                 # Now create a package archive containing all packages, and
                 # then one for each.
@@ -235,8 +235,8 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
                 for alist in ([plist[0]], [plist[1], plist[2]], [plist[3]],
                     [plist[4], plist[5]]):
                         arc_path = self.__archive_packages(
-                            "%s.p5p" % alist[0].pkg_name, repo, alist)
-                        setattr(self, "%s_arc" % alist[0].pkg_name, arc_path)
+                            "{0}.p5p".format(alist[0].pkg_name), repo, alist)
+                        setattr(self, "{0}_arc".format(alist[0].pkg_name), arc_path)
 
                 self.ta_dir = None
 
@@ -262,7 +262,7 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Verify list output for multiple, disparate sources using
                 # different combinations of archives and repositories.
-                self.pkg("set-publisher -g %s -g %s test" % (self.signed_arc,
+                self.pkg("set-publisher -g {0} -g {1} test".format(self.signed_arc,
                     self.foo_rurl))
                 self.pkg("list -afH")
                 expected = \
@@ -273,16 +273,16 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Verify removing origins while others remain configured
                 # works as expected.
-                self.pkg("set-publisher -G %s test" % self.foo_rurl)
+                self.pkg("set-publisher -G {0} test".format(self.foo_rurl))
                 self.pkg("list -afH")
                 expected = "signed (test) 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify simply adding origins works as expected.
-                self.pkg("set-publisher -g %s test" % self.foo_arc)
-                self.pkg("set-publisher -g %s test" % self.incorp_arc)
-                self.pkg("set-publisher -g %s test2" % self.quux_arc)
+                self.pkg("set-publisher -g {0} test".format(self.foo_arc))
+                self.pkg("set-publisher -g {0} test".format(self.incorp_arc))
+                self.pkg("set-publisher -g {0} test2".format(self.quux_arc))
                 self.pkg("list -afH")
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -296,16 +296,16 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Verify removing and adding origins at the same time works as
                 # expected.
-                self.pkg("set-publisher -G %s -g %s test" % (self.foo_arc,
+                self.pkg("set-publisher -G {0} -g {1} test".format(self.foo_arc,
                     self.foo_rurl))
                 self.pkg("list -afH")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("set-publisher -G \* -g %s test" % self.all_arc)
-                self.pkg("set-publisher -G %s -g %s -g %s test2" % (
+                self.pkg("set-publisher -G \* -g {0} test".format(self.all_arc))
+                self.pkg("set-publisher -G {0} -g {1} -g {2} test2".format(
                     self.quux_arc, self.all_arc, self.all_rurl))
-                self.pkg("list -afH -g %s -g %s" % (self.all_arc,
+                self.pkg("list -afH -g {0} -g {1}".format(self.all_arc,
                     self.all_rurl))
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
@@ -338,26 +338,26 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Verify info result for multiple disparate sources using
                 # different combinations of archives and repositories.
-                self.pkg("set-publisher -g %s -g %s test" % (self.signed_arc,
+                self.pkg("set-publisher -g {0} -g {1} test".format(self.signed_arc,
                     self.foo_rurl))
                 self.pkg("info -r signed@1.0 foo@1.0")
 
-                self.pkg("set-publisher -G %s -g %s -g %s test" %
-                    (self.foo_rurl, self.foo_arc, self.incorp_arc))
-                self.pkg("set-publisher -g %s test2" % self.quux_arc)
+                self.pkg("set-publisher -G {0} -g {1} -g {2} test".format(
+                    self.foo_rurl, self.foo_arc, self.incorp_arc))
+                self.pkg("set-publisher -g {0} test2".format(self.quux_arc))
                 self.pkg("info -r foo@1.0 incorp@1.0 signed@1.0 quux@0.1")
 
-                self.pkg("set-publisher -G %s -g %s test" % (self.foo_arc,
+                self.pkg("set-publisher -G {0} -g {1} test".format(self.foo_arc,
                     self.foo_rurl))
-                self.pkg("info -g %s -g %s -g %s -g %s foo@1.0 incorp@1.0 "
-                    "signed@1.0 quux@0.1" % (
+                self.pkg("info -g {0} -g {1} -g {2} -g {3} foo@1.0 incorp@1.0 "
+                    "signed@1.0 quux@0.1".format(
                     self.signed_arc, self.incorp_arc, self.quux_arc,
                     self.foo_rurl))
 
-                self.pkg("set-publisher -G \* -g %s -g %s test" %
-                    (self.all_arc, self.all_rurl))
-                self.pkg("set-publisher -G \* -g %s -g %s test2" %
-                    (self.all_arc, self.all_rurl))
+                self.pkg("set-publisher -G \* -g {0} -g {1} test".format(
+                    self.all_arc, self.all_rurl))
+                self.pkg("set-publisher -G \* -g {0} -g {1} test2".format(
+                    self.all_arc, self.all_rurl))
                 self.pkg("info -r foo@1.0 incorp@2.0 signed@1.0 quux@1.0")
 
                 # Verify package installed from archive shows in default info
@@ -371,11 +371,11 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 41.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": self.foo10.version.get_timestamp().strftime("%c"),
-    "pkg_fmri": self.foo10.get_fmri(include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=self.foo10.version.get_timestamp().strftime("%c"),
+    pkg_fmri=self.foo10.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, self.output)
 
         def test_02_contents(self):
@@ -389,23 +389,23 @@ Packaging Date: %(pkg_date)s
 
                 # Verify contents result for multiple disparate sources using
                 # different combinations of archives and repositories.
-                self.pkg("set-publisher -g %s -g %s test" % (self.signed_arc,
+                self.pkg("set-publisher -g {0} -g {1} test".format(self.signed_arc,
                     self.foo_rurl))
                 self.pkg("contents -r signed@1.0 foo@1.0")
 
-                self.pkg("set-publisher -G %s -g %s -g %s test" %
-                    (self.foo_rurl, self.foo_arc, self.incorp_arc))
-                self.pkg("set-publisher -g %s test2" % self.quux_arc)
+                self.pkg("set-publisher -G {0} -g {1} -g {2} test".format(
+                    self.foo_rurl, self.foo_arc, self.incorp_arc))
+                self.pkg("set-publisher -g {0} test2".format(self.quux_arc))
                 self.pkg("contents -r foo@1.0 incorp@1.0 signed@1.0 quux@0.1")
 
-                self.pkg("set-publisher -G %s -g %s test" % (self.foo_arc,
+                self.pkg("set-publisher -G {0} -g {1} test".format(self.foo_arc,
                     self.foo_rurl))
                 self.pkg("contents -r foo@1.0 incorp@1.0 signed@1.0 quux@0.1")
 
-                self.pkg("set-publisher -G \* -g %s -g %s test" %
-                    (self.all_arc, self.all_rurl))
-                self.pkg("set-publisher -G \* -g %s -g %s test2" %
-                    (self.all_arc, self.all_rurl))
+                self.pkg("set-publisher -G \* -g {0} -g {1} test".format(
+                    self.all_arc, self.all_rurl))
+                self.pkg("set-publisher -G \* -g {0} -g {1} test2".format(
+                    self.all_arc, self.all_rurl))
                 self.pkg("contents -r foo@1.0 incorp@2.0 signed@1.0 quux@1.0")
 
                 # Verify package installed from archive can be used with
@@ -429,7 +429,7 @@ Packaging Date: %(pkg_date)s
 
                 # Verify that packages with dependencies can be installed when
                 # using multiple, disparate sources.
-                self.pkg("set-publisher -g %s -g %s test" % (self.foo_arc,
+                self.pkg("set-publisher -g {0} -g {1} test".format(self.foo_arc,
                     self.signed_arc))
                 self.pkg("install signed")
                 self.pkg("list foo signed")
@@ -447,7 +447,7 @@ Packaging Date: %(pkg_date)s
                 # Verify that signed package can be installed and the archive
                 # configured for the publisher allows dependencies to be
                 # satisfied.
-                self.pkg("set-publisher -g %s test" % self.foo_arc)
+                self.pkg("set-publisher -g {0} test".format(self.foo_arc))
                 self.pkg("set-property signature-policy verify")
                 self.pkg("publisher test")
                 self.pkg("install signed")
@@ -456,7 +456,7 @@ Packaging Date: %(pkg_date)s
                 # Verify that removing all packages and the signed archive as
                 # a source leaves only foo known.
                 self.pkg("uninstall \*")
-                self.pkg("set-publisher -G %s test" % self.signed_arc)
+                self.pkg("set-publisher -G {0} test".format(self.signed_arc))
                 self.pkg("list -aH")
                 expected = "foo 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
@@ -469,14 +469,14 @@ Packaging Date: %(pkg_date)s
                 self.pkg("list -a", exit=1)
 
                 # Install an older version of a known package.
-                self.pkg("set-publisher -g %s test" % self.all_arc)
-                self.pkg("set-publisher -g %s test2" % self.all_arc)
+                self.pkg("set-publisher -g {0} test".format(self.all_arc))
+                self.pkg("set-publisher -g {0} test2".format(self.all_arc))
                 self.pkg("install quux@0.1")
                 self.pkg("list incorp@1.0 quux@0.1")
 
                 # Verify that packages can be updated when using multiple,
                 # disparate sources (that have some overlap).
-                self.pkg("set-publisher -g %s test" % self.incorp_arc)
+                self.pkg("set-publisher -g {0} test".format(self.incorp_arc))
                 self.pkg("update")
                 self.pkg("list incorp@2.0 quux@1.0")
 
@@ -487,12 +487,12 @@ Packaging Date: %(pkg_date)s
                 self.__seed_ta_dir("ta1")
 
                 # Add the incorp archive as a source.
-                self.pkg("set-publisher -g %s test" % self.incorp_arc)
+                self.pkg("set-publisher -g {0} test".format(self.incorp_arc))
 
                 # Now verify that temporary package sources can be used during
                 # package operations when multiple, disparate sources are
                 # already configured for the same publisher.
-                self.pkg("install -g %s incorp signed" % self.foo_rurl)
+                self.pkg("install -g {0} incorp signed".format(self.foo_rurl))
                 self.pkg("list incorp foo signed")
 
         def test_04_search(self):
@@ -507,7 +507,7 @@ Packaging Date: %(pkg_date)s
                 self.pkg("list -a", exit=1)
 
                 # Add multiple, different sources.
-                self.pkg("set-publisher -g %s -g %s test" % (self.foo_rurl,
+                self.pkg("set-publisher -g {0} -g {1} test".format(self.foo_rurl,
                     self.signed_rurl))
 
                 # Verify a remote search that should only match one of the
@@ -531,7 +531,7 @@ Packaging Date: %(pkg_date)s
                 # (provides some of the same packages) and verify that some
                 # of the results are duplicated (since search across sources
                 # is a simple aggregation of all sources).
-                self.pkg("set-publisher -g %s test" % self.all_rurl)
+                self.pkg("set-publisher -g {0} test".format(self.all_rurl))
                 self.pkg("search -Hpr -o pkg.shortfmri /usr/bin/foo OR "
                     "/usr/bin/quark OR Incorporation")
                 expected = \
@@ -564,11 +564,11 @@ Packaging Date: %(pkg_date)s
 
                 # Verify usage alone.
                 for uri in (self.empty_rurl, self.void_rurl):
-                        self.pkg("list -afH -g %s '*'" % uri, exit=1)
-                        self.pkg("contents -H -g %s '*'" % uri, exit=1)
+                        self.pkg("list -afH -g {0} '*'".format(uri), exit=1)
+                        self.pkg("contents -H -g {0} '*'".format(uri), exit=1)
 
                 # Verify usage in combination with non-empty.
-                self.pkg("list -afH -g %s -g %s -g %s '*'" % (self.empty_rurl,
+                self.pkg("list -afH -g {0} -g {1} -g {2} '*'".format(self.empty_rurl,
                     self.void_rurl, self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n")

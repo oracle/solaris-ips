@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (symbolic) link packaging object
@@ -91,9 +91,9 @@ class LinkAction(generic.Action):
                 atarget = os.readlink(path)
 
                 if target != atarget:
-                        errors.append(_("Target: '%(found)s' should be "
-                            "'%(expected)s'") % { "found": atarget,
-                            "expected": target })
+                        errors.append(_("Target: '{found}' should be "
+                            "'{expected}'").format(found=atarget,
+                            expected=target))
                 return errors, warnings, info
 
         def remove(self, pkgplan):

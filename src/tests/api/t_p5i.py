@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -181,7 +181,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # information that can't be retrieved (doesn't exist).
                 nefpath = os.path.join(self.test_root, "non-existent")
                 self.assertRaises(api_errors.RetrievalError,
-                    p5i.parse, location="file://%s" % nefpath)
+                    p5i.parse, location="file://{0}".format(nefpath))
 
                 self.assertRaises(api_errors.RetrievalError,
                     p5i.parse, location=nefpath)

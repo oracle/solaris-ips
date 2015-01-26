@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -143,7 +143,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
 
         def __assert_variant_matches_tsv(self, expected, errout=None,
             exit=0, opts=misc.EmptyI, names=misc.EmptyI, su_wrap=False):
-                self.pkg("variant %s -H -F tsv %s" % (" ".join(opts),
+                self.pkg("variant {0} -H -F tsv {1}".format(" ".join(opts),
                     " ".join(names)), exit=exit, su_wrap=su_wrap)
                 self.assertEqualDiff(expected, self.output)
                 if errout:
@@ -168,7 +168,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
 
                 if negate and not token:
                         self.assert_(False,
-                            "File exists when it shouldn't: %s" % path)
+                            "File exists when it shouldn't: {0}".format(path))
 
                 token_re = re.compile(
                     "^"     + token  + "$"   \
@@ -184,11 +184,11 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 f.close()
 
                 if not negate and not found:
-                        self.assert_(False, "File %s (%s) does not contain %s" %
-                            (path, file_path, token))
+                        self.assert_(False, "File {0} ({1}) does not contain {2}".format(
+                            path, file_path, token))
                 if negate and found:
-                        self.assert_(False, "File %s (%s) contains %s" %
-                            (path, file_path, token))
+                        self.assert_(False, "File {0} ({1}) contains {2}".format(
+                            path, file_path, token))
 
         def p_verify(self, p=None, v_arch=None, v_zone=None, negate=False):
                 """Given a specific architecture and zone variant, verify
@@ -208,10 +208,10 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
 
                 # make sure the package is installed
                 if negate:
-                        self.pkg("list %s" % p, exit=1)
+                        self.pkg("list {0}".format(p), exit=1)
                 else:
-                        self.pkg("list %s" % p)
-                        self.pkg("verify %s" % p)
+                        self.pkg("list {0}".format(p))
+                        self.pkg("verify {0}".format(p))
 
                 # nothing to verify for packages with no content
                 if p == 'pkg_inc':
@@ -273,8 +273,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                             "unable to determine image arch variant")
                 if ic.variants["variant.arch"] != v_arch:
                         self.assert_(False,
-                            "unexpected arch variant: %s != %s" % \
-                            (ic.variants["variant.arch"], v_arch))
+                            "unexpected arch variant: {0} != {1}".format(
+                            ic.variants["variant.arch"], v_arch))
 
                 if "variant.opensolaris.zone" not in ic.variants:
                         self.assert_(False,
@@ -298,8 +298,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 # number of packages in pl.
                 #
                 self.pkg(
-                    "list -H | wc -l | nawk '{print $1'} | grep '^%d$'" %
-                    len(pl))
+                    "list -H | wc -l | nawk '{{print $1'}} | grep '^{0:d}$'".format(
+                    len(pl)))
 
                 # make sure each specified package is installed
                 for p in pl:
@@ -311,7 +311,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 # make sure that pkg search doesn't report corrupted indexes
                 if self.verify_search:
                         for p in pl:
-                                self.pkg("search -l %s" % p )
+                                self.pkg("search -l {0}".format(p))
 
         def cv_test(self, v_arch, v_zone, pl, v_arch2, v_zone2, pl2,
             rv=EXIT_OK):
@@ -331,16 +331,16 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl, variants=variants)
 
                 exp_tsv = """\
-variant.arch\t%s
-variant.opensolaris.zone\t%s
-""" % (v_arch, v_zone)
+variant.arch\t{0}
+variant.opensolaris.zone\t{1}
+""".format(v_arch, v_zone)
                 self.__assert_variant_matches_tsv(exp_tsv)
 
                 # install the specified packages into the image
                 ii_args = ""
                 for p in pl:
-                        ii_args += " %s " % p
-                self.pkg("install %s" % ii_args)
+                        ii_args += " {0} ".format(p)
+                self.pkg("install {0}".format(ii_args))
 
                 # if we're paranoid, then verify the image we just installed
                 if self.verify_install:
@@ -348,17 +348,17 @@ variant.opensolaris.zone\t%s
                 # change the specified variant
                 cv_args = ""
                 cv_args += " -v"
-                cv_args += " variant.arch=%s" % v_arch2
-                cv_args += " variant.opensolaris.zone=%s" % v_zone2
+                cv_args += " variant.arch={0}".format(v_arch2)
+                cv_args += " variant.opensolaris.zone={0}".format(v_zone2)
 
                 self.pkg("change-variant" + cv_args, exit=rv)
                 # verify the updated image
                 self.i_verify(v_arch2, v_zone2, pl2)
 
                 exp_tsv = """\
-variant.arch\t%s
-variant.opensolaris.zone\t%s
-""" % (v_arch2, v_zone2)
+variant.arch\t{0}
+variant.opensolaris.zone\t{1}
+""".format(v_arch2, v_zone2)
                 self.__assert_variant_matches_tsv(exp_tsv)
 
                 self.image_destroy()
@@ -472,7 +472,7 @@ variant.opensolaris.zone\t%s
                 # present.
                 self.pkg("install -v unknown@1.0")
                 for fname in ("bar", "foo"):
-                        self.f_verify("usr/bin/%s" % fname, fname)
+                        self.f_verify("usr/bin/{0}".format(fname), fname)
 
                 # Next, verify upgrade to version of package with unknown
                 # variant fails if new version delivers conflicting content and
@@ -494,7 +494,7 @@ variant.opensolaris.zone\t%s
 
                 # Verify bar and foo no longer exist...
                 for fname in ("bar", "foo"):
-                        self.f_verify("usr/bin/%s" % fname, fname, negate=True)
+                        self.f_verify("usr/bin/{0}".format(fname), fname, negate=True)
 
                 # ...and that foo variant of foobar is now installed.
                 self.f_verify("usr/bin/foobar", "foo")

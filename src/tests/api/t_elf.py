@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -75,8 +75,8 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                 arch = pkg.portable.get_isainfo()[0]
                 for p in self.elf_paths:
                         p = re.sub("__ARCH__", arch, p)
-                        self.debug("testing elf file %s" % p)
-                        self.assert_(os.path.exists(p), "%s does not exist" % p)
+                        self.debug("testing elf file {0}".format(p))
+                        self.assert_(os.path.exists(p), "{0} does not exist".format(p))
                         self.assertEqual(elf.is_elf_object(p), True)
                         elf.get_dynamic(p)
                         elf.get_info(p)

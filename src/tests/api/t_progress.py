@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -205,8 +205,8 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
 
                 self.assert_(sp.get_final_speed() is None)
                 sp.done(timestamp)
-                self.debug("-- final speed: %f" % sp.get_final_speed())
-                self.debug("-- expected final speed: %f" % (hunk * hunkspersec))
+                self.debug("-- final speed: {0:f}".format(sp.get_final_speed()))
+                self.debug("-- expected final speed: {0:f}".format(hunk * hunkspersec))
                 self.debug(str(sp))
                 self.assert_(int(sp.get_final_speed()) == hunk * hunkspersec)
 
@@ -264,34 +264,34 @@ class TestFormatPair(pkg5unittest.Pkg5TestCase):
         def test_format_pair(self):
                 """Test that format_pair works as expected."""
                 testdata = [
-                    ["%d", 0, 0, {},                   "0/0"],
-                    ["%d", 0, 1, {},                   "0/1"],
-                    ["%d", 1, 100, {},                 "  1/100"],
-                    ["%d", 1000, 1000, {},             "1000/1000"],
-                    ["%.1f", 0, 1000, {},              "   0.0/1000.0"],
-                    ["%.1f", 1000, 1000, {},           "1000.0/1000.0"],
-                    ["%.1f", 1012.512, 2000.912, {},   "1012.5/2000.9"],
-                    ["%.1f", 20.32, 1000.23,
-                        {"targetwidth": 6, "format2": "%d"},
+                    ["{0:d}", 0, 0, {},                   "0/0"],
+                    ["{0:d}", 0, 1, {},                   "0/1"],
+                    ["{0:d}", 1, 100, {},                 "  1/100"],
+                    ["{0:d}", 1000, 1000, {},             "1000/1000"],
+                    ["{0:.1f}", 0, 1000, {},              "   0.0/1000.0"],
+                    ["{0:.1f}", 1000, 1000, {},           "1000.0/1000.0"],
+                    ["{0:.1f}", 1012.512, 2000.912, {},   "1012.5/2000.9"],
+                    ["{0:.1f}", 20.32, 1000.23,
+                        {"targetwidth": 6, "format2": "{0:d}"},
                                                             "  20.3/1000.2"],
-                    ["%.1f", 20.322, 1000.23,
-                        {"targetwidth": 5, "format2": "%d"},
+                    ["{0:.1f}", 20.322, 1000.23,
+                        {"targetwidth": 5, "format2": "{0:d}"},
                                                             "  20/1000"],
-                    ["%.1f", 20.322, 1000.23,
-                        {"targetwidth": 4, "format2": "%d"},
+                    ["{0:.1f}", 20.322, 1000.23,
+                        {"targetwidth": 4, "format2": "{0:d}"},
                                                             "  20/1000"],
-                    ["%.1f", 20.322, 99.23,
-                        {"targetwidth": 5, "format2": "%d"},
+                    ["{0:.1f}", 20.322, 99.23,
+                        {"targetwidth": 5, "format2": "{0:d}"},
                                                             "20.3/99.2"],
-                    ["%.1f", 2032, 9923,
-                        {"targetwidth": 5, "format2": "%d", "scale": 100},
+                    ["{0:.1f}", 2032, 9923,
+                        {"targetwidth": 5, "format2": "{0:d}", "scale": 100},
                                                             "20.3/99.2"],
                 ]
                 for (formatstr, item, goal, kwargs, expresult) in testdata:
                         result = progress.format_pair(formatstr, item,
                             goal, **kwargs)
                         self.assertEqual(result, expresult,
-                            "expected: %s != result: %s" % (expresult, result))
+                            "expected: {0} != result: {1}".format(expresult, result))
 
 
 class TestProgressTrackers(pkg5unittest.Pkg5TestCase):

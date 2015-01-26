@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -65,9 +65,9 @@ class NeedToModifyReadOnlyFileManager(apx.ApiException):
                 self.create = create
 
         def __str__(self):
-                return _("The FileManager cannot %(cre)s %(ent)s because it "
-                    "is configured read-only.") % \
-                    { "cre": self.create, "ent":self.ent }
+                return _("The FileManager cannot {cre} {ent} because it "
+                    "is configured read-only.").format(
+                    cre=self.create, ent=self.ent)
 
 
 class FMInsertionFailure(apx.ApiException):
@@ -81,8 +81,9 @@ class FMInsertionFailure(apx.ApiException):
                 self.dest = dest
 
         def __str__(self):
-                return _("%(src)s was removed while FileManager was attempting "
-                    "to insert it into the cache as %(dest)s.") % self.__dict__
+                return _("{src} was removed while FileManager was attempting "
+                    "to insert it into the cache as {dest}.").format(
+                    **self.__dict__)
 
 
 class FMPermissionsException(apx.PermissionsException):
@@ -90,8 +91,8 @@ class FMPermissionsException(apx.PermissionsException):
         permissions to operate as needed on the file system."""
 
         def __str__(self):
-                return _("FileManager was unable to create %s or the "
-                    "directories containing it.") % self.path
+                return _("FileManager was unable to create {0} or the "
+                    "directories containing it.").format(self.path)
 
 
 class UnrecognizedFilePaths(apx.ApiException):
@@ -104,8 +105,8 @@ class UnrecognizedFilePaths(apx.ApiException):
 
         def __str__(self):
                 return _("The following paths were found but cannot be "
-                    "accounted for by any of the known layouts:\n%s") % \
-                    "\n".join(self.fps)
+                    "accounted for by any of the known layouts:\n{0}").format(
+                    "\n".join(self.fps))
 
 
 class FileManager(object):

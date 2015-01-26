@@ -124,10 +124,10 @@ class TransportFailures(TransportException):
                 s = ""
                 for i, x in enumerate(self.exceptions):
                         if len(self.exceptions) > 1:
-                                s += "%d: " % (i + 1)
+                                s += "{0:d}: ".format(i + 1)
                         s += str(x)
                         if x.count > 1:
-                                s += " (happened %d times)" % x.count
+                                s += " (happened {0:d} times)".format(x.count)
                         s += "\n"
                 s += self._str_autofix()
                 return s
@@ -164,25 +164,26 @@ class TransportProtoError(TransportException):
                         self.codename = codenames[0]
 
         def __str__(self):
-                s = "%s protocol error" % self.proto
+                s = "{0} protocol error".format(self.proto)
                 if self.code and self.codename:
-                        s += ": code: %s (%d)" % (self.codename, self.code)
+                        s += ": code: {0} ({1:d})".format(
+                            self.codename, self.code)
                 elif self.code:
-                        s += ": Unknown error code: %d" % self.code
+                        s += ": Unknown error code: {0:d}".format(self.code)
                 if self.reason:
-                        s += " reason: %s" % self.reason
+                        s += " reason: {0}".format(self.reason)
                 if self.url:
-                        s += "\nURL: '%s'" % self.url
+                        s += "\nURL: '{0}'".format(self.url)
                 elif self.urlstem:
                         # If the location of the resource isn't known because
                         # the error was encountered while attempting to find
                         # the location, then at least knowing where it was
                         # looking will be helpful.
-                        s += "\nRepository URL: '%s'." % self.urlstem
+                        s += "\nRepository URL: '{0}'.".format(self.urlstem)
                 if self.proxy:
-                        s += "\nProxy: '%s'" % self.proxy
+                        s += "\nProxy: '{0}'".format(self.proxy)
                 if self.details:
-                        s +="\nAdditional Details:\n%s" % self.details
+                        s +="\nAdditional Details:\n{0}".format(self.details)
                 return s
 
         def __cmp__(self, other):
@@ -229,15 +230,17 @@ class TransportFrameworkError(TransportException):
 
         def __str__(self):
                 if self.codename:
-                        s = "Framework error: code: %s (%d)" % (self.codename, self.code)
+                        s = "Framework error: code: {0} ({1:d})".format(
+                            self.codename, self.code)
                 else:
-                        s = "Unkown Framework error code: %d" % self.code
+                        s = "Unkown Framework error code: {0:d}".format(
+                            self.code)
                 if self.reason:
-                        s += " reason: %s" % self.reason
+                        s += " reason: {0}".format(self.reason)
                 if self.url:
-                        s += "\nURL: '%s'" % self.url
+                        s += "\nURL: '{0}'".format(self.url)
                 if self.proxy:
-                        s += "\nProxy: '%s'" % self.proxy
+                        s += "\nProxy: '{0}'".format(self.proxy)
                 s += self._str_autofix()
                 return s
 
@@ -272,9 +275,9 @@ class TransportStallError(TransportException):
                 if self.url or self.proxy:
                         s += ":"
                 if self.url:
-                        s += "\nURL: '%s'" % self.url
+                        s += "\nURL: '{0}'".format(self.url)
                 if self.proxy:
-                        s += "\nProxy: '%s'" % self.proxy
+                        s += "\nProxy: '{0}'".format(self.proxy)
                 return s
 
         def __cmp__(self, other):
@@ -298,12 +301,12 @@ class TransferContentException(TransportException):
 
         def __str__(self):
                 if self.proxy:
-                        s = "Transfer from '%s' via proxy '%s' failed" % \
-                            (self.url, self.proxy)
+                        s = "Transfer from '{0}' via proxy '{1}' failed".format(
+                            self.url, self.proxy)
                 else:
-                        s = "Transfer from '%s' failed" % self.url
+                        s = "Transfer from '{0}' failed".format(self.url)
                 if self.reason:
-                        s += ": %s" % self.reason
+                        s += ": {0}".format(self.reason)
                 s += "."
                 return s
 
@@ -335,13 +338,13 @@ class InvalidContentException(TransportException):
         def __str__(self):
                 s = "Invalid content"
                 if self.path:
-                        s += "path %s" % self.path
+                        s += "path {0}".format(self.path)
                 if self.reason:
-                        s += ": %s." % self.reason
+                        s += ": {0}.".format(self.reason)
                 if self.url:
-                        s += "\nURL: %s" % self.url
+                        s += "\nURL: {0}".format(self.url)
                 if self.proxy:
-                        s += "\nProxy: %s" % self.proxy
+                        s += "\nProxy: {0}".format(self.proxy)
                 return s
 
         def __cmp__(self, other):
@@ -378,16 +381,16 @@ class PkgProtoError(TransportException):
 
         def __str__(self):
                 if self.proxy:
-                        s = "Invalid pkg(5) response from %s (proxy %s)" % \
-                            (self.url, self.proxy)
+                        s = "Invalid pkg(5) response from {0} (proxy {1})".format(
+                            self.url, self.proxy)
                 else:
-                        s = "Invalid pkg(5) response from %s" % self.url
+                        s = "Invalid pkg(5) response from {0}".format(self.url)
                 if self.operation:
-                        s += ": Attempting operation '%s'" % self.operation
+                        s += ": Attempting operation '{0}'".format(self.operation)
                 if self.version is not None:
-                        s += " version %s" % self.version
+                        s += " version {0}".format(self.version)
                 if self.reason:
-                        s += ":\n%s" % self.reason
+                        s += ":\n{0}".format(self.reason)
                 return s
 
         def __cmp__(self, other):
@@ -424,11 +427,11 @@ class ExcessiveTransientFailure(TransportException):
         def __str__(self):
                 s = "Too many retryable errors encountered during transfer.\n"
                 if self.url:
-                        s += "URL: %s " % self.url
+                        s += "URL: {0} ".format(self.url)
                 if self.proxy:
-                        s += "Proxy: %s" % self.proxy
+                        s += "Proxy: {0}".format(self.proxy)
                 if self.count:
-                        s += "Count: %s " % self.count
+                        s += "Count: {0} ".format(self.count)
                 return s
 
         def __cmp__(self, other):

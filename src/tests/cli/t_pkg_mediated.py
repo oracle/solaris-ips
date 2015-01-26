@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -281,12 +281,12 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
                 ])
 
         def __assert_mediation_matches(self, expected, mediators=misc.EmptyI):
-                self.pkg("mediator -H -F tsv %s" % " ".join(mediators))
+                self.pkg("mediator -H -F tsv {0}".format(" ".join(mediators)))
                 self.assertEqualDiff(expected, self.output)
 
         def __assert_available_mediation_matches(self, expected,
             mediators=misc.EmptyI, su_wrap=False):
-                self.pkg("mediator -H -F tsv -a %s" % " ".join(mediators),
+                self.pkg("mediator -H -F tsv -a {0}".format(" ".join(mediators)),
                     su_wrap=su_wrap)
                 self.assertEqualDiff(expected, self.output)
 

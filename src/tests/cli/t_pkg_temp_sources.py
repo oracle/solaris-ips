@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -122,7 +122,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.assert_(dest_dir)
                 self.assert_(self.raw_trust_anchor_dir)
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -140,24 +140,24 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Sign the 'signed' package.
                 r = self.get_repo(self.dcs[1].get_repodir())
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "i1": os.path.join(self.chain_certs_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {i6} {pkg}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      i1=os.path.join(self.chain_certs_dir,
                           "ch1_ta1_cert.pem"),
-                      "i2": os.path.join(self.chain_certs_dir,
+                      i2=os.path.join(self.chain_certs_dir,
                           "ch2_ta1_cert.pem"),
-                      "i3": os.path.join(self.chain_certs_dir,
+                      i3= os.path.join(self.chain_certs_dir,
                           "ch3_ta1_cert.pem"),
-                      "i4": os.path.join(self.chain_certs_dir,
+                      i4=os.path.join(self.chain_certs_dir,
                           "ch4_ta1_cert.pem"),
-                      "i5": os.path.join(self.chain_certs_dir,
+                      i5=os.path.join(self.chain_certs_dir,
                           "ch5_ta1_cert.pem"),
-                      "i6": os.path.join(self.chain_certs_dir,
+                      i6=os.path.join(self.chain_certs_dir,
                           "ch1_ta3_cert.pem"),
-                      "pkg": plist[3]
-                    }
+                      pkg=plist[3]
+                    )
                 self.pkgsign(rurl, sign_args)
 
                 # This is just a test assertion to verify that the
@@ -221,7 +221,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 plist = self.__publish_packages(self.all_rurl)
 
                 # Copy foo to second repository.
-                self.pkgrecv(self.all_rurl, "-d %s foo" % self.foo_rurl)
+                self.pkgrecv(self.all_rurl, "-d {0} foo".format(self.foo_rurl))
 
                 # Now create a package archive containing all packages, and
                 # then one for each.
@@ -232,8 +232,8 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 for alist in ([plist[0]], [plist[1], plist[2]], [plist[3]],
                     [plist[4], plist[5]]):
                         arc_path = self.__archive_packages(
-                            "%s.p5p" % alist[0].pkg_name, repo, alist)
-                        setattr(self, "%s_arc" % alist[0].pkg_name, arc_path)
+                            "{0}.p5p".format(alist[0].pkg_name), repo, alist)
+                        setattr(self, "{0}_arc".format(alist[0].pkg_name), arc_path)
 
                 self.ta_dir = None
 
@@ -274,25 +274,25 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Verify graceful failure for an empty source alone or in
                 # combination with another temporary source.
-                self.pkg("list -H -g %s" % self.empty_arc, exit=1)
-                self.pkg("list -H -g %s -g %s" % (self.empty_arc,
+                self.pkg("list -H -g {0}".format(self.empty_arc), exit=1)
+                self.pkg("list -H -g {0} -g {1}".format(self.empty_arc,
                     self.foo_arc), exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("list -H -g %s" % (self.foo_arc + ".nosuchpkg"),
+                self.pkg("list -H -g {0}".format(self.foo_arc + ".nosuchpkg"),
                     exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("list -H -g %s" % self.perm_arc, su_wrap=True, exit=1)
+                self.pkg("list -H -g {0}".format(self.perm_arc), su_wrap=True, exit=1)
 
                 # Verify graceful list failure if -u is used with -g.
-                self.pkg("list -H -u -g %s" % self.foo_arc, exit=2)
+                self.pkg("list -H -u -g {0}".format(self.foo_arc), exit=2)
 
                 # Verify list output for a single package temporary source.
                 # -a is used here to verify that even though -a is implicit,
                 # it is not an error to specify it.
-                self.pkg("list -aH -g %s" % self.foo_arc)
+                self.pkg("list -aH -g {0}".format(self.foo_arc))
                 expected = "foo (test) 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
@@ -302,7 +302,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Verify list output for a multiple package temporary source
                 # as an unprivileged user.
-                self.pkg("list -fH -g %s" % self.all_arc, su_wrap=True)
+                self.pkg("list -fH -g {0}".format(self.all_arc), su_wrap=True)
                 expected = \
                     ("foo (test) 1.0 ---\n"
                     "incorp (test) 2.0 ---\n"
@@ -314,13 +314,13 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 # Verify list output for a multiple package temporary source.
-                self.pkg("list -fH -g %s" % self.all_arc)
+                self.pkg("list -fH -g {0}".format(self.all_arc))
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify list output for multiple temporary sources using
                 # different combinations of archives and repositories.
-                self.pkg("list -fH -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -fH -g {0} -g {1}".format(self.signed_arc,
                     self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -328,7 +328,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -fH -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -fH -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.incorp_arc, self.quux_arc, self.foo_arc))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -340,18 +340,18 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -fH -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -fH -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -fH -g %s -g %s" % (self.all_arc,
+                self.pkg("list -fH -g {0} -g {1}".format(self.all_arc,
                     self.all_rurl))
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify list -g without -f.
-                self.pkg("list -H -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -H -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -363,14 +363,14 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Verify package installed from archive shows in default list
                 # output.
-                self.pkg("install -g %s incorp@1.0" % self.incorp_arc)
+                self.pkg("install -g {0} incorp@1.0".format(self.incorp_arc))
                 self.pkg("list -H")
                 expected = "incorp (test) 1.0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify list -g with an incorp installed without -f.
-                self.pkg("list -H -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -H -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -381,14 +381,14 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 # Verify output again as unprivileged user.
-                self.pkg("list -H -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -H -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl),
                     su_wrap=True)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify list -g with an incorp installed with -f.
-                self.pkg("list -fH -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -fH -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -401,7 +401,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 # Verify list -g with an incorp installed and -n.
-                self.pkg("list -nH -g %s -g %s -g %s -g %s" % (self.signed_arc,
+                self.pkg("list -nH -g {0} -g {1} -g {2} -g {3}".format(self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
                     ("foo (test) 1.0 ---\n"
@@ -433,20 +433,20 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Verify graceful failure for an empty source alone or in
                 # combination with another temporary source.
-                self.pkg("info -g %s \*" % self.empty_arc, exit=1)
-                self.pkg("info -g %s -g %s foo" % (self.empty_arc,
+                self.pkg("info -g {0} \*".format(self.empty_arc), exit=1)
+                self.pkg("info -g {0} -g {1} foo".format(self.empty_arc,
                     self.foo_arc), exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("info -g %s foo" % (self.foo_arc + ".nosuchpkg"),
+                self.pkg("info -g {0} foo".format(self.foo_arc + ".nosuchpkg"),
                     exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("info -g %s foo" % self.perm_arc, su_wrap=True, exit=1)
+                self.pkg("info -g {0} foo".format(self.perm_arc), su_wrap=True, exit=1)
 
                 # Verify graceful failure if -l is used with -g.
-                self.pkg("info -l -g %s foo" % self.foo_arc, exit=2)
+                self.pkg("info -l -g {0} foo".format(self.foo_arc), exit=2)
 
                 # Verify output for a single package temporary source.
                 # -r is used here to verify that even though -r is implicit,
@@ -454,7 +454,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 def pd(pfmri):
                         return pfmri.version.get_timestamp().strftime("%c")
 
-                self.pkg("info -r -g %s foo" % self.foo_arc, su_wrap=True)
+                self.pkg("info -r -g {0} foo".format(self.foo_arc), su_wrap=True)
                 expected = """\
           Name: foo
        Summary: Example package foo.
@@ -462,15 +462,15 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 41.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10.get_fmri(
-    include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pd(self.foo10), pkg_fmri=self.foo10.get_fmri(
+    include_build=False))
                 self.assertEqualDiff(expected, self.output)
 
                 # Again, as prvileged user.
-                self.pkg("info -r -g %s foo" % self.foo_arc)
+                self.pkg("info -r -g {0} foo".format(self.foo_arc))
                 self.assertEqualDiff(expected, self.output)
 
                 # Note that -r is implicit when -g is used, so all of
@@ -478,7 +478,7 @@ Packaging Date: %(pkg_date)s
 
                 # Verify info output for a multiple package temporary source
                 # as an unprivileged user.
-                self.pkg("info -g %s \*" % self.all_arc, su_wrap=True)
+                self.pkg("info -g {0} \*".format(self.all_arc), su_wrap=True)
                 expected = """\
           Name: foo
        Summary: Example package foo.
@@ -486,9 +486,9 @@ Packaging Date: %(pkg_date)s
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(foo10_pkg_date)s
+Packaging Date: {foo10_pkg_date}
           Size: 41.00 B
-          FMRI: %(foo10_pkg_fmri)s
+          FMRI: {foo10_pkg_fmri}
 
           Name: incorp
        Summary: Incorporation
@@ -496,9 +496,9 @@ Packaging Date: %(foo10_pkg_date)s
      Publisher: test
        Version: 2.0
         Branch: None
-Packaging Date: %(incorp20_pkg_date)s
+Packaging Date: {incorp20_pkg_date}
           Size: 0.00 B
-          FMRI: %(incorp20_pkg_fmri)s
+          FMRI: {incorp20_pkg_fmri}
 
           Name: quux
        Summary: Example package quux.
@@ -506,19 +506,19 @@ Packaging Date: %(incorp20_pkg_date)s
      Publisher: test2
        Version: 1.0
         Branch: 0.2
-Packaging Date: %(quux10_pkg_date)s
+Packaging Date: {quux10_pkg_date}
           Size: 8.00 B
-          FMRI: %(quux10_pkg_fmri)s
+          FMRI: {quux10_pkg_fmri}
 
           Name: signed
          State: Not installed
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(signed10_pkg_date)s
+Packaging Date: {signed10_pkg_date}
           Size: 7.81 kB
-          FMRI: %(signed10_pkg_fmri)s
-""" % { "foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": \
+          FMRI: {signed10_pkg_fmri}
+""".format(**{"foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": \
         self.foo10.get_fmri(include_build=False),
     "incorp20_pkg_date": pd(self.incorp20), "incorp20_pkg_fmri": \
         self.incorp20.get_fmri(include_build=False),
@@ -526,35 +526,35 @@ Packaging Date: %(signed10_pkg_date)s
         self.quux10.get_fmri(include_build=False),
     "signed10_pkg_date": pd(self.signed10), "signed10_pkg_fmri": \
         self.signed10.get_fmri(include_build=False),
-    }
+    })
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify info output for a multiple package temporary source.
-                self.pkg("info -g %s foo@1.0 incorp@2.0 signed@1.0 "
-                    "quux@1.0" % self.all_arc)
+                self.pkg("info -g {0} foo@1.0 incorp@2.0 signed@1.0 "
+                    "quux@1.0".format(self.all_arc))
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify info result for multiple temporary sources using
                 # different combinations of archives and repositories.
-                self.pkg("info -g %s -g %s signed@1.0 foo@1.0 signed@1.0" % (
+                self.pkg("info -g {0} -g {1} signed@1.0 foo@1.0 signed@1.0".format(
                     self.signed_arc, self.foo_rurl))
 
-                self.pkg("info -g %s -g %s -g %s -g %s foo@1.0 incorp@1.0 "
-                    "signed@1.0 quux@0.1" % (
+                self.pkg("info -g {0} -g {1} -g {2} -g {3} foo@1.0 incorp@1.0 "
+                    "signed@1.0 quux@0.1".format(
                     self.signed_arc, self.incorp_arc, self.quux_arc,
                     self.foo_arc))
 
-                self.pkg("info -g %s -g %s -g %s -g %s foo@1.0 incorp@1.0 "
-                    "signed@1.0 quux@0.1" % (
+                self.pkg("info -g {0} -g {1} -g {2} -g {3} foo@1.0 incorp@1.0 "
+                    "signed@1.0 quux@0.1".format(
                     self.signed_arc, self.incorp_arc, self.quux_arc,
                     self.foo_rurl))
 
-                self.pkg("info -g %s -g %s foo@1.0 incorp@2.0 signed@1.0 "
-                    "quux@1.0" % (self.all_arc, self.all_rurl))
+                self.pkg("info -g {0} -g {1} foo@1.0 incorp@2.0 signed@1.0 "
+                    "quux@1.0".format(self.all_arc, self.all_rurl))
 
                 # Verify package installed from archive shows in default info
                 # output.
-                self.pkg("install -g %s foo@1.0" % self.foo_arc)
+                self.pkg("install -g {0} foo@1.0".format(self.foo_arc))
                 self.pkg("info")
                 expected = """\
           Name: foo
@@ -563,16 +563,16 @@ Packaging Date: %(signed10_pkg_date)s
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 41.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10.get_fmri(
-    include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pd(self.foo10), pkg_fmri=self.foo10.get_fmri(
+    include_build=False))
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify that when showing package info from archive that
                 # package shows as installed if it matches the installed one.
-                self.pkg("info -g %s foo" % self.foo_arc)
+                self.pkg("info -g {0} foo".format(self.foo_arc))
                 self.assertEqualDiff(expected, self.output)
 
                 # Uninstall all packages and verify there are no known packages.
@@ -580,11 +580,11 @@ Packaging Date: %(pkg_date)s
                 self.pkg("info -r \*", exit=1)
 
                 # Verify that --license works as expected with -g.
-                self.pkg("info -g %s --license licensed@1.0" %
-                    self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed@1.0".format(
+                    self.licensed_rurl))
                 self.assertEqualDiff("tmp/LICENSE\n", self.output)
-                self.pkg("info -g %s --license licensed" %
-                    self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed".format(
+                    self.licensed_rurl))
                 self.assertEqualDiff("tmp/LICENSE2\n", self.output)
 
                 # Cleanup.
@@ -601,17 +601,17 @@ Packaging Date: %(pkg_date)s
 
                 # Verify graceful failure for an empty source alone or in
                 # combination with another temporary source.
-                self.pkg("contents -g %s \*" % self.empty_arc, exit=1)
-                self.pkg("contents -g %s -g %s foo" % (self.empty_arc,
+                self.pkg("contents -g {0} \*".format(self.empty_arc), exit=1)
+                self.pkg("contents -g {0} -g {1} foo".format(self.empty_arc,
                     self.foo_arc), exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("contents -g %s foo" % (self.foo_arc + ".nosuchpkg"),
+                self.pkg("contents -g {0} foo".format(self.foo_arc + ".nosuchpkg"),
                     exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("contents -g %s foo" % self.perm_arc, su_wrap=True,
+                self.pkg("contents -g {0} foo".format(self.perm_arc), su_wrap=True,
                     exit=1)
 
                 # Verify output for a single package temporary source.
@@ -620,9 +620,9 @@ Packaging Date: %(pkg_date)s
                 def pd(pfmri):
                         return pfmri.version.get_timestamp().strftime("%c")
 
-                self.pkg("contents -mr -g %s foo" % self.foo_arc, su_wrap=True)
+                self.pkg("contents -mr -g {0} foo".format(self.foo_arc), su_wrap=True)
                 expected = """\
-set name=pkg.fmri value=%s
+set name=pkg.fmri value={0}
 set name=pkg.summary value="Example package foo."
 set name=variant.debug.foo value=true value=false
 dir group=bin mode=0755 owner=root path=lib
@@ -642,10 +642,10 @@ file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca chash=97a09a2356d068d8dbe418de9001
 file dc84bd4b606fe43fc892eb245d9602b67f8cba38 chash=e1106f9505253dfe46aa48c353740f9e1896a844 group=bin mode=0444 owner=root path=usr/share/doc/foo/README pkg.csize=30 pkg.size=10
 hardlink path=usr/local/bin/hard-foo target=/usr/bin/foo
 link path=usr/local/bin/soft-foo target=usr/bin/foo
-""" % self.foo10
+""".format(self.foo10)
 
                 # Again, as prvileged user.
-                self.pkg("contents -mr -g %s foo" % self.foo_arc)
+                self.pkg("contents -mr -g {0} foo".format(self.foo_arc))
                 self.assertEqualDiff(sorted(expected.splitlines()),
                     sorted(self.output.splitlines()))
 
@@ -654,23 +654,23 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
 
                 # Verify contents result for multiple temporary sources using
                 # different combinations of archives and repositories.
-                self.pkg("contents -g %s -g %s signed@1.0 foo@1.0 "
-                    "signed@1.0" % (self.signed_arc, self.foo_rurl))
+                self.pkg("contents -g {0} -g {1} signed@1.0 foo@1.0 "
+                    "signed@1.0".format(self.signed_arc, self.foo_rurl))
 
-                self.pkg("contents -g %s -g %s -g %s -g %s foo@1.0 incorp@1.0 "
-                    "signed@1.0 quux@0.1" % (self.signed_arc, self.incorp_arc,
+                self.pkg("contents -g {0} -g {1} -g {2} -g {3} foo@1.0 incorp@1.0 "
+                    "signed@1.0 quux@0.1".format(self.signed_arc, self.incorp_arc,
                     self.quux_arc, self.foo_arc))
 
-                self.pkg("contents -g %s -g %s -g %s -g %s foo@1.0 incorp@1.0 "
-                    "signed@1.0 quux@0.1" % (self.signed_arc, self.incorp_arc,
+                self.pkg("contents -g {0} -g {1} -g {2} -g {3} foo@1.0 incorp@1.0 "
+                    "signed@1.0 quux@0.1".format(self.signed_arc, self.incorp_arc,
                     self.quux_arc, self.foo_rurl))
 
-                self.pkg("contents -g %s -g %s foo@1.0 incorp@2.0 signed@1.0 "
-                    "quux@1.0" % (self.all_arc, self.all_rurl))
+                self.pkg("contents -g {0} -g {1} foo@1.0 incorp@2.0 signed@1.0 "
+                    "quux@1.0".format(self.all_arc, self.all_rurl))
 
                 # Verify package installed from archive can be used with
                 # contents.
-                self.pkg("install -g %s foo@1.0" % self.foo_arc)
+                self.pkg("install -g {0} foo@1.0".format(self.foo_arc))
                 self.pkg("contents foo")
 
                 # Uninstall all packages and verify there are no known packages.
@@ -693,7 +693,7 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 self.image_create(self.empty_rurl, prefix=None)
                 self.pkg("set-property signature-policy ignore")
                 self.pkg("list -a", exit=1)
-                self.pkg("install -g %s foo" % self.foo_arc)
+                self.pkg("install -g {0} foo".format(self.foo_arc))
 
                 #
                 # Create an image with a network-based source, then make that
@@ -708,7 +708,7 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 # --no-refresh is required for now because -g combines temporary
                 # sources with configured soures and pkg(5) currently treats
                 # refresh failure as fatal.  See bug 18323.
-                self.pkg("install --no-refresh -g %s foo" % self.foo_arc)
+                self.pkg("install --no-refresh -g {0} foo".format(self.foo_arc))
 
                 #
                 # Create an image and verify no packages are known.
@@ -720,38 +720,38 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 self.pkg("list -a", exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("install -g %s foo" % (self.foo_arc + ".nosuchpkg"),
+                self.pkg("install -g {0} foo".format(self.foo_arc + ".nosuchpkg"),
                     exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("install -g %s foo" % self.perm_arc, su_wrap=True,
+                self.pkg("install -g {0} foo".format(self.perm_arc), su_wrap=True,
                     exit=1)
 
                 # Verify attempting to install a package with a missing
                 # dependency fails gracefully.
-                self.pkg("install -g %s signed" % self.signed_arc, exit=1)
+                self.pkg("install -g {0} signed".format(self.signed_arc), exit=1)
 
                 # Verify a package from a publisher not already configured can
                 # be installed using temporary origins.  Installing a package
                 # in this scenario will result in the publisher being added
                 # but without any origin information.
-                self.pkg("install -g %s foo" % self.foo_arc)
+                self.pkg("install -g {0} foo".format(self.foo_arc))
                 self.pkg("list foo")
 
                 # Verify that publisher exists now (without origin information)
                 # and is enabled and sticky (-n omits disabled publishers).
                 self.pkg("publisher -nH")
                 expected = """\
-empty origin online F %s/
+empty origin online F {0}/
 test 
-""" % self.empty_rurl
+""".format(self.empty_rurl)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 # Verify that signed package can now be installed since
                 # dependency was satisfied.
-                self.pkg("install -g %s signed" % self.signed_arc)
+                self.pkg("install -g {0} signed".format(self.signed_arc))
                 self.pkg("list foo signed")
 
                 # Verify that removing all packages leaves no packages known
@@ -772,7 +772,7 @@ test
                 # configured for the publisher allows dependencies to be
                 # satisfied.
                 self.pkg("set-property signature-policy verify")
-                self.pkg("install -g %s signed" % self.signed_arc)
+                self.pkg("install -g {0} signed".format(self.signed_arc))
                 self.pkg("list foo signed")
 
                 # Verify that removing all packages leaves only foo known.
@@ -789,20 +789,20 @@ test
                 self.pkg("list -a", exit=1)
 
                 # Install an older version of a known package.
-                self.pkg("install -g %s quux@0.1" % self.all_arc)
+                self.pkg("install -g {0} quux@0.1".format(self.all_arc))
                 self.pkg("list incorp@1.0 quux@0.1")
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("update -g %s foo" % (self.foo_arc + ".nosuchpkg"),
+                self.pkg("update -g {0} foo".format(self.foo_arc + ".nosuchpkg"),
                     exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("update -g %s foo" % self.perm_arc, su_wrap=True,
+                self.pkg("update -g {0} foo".format(self.perm_arc), su_wrap=True,
                     exit=1)
 
                 # Verify that packages can be updated using temporary origins.
-                self.pkg("update -g %s -g %s" % (self.incorp_arc,
+                self.pkg("update -g {0} -g {1}".format(self.incorp_arc,
                     self.quux_arc))
                 self.pkg("list incorp@2.0 quux@1.0")
 
@@ -810,10 +810,10 @@ test
                 # origins.
                 self.pkg("publisher -H")
                 expected = """\
-empty origin online F %s/
+empty origin online F {0}/
 test 
 test2 
-""" % self.empty_rurl
+""".format(self.empty_rurl)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -829,7 +829,7 @@ test2
                 self.pkg("list -a", exit=1)
 
                 # Install a package from an archive.
-                self.pkg("install -g %s foo" % self.foo_arc)
+                self.pkg("install -g {0} foo".format(self.foo_arc))
 
                 #
                 # Verify change-facet can use temporary origins.
@@ -848,17 +848,17 @@ test2
                 self.pkg("change-facet facet.doc.man=true", exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("change-facet -g %s facet.doc.man=true" %
-                    (self.foo_arc + ".nosuchpkg"), exit=1)
+                self.pkg("change-facet -g {0} facet.doc.man=true".format(
+                    self.foo_arc + ".nosuchpkg"), exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("change-facet -g %s facet.doc.man=true" %
-                    self.perm_arc, su_wrap=True, exit=1)
+                self.pkg("change-facet -g {0} facet.doc.man=true".format(
+                    self.perm_arc), su_wrap=True, exit=1)
 
                 # Verify that if the original archive is provided, the operation
                 # will succeed.
-                self.pkg("change-facet -g %s facet.doc.man=True" % self.foo_arc)
+                self.pkg("change-facet -g {0} facet.doc.man=True".format(self.foo_arc))
                 assert os.path.exists(fpath)
 
                 #
@@ -873,18 +873,18 @@ test2
                 self.pkg("change-variant -vv variant.debug.foo=true", exit=1)
 
                 # Verify graceful failure if source doesn't exist.
-                self.pkg("change-variant -vvg %s variant.debug.foo=true" %
-                    (self.foo_arc + ".nosuchpkg"), exit=1)
+                self.pkg("change-variant -vvg {0} variant.debug.foo=true".format(
+                    self.foo_arc + ".nosuchpkg"), exit=1)
 
                 # Verify graceful failure if user doesn't have permission to
                 # access temporary source.
-                self.pkg("change-variant -vvg %s variant.debug.foo=true" %
-                    self.perm_arc, su_wrap=True, exit=1)
+                self.pkg("change-variant -vvg {0} variant.debug.foo=true".format(
+                    self.perm_arc), su_wrap=True, exit=1)
 
                 # Verify that if the original archive is provided, the operation
                 # will succeed.
-                self.pkg("change-variant -vvg %s variant.debug.foo=true" %
-                    self.foo_arc)
+                self.pkg("change-variant -vvg {0} variant.debug.foo=true".format(
+                    self.foo_arc))
                 assert os.path.exists(vpath)
                 self.assertEqual(os.stat(vpath).st_size, 21)
 
@@ -897,16 +897,16 @@ test2
                 self.pkg("list -a", exit=1)
 
                 # Install an older version of a known package.
-                self.pkg("install -g %s quux@0.1" % self.all_arc)
+                self.pkg("install -g {0} quux@0.1".format(self.all_arc))
                 self.pkg("list incorp@1.0 quux@0.1")
 
                 # Verify that packages can be updated using temporary origins.
-                self.pkg("update --stage=plan -g %s -g %s" %
-                    (self.incorp_arc, self.quux_arc))
-                self.pkg("update --stage=prepare -g %s -g %s" %
-                    (self.incorp_arc, self.quux_arc))
-                self.pkg("update --stage=execute -g %s -g %s" %
-                    (self.incorp_arc, self.quux_arc))
+                self.pkg("update --stage=plan -g {0} -g {1}".format(
+                    self.incorp_arc, self.quux_arc))
+                self.pkg("update --stage=prepare -g {0} -g {1}".format(
+                    self.incorp_arc, self.quux_arc))
+                self.pkg("update --stage=execute -g {0} -g {1}".format(
+                    self.incorp_arc, self.quux_arc))
                 self.pkg("list incorp@2.0 quux@1.0")
 
         def test_06_appropriate_license_files(self):
@@ -914,32 +914,32 @@ test2
 
                 self.image_create()
 
-                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed".format(self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE2\n", self.output)
-                self.pkg("info -g %s --license licensed@1.0" %
-                    self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed@1.0".format(
+                    self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE\n", self.output)
 
-                self.pkg("install -g %s --licenses licensed@1.0" %
-                    self.licensed_rurl)
+                self.pkg("install -g {0} --licenses licensed@1.0".format(
+                    self.licensed_rurl))
                 self.assert_("tmp/LICENSE" in self.output, "Expected "
                     "tmp/LICENSE to be in the output of the install. Output "
-                    "was:\n%s" % self.output)
-                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                    "was:\n{0}".format(self.output))
+                self.pkg("info -g {0} --license licensed".format(self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE2\n", self.output)
-                self.pkg("info -g %s --license licensed@2.0" %
-                    self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed@2.0".format(
+                    self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE2\n", self.output)
 
-                self.pkg("update -g %s --licenses licensed@2.0" %
-                    self.licensed_rurl)
+                self.pkg("update -g {0} --licenses licensed@2.0".format(
+                    self.licensed_rurl))
                 self.assert_("tmp/LICENSE2" in self.output, "Expected "
                     "tmp/LICENSE2 to be in the output of the install. Output "
-                    "was:\n%s" % self.output)
-                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                    "was:\n{0}".format(self.output))
+                self.pkg("info -g {0} --license licensed".format(self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE2\n", self.output)
-                self.pkg("info -g %s --license licensed@1.0" %
-                    self.licensed_rurl)
+                self.pkg("info -g {0} --license licensed@1.0".format(
+                    self.licensed_rurl))
                 self.assertEqual("tmp/LICENSE\n", self.output)
 
 

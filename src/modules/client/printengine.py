@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module implements PrintEngine (abstract), POSIXPrintEngine and
@@ -44,7 +44,7 @@ from pkg.misc import PipeError
 class PrintEngineException(Exception):
         """Exception indicating the failure to create PrintEngine."""
         def __str__(self):
-                return "PrintEngineException: %s" % " ".join(self.args)
+                return "PrintEngineException: {0}".format(" ".join(self.args))
 
 class PrintEngine(object):
         """Abstract class defining what a PrintEngine must know how to do."""
@@ -104,8 +104,8 @@ class POSIXPrintEngine(PrintEngine):
                         self.__cr = curses.tigetstr("cr")
                         self.__el = curses.tigetstr("el")
                 except curses.error:
-                        raise PrintEngineException("Unknown terminal '%s'" %
-                            os.environ.get("TERM", ""))
+                        raise PrintEngineException("Unknown terminal "
+                            "'{0}'".format(os.environ.get("TERM", "")))
 
         def putp(self, string):
                 """This routine loosely emulates python's curses.putp, but
@@ -293,7 +293,8 @@ def test_posix_printengine(output_file, ttymode):
                 standout = curses.tigetstr("smso") or ""
                 sgr0 = curses.tigetstr("sgr0") or ""
 
-        pe.cprint("Testing POSIX print engine; ttymode is %s\n" % ttymode)
+        pe.cprint("Testing POSIX print engine; ttymode is {0}\n".format(
+            ttymode))
 
         # If we're not in ttymode, then the testing is simple.
         if not ttymode:

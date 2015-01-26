@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -121,12 +121,12 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
         elftest1 = """
             open elftest@1.0
-            add file %s mode=0755 owner=root group=bin path=/bin/true
+            add file {0} mode=0755 owner=root group=bin path=/bin/true
             close """
 
         elftest2 = """
             open elftest@2.0
-            add file %s mode=0755 owner=root group=bin path=/bin/true
+            add file {0} mode=0755 owner=root group=bin path=/bin/true
             close """
 
         # An example of dueling incorporations for an upgrade case.
@@ -192,7 +192,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 for i in (4, 5):
                         self.copy_repository(self.dcs[2].get_repodir(),
                                 self.dcs[i].get_repodir(),
-                                { "test1": "test%d" % i })
+                                { "test1": "test{0:d}".format(i) })
                         self.dcs[i].get_repo(auto_create=True).rebuild()
 
                 self.pkgsend_bulk(self.rurl6, (self.dueling_inst,
@@ -216,22 +216,22 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install foo@1.0")
 
                 # Install a package from a second publisher.
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl2))
                 self.pkg("install bar@1.0")
 
                 # Remove the publisher of an installed package, then add the
                 # publisher back, but with an empty repository.  An update
                 # should still be possible.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test2" % self.rurl3)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl3))
                 self.pkg("update -nv")
 
                 # Add two publishers with the same packages as a removed one;
                 # an update should be possible despite the conflict (as
                 # the newer versions will simply be ignored).
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test4" % self.rurl4)
-                self.pkg("set-publisher -O %s test5" % self.rurl5)
+                self.pkg("set-publisher -O {0} test4".format(self.rurl4))
+                self.pkg("set-publisher -O {0} test5".format(self.rurl5))
                 self.pkg("update -nv")
 
                 # Remove one of the conflicting publishers. An update
@@ -253,7 +253,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # not affect which source is used for update when two
                 # publishers offer the same package and the package publisher
                 # was preferred at the time of install.
-                self.pkg("set-publisher -P -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -P -O {0} test2".format(self.rurl2))
                 self.pkg("install foo@1.0")
                 self.pkg("info foo@1.0 | grep test2")
                 self.pkg("set-publisher -P test1")
@@ -286,7 +286,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install foo@1.0")
 
                 # Install a package from a second publisher.
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl2))
                 self.pkg("install bar@1.0")
 
                 # Update just bar, and then verify foo wasn't updated.
@@ -329,7 +329,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
                 self.image_create(self.rurl2)
                 self.pkg("install foo")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 self.pkg("update foo@1.1", exit=1)
                 self.assert_("test1" in self.errout)
 
@@ -339,18 +339,18 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 there are not."""
 
                 facet_max = 1000
-                facet_fmt = "%%.%dd" % len("%d" % facet_max)
+                facet_fmt = "{{0:{0:d}d}}".format(len("{0:d}".format(facet_max)))
 
                 facet_set = set()
                 random.seed()
                 self.image_create()
                 for i in range(15):
-                        facet = facet_fmt % random.randint(0, facet_max)
+                        facet = facet_fmt.format(random.randint(0, facet_max))
                         if facet in facet_set:
                                 # skip dups
                                 continue
                         facet_set.add(facet)
-                        self.pkg("change-facet %s=False" % facet)
+                        self.pkg("change-facet {0}=False".format(facet))
                         self.pkg("update -nv", exit=EXIT_NOP)
 
         def test_ignore_missing(self):
@@ -378,10 +378,10 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # Elftest1 and elftest2 have the same content and the same size,
                 # just different entries in the comment section. The content
                 # hash for both is the same, however the file hash is different.
-                elftest1 = self.elftest1 % os.path.join("ro_data",
-                    "elftest.so.1")
-                elftest2 = self.elftest2 % os.path.join("ro_data",
-                    "elftest.so.2")
+                elftest1 = self.elftest1.format(os.path.join("ro_data",
+                    "elftest.so.1"))
+                elftest2 = self.elftest2.format(os.path.join("ro_data",
+                    "elftest.so.2"))
 
                 # get the sha256 sums from the original files to distinguish
                 # what actually got installed
@@ -394,46 +394,46 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
                 # prepare image, install elftest@1.0 and verify
                 self.image_create(self.rurl1)
-                self.pkg("install -v %s" % elf1)
-                self.pkg("contents -m %s" % elf1)
+                self.pkg("install -v {0}".format(elf1))
+                self.pkg("contents -m {0}".format(elf1))
                 self.assertEqual(elf1sum, get_test_sum())
 
                 # test default behavior (always update)
                 self.pkg("update -v elftest")
-                self.pkg("contents -m %s" % elf2)
+                self.pkg("contents -m {0}".format(elf2))
                 self.assertEqual(elf2sum, get_test_sum())
                 # reset and start over
                 self.pkg("uninstall elftest")
-                self.pkg("install -v %s" % elf1)
+                self.pkg("install -v {0}".format(elf1))
 
                 # set policy to when-required, file shouldn't be updated
                 self.pkg("set-property content-update-policy when-required")
                 self.pkg("update -v elftest")
-                self.pkg("list %s" % elf2)
+                self.pkg("list {0}".format(elf2))
                 self.assertEqual(elf1sum, get_test_sum())
                 # reset and start over
                 self.pkg("uninstall elftest")
-                self.pkg("install -v %s" % elf1)
+                self.pkg("install -v {0}".format(elf1))
 
                 # set policy to always, file should be updated now
                 self.pkg("set-property content-update-policy always")
                 self.pkg("update -v elftest")
-                self.pkg("list %s" % elf2)
+                self.pkg("list {0}".format(elf2))
                 self.assertEqual(elf2sum, get_test_sum())
 
                 # do tests again for downgrading, test file shouldn't change
                 self.pkg("set-property content-update-policy when-required")
-                self.pkg("update -v %s" % elf1)
-                self.pkg("list %s" % elf1)
+                self.pkg("update -v {0}".format(elf1))
+                self.pkg("list {0}".format(elf1))
                 self.assertEqual(elf2sum, get_test_sum())
                 # reset and start over
                 self.pkg("uninstall elftest")
-                self.pkg("install -v %s" % elf2)
+                self.pkg("install -v {0}".format(elf2))
 
                 # set policy to always, file should be updated now
                 self.pkg("set-property content-update-policy always")
-                self.pkg("update -v %s" % elf1)
-                self.pkg("list %s" % elf1)
+                self.pkg("update -v {0}".format(elf1))
+                self.pkg("list {0}".format(elf1))
                 self.assertEqual(elf1sum, get_test_sum())
 
         def test_dueling_incs(self):

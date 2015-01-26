@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """SystemV / Solaris packages.
@@ -145,7 +145,7 @@ class SolarisPackage(object):
                                                 raise
                                         else:
                                                 g.close()
-                                                raise ValueError, "%s is not a package" % path
+                                                raise ValueError, "{0} is not a package".format(path)
 
                         pkgs = []
                         while True:
@@ -156,8 +156,8 @@ class SolarisPackage(object):
 
                         if len(pkgs) > 1:
                                 raise MultiPackageDatastreamException(
-                                    "%s contains %s packages" % \
-                                    (path, len(pkgs)))
+                                    "{0} contains {1} packages".format(
+                                    path, len(pkgs)))
 
                         # The cpio archive containing all the packages' pkginfo
                         # and pkgmap files starts on the next 512-byte boundary

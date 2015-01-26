@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 import bisect
 import datetime
@@ -60,9 +61,9 @@ class CatalogPermissionsException(CatalogException):
                     "permissions:\n")
                 for f in self._args:
                         fname, emode, fmode = f
-                        msg += _("\t%(fname)s: expected mode: %(emode)s, found "
-                            "mode: %(fmode)s\n") % ({ "fname": fname,
-                            "emode": emode, "fmode": fmode })
+                        msg += _("\t{fname}: expected mode: {emode}, found "
+                            "mode: {fmode}\n").format(fname=fname,
+                            emode=emode, fmode=fmode)
                 return msg
 
 
@@ -158,8 +159,8 @@ class ServerCatalog(object):
                                                     self.file_mode)
                                         except AssertionError, ae:
                                                 bad_modes.append((fpath,
-                                                    "%o" % self.file_mode,
-                                                    "%o" % ae.mode))
+                                                    "{0:o}".format(self.file_mode),
+                                                    "{0:o}".format(ae.mode)))
                                 else:
                                         os.chmod(fpath, self.file_mode)
                         except EnvironmentError, e:
@@ -175,8 +176,8 @@ class ServerCatalog(object):
                                             self.file_mode)
                                 except AssertionError, ae:
                                         bad_modes.append((fpath,
-                                            "%o" % self.file_mode,
-                                            "%o" % ae.mode))
+                                            "{0:o}".format(self.file_mode),
+                                            "{0:o}".format(ae.mode)))
  
                 if bad_modes:
                         raise CatalogPermissionsException(bad_modes)
@@ -187,7 +188,7 @@ class ServerCatalog(object):
                 present.  Throws an exception if package has no version."""
                 if pfmri.version == None:
                         raise CatalogException, \
-                            "Unversioned FMRI not supported: %s" % pfmri
+                            "Unversioned FMRI not supported: {0}".format(pfmri)
 
                 assert not self.read_only
 
@@ -195,13 +196,13 @@ class ServerCatalog(object):
                 # valid; however, this check is here in case they're
                 # lackadaisical
                 if not self.valid_new_fmri(pfmri):
-                        raise CatalogException("FMRI %s already exists in "
-                            "the catalog." % pfmri)
+                        raise CatalogException("FMRI {0} already exists in "
+                            "the catalog.".format(pfmri))
 
                 if critical:
-                        pkgstr = "C %s\n" % pfmri.get_fmri(anarchy = True)
+                        pkgstr = "C {0}\n".format(pfmri.get_fmri(anarchy = True))
                 else:
-                        pkgstr = "V %s\n" % pfmri.get_fmri(anarchy = True)
+                        pkgstr = "V {0}\n".format(pfmri.get_fmri(anarchy = True))
 
                 self.__append_to_catalog(pkgstr)
 
@@ -255,8 +256,8 @@ class ServerCatalog(object):
                         for entry in pfile:
                                 if entry == pkgstr:
                                         raise CatalogException(
-                                            "Package %s is already in " 
-                                            "the catalog" % pkgstr)
+                                            "Package {0} is already in " 
+                                            "the catalog".format(pkgstr))
                                 else:
                                         tfile.write(entry)
                         tfile.write(pkgstr)
@@ -346,7 +347,7 @@ class ServerCatalog(object):
                 ret = []
 
                 for k, v in self.attrs.items():
-                        s = "S %s: %s\n" % (k, v)
+                        s = "S {0}: {1}\n".format(k, v)
                         ret.append(s)
 
                 return ret
@@ -441,7 +442,8 @@ class ServerCatalog(object):
                                 raise
                         except Exception, e:
                                 raise RuntimeError("corrupt catalog entry for "
-                                    "publisher '%s': %s" % (self.pub, entry))
+                                    "publisher '{0}': {1}".format(self.pub,
+                                    entry))
 
                 pfile.close()
 
@@ -535,8 +537,8 @@ class ServerCatalog(object):
                                                 bad_fmri = e
                                                 continue
 
-                                        catf.write("%s %s %s %s\n" %
-                                            (s[0], "pkg", f.pkg_name,
+                                        catf.write("{0} {1} {2} {3}\n".format(
+                                            s[0], "pkg", f.pkg_name,
                                             f.version))
                 except:
                         # Re-raise all uncaught exceptions after performing
@@ -558,7 +560,7 @@ class ServerCatalog(object):
 
                 # Write the publisher's origin into our attributes
                 if pub:
-                        origstr = "S origin: %s\n" % pub["origin"]
+                        origstr = "S origin: {0}\n".format(pub["origin"])
                         attrf.write(origstr)
 
                 attrf.close()
@@ -590,7 +592,7 @@ class ServerCatalog(object):
                         tfile = os.fdopen(tmp_num, "w")
 
                         for a in self.attrs.keys():
-                                s = "S %s: %s\n" % (a, self.attrs[a])
+                                s = "S {0}: {1}\n".format(a, self.attrs[a])
                                 tfile.write(s)
 
                         tfile.close()

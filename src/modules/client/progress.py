@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -52,7 +52,8 @@ class ProgressTrackerException(Exception):
         For example, the tracker which depends on a UNIX style terminal should
         throw this exception if it can't find a valid terminal."""
         def __str__(self):
-                return "ProgressTrackerException: %s" % " ".join(self.args)
+                return "ProgressTrackerException: {0}".format(
+                    " ".join(self.args))
 
 
 def format_pair(format1, v1, v2, scale=None, targetwidth=None,
@@ -61,14 +62,14 @@ def format_pair(format1, v1, v2, scale=None, targetwidth=None,
         as v1=3 v2=200, such that for all anticipated values of v1 (0 through
         v2) , the result is a fixed width pair separated by '/':
 
-            format_pair("%d", 3, 200)               --> "  3/200"
+            format_pair("{0:d}", 3, 200)               --> "  3/200"
 
         'format1' is the preferred number format.  In the event that targetwidth
-        is specified and the width of (format1 % v2 > targetwidth), then
+        is specified and the width of (format1.format(v2) > targetwidth), then
         'format2' is used instead:
 
-            format_pair("%.1f", 20.322, 1000.23,
-                targetwidth=5, format2="%d")             --> "  20/1000"
+            format_pair("{0:.1f}", 20.322, 1000.23,
+                targetwidth=5, format2="{0:d}")             --> "  20/1000"
 
         This provides a mechanism for downshifting the accuracy of an output
         to preserve column width.
@@ -79,17 +80,27 @@ def format_pair(format1, v1, v2, scale=None, targetwidth=None,
                 v1 /= float(scale)
                 v2 /= float(scale)
         realformat = format1
-        v2len = len(realformat % v2)
+        v2format = realformat.format(v2)
+        v2len = len(v2format)
         if format2 and targetwidth and v2len > targetwidth:
                 # see if format2 is shorter.
-                if len(format2 % v2) < v2len:
+                # convert type 'float' to 'int'.
+                if "d" in format2:
+                        v2format = format2.format(int(v2))
+                else:
+                        v2format = format2.format(v2)
+                v2len1 = len(v2format)
+                if v2len1 < v2len:
                         realformat = format2
+                        v2len = v2len1
 
-        v2len = len(realformat % v2)
-        formatpercent = realformat.find("%")
-        v1format = realformat[0:formatpercent + 1] + str(v2len) + \
-            realformat[formatpercent + 1:]
-        return (v1format % v1) + "/" + (realformat % v2)
+        formatcolon = realformat.find(":")
+        v1format = realformat[0:formatcolon + 1] + str(v2len) + \
+            realformat[formatcolon + 1:]
+        if "d" in v1format:
+                return (v1format.format(int(v1))) + "/" + v2format
+        else:
+                return (v1format.format(v1)) + "/" + v2format
 
 
 class SpeedEstimator(object):
@@ -133,10 +144,10 @@ class SpeedEstimator(object):
                 # the speedstr > 5, we whack off the floating point
                 # portion.
                 #
-                speedstr = misc.bytes_to_str(speed, "%(num).1f%(shortunit)s")
+                speedstr = misc.bytes_to_str(speed, "{num:>.1f}{shortunit}")
                 if speed < 1024 or len(speedstr) > 5:
                         speedstr = misc.bytes_to_str(speed,
-                            "%(num)d%(shortunit)s")
+                            "{num:d}{shortunit}")
                 speedstr += "/s"
                 return speedstr
 
@@ -259,8 +270,8 @@ class SpeedEstimator(object):
                 for x, (timestamp, nbytes) in enumerate(self.__deque):
                         if x % 3 == 0:
                                 s += "\n    "
-                        s += "(t=%.3f, b=%-5d), " % \
-                            (timestamp - self.__starttime, nbytes)
+                        s += "(t={0:>.3f}, b={1:5d}), ".format(
+                            timestamp - self.__starttime, nbytes)
                 s += "]>"
                 return s
 
@@ -273,7 +284,7 @@ class PrintTimer(object):
         read to get a monotonically increasing count of the number of times
         time_to_print() has returned True.  Can be used to key a spinner,
         e.g.:
-                print("%c" % (pt.print_value % len(__spinner_chars)))
+                print("{0}".format(pt.print_value.format(len(__spinner_chars))))
         """
 
         def __init__(self, delay):
@@ -322,7 +333,7 @@ class OutSpec(object):
                 s += " +last" if self.last else ""
                 if self.changed:
                         for chg in self.changed:
-                                s += " +'%s'" % str(chg)
+                                s += " +'{0}'".format(str(chg))
                 s += ">"
                 return s
 
@@ -381,8 +392,8 @@ class TrackerItem(object):
                 if self.starttime is None:
                         assert not getattr(self, "endtime", None), \
                             "can't set items after explicit done(). " \
-                            "Tried to set %s=%s (is %s)" % \
-                            (attrname, value, self.__dict__[attrname])
+                            "Tried to set {0}={1} (is {2})".format(
+                            attrname, value, self.__dict__[attrname])
                         self.starttime = time.time()
                 self.__dict__[attrname] = value
 
@@ -405,8 +416,8 @@ class TrackerItem(object):
         def __str__(self):
                 info = ""
                 if self.curinfo:
-                        info = " (%s)" % str(self.curinfo)
-                return "<%s: %s%s>" % (self.name, self.items, info)
+                        info = " ({0})".format(str(self.curinfo))
+                return "<{0}: {1}{2}>".format(self.name, self.items, info)
 
 
 class GoalTrackerItem(TrackerItem):
@@ -433,8 +444,8 @@ class GoalTrackerItem(TrackerItem):
 
                 assert not getattr(self, "endtime", None), \
                     "can't set values after explicit done(). " \
-                    "Tried to set %s=%s (is %s)" % \
-                    (attrname, value, self.__dict__[attrname])
+                    "Tried to set {0}={1} (is {2})".format(
+                    attrname, value, self.__dict__[attrname])
 
                 # see if this is the first time we're setting items
                 if self.starttime is None:
@@ -451,12 +462,12 @@ class GoalTrackerItem(TrackerItem):
 
                 # See if we indeed met our goal.
                 if goalcheck and not self.metgoal():
-                        exstr = _("Goal mismatch '%(name)s': "
-                            "expected goal: %(expected)s, "
-                            "current value: %(current)s") % \
-                            {"name": self.name,
-                            "expected": self.goalitems,
-                            "current": self.items}
+                        exstr = _("Goal mismatch '{name}': "
+                            "expected goal: {expected}, "
+                            "current value: {current}").format(
+                            name=self.name,
+                            expected=self.goalitems,
+                            current=self.items)
                         logger.error("\n" + exstr)
                         assert self.metgoal(), exstr
 
@@ -468,8 +479,8 @@ class GoalTrackerItem(TrackerItem):
         def pair(self):
                 if self.goalitems is None:
                         assert self.items == 0
-                        return format_pair("%d", 0, 0)
-                return format_pair("%d", self.items, self.goalitems)
+                        return format_pair("{0:d}", 0, 0)
+                return format_pair("{0:d}", self.items, self.goalitems)
 
         def pairplus1(self):
                 # For use when you want to display something happening,
@@ -480,12 +491,12 @@ class GoalTrackerItem(TrackerItem):
                 # output, we also account for that case.
                 if self.goalitems is None:
                         assert self.items == 0
-                        return format_pair("%d", 1, 1)
+                        return format_pair("{0:d}", 1, 1)
                 if self.items == self.goalitems:
                         items = self.items
                 else:
                         items = self.items + 1
-                return format_pair("%d", items, self.goalitems)
+                return format_pair("{0:d}", items, self.goalitems)
 
         def pctdone(self):
                 """Returns progress towards a goal as a percentage.
@@ -498,8 +509,8 @@ class GoalTrackerItem(TrackerItem):
         def __str__(self):
                 info = ""
                 if self.curinfo:
-                        info = " (%s)" % str(self.curinfo)
-                return "<%s: %s%s>" % (self.name, self.pair(), info)
+                        info = " ({0})".format(str(self.curinfo))
+                return "<{0}: {1}{2}>".format(self.name, self.pair(), info)
 
 #
 # This implements a decorator which is used to mark methods in
@@ -515,9 +526,9 @@ def pt_abstract(func):
         # Unused argument 'args', 'kwargs'; pylint: disable=W0613
         @wraps(func)
         def enforce_abstract(*args, **kwargs):
-                raise NotImplementedError("%s is abstract in "
-                    "superclass; you must implement it in your subclass." %
-                    func.__name__)
+                raise NotImplementedError("{0} is abstract in "
+                    "superclass; you must implement it in your "
+                    "subclass.".format(func.__name__))
 
         return enforce_abstract
 
@@ -1573,9 +1584,11 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.lint_phase = 0
                 self.lint_phase += 1
                 if lint_phasetype == self.LINT_PHASETYPE_SETUP:
-                        phasename = _("Lint setup %d" % self.lint_phase)
+                        phasename = _("Lint setup {0:d}".format(
+                            self.lint_phase))
                 else:
-                        phasename = _("Lint phase %d" % self.lint_phase)
+                        phasename = _("Lint phase {0:d}".format(
+                            self.lint_phase))
                 # Attribute defined outside __init__; pylint: disable=W0201
                 self.lintitems = GoalTrackerItem(phasename)
                 self.lintitems.goalitems = goalitems
@@ -1760,9 +1773,9 @@ class FunctionProgressTracker(ProgressTracker):
                         def __printargs(*args, **kwargs):
                                 s = ""
                                 for x in args:
-                                        s += "%s, " % str(x)
+                                        s += "{0}, ".format(str(x))
                                 for x in sorted(kwargs):
-                                        s += "%s=%s, " % (x, kwargs[x])
+                                        s += "{0}={1}, ".format(x, kwargs[x])
                                 s = s[:-2]
 
                                 #
@@ -1776,7 +1789,7 @@ class FunctionProgressTracker(ProgressTracker):
                                 # and spoiling the test_multi() test case.
                                 #
                                 chainedmeth(*args, **kwargs)
-                                print("%s(%s)" % (methname, s),
+                                print("{0}({1})".format(methname, s),
                                     file=self.output_file)
 
                         return __printargs
@@ -1860,13 +1873,13 @@ class CommandLineProgressTracker(ProgressTracker):
                         return ""
 
                 # The following string was originally expressed as
-                # "%*s: " % \
+                # "%*s: ". % \
                 #     (self.phase_max_width, self.phase_names[self.major_phase])
                 # however xgettext incorrectly flags this as an improper use of
                 # non-parameterized messages, which gets detected as an error
                 # during our build.  So instead, we express the string using
                 # an equivalent <str>.format(..) function
-                s = _("{phase:>%d}: ") % self.phase_max_width
+                s = _("{{phase:>{0:d}}}: ").format(self.phase_max_width)
                 return s.format(phase=self.phase_names[self.major_phase])
 
         #
@@ -1896,10 +1909,10 @@ class CommandLineProgressTracker(ProgressTracker):
                         return
                 if msg is None:
                         if global_settings.client_output_verbose > 0:
-                                msg = " " + _("Done (%(elapsed).3fs)")
+                                msg = " " + _("Done ({elapsed:>.3f}s)")
                         else:
                                 msg = " " + _("Done")
-                outmsg = msg % { "elapsed": item.elapsed() }
+                outmsg = msg.format(elapsed=item.elapsed())
                 self._pe.cprint(outmsg, end='\n')
                 self._ptimer.reset()
 
@@ -1936,25 +1949,26 @@ class CommandLineProgressTracker(ProgressTracker):
                 if "startpublisher" in outspec.changed:
                         p = self.pub_refresh.curinfo.prefix
                         if self.refresh_target_catalog:
-                                m = _("Retrieving target catalog '%s' ...") % p
+                                m = _("Retrieving target catalog '{0}' "
+                                    "...").format(p)
                         elif self.refresh_full_refresh:
-                                m = _("Retrieving catalog '%s' ...") % p
+                                m = _("Retrieving catalog '{0}' ...").format(p)
                         else:
-                                m = _("Refreshing catalog '%s' ...") % p
+                                m = _("Refreshing catalog '{0}' ...").format(p)
                         self.__generic_start(m)
                 elif "endpublisher" in outspec.changed:
                         self.__generic_done()
 
         def _plan_output(self, outspec, planitem):
                 if outspec.first:
-                        self.__generic_start(_("%s ...") % planitem.name)
+                        self.__generic_start(_("{0} ...").format(planitem.name))
                 if outspec.last:
                         self.__generic_done_item(planitem)
 
         def _plan_output_all_done(self):
                 self.__generic_done(self._phase_prefix() + \
-                    _("Planning completed in %.2f seconds") % \
-                    self.plan_generic.elapsed())
+                    _("Planning completed in {0:>.2f} seconds").format(
+                    self.plan_generic.elapsed()))
 
         def _mfst_fetch(self, outspec):
                 if not self._ptimer.time_to_print() and \
@@ -1974,10 +1988,10 @@ class CommandLineProgressTracker(ProgressTracker):
                 # adjusts the output based on the major phase.
                 #
                 self._pe.cprint(self._phase_prefix() +
-                    _("Fetching manifests: %(num)s  %(pctcomplete)d%% "
-                    "complete") %
-                    {"num": self.mfst_fetch.pair(),
-                    "pctcomplete": self.mfst_fetch.pctdone()})
+                    _("Fetching manifests: {num}  {pctcomplete}% "
+                    "complete").format(
+                    num=self.mfst_fetch.pair(),
+                    pctcomplete=int(self.mfst_fetch.pctdone())))
 
         def _mfst_commit(self, outspec):
                 # For now, manifest commit is hard to handle in this
@@ -2028,32 +2042,32 @@ class CommandLineProgressTracker(ProgressTracker):
                 else:
                         speed = self.dl_estimator.get_final_speed()
                 speedstr = "" if speed is None else \
-                    "(%s)" % self.dl_estimator.format_speed(speed)
+                    "({0})".format(self.dl_estimator.format_speed(speed))
 
                 if not outspec.last:
                         # 'first' or time to print
-                        mbs = format_pair("%.1f", self.dl_bytes.items,
+                        mbs = format_pair("{0:.1f}", self.dl_bytes.items,
                             self.dl_bytes.goalitems, scale=(1024 * 1024))
                         self._pe.cprint(
-                            _("Download: %(num)s items  %(mbs)sMB  "
-                            "%(pctcomplete)d%% complete %(speed)s") %
-                            {"num": self.dl_files.pair(), "mbs": mbs,
-                            "pctcomplete": self.dl_bytes.pctdone(),
-                            "speed": speedstr})
+                            _("Download: {num} items  {mbs}MB  "
+                            "{pctcomplete}% complete {speed}").format(
+                            num=self.dl_files.pair(), mbs=mbs,
+                            pctcomplete=int(self.dl_bytes.pctdone()),
+                            speed=speedstr))
                 else:
                         # 'last'
                         goal = misc.bytes_to_str(self.dl_bytes.goalitems)
                         self.__generic_done(
-                            msg=_("Download: Completed %(num)s in %(sec).2f "
-                            "seconds %(speed)s") %
-                            {"num": goal, "sec": self.dl_estimator.elapsed(),
-                            "speed": speedstr})
+                            msg=_("Download: Completed {num} in {sec:>.2f} "
+                            "seconds {speed}").format(
+                            num=goal, sec=self.dl_estimator.elapsed(),
+                            speed=speedstr))
 
         def _republish_output(self, outspec):
                 if "startpkg" in outspec.changed:
                         pkgfmri = self.repub_pkgs.curinfo
-                        self.__generic_start(_("Republish: %s ... ") %
-                            pkgfmri.get_fmri(anarchy=True))
+                        self.__generic_start(_("Republish: {0} ... ").format(
+                            pkgfmri.get_fmri(anarchy=True)))
                 if "endpkg" in outspec.changed:
                         self.__generic_done()
 
@@ -2067,18 +2081,18 @@ class CommandLineProgressTracker(ProgressTracker):
                 if outspec.last:
                         goal = misc.bytes_to_str(self.archive_bytes.goalitems)
                         self.__generic_done(
-                            msg=_("Archiving: Completed %(num)s in %(secs).2f "
-                            "seconds") %
-                            {"num": goal, "secs": self.archive_items.elapsed()})
+                            msg=_("Archiving: Completed {num} in {secs:>.2f} "
+                            "seconds").format(
+                            num=goal, secs=self.archive_items.elapsed()))
                         return
 
-                mbs = format_pair("%.1f", self.archive_bytes.items,
+                mbs = format_pair("{0:.1f}", self.archive_bytes.items,
                     self.archive_bytes.goalitems, scale=(1024 * 1024))
                 self._pe.cprint(
-                    _("Archiving: %(pair)s items  %(mbs)sMB  %(pctcomplete)d%% "
-                    "complete") %
-                    {"pair": self.archive_items.pair(), "mbs": mbs,
-                    "pctcomplete": self.archive_bytes.pctdone()})
+                    _("Archiving: {pair} items  {mbs}MB  {pctcomplete}% "
+                    "complete").format(
+                    pair=self.archive_items.pair(), mbs=mbs,
+                    pctcomplete=int(self.archive_bytes.pctdone())))
 
         #
         # The progress tracking infrastructure wants to tell us about each
@@ -2096,9 +2110,9 @@ class CommandLineProgressTracker(ProgressTracker):
                 total_goal = \
                     sum(x.goalitems for x in self._actionitems.values())
                 self._pe.cprint(self._phase_prefix() +
-                    _("%(num)s actions (%(type)s)") %
-                    {"num": format_pair("%d", total_actions, total_goal),
-                    "type": actionitem.name})
+                    _("{num} actions ({type})").format(
+                    num=format_pair("{0:d}", total_actions, total_goal),
+                    type=actionitem.name))
 
         def _act_output_all_done(self):
                 total_goal = \
@@ -2108,24 +2122,24 @@ class CommandLineProgressTracker(ProgressTracker):
                 if total_goal == 0:
                         return
                 self._pe.cprint(self._phase_prefix() +
-                    _("Completed %(numactions)d actions in %(time).2f "
-                    "seconds.") %
-                    {"numactions": total_goal, "time": total_time})
+                    _("Completed {numactions:d} actions in {time:>.2f} "
+                    "seconds.").format(
+                    numactions=total_goal, time=total_time))
 
         def _job_output(self, outspec, jobitem):
                 if outspec.first:
-                        self.__generic_start("%s ... " % jobitem.name)
+                        self.__generic_start("{0} ... ".format(jobitem.name))
                 if outspec.last:
                         self.__generic_done_item(jobitem)
 
         def _lint_output(self, outspec):
                 if outspec.first:
                         if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
-                                self._pe.cprint("%s ... " %
-                                    self.lintitems.name, end='')
+                                self._pe.cprint("{0} ... ".format(
+                                    self.lintitems.name, end=''))
                         elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
-                                self._pe.cprint("# --- %s ---" %
-                                    self.lintitems.name)
+                                self._pe.cprint("# --- {0} ---".format(
+                                    self.lintitems.name))
                 if outspec.last:
                         if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
                                 self.__generic_done()
@@ -2162,7 +2176,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 if not stdout and not stderr:
                         return
                 self._pe.cprint(self._phase_prefix() +
-                    _("Linked image '%s' output:") % lin)
+                    _("Linked image '{0}' output:").format(lin))
                 self.__li_dump_output(stdout)
                 self.__li_dump_output(stderr)
 
@@ -2171,11 +2185,11 @@ class CommandLineProgressTracker(ProgressTracker):
                         return
 
                 running = " ".join([str(i) for i in self.linked_running])
-                msg = _("Linked images: %(pair)s done; %(numworking)d working: "
-                    "%(running)s") % \
-                    {"pair": format_pair("%d", done, self.linked_total),
-                    "numworking": len(self.linked_running),
-                    "running": running}
+                msg = _("Linked images: {pair} done; {numworking:d} working: "
+                    "{running}").format(
+                    pair=format_pair("{0:d}", done, self.linked_total),
+                    numworking=len(self.linked_running),
+                    running=running)
                 self._pe.cprint(self._phase_prefix() + msg)
 
         def _li_recurse_progress_output(self, lin):
@@ -2192,19 +2206,19 @@ class CommandLineProgressTracker(ProgressTracker):
 
                 if outspec.last:
                         self.__generic_done(
-                            msg=_("Reversioned %(revs)s of %(pkgs)s packages "
-                            "and adjusted %(adjs)s packages.") %
-                            {"revs": self.reversion_revs.items,
-                            "pkgs": self.reversion_pkgs.items,
-                            "adjs": self.reversion_adjs.items})
+                            msg=_("Reversioned {revs} of {pkgs} packages "
+                            "and adjusted {adjs} packages.").format(
+                            revs=self.reversion_revs.items,
+                            pkgs=self.reversion_pkgs.items,
+                            adjs=self.reversion_adjs.items))
                         return
 
                 self._pe.cprint(
-                    _("Reversioning: %(pkgs)s processed, %(revs)s reversioned, "
-                    "%(adjs)s adjusted") %
-                    {"pkgs": self.reversion_pkgs.pair(),
-                    "revs": self.reversion_revs.pair(),
-                    "adjs": self.reversion_adjs.items})
+                    _("Reversioning: {pkgs} processed, {revs} reversioned, "
+                    "{adjs} adjusted").format(
+                    pkgs=self.reversion_pkgs.pair(),
+                    revs=self.reversion_revs.pair(),
+                    adjs=self.reversion_adjs.items))
 
 
 class LinkedChildProgressTracker(CommandLineProgressTracker):
@@ -2257,8 +2271,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             ttymode=True)
                 except printengine.PrintEngineException, e:
                         raise ProgressTrackerException(
-                            "Couldn't create print engine: %s" %
-                            " ".join(e.args))
+                            "Couldn't create print engine: {0}".format(
+                            " ".join(e.args)))
 
                 if term_delay is None:
                         term_delay = self.TERM_DELAY_SLOW if self._pe.isslow() \
@@ -2305,8 +2319,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if not self._ptimer.time_to_print():
                         return
                 self._pe.cprint(
-                    _("Checking that pkg(5) is up to date %c") %
-                    self._spinner(), end='', erase=True)
+                    _("Checking that pkg(5) is up to date {0}").format(
+                    self._spinner()), end='', erase=True)
 
         # Unused argument 'op'; pylint: disable=W0613
         def _change_purpose(self, op, np):
@@ -2347,11 +2361,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         prefix = _("Retrieving catalog")
                 else:
                         prefix = _("Refreshing catalog")
-                msg = _("%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s") % {
-                    "prefix": prefix,
-                    "pub_cnt": self.pub_refresh.pairplus1(),
-                    "publisher": self.pub_refresh.curinfo,
-                    "bytes": nbytes }
+                msg = _("{prefix} {pub_cnt} {publisher}{bytes}").format(
+                    prefix=prefix,
+                    pub_cnt=self.pub_refresh.pairplus1(),
+                    publisher=self.pub_refresh.curinfo,
+                    bytes=nbytes)
 
                 self._pe.cprint(msg, end="", erase=True)
                 if outspec.last:
@@ -2368,11 +2382,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 extra_info = ""
                 if isinstance(planitem, GoalTrackerItem):
-                        extra_info = ": %s" % planitem.pair()
-                msg = _("Creating Plan (%(name)s%(info)s): %(spinner)s") % \
-                    {"name": planitem.name,
-                    "info": extra_info,
-                    "spinner": self._spinner()}
+                        extra_info = ": {0}".format(planitem.pair())
+                msg = _("Creating Plan ({name}{info}): {spinner}").format(
+                    name=planitem.name,
+                    info=extra_info,
+                    spinner=self._spinner())
                 self._pe.cprint(msg, sep='', end='', erase=True)
 
         def _plan_output_all_done(self):
@@ -2393,19 +2407,19 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # the output based on the major mode.
                 #
                 if self.major_phase == self.PHASE_PLAN:
-                        msg = _("Creating Plan (%(name)s %(pair)s) "
-                            "%(spinner)c") % \
-                            {"name": self.mfst_fetch.name,
-                            "pair": self.mfst_fetch.pair(),
-                            "spinner": self._spinner()}
+                        msg = _("Creating Plan ({name} {pair}) "
+                            "{spinner}").format(
+                            name=self.mfst_fetch.name,
+                            pair=self.mfst_fetch.pair(),
+                            spinner=self._spinner())
                 if self.major_phase == self.PHASE_UTILITY:
                         # note to translators: the position of these strings
                         # should probably be left alone, as they form part of
                         # the progress output text.
-                        msg = _("%(name)s (%(fetchpair)s) %(spinchar)c") % {
-                            "name": self.mfst_fetch.name,
-                            "fetchpair": self.mfst_fetch.pair(),
-                            "spinchar": self._spinner()}
+                        msg = _("{name} ({fetchpair}) {spinchar}").format(
+                            name=self.mfst_fetch.name,
+                            fetchpair=self.mfst_fetch.pair(),
+                            spinchar=self._spinner())
                 self._pe.cprint(msg, sep='', end='', erase=True)
 
                 if outspec.last:
@@ -2423,12 +2437,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-38s %13s %13s %11s" %
-                            (_("PKG"), _("Processed"), _("Reversioned"),
+                        self._pe.cprint("{0:38} {1:>13} {2:>13} {3:>11}".format(
+                            _("PKG"), _("Processed"), _("Reversioned"),
                             _("Adjusted")))
 
-                s = "%-40.40s %11s %13s %11s" % \
-                    (stem, self.reversion_pkgs.pair(),
+                s = "{0:<40.40} {1:>11} {2:>13} {3:>11}".format(
+                    stem, self.reversion_pkgs.pair(),
                     self.reversion_revs.pair(), self.reversion_adjs.items)
                 self._pe.cprint(s, end='', erase=True)
 
@@ -2442,10 +2456,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if not self._ptimer.time_to_print():
                         return
                 if self.major_phase == self.PHASE_PLAN:
-                        msg = _("Creating Plan (Committing Manifests): %c") % \
-                            self._spinner()
+                        msg = _("Creating Plan (Committing Manifests): "
+                            "{0}").format(self._spinner())
                 if self.major_phase == self.PHASE_UTILITY:
-                        msg = _("Committing Manifests %c") % self._spinner()
+                        msg = _("Committing Manifests {0}").format(
+                            self._spinner())
                 self._pe.cprint(msg, sep='', end='', erase=True)
                 return
 
@@ -2469,8 +2484,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if "endpkg" in outspec.changed:
                         self._pe.cprint("", end='', erase=True)
                         return
-                s = "%-64s %s %c" % \
-                    (pkg_stem, self.repo_ver_pkgs.pair(), self._spinner())
+                s = "{0:64} {1} {2}".format(
+                    pkg_stem, self.repo_ver_pkgs.pair(), self._spinner())
                 self._pe.cprint(s, end='', erase=True)
 
         def _repo_ver_output_error(self, errors):
@@ -2478,7 +2493,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self._pe.cprint(errors)
 
         def _repo_fix_output(self, outspec):
-                s = "%c" %  self._spinner()
+                s = "{0}".format( self._spinner())
                 self._pe.cprint(s, end='', erase=True)
 
         def _repo_fix_output_error(self, errors):
@@ -2495,14 +2510,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-44s %13s %11s" %
-                            (_("ARCHIVE"), _("FILES"), _("STORE (MB)")))
+                        self._pe.cprint("{0:44} {1:>13} {2:>11}".format(
+                            _("ARCHIVE"), _("FILES"), _("STORE (MB)")))
 
-                mbs = format_pair("%.1f", self.archive_bytes.items,
+                mbs = format_pair("{0:.1f}", self.archive_bytes.items,
                     self.archive_bytes.goalitems, scale=(1024 * 1024),
-		    targetwidth=5, format2="%d")
-                s = "%-44.44s %11s %11s" % \
-                    (self._archive_name, self.archive_items.pair(), mbs)
+                    targetwidth=5, format2="{0:d}")
+                s = "{0:<44.44} {1:>11} {2:>11}".format(
+                    self._archive_name, self.archive_items.pair(), mbs)
                 self._pe.cprint(s, end='', erase=True)
 
                 if outspec.last:
@@ -2516,9 +2531,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-34s %9s %13s %12s %7s" %
-                            (_("DOWNLOAD"), _("PKGS"), _("FILES"),
-                            _("XFER (MB)"), _("SPEED")))
+                        self._pe.cprint("{0:34} {1:>9} {2:>13} {3:>12} "
+                            "{4:>7}".format(_("DOWNLOAD"), _("PKGS"),
+                            _("FILES"), _("XFER (MB)"), _("SPEED")))
 
                 if outspec.last:
                         pkg_name = _("Completed")
@@ -2547,11 +2562,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                         speedstr = "--"
 
                 # Use floats unless it makes the field too wide
-                mbstr = format_pair("%.1f", self.dl_bytes.items,
+                mbstr = format_pair("{0:.1f}", self.dl_bytes.items,
                     self.dl_bytes.goalitems, scale=1024.0 * 1024.0,
-                    targetwidth=5, format2="%d")
-                s = "%-34.34s %9s %13s %12s %7s" % \
-                    (pkg_name, self.dl_pkgs.pair(), self.dl_files.pair(),
+                    targetwidth=5, format2="{0:d}")
+                s = "{0:<34.34} {1:>9} {2:>13} {3:>12} {4:>7}".format(
+                    pkg_name, self.dl_pkgs.pair(), self.dl_files.pair(),
                     mbstr, speedstr)
                 self._pe.cprint(s, end='', erase=True)
 
@@ -2566,8 +2581,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-40s %12s %11s %11s" %
-                            (_("PROCESS"), _("ITEMS"), _("GET (MB)"),
+                        self._pe.cprint("{0:40} {1:>12} {2:>11} {3:>11}".format(
+                            _("PROCESS"), _("ITEMS"), _("GET (MB)"),
                             _("SEND (MB)")))
 
                 if outspec.last:
@@ -2577,14 +2592,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if len(pkg_name) > 40:
                         pkg_name = "..." + pkg_name[-37:]
 
-                s = "%-40.40s %12s %11s %11s" % \
-                    (pkg_name, self.repub_pkgs.pair(),
-                    format_pair("%.1f", self.dl_bytes.items,
+                s = "{0:<40.40} {1:>12} {2:>11} {3:>11}".format(
+                    pkg_name, self.repub_pkgs.pair(),
+                    format_pair("{0:.1f}", self.dl_bytes.items,
                         self.dl_bytes.goalitems, scale=(1024 * 1024),
-			targetwidth=5, format2="%d"),
-                    format_pair("%.1f", self.repub_send_bytes.items,
+                        targetwidth=5, format2="{0:d}"),
+                    format_pair("{0:.1f}", self.repub_send_bytes.items,
                         self.repub_send_bytes.goalitems, scale=(1024 * 1024),
-			targetwidth=5, format2="%d"))
+                        targetwidth=5, format2="{0:d}"))
                 self._pe.cprint(s, erase=True, end='')
 
                 if outspec.last:
@@ -2594,7 +2609,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def _print_phases_hdr(self):
                 if self._phases_hdr_printed:
                         return
-                self._pe.cprint("%-40s %11s" % (_("PHASE"), _("ITEMS")))
+                self._pe.cprint("{0:40} {1:>11}".format(_("PHASE"), _("ITEMS")))
                 self._phases_hdr_printed = True
 
         def _act_output(self, outspec, actionitem):
@@ -2607,8 +2622,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if not self._ptimer.time_to_print() and \
                     not outspec.last and not outspec.first:
                         return
-                self._pe.cprint("%-40s %11s" %
-                    (actionitem.name, actionitem.pair()), end='', erase=True)
+                self._pe.cprint("{0:40} {1:>11}".format(
+                    actionitem.name, actionitem.pair()), end='', erase=True)
                 if outspec.last:
                         self.__generic_done_newline()
 
@@ -2631,15 +2646,15 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 else:
                         val = _("Done") if outspec.last else _("working")
 
-                self._pe.cprint("%-40s %11s %s" % (jobitem.name, val, spin),
-                    end='', erase=True)
+                self._pe.cprint("{0:40} {1:>11} {2}".format(jobitem.name,
+                    val, spin), end='', erase=True)
                 if outspec.last:
                         self.__generic_done_newline()
 
         def _lint_output(self, outspec):
                 if not self._ptimer.time_to_print() and not outspec.last:
                         return
-                self._pe.cprint("%-40s %11s" % (self.lintitems.name,
+                self._pe.cprint("{0:40} {1:>11}".format(self.lintitems.name,
                     self.lintitems.pair()), end='', erase=True)
                 if outspec.last:
                         self.__generic_done()
@@ -2653,10 +2668,10 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def _li_recurse_end_output(self):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
-                msg = _("%(phasename)s linked: %(numdone)s done") % {
-                    "phasename": self.li_phase_names[self.major_phase],
-                    "numdone": format_pair("%d", self.linked_total,
-                        self.linked_total)}
+                msg = _("{phasename} linked: {numdone} done").format(
+                    phasename=self.li_phase_names[self.major_phase],
+                    numdone=format_pair("{0:d}", self.linked_total,
+                        self.linked_total))
                 self._pe.cprint(msg, erase=True)
 
         def __li_dump_output(self, output):
@@ -2677,7 +2692,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         self._pe.cprint("", erase=True, end='')
                         return
                 
-                self._pe.cprint(_("Linked image '%s' output:") % lin,
+                self._pe.cprint(_("Linked image '{0}' output:").format(lin),
                     erase=True)
                 self.__li_dump_output(stdout)
                 self.__li_dump_output(stderr)
@@ -2689,12 +2704,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 assert self.major_phase in self.li_phase_names, self.major_phase
 
                 running = " ".join([str(i) for i in self.linked_running])
-                msg = _("%(phase)s linked: %(numdone)s done; "
-                    "%(numworking)d working: %(running)s") % \
-                    {"phase": self.li_phase_names[self.major_phase],
-                    "numdone": format_pair("%d", done, self.linked_total),
-                    "numworking": len(self.linked_running),
-                    "running": running}
+                msg = _("{phase} linked: {numdone} done; "
+                    "{numworking:d} working: {running}").format(
+                    phase=self.li_phase_names[self.major_phase],
+                    numdone=format_pair("{0:d}", done, self.linked_total),
+                    numworking=len(self.linked_running),
+                    running=running)
                 self._pe.cprint(msg, erase=True)
 
                 self.__linked_spinners = list(
@@ -2710,13 +2725,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # update that child's spinner
                 self.__linked_spinners[i] = \
-                    (self.__linked_spinners[i] + 1) % len(self.__spinner_chars)
+                    (self.__linked_spinners[i] + 1).format(len(
+                        self.__spinner_chars))
                 spinners = "".join([
                         self.__spinner_chars[i]
                         for i in self.__linked_spinners
                 ])
-                self._pe.cprint(_("Linked progress: %s") % spinners, end='',
-                    erase=True)
+                self._pe.cprint(_("Linked progress: {0}").format(spinners),
+                    end='', erase=True)
 
 
 #

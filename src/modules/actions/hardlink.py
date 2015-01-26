@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -93,9 +93,9 @@ class HardLinkAction(link.LinkAction):
                         # hardlink, a package hasn't declared correct
                         # dependencies, or the target hasn't been installed
                         # yet.
-                        err_txt = _("Unable to create hard link %(path)s; "
-                            "target %(target)s is missing.") % {
-                            "path": path, "target": fulltarget }
+                        err_txt = _("Unable to create hard link {path}; "
+                            "target {target} is missing.").format(
+                            path=path, target=fulltarget)
                         raise ActionExecutionError(self, details=err_txt,
                             error=e, fmri=pkgplan.destination_fmri)
 
@@ -120,8 +120,8 @@ class HardLinkAction(link.LinkAction):
                     (img.get_root(), target)))
 
                 if not os.path.exists(target):
-                        errors.append(_("Target '%s' does not exist") %
-                            self.attrs["target"])
+                        errors.append(_("Target '{0}' does not exist").format(
+                            self.attrs["target"]))
 
                 # No point in continuing if no target
                 if errors:
@@ -129,10 +129,10 @@ class HardLinkAction(link.LinkAction):
 
                 try:
                         if os.stat(path).st_ino != os.stat(target).st_ino:
-                                errors.append(_("Broken: Path and Target (%s) "
-                                    "inodes not the same") %
-                                    self.get_target_path())
+                                errors.append(_("Broken: Path and Target ({0}) "
+                                    "inodes not the same").format(
+                                    self.get_target_path()))
                 except OSError, e:
-                        errors.append(_("Unexpected Error: %s") % e)
+                        errors.append(_("Unexpected Error: {0}").format(e))
 
                 return errors, warnings, info

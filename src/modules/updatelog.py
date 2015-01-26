@@ -19,8 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -109,7 +109,7 @@ class UpdateLog(object):
                                         if ts > mts:
                                                 pts = mts
                                                 mts = ts
-                                        line = "%s %s\n" % (l[2], l[3])
+                                        line = "{0} {1}\n".format(l[2], l[3])
                                         unknown_lines.append(line)
 
                         elif l[0] == "+":
@@ -133,8 +133,8 @@ class UpdateLog(object):
                                                         mts = pts
                                                         continue
 
-                                                line = "%s %s %s %s\n" % \
-                                                    (l[2], "pkg", f.pkg_name,
+                                                line = "{0} {1} {2} {3}\n".format(
+                                                    l[2], "pkg", f.pkg_name,
                                                     f.version)
                                                 add_lines.append(line)
                                                 added += 1
@@ -171,8 +171,8 @@ class UpdateLog(object):
                                 tfile.close()
                                 portable.remove(tmpfile)
                                 raise UpdateLogException, \
-                                    "Package %s is already in the catalog" % \
-                                        c
+                                    "Package {0} is already in the catalog".format(
+                                        c)
                         tfile.write(c)
 
                 # Write the new entries to the catalog
@@ -208,7 +208,7 @@ class UpdateLog(object):
                 tfile = os.fdopen(tmp_num, 'w')
 
                 for a in attrs.keys():
-                        s = "S %s: %s\n" % (a, attrs[a])
+                        s = "S {0}: {1}\n".format(a, attrs[a])
                         tfile.write(s)
 
                 tfile.close()

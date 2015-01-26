@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -110,7 +110,7 @@ header = """
 
 	</head>
 	<body class="yui-skin-sam">
-	<h1><img src="http://%s/logo" alt="%s"/> %s Statistics</h1>
-""" % (hostname, hostname, hostname)
+	<h1><img src="http://{0}/logo" alt="{1}"/> {2} Statistics</h1>
+""".format(hostname, hostname, hostname)
 
 print(header)

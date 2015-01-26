@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -66,10 +66,10 @@ class _NRLock(threading._RLock):
                         errbuf += "Stack of owner:\n"
                         for filenm, lno, func, txt in \
                             traceback.extract_stack(stack):
-                                errbuf += "  File: \"%s\", line %d,in %s" \
-                                     % (filenm, lno, func)
+                                errbuf += "  File: \"{0}\", line {1:d},in {2}".format(
+                                    filenm, lno, func)
                                 if txt:
-                                        errbuf += "\n    %s" % txt.strip()
+                                        errbuf += "\n    {0}".format(txt.strip())
                                 errbuf += "\n"
                         break
 

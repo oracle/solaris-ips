@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -51,11 +51,11 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
                 if be_missing:
                         estr += "The following methods were missing from " \
                             "BootEnv:\n" + \
-                            "\n".join("\t%s" % s for s in be_missing)
+                            "\n".join("\t{0}".format(s) for s in be_missing)
                 if null_missing:
                         estr += "The following methods were missing from " \
                             "BootEnvNull:\n" + \
-                            "\n".join("\t%s" % s for s in null_missing)
+                            "\n".join("\t{0}".format(s) for s in null_missing)
                 self.assert_(not estr, estr)
 
         def test_bootenv(self):

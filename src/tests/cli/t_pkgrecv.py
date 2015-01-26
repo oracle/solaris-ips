@@ -177,7 +177,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 except cfg.ConfigError, e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
-                            "valid:\n%s") % e)
+                            "valid:\n{0}").format(e))
 
         def test_0_opts(self):
                 """Verify that various basic options work as expected and that
@@ -187,10 +187,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(command="--newest", exit=2)
                 self.pkgrecv(self.durl1, "-!", exit=2)
                 self.pkgrecv(self.durl1, "-p foo", exit=2)
-                self.pkgrecv(self.durl1, "-d %s gold@1.0-1" % self.tempdir,
+                self.pkgrecv(self.durl1, "-d {0} gold@1.0-1".format(self.tempdir),
                     exit=1)
-                self.pkgrecv(self.durl1, "-d %s invalid.fmri@1.0.a" %
-                    self.tempdir, exit=1)
+                self.pkgrecv(self.durl1, "-d {0} invalid.fmri@1.0.a".format(
+                    self.tempdir), exit=1)
 
                 # Test help.
                 self.pkgrecv(command="-h", exit=0)
@@ -200,7 +200,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Verify that a non-existent repository results in failure.
                 npath = os.path.join(self.test_root, "nochance")
-                self.pkgrecv(self.durl1, "-d file://%s foo" % npath,  exit=1)
+                self.pkgrecv(self.durl1, "-d file://{0} foo".format(npath),  exit=1)
 
                 # Test list newest.
                 self.pkgrecv(self.durl1, "--newest")
@@ -228,7 +228,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 f = fmri.PkgFmri(self.published[3], None)
 
                 # First, retrieve the package.
-                self.pkgrecv(self.durl1, "--raw -d %s %s" % (self.tempdir, f))
+                self.pkgrecv(self.durl1, "--raw -d {0} {1}".format(self.tempdir, f))
 
                 # Next, load the manifest.
                 basedir = os.path.join(self.tempdir, f.get_dir_path())
@@ -259,7 +259,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Next, send it to another depot
                 self.pkgsend(self.durl2, "open foo@1.0-1")
                 self.pkgsend(self.durl2,
-                    "include -d %s %s" % (basedir, mpath))
+                    "include -d {0} {1}".format(basedir, mpath))
                 self.pkgsend(self.durl2, "close")
 
         def test_2_recv_compare(self):
@@ -271,7 +271,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # First, pkgrecv the pkg to a directory.  The files are
                 # kept compressed so they can be compared directly to the
                 # repository's internal copy.
-                self.pkgrecv(self.durl1, "--raw -k -d %s %s" % (self.tempdir,
+                self.pkgrecv(self.durl1, "--raw -k -d {0} {1}".format(self.tempdir,
                     f))
 
                 # Next, compare the manifests.
@@ -305,9 +305,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Second, pkgrecv to the pkg to a file repository.
                 npath = tempfile.mkdtemp(dir=self.test_root)
-                self.pkgsend("file://%s" % npath,
+                self.pkgsend("file://{0}".format(npath),
                     "create-repository --set-property publisher.prefix=test1")
-                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+                self.pkgrecv(self.durl1, "-d file://{0} {1}".format(npath, f))
 
                 # Next, compare the manifests (this will also only succeed if
                 # the fmris are exactly the same including timestamp).
@@ -342,7 +342,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Third, pkgrecv to the pkg to a http repository from the
                 # file repository from the last test.
-                self.pkgrecv("file://%s" % npath, "-d %s %s" % (self.durl2, f))
+                self.pkgrecv("file://{0}".format(npath), "-d {0} {1}".format(
+                    self.durl2, f))
                 orepo = nrepo
 
                 # Next, compare the manifests (this will also only succeed if
@@ -385,9 +386,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # manifest of a package published with the scheme (pkg:/) given.
                 f = fmri.PkgFmri(self.published[6], None)
                 npath = tempfile.mkdtemp(dir=self.test_root)
-                self.pkgsend("file://%s" % npath,
+                self.pkgsend("file://{0}".format(npath),
                     "create-repository --set-property publisher.prefix=test1")
-                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+                self.pkgrecv(self.durl1, "-d file://{0} {1}".format(npath, f))
 
                 # Next, compare the manifests (this will also only succeed if
                 # the fmris are exactly the same including timestamp).
@@ -409,7 +410,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze recursively to a directory, this should
                 # also retrieve its dependency: amber, and amber's dependency:
                 # tree.
-                self.pkgrecv(self.durl1, "--raw -r -k -d %s %s" % (self.tempdir,
+                self.pkgrecv(self.durl1, "--raw -r -k -d {0} {1}".format(self.tempdir,
                     bronze))
 
                 amber = fmri.PkgFmri(self.published[1], None)
@@ -431,7 +432,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using -m all-timestamps and a version pattern.
                 # This should only retrieve bronze20_1 and bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -m all-timestamps -r -k "
-                    "-d %s %s" % (self.tempdir, "/bronze@2.0"))
+                    "-d {0} {1}".format(self.tempdir, "/bronze@2.0"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -452,7 +453,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using -m all-timestamps and a package stem.
                 # This should retrieve bronze10, bronze20_1, and bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -m all-timestamps -r -k "
-                    "-d %s %s" % (self.tempdir, "bronze"))
+                    "-d {0} {1}".format(self.tempdir, "bronze"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -474,7 +475,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using -m all-versions, this should only
                 # retrieve bronze10 and bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -m all-versions -r -k "
-                    "-d %s %s" % (self.tempdir, "bronze"))
+                    "-d {0} {1}".format(self.tempdir, "bronze"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -495,7 +496,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using -m latest, this should only
                 # retrieve bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -m latest -r -k "
-                    "-d %s %s" % (self.tempdir, "bronze"))
+                    "-d {0} {1}".format(self.tempdir, "bronze"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -515,7 +516,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using default setting.
                 # This should retrieve bronze10, bronze20_1, and bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -r -k "
-                    "-d %s %s" % (self.tempdir, "bronze"))
+                    "-d {0} {1}".format(self.tempdir, "bronze"))
 
                 # Verify that all expected packages were retrieved.
                 expected = [
@@ -540,7 +541,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 os.environ["PKG_DEST"] = self.tempdir
 
                 # First, retrieve the package.
-                self.pkgrecv(command="--raw %s" % f)
+                self.pkgrecv(command="--raw {0}".format(f))
 
                 # Next, load the manifest.
                 basedir = os.path.join(self.tempdir, f.get_dir_path())
@@ -576,13 +577,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # First, pkgrecv tree into a file repository
                 npath = tempfile.mkdtemp(dir=self.test_root)
-                self.pkgsend("file://%s" % npath,
+                self.pkgsend("file://{0}".format(npath),
                     "create-repository --set-property publisher.prefix=test1")
-                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+                self.pkgrecv(self.durl1, "-d file://{0} {1}".format(npath, f))
 
                 # Next, recursively pkgrecv bronze2.0 into a file repository
                 # This would fail before behavior fixed to skip existing pkgs.
-                self.pkgrecv(self.durl1, "-r -d file://%s %s" % (npath, f2))
+                self.pkgrecv(self.durl1, "-r -d file://{0} {1}".format(npath, f2))
 
         def test_7_recv_multipublisher(self):
                 """Verify that pkgrecv handles multi-publisher repositories as
@@ -591,12 +592,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Setup a repository with packages from multiple publishers.
                 amber = self.amber10.replace("open ", "open //test2/")
                 self.pkgsend_bulk(self.durl3, amber)
-                self.pkgrecv(self.durl1, "-d %s amber@1.0 bronze@1.0" %
-                    self.durl3)
+                self.pkgrecv(self.durl1, "-d {0} amber@1.0 bronze@1.0".format(
+                    self.durl3))
 
                 # Now attempt to receive from a repository with packages from
                 # multiple publishers and verify entry exists only for test1.
-                self.pkgrecv(self.durl3, "-d %s bronze" % self.durl4)
+                self.pkgrecv(self.durl3, "-d {0} bronze".format(self.durl4))
                 self.pkgrecv(self.durl3, "--newest")
                 self.assertNotEqual(self.output.find("test1/bronze"), -1)
                 self.assertEqual(self.output.find("test2/bronze"), -1)
@@ -604,14 +605,14 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Now retrieve amber, and verify entries exist for both pubs.
                 self.wait_repo(self.dcs[4].get_repodir())
                 self.wait_repo(self.dcs[3].get_repodir())
-                self.pkgrecv(self.durl3, "-d %s amber" % self.durl4)
+                self.pkgrecv(self.durl3, "-d {0} amber".format(self.durl4))
                 self.pkgrecv(self.durl4, "--newest")
                 self.assertNotEqual(self.output.find("test1/amber"), -1)
                 self.assertNotEqual(self.output.find("test2/amber"), -1)
 
                 # Verify attempting to retrieve a non-existent package fails
                 # for a multi-publisher repository.
-                self.pkgrecv(self.durl3, "-d %s nosuchpackage" % self.durl4,
+                self.pkgrecv(self.durl3, "-d {0} nosuchpackage".format(self.durl4),
                     exit=1)
 
         def test_8_archive(self):
@@ -620,12 +621,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Setup a repository with packages from multiple publishers.
                 amber = self.amber10.replace("open ", "open pkg://test2/")
                 t2_amber10 = self.pkgsend_bulk(self.durl3, amber)[0]
-                self.pkgrecv(self.durl1, "-d %s amber@1.0 bronze@1.0" %
-                    self.durl3)
+                self.pkgrecv(self.durl1, "-d {0} amber@1.0 bronze@1.0".format(
+                    self.durl3))
 
                 # Now attempt to receive from a repository to a package archive.
                 arc_path = os.path.join(self.test_root, "test.p5p")
-                self.pkgrecv(self.durl3, "-a -d %s \*" % arc_path)
+                self.pkgrecv(self.durl3, "-a -d {0} \*".format(arc_path))
 
                 #
                 # Verify that the archive can be opened and the expected
@@ -661,7 +662,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # archive.
                 #
                 arc2_path = os.path.join(self.test_root, "test2.p5p")
-                self.pkgrecv(arc_path, "-a -d %s pkg://test2/amber" % arc2_path)
+                self.pkgrecv(arc_path, "-a -d {0} pkg://test2/amber".format(arc2_path))
 
                 # Check for expected publishers.
                 arc = p5p.Archive(arc2_path, mode="r")
@@ -688,15 +689,15 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Verify that pkgrecv gracefully fails if archive already
                 # exists.
                 #
-                self.pkgrecv(arc_path, "-d %s \*" % arc2_path, exit=1)
+                self.pkgrecv(arc_path, "-d {0} \*".format(arc2_path), exit=1)
 
                 #
                 # Verify that packages can be received from an archive to
                 # a repository.
                 #
                 self.pkgrecv(arc_path, "--newest")
-                self.pkgrecv(arc_path, "-d %s pkg://test2/amber bronze" %
-                    self.durl4)
+                self.pkgrecv(arc_path, "-d {0} pkg://test2/amber bronze".format(
+                    self.durl4))
                 self.wait_repo(self.dcs[4].get_repodir())
                 repo = self.dcs[4].get_repo()
                 self.pkgrecv(repo.root, "--newest")
@@ -717,7 +718,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Attempt a dry-run to receive a package archive.
                 # We should not have the archive created in this case.
                 arc_path = os.path.join(self.test_root, "dry-run.p5p")
-                self.pkgrecv(self.durl3, "-n -a -d %s \*" % arc_path)
+                self.pkgrecv(self.durl3, "-n -a -d {0} \*".format(arc_path))
                 self.assertFalse(os.path.exists(arc_path))
 
         def test_9_dryruns(self):
@@ -726,30 +727,30 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 f = fmri.PkgFmri(self.published[3], None)
 
                 rpth = tempfile.mkdtemp(dir=self.test_root)
-                self.pkgrepo("create %s" % rpth)
+                self.pkgrepo("create {0}".format(rpth))
                 expected = ["pkg5.repository"]
-                self.pkgrecv(self.durl1, "-n -d %s %s" % (rpth, f))
+                self.pkgrecv(self.durl1, "-n -d {0} {1}".format(rpth, f))
                 self.assertEqualDiff(expected, os.listdir(rpth))
 
-                self.pkgrecv(self.durl1, "-r -n -d %s %s" % (rpth, f))
+                self.pkgrecv(self.durl1, "-r -n -d {0} {1}".format(rpth, f))
                 self.assertEqualDiff(expected, os.listdir(rpth))
 
-                self.pkgrecv(self.durl1, "--clone -n -p '*' -d %s" % (rpth))
+                self.pkgrecv(self.durl1, "--clone -n -p '*' -d {0}".format(rpth))
                 self.assertEqualDiff(expected, os.listdir(rpth))
 
                 arc_path = os.path.join(self.test_root, "test.p5p")
-                self.pkgrecv(self.durl1, "-a -n -d %s \*" % arc_path)
+                self.pkgrecv(self.durl1, "-a -n -d {0} \*".format(arc_path))
                 self.assert_(not os.path.exists(arc_path))
 
                 # --raw actually populates the destination with manifests even
                 # with -n, so just check that it exits 0.
-                self.pkgrecv(self.durl1, "--raw -n -d %s %s" %
-                    (self.tempdir, f))
+                self.pkgrecv(self.durl1, "--raw -n -d {0} {1}".format(
+                    self.tempdir, f))
 
                 # --raw actually populates the destination with manifests even
                 # with -n, so just check that it exits 0.
-                self.pkgrecv(self.durl1, "--raw -r -n -d %s %s" %
-                    (self.tempdir, f))
+                self.pkgrecv(self.durl1, "--raw -r -n -d {0} {1}".format(
+                    self.tempdir, f))
 
         def test_10_unsupported_actions(self):
                 """Test that pkgrecv skips packages with actions it can't
@@ -757,30 +758,30 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 exit codes."""
 
                 def __count_pulled_packages(pth):
-                        self.pkgrepo("list -F tsv -H -s %s" % pth)
+                        self.pkgrepo("list -F tsv -H -s {0}".format(pth))
                         return len(self.output.splitlines())
 
                 def __check_errout(pfmri):
-                        s1 = "invalid action in package %s" % pfmri
-                        s2 = "Malformed action in package '%s'" % pfmri
+                        s1 = "invalid action in package {0}".format(pfmri)
+                        s2 = "Malformed action in package '{0}'".format(pfmri)
                         self.assert_(s1 in self.errout or s2 in self.errout,
-                            "%s not in error" % pfmri)
+                            "{0} not in error".format(pfmri))
 
                 def __empty_repo(uri, arg_string):
                         if uri.startswith("http://"):
                                 rurl = self.dcs[4].get_repo_url()
-                                self.pkgrepo("remove -s %s '*'" % rurl)
+                                self.pkgrepo("remove -s {0} '*'".format(rurl))
                                 # Refresh the depot to get it to realize that
                                 # the catalog has changed.
                                 self.dcs[4].refresh()
                         elif arg_string:
                                 portable.remove(uri)
                         else:
-                                self.pkgrepo("remove -s %s '*'" % uri)
+                                self.pkgrepo("remove -s {0} '*'".format(uri))
 
 
                 def __test_rec(duri, arg_string, pfmris):
-                        self.debug("\n\nNow pkgrecv'ing to %s" % duri)
+                        self.debug("\n\nNow pkgrecv'ing to {0}".format(duri))
 
                         # It's necessary to use the -D option below because
                         # otherwise pkgrecv will fail because the manifest
@@ -790,7 +791,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         # Check that invalid action attributes don't cause
                         # tracebacks.
                         self.pkgrecv(self.durl1, novalidate +
-                            "-d %s %s %s" % (duri, arg_string,
+                            "-d {0} {1} {2}".format(duri, arg_string,
                             " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
                         for pfmri in pfmris:
                                 __check_errout(pfmri)
@@ -799,7 +800,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 portable.remove(duri)
 
                         self.pkgrecv(self.rurl1, novalidate +
-                            "-d %s %s %s" % (duri, arg_string,
+                            "-d {0} {1} {2}".format(duri, arg_string,
                             " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
                         for pfmri in pfmris:
                                 __check_errout(pfmri)
@@ -810,8 +811,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         # Check that other packages are retrieved and the exit
                         # code reflects partial success.
                         self.pkgrecv(self.durl1, novalidate +
-                            "-d %s %s -m all-timestamps '*'" %
-                            (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
+                            "-d {0} {1} -m all-timestamps '*'".format(
+                            duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
                         for pfmri in pfmris:
                                 __check_errout(pfmri)
                         self.assertEqual(__count_pulled_packages(duri),
@@ -819,8 +820,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         __empty_repo(duri, arg_string)
 
                         self.pkgrecv(self.rurl1, novalidate +
-                            "-d %s %s -m all-timestamps '*'" %
-                            (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
+                            "-d {0} {1} -m all-timestamps '*'".format(
+                            duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
                         for pfmri in pfmris:
                                 __check_errout(pfmri)
                         self.assertEqual(__count_pulled_packages(duri),
@@ -840,7 +841,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         fh.write(txt)
 
                 rpth = tempfile.mkdtemp(dir=self.test_root)
-                self.pkgrepo("create %s" % rpth)
+                self.pkgrepo("create {0}".format(rpth))
                 adir = tempfile.mkdtemp(dir=self.test_root)
 
                 # The __empty repo function above assumes that the only http uri
@@ -867,7 +868,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 """Verify that pkgrecv handles cloning repos as expected."""
                 # Test basic operation of cloning repo which contains one
                 # publisher to repo which contains same publisher
-                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2)
+                self.pkgrecv(self.durl1, "--clone -d {0}".format(self.dpath2))
 
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
                     "index", "-x", "trans", self.dpath1, self.dpath2])
@@ -875,7 +876,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Test that packages in dst which are not in src get removed.
                 self.pkgsend_bulk(self.durl2, (self.amber30))
-                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2)
+                self.pkgrecv(self.durl1, "--clone -d {0}".format(self.dpath2))
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
                     "index", "-x", "trans", self.dpath1, self.dpath2])
                 self.assertTrue(ret==0)
@@ -883,37 +884,37 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Test that clone reports publishers not in the dest repo.
                 amber = self.amber10.replace("open ", "open pkg://test2/")
                 self.pkgsend_bulk(self.durl1, amber)
-                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2, exit=1)
+                self.pkgrecv(self.durl1, "--clone -d {0}".format(self.dpath2), exit=1)
 
                 # Test that clone adds new publishers if requested.
                 amber = self.amber10.replace("open ", "open pkg://test2/")
                 self.pkgsend_bulk(self.durl1, amber)
-                self.pkgrecv(self.durl1, "--clone -d %s -p test2" % self.dpath2)
+                self.pkgrecv(self.durl1, "--clone -d {0} -p test2".format(self.dpath2))
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
                     "index", "-x", "trans", self.dpath1,
                     self.dpath2])
                 self.assertTrue(ret==0)
 
                 # Test that clone removes all packages if source is empty
-                self.pkgrecv(self.durl3, "--clone -d %s" % self.dpath2)
-                self.pkgrepo("-s %s list -H -p test2" % self.dpath2)
+                self.pkgrecv(self.durl3, "--clone -d {0}".format(self.dpath2))
+                self.pkgrepo("-s {0} list -H -p test2".format(self.dpath2))
                 self.assertEqualDiff("", self.output)
 
                 # Test that clone fails if --raw is specified.
-                self.pkgrecv(self.durl1, "--raw --clone -d %s -p test2" %
-                    self.dpath2, exit=2)
+                self.pkgrecv(self.durl1, "--raw --clone -d {0} -p test2".format(
+                    self.dpath2), exit=2)
 
                 # Test that clone fails if -c is specified.
-                self.pkgrecv(self.durl1, "-c /tmp/ --clone -d %s -p test2" %
-                    self.dpath2, exit=2)
+                self.pkgrecv(self.durl1, "-c /tmp/ --clone -d {0} -p test2".format(
+                    self.dpath2), exit=2)
 
                 # Test that clone fails if -a is specified.
-                self.pkgrecv(self.durl1, "-a --clone -d %s -p test2" %
-                    self.dpath2, exit=2)
+                self.pkgrecv(self.durl1, "-a --clone -d {0} -p test2".format(
+                    self.dpath2), exit=2)
 
                 # Test that clone fails if --newest is specified.
-                self.pkgrecv(self.durl1, "--newest --clone -d %s -p test2" %
-                    self.dpath2, exit=2)
+                self.pkgrecv(self.durl1, "--newest --clone -d {0} -p test2".format(
+                    self.dpath2), exit=2)
 
         def test_12_multihash(self):
                 """Tests that we can recv to and from repositories with
@@ -930,50 +931,50 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.image_create()
 
                 # First, recv the package and verify it has no extended hashes
-                self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
-                self.pkg("contents -g %s -m %s" % (self.durl3, f))
-                self.assert_("pkg.hash.%s" % hash_alg not in self.output)
+                self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
+                self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
+                self.assert_("pkg.hash.{0}".format(hash_alg not in self.output))
 
                 # Now stop and start the repository as multi-hash aware, and
                 # recv it again, making sure that we do not get multiple hashes
                 # added (because modifying the manifest would break signatures)
                 self.dcs[3].stop()
-                self.dcs[3].set_debug_feature("hash=sha1+%s" % hash_alg)
+                self.dcs[3].set_debug_feature("hash=sha1+{0}".format(hash_alg))
                 self.dcs[3].start()
-                self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
-                self.pkg("contents -g %s -m %s" % (self.durl3, f))
-                self.assert_("pkg.hash.%s" % hash_alg not in self.output)
+                self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
+                self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
+                self.assert_("pkg.hash.{0}".format(hash_alg not in self.output))
 
                 # Now check the reverse - that a package with multiple hashes
                 # can be received into a repository that is not multi-hash aware
                 b = "bronze@1.0,5.11-0"
                 self.pkgsend_bulk(self.durl3, self.bronze10)
-                self.pkg("contents -g %s -m %s" % (self.durl3, b))
-                self.assert_("pkg.hash.%s" % hash_alg in self.output)
-                self.pkgrecv(self.durl3, "-d %s %s" % (self.durl4, b))
-                self.pkg("contents -g %s -m %s" % (self.durl4, b))
-                self.assert_("pkg.hash.%s" % hash_alg in self.output)
+                self.pkg("contents -g {0} -m {1}".format(self.durl3, b))
+                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
+                self.pkgrecv(self.durl3, "-d {0} {1}".format(self.durl4, b))
+                self.pkg("contents -g {0} -m {1}".format(self.durl4, b))
+                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
 
                 # Ensure that we can recv multi-hash packages into p5p files
                 p5p_path = os.path.join(self.test_root,
-                    "multi-hash-%s.p5p" % hash_alg)
-                self.pkgrecv(self.durl3, "-ad %s %s" % (p5p_path, b))
-                self.pkg("contents -g %s -m %s" % (p5p_path, b))
-                self.assert_("pkg.hash.%s" % hash_alg in self.output)
+                    "multi-hash-{0}.p5p".format(hash_alg))
+                self.pkgrecv(self.durl3, "-ad {0} {1}".format(p5p_path, b))
+                self.pkg("contents -g {0} -m {1}".format(p5p_path, b))
+                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
 
                 # Finally, stop and start our scratch repository to clear the
                 # debug feature. If this doesn't happen because we've failed
                 # before now, it's not the end of the world.
                 self.dcs[3].stop()
-                self.dcs[3].unset_debug_feature("hash=sha1+%s" % hash_alg)
+                self.dcs[3].unset_debug_feature("hash=sha1+{0}".format(hash_alg))
                 self.dcs[3].start()
 
         def test_13_output(self):
                 """Verify that pkgrecv handles verbose output as expected."""
 
                 # Now attempt to receive from a repository.
-                self.pkgrepo("create %s" % self.tempdir)
-                self.pkgrecv(self.dpath1, "-d %s -n -v \*" % self.tempdir)
+                self.pkgrepo("create {0}".format(self.tempdir))
+                self.pkgrecv(self.dpath1, "-d {0} -n -v \*".format(self.tempdir))
                 expected = """\
 Retrieving packages (dry-run) ...
         Packages to add:        9
@@ -989,7 +990,7 @@ Estimated transfer size: 528.00 B
                 shutil.rmtree(self.tempdir)
 
                 # Now attempt to receive from a repository to a package archive.
-                self.pkgrecv(self.dpath1, "-a -d %s -n -v \*" % self.tempdir)
+                self.pkgrecv(self.dpath1, "-a -d {0} -n -v \*".format(self.tempdir))
                 expected = """\
 Archiving packages (dry-run) ...
         Packages to add:        9
@@ -1002,9 +1003,9 @@ Estimated transfer size: 528.00 B
                             include_scheme=False) in self.output)
 
                 # Now attempt to clone a repository.
-                self.pkgrepo("create %s" % self.tempdir)
-                self.pkgrecv(self.dpath1, "--clone -d %s -p \* -n -v" \
-                    % self.tempdir)
+                self.pkgrepo("create {0}".format(self.tempdir))
+                self.pkgrecv(self.dpath1, "--clone -d {0} -p \* -n -v" \
+                   .format(self.tempdir))
                 expected = """\
 Retrieving packages (dry-run) ...
         Packages to add:        9
@@ -1017,7 +1018,7 @@ Estimated transfer size: 528.00 B
                             include_scheme=False) in self.output)
 
                 # Test that output is correct if -n is not specified.
-                self.pkgrecv(self.dpath1, "-d %s -v \*" % self.tempdir)
+                self.pkgrecv(self.dpath1, "-d {0} -v \*".format(self.tempdir))
                 self.assert_("dry-run" not in self.output)
 
 
@@ -1040,12 +1041,12 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.srurl, self.example_pkg10)
 
-                self.surl = self.ac.url + "/%s" % pubs[0]
-                self.durl = self.ac.url + "/%s" % pubs[1]
+                self.surl = self.ac.url + "/{0}".format(pubs[0])
+                self.durl = self.ac.url + "/{0}".format(pubs[1])
 
                 #set permissions of tmp/verboten to make it non-readable
                 self.verboten = os.path.join(self.test_root, "tmp/verboten")
-                os.system("chmod 600 %s" % self.verboten) 
+                os.system("chmod 600 {0}".format(self.verboten))
                 
 
         def test_01_basics(self):
@@ -1075,96 +1076,96 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
                 # We try to receive a pkg from a secured repo and publish it to
                 # another secured repo where both repos require different
                 # credentials
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict))
 
                 # Now try to use the same credentials for source and dest.
                 # This should fail.
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(key)s --dcert %(cert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {key} --dcert {cert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Make sure we don't traceback when credential files are invalid
                 # Src certificate option missing
-                self.pkgrecv(self.surl, "--key %(key)s -d %(dst)s "
-                    "--dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} -d {dst} "
+                    "--dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst certificate option missing
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {dkey} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Src key option missing
-                self.pkgrecv(self.surl, "--cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst key option missing
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Src certificate not found
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(noexist)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {noexist} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst certificate not found
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(noexist)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {noexist} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Src key not found
-                self.pkgrecv(self.surl, "--key %(noexist)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {noexist} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst key not found
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(noexist)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {noexist} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Src certificate is empty file
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(empty)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {empty} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst certificate is empty file
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(empty)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {empty} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Src key is empty file
-                self.pkgrecv(self.surl, "--key %(empty)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {empty} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
 
                 # Dst key is empty file
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(empty)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {empty} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), exit=1)
                 
                 # No permissions to read src certificate 
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(verboten)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {verboten} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
                 # No permissions to read dst certificate 
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(verboten)s "
-                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {verboten} "
+                    "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
                 # No permissions to read src key 
-                self.pkgrecv(self.surl, "--key %(verboten)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+                self.pkgrecv(self.surl, "--key {verboten} --cert {cert} "
+                    "-d {dst} --dkey {dkey} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
                 # No permissions to read dst key 
-                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
-                    "-d %(dst)s --dkey %(verboten)s --dcert %(dcert)s "
-                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+                self.pkgrecv(self.surl, "--key {key} --cert {cert} "
+                    "-d {dst} --dkey {verboten} --dcert {dcert} "
+                    "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
 
 if __name__ == "__main__":

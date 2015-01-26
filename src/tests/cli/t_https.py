@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -64,8 +64,8 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                self.acurl1 = self.ac.url + "/%s" % pub1_name
-                self.acurl2 = self.ac.url + "/%s" % pub2_name
+                self.acurl1 = self.ac.url + "/{0}".format(pub1_name)
+                self.acurl2 = self.ac.url + "/{0}".format(pub2_name)
                 # Our proxy is served by the same Apache controller, but uses
                 # a different port.
                 self.proxyurl = self.ac.url.replace("https", "http")
@@ -86,20 +86,20 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Test that adding a HTTPS repo fails if the image does not
                 # contain the trust anchor to verify the server's identity.
-                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    }, exit=1)
+                self.pkg("set-publisher -k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                   ), exit=1)
 
                 # Add the trust anchor needed to verify the server's identity to
                 # the image.
                 self.seed_ta_dir("ta7")
-                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    })
+                self.pkg("set-publisher -k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                   ))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -112,11 +112,11 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 odebug = DebugValues["ssl_ca_file"]
                 DebugValues["ssl_ca_file"] = odebug.replace("image0",
                     "new.image")
-                self.pkg("-R %s refresh --full test" % npath)
+                self.pkg("-R {0} refresh --full test".format(npath))
 
                 # Listing the test publisher causes its cert and key to be
                 # validated.
-                self.pkg("-R %s publisher test" % npath)
+                self.pkg("-R {0} publisher test".format(npath))
                 assert os.path.join("new.image", "var", "pkg", "ssl") in \
                     self.output
 
@@ -128,12 +128,12 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # HTTP proxy.
                 self.image_create()
                 self.seed_ta_dir("ta7")
-                self.pkg("set-publisher --proxy %(proxy)s "
-                    "-k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    "proxy": self.proxyurl})
+                self.pkg("set-publisher --proxy {proxy} "
+                    "-k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    proxy=self.proxyurl))
                 self.pkg("install example_pkg")
 
                 # Now try to use the bad proxy, ensuring that we cannot set
@@ -143,22 +143,22 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                     str(self.bad_proxy_port))
                 self.image_create()
                 self.seed_ta_dir("ta7")
-                self.pkg("set-publisher --proxy %(proxy)s "
-                    "-k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    "proxy": bad_proxyurl}, exit=1)
+                self.pkg("set-publisher --proxy {proxy} "
+                    "-k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    proxy=bad_proxyurl), exit=1)
 
                 # Set the bad proxy in the image, verify we can't refresh,
                 # then use an OS environment override to force the use of a
                 # good proxy.
-                self.pkg("set-publisher --no-refresh --proxy %(proxy)s "
-                    "-k %(key)s -c %(cert)s -g %(url)s test" % {
-                    "url": self.acurl1,
-                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    "proxy": bad_proxyurl}, exit=0)
+                self.pkg("set-publisher --no-refresh --proxy {proxy} "
+                    "-k {key} -c {cert} -g {url} test".format(
+                    url=self.acurl1,
+                    cert=os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    proxy=bad_proxyurl), exit=0)
                 self.pkg("refresh", exit=1)
                 proxy_env = {"https_proxy": self.proxyurl}
                 self.pkg("refresh", env_arg=proxy_env)
@@ -178,13 +178,13 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Set https-based publisher with correct cert.
                 self.seed_ta_dir("ta7")
-                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": good_cert_path,
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    })
+                self.pkg("set-publisher -k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=good_cert_path,
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                   ))
                 # Set a second publisher
-                self.pkg("set-publisher -p %(url)s" % {"url": self.rurl2})
+                self.pkg("set-publisher -p {url}".format(url=self.rurl2))
 
                 # Replace cert of first publisher with one that is expired.
                 # It doesn't need to match the key because we just want to
@@ -201,7 +201,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Refreshing the second publisher should not try to validate
                 # the cert for the first publisher.
-                self.pkg("refresh %s" % self.tmppub)
+                self.pkg("refresh {0}".format(self.tmppub))
 
         def test_expired_certs(self):
                 """ Test that certificate validation needs to validate all
@@ -218,17 +218,17 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Set https-based publisher with correct cert.
                 self.seed_ta_dir("ta7")
-                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl1,
-                    "cert": good_cert_path_1,
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
-                    })
+                self.pkg("set-publisher -k {key} -c {cert} -p {url}".format(
+                    url=self.acurl1,
+                    cert=good_cert_path_1,
+                    key=os.path.join(self.keys_dir, self.get_cli_key("test")),
+                   ))
                 # Set a second publisher
-                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl2,
-                    "cert": good_cert_path_2,
-                    "key": os.path.join(self.keys_dir, self.get_cli_key("tmp")),
-                    })
+                self.pkg("set-publisher -k {key} -c {cert} -p {url}".format(
+                    url=self.acurl2,
+                    cert=good_cert_path_2,
+                    key=os.path.join(self.keys_dir, self.get_cli_key("tmp")),
+                   ))
  
                 # Replace cert of first publisher with one that is expired.
 
@@ -260,7 +260,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Retrive the correct CA and use it to generate a new cert.
                 test_ca = self.get_pub_ta("test")
-                test_cs = "cs1_%s" % test_ca
+                test_cs = "cs1_{0}".format(test_ca)
 
                 # Add a certificate to the length 2 chain that is going to
                 # expire in 27 days.
@@ -272,13 +272,13 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Set https-based publisher with expiring cert.
                 self.seed_ta_dir("ta7")
-                self.pkg("image-create -f --user -k %(key)s -c %(cert)s "
-                    "-p test=%(url)s %(path)s/image"% {
-                    "url": self.acurl1,
-                    "cert": os.path.join(cg.cs_dir, "%s_cert.pem" % test_cs),
-                    "key": os.path.join(cg.keys_dir, "%s_key.pem" % test_cs),
-                    "path": tmp_dir
-                    })
+                self.pkg("image-create -f --user -k {key} -c {cert} "
+                    "-p test={url} {path}/image".format(
+                    url=self.acurl1,
+                    cert=os.path.join(cg.cs_dir, "{0}_cert.pem".format(test_cs)),
+                    key=os.path.join(cg.keys_dir, "{0}_key.pem".format(test_cs)),
+                    path=tmp_dir
+                   ))
 
 
 class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
@@ -310,8 +310,8 @@ echo "12345"
                 # The value for ssl_ca_file is pulled from DebugValues because
                 # ssl_ca_file needs to be set there so the api object calls work
                 # as desired.
-                command = "--debug ssl_ca_file=%s %s" % \
-                    (DebugValues["ssl_ca_file"], command)
+                command = "--debug ssl_ca_file={0} {1}".format(
+                    DebugValues["ssl_ca_file"], command)
                 return pkg5unittest.SingleDepotTestCase.pkg(self, command,
                     *args, **kwargs)
 
@@ -321,7 +321,7 @@ echo "12345"
                 if not dest_dir:
                         dest_dir = self.ta_dir
                 for c in certs:
-                        name = "%s_cert.pem" % c
+                        name = "{0}_cert.pem".format(c)
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
@@ -381,7 +381,7 @@ echo "12345"
                         # Start depot *after* seeding certs.
                         self.dc.start()
 
-                        self.pkg("set-publisher -p %s" % self.durl)
+                        self.pkg("set-publisher -p {0}".format(self.durl))
                         api_obj = self.get_img_api_obj()
                         self._api_install(api_obj, ["example_pkg"])
 
@@ -398,14 +398,14 @@ echo "12345"
                 # that has no passphrase.
                 self.dc.enable_ssl(key_path=self.server_ssl_key,
                     cert_path=self.server_ssl_cert,
-                    dialog="exec:%s" % self.ssl_auth_script)
+                    dialog="exec:{0}".format(self.ssl_auth_script))
                 test_ssl_settings()
 
                 # Verify using 'exec' ssl authentication for server with a key
                 # that has a passphrase of '123'.
                 self.dc.enable_ssl(key_path=self.server_ssl_reqpass_key,
                     cert_path=self.server_ssl_cert,
-                    dialog="exec:%s" % self.ssl_auth_script)
+                    dialog="exec:{0}".format(self.ssl_auth_script))
                 test_ssl_settings()
 
                 # Verify using 'exec' ssl authentication for server with a key
@@ -413,7 +413,7 @@ echo "12345"
                 # supplied.
                 self.dc.enable_ssl(key_path=self.server_ssl_reqpass_key,
                     cert_path=self.server_ssl_cert,
-                    dialog="exec:%s" % self.ssl_auth_bad_script)
+                    dialog="exec:{0}".format(self.ssl_auth_bad_script))
                 test_ssl_settings(exit=1)
 
 

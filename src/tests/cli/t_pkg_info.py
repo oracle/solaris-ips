@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -358,12 +358,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 plist = self.plist[:2]
 
                 # This should succeed and cause the manifests to be cached.
-                self.pkg("info -r %s" % " ".join(p for p in plist))
+                self.pkg("info -r {0}".format(" ".join(p for p in plist)))
 
                 # Now attempt to corrupt the client's copy of the manifest by
                 # adding malformed actions.
                 for p in plist:
-                        self.debug("Testing package %s ..." % p)
+                        self.debug("Testing package {0} ...".format(p))
                         pfmri = fmri.PkgFmri(p)
                         mdata = self.get_img_manifest(pfmri)
                         if mdata.find("dir") != -1:
@@ -375,10 +375,10 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                             'set name=description value="" \" my desc \" ""',
                             "set name=com.sun.service.escalations value="):
                                 self.debug("Testing with bad action "
-                                    "'%s'." % bad_act)
-                                bad_mdata = mdata + "%s\n" % bad_act
+                                    "'{0}'.".format(bad_act))
+                                bad_mdata = mdata + "{0}\n".format(bad_act)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("info -r %s" % pfmri.pkg_name, exit=0)
+                                self.pkg("info -r {0}".format(pfmri.pkg_name), exit=0)
 
         def test_human_version(self):
                 """Verify that info returns the expected output for packages
@@ -405,20 +405,20 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 # Create an isolated repository for this test
                 repodir = os.path.join(self.test_root, "test-ranked")
                 self.create_repo(repodir)
-                self.pkgrepo("add-publisher -s %s test" % repodir)
+                self.pkgrepo("add-publisher -s {0} test".format(repodir))
                 self.pkgsend_bulk(repodir, (self.bronze10, self.human))
 
-                self.pkgrepo("add-publisher -s %s test2" % repodir)
-                self.pkgrepo("set -s %s publisher/prefix=test2" % repodir)
+                self.pkgrepo("add-publisher -s {0} test2".format(repodir))
+                self.pkgrepo("set -s {0} publisher/prefix=test2".format(repodir))
                 self.pkgsend_bulk(repodir, self.bronze10)
 
-                self.pkgrepo("add-publisher -s %s test3" % repodir)
-                self.pkgrepo("set -s %s publisher/prefix=test3" % repodir)
+                self.pkgrepo("add-publisher -s {0} test3".format(repodir))
+                self.pkgrepo("set -s {0} publisher/prefix=test3".format(repodir))
                 self.pkgsend_bulk(repodir, self.bronze10)
 
                 # Create a test image.
                 self.image_create()
-                self.pkg("set-publisher -p %s" % repodir)
+                self.pkg("set-publisher -p {0}".format(repodir))
 
                 # Test should be higher ranked than test2 since the default
                 # for auto-configuration is to use lexical order when
@@ -601,10 +601,10 @@ Packaging Date: Thu Sep 08 00:45:46 2011
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 0.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, actual)
 
                 # Next, verify that a renamed package (for a variant not
@@ -622,10 +622,10 @@ Packaging Date: %(pkg_date)s
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 0.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, actual)
 
                 # Next, verify that a renamed package (for a variant applicable
@@ -641,10 +641,10 @@ Packaging Date: %(pkg_date)s
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 0.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, actual)
 
 
@@ -661,10 +661,10 @@ Packaging Date: %(pkg_date)s
      Publisher: test
        Version: 1.0
         Branch: None
-Packaging Date: %(pkg_date)s
+Packaging Date: {pkg_date}
           Size: 0.00 B
-          FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, actual)
 
         def test_appropriate_license_files(self):
@@ -680,7 +680,7 @@ Packaging Date: %(pkg_date)s
                 self.pkg("install --licenses bronze@0.5")
                 self.assert_("tmp/copyright0" in self.output, "Expected "
                     "tmp/copyright0 to be in the output of the install. Output "
-                    "was:\n%s" % self.output)
+                    "was:\n{0}".format(self.output))
                 self.pkg("info -l --license bronze")
                 self.assertEqual("tmp/copyright0\n", self.output)
                 self.pkg("info -r --license bronze")
@@ -691,7 +691,7 @@ Packaging Date: %(pkg_date)s
                 self.pkg("update --licenses bronze@1.0")
                 self.assert_("tmp/copyright1" in self.output, "Expected "
                     "tmp/copyright1 to be in the output of the install. Output "
-                    "was:\n%s" % self.output)
+                    "was:\n{0}".format(self.output))
                 self.pkg("info -r --license bronze")
                 self.assertEqual("tmp/copyright1\n", self.output)
                 self.pkg("info -l --license bronze")
@@ -743,13 +743,13 @@ class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):
                                 fh.write(l)
                         self.assert_(a)
                         l = """\
-license %(hash)s license=foo chash=%(chash)s pkg.csize=%(csize)s \
-pkg.size=%(size)s""" % {
-    "hash":a.hash,
-    "chash":a.attrs["chash"],
-    "csize":a.attrs["pkg.csize"],
-    "size":a.attrs["pkg.size"]
-}
+license {hash} license=foo chash={chash} pkg.csize={csize} \
+pkg.size={size}""".format(
+    hash=a.hash,
+    chash=a.attrs["chash"],
+    csize=a.attrs["pkg.csize"],
+    size=a.attrs["pkg.size"]
+)
                         fh.write(l)
                 repo.rebuild()
 

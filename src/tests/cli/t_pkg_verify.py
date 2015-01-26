@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -141,12 +141,12 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # Should not output anything when using -q.
                 self.pkg_verify("-q foo", exit=1)
                 assert(self.output == "")
-                self.pkg("set-publisher -p %s" % self.rurl)
+                self.pkg("set-publisher -p {0}".format(self.rurl))
                 self.pkg("fix foo")
 
                 # Informational messages should not be output unless -v
                 # is provided.
-                self.pkg("set-publisher -p %s" % self.rurl)
+                self.pkg("set-publisher -p {0}".format(self.rurl))
                 self.pkg_verify("foo | grep bobcat", exit=1)
                 self.pkg_verify("-v foo | grep bobcat")
 
@@ -274,9 +274,9 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 os.chown(fpath, -1, 2)
                 self.pkg("verify", exit=1)
                 for sattr in ('H','S'):
-                        expected = "System attribute '%s' not set" % sattr
+                        expected = "System attribute '{0}' not set".format(sattr)
                         self.assertTrue(expected in self.output,
-                            "Missing in verify output:  %s" % expected)
+                            "Missing in verify output:  {0}".format(expected))
 
                 shutil.rmtree(self.img_path())
                 self.set_img_path(old_img_path)

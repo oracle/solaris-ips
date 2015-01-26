@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some opensolaris distribution specific lint checks
@@ -66,9 +66,10 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 for key in keys:
                         if key not in manifest:
                                 engine.warning(
-                                    _("Missing attribute '%(key)s' in %(pkg)s")
-                                    % {"key": key, "pkg": manifest.fmri},
-                                    msgid="%s%s.1" % (self.name, pkglint_id))
+                                    _("Missing attribute '{key}' in "
+                                    "{pkg}").format(key=key, pkg=manifest.fmri),
+                                    msgid="{0}{1}.1".format(self.name,
+                                    pkglint_id))
 
         missing_attrs.pkglint_desc = _(
             "Standard package attributes should be present.")

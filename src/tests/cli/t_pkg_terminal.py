@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -70,10 +70,10 @@ class TestPkgTerminalTesters(pkg5unittest.CliTestCase):
         """Test the runprintengine and runprogress test utilities."""
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
-                self.runprog = "%s/interactive/runprogress.py" % \
-                    pkg5unittest.g_test_dir
-                self.runprint = "%s/interactive/runprintengine.py" % \
-                    pkg5unittest.g_test_dir
+                self.runprog = "{0}/interactive/runprogress.py".format(
+                    pkg5unittest.g_test_dir)
+                self.runprint = "{0}/interactive/runprintengine.py".format(
+                    pkg5unittest.g_test_dir)
 
         #
         # This is also an effective way to spot-check certain behaviors of

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -51,13 +51,13 @@ class MissingFile(DependencyAnalysisError):
 
         def __str__(self):
                 if not self.dirs:
-                        return _("Couldn't find '%s'") % self.file_path
+                        return _("Couldn't find '{0}'").format(self.file_path)
                 else:
-                        return _("Couldn't find '%(path)s' in any of the "
-                            "specified search directories:\n%(dirs)s") % \
-                            {"path": self.file_path,
-                            "dirs": "\n".join(
-                            ["\t" + d for d in sorted(self.dirs)])}
+                        return _("Couldn't find '{path}' in any of the "
+                            "specified search directories:\n{dirs}").format(
+                            path=self.file_path,
+                            dirs="\n".join(
+                            ["\t" + d for d in sorted(self.dirs)]))
 
 class MultipleDefaultRunpaths(DependencyAnalysisError):
         """Exception that is raised when multiple $PGKDEPEND_RUNPATH tokens
@@ -82,8 +82,8 @@ class InvalidDependBypassValue(DependencyAnalysisError):
 
         def __str__(self):
                 return _(
-                    "Invalid pkg.depend.bypass-generate value %(val)s: "
-                    "%(err)s") % {"val": self.value, "err": self.error}
+                    "Invalid pkg.depend.bypass-generate value {val}: "
+                    "{err}").format(val=self.value, err=self.error)
 
 
 class InvalidPublishingDependency(DependencyAnalysisError):
@@ -96,7 +96,7 @@ class InvalidPublishingDependency(DependencyAnalysisError):
 
         def __str__(self):
                 return _(
-                    "Invalid publishing dependency: %s") % self.error
+                    "Invalid publishing dependency: {0}").format(self.error)
 
 
 class Dependency(depend.DependencyAction):
@@ -133,7 +133,8 @@ class Dependency(depend.DependencyAction):
                 attrs.update([
                     ("fmri", self.DUMMY_FMRI),
                     ("type", self.DEPEND_TYPE),
-                    ("%s.reason" % self.DEPEND_DEBUG_PREFIX, self.action_path())
+                    ("{0}.reason".format(self.DEPEND_DEBUG_PREFIX),
+                    self.action_path())
                 ])
 
                 attrs.update(action.get_variant_template())
@@ -155,8 +156,8 @@ class Dependency(depend.DependencyAction):
                 on in a way that is hashable."""
 
                 raise NotImplementedError(_("Subclasses of Dependency must "
-                    "implement dep_key. Current class is %s") %
-                    self.__class__.__name__)
+                    "implement dep_key. Current class is {0}").format(
+                    self.__class__.__name__))
 
         def get_variant_combinations(self, satisfied=False):
                 """Create the combinations of variants that this action
@@ -193,7 +194,7 @@ class Dependency(depend.DependencyAction):
 
                 if self.dep_vars is not None:
                         return " " + " ".join([
-                            ("%s=%s" % (k, ",".join(self.dep_vars[k])))
+                            ("{0}={1}".format(k, ",".join(self.dep_vars[k])))
                             for k in sorted(self.dep_vars.keys())
                         ])
 
@@ -252,9 +253,9 @@ class PublishingDependency(Dependency):
                         # full_paths or a combination of base_names and
                         # run_paths.
                         raise InvalidPublishingDependency(
-                            "A dependency was specified using full_paths=%s as "
-                            "well as base_names=%s and run_paths=%s" %
-                            (full_paths, base_names, run_paths))
+                            "A dependency was specified using full_paths={0} as "
+                            "well as base_names={1} and run_paths={2}".format(
+                            full_paths, base_names, run_paths))
 
                 self.base_names = sorted(base_names)
 
@@ -275,16 +276,16 @@ class PublishingDependency(Dependency):
                             for rp in run_paths
                         ])
 
-                attrs = {"%s.type" % self.DEPEND_DEBUG_PREFIX: kind}
+                attrs = {"{0}.type".format(self.DEPEND_DEBUG_PREFIX): kind}
                 if self.full_paths:
-                        attrs["%s.fullpath" % self.DEPEND_DEBUG_PREFIX] = \
+                        attrs["{0}.fullpath".format(self.DEPEND_DEBUG_PREFIX)] = \
                             self.full_paths
                 else:
                         attrs.update({
-                            "%s.file" %
-                            self.DEPEND_DEBUG_PREFIX: self.base_names,
-                            "%s.path" %
-                            self.DEPEND_DEBUG_PREFIX: self.run_paths,
+                            "{0}.file".format(
+                            self.DEPEND_DEBUG_PREFIX): self.base_names,
+                            "{0}.path".format(
+                            self.DEPEND_DEBUG_PREFIX): self.run_paths,
                         })
 
                 Dependency.__init__(self, action, pkg_vars, proto_dir, attrs)

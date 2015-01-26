@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic variant support
@@ -108,7 +108,7 @@ class Variants(_Variants):
                 # The trailing '.' is to encourage namespace usage.
                 if item.startswith("variant.debug."):
                         return None, "false" # 'false' by default
-                raise KeyError, "unknown variant %s" % item
+                raise KeyError, "unknown variant {0}".format(item)
 
         def __getitem__(self, item):
                 return self.__getitem_internal(item)[1]
@@ -178,13 +178,13 @@ class VariantCombinationTemplate(_Variants):
                         self.setdefault(name, set([])).update(var[name])
 
         def __repr__(self):
-                return "VariantTemplate(%s)" % dict.__repr__(self)
+                return "VariantTemplate({0})".format(dict.__repr__(self))
 
         def __str__(self):
                 s = ""
                 for k in sorted(self):
-                        t = ",".join(['"%s"' % v for v in sorted(self[k])])
-                        s += " %s=%s" % (k, t)
+                        t = ",".join(['"{0}"'.format(v) for v in sorted(self[k])])
+                        s += " {0}={1}".format(k, t)
                 if s:
                         return s
                 else:
@@ -422,8 +422,8 @@ class VariantCombinations(object):
                         self.__simpl_template = {}                
                         if assert_on_different_domains:
                                 assert self.__template.issubset(vct), \
-                                    "template:%s\nvct:%s" % \
-                                    (self.__template, vct)
+                                    "template:{0}\nvct:{1}".format(
+                                    self.__template, vct)
                 self.__simpl_template = vct
 
         def split_combinations(self):
@@ -554,5 +554,5 @@ class VariantCombinations(object):
                 return rel_set
 
         def __repr__(self):
-                return "VC Sat:%s Unsat:%s" % (sorted(self.__sat_set),
+                return "VC Sat:{0} Unsat:{1}".format(sorted(self.__sat_set),
                     sorted(self.__not_sat_set))

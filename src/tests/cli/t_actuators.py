@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -486,8 +486,8 @@ stop/type astring method
                 # zone images are rooted at <zonepath>/root
                 zimg_path = os.path.join(zone_path, "root")
                 self.image_create(repourl=rurl, img_path=zimg_path)
-                self.pkg("-R %s attach-linked -c system:%s %s" %
-                    (self.img_path(0), zname, zimg_path))
+                self.pkg("-R {0} attach-linked -c system:{1} {2}".format(
+                    self.img_path(0), zname, zimg_path))
 
                 return zone_path
                 
@@ -524,9 +524,9 @@ stop/type astring method
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
 
                 # test to see if our test service is restarted on install
-                self.pkg("--debug bin_zoneadm='%s' "
-                    "--debug bin_zlogin='%s' "
-                    "install -rv basics@1.0" % (bin_zoneadm, bin_zlogin))
+                self.pkg("--debug bin_zoneadm='{0}' "
+                    "--debug bin_zlogin='{1}' "
+                    "install -rv basics@1.0".format(bin_zoneadm, bin_zlogin))
                 # test that actuator in global zone and z2 is run
                 self.file_contains(svcadm_output,
                     "svcadm restart svc:/system/test_restart_svc:default",

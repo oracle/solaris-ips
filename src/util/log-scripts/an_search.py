@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -59,40 +59,40 @@ def emit_search_report(summary_file, searchtype, label, results):
 
         if summary_file:
                 print("""
-			<h3>Top 25 %(searchtype)s searches</h3>
-			<div id="search-%(searchtype)s-container">
-			<table id="search-%(searchtype)s-table">
-			<thead><tr><th>Term</th><th>%(label)s</th></tr></thead>
-		""" % {"label":label, "searchtype": searchtype}, file=summary_file)
+			<h3>Top 25 {searchtype} searches</h3>
+			<div id="search-{searchtype}-container">
+			<table id="search-{searchtype}-table">
+			<thead><tr><th>Term</th><th>{label}</th></tr></thead>
+		""".format(label=label, searchtype=searchtype), file=summary_file)
 
                 for i, n in results[:25]:
-                        print("<tr><td>%s</td><td>%s</td></tr>" % (i, n),
-                            file=summary_file)
+                        print("<tr><td>{0}</td><td>{1}</td></tr>".format(i, n),
+                file=summary_file)
 
                 print("</table></div>", file=summary_file)
 		print("""
 <script type="text/javascript">
 	var myDataSource =
 	    new YAHOO.util.DataSource(YAHOO.util.Dom.get(
-	    "search-%(searchtype)s-table"));
+	    "search-{searchtype}-table"));
 	myDataSource.responseType = YAHOO.util.DataSource.TYPE_HTMLTABLE;
 	myDataSource.responseSchema = {
 	    fields: [{key:"Term", sortable:true},
-		    {key:"%(label)s", parser:YAHOO.util.DataSource.parseNumber}
+		    {key:"{label}", parser:YAHOO.util.DataSource.parseNumber}
 	    ]
 	};
 
 	var myColumnDefs = [
 	    {key:"Term", sortable:true},
-	    {key:"%(label)s", sortable:true}
+	    {key:"{label}", sortable:true}
 	];
 
 	var myDataTable =
-	    new YAHOO.widget.DataTable("search-%(searchtype)s-container",
+	    new YAHOO.widget.DataTable("search-{searchtype}-container",
 	    myColumnDefs, myDataSource,
-	    {sortedBy:{key:"%(label)s", dir:YAHOO.widget.DataTable.CLASS_DESC}});
+	    {sortedBy:{key:"{label}", dir:YAHOO.widget.DataTable.CLASS_DESC}});
 </script>
-		""" % {"label":label, "searchtype": searchtype}, file=summary_file)
+                """.format(label=label, searchtype=searchtype), file=summary_file)
 
 
 

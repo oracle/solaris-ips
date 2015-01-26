@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -543,9 +543,9 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 self.pkgsurf("-s pacific", exit=2)
                 self.pkgsurf("-s pacific -r atlantic arctic antarctic", exit=2)
                 # invalid patterns for -c
-                self.pkgsurf("-n -s %s -r %s -c tiger@2.0" % (self.dpath2,
+                self.pkgsurf("-n -s {0} -r {1} -c tiger@2.0".format(self.dpath2,
                     self.dpath1), exit=1)
-                self.pkgsurf("-n -s %s -r %s -c tig" % (self.dpath2,
+                self.pkgsurf("-n -s {0} -r {1} -c tig".format(self.dpath2,
                     self.dpath1), exit=1)
 
                 # Check that -n doesn't modify repo.
@@ -553,7 +553,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 path = os.path.join(tmpdir, "repo")
                 shutil.copytree(self.dpath2, path)
 
-                self.pkgsurf("-s %s -r %s -n" % (self.dpath2, self.dpath1))
+                self.pkgsurf("-s {0} -r {1} -n".format(self.dpath2, self.dpath1))
 
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", path,
                     self.dpath2])
@@ -572,24 +572,24 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 # Check that empty repos get handled correctly
                 tempdir = tempfile.mkdtemp(dir=self.test_root)
                 # No repo at all
-                self.pkgsurf("-s %s -r %s" % (tempdir, self.dpath1), exit=1)
-                self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir), exit=1)
+                self.pkgsurf("-s {0} -r {1}".format(tempdir, self.dpath1), exit=1)
+                self.pkgsurf("-s {0} -r {1}".format(self.dpath1, tempdir), exit=1)
 
                 # Repo empty
-                self.pkgrepo("create -s %s" % tempdir)
-                self.pkgsurf("-s %s -r %s" % (tempdir, self.dpath1), exit=1)
-                self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir), exit=1)
+                self.pkgrepo("create -s {0}".format(tempdir))
+                self.pkgsurf("-s {0} -r {1}".format(tempdir, self.dpath1), exit=1)
+                self.pkgsurf("-s {0} -r {1}".format(self.dpath1, tempdir), exit=1)
 
                 # No packages
-                self.pkgrepo("add-publisher -s %s selachii" % tempdir)
-                self.pkgsurf("-s %s -r %s" % (tempdir, self.dpath1))
+                self.pkgrepo("add-publisher -s {0} selachii".format(tempdir))
+                self.pkgsurf("-s {0} -r {1}".format(tempdir, self.dpath1))
                 self.assertTrue("No packages to reversion." in self.output)
-                self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir))
+                self.pkgsurf("-s {0} -r {1}".format(self.dpath1, tempdir))
                 self.assertTrue("No packages to reversion." in self.output)
                 shutil.rmtree(tempdir)
 
                 # Now check if it actually works.
-                self.pkgsurf("-s %s -r %s" % (self.dpath_tmp, self.dpath1))
+                self.pkgsurf("-s {0} -r {1}".format(self.dpath_tmp, self.dpath1))
 
                 ref_repo = self.get_repo(self.dpath1)
                 targ_repo = self.get_repo(self.dpath_tmp)
@@ -608,12 +608,12 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                         expm.set_content(pathname=exp)
 
                         ta, ra, ca = manifest.Manifest.comm([targm, expm])
-                        self.debug("%s: %d %d" %(str(s), len(ta), len(ra)))
+                        self.debug("{0}: {1:d} {2:d}".format(str(s), len(ta), len(ra)))
 
-                        self.assertEqual(0, len(ta), "%s had unexpected actions:"
-                            " \n%s" % (s, "\n".join([str(x) for x in ta])))
-                        self.assertEqual(0, len(ra), "%s had missing actions: "
-                            "\n%s" % (s, "\n".join([str(x) for x in ra])))
+                        self.assertEqual(0, len(ta), "{0} had unexpected actions:"
+                            " \n{1}".format(s, "\n".join([str(x) for x in ta])))
+                        self.assertEqual(0, len(ra), "{0} had missing actions: "
+                            "\n{1}".format(s, "\n".join([str(x) for x in ra])))
 
                 # Check that pkgsurf informed the user that there is a newer
                 # version of a pkg in the ref repo.
@@ -621,7 +621,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
                 # Check that ignore option works.
                 # Just run again and see if goblin pkg now gets reversioned.
-                self.pkgsurf("-s %s -r %s -i info.home" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -i info.home".format(self.dpath_tmp,
                     self.dpath1))
 
                 # Find goblin package
@@ -638,7 +638,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
                 # Check that running the tool again doesn't find any pkgs
                 # to reversion. Use http for accessing reference repo this time.
-                self.pkgsurf("-s %s -r %s" % (self.dpath_tmp, self.durl1))
+                self.pkgsurf("-s {0} -r {1}".format(self.dpath_tmp, self.durl1))
                 self.assertTrue("No packages to reversion." in self.output)
 
         def test_2_publishers(self):
@@ -655,36 +655,36 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
                 # Test that unknown publisher in ref repo gets skipped without
                 # issue.
-                self.pkgsurf("-s %s -r %s -n" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -n".format(self.dpath_tmp,
                     self.dpath1))
                 # Test that we also print a skipping notice
                 self.assertTrue("Skipping" in self.output)
 
                 # Test that we fail if we specify a publisher which is not in
                 # reference repo.
-                self.pkgsurf("-s %s -r %s -p cetacea -n" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -p cetacea -n".format(self.dpath_tmp,
                     self.dpath1), exit=1)
 
                 # Now add packages from the 2nd pub to the ref repo
                 self.pkgsend_bulk(self.durl1, [self.humpback_ref])
 
                 # Test that only specified publisher is processed
-                self.pkgsurf("-s %s -r %s -p cetacea -n" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -p cetacea -n".format(self.dpath_tmp,
                     self.dpath1))
                 self.assertFalse("selachii" in self.output)
-                self.pkgsurf("-s %s -r %s -p selachii -n" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -p selachii -n".format(self.dpath_tmp,
                     self.dpath1))
                 self.assertFalse("cetacea" in self.output)
 
                 # Now do an actual resurfacing of just one publisher
-                self.pkgsurf("-s %s -r %s -p selachii" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -p selachii".format(self.dpath_tmp,
                     self.dpath1))
                 # Check if we see anything about the unspecified publisher
                 # in the output.
                 self.assertFalse("cetacea" in self.output)
                 # Check if we didn't reversion packages of the unspecified
                 # publisher.
-                self.pkgrepo("-s %s list humpback" % (self.dpath_tmp))
+                self.pkgrepo("-s {0} list humpback".format(self.dpath_tmp))
                 self.assertTrue("2.0" in self.output)
 
         def test_3_override_pkgs(self):
@@ -698,17 +698,17 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 self.dcs[4].get_repo(auto_create=True).rebuild()
 
                 # Check multiple patterns with globbing
-                self.pkgsurf("-s %s -r %s -c *iger" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -c *iger".format(self.dpath_tmp,
                     self.dpath1))
-                self.pkgrepo("-s %s list tiger" % (self.dpath_tmp))
+                self.pkgrepo("-s {0} list tiger".format(self.dpath_tmp))
                 self.assertTrue("2.0" in self.output)
-                self.pkgrepo("-s %s list sandtiger" % (self.dpath_tmp))
+                self.pkgrepo("-s {0} list sandtiger".format(self.dpath_tmp))
                 self.assertTrue("2.0" in self.output)
 
                 # Check specific name.
-                self.pkgsurf("-s %s -r %s -c tiger" % (self.dpath_tmp,
+                self.pkgsurf("-s {0} -r {1} -c tiger".format(self.dpath_tmp,
                     self.dpath1))
-                self.pkgrepo("-s %s list tiger" % (self.dpath_tmp))
+                self.pkgrepo("-s {0} list tiger".format(self.dpath_tmp))
                 self.assertTrue("2.0" in self.output)
 
 

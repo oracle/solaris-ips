@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -71,7 +71,7 @@ def __fd_to_path(fd):
         or we should come up with a different safe way to open files in an
         alternate root."""
 
-        path = "/proc/%d/path/%d" % (os.getpid(), fd)
+        path = "/proc/{0:d}/path/{1:d}".format(os.getpid(), fd)
         return os.readlink(path)
 
 # ---------------------------------------------------------------------------
@@ -110,8 +110,8 @@ def ar_open(root, path, flags,
 
         # we're going to update root and path so prepare an error
         # message with the existing values now.
-        eremote = _("Path outside alternate root: root=%(root)s, "
-            "path=%(path)s") % {"root": root, "path": path}
+        eremote = _("Path outside alternate root: root={root}, "
+            "path={path}").format(root=root, path=path)
 
         # make target into a relative path
         if os.path.isabs(path):

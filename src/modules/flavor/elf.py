@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -42,8 +42,8 @@ class BadElfFile(base.DependencyAnalysisError):
                 self.ex = ex
 
         def __str__(self):
-                return _("%(file)s had this elf error:%(err)s") % \
-                    {"file": "self.fp", "err": self.ex}
+                return _("{file} had this elf error:{err}").format(
+                    file="self.fp", err=self.ex)
 
 class UnsupportedDynamicToken(base.DependencyAnalysisError):
         """Exception that is used for elf dependencies which have a dynamic
@@ -57,11 +57,11 @@ class UnsupportedDynamicToken(base.DependencyAnalysisError):
                 self.tok = token
 
         def __str__(self):
-                return  _("%(pp)s (which will be installed at %(ip)s) had this "
-                    "token, %(tok)s, in its run path: %(rp)s.  It is not "
+                return  _("{pp} (which will be installed at {ip}) had this "
+                    "token, {tok}, in its run path: {rp}.  It is not "
                     "currently possible to automatically expand this token. "
-                    "Please specify its value on the command line.") % \
-                    self.__dict__
+                    "Please specify its value on the command line.").format(
+                    **self.__dict__)
 
 
 class ElfDependency(base.PublishingDependency):
@@ -97,7 +97,7 @@ class ElfDependency(base.PublishingDependency):
                 if err == self.ERROR and vars.is_satisfied() and \
                     self.base_names[0] in delivered_base_names:
                         self.err_type = self.WARNING
-                        self.attrs["%s.severity" % self.DEPEND_DEBUG_PREFIX] =\
+                        self.attrs["{0}.severity".format(self.DEPEND_DEBUG_PREFIX)] =\
                             "warning"
                         missing_vars = self.get_variant_combinations()
                         missing_vars.mark_as_satisfied(
@@ -107,7 +107,7 @@ class ElfDependency(base.PublishingDependency):
                         return err, vars
 
         def __repr__(self):
-                return "ElfDep(%s, %s, %s, %s)" % (self.action,
+                return "ElfDep({0}, {1}, {2}, {3})".format(self.action,
                     self.base_names[0], self.run_paths, self.pkg_vars)
 
 def expand_variables(paths, dyn_tok_conv):
@@ -201,14 +201,14 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
             installed_path.split("/")[2] == "kernel"):
                 if rp:
                         raise RuntimeError("RUNPATH set for kernel module "
-                            "(%s): %s" % (installed_path, rp))
+                            "({0}): {1}".format(installed_path, rp))
                 # Add this platform to the search path.
                 if installed_path.startswith("platform"):
-                        rp.append("/platform/%s/kernel" %
-                            installed_path.split("/")[1])
+                        rp.append("/platform/{0}/kernel".format(
+                            installed_path.split("/")[1]))
                 else:
                         for p in dyn_tok_conv.get("$PLATFORM", []):
-                                rp.append("/platform/%s/kernel" % p)
+                                rp.append("/platform/{0}/kernel".format(p))
                 # Default kernel search path
                 rp.extend(["/kernel", "/usr/kernel"])
                 # What subdirectory should we look in for 64-bit kernel modules?
@@ -218,8 +218,8 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
                         elif ei["arch"] == "sparc":
                                 kernel64 = "sparcv9"
                         else:
-                                raise RuntimeError("Unknown arch:%s" %
-                                    ei["arch"])
+                                raise RuntimeError("Unknown arch:{0}".format(
+                                    ei["arch"]))
         else:
                 for p in default_run_paths:
                         if ei["bits"] == 64:

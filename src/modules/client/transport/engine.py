@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -844,13 +844,13 @@ class CurlTransportEngine(TransportEngine):
 
                         # Headers common to all requests
                         for k, v in self.__common_header.iteritems():
-                                headerstr = "%s: %s" % (k, v)
+                                headerstr = "{0}: {1}".format(k, v)
                                 headerlist.append(headerstr)
 
                         # Headers specific to this request
                         if treq.header:
                                 for k, v in treq.header.iteritems():
-                                        headerstr = "%s: %s" % (k, v)
+                                        headerstr = "{0}: {1}".format(k, v)
                                         headerlist.append(headerstr)
 
                         hdl.setopt(pycurl.HTTPHEADER, headerlist)
@@ -878,7 +878,7 @@ class CurlTransportEngine(TransportEngine):
                                 # Raise OperationError if it's not EACCES
                                 # or EROFS.
                                 raise tx.TransportOperationError(
-                                    "Unable to open file: %s" % e)
+                                    "Unable to open file: {0}".format(e))
          
                         hdl.setopt(pycurl.WRITEDATA, hdl.fobj)
                         # Request filetime, if endpoint knows it.
@@ -890,8 +890,8 @@ class CurlTransportEngine(TransportEngine):
                         hdl.fobj = None
                 else:
                         raise tx.TransportOperationError("Transport invocation"
-                            " for URL %s did not specify filepath or write"
-                            " function." % treq.url)
+                            " for URL {0} did not specify filepath or write"
+                            " function.".format(treq.url))
 
                 if treq.failonerror:
                         hdl.setopt(pycurl.FAILONERROR, True)
@@ -921,7 +921,7 @@ class CurlTransportEngine(TransportEngine):
                                 # Raise OperationError if it's not EACCES
                                 # or EROFS.
                                 raise tx.TransportOperationError(
-                                    "Unable to open file: %s" % e)
+                                    "Unable to open file: {0}".format(e))
 
                 if treq.compressible:
                         hdl.setopt(pycurl.ENCODING, "")
@@ -945,9 +945,9 @@ class CurlTransportEngine(TransportEngine):
                                     os.fstat(hdl.r_fobj.fileno()).st_size)
                         else:
                                 raise tx.TransportOperationError("Transport "
-                                    "operation for POST URL %s did not "
+                                    "operation for POST URL {0} did not "
                                     "supply data or read_fobj.  At least one "
-                                    "is required." % treq.url)
+                                    "is required.".format(treq.url))
                 elif treq.httpmethod == "PUT":
                         hdl.setopt(pycurl.UPLOAD, True)
                         if hdl.r_fobj or treq.read_fobj:
@@ -958,14 +958,14 @@ class CurlTransportEngine(TransportEngine):
                                     os.fstat(hdl.r_fobj.fileno()).st_size)
                         else:
                                 raise tx.TransportOperationError("Transport "
-                                    "operation for PUT URL %s did not "
-                                    "supply a read_fobj.  One is required."
-                                     % treq.url)
+                                    "operation for PUT URL {0} did not "
+                                    "supply a read_fobj.  One is "
+                                    "required.".format(treq.url))
                 elif treq.httpmethod == "DELETE":
                         hdl.setopt(pycurl.CUSTOMREQUEST, "DELETE")
                 else:
                         raise tx.TransportOperationError("Invalid http method "
-                            "'%s' specified." % treq.httpmethod)
+                            "'{0}' specified.".format(treq.httpmethod))
 
                 # Set up SSL options
                 if treq.sslcert:
@@ -1023,8 +1023,8 @@ class CurlTransportEngine(TransportEngine):
                                         if e.errno != errno.ENOENT:
                                                 raise \
                                                     tx.TransportOperationError(
-                                                    "Unable to remove file: %s"
-                                                    % e)
+                                                    "Unable to remove file: "
+                                                    "{0}".format(e))
                         else:
                                 if hdl.fileprog:
                                         filesz = os.stat(hdl.filepath).st_size

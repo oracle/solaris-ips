@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -88,7 +88,7 @@ class BaseLine(object):
                          "match the baseline.", file=sys.stderr)
                         print(self.sep2, file=sys.stderr)
                         for name, result in lst:
-                                print("%s: %s" % (name, result), file=sys.stderr)
+                                print("{0}: {1}".format(name, result), file=sys.stderr)
                         print(self.sep2, file=sys.stderr)
                         print("", file=sys.stderr)
   
@@ -101,18 +101,18 @@ class BaseLine(object):
                         f = file(self.__filename, "w")
                 except IOError, (err, msg):
                         print("ERROR: storing baseline:", file=sys.stderr)
-                        print("Failed to open %s: %s" %
-                            (self.__filename, msg), file=sys.stderr)
+                        print("Failed to open {0}: {1}".format(
+                            self.__filename, msg), file=sys.stderr)
                         return 
 
                 # Sort the results to make baseline diffs easier
                 results_sorted = self.__results.keys()
                 results_sorted.sort()
-                print("# Writing baseline to %s." % self.__filename,
+                print("# Writing baseline to {0}.".format(self.__filename),
                     file=sys.stderr)
                 for s in results_sorted:
-                        f.write("%s|%s%s" %
-                            (s, self.__results[s], os.linesep))
+                        f.write("{0}|{1}{2}".format(
+                            s, self.__results[s], os.linesep))
                 f.flush()
                 f.close()
 
@@ -126,8 +126,8 @@ class BaseLine(object):
                         f = file(self.__filename, "r")
                 except IOError, (err, msg):
                         print("ERROR: loading baseline:", file=sys.stderr)
-                        print("Failed to open %s: %s" %
-                            (self.__filename, msg), file=sys.stderr)
+                        print("Failed to open {0}: {1}".format(
+                            self.__filename, msg), file=sys.stderr)
                         return
                 for line in f.readlines():
                         n, r = line.split('|')

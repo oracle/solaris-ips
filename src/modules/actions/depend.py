@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -106,8 +106,8 @@ class DependencyAction(generic.Action):
                 try:
                         if self.attrs["type"] not in known_types:
                                 raise pkg.actions.InvalidActionError(str(self),
-                                    _("Unknown type (%s) in depend action") %
-                                    self.attrs["type"])
+                                    _("Unknown type ({0}) in depend action").format(
+                                    self.attrs["type"]))
                 except KeyError:
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing type attribute"))
@@ -128,14 +128,14 @@ class DependencyAction(generic.Action):
                 errors = []
                 if fmri.pkg_name not in ppkgs_dict:
                         errors.append(_("Package is not installed in "
-                            "parent image %s") % fmri.pkg_name)
+                            "parent image {0}").format(fmri.pkg_name))
                         return errors
 
                 pf = ppkgs_dict[fmri.pkg_name]
                 if fmri.publisher and fmri.publisher != pf.publisher:
                         # package is from a different publisher
                         errors.append(_("Package in parent is from a "
-                            "different publisher: %s") % pf)
+                            "different publisher: {0}").format(pf))
                         return errors
 
                 if pf.version == fmri.version or pf.version.is_successor(
@@ -146,10 +146,10 @@ class DependencyAction(generic.Action):
                 if pf.version.is_successor(fmri.version,
                     pkg.version.CONSTRAINT_NONE):
                         errors.append(_("Parent image has a newer "
-                            "version of package %s") % pf)
+                            "version of package {0}").format(pf))
                 else:
                         errors.append(_("Parent image has an older "
-                            "version of package %s") % pf)
+                            "version of package {0}").format(pf))
 
                 return errors
 
@@ -163,28 +163,28 @@ class DependencyAction(generic.Action):
                     min_fmri.version.is_successor(vi,
                     pkg.version.CONSTRAINT_NONE):
                         errors.append(
-                            _("%(dep_type)s dependency %(dep_val)s "
-                            "is downrev (%(inst_ver)s)") % {
-                            "dep_type": ctype, "dep_val": min_fmri,
-                            "inst_ver": installed_version })
+                            _("{dep_type} dependency {dep_val} "
+                            "is downrev ({inst_ver})").format(
+                            dep_type=ctype, dep_val=min_fmri,
+                            inst_ver=installed_version))
                         return errors
                 if max_fmri and max_fmri.version and  \
                     vi > max_fmri.version and \
                     not vi.is_successor(max_fmri.version,
                     pkg.version.CONSTRAINT_AUTO):
                         errors.append(
-                            _("%(dep_type)s dependency %(dep_val)s "
-                            "is uprev (%(inst_ver)s)") % {
-                            "dep_type": ctype, "dep_val": max_fmri,
-                            "inst_ver": installed_version })
+                            _("{dep_type} dependency {dep_val} "
+                            "is uprev ({inst_ver})").format(
+                            dep_type=ctype, dep_val=max_fmri,
+                            inst_ver=installed_version))
                         return errors
                 if required and pkgdefs.PKG_STATE_OBSOLETE in \
                     image.get_pkg_state(installed_version):
                         errors.append(
-                            _("%(dep_type)s dependency on an obsolete package "
-                            "(%(obs_pkg)s); this package must be uninstalled "
-                            "manually") %
-                            {"dep_type": ctype, "obs_pkg": installed_version})
+                            _("{dep_type} dependency on an obsolete package "
+                            "({obs_pkg}); this package must be uninstalled "
+                            "manually").format(
+                            dep_type=ctype, obs_pkg=installed_version))
                         return errors
                 return errors
 
@@ -209,7 +209,8 @@ class DependencyAction(generic.Action):
 
                 if ctype not in known_types:
                         errors.append(
-                            _("Unknown type (%s) in depend action") % ctype)
+                            _("Unknown type ({0}) in depend action").format(
+                            ctype))
                         return errors, warnings, info
 
                 # get a list of fmris and do fmri token substitution
@@ -273,8 +274,8 @@ class DependencyAction(generic.Action):
                                         errors.extend(e)
                         if not errors: # none was installed
                                 errors.append(_("Required dependency on one of "
-                                    "%s not met") %
-                                    ", ".join((str(p) for p in pfmris)))
+                                    "{0} not met").format(
+                                    ", ".join((str(p) for p in pfmris))))
                         return errors, warnings, info
                 elif ctype == "origin" and pfmri.pkg_name.startswith(
                     "feature/firmware/"):
@@ -292,8 +293,8 @@ class DependencyAction(generic.Action):
                     min_fmri, max_fmri, required, ctype))
 
                 if required and not installed_version:
-                        errors.append(_("Required dependency %s is not "
-                            "installed") % pfmri)
+                        errors.append(_("Required dependency {0} is not "
+                            "installed").format(pfmri))
 
                 # cannot verify origin since it applys to upgrade
                 # operation, not final state
@@ -483,9 +484,9 @@ class DependencyAction(generic.Action):
                                                 # value.
                                                 continue
                                         errors.append((attr, _("invalid "
-                                            "%(attr)s value '%(value)s': "
-                                            "%(error)s") % { "attr": attr,
-                                            "value": f, "error": str(e) }))
+                                            "{attr} value '{value}': "
+                                            "{error}").format(attr=attr,
+                                            value=f, error=str(e))))
 
                 if errors:
                         raise pkg.actions.InvalidActionAttributesError(self,

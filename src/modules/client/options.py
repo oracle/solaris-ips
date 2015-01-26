@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import os
 
@@ -219,11 +219,12 @@ def __parse_linked_props(args):
 
                 if p not in li.prop_values:
                         raise InvalidOptionError(msg=_("invalid linked "
-                        "image property: '%s'.") % p)
+                        "image property: '{0}'.").format(p))
 
                 if p in linked_props:
                         raise InvalidOptionError(msg=_("linked image "
-                            "property specified multiple times: '%s'.") % p)
+                            "property specified multiple times: "
+                            "'{0}'.").format(p))
 
                 linked_props[p] = v
 
@@ -342,13 +343,14 @@ def opts_table_cb_li_recurse(api_inst, opts, opts_new):
                             allow_unknown=True)
                 except LinkedImageException, e:
                         try:
-                                lin = api_inst.parse_linked_name("zone:%s" % ulin,
-                                    allow_unknown=True)
+                                lin = api_inst.parse_linked_name(
+                                    "zone:{0}".format(ulin), allow_unknown=True)
                         except LinkedImageException, e:
                                 pass
                 if lin is None or lin not in li_child_list:
                         raise InvalidOptionError(msg=
-                            _("invalid linked image or zone name '%s'.") % ulin)
+                            _("invalid linked image or zone name "
+                            "'{0}'.").format(ulin))
 
                 return lin
 
@@ -429,7 +431,7 @@ def opts_table_cb_stage(api_inst, opts, opts_new):
 
         if opts_new[STAGE] not in pkgdefs.api_stage_values:
                 raise InvalidOptionError(msg=_("invalid operation stage: "
-                    "'%s'") % opts[STAGE])
+                    "'{0}'").format(opts[STAGE]))
 
 def opts_cb_li_attach(api_inst, opts, opts_new):
         if opts[ATTACH_PARENT] and opts[ATTACH_CHILD]:
@@ -527,12 +529,12 @@ def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
                 v = int(v)
         except (ValueError, TypeError):
                 # not a valid integer
-                err = _("value '%s' invalid") % (v)
+                err = _("value '{0}' invalid").format(v)
                 raise InvalidOptionError(msg=err, options=[k])
 
         # check the minimum bounds
         if minimum is not None and v < minimum:
-                err = _("value must be >= %d") % (minimum)
+                err = _("value must be >= {0:d}").format(minimum)
                 raise InvalidOptionError(msg=err, options=[k])
 
         # update the new options array to make the value an integer
@@ -541,7 +543,7 @@ def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
 def opts_cb_fd(k, api_inst, opts, opts_new):
         opts_cb_int(k, api_inst, opts, opts_new, minimum=0)
 
-        err = _("value '%s' invalid") % (opts_new[k])
+        err = _("value '{0}' invalid").format(opts_new[k])
         try:
                 os.fstat(opts_new[k])
         except OSError:

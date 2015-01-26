@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -134,7 +134,7 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
 
         def check_link_count(self, n):
                 """ Make sure link count is what we think it should be"""
-                for f in ("link_target_%d" % i for i in range(3)):
+                for f in ("link_target_{0:d}".format(i) for i in range(3)):
                         self.assertEqual(os.stat(os.path.join(self.get_img_path(), 
                             f)).st_nlink, n)
  

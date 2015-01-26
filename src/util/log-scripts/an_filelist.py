@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -50,11 +50,10 @@ filelist_totals["bytes"] = 0
 pkg_pat = re.compile("/filelist/(?P<mversion>\d+)/(?P<trailing>.*)")
 
 def report_filelist_by_bytes():
-        print("<p>Total kilobytes sent via filelist: %f</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024))
-
+        print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024))
 
         if summary_file:
-                print("<p>Total kilobytes sent via filelist: %d</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024), file=summary_file)
+                print("<p>Total kilobytes sent via filelist: {0:d}</p>".format(filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024), file=summary_file)
 
 def count_filelist(mg, d):
         try:
@@ -105,7 +104,7 @@ for l in fileinput.input(args):
                 continue
 
         mg = m.groupdict()
-        
+
         d = None
 
         if lastdatetime and mg["date"] == lastdate:

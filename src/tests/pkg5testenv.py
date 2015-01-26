@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import os
@@ -78,10 +78,10 @@ def setup_environment(path_to_proto, debug=False, system_test=False):
                 if system_test:
                         pkg_path = "/"
                 else:
-                        pkg_path = "%s/%s/root_%s" % \
-                            (cmddir, path_to_proto, proc)
+                        pkg_path = "{0}/{1}/root_{2}".format(
+                            cmddir, path_to_proto, proc)
 
-        proto_area = "%s/%s/root_%s" % (cmddir, path_to_proto, proc)
+        proto_area = "{0}/{1}/root_{2}".format(cmddir, path_to_proto, proc)
 
         # Clean up relative ../../, etc. out of path to proto
         pkg_path = os.path.realpath(pkg_path)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import re
 
@@ -34,8 +34,8 @@ def valid_mediator(value):
         if isinstance(value, basestring):
                 if re.match("^[a-zA-Z0-9\-]+$", value):
                         return True, None
-        return False, _("'%s' is not a valid mediator; only alphanumeric "
-            "characters are allowed") % value
+        return False, _("'{0}' is not a valid mediator; only alphanumeric "
+            "characters are allowed").format(value)
 
 def valid_mediator_version(value):
         """Returns a tuple of (valid, error) indicating whether the provided
@@ -51,9 +51,9 @@ def valid_mediator_version(value):
                         error = str(e)
 
         if error:
-                return False, _("'%(value)s' is not a valid mediator-version: "
-                    "%(error)s") % locals()
-        return False, _("'%s' is not a valid mediator-version") % value
+                return False, _("'{value}' is not a valid mediator-version: "
+                    "{error}").format(**locals())
+        return False, _("'{0}' is not a valid mediator-version").format(value)
 
 def parse_mediator_implementation(value):
         """Parses the provided mediator implementation string for a link and
@@ -109,13 +109,13 @@ def valid_mediator_implementation(value, allow_empty_version=False):
                         return True, None
 
         if error:
-                return False, _("'%(value)s' is not a valid "
+                return False, _("'{value}' is not a valid "
                     "mediator-implementation; only alphanumeric characters and "
                     "a version dot-sequence following a single '@' are allowed: "
-                    "%(error)s") % locals()
-        return False, _("'%s' is not a valid mediator-implementation; only "
+                    "{error}").format(**locals())
+        return False, _("'{0}' is not a valid mediator-implementation; only "
             "alphanumeric characters and a version dot-sequence following a "
-            "single '@' are allowed") % value
+            "single '@' are allowed").format(value)
 
 def valid_mediator_priority(value):
         """Returns a tuple of (valid, error) indicating whether the provided
@@ -124,8 +124,8 @@ def valid_mediator_priority(value):
 
         if value in ("site", "vendor"):
                 return True, None
-        return False, _("'%s' is not a valid mediator-priority; valid values "
-            "are 'site' or 'vendor'") % value
+        return False, _("'{0}' is not a valid mediator-priority; valid values "
+            "are 'site' or 'vendor'").format(value)
 
 # A ranking dictionary used by cmp_mediations for sorting mediatoins based on
 # mediator priority for mediated links.

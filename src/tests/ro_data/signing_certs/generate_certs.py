@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -166,7 +166,7 @@ if __name__ == "__main__":
                 if x == 7:
                         # ta requires a password to unlock cert, don't use 
                         continue
-                fn = "%s/ta%d/ta%d_cert.pem" % (output_dir, x, x)
+                fn = "{0}/ta{1:d}/ta{2:d}_cert.pem".format(output_dir, x, x)
                 fhr = open(fn, "r")
                 fhw.write(fhr.read())
                 fhr.close()

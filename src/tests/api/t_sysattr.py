@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -41,7 +41,7 @@ class TestSysattr(pkg5unittest.Pkg5TestCase):
 
                 p_re = re.compile("{(?P<attrs>.*)}")
 
-                self.cmdline_run("/usr/bin/ls -/ v %s" % path, coverage=False)
+                self.cmdline_run("/usr/bin/ls -/ v {0}".format(path), coverage=False)
                 m = re.search(p_re, self.output)
 
                 self.assertTrue(m is not None)

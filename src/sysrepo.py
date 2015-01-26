@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -107,14 +107,14 @@ SYSREPO_PUB_DIRNAME = ["publisher", "0"]
 
 # static string with our versions response
 SYSREPO_VERSIONS_STR = """\
-pkg-server %s
+pkg-server {0}
 publisher 0
 versions 0
 catalog 1
 file 1
 syspub 0
 manifest 0
-""" % pkg.VERSION
+""".format(pkg.VERSION)
 
 SYSREPO_USER = "pkg5srv"
 SYSREPO_GROUP = "pkg5srv"
@@ -135,7 +135,7 @@ def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
         if cmd:
-                text = "%s: %s" % (cmd, text)
+                text = "{0}: {1}".format(cmd, text)
                 pkg_cmd = "pkg.sysrepo "
         else:
                 pkg_cmd = "pkg.sysrepo: "
@@ -184,12 +184,13 @@ def _get_image(image_dir):
                     tracker, None, PKG_CLIENT_NAME)
 
                 if api_inst.root != image_dir:
-                        msg(_("Problem getting image at %s") % image_dir)
+                        msg(_("Problem getting image at {0}").format(
+                            image_dir))
         except Exception, err:
                 raise SysrepoException(
-                    _("Unable to get image at %(dir)s: %(reason)s") %
-                    {"dir": image_dir,
-                    "reason": str(err)})
+                    _("Unable to get image at {dir}: {reason}").format(
+                    dir=image_dir,
+                    reason=str(err)))
 
         # restore the current directory, which ImageInterace had changed
         os.chdir(cdir)
@@ -227,15 +228,16 @@ def _follow_redirects(uri_list, http_timeout):
 
                 # otherwise, open a known url to check for redirects
                 try:
-                        opener.open("%s/versions/0" % uri, None, http_timeout)
+                        opener.open("{0}/versions/0".format(uri), None,
+                            http_timeout)
                         ret_uris.update(set(
                             [item.replace("/versions/0", "").rstrip("/")
                             for item in handler.redirects]))
                 except urllib2.URLError, err:
                         # We need to log this, and carry on - the url
                         # could become available at a later date.
-                        msg(_("WARNING: unable to access %(uri)s when checking "
-                            "for redirects: %(err)s") % locals())
+                        msg(_("WARNING: unable to access {uri} when checking "
+                            "for redirects: {err}").format(**locals()))
                         timed_out = True
 
         return sorted(list(ret_uris)), timed_out
@@ -255,36 +257,39 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
 
         # validate the structure of the pub_info object
         if not isinstance(pub_info, dict):
-                raise SysrepoException("%s is not a dict" % pub_info)
+                raise SysrepoException("{0} is not a dict".format(pub_info))
         for uri in pub_info:
                 if not isinstance(uri, basestring):
-                        raise SysrepoException("%s is not a basestring" % uri)
+                        raise SysrepoException("{0} is not a basestring".format(
+                            uri))
                 uri_info = pub_info[uri]
                 if not isinstance(uri_info, list):
-                        raise SysrepoException("%s is not a list" % uri_info)
+                        raise SysrepoException("{0} is not a list".format(
+                            uri_info))
                 for props in uri_info:
                         if len(props) != 6:
-                                raise SysrepoException("%s does not have 6 "
-                                    "items" % props)
+                                raise SysrepoException("{0} does not have 6 "
+                                    "items".format(props))
                         # props [0] and [3] must be strings
                         if not isinstance(props[0], basestring) or \
                             not isinstance(props[3], basestring):
-                                raise SysrepoException("indices 0 and 3 of %s "
-                                    "are not basestrings" % props)
+                                raise SysrepoException("indices 0 and 3 of {0} "
+                                    "are not basestrings".format(props))
                         # prop[5] must be a string, either "file" or "dir"
                         # and prop[0] must start with file://
                         if not isinstance(props[5], basestring) or \
                             (props[5] not in ["file", "dir"] and
                             props[0].startswith("file://")):
-                                raise SysrepoException("index 5 of %s is not a "
-                                    "basestring or is not 'file' or 'dir'" %
-                                    props)
+                                raise SysrepoException("index 5 of {0} is not a "
+                                    "basestring or is not 'file' or 'dir'".format(
+                                    props))
         # validate the structure of the no_uri_pubs object
         if not isinstance(no_uri_pubs, list):
-                raise SysrepoException("%s is not a list" % no_uri_pubs)
+                raise SysrepoException("{0} is not a list".format(no_uri_pubs))
         for item in no_uri_pubs:
                 if not isinstance(item, basestring):
-                        raise SysrepoException("%s is not a basestring" % item)
+                        raise SysrepoException(
+                            "{0} is not a basestring".format(item))
 
         # check that we have entries for each URI for each publisher.
         # (we may have more URIs than these, due to server-side http redirects
@@ -296,12 +301,12 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
                 for uri in repo.mirrors + repo.origins:
                         uri_key = uri.uri.rstrip("/")
                         if uri_key not in pub_info:
-                                raise SysrepoException("%s is not in %s" %
-                                    (uri_key, pub_info))
+                                raise SysrepoException("{0} is not in {1}".format(
+                                    uri_key, pub_info))
                 if repo.mirrors + repo.origins == []:
                         if pub.prefix not in no_uri_pubs:
-                                raise SysrepoException("%s is not in %s" %
-                                    (pub.prefix, no_uri_pubs))
+                                raise SysrepoException("{0} is not in {1}".format(
+                                    pub.prefix, no_uri_pubs))
         return
 
 def _load_publisher_info(api_inst, image_dir):
@@ -338,15 +343,15 @@ def _load_publisher_info(api_inst, image_dir):
                         try:
                                 pub_info_tuple = simplejson.load(cache_file)
                         except simplejson.JSONDecodeError:
-                                error(_("Invalid config cache file at %s "
-                                    "generating fresh configuration.") %
-                                    cache_path)
+                                error(_("Invalid config cache file at {0} "
+                                    "generating fresh configuration.").format(
+                                    cache_path))
                                 return None, None
 
                         if len(pub_info_tuple) != 2:
-                                error(_("Invalid config cache at %s "
-                                    "generating fresh configuration.") %
-                                    cache_path)
+                                error(_("Invalid config cache at {0} "
+                                    "generating fresh configuration.").format(
+                                    cache_path))
                                 return None, None
 
                         pub_info, no_uri_pubs = pub_info_tuple
@@ -355,15 +360,15 @@ def _load_publisher_info(api_inst, image_dir):
                                 __validate_pub_info(pub_info, no_uri_pubs,
                                     api_inst)
                         except SysrepoException, e:
-                                error(_("Invalid config cache at %s "
-                                    "generating fresh configuration.") %
-                                    cache_path)
+                                error(_("Invalid config cache at {0} "
+                                    "generating fresh configuration.").format(
+                                    cache_path))
                                 return None, None
 
         # If we have any problems loading the publisher info, we explain why.
         except IOError, e:
-                error(_("Unable to load config from %(cache_path)s: %(e)s") %
-                    locals())
+                error(_("Unable to load config from {cache_path}: {e}").format(
+                    **locals()))
                 return None, None
 
         return pub_info, no_uri_pubs
@@ -390,8 +395,8 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
                             indent=True)
                         os.chmod(cache_path, 0600)
         except IOError, e:
-                error(_("Unable to store config to %(cache_path)s: %(e)s") %
-                    locals())
+                error(_("Unable to store config to {cache_path}: {e}").format(
+                    **locals()))
 
 def _valid_proxy(proxy):
         """Checks the given proxy string to make sure that it does not contain
@@ -452,9 +457,9 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                 # require authentication.
                 for uri in proxy_map:
                         if not _valid_proxy(proxy_map[uri]):
-                                raise SysrepoException("proxy value %(val)s "
-                                    "for %(uri)s is not supported." %
-                                    {"uri": uri, "val": proxy_map[uri]})
+                                raise SysrepoException("proxy value {val} "
+                                    "for {uri} is not supported.".format(
+                                    uri=uri, val=proxy_map[uri]))
 
                 uri_list, timed_out = _follow_redirects(
                     [repo_uri.uri.rstrip("/")
@@ -478,16 +483,16 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                                 utype = "dir"
                                 if not os.path.exists(urlresult.path):
                                         raise SysrepoException(
-                                            _("file repository %s does not "
-                                            "exist or is not accessible") % uri)
+                                            _("file repository {0} does not "
+                                            "exist or is not accessible").format(uri))
                                 if os.path.isdir(urlresult.path) and \
                                     not os.path.exists(os.path.join(
                                     urlresult.path, "pkg5.repository")):
                                         raise SysrepoException(
-                                            _("file repository %s cannot be "
+                                            _("file repository {0} cannot be "
                                             "proxied. Only file "
                                             "repositories of version 4 or "
-                                            "later are supported.") % uri)
+                                            "later are supported.").format(uri))
                                 if not os.path.isdir(urlresult.path):
                                         utype = "file"
                                         try:
@@ -495,8 +500,8 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                                         except p5p.InvalidArchive:
                                                 raise SysrepoException(
                                                     _("unable to read p5p "
-                                                    "archive file at %s") %
-                                                    urlresult.path)
+                                                    "archive file at {0}").format(
+                                                    urlresult.path))
 
                         hash = _uri_hash(uri)
                         # we don't have per-uri ssl key/cert information yet,
@@ -526,10 +531,10 @@ def _chown_cache_dir(dir):
         except OSError, err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
                         raise SysrepoException(
-                            _("Unable to chown to %(user)s:%(group)s: "
-                            "%(err)s") %
-                            {"user": SYSREPO_USER, "group": "bin",
-                            "err": err})
+                            _("Unable to chown to {user}:{group}: "
+                            "{err}").format(
+                            user=SYSREPO_USER, group="bin",
+                            err=err))
 
 def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
     cache_size, uri_pub_map, http_proxy, https_proxy):
@@ -550,7 +555,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 for dir in dirs + [template_dir]:
                         if os.path.exists(dir) and not os.path.isdir(dir):
                                 raise SysrepoException(
-                                    _("%s is not a directory") % dir)
+                                    _("{0} is not a directory").format(dir))
 
                 for dir in dirs:
                         try:
@@ -567,20 +572,21 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 try:
                         num = int(port)
                         if num <= 0 or num >= 65535:
-                                raise SysrepoException(_("invalid port: %s") %
-                                    port)
+                                raise SysrepoException(
+                                    _("invalid port: {0}").format(port))
                 except ValueError:
-                        raise SysrepoException(_("invalid port: %s") % port)
+                        raise SysrepoException(_("invalid port: {0}").format(
+                            port))
 
                 # check our cache size
                 try:
                         num = int(cache_size)
                         if num <= 0:
                                 raise SysrepoException(_("invalid cache size: "
-                                   "%s") % num)
+                                   "{0}").format(num))
                 except ValueError:
-                        raise SysrepoException(_("invalid cache size: %s") %
-                            cache_size)
+                        raise SysrepoException(
+                            _("invalid cache size: {0}").format(cache_size))
 
                 # check our proxy arguments - we can use a proxy to handle
                 # incoming http or https requests, but that proxy must use http.
@@ -599,8 +605,8 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                                         raise Exception("unsupported proxy")
                         except Exception, e:
                                 raise SysrepoException(
-                                    _("invalid %(key)s: %(val)s: %(err)s") %
-                                    {"key": key, "val": val, "err": str(e)})
+                                    _("invalid {key}: {val}: {err}").format(
+                                    key=key, val=val, err=str(e)))
 
                 httpd_conf_template_path = os.path.join(template_dir,
                     SYSREPO_HTTP_TEMPLATE)
@@ -632,11 +638,11 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 httpd_conf_file.close()
         except socket.gaierror, err:
                 raise SysrepoException(
-                    _("Unable to write sysrepo_httpd.conf: %(host)s: "
-                    "%(err)s") % locals())
+                    _("Unable to write sysrepo_httpd.conf: {host}: "
+                    "{err}").format(**locals()))
         except (OSError, IOError), err:
                 raise SysrepoException(
-                    _("Unable to write sysrepo_httpd.conf: %s") % err)
+                    _("Unable to write sysrepo_httpd.conf: {0}").format(err))
 
 def _write_crypto_conf(runtime_dir, uri_pub_map):
         """Writes the crypto.txt file, containing keys and certificates
@@ -667,7 +673,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
                 os.chmod(crypto_path, 0400)
         except OSError, err:
                 raise SysrepoException(
-                    _("unable to write crypto.txt file: %s") % err)
+                    _("unable to write crypto.txt file: {0}").format(err))
 
 def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
         """Writes static html for all file-repository-based publishers that
@@ -708,7 +714,7 @@ def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
                                         publisher_file.close()
         except OSError, err:
                 raise SysrepoException(
-                    _("unable to write publisher response: %s") % err)
+                    _("unable to write publisher response: {0}").format(err))
 
 def _write_versions_response(htdocs_path):
         """Writes a static versions/0 response for the system repository."""
@@ -724,7 +730,7 @@ def _write_versions_response(htdocs_path):
                 versions_file.close()
         except OSError, err:
                 raise SysrepoException(
-                    _("Unable to write versions response: %s") % err)
+                    _("Unable to write versions response: {0}").format(err))
 
 def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
         """Writes a static syspub/0 response for the system repository."""
@@ -743,7 +749,7 @@ def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
                     pub_prefixes, 0)
         except (OSError, apx.ApiException), err:
                 raise SysrepoException(
-                    _("Unable to write syspub response: %s") % err)
+                    _("Unable to write syspub response: {0}").format(err))
 
 def _uri_hash(uri):
         """Returns a string hash of the given URI"""
@@ -760,10 +766,10 @@ def _chown_runtime_dir(runtime_dir):
         except OSError, err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
                         raise SysrepoException(
-                            _("Unable to chown to %(user)s:%(group)s: "
-                            "%(err)s") %
-                            {"user": SYSREPO_USER, "group": SYSREPO_GROUP,
-                            "err": err})
+                            _("Unable to chown to {user}:{group}: "
+                            "{err}").format(
+                            user=SYSREPO_USER, group=SYSREPO_GROUP,
+                            err=err))
 
 def cleanup_conf(runtime_dir=None):
         """Destroys an old configuration."""
@@ -771,7 +777,7 @@ def cleanup_conf(runtime_dir=None):
                 shutil.rmtree(runtime_dir, ignore_errors=True)
         except OSError, err:
                 raise SysrepoException(
-                    _("Unable to cleanup old configuration: %s") % err)
+                    _("Unable to cleanup old configuration: {0}").format(err))
 
 def refresh_conf(image_root="/", port=None, runtime_dir=None,
     log_dir=None, template_dir=None, host="127.0.0.1", cache_dir=None,
@@ -787,7 +793,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                         http_timeout = int(http_timeout)
                 except ValueError, err:
                         raise SysrepoException(
-                            _("invalid value for http_timeout: %s") % err)
+                            _("invalid value for http_timeout: {0}").format(err))
                 if http_timeout < 1:
                         raise SysrepoException(
                             _("http_timeout must a positive integer"))
@@ -797,15 +803,15 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                             http_timeout, api_inst.root)
                 except SysrepoException, err:
                         raise SysrepoException(
-                            _("unable to get publisher information: %s") %
-                            err)
+                            _("unable to get publisher information: {0}").format(
+                            err))
                 try:
                         htdocs_path = os.path.join(runtime_dir,
                             SYSREPO_HTDOCS_DIRNAME)
                         os.makedirs(htdocs_path)
                 except OSError, err:
                         raise SysrepoException(
-                            _("unable to create htdocs dir: %s") % err)
+                            _("unable to create htdocs dir: {0}").format(err))
 
                 _write_httpd_conf(runtime_dir, log_dir, template_dir, host,
                     port, cache_dir, cache_size, uri_pub_map, http_proxy,
@@ -843,11 +849,11 @@ def main_func():
         # an empty image_root means we don't get '//' in the below
         # _get_image() deals with "" in a sane manner.
         image_root = ""
-        cache_dir = "%s/var/cache/pkg/sysrepo" % image_root
+        cache_dir = "{0}/var/cache/pkg/sysrepo".format(image_root)
         cache_size = "1024"
-        template_dir = "%s/etc/pkg/sysrepo" % image_root
-        runtime_dir = "%s/var/run/pkg/sysrepo" % image_root
-        log_dir = "%s/var/log/pkg/sysrepo" % image_root
+        template_dir = "{0}/etc/pkg/sysrepo".format(image_root)
+        runtime_dir = "{0}/var/run/pkg/sysrepo".format(image_root)
+        log_dir = "{0}/var/log/pkg/sysrepo".format(image_root)
         http_timeout = 4
         http_proxy = None
         https_proxy = None
@@ -882,7 +888,7 @@ def main_func():
                                 usage()
 
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
 
         if not port:
                 usage(_("required port option missing."))
@@ -927,10 +933,9 @@ def handle_errors(func, *args, **kwargs):
         except apx.VersionException, __e:
                 error(_("The sysrepo command appears out of sync with the "
                     "libraries provided\nby pkg:/package/pkg. The client "
-                    "version is %(client)s while the library\nAPI version is "
-                    "%(api)s.") % {'client': __e.received_version,
-                     'api': __e.expected_version
-                    })
+                    "version is {client} while the library\nAPI version is "
+                    "{api}.").format(client=__e.received_version,
+                     api=__e.expected_version))
                 __ret = EXIT_OOPS
         except:
                 traceback.print_exc()

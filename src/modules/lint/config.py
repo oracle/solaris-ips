@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # aspects of pkglint configuration
@@ -65,7 +65,8 @@ class PkglintConfig(object):
                                 file(config_file, "r").close()
                         except (EnvironmentError), err:
                                 raise PkglintConfigException(
-                                    _("unable to read config file: %s ") % err)
+                                    _("unable to read config file: {0} ").format(
+                                    err))
                 try:
                         self.config = ConfigParser.SafeConfigParser(defaults)
                         if not config_file:
@@ -81,4 +82,4 @@ class PkglintConfig(object):
                 except ConfigParser.Error, err:
                         raise PkglintConfigException(
                             _("missing or corrupt pkglintrc file "
-                            "%(config_file)s: %(err)s") % locals())
+                            "{config_file}: {err}").format(**locals()))

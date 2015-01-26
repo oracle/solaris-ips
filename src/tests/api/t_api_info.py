@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -354,7 +354,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # Now attempt to corrupt the client's copy of the manifest by
                 # adding malformed actions.
                 for p in plist:
-                        self.debug("Testing package %s ..." % p)
+                        self.debug("Testing package {0} ...".format(p))
                         pfmri = fmri.PkgFmri(p)
                         mdata = self.get_img_manifest(pfmri)
                         if mdata.find("dir") != -1:
@@ -366,8 +366,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                             'set name=description value="" \" my desc \" ""',
                             "set name=com.sun.service.escalations value="):
                                 self.debug("Testing with bad action "
-                                    "'%s'." % bad_act)
-                                bad_mdata = mdata + "%s\n" % bad_act
+                                    "'{0}'.".format(bad_act))
+                                bad_mdata = mdata + "{0}\n".format(bad_act)
                                 self.write_img_manifest(pfmri, bad_mdata)
 
                                 # Info shouldn't raise an exception.

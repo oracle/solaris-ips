@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import cStringIO
 import codecs
@@ -112,7 +112,7 @@ class RepositoryExistsError(RepositoryError):
 
         def __str__(self):
                 return _("A package repository (or a directory with content) "
-                    "already exists at '%s'.") % self.data
+                    "already exists at '{0}'.").format(self.data)
 
 
 class RepositoryFileNotFoundError(RepositoryError):
@@ -121,7 +121,7 @@ class RepositoryFileNotFoundError(RepositoryError):
 
         def __str__(self):
                 return _("No file could be found for the specified "
-                    "hash name: '%s'.") % self.data
+                    "hash name: '{0}'.").format(self.data)
 
 
 class RepositoryInvalidError(RepositoryError):
@@ -132,8 +132,8 @@ class RepositoryInvalidError(RepositoryError):
                 if not self.data:
                         return _("The specified path does not contain a valid "
                             "package repository.")
-                return _("The path '%s' does not contain a valid package "
-                    "repository.") % self.data
+                return _("The path '{0}' does not contain a valid package "
+                    "repository.").format(self.data)
 
 
 class RepositoryInvalidFMRIError(RepositoryError):
@@ -150,9 +150,9 @@ class RepositoryInvalidIgnoreDepFMRIError(RepositoryError):
                 self.fmri = fmri
 
         def __str__(self):
-                return _("The FMRI in ignored-dependency file: %(fn)s is "
-                    "invalid.\n'%(fmri)s'.") % {"fn": self.filename,
-                    "fmri": self.fmri}
+                return _("The FMRI in ignored-dependency file: {fn} is "
+                    "invalid.\n'{fmri}'.").format(fn=self.filename,
+                    fmri=self.fmri)
 
 
 class RepositoryInvalidIgnoreDepEntryError(RepositoryError):
@@ -165,9 +165,9 @@ class RepositoryInvalidIgnoreDepEntryError(RepositoryError):
                 self.entry = entry
 
         def __str__(self):
-                return _("The entry in ignored-dependency file: %(fn)s is "
-                    "invalid.\n'%(entry)s'.") % {"fn": self.filename,
-                    "entry": self.entry}
+                return _("The entry in ignored-dependency file: {fn} is "
+                    "invalid.\n'{entry}'.").format(fn=self.filename,
+                    entry=self.entry)
 
 
 class RepositoryIgnoreDepEntryAttrError(RepositoryError):
@@ -182,13 +182,13 @@ class RepositoryIgnoreDepEntryAttrError(RepositoryError):
         def __str__(self):
                 if self.etype == "missing":
                         return _("Missing attribute(s) in ignored-"
-                            "dependency entry: '%(entry)s'.\n%(attrs)s.") % {
-                            "entry": self.entry,
-                            "attrs": ", ".join(self.attrs)}
+                            "dependency entry: '{entry}'.\n{attrs}.").format(
+                            entry=self.entry,
+                            attrs=", ".join(self.attrs))
                 elif self.etype == "unknown":
                         return _("Unknown attribute(s) found in ignored-"
-                            "dependency entry: '%(entry)s'.\n%(attrs)s.") % {
-                            "entry": self.entry, "attrs": ", ".join(self.attrs)}
+                            "dependency entry: '{entry}'.\n{attrs}.").format(
+                            entry=self.entry, attrs=", ".join(self.attrs))
 
 
 class RepositoryUnqualifiedFMRIError(RepositoryError):
@@ -198,15 +198,15 @@ class RepositoryUnqualifiedFMRIError(RepositoryError):
         def __str__(self):
                 return _("This operation requires that a default publisher has "
                     "been set or that a publisher be specified in the FMRI "
-                    "'%s'.") % self.data
+                    "'{0}'.").format(self.data)
 
 
 class RepositoryInvalidTransactionIDError(RepositoryError):
         """Used to indicate that an invalid Transaction ID was supplied."""
 
         def __str__(self):
-                return _("No transaction matching '%s' could be found.") % \
-                    self.data
+                return _("No transaction matching '{0}' could be found.").format(
+                    self.data)
 
 
 class RepositoryLockedError(RepositoryError):
@@ -223,8 +223,8 @@ class RepositoryLockedError(RepositoryError):
                         # Even if the host is none, use this message.
                         return _("The repository cannot be modified as it is "
                             "currently in use by another process: "
-                            "pid %(pid)s on %(host)s.") % {
-                            "pid": self.pid, "host": self.hostname }
+                            "pid {pid} on {host}.").format(
+                            pid=self.pid, host=self.hostname)
                 return _("The repository cannot be modified as it is currently "
                     "in use by another process.")
 
@@ -233,8 +233,8 @@ class RepositoryManifestNotFoundError(RepositoryError):
         """Used to indicate that the requested manifest could not be found."""
 
         def __str__(self):
-                return _("No manifest could be found for the FMRI: '%s'.") % \
-                    self.data
+                return _("No manifest could be found for the FMRI: '{0}'.").format(
+                    self.data)
 
 
 class RepositoryMirrorError(RepositoryError):
@@ -261,7 +261,7 @@ class RepositoryNoSuchFileError(RepositoryError):
         """Used to indicate that the file provided does not exist."""
 
         def __str__(self):
-                return _("No such file '%s'.") % self.data
+                return _("No such file '{0}'.").format(self.data)
 
 
 class RepositoryReadOnlyError(RepositoryError):
@@ -278,10 +278,11 @@ class RepositorySearchTokenError(RepositoryError):
 
         def __str__(self):
                 if self.data is None:
-                        return _("No token was provided to search.") % self.data
+                        return _("No token was provided to search.").format(
+                            self.data)
 
-                return _("The specified search token '%s' is invalid.") % \
-                    self.data
+                return _("The specified search token '{0}' is invalid.").format(
+                    self.data)
 
 
 class RepositorySearchUnavailableError(RepositoryError):
@@ -297,7 +298,7 @@ class RepositoryDuplicatePublisher(RepositoryError):
         """
 
         def __str__(self):
-                return _("Publisher '%s' already exists.") % self.data
+                return _("Publisher '{0}' already exists.").format(self.data)
 
 
 class RepositoryUnknownPublisher(RepositoryError):
@@ -309,8 +310,8 @@ class RepositoryUnknownPublisher(RepositoryError):
                 if not self.data:
                         return _("No publisher was specified or no default "
                             "publisher has been configured for the repository.")
-                return _("No publisher matching '%s' could be found.") % \
-                    self.data
+                return _("No publisher matching '{0}' could be found.").format(
+                    self.data)
 
 
 class RepositoryVersionError(RepositoryError):
@@ -325,9 +326,9 @@ class RepositoryVersionError(RepositoryError):
                 self.current_version = current_version
 
         def __str__(self):
-                return("The repository at '%(location)s' is version "
-                    "'%(version)s'; only versions up to %(current_version)s are"
-                    " supported.") %  self.__dict__
+                return("The repository at '{location}' is version "
+                    "'{version}'; only versions up to {current_version} are"
+                    " supported.").format(**self.__dict__)
 
 
 class RepositoryInvalidVersionError(RepositoryError):
@@ -342,10 +343,10 @@ class RepositoryInvalidVersionError(RepositoryError):
                 self.supported = supported
 
         def __str__(self):
-                return("The repository at '%(location)s' is version "
-                    "'%(version)s'; only version %(supported)s repositories are"
-                    " supported.") % \
-                    self.__dict__
+                return("The repository at '{location}' is version "
+                    "'{version}'; only version {supported} repositories are"
+                    " supported.").format(
+                    **self.__dict__)
 
 
 class RepositoryUnsupportedOperationError(RepositoryError):
@@ -371,7 +372,8 @@ class RepositorySigNoTrustAnchorDirError(RepositoryError):
         while performing repository verification."""
 
         def __str__(self):
-                return _("Unable to find trust anchor directory %s") % self.data
+                return _("Unable to find trust anchor directory {0}").format(
+                    self.data)
 
 class _RepoStore(object):
         """The _RepoStore object provides an interface for performing operations
@@ -800,9 +802,9 @@ class _RepoStore(object):
                                                 name = os.path.join(pkgpath[0],
                                                     fname)
                                                 self.__log(_("Skipping "
-                                                    "%(name)s; invalid "
-                                                    "manifest: %(error)s") % {
-                                                    "name": name, "error": e })
+                                                    "{name}; invalid "
+                                                    "manifest: {error}").format(
+                                                    name=name, error=e))
                                         except apx.DuplicateCatalogEntry, e:
                                                 # Raise dups if not in
                                                 # incremental mode.
@@ -1073,10 +1075,11 @@ class _RepoStore(object):
                                 for elist in e.args:
                                         for entry in elist:
                                                 if type(entry) == tuple:
-                                                        msg += "%s\n" % \
-                                                            entry[-1]
+                                                        msg += "{0}\n".format(
+                                                            entry[-1])
                                                 else:
-                                                        msg += "%s\n" % entry
+                                                        msg += "{0}\n".format(
+                                                            entry)
                                 raise apx.UnknownErrors(msg)
                         elif e.errno == errno.EACCES or e.errno == errno.EPERM:
                                 raise apx.PermissionsException(
@@ -1352,14 +1355,15 @@ class _RepoStore(object):
                 # S Last-Modified: 2009-08-28T15:01:48.546606
                 # S prefix: CRSV
                 # S npkgs: 46292
-                yield "S Last-Modified: %s\n" % c.last_modified.isoformat()
+                yield "S Last-Modified: {0}\n".format(
+                    c.last_modified.isoformat())
                 yield "S prefix: CRSV\n"
-                yield "S npkgs: %s\n" % c.package_version_count
+                yield "S npkgs: {0}\n".format(c.package_version_count)
 
                 # Now yield each FMRI in the catalog in the v0 format:
                 # V pkg:/SUNWdvdrw@5.21.4.10.8,5.11-0.86:20080426T173208Z
                 for pub, stem, ver in c.tuples():
-                        yield "V pkg:/%s@%s\n" % (stem, ver)
+                        yield "V pkg:/{0}@{1}\n".format(stem, ver)
 
         def catalog_1(self, name):
                 """Returns the absolute pathname of the named catalog file."""
@@ -1539,9 +1543,9 @@ class _RepoStore(object):
                                         self.__refresh_index()
                                 except se.InconsistentIndexException, e:
                                         s = _("Index corrupted or out of date. "
-                                            "Removing old index directory (%s) "
+                                            "Removing old index directory ({0}) "
                                             " and rebuilding search "
-                                            "indexes.") % e.cause
+                                            "indexes.").format(e.cause)
                                         self.__log(s, "INDEX")
                                         try:
                                                 self.__rebuild(
@@ -1979,18 +1983,20 @@ class _RepoStore(object):
 
                 message = _("Unknown error")
                 if error == REPO_VERIFY_BADHASH:
-                        message = _("Invalid file hash: %s") % reason["hash"]
+                        message = _("Invalid file hash: {0}").format(
+                            reason["hash"])
                         del reason["hash"]
                 elif error == REPO_VERIFY_BADMANIFEST:
                         message = _("Corrupt manifest.")
                         reason["err"] = _("Use pkglint(1) for more details.")
                 elif error == REPO_VERIFY_NOFILE:
-                        message = _("Missing file: %s") % reason["hash"]
+                        message = _("Missing file: {0}").format(reason["hash"])
                         del reason["hash"]
                 elif error == REPO_VERIFY_BADGZIP:
                         message = _("Corrupted gzip file.")
                 elif error in [REPO_VERIFY_PERM, REPO_VERIFY_MFPERM]:
-                        message = _("Verification failure: %s") % reason["err"]
+                        message = _("Verification failure: {0}").format(
+                            reason["err"])
                         del reason["err"]
                 elif error == REPO_VERIFY_UNKNOWN:
                         message = _("Bad manifest.")
@@ -2003,7 +2009,7 @@ class _RepoStore(object):
                         # outside our responsibility to do so.
                         message = _("Restrictive permissions.")
                         reason["err"] = \
-                            _("Some repository content for publisher '%s' "
+                            _("Some repository content for publisher '{0}' "
                             "or paths leading to the repository were not "
                             "world-readable or were not readable by "
                             "'pkg5srv:pkg5srv', which can cause access errors "
@@ -2012,11 +2018,12 @@ class _RepoStore(object):
                             " svc:/application/pkg/server\n"
                             " svc:/application/pkg/system-repository.\n"
                             "Only the first path found with restrictive "
-                            "permissions is shown.") % reason["pub"]
+                            "permissions is shown.").format(reason["pub"])
                         del reason["pub"]
                 else:
                         raise Exception(
-                            "Unknown repository verify error code: %s" % error)
+                            "Unknown repository verify error code: {0}".format(
+                            error))
 
                 return error, path, message, reason
 
@@ -2215,7 +2222,7 @@ class _RepoStore(object):
                 for comp in components:
                         if not comp:
                                 continue
-                        path = "%s/%s" % (path, comp)
+                        path = "{0}/{1}".format(path, comp)
                         st = os.stat(path)
                         if not (pkg5srv_readable(st) or
                             world_readable(st)):
@@ -2320,7 +2327,8 @@ class _RepoStore(object):
                                             publisher=self.publisher)
                                         if not os.path.isfile(path):
                                                 raise Exception(
-                                                    "%s is not a file" % path)
+                                                    "{0} is not a file".format(
+                                                    path))
                                 except Exception, e:
                                         # Assume the error is result of an
                                         # unexpected file in the directory. We
@@ -2539,8 +2547,8 @@ class _RepoStore(object):
                         # we can't do anything about missing files
                         if not os.path.exists(path):
                                 yield (REPO_FIX_ITEM, path,
-                                    _("Missing file %s must be fixed by "
-                                    "republishing the package.") % path,
+                                    _("Missing file {0} must be fixed by "
+                                    "republishing the package.").format(path),
                                     {"pkg": fmri})
                                 continue
 
@@ -2561,8 +2569,8 @@ class _RepoStore(object):
                                 # unique quarantine root per fix(..) call
                                 raise RepositoryQuarantinedPathExistsError()
 
-                        message = _("Moving %(src)s to %(dest)s") % {
-                            "src": path, "dest": dest}
+                        message = _("Moving {src} to {dest}").format(
+                            src=path, dest=dest)
                         status = REPO_FIX_ITEM
                         reason = {"dest": dest, "pkg": fmri}
                         try:
@@ -2570,8 +2578,8 @@ class _RepoStore(object):
                                 fixed_paths.add(path)
                         except Exception, e:
                                 status = REPO_FIX_FAILED
-                                message = _("Unable to quarantine %(path)s: "
-                                    "%(err)s") % {"path": path, "err": e}
+                                message = _("Unable to quarantine {path}: "
+                                    "{err}").format(path=path, err=e)
                         finally:
                                 yield(status, path, message, reason)
 
@@ -3931,7 +3939,7 @@ class Repository(object):
                 for pub in pubs:
                         for r, e, acts in pub.catalog.entry_actions(
                             (pub.catalog.DEPENDENCY,)):
-                                apkg = "pkg://%s/%s@%s" % r
+                                apkg = "pkg://{0}/{1}@{2}".format(*r)
                                 yield apkg, acts
 
         def __get_dep_actions_checklist(self, force_dep_check, acts):
@@ -4021,14 +4029,14 @@ class Repository(object):
 
                                         if attrs.get("min_ver", None):
                                                 minfmri = fmri.PkgFmri(
-                                                    "%s@%s" % \
-                                                    (attrs["pkg"],
+                                                    "{0}@{1}".format(
+                                                    attrs["pkg"],
                                                     attrs["min_ver"]))
                                                 attrs["min_ver"] = minfmri
                                         if attrs.get("max_ver", None):
                                                 maxfmri = fmri.PkgFmri(
-                                                    "%s@%s" % \
-                                                    (attrs["pkg"],
+                                                    "{0}@{1}".format(
+                                                    attrs["pkg"],
                                                     attrs["max_ver"])
                                                     )
                                                 attrs["max_ver"] = maxfmri

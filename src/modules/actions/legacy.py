@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a legacy packaging object
@@ -103,7 +103,7 @@ class LegacyAction(generic.Action):
 
                 with open(pkginfo, "wb") as pfile:
                         for k, v in attrs:
-                                pfile.write("%s=%s\n" % (k, v))
+                                pfile.write("{0}={1}\n".format(k, v))
 
                 # the svr4 pkg commands need contents file to work, but the
                 # needed directories are in the SUNWpkgcmds package....
@@ -126,7 +126,7 @@ class LegacyAction(generic.Action):
                 # Don't assume that the hardlinks are still in place; just
                 # remove all consecutively numbered files.
                 for i in itertools.count(2):
-                        lfile = os.path.join(pkgdir, "pkginfo.%d" % i)
+                        lfile = os.path.join(pkgdir, "pkginfo.{0:d}".format(i))
                         try:
                                 os.unlink(lfile)
                         except OSError, e:
@@ -149,13 +149,15 @@ class LegacyAction(generic.Action):
                 # XXX this could be a better check & exactly validate pkginfo
                 # contents
                 if not os.path.isdir(pkgdir):
-                        errors.append(_("Missing directory var/sadm/pkg/%s") %
-                            self.attrs["pkg"])
+                        errors.append(
+                            _("Missing directory var/sadm/pkg/{0}").format(
+                            self.attrs["pkg"]))
                         return errors, warnings, info
 
                 if not os.path.isfile(os.path.join(pkgdir, "pkginfo")):
                         errors.append(_("Missing file "
-                            "var/sadm/pkg/%s/pkginfo") % self.attrs["pkg"])
+                            "var/sadm/pkg/{0}/pkginfo").format(
+                            self.attrs["pkg"]))
                 return errors, warnings, info
 
         def remove(self, pkgplan):

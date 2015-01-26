@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -92,13 +92,15 @@ class PkgRemote(object):
                         return
 
                 if t1:
-                        prefix = "PkgRemote(%s) client thread 1: " % id(self)
+                        prefix = "PkgRemote({0}) client thread 1: ".format(
+                            id(self))
                 elif t2:
-                        prefix = "PkgRemote(%s) client thread 2: " % id(self)
+                        prefix = "PkgRemote({0}) client thread 2: ".format(
+                            id(self))
                 else:
-                        prefix = "PkgRemote(%s) client: " % id(self)
+                        prefix = "PkgRemote({0}) client: ".format(id(self))
 
-                global_settings.logger.info("%s%s" % (prefix, msg))
+                global_settings.logger.info("{0}{1}".format(prefix, msg))
 
         def __rpc_server_fork(self, img_path,
             server_cmd_pipe, server_prog_pipe_fobj):
@@ -114,13 +116,14 @@ class PkgRemote(object):
 
                 pkg_cmd = pkg.misc.api_pkgcmd() + [
                     "-R", img_path,
-                    "--runid=%s" % global_settings.client_runid,
+                    "--runid={0}".format(global_settings.client_runid),
                     "remote",
-                    "--ctlfd=%s" % server_cmd_pipe,
-                    "--progfd=%s" % server_prog_pipe_fobj.fileno(),
+                    "--ctlfd={0}".format(server_cmd_pipe),
+                    "--progfd={0}".format(server_prog_pipe_fobj.fileno()),
                 ]
 
-                self.__debug_msg("RPC server cmd: %s" % (" ".join(pkg_cmd)))
+                self.__debug_msg("RPC server cmd: {0}".format(
+                    " ".join(pkg_cmd)))
 
                 # create temporary files to log standard output and error from
                 # the RPC server.
@@ -225,45 +228,45 @@ class PkgRemote(object):
 
                 if state is not None:
                         assert self.__state == state, \
-                            "%s == %s" % (self.__state, state)
+                            "{0} == {1}".format(self.__state, state)
                 else:
                         state = self.__state
 
                 if state == self.__IDLE:
                         assert self.__pkg_op is None, \
-                            "%s is None" % self.__pkg_op
+                            "{0} is None".format(self.__pkg_op)
                         assert self.__kwargs is None, \
-                            "%s is None" % self.__kwargs
+                            "{0} is None".format(self.__kwargs)
                         assert self.__async_rpc_caller is None, \
-                            "%s is None" % self.__async_rpc_caller
+                            "{0} is None".format(self.__async_rpc_caller)
                         assert self.__async_rpc_waiter is None, \
-                            "%s is None" % self.__async_rpc_waiter
+                            "{0} is None".format(self.__async_rpc_waiter)
                         assert self.__result is None, \
-                            "%s is None" % self.__result
+                            "{0} is None".format(self.__result)
 
                 elif state == self.__SETUP:
                         assert self.__pkg_op is not None, \
-                            "%s is not None" % self.__pkg_op
+                            "{0} is not None".format(self.__pkg_op)
                         assert self.__kwargs is not None, \
-                            "%s is not None" % self.__kwargs
+                            "{0} is not None".format(self.__kwargs)
                         assert self.__async_rpc_caller is None, \
-                            "%s is None" % self.__async_rpc_caller
+                            "{0} is None".format(self.__async_rpc_caller)
                         assert self.__async_rpc_waiter is None, \
-                            "%s is None" % self.__async_rpc_waiter
+                            "{0} is None".format(self.__async_rpc_waiter)
                         assert self.__result is None, \
-                            "%s is None" % self.__result
+                            "{0} is None".format(self.__result)
 
                 elif state == self.__STARTED:
                         assert self.__pkg_op is not None, \
-                            "%s is not None" % self.__pkg_op
+                            "{0} is not None".format(self.__pkg_op)
                         assert self.__kwargs is not None, \
-                            "%s is not None" % self.__kwargs
+                            "{0} is not None".format(self.__kwargs)
                         assert self.__async_rpc_caller is not None, \
-                            "%s is not None" % self.__async_rpc_caller
+                            "{0} is not None".format(self.__async_rpc_caller)
                         assert self.__async_rpc_waiter is not None, \
-                            "%s is not None" % self.__async_rpc_waiter
+                            "{0} is not None".format(self.__async_rpc_waiter)
                         assert self.__result is None, \
-                            "%s is None" % self.__result
+                            "{0} is None".format(self.__result)
 
         def __set_state_idle(self):
                 """Enter the __IDLE state.  This clears all RPC call
@@ -279,7 +282,7 @@ class PkgRemote(object):
                 self.__async_rpc_caller = None
                 self.__async_rpc_waiter = None
                 self.__result = None
-                self.__debug_msg("set call state: %s" % (self.__state))
+                self.__debug_msg("set call state: {0}".format(self.__state))
 
                 # verify the new state
                 self.__state_verify()
@@ -302,8 +305,8 @@ class PkgRemote(object):
                 self.__state = self.__SETUP
                 self.__pkg_op = pkg_op
                 self.__kwargs = kwargs
-                self.__debug_msg("set call state: %s, pkg op: %s" %
-                    (self.__state, pkg_op))
+                self.__debug_msg("set call state: {0}, pkg op: {1}".format(
+                    self.__state, pkg_op))
 
                 # verify the new state
                 self.__state_verify()
@@ -320,7 +323,7 @@ class PkgRemote(object):
                 self.__state = self.__STARTED
                 self.__async_rpc_caller = async_rpc_caller
                 self.__async_rpc_waiter = async_rpc_waiter
-                self.__debug_msg("set call state: %s" % (self.__state))
+                self.__debug_msg("set call state: {0}".format(self.__state))
 
                 # verify the new state
                 self.__state_verify()
@@ -333,8 +336,8 @@ class PkgRemote(object):
 
                 'kwargs' is the argument dict for the RPC operation."""
 
-                self.__debug_msg("starting pkg op: %s; args: %s" %
-                    (pkg_op, kwargs), t1=True)
+                self.__debug_msg("starting pkg op: {0}; args: {1}".format(
+                    pkg_op, kwargs), t1=True)
 
                 # make the RPC call
                 rv = e = None
@@ -343,10 +346,10 @@ class PkgRemote(object):
                         # Catch "Exception"; pylint: disable=W0703
                         rv = rpc_method(**kwargs)
                 except Exception, e:
-                        self.__debug_msg("caught exception\n%s" %
-                            (traceback.format_exc()), t1=True)
+                        self.__debug_msg("caught exception\n{0}".format(
+                            traceback.format_exc()), t1=True)
                 else:
-                        self.__debug_msg("returned: %s" % rv, t1=True)
+                        self.__debug_msg("returned: {0}".format(rv), t1=True)
 
                 # get output generated by the RPC server.  the server
                 # truncates its output file after each operation, so we always

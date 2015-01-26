@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -83,15 +83,15 @@ class LintEngineCache():
                 self.version_pattern = version_pattern
                 self.release = release
                 if self.release:
-                        combined = "%s%s" % \
-                            (version_pattern.split(",")[1], release)
+                        combined = "{0}{1}".format(
+                            version_pattern.split(",")[1], release)
                         try:
                                 self.branch = DotSequence(
                                     combined.split("-")[1])
                         except pkg.version.IllegalDotSequence:
                                 raise LintEngineSetupException(
-                                    _("Invalid release string: %s") %
-                                    self.release)
+                                    _("Invalid release string: {0}").format(
+                                    self.release))
 
         def seed_latest(self, api_inst, tracker, phase):
                 """Builds a cache of latest manifests for this api_inst, using
@@ -115,11 +115,12 @@ class LintEngineCache():
                             search_type, patterns=pattern_list, variants=True):
                                 pub_name, name, version = item[0]
                                 pub = api_inst.get_publisher(prefix=pub_name)
-                                fmri ="pkg://%s/%s@%s" % (pub, name, version)
+                                fmri ="pkg://{0}/{1}@{2}".format(pub, name,
+                                    version)
                                 pfmri = pkg.fmri.PkgFmri(fmri)
                                 # index with just the pkg name, allowing us to
                                 # use this cache when searching for dependencies
-                                packages["pkg:/%s" % name] = pfmri
+                                packages["pkg:/{0}".format(name)] = pfmri
 
                 else:
                         # take a bit more time building up the latest version
@@ -130,14 +131,15 @@ class LintEngineCache():
                             search_type, variants=True):
                                 pub_name, name, version = item[0]
                                 pub = api_inst.get_publisher(prefix=pub_name)
-                                fmri ="pkg://%s/%s@%s" % (pub, name, version)
+                                fmri ="pkg://{0}/{1}@{2}".format(pub, name,
+                                    version)
                                 # obtain just the build branch, e.g. from
                                 # 0.5.11,5.11-0.111:20090508T235707Z, return
                                 # 0.111
                                 branch = Version(version, None).branch
 
                                 pfmri = pkg.fmri.PkgFmri(fmri)
-                                key = "pkg:/%s" % name
+                                key = "pkg:/{0}".format(name)
 
                                 if key not in packages and \
                                     branch <= self.branch:
@@ -363,7 +365,7 @@ class LintEngine(object):
                 assuming they haven't been excluded by the config object."""
 
                 try:
-                        self.logger.debug("Loading module %s" % name)
+                        self.logger.debug("Loading module {0}".format(name))
                         __import__(name, None, None, [], -1)
                         (checkers, excluded) = \
                             base.get_checkers(sys.modules[name], config)
@@ -380,10 +382,10 @@ class LintEngine(object):
                         if checker.name in unique_names:
                                 raise LintEngineSetupException(
                                     _("loading extensions: "
-                                    "duplicate checker name %(name)s: "
-                                    "%(class)s") %
-                                    {"name": checker.name,
-                                    "class": checker})
+                                    "duplicate checker name {name}: "
+                                    "{classname}").format(
+                                    name=checker.name,
+                                    classname=checker))
                         unique_names.add(checker.name)
                         unique_methods = set()
 
@@ -393,11 +395,11 @@ class LintEngine(object):
                                 if pkglint_id in unique_methods:
                                         raise LintEngineSetupException(_(
                                             "loading extension "
-                                            "%(checker)s: duplicate pkglint_id "
-                                            "%(pkglint_id)s in %(method)s") %
-                                            {"checker": checker.name,
-                                            "pkglint_id": pkglint_id,
-                                            "method": method})
+                                            "{checker}: duplicate pkglint_id "
+                                            "{pkglint_id} in {method}").format(
+                                            checker=checker.name,
+                                            pkglint_id=pkglint_id,
+                                            method=method))
                                 unique_methods.add(pkglint_id)
 
         def load_config(self, config, verbose=False):
@@ -443,7 +445,7 @@ class LintEngine(object):
                                 except base.LintException, err:
                                         raise LintEngineSetupException(
                                             _("Error parsing config value for "
-                                            "%(key)s: %(err)s") % locals())
+                                            "{key}: {err}").format(**locals()))
 
                 self._unique_checkers()
 
@@ -554,8 +556,8 @@ class LintEngine(object):
 
                         except LintEngineException, err:
                                 raise LintEngineSetupException(
-                                    _("Unable to create lint image: %s") %
-                                    str(err))
+                                    _("Unable to create lint image: {0}").format(
+                                    str(err)))
                         try:
                                 self.ref_image = os.path.join(self.basedir,
                                     "ref_image")
@@ -589,13 +591,13 @@ class LintEngine(object):
 
                         except LintEngineException, err:
                                 raise LintEngineSetupException(
-                                    _("Unable to create reference image: %s") %
-                                    str(err))
+                                    _("Unable to create reference image: {0}").format(
+                                    str(err)))
 
                         if not (self.ref_api_inst or self.lint_api_inst):
                                 raise LintEngineSetupException(
                                     _("Unable to access any pkglint images "
-                                   "under %s") % cache)
+                                   "under {0}").format(cache))
 
                 for checker in self.checkers:
                         checker.startup(self)
@@ -633,12 +635,13 @@ class LintEngine(object):
                                 action_checks.append(checker)
                         else:
                                 raise LintEngineSetupException(
-                                    _("%s does not subclass a known "
+                                    _("{0} does not subclass a known "
                                     "Checker subclass intended for use by "
-                                    "pkglint extensions") % str(checker))
+                                    "pkglint extensions").format(str(checker)))
 
                 self.tracker.flush()
-                self.logger.debug(_("Total number of checks found: %s") % count)
+                self.logger.debug(_("Total number of checks found: {0}").format(
+                    count))
 
                 for mf in self.lint_manifests:
                         self._check_manifest(mf, manifest_checks,
@@ -698,7 +701,7 @@ class LintEngine(object):
                 """
 
                 if not pkg_name.startswith("pkg:/"):
-                        pkg_name = "pkg:/%s" % pkg_name
+                        pkg_name = "pkg:/{0}".format(pkg_name)
 
                 def build_fmri(pkg_name):
                         """builds a pkg.fmri.PkgFmri from a string."""
@@ -714,7 +717,7 @@ class LintEngine(object):
                                         return fmri
                                 except:
                                         msg = _("unable to construct fmri from "
-                                            "%s") %  pkg_name
+                                            "{0}").format(pkg_name)
                                         raise base.LintException(msg)
 
                 def get_fmri(api_inst, pkg_name):
@@ -722,11 +725,11 @@ class LintEngine(object):
 
                         if "*" in pkg_name or "?" in pkg_name:
                                 raise base.LintException(
-                                    _("invalid pkg name %s") % pkg_name)
+                                    _("invalid pkg name {0}").format(pkg_name))
 
                         if "@" not in pkg_name and self.release:
-                                pkg_name = "%s@%s%s" % \
-                                    (pkg_name, self.version_pattern,
+                                pkg_name = "{0}@{1}{2}".format(
+                                    pkg_name, self.version_pattern,
                                     self.release)
 
                         fmris = []
@@ -749,13 +752,13 @@ class LintEngine(object):
                                 # we expected to get only 1 hit, so
                                 # something has gone wrong
                                 raise LintEngineException(
-                                    _("get_fmri(pattern) %(pattern)s "
-                                    "matched %(count)s packages: "
-                                    "%(pkgs)s") %
-                                    {"pattern": pkg_name,
-                                    "count": len(fmri_list),
-                                    "pkgs": " ".join(fmri_list)
-                                    })
+                                    _("get_fmri(pattern) {pattern} "
+                                    "matched {count} packages: "
+                                    "{pkgs}").format(
+                                    pattern=pkg_name,
+                                    count=len(fmri_list),
+                                    pkgs=" ".join(fmri_list)
+                                    ))
 
                 def mf_from_image(api_inst, pkg_name, search_type):
                         """Fetch a manifest for the given package name using
@@ -767,7 +770,7 @@ class LintEngine(object):
                         if search_type == self.LATEST_SUCCESSOR:
                                 # we want to normalize the pkg_name, removing
                                 # the publisher, if any.
-                                name = "pkg:/%s" % search_fmri.get_name()
+                                name = "pkg:/{0}".format(search_fmri.get_name())
                                 mf = self.mf_cache.get_latest(api_inst, name)
                                 if not mf:
                                         return
@@ -845,9 +848,9 @@ class LintEngine(object):
                                 api_inst.refresh(immediate=True)
                 except Exception, err:
                         raise LintEngineSetupException(
-                            _("Unable to get image at %(dir)s: %(reason)s") %
-                            {"dir": image_dir,
-                            "reason": str(err)})
+                            _("Unable to get image at {dir}: {reason}").format(
+                            dir=image_dir,
+                            reason=str(err)))
 
                 # restore the current directory, which ImageInterace had changed
                 os.chdir(cdir)
@@ -863,15 +866,15 @@ class LintEngine(object):
                 refresh_allowed = True
 
                 self.tracker.flush()
-                self.logger.debug(_("Creating image at %s") % image_dir)
+                self.logger.debug(_("Creating image at {0}").format(image_dir))
 
                 # Check to see if a scheme was used, if not, treat it as a
                 # file:// URI, and get the absolute path.  Missing or invalid
                 # repositories will be caught by pkg.client.api.image_create.
                 for i, uri in enumerate(repo_uris):
                         if not urllib2.urlparse.urlparse(uri).scheme:
-                                repo_uris[i] = "file://%s" % \
-                                    urllib2.quote(os.path.abspath(uri))
+                                repo_uris[i] = "file://{0}".format(
+                                    urllib2.quote(os.path.abspath(uri)))
 
                 try:
                         api_inst = pkg.client.api.image_create(
@@ -957,7 +960,8 @@ class LintEngine(object):
         def _check_manifest(self, manifest, manifest_checks, action_checks):
                 """Check a given manifest."""
 
-                self.debug(_("Checking %s") % manifest.fmri, "pkglint001.3")
+                self.debug(_("Checking {0}").format(manifest.fmri),
+                    "pkglint001.3")
 
                 for checker in manifest_checks:
                         checker.check(manifest, self)
@@ -1028,8 +1032,8 @@ class LintEngine(object):
 
         def skip_check_msg(self, action, msgid):
                 """Log a message saying we're skipping a particular check."""
-                self.info(_("Not running %(check)s checks on linted action "
-                    "%(action)s") % {"check": msgid, "action": str(action)},
+                self.info(_("Not running {check} checks on linted action "
+                    "{action}").format(check=msgid, action=str(action)),
                     msgid="pkglint001.4", ignore_linted=True)
 
         def teardown(self, clear_cache=False):
@@ -1114,7 +1118,7 @@ class LintEngine(object):
 
                 if warn_on_obsolete and "pkg.obsolete" in mf:
                         raise base.LintException(
-                            _("obsolete package: %s") % mf.fmri)
+                            _("obsolete package: {0}").format(mf.fmri))
 
                 # if we're trying to rename to a package in our history,
                 # we should complain
@@ -1122,8 +1126,8 @@ class LintEngine(object):
                         if old_mf.fmri.get_name() == mf.fmri.get_name():
                                 old_mfs.append(mf)
                                 raise base.LintException(
-                                    _("loop detected in rename: %s") %
-                                    " -> ".join(str(s.fmri) for s in old_mfs))
+                                    _("loop detected in rename: {0}").format(
+                                    " -> ".join(str(s.fmri) for s in old_mfs)))
 
                 if "pkg.renamed" in mf and \
                     mf["pkg.renamed"].lower() == "true":
@@ -1170,7 +1174,7 @@ class LintEngine(object):
                 namespace and don't clash with other manifest or action attrs.
                 """
 
-                param_key = "pkg.lint.%s" % key
+                param_key = "pkg.lint.{0}".format(key)
                 val = None
                 if action and param_key in action.attrs:
                         val = action.attrs[param_key]
@@ -1197,7 +1201,8 @@ class LintEngine(object):
                 'set' action.
                 """
                 if attr not in manifest:
-                        raise KeyError(_("%s is not set in manifest") % attr)
+                        raise KeyError(
+                            _("{0} is not set in manifest").format(attr))
                 for action in manifest.gen_actions_by_type("set"):
                         if action.attrs.get("name", "") == attr:
                                 return action

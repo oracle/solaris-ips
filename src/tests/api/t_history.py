@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -263,7 +264,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 h.client_name = "pkg-test"
 
                 for i in range(1, 4):
-                        h.log_operation_start("operation-%d" % i)
+                        h.log_operation_start("operation-{0:d}".format(i))
 
                 h.abort(history.RESULT_FAILED_BAD_REQUEST)
 

@@ -198,7 +198,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                             target=mapline.target)
                 elif mapline.type == "i" and mapline.pathname == "copyright":
                         act = license.LicenseAction(data,
-                            license="%s.copyright" % self.pkgname)
+                            license="{0}.copyright".format(self.pkgname))
                         if act.hash == "NOHASH" and \
                             isinstance(data, basestring) and \
                             data.startswith(self.filename):
@@ -269,7 +269,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                         name = key.lower()
                         if name in ignored_keys or "SUNW_" in key:
                                 continue
-                        name = "pkg.send.convert.%s" % name
+                        name = "pkg.send.convert.{0}".format(name)
                         name = name.replace("_", "-")
                         actions.append(AttributeAction(name=name,
                             value=pkginfo[key]))

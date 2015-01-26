@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -98,12 +98,14 @@ class PkgTarFile(tarfile.TarFile):
                                 raise
                         else:
                                 if e.filename is None:
-                                        self._dbg(1, "tarfile %s" % e.strerror)
+                                        self._dbg(1, "tarfile {0}".format(
+                                            e.strerror))
                                 else:
-                                        self._dbg(1, "tarfile: %s %r" % (
+                                        self._dbg(1,
+                                            "tarfile: {0} {1!r}".format(
                                             e.strerror, e.filename))
                 except tarfile.ExtractError, e:
                         if self.errorlevel > 1:
                                 raise
                         else:
-                                self._dbg(1, "tarfile: %s" % e)
+                                self._dbg(1, "tarfile: {0}".format(e))

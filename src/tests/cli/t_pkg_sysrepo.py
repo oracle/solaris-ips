@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -113,9 +113,9 @@ class TestSysrepo(pkg5unittest.ApacheDepotTestCase):
 
         expected_all_access =  """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
 test4\ttrue\ttrue\ttrue\t\t\t\t
 """
 
@@ -133,8 +133,8 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # Set up the smf commands that these tests use.
                 smf_conf_dict = {"proxy_port": self.sysrepo_port}
                 for n in self.__smf_cmds_template:
-                        self.smf_cmds[n] = self.__smf_cmds_template[n] % \
-                            smf_conf_dict
+                        self.smf_cmds[n] = self.__smf_cmds_template[n].format(**
+                            smf_conf_dict)
 
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test12",
                     "test3", "test4", "test12"], start_depots=True)
@@ -348,17 +348,17 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     "port": https_port,
                     "proxied-server": pc.url,
                     "server-ca-cert":os.path.join(self.raw_trust_anchor_dir,
-                        "%s_cert.pem" % pc.client_ta),
+                        "{0}_cert.pem".format(pc.client_ta)),
                     "server-ca-taname": pc.client_ta,
                     "serve_root": content_dir,
                     "server-ssl-cert":os.path.join(self.cs_dir,
-                        "cs1_%s_cert.pem" % pc.server_ta),
+                        "cs1_{0}_cert.pem".format(pc.server_ta)),
                     "server-ssl-key":os.path.join(self.keys_dir,
-                        "cs1_%s_key.pem" % pc.server_ta),
-                })
+                        "cs1_{0}_key.pem".format(pc.server_ta)),
+               })
                 conf_path = os.path.join(instance_dir, "https.conf")
                 with open(conf_path, "wb") as fh:
-                        fh.write(self.https_conf % cd)
+                        fh.write(self.https_conf.format(**cd))
 
                 ac = pkg5unittest.ApacheController(conf_path, https_port,
                     instance_dir, testcase=self, https=True)
@@ -392,11 +392,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                                 if not pc.sticky:
                                         cmd += " --non-sticky"
                                 if not pc.https and pc.url:
-                                        cmd += " -p %s" % pc.url
+                                        cmd += " -p {0}".format(pc.url)
                                 elif not pc.https and not pc.url:
                                         for o in pc.origins:
-                                                cmd += " -g %s" % o
-                                        cmd += " %s" % pc.name
+                                                cmd += " -g {0}".format(o)
+                                        cmd += " {0}".format(pc.name)
                                 else:
                                         if pc.url in self.acs:
                                                 ac = self.acs[pc.url]
@@ -404,58 +404,58 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                                                 ac = self.__start_https(pc)
                                         # Configure image to use apache instance
                                         cmd = " --debug " \
-                                            "ssl_ca_file=%(ca_file)s %(cmd)s " \
-                                            "-k %(key)s -c %(cert)s " \
-                                            "-p %(url)s" % {
-                                                "ca_file": os.path.join(
+                                            "ssl_ca_file={ca_file} {cmd} " \
+                                            "-k {key} -c {cert} " \
+                                            "-p {url}".format(
+                                                ca_file=os.path.join(
                                                     self.raw_trust_anchor_dir,
-                                                    "%s_cert.pem" %
-                                                    pc.server_ta),
-                                                "cert": os.path.join(
+                                                    "{0}_cert.pem".format(
+                                                    pc.server_ta)),
+                                                cert=os.path.join(
                                                     self.cs_dir,
-                                                    "cs1_%s_cert.pem" %
-                                                    pc.client_ta),
-                                                "cmd": cmd,
-                                                "key": os.path.join(
+                                                    "cs1_{0}_cert.pem".format(
+                                                    pc.client_ta)),
+                                                cmd=cmd,
+                                                key=os.path.join(
                                                     self.keys_dir,
-                                                    "cs1_%s_key.pem" %
-                                                    pc.client_ta),
-                                                "url": ac.url,
-                                            }
+                                                    "cs1_{0}_key.pem".format(
+                                                    pc.client_ta)),
+                                                url=ac.url,
+                                            )
                                 if pc.signature_policy:
                                         cmd += " --set-property " \
-                                            "signature-policy=%s" % \
-                                            pc.signature_policy
+                                            "signature-policy={0}".format(
+                                            pc.signature_policy)
                                 if pc.required_names:
                                         cmd += " --set-property " \
-                                            "signature-required-names='%s'" % \
-                                            pc.required_names
+                                            "signature-required-names='{0}'".format(
+                                            pc.required_names)
                                 self.pkg(cmd, debug_smf=False)
                                 for pub, m in pc.mirrors:
                                         self.pkg(
-                                            "set-publisher -m %s %s" % (m, pub))
+                                            "set-publisher -m {0} {1}".format(m, pub))
                                 if pc.disabled:
-                                        self.pkg("set-publisher -d %s" %
-                                            pc.name)
+                                        self.pkg("set-publisher -d {0}".format(
+                                            pc.name))
 
                         if use_config_cache:
                                 # Call self.sysrepo so that a config cache is
                                 # created.  The subsequent call to self.sysrepo
                                 # will use that cache to build the Apache
                                 # configuration.
-                                self.sysrepo("-l %(log_locs)s -p %(port)s "
-                                    "-r %(common_serve)s" % {
-                                        "log_locs": self.apache_log_dir,
-                                        "port": port,
-                                        "common_serve": self.common_config_dir
-                                    })
+                                self.sysrepo("-l {log_locs} -p {port} "
+                                    "-r {common_serve}".format(
+                                        log_locs=self.apache_log_dir,
+                                        port=port,
+                                        common_serve=self.common_config_dir)
+                                   )
 
-                        self.sysrepo("-l %(log_locs)s -p %(port)s "
-                            "-r %(common_serve)s" % {
-                                "log_locs": self.apache_log_dir,
-                                "port": port,
-                                "common_serve": self.common_config_dir
-                            })
+                        self.sysrepo("-l {log_locs} -p {port} "
+                            "-r {common_serve}".format(
+                                log_locs=self.apache_log_dir,
+                                port=port,
+                                common_serve=self.common_config_dir)
+                           )
                         st = os.stat(os.path.join(self.common_config_dir,
                             "htdocs"))
                         uid = st.st_uid
@@ -479,13 +479,13 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 when providing responses."""
 
                 if name not in self.__configured_names:
-                        raise RuntimeError("%s hasn't been prepared for this "
-                            "test." % name)
+                        raise RuntimeError("{0} hasn't been prepared for this "
+                            "test.".format(name))
                 base_dir = os.path.join(self.test_root, "apache-conf", name,
                     "htdocs")
                 if not os.path.isdir(base_dir):
-                        raise RuntimeError("Expected %s to already exist and "
-                            "be a directory but it's not." % base_dir)
+                        raise RuntimeError("Expected {0} to already exist and "
+                            "be a directory but it's not.".format(base_dir))
                 if os.path.isdir(self.htdocs_dir):
                         shutil.rmtree(self.htdocs_dir)
                 shutil.copytree(base_dir, self.htdocs_dir)
@@ -528,13 +528,13 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 pub_dir = os.path.join(self.img_path(), "var/pkg/publisher")
                 for p in pubs:
                         if not os.path.isdir(os.path.join(pub_dir, p)):
-                                raise RuntimeError("Publisher %s was expected "
+                                raise RuntimeError("Publisher {0} was expected "
                                     "to exist but its directory is missing "
-                                    "from the image directory." % p)
+                                    "from the image directory.".format(p))
                 for d in os.listdir(pub_dir):
                         if d not in pubs:
-                                raise RuntimeError("%s was not expected in the "
-                                    "publisher directory but was found." % d)
+                                raise RuntimeError("{0} was not expected in the "
+                                    "publisher directory but was found.".format(d))
 
         def test_01_basics(self):
                 """Test that an image with no publishers can be created and that
@@ -564,10 +564,10 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # Make sure that the publisher catalogs were created.
                 for n in ("test1", "test12", "test3"):
                         self.assert_(os.path.isdir(os.path.join(self.img_path(),
-                            "var/pkg/publisher/%s" % n)))
-                expected = self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                            "var/pkg/publisher/{0}".format(n))))
+                expected = self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # make sure none of our sysrepo-provided configuration has
@@ -590,31 +590,31 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                         # publisher 4 does not have any origins set
                         if not line.startswith("test4") and line:
                                 self.assert_("<system-repository>" in line,
-                                    "line %s does not contain "
-                                    "'<system-repository>'" % line)
+                                    "line {0} does not contain "
+                                    "'<system-repository>'".format(line))
                 self.assert_(count == 5,
-                    "expected 5 lines of output in \n%s\n, got %s" %
-                    (self.output, count))
+                    "expected 5 lines of output in \n{0}\n, got {1}".format(
+                    self.output, count))
 
                 self.pkg("publisher")
                 self.pkg("publisher test1")
                 self.pkg("publisher test12")
-                self.assert_("Proxy: http://localhost:%s" % self.sysrepo_port
+                self.assert_("Proxy: http://localhost:{0}".format(self.sysrepo_port)
                     in self.output)
                 self.assert_("<system-repository>" not in self.output)
-                self.debug("looking for %s" % self.durl1)
+                self.debug("looking for {0}".format(self.durl1))
 
                 # Test that the publishers have the right uris and appear in
                 # the correct order.
                 self.pkg("publisher -F tsv")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(one)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(two)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(three)s/\thttp://localhost:%(port)s
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{one}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{two}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{three}/\thttp://localhost:{port}
 test4\ttrue\ttrue\ttrue\t\t\t\t
-""" % {"port": self.sysrepo_port, "one": self.durl1, "two": self.durl2,
-    "three": self.durl3}
+""".format(port=self.sysrepo_port, one=self.durl1, two=self.durl2,
+    three=self.durl3)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output, bound_white_space=True)
 
@@ -661,9 +661,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 api_obj = self.image_create(props={"use-system-repo": True})
                 sc.conf = self.apache_confs["none"]
 
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("list -a")
@@ -713,14 +713,14 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # create an image the long way, allowing us to pass an environ
                 self.image_destroy()
                 os.mkdir(self.img_path())
-                self.pkg("image-create %s" % self.img_path())
+                self.pkg("image-create {0}".format(self.img_path()))
                 self.pkg("set-property use-system-repo True", env_arg=env)
 
                 self.pkg("refresh --full", env_arg=env)
                 self.pkg("contents -rm example_pkg", env_arg=env)
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected, env_arg=env)
                 self.pkg("install example_pkg", env_arg=env)
 
@@ -728,7 +728,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # create an image the long way, allowing us to pass an environ
                 self.image_destroy()
                 os.mkdir(self.img_path())
-                self.pkg("image-create %s" % self.img_path())
+                self.pkg("image-create {0}".format(self.img_path()))
                 self.pkg("set-property use-system-repo True", env_arg=env)
 
                 self.pkg("refresh --full", env_arg=env)
@@ -767,18 +767,18 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.pkg("set-publisher --search-first test1", exit=1)
 
                 # Add a mirror to an existing system publisher
-                self.pkg("set-publisher -m %s test1" % self.rurl1)
+                self.pkg("set-publisher -m {0} test1".format(self.rurl1))
 
                 # Add an origin to an existing system publisher.
-                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.pkg("set-publisher -g {0} test1".format(self.rurl1))
 
                 # Check that the publisher information is shown correctly.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # Check that the publisher specific information has information
@@ -787,7 +787,7 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
                 self.pkg("publisher test1")
                 self.assert_(self.rurl1 in self.output)
                 self.assert_(self.durl1 in self.output)
-                self.assert_("http://localhost:%s\n" % self.sysrepo_port
+                self.assert_("http://localhost:{0}\n".format(self.sysrepo_port)
                     in self.output)
                 self.assert_(self.output.count("Proxy:") == 1)
 
@@ -802,20 +802,20 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
                 self.pkg("refresh --full", exit=1)
 
                 # Check that removing the system configured origin fails.
-                self.pkg("set-publisher -G %s test1" % self.durl1, exit=1)
-                self.pkg("set-publisher -G %s test1" % self.durl1,
+                self.pkg("set-publisher -G {0} test1".format(self.durl1), exit=1)
+                self.pkg("set-publisher -G {0} test1".format(self.durl1),
                     exit=1)
                 # Check that removing the user configured origin succeeds.
                 # --no-refresh is needed because otherwise we attempt to contact
                 # the publisher to update the catalogs.
-                self.pkg("set-publisher -G %s --no-refresh test1" % self.rurl1)
+                self.pkg("set-publisher -G {0} --no-refresh test1".format(self.rurl1))
 
                 # Check that the user configured origin is gone.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
-""" % {"durl1": self.durl1, "rurl1": self.rurl1, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
+""".format(durl1=self.durl1, rurl1=self.rurl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # Ensure that previous communication was going through the file
@@ -839,48 +839,48 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
                 # but can't remove repo-provided mirrors
                 sc.conf = self.apache_confs["mirror-access-user"]
                 self.__set_responses("mirror-access-user")
-                self.pkg("set-publisher -m %s test12" % self.rurl2)
+                self.pkg("set-publisher -m {0} test12".format(self.rurl2))
                 expected_mirrors = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\tmirror\tonline\t%(rurl2)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "rurl1": self.rurl1,
-    "rurl2": self.rurl2, "hash3": hash3, "durl1": self.durl1,
-    "durl2": self.durl2, "durl3": self.durl3}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\tmirror\tonline\t{rurl2}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, rurl1=self.rurl1,
+    rurl2=self.rurl2, hash3=hash3, durl1=self.durl1,
+    durl2=self.durl2, durl3=self.durl3)
                 self.__check_publisher_info(expected_mirrors)
 
                 # turn off the sysrepo property, and ensure the mirror is there
                 self.pkg("set-property use-system-repo False")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\tfalse\ttrue\tmirror\tonline\t%(rurl1)s/\t-
-test12\tfalse\tfalse\ttrue\tmirror\tonline\t%(rurl2)s/\t-
-""" % {"rurl1": self.rurl1, "rurl2": self.rurl2}
+test1\ttrue\tfalse\ttrue\tmirror\tonline\t{rurl1}/\t-
+test12\tfalse\tfalse\ttrue\tmirror\tonline\t{rurl2}/\t-
+""".format(rurl1=self.rurl1, rurl2=self.rurl2)
                 self.__check_publisher_info(expected)
                 self.pkg("set-property use-system-repo True")
 
                 # ensure we can't remove the sysrepo-provided mirror
-                self.pkg("set-publisher -M %s test12" % self.rurl1, exit=1)
+                self.pkg("set-publisher -M {0} test12".format(self.rurl1), exit=1)
                 self.__check_publisher_info(expected_mirrors)
 
                 # ensure we can remove the user-provided mirror
-                self.pkg("set-publisher -M %s test12" % self.rurl2)
+                self.pkg("set-publisher -M {0} test12".format(self.rurl2))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "rurl1": self.rurl1,
-    "hash3": hash3, "durl1": self.durl1, "durl2": self.durl2,
-    "durl3": self.durl3}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, rurl1=self.rurl1,
+    hash3=hash3, durl1=self.durl1, durl2=self.durl2,
+    durl3=self.durl3)
 
                 self.__check_publisher_info(expected)
 
@@ -906,19 +906,19 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 self.__check_publisher_info(expected)
 
                 # The user configures test1 as a publisher.
-                self.pkg("set-publisher --non-sticky -p %s" % self.durl1)
+                self.pkg("set-publisher --non-sticky -p {0}".format(self.durl1))
                 self.__check_publisher_dirs(["test1"])
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\ttrue\torigin\tonline\t%s/\t-
-""" % self.durl1
+test1\tfalse\tfalse\ttrue\torigin\tonline\t{0}/\t-
+""".format(self.durl1)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-publisher -d test1")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t%s/\t-
-""" % self.durl1
+test1\tfalse\tfalse\tfalse\torigin\tonline\t{0}/\t-
+""".format(self.durl1)
                 self.__check_publisher_info(expected)
                 self.__check_publisher_dirs([])
 
@@ -934,9 +934,9 @@ test1\tfalse\tfalse\tfalse\torigin\tonline\t%s/\t-
                 # so we use the system repository version.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-""" % {"durl1": self.durl1, "durl2": self.durl2, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+""".format(durl1=self.durl1, durl2=self.durl2, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
                 self.__check_publisher_dirs([])
 
@@ -957,9 +957,9 @@ foo (test12) 1.0-0 ---
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-""" % {"durl1": self.durl1, "durl3": self.durl3, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+""".format(durl1=self.durl1, durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
                 # Only test1 is expected to exist because only it was present in
                 # both the old configuration and the current configuration.
@@ -990,13 +990,13 @@ example_pkg 1.0-0 ---
                 # using the same url as the system-repository provides, which
                 # should fail, because There Can Be Only One origin for a given
                 # uri.
-                self.pkg("set-publisher -g %s test3" % self.durl3, exit=1)
+                self.pkg("set-publisher -g {0} test3".format(self.durl3), exit=1)
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-""" % {"durl1": self.durl1, "durl3": self.durl3, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+""".format(durl1=self.durl1, durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
                 self.__check_publisher_dirs(["test1", "test3"])
 
@@ -1028,9 +1028,9 @@ example_pkg 1.0-0 ---
                 # higher ranked.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test1\tfalse\tfalse\tfalse\torigin\tonline\t%(durl1)s/\t-
-""" % {"durl2": self.durl2, "durl1": self.durl1, "port": self.sysrepo_port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
+""".format(durl2=self.durl2, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("refresh --full")
@@ -1051,9 +1051,9 @@ foo 1.0-0 ---
                 # as a system publisher.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t%(durl1)s/\t-
+test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
 test12\tfalse\ttrue\tfalse\t\t\t\t
-""" % {"durl1": self.durl1}
+""".format(durl1=self.durl1)
                 self.__check_publisher_info(expected)
 
                 # Uninstalling foo should remove test12 from the list of
@@ -1061,8 +1061,8 @@ test12\tfalse\ttrue\tfalse\t\t\t\t
                 self.pkg("uninstall foo")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t%(durl1)s/\t-
-""" % {"durl1": self.durl1, "durl3": self.durl3}
+test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
+""".format(durl1=self.durl1, durl3=self.durl3)
                 self.__check_publisher_info(expected)
 
         def test_05_simultaneous_change(self):
@@ -1088,29 +1088,29 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 # made a system publisher.
                 self.__set_responses("test1")
 
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+""".format(rurl1=self.rurl1, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # Adding the origin to the publisher which now exists should
                 # fail.
-                self.pkg("set-publisher -g %s test1" % self.rurl1, exit=1)
+                self.pkg("set-publisher -g {0} test1".format(self.rurl1), exit=1)
 
                 # The user adds an origin to test12 at the same time that test12
                 # first becomes known to the image.
                 self.__set_responses("test12")
-                self.pkg("set-publisher -g %s test12" % self.rurl2)
+                self.pkg("set-publisher -g {0} test12".format(self.rurl2))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(rurl2)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl1)s/\t-
-""" % {"rurl2": self.rurl2, "durl2": self.durl2, "rurl1": self.rurl1,
-    "port": self.sysrepo_port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{rurl2}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test1\ttrue\tfalse\ttrue\torigin\tonline\t{rurl1}/\t-
+""".format(rurl2=self.rurl2, durl2=self.durl2, rurl1=self.rurl1,
+    port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("publisher")
@@ -1119,22 +1119,22 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl1)s/\t-
                 # test12 stops being a system publisher and test1 is added as a
                 # system publisher.
                 self.__set_responses("test1")
-                self.pkg("set-publisher -G %s test12" % self.rurl2)
+                self.pkg("set-publisher -G {0} test12".format(self.rurl2))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
 test12\tfalse\tfalse\ttrue\t\t\t\t
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "port": self.sysrepo_port}
+""".format(rurl1=self.rurl1, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # The user now removes the originless publisher
                 self.pkg("unset-publisher test12")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+""".format(rurl1=self.rurl1, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # The user now unsets test1 at the same time that test1 stops
@@ -1160,89 +1160,89 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 sc.start()
                 api_obj = self.image_create(props={"use-system-repo": True})
 
-                self.pkg("set-publisher -p %s" % self.rurl3)
-                self.pkg("set-publisher -p %s" % self.rurl2)
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl3))
+                self.pkg("set-publisher -p {0}".format(self.rurl2))
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-""" % (self.rurl3, self.rurl2, self.rurl1)
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{0}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{1}/\t-
+test1\ttrue\tfalse\ttrue\torigin\tonline\t{2}/\t-
+""".format(self.rurl3, self.rurl2, self.rurl1)
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("all-access")
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(rurl2)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{rurl2}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{rurl3}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
 test4\ttrue\ttrue\ttrue\t\t\t\t
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl2": self.rurl2,
-    "durl2": self.durl2, "rurl3": self.rurl3, "durl3": self.durl3,
-    "port": self.sysrepo_port}
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl2=self.rurl2,
+    durl2=self.durl2, rurl3=self.rurl3, durl3=self.durl3,
+    port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-property use-system-repo False")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-""" % (self.rurl3, self.rurl2, self.rurl1)
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{0}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{1}/\t-
+test1\ttrue\tfalse\ttrue\torigin\tonline\t{2}/\t-
+""".format(self.rurl3, self.rurl2, self.rurl1)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-property use-system-repo True")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(rurl2)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{rurl2}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{rurl3}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
 test4\ttrue\ttrue\ttrue\t\t\t\t
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl2": self.rurl2,
-    "durl2": self.durl2, "rurl3": self.rurl3, "durl3": self.durl3,
-    "port": self.sysrepo_port}
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl2=self.rurl2,
+    durl2=self.durl2, rurl3=self.rurl3, durl3=self.durl3,
+    port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("test1")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl3": self.rurl3,
-    "rurl2": self.rurl2, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl3=self.rurl3,
+    rurl2=self.rurl2, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-publisher --search-before test3 test12")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl2": self.rurl2,
-    "rurl3": self.rurl3, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl2=self.rurl2,
+    rurl3=self.rurl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-publisher --search-after test3 test12")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl3": self.rurl3,
-    "rurl2": self.rurl2, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl3=self.rurl3,
+    rurl2=self.rurl2, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-publisher --search-before test1 test12", exit=1)
@@ -1251,12 +1251,12 @@ test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
                 # Ensure that test12 is not disabled.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl3": self.rurl3,
-    "rurl2": self.rurl2, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl3=self.rurl3,
+    rurl2=self.rurl2, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
                 self.pkg("set-publisher --search-after test1 test12", exit=1)
                 self.pkg("set-publisher --non-sticky --search-after test1 "
@@ -1264,12 +1264,12 @@ test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
                 # Ensure that test12 is still sticky.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl3": self.rurl3,
-    "rurl2": self.rurl2, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl3=self.rurl3,
+    rurl2=self.rurl2, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 # Check that attempting to change test12 relative to test1
@@ -1279,21 +1279,21 @@ test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
                 self.pkg("set-publisher --search-first test12")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl2)s/\t-
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl3)s/\t-
-""" % {"rurl1": self.rurl1, "durl1": self.durl1, "rurl2": self.rurl2,
-    "rurl3": self.rurl3, "port": self.sysrepo_port}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{rurl1}/\t-
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{rurl2}/\t-
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{rurl3}/\t-
+""".format(rurl1=self.rurl1, durl1=self.durl1, rurl2=self.rurl2,
+    rurl3=self.rurl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.pkg("set-property use-system-repo False")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test12\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test3\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
-""" % (self.rurl2, self.rurl3, self.rurl1)
+test12\ttrue\tfalse\ttrue\torigin\tonline\t{0}/\t-
+test3\ttrue\tfalse\ttrue\torigin\tonline\t{1}/\t-
+test1\ttrue\tfalse\ttrue\torigin\tonline\t{2}/\t-
+""".format(self.rurl2, self.rurl3, self.rurl1)
                 self.__check_publisher_info(expected)
 
         def test_07_environment_variable(self):
@@ -1311,12 +1311,12 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
                 self.register_apache_controller("sysrepo", sc)
                 sc.start()
                 old_psu = os.environ.get("PKG_SYSREPO_URL", None)
-                os.environ["PKG_SYSREPO_URL"] = "localhost:%s" % \
-                    self.sysrepo_alt_port
+                os.environ["PKG_SYSREPO_URL"] = "localhost:{0}".format(
+                    self.sysrepo_alt_port)
                 api_obj = self.image_create(props={"use-system-repo": True})
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_alt_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_alt_port)
                 self.__check_publisher_info(expected, set_debug_value=False)
                 if old_psu:
                         os.environ["PKG_SYSREPO_URL"] = old_psu
@@ -1348,12 +1348,12 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3)
+
                 self.__check_publisher_info(expected)
 
                 # Check connectivity with the proxied repos.
@@ -1374,11 +1374,11 @@ test1\ttrue\ttrue\tfalse\t\t\t\t
                 # Check that when the user adds an origin to a former system
                 # publisher with an installed package, the publisher becomes
                 # enabled and is not a system publisher.
-                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.pkg("set-publisher -g {0} test1".format(self.rurl1))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl1)s/\t-
-""" % {"rurl1":self.rurl1}
+test1\ttrue\tfalse\ttrue\torigin\tonline\t{rurl1}/\t-
+""".format(rurl1=self.rurl1)
                 self.__check_publisher_info(expected)
 
         def test_09_test_file_http_transitions(self):
@@ -1407,18 +1407,18 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl1)s/\t-
                 self.__set_responses("all-access-f")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3)
+
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("all-access")
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
         def test_10_test_mirrors(self):
@@ -1446,31 +1446,31 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3, "durl1": self.durl1, "durl2": self.durl2,
-    "durl3": self.durl3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3, durl1=self.durl1, durl2=self.durl2,
+    durl3=self.durl3)
+
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("mirror-access-f")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test12\tfalse\ttrue\ttrue\tmirror\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-test3\ttrue\ttrue\ttrue\tmirror\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3, "durl1": self.durl1, "durl2": self.durl2,
-    "durl3": self.durl3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test12\tfalse\ttrue\ttrue\tmirror\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+test3\ttrue\ttrue\ttrue\tmirror\tonline\t{durl3}/\thttp://localhost:{port}
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3, durl1=self.durl1, durl2=self.durl2,
+    durl3=self.durl3)
+
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("none")
@@ -1482,37 +1482,37 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 self.__set_responses("mirror-access-f")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test12\tfalse\ttrue\ttrue\tmirror\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-test3\ttrue\ttrue\ttrue\tmirror\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3, "durl1": self.durl1, "durl2": self.durl2,
-    "durl3": self.durl3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test1\ttrue\ttrue\ttrue\tmirror\tonline\t{durl1}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test12\tfalse\ttrue\ttrue\tmirror\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+test3\ttrue\ttrue\ttrue\tmirror\tonline\t{durl3}/\thttp://localhost:{port}
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3, durl1=self.durl1, durl2=self.durl2,
+    durl3=self.durl3)
+
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("all-access")
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("mirror-access")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
-test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test12/%(hash2)s/\t-
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash2": hash2,
-    "hash3": hash3, "durl1": self.durl1, "durl2": self.durl2,
-    "durl3": self.durl3
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{durl1}/\thttp://localhost:{port}
+test1\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test1/{hash1}/\t-
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test12/{hash2}/\t-
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:{port}/test3/{hash3}/\t-
+""".format(port=self.sysrepo_port, hash1=hash1, hash2=hash2,
+    hash3=hash3, durl1=self.durl1, durl2=self.durl2,
+    durl3=self.durl3)
+
                 self.__check_publisher_info(expected)
 
         def test_11_https_repos(self, use_config_cache=False):
@@ -1540,15 +1540,15 @@ test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%(ac1url)s/\thttp://localhost:%(port)s
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(ac2url)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(ac3url)s/\thttp://localhost:%(port)s
-""" % {
-    "ac1url": self.acs[self.durl1].url.replace("https", "http"),
-    "ac2url": self.acs[self.durl2].url.replace("https", "http"),
-    "ac3url": self.acs[self.durl3].url.replace("https", "http"),
-    "port": self.sysrepo_port
-}
+test1\ttrue\ttrue\ttrue\torigin\tonline\t{ac1url}/\thttp://localhost:{port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{ac2url}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{ac3url}/\thttp://localhost:{port}
+""".format(
+    ac1url=self.acs[self.durl1].url.replace("https", "http"),
+    ac2url=self.acs[self.durl2].url.replace("https", "http"),
+    ac3url=self.acs[self.durl3].url.replace("https", "http"),
+    port=self.sysrepo_port)
+
                 self.__check_publisher_info(expected)
 
                 api_obj = self.get_img_api_obj()
@@ -1587,9 +1587,9 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 api_obj = self.image_create(props={"use-system-repo": True})
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test12\tfalse\ttrue\ttrue\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
-""" % {"durl2": self.durl2, "durl3": self.durl3, "port": self.sysrepo_port}
+test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
+test3\ttrue\ttrue\ttrue\torigin\tonline\t{durl3}/\thttp://localhost:{port}
+""".format(durl2=self.durl2, durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
         def test_13_no_url(self):
@@ -1622,14 +1622,14 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.pkg("publisher -F tsv")
                 self.__check_publisher_info(expected_empty)
                 self.pkg("unset-publisher test4", exit=1)
-                self.pkg("set-publisher -g %s test4" % self.durl4)
+                self.pkg("set-publisher -g {0} test4".format(self.durl4))
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test4\ttrue\ttrue\ttrue\torigin\tonline\t%s/\t-
-""" % self.durl4
+test4\ttrue\ttrue\ttrue\torigin\tonline\t{0}/\t-
+""".format(self.durl4)
                 self.__check_publisher_info(expected)
-                self.pkg("set-publisher -G %s test4" % self.durl4)
+                self.pkg("set-publisher -G {0} test4".format(self.durl4))
                 self.__check_publisher_info(expected_empty)
 
                 # add another empty publisher
@@ -1672,9 +1672,9 @@ empty\ttrue\tfalse\ttrue\t\t\t\t
                 sc.start()
                 api_obj = self.image_create(props={"use-system-repo": True})
 
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected, su_wrap=True)
                 self.pkg("property", su_wrap=True)
                 self.pkg("install foo", su_wrap=True, exit=1)
@@ -1686,9 +1686,9 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 self.__check_publisher_info(expected, su_wrap=True)
                 self.__check_publisher_info(expected)
                 self.__set_responses("all-access")
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected, su_wrap=True)
 
                 # Test that when the sysrepo isn't available, unprivileged users
@@ -1707,9 +1707,9 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 # Now do a privileged command command to change what the state
                 # on disk is.
                 sc.start()
-                expected =  self.expected_all_access % \
-                    {"durl1": self.durl1, "durl2": self.durl2,
-                    "durl3": self.durl3, "port": self.sysrepo_port}
+                expected =  self.expected_all_access.format(
+                    durl1=self.durl1, durl2=self.durl2,
+                    durl3=self.durl3, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
                 sc.stop()
 
@@ -2243,13 +2243,13 @@ if __name__ == "__main__":
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "cp:")
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %%s") %% e.opt)
+                usage(_("illegal global option -- {{0}}").format(e.opt))
 
-        prop_dict = {
+        prop_dict = {{
             "config/listen_host" : "localhost",
-            "config/listen_port" : "%(proxy_port)s",
+            "config/listen_port" : "{proxy_port}",
             "general/enabled" : "true",
-        }
+        }}
 
         found_c = False
         prop = None
@@ -2265,7 +2265,7 @@ if __name__ == "__main__":
                 print(prop)
                 sys.exit(0)
         for k, v in prop_dict.iteritems():
-                print("%%s %%s" %% (k, v))
+                print("{{0}} {{1}}".format(k, v))
         sys.exit(0)
 """,
 
@@ -2279,12 +2279,12 @@ if __name__ == "__main__":
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "cp:")
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %%s") %% e.opt)
+                usage(_("illegal global option -- {{0}}").format(e.opt))
 
-        prop_dict = {
+        prop_dict = {{
             "config/proxy_host" : "localhost",
-            "config/proxy_port" : "%(proxy_port)s"
-        }
+            "config/proxy_port" : "{proxy_port}"
+        }}
 
         if len(pargs) != 2 or pargs[0] != "restart" or \
             pargs[1] != "svc:/application/pkg/system-repository":
@@ -2311,7 +2311,7 @@ if __name__ == "__main__":
 #
 ServerRoot "/usr/apache2/2.2"
 
-PidFile "%(pidfile)s"
+PidFile "{pidfile}"
 
 #
 # Listen: Allows you to bind Apache to specific IP addresses and/or
@@ -2321,7 +2321,7 @@ PidFile "%(pidfile)s"
 # Change this to Listen on specific IP addresses as shown below to
 # prevent Apache from glomming onto all bound IP addresses.
 #
-Listen 0.0.0.0:%(https_port)s
+Listen 0.0.0.0:{https_port}
 
 #
 # Dynamic Shared Object (DSO) Support
@@ -2431,7 +2431,7 @@ DocumentRoot "/"
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog "%(log_locs)s/error_log"
+ErrorLog "{log_locs}/error_log"
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
@@ -2447,7 +2447,7 @@ LogLevel debug
     # The following directives define some format nicknames for use with
     # a CustomLog directive (see below).
     #
-    LogFormat "%(common_log_format)s" common
+    LogFormat "{common_log_format}" common
 
     #
     # The location and format of the access logfile (Common Logfile Format).
@@ -2456,7 +2456,7 @@ LogLevel debug
     # define per-<VirtualHost> access logfiles, transactions will be
     # logged therein and *not* in this file.
     #
-    CustomLog "%(log_locs)s/access_log" common
+    CustomLog "{log_locs}/access_log" common
 </IfModule>
 
 #
@@ -2499,7 +2499,7 @@ SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
 
-<VirtualHost 0.0.0.0:%(https_port)s>
+<VirtualHost 0.0.0.0:{https_port}>
         AllowEncodedSlashes On
         ProxyRequests Off
         MaxKeepAliveRequests 10000
@@ -2507,11 +2507,11 @@ SSLRandomSeed connect builtin
         SSLEngine On
 
         # Cert paths
-        SSLCertificateFile %(server-ssl-cert)s
-        SSLCertificateKeyFile %(server-ssl-key)s
+        SSLCertificateFile {server-ssl-cert}
+        SSLCertificateKeyFile {server-ssl-key}
 
         # Combined product CA certs for client verification
-        SSLCACertificateFile %(server-ca-cert)s
+        SSLCACertificateFile {server-ca-cert}
 
 	SSLVerifyClient require
 
@@ -2520,10 +2520,10 @@ SSLRandomSeed connect builtin
 
 	        # The client's certificate must pass verification, and must have
 	        # a CN which matches this repository.
-                SSLRequire ( %(ssl-special)s =~ m/%(server-ca-taname)s/ )
+                SSLRequire ( {ssl-special} =~ m/{server-ca-taname}/ )
 
                 # set max to number of threads in depot
-                ProxyPass %(proxied-server)s/ nocanon max=500
+                ProxyPass {proxied-server}/ nocanon max=500
         </Location>
 </VirtualHost>
 

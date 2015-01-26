@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import os.path
@@ -71,5 +71,6 @@
 
         # Finally, redirect the client to the content appropriate for their
         # language and region.
-        raise api_errors.RedirectException("%s%s/%s" % (prefix, dlang, rpath))
+        raise api_errors.RedirectException("{0}{1}/{2}".format(
+            prefix, dlang, rpath))
 %>\

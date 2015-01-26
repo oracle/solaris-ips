@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -80,8 +80,8 @@ class TestPkgPropertyBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("remove-property-value foo bar", exit=1)
                 self.pkg("set-property", exit=2)
 
-                self.pkg("set-property trust-anchor-directory %s %s" %
-                    (self.test_root, self.test_root), exit=1)
+                self.pkg("set-property trust-anchor-directory {0} {1}".format(
+                    self.test_root, self.test_root), exit=1)
 
                 # Verify that properties with single values can be set and
                 # retrieved as expected.

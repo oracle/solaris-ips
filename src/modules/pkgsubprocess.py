@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -156,7 +156,7 @@ class Popen(subprocess.Popen):
                                 # the "env" argument.  Allow that here by doing
                                 # the explicit conversion to a list.
                                 env = [
-                                    "%s=%s" % (k, v)
+                                    "{0}={1}".format(k, v)
                                     for k, v in env.iteritems()
                                 ]
 

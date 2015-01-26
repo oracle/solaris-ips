@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -708,7 +708,7 @@ class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
                             os.stat(target).st_ino)
 
                 def assert_mediation_matches(expected, mediators=misc.EmptyI):
-                        self.pkg("mediator -H -F tsv %s" % " ".join(mediators))
+                        self.pkg("mediator -H -F tsv {0}".format(" ".join(mediators)))
                         self.assertEqualDiff(expected, self.output)
 
                 vi_path = get_link_path("usr", "bin", "vi")

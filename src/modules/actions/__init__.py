@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -64,7 +64,7 @@ types = {}
 payload_types = {}
 
 for modname in __all__:
-        module = __import__("%s.%s" % (__name__, modname),
+        module = __import__("{0}.{1}".format(__name__, modname),
             globals(), locals(), [modname])
 
         nvlist = inspect.getmembers(module, inspect.isclass)
@@ -106,13 +106,13 @@ class UnknownActionError(ActionError):
 
         def __str__(self):
                 if hasattr(self, "fmri") and self.fmri is not None:
-                        return _("unknown action type '%(type)s' in package "
-                            "'%(fmri)s' in action '%(action)s'") % {
-                            "type": self.type, "fmri": self.fmri,
-                            "action": self.actionstr }
-                return _("unknown action type '%(type)s' in action "
-                    "'%(action)s'") % { "type": self.type,
-                    "action": self.actionstr }
+                        return _("unknown action type '{type}' in package "
+                            "'{fmri}' in action '{action}'").format(
+                            type=self.type, fmri=self.fmri,
+                            action=self.actionstr)
+                return _("unknown action type '{type}' in action "
+                    "'{action}'").format(type=self.type,
+                    action=self.actionstr)
 
 class MalformedActionError(ActionError):
         def __init__(self, *args):
@@ -124,15 +124,15 @@ class MalformedActionError(ActionError):
         def __str__(self):
                 marker = " " * (4 + self.position) + "^"
                 if hasattr(self, "fmri") and self.fmri is not None:
-                        return _("Malformed action in package '%(fmri)s' at "
-                            "position: %(pos)d: %(error)s:\n    %(action)s\n"
-                            "%(marker)s") % { "fmri": self.fmri,
-                            "pos": self.position, "action": self.actionstr,
-                            "marker": marker, "error": self.errorstr }
-                return _("Malformed action at position: %(pos)d: %(error)s:\n    "
-                    "%(action)s\n%(marker)s") % { "pos": self.position,
-                    "action": self.actionstr, "marker": marker,
-                    "error": self.errorstr }
+                        return _("Malformed action in package '{fmri}' at "
+                            "position: {pos:d}: {error}:\n    {action}\n"
+                            "{marker}").format(fmri=self.fmri,
+                            pos=self.position, action=self.actionstr,
+                            marker=marker, error=self.errorstr)
+                return _("Malformed action at position: {pos:d}: {error}:\n    "
+                    "{action}\n{marker}").format(pos=self.position,
+                    action=self.actionstr, marker=marker,
+                    error=self.errorstr)
 
 
 class ActionDataError(ActionError):
@@ -159,11 +159,11 @@ class InvalidActionError(ActionError):
 
         def __str__(self):
                 if hasattr(self, "fmri") and self.fmri is not None:
-                        return _("invalid action in package %(fmri)s: "
-                            "%(action)s: %(error)s") % { "fmri": self.fmri,
-                            "action": self.actionstr, "error": self.errorstr }
-                return _("invalid action, '%(action)s': %(error)s") % {
-                        "action": self.actionstr, "error": self.errorstr }
+                        return _("invalid action in package {fmri}: "
+                            "{action}: {error}").format(fmri=self.fmri,
+                            action=self.actionstr, error=self.errorstr)
+                return _("invalid action, '{action}': {error}").format(
+                        action=self.actionstr, error=self.errorstr)
 
 
 class MissingKeyAttributeError(InvalidActionError):
@@ -171,7 +171,8 @@ class MissingKeyAttributeError(InvalidActionError):
 
         def __init__(self, *args):
                 InvalidActionError.__init__(self, str(args[0]),
-                    _("no value specified for key attribute '%s'") % args[1])
+                    _("no value specified for key attribute '{0}'").format(
+                    args[1]))
 
 
 class KeyAttributeMultiValueError(InvalidActionError):
@@ -180,7 +181,8 @@ class KeyAttributeMultiValueError(InvalidActionError):
 
         def __init__(self, *args):
                 InvalidActionError.__init__(self, str(args[0]),
-                    _("%s attribute may only be specified once") % args[1])
+                    _("{0} attribute may only be specified once").format(
+                    args[1]))
 
 
 class InvalidPathAttributeError(InvalidActionError):
@@ -214,13 +216,13 @@ class InvalidActionAttributesError(ActionError):
         def __str__(self):
                 act_errors = "\n  ".join(err for name, err in self.errors)
                 if self.fmri:
-                        return _("The action '%(action)s' in package "
-                            "'%(fmri)s' has invalid attribute(s):\n"
-                            "  %(act_errors)s") % { "action": self.action,
-                            "fmri": self.fmri, "act_errors": act_errors }
-                return _("The action '%(action)s' has invalid attribute(s):\n"
-                    "  %(act_errors)s") % { "action": self.action,
-                    "act_errors": act_errors }
+                        return _("The action '{action}' in package "
+                            "'{fmri}' has invalid attribute(s):\n"
+                            "  {act_errors}").format(action=self.action,
+                            fmri=self.fmri, act_errors=act_errors)
+                return _("The action '{action}' has invalid attribute(s):\n"
+                    "  {act_errors}").format(action=self.action,
+                    act_errors=act_errors)
 
 
 # This must be imported *after* all of the exception classes are defined as
@@ -232,7 +234,7 @@ def attrsfromstr(string):
 
         Raises MalformedActionError if the attributes have syntactic problems.
         """
-        return fromstr("unknown %s" % string).attrs
+        return fromstr("unknown {0}".format(string)).attrs
 
 def internalizelist(atype, args, ahash=None, basedirs=None):
         """Create an action instance based on a sequence of "key=value" strings.
@@ -254,7 +256,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         """
 
         if atype not in types:
-                raise UnknownActionError(("%s %s" % (atype,
+                raise UnknownActionError(("{0} {1}".format(atype,
                     " ".join(args))).strip(), atype)
 
         data = None
@@ -271,8 +273,9 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
                                 p1 = " ".join(args[:kvi])
                                 p2 = " ".join(args[kvi:])
                                 raise MalformedActionError(
-                                    "%s %s %s" % (atype, p1, p2), len(p1) + 1,
-                                    "attribute '%s'" % kv)
+                                    "{0} {1} {2}".format(atype, p1, p2),
+                                    len(p1) + 1,
+                                    "attribute '{0}'".format(kv))
 
                         # This is by far the common case-- an attribute with
                         # a single value.
@@ -292,8 +295,8 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
                 kvi = args.index(kv) + 1
                 p1 = " ".join(args[:kvi])
                 p2 = " ".join(args[kvi:])
-                raise MalformedActionError("%s %s %s" % (atype, p1, p2),
-                    len(p1) + 2, "attribute '%s'" % kv)
+                raise MalformedActionError("{0} {1} {2}".format(atype, p1, p2),
+                    len(p1) + 2, "attribute '{0}'".format(kv))
 
         # keys called 'data' cause problems due to the named parameter being
         # passed to the action constructor below. Check for these. Note that
@@ -301,7 +304,8 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         if "data" in attrs:
                 astr = atype + " " + " ".join(args)
                 raise InvalidActionError(astr,
-                        "%s action cannot have a 'data' attribute" % atype)
+                        "{0} action cannot have a 'data' attribute".format(
+                        atype))
 
         action = types[atype](**attrs)
         if ahash:
@@ -392,15 +396,15 @@ def set_action_data(payload, action, basedirs=None, bundles=None):
                                 break
 
                 if not data and basedirs:
-                        raise ActionDataError(_("Action payload '%(name)s' "
+                        raise ActionDataError(_("Action payload '{name}' "
                             "was not found in any of the provided locations:"
-                            "\n%(basedirs)s") % { "name": filepath,
-                            "basedirs": "\n".join(basedirs) }, path=filepath)
+                            "\n{basedirs}").format(name=filepath,
+                            basedirs="\n".join(basedirs)), path=filepath)
                 elif not data and bundles:
-                        raise ActionDataError(_("Action payload '%(name)s' was "
+                        raise ActionDataError(_("Action payload '{name}' was "
                             "not found in any of the provided sources:"
-                            "\n%(sources)s") % { "name": filepath,
-                            "sources": "\n".join(b.filename for b in bundles) },
+                            "\n{sources}").format(name=filepath,
+                            sources="\n".join(b.filename for b in bundles)),
                             path=filepath)
                 elif not data:
                         # Only if no explicit sources were provided should a

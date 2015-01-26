@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -320,27 +320,27 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Change the origin of the publisher of an installed package to
                 # that of an empty repository.  The package should still be
                 # shown for test1 and installed for test2.
-                self.pkg("set-publisher -O %s test2" % self.rurl3)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl3))
                 self.pkg("list -aHf /foo@1.0")
                 expected = \
                     "foo 1.0-0 ---\n" + \
                     "foo (test2) 1.0-0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl2))
 
                 # Remove the publisher of an installed package, then add the
                 # publisher back, but with an empty repository.  The package
                 # should still be shown as for test1 and installed for test2.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test2" % self.rurl3)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl3))
                 self.pkg("list -aHf /foo@1.0")
                 expected = \
                     "foo 1.0-0 ---\n" + \
                     "foo (test2) 1.0-0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl2))
 
                 # With the publisher of an installed package unknown, add a new
                 # publisher using the repository the package was originally
@@ -449,7 +449,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.__check_qoutput(errout=True)
 
                 # Reset test2's origin.
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("set-publisher -O {0} test2".format(self.rurl2))
 
         def test_11_v0_repo(self):
                 """Verify that pkg list works with a v0 repository, especially
@@ -459,8 +459,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 dc = self.dcs[1]
                 dc.set_disable_ops(["catalog/1"])
                 dc.start()
-                self.pkg("set-publisher --no-refresh -O %s test1" %
-                    dc.get_depot_url())
+                self.pkg("set-publisher --no-refresh -O {0} test1".format(
+                    dc.get_depot_url()))
 
                 self.pkg("refresh --full")
 
@@ -477,7 +477,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 dc.stop()
                 dc.unset_disable_ops()
 
-                self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl1)
+                self.pkg("set-publisher --no-refresh -O {0} test1".format(self.rurl1))
                 self.pkg("refresh --full")
 
         def test_12_matching(self):
@@ -546,7 +546,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     ("foo bogus", 3), ("foo food bogus", 3),
                     ("bogus quirky names", 1), ("'fo*' bogus", 3),
                     ("'fo*' food bogus", 3), ("'f?o*' bogus", 3)):
-                        self.pkg("list -a %s" % pat, exit=ecode)
+                        self.pkg("list -a {0}".format(pat), exit=ecode)
 
                 self.pkg("list junk_pkg_name", exit=1)
                 self.assert_("junk_pkg_name" in self.errout)
@@ -581,7 +581,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 pats = ("bar -v", "*@a", "bar@a", "@1.0", "foo@1.0.a")
                 # First, test individually.
                 for val in pats:
-                        self.pkg("list %s" % val, exit=1)
+                        self.pkg("list {0}".format(val), exit=1)
                         self.assert_(self.errout)
 
                 # Next, test invalid input but with options.  The option
@@ -594,7 +594,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.__check_qoutput(errout=True)
 
                 # Last, test all at once.
-                self.pkg("list %s" % " ".join(pats), exit=1)
+                self.pkg("list {0}".format(" ".join(pats)), exit=1)
 
         def test_15_latest(self):
                 """Verify that FMRIs using @latest work as expected and

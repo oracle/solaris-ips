@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -100,8 +100,8 @@ class LicenseAction(generic.Action):
                             hash_func=hash_func)
                 except zlib.error, e:
                         raise ActionExecutionError(self, details=_("Error "
-                            "decompressing payload: %s") %
-                            (" ".join([str(a) for a in e.args])), error=e)
+                            "decompressing payload: {0}").format(
+                            " ".join([str(a) for a in e.args])), error=e)
                 finally:
                         lfile.close()
                         stream.close()
@@ -109,12 +109,12 @@ class LicenseAction(generic.Action):
                 if shasum != hash_val:
                         raise ActionExecutionError(self, details=_("Action "
                             "data hash verification failure: expected: "
-                            "%(expected)s computed: %(actual)s action: "
-                            "%(action)s") % {
-                                "expected": hash_val,
-                                "actual": shasum,
-                                "action": self
-                            })
+                            "{expected} computed: {actual} action: "
+                            "{action}").format(
+                                expected=hash_val,
+                                actual=shasum,
+                                action=self
+                           ))
 
                 os.chmod(path, misc.PKG_RO_FILE_MODE)
 
@@ -148,15 +148,15 @@ class LicenseAction(generic.Action):
                                     hash_func=hash_func)
                         except EnvironmentError, e:
                                 if e.errno == errno.ENOENT:
-                                        errors.append(_("License file %s does "
-                                            "not exist.") % path)
+                                        errors.append(_("License file {0} does "
+                                            "not exist.").format(path))
                                         return errors, warnings, info
                                 raise
 
                         if chash != hash_val:
-                                errors.append(_("Hash: '%(found)s' should be "
-                                    "'%(expected)s'") % { "found": chash,
-                                    "expected": hash_val})
+                                errors.append(_("Hash: '{found}' should be "
+                                    "'{expected}'").format(found=chash,
+                                    expected=hash_val))
                 return errors, warnings, info
 
         def remove(self, pkgplan):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -80,7 +80,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # add a few more entries to the history - we don't care
                 # that these fail
                 for item in ["cheese", "tomatoes", "bread", "pasta"]:
-                            self.pkg("install %s" % item, exit=1)
+                            self.pkg("install {0}".format(item), exit=1)
                             time.sleep(1)
                 self.pkg("install baz")
                 self.pkg("refresh")
@@ -154,16 +154,16 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 for op in operations:
                         # Verify that each operation was recorded.
                         if o.find(op) == -1:
-                                raise RuntimeError("Operation: %s wasn't "
-                                    "recorded, o:%s" % (op, o))
+                                raise RuntimeError("Operation: {0} wasn't "
+                                    "recorded, o:{1}".format(op, o))
 
                 self.pkg("history -o start,command")
                 o = self.output
                 for cmd, exit in commands:
                         # Verify that each of the commands was recorded.
-                        if o.find(" %s" % cmd) == -1:
-                                raise RuntimeError("Command: %s wasn't recorded,"
-                                    " o:%s" % (cmd, o))
+                        if o.find(" {0}".format(cmd)) == -1:
+                                raise RuntimeError("Command: {0} wasn't recorded,"
+                                    " o:{1}".format(cmd, o))
 
                 # Verify that a successful operation with no effect won't
                 # be recorded.
@@ -295,23 +295,23 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                                 found_op = True
                                 if line.find("Failed") == -1:
-                                        raise RuntimeError("Operation: %s "
+                                        raise RuntimeError("Operation: {0} "
                                             "wasn't recorded as failing, "
-                                            "o:%s" % (op, l))
+                                            "o:{0}".format(op, l))
                                 break
 
                         if not found_op:
-                                raise RuntimeError("Operation: %s "
-                                    "wasn't recorded, o:%s" % (op, o))
+                                raise RuntimeError("Operation: {0} "
+                                    "wasn't recorded, o:{1}".format(op, o))
 
                 # The actual commands are only found in long format.
                 self.pkg("history -l")
                 o = self.output
                 for cmd in commands:
                         # Verify that each of the commands was recorded.
-                        if o.find(" %s" % cmd) == -1:
-                                raise RuntimeError("Command: %s wasn't recorded,"
-                                    " o:%s" % (cmd, o))
+                        if o.find(" {0}".format(cmd)) == -1:
+                                raise RuntimeError("Command: {0} wasn't recorded,"
+                                    " o:{1}".format(cmd, o))
 
         def test_9_history_limit(self):
                 """Verify limiting the number of records to output
@@ -322,7 +322,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # experiment.
                 #
                 for i in xrange(5):
-                        self.pkg("install pkg%d" % i, exit=1)
+                        self.pkg("install pkg{0:d}".format(i), exit=1)
                 self.pkg("history -Hn 3")
                 self.assertEqual(len(self.output.splitlines()), 3)
 
@@ -335,7 +335,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 count = len(os.listdir(hist_path))
 
                 # Asking for too many objects should return the full set
-                self.pkg("history -Hn %d" % (count + 5))
+                self.pkg("history -Hn {0:d}".format(count + 5))
                 self.assertEqual(len(self.output.splitlines()), count)
 
         def test_10_history_columns(self):
@@ -355,15 +355,15 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                     "finish", "id", "new_be", "new_be_uuid", "operation",
                     "outcome", "reason", "snapshot", "start", "time", "user"]
                 for col in cols:
-                        self.pkg("history -H -n1 -o %s" % col)
+                        self.pkg("history -H -n1 -o {0}".format(col))
                         self.assert_(self.output)
                         # if we've seen this column before, we can verify
                         # the -o output matches that field in the normal
                         # output.
                         if col in known:
                                 self.assert_(self.output.strip() == known[col],
-                                    "%s column output %s does not match %s" %
-                                    (col, self.output, known[col]))
+                                    "{0} column output {1} does not match {2}".format(
+                                    col, self.output, known[col]))
 
         def test_11_history_events(self):
                 """ Verify the -t option, for discreet timestamps """
@@ -386,14 +386,14 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # verify we can retrieve each event
                 for timestamp in events:                        
                         operations = set(events[timestamp])
-                        self.pkg("history -H -t %s -o operation" % timestamp)
+                        self.pkg("history -H -t {0} -o operation".format(timestamp))
                         arr = self.output.splitlines()
                         found = set()
                         for item in arr:
                                 found.add(item.strip())
                         self.assert_(found == operations,
-                                    "%s does not equal %s for %s" %
-                                    (found, operations, timestamp))
+                                    "{0} does not equal {1} for {2}".format(
+                                    found, operations, timestamp))
                 
                 # record timestamp and expected result for 3 random,
                 # unique timestamps.  Since each timestamp can result in
@@ -408,13 +408,13 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         if not comma_events:
                                 comma_events = ts
                         else:
-                                comma_events = "%s,%s" % (comma_events, ts)
+                                comma_events = "{0},{1}".format(comma_events, ts)
                         expected_count = expected_count + len(events[ts])
 
-                self.pkg("history -H -t %s -o start,operation" % comma_events)
+                self.pkg("history -H -t {0} -o start,operation".format(comma_events))
                 output = self.output.splitlines()
                 self.assert_(len(output) == expected_count,
-                    "Expected %s events, got %s" % (expected_count,
+                    "Expected {0} events, got {1}".format(expected_count,
                     len(output)))
                 
                 for line in output:
@@ -422,19 +422,19 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         timestamp = fields[0].strip()
                         operation = fields[1].strip()
                         self.assert_(timestamp in events,
-                            "Missing %s from %s" % (timestamp, events))
+                            "Missing {0} from {1}".format(timestamp, events))
                         expected = events[timestamp]
                         self.assert_(operation in expected,
-                            "Recorded operation %s at %s not in dictionary %s" %
-                            (operation, timestamp, events))
+                            "Recorded operation {0} at {1} not in dictionary {2}".format(
+                            operation, timestamp, events))
 
                 # verify that duplicate timestamps specified on command line
                 # only output history for one instance of each timestamp
-                multi_events = "%s,%s" % (comma_events, comma_events)
-                self.pkg("history -H -t %s -o start,operation" % multi_events)
+                multi_events = "{0},{1}".format(comma_events, comma_events)
+                self.pkg("history -H -t {0} -o start,operation".format(multi_events))
                 output = self.output.splitlines()
                 self.assert_(len(output) == expected_count,
-                    "Expected %s events, got %s" % (expected_count,
+                    "Expected {0} events, got {1}".format(expected_count,
                     len(output)))
 
         def test_12_history_range(self):
@@ -448,8 +448,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 self.pkg("history -H "
                     "-t 1970-01-01T00:00:00-2037-01-01T03:44:07")
                 self.assert_(entire_output == self.output,
-                    "large history range, %s not equal to %s" %
-                    (entire_output, self.output))
+                    "large history range, {0} not equal to {1}".format(
+                    entire_output, self.output))
 
                 # checks to verify history ranges are tricky since one history
                 # timestamp can correspond to more than one history entry.
@@ -468,11 +468,11 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 # verify a range specifying the same timestamp twice
                 # is the same as printing just that timestamp
-                self.pkg("history -H -t %s" % single_ts)
+                self.pkg("history -H -t {0}".format(single_ts))
                 single_entry_output = self.output
-                self.pkg("history -H -t %s-%s" % (single_ts, single_ts))
+                self.pkg("history -H -t {0}-{1}".format(single_ts, single_ts))
                 self.assert_(single_entry_output == self.output,
-                    "%s does not equal %s" % (single_entry_output, self.output))
+                    "{0} does not equal {1}".format(single_entry_output, self.output))
 
                 # verify a random range taken from the history is correct
                 timestamps = entries.keys()
@@ -492,22 +492,22 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         attempts = attempts + 1
 
                 self.assert_(start_ts != end_ts,
-                    "Unable to test pkg history range, %s == %s" %
-                    (start_ts, end_ts))
+                    "Unable to test pkg history range, {0} == {1}".format(
+                    start_ts, end_ts))
 
-                self.pkg("history -H -t %s-%s" % (start_ts, end_ts))
+                self.pkg("history -H -t {0}-{1}".format(start_ts, end_ts))
                 range_lines = self.output.splitlines()
                 range_timestamps = []
 
                 self.assert_(len(range_lines) >= 1, "No output from pkg history"
-                    " -t %s-%s" % (start_ts, end_ts))
+                    " -t {0}-{1}".format(start_ts, end_ts))
 
                 # for each history line in the range output, ensure that it
                 # matches timestamps that we stored from the main history output
                 for line in range_lines:
                         ts = line.strip().split()[0]
                         self.assert_(line in entries[ts],
-                            "%s does not appear in %s" % (line, entries[ts]))                        
+                            "{0} does not appear in {1}".format(line, entries[ts]))                        
                         range_timestamps.append(ts)
 
                 # determine the reverse. That is, for each entry in the
@@ -524,19 +524,19 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                                 self.assert_(line in range_lines,
                                     "expected range history entry not found "
                                     "in output:\n"
-                                    "Line: %s\n"
-                                    "Range output %s\n"
-                                    "Entire output %s" %
-                                    (line, "\n".join(range_lines),
+                                    "Line: {0}\n"
+                                    "Range output {1}\n"
+                                    "Entire output {2}".format(
+                                    line, "\n".join(range_lines),
                                     entire_output))
 
                 # now verify that each timestamp we collected does indeed fall
                 # within that range
                 for ts in range_timestamps:
-                        self.assert_(ts >= start_ts, "%s is not >= %s" %
-                            (ts, start_ts))
-                        self.assert_(ts <= end_ts, "%s is not <= %s" %
-                            (ts, end_ts))
+                        self.assert_(ts >= start_ts, "{0} is not >= {1}".format(
+                            ts, start_ts))
+                        self.assert_(ts <= end_ts, "{0} is not <= {1}".format(
+                            ts, end_ts))
 
         def test_13_bug_17418(self):
                 """Verify we can get history for an operation that ran for a

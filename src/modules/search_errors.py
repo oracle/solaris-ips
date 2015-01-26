@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # __str__ methods defined for subclasses of IndexError should be defined
@@ -49,8 +48,8 @@ class InconsistentIndexException(IndexingException):
 
         def __str__(self):
                 return "Index corrupted, remove all files and " \
-                    "rebuild from scratch by clearing out %s " \
-                    " and restarting the depot." % self.cause
+                    "rebuild from scratch by clearing out {0} " \
+                    " and restarting the depot.".format(self.cause)
 
 
 class IndexLockedException(IndexingException):
@@ -67,8 +66,8 @@ class IndexLockedException(IndexingException):
                         # Used even if hostname is undefined.
                         return _("The search index cannot be modified as it "
                             "is currently in use by another process: "
-                            "pid %(pid)s on %(host)s.") % {
-                            "pid": self.pid, "host": self.hostname }
+                            "pid {pid} on {host}.").format(
+                            pid=self.pid, host=self.hostname)
                 return _("The search index cannot be modified as it is "
                     "currently in use by another process.")
 
@@ -79,9 +78,9 @@ class ProblematicPermissionsIndexException(IndexingException):
 
         def __str__(self):
                 return "Could not remove or create " \
-                    "%s because of\nincorrect " \
+                    "{0} because of\nincorrect " \
                     "permissions. Please correct this issue then " \
-                    "rebuild the index." % self.cause
+                    "rebuild the index.".format(self.cause)
 
 class NoIndexException(Exception):
         """This is used when a search is executed while no index exists."""
@@ -96,8 +95,8 @@ class NoIndexException(Exception):
                 return str(self)
 
         def __str__(self):
-                return "Could not find index to search, looked in: %s" \
-                    % self.index_dir
+                return "Could not find index to search, looked in: " \
+                    "{0}".format(self.index_dir)
 
 class IncorrectIndexFileHash(Exception):
         """This is used when the index hash value doesn't match the hash of the
@@ -115,5 +114,5 @@ class IncorrectIndexFileHash(Exception):
                 return str(self)
 
         def __str__(self):
-                return "existing_val was:%s\nincoming_val was:%s" % \
-                    (self.ev, self.iv)
+                return "existing_val was:{0}\nincoming_val was:{1}".format(
+                    self.ev, self.iv)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -273,7 +273,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 for utype in ("legal_uri", "mirror", "origin", "related_uri"):
                         prop = utype + "s"
                         for u in rprops[prop]:
-                                method = getattr(robj, "add_%s" % utype)
+                                method = getattr(robj, "add_{0}".format(utype))
                                 method(u, priority=1, ssl_cert=tcert,
                                     ssl_key=tkey)
 
@@ -281,10 +281,10 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 for utype in ("mirror", "origin"):
                         prop = utype + "s"
                         for u in rprops[prop]:
-                                method = getattr(robj, "has_%s" % utype)
+                                method = getattr(robj, "has_{0}".format(utype))
                                 self.assertTrue(method(u))
 
-                                method = getattr(robj, "get_%s" % utype)
+                                method = getattr(robj, "get_{0}".format(utype))
                                 cu = publisher.RepositoryURI(u, priority=1,
                                     ssl_cert=tcert, ssl_key=tkey,
                                     trailing_slash=True)
@@ -304,7 +304,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
 
                         # Remove only the first URI for each property.
                         u = rprops[prop][0]
-                        method = getattr(robj, "remove_%s" % utype)
+                        method = getattr(robj, "remove_{0}".format(utype))
                         method(u)
                         self.assertTrue(u not in getattr(robj, prop))
                         self.assertEqual(len(getattr(robj, prop)), 1)
@@ -316,10 +316,10 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                         # Update only the last entry for each property.
                         u = rprops[prop][-1]
 
-                        method = getattr(robj, "update_%s" % utype)
+                        method = getattr(robj, "update_{0}".format(utype))
                         method(u, priority=2, ssl_cert=t2cert, ssl_key=t2key)
 
-                        method = getattr(robj, "get_%s" % utype)
+                        method = getattr(robj, "get_{0}".format(utype))
                         ou = method(u)
 
                         # This verifies that the expected URI object is
@@ -334,7 +334,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
 
                 # Verify that reset functions work as expected.
                 for prop in ("mirrors", "origins"):
-                        method = getattr(robj, "reset_%s" % prop)
+                        method = getattr(robj, "reset_{0}".format(prop))
                         method()
                         self.assertEqual(getattr(robj, prop), [])
 

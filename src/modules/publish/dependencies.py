@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -47,18 +47,18 @@ import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variants
 
-paths_prefix = "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX
-files_prefix = "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX
-reason_prefix = "%s.reason" % base.Dependency.DEPEND_DEBUG_PREFIX
-type_prefix = "%s.type" % base.Dependency.DEPEND_DEBUG_PREFIX
-target_prefix = "%s.target" % base.Dependency.DEPEND_DEBUG_PREFIX
-bypassed_prefix = "%s.bypassed" % base.Dependency.DEPEND_DEBUG_PREFIX
-via_links_prefix = "%s.via-links" % base.Dependency.DEPEND_DEBUG_PREFIX
-path_id_prefix = "%s.path-id" % base.Dependency.DEPEND_DEBUG_PREFIX
+paths_prefix = "{0}.path".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+files_prefix = "{0}.file".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+reason_prefix = "{0}.reason".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+type_prefix = "{0}.type".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+target_prefix = "{0}.target".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+bypassed_prefix = "{0}.bypassed".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+via_links_prefix = "{0}.via-links".format(base.Dependency.DEPEND_DEBUG_PREFIX)
+path_id_prefix = "{0}.path-id".format(base.Dependency.DEPEND_DEBUG_PREFIX)
 
 # A tag used to hold the product of the paths_prefix and files_prefix
 # contents, used when bypassing dependency generation
-fullpaths_prefix = "%s.fullpath" % base.Dependency.DEPEND_DEBUG_PREFIX
+fullpaths_prefix = "{0}.fullpath".format(base.Dependency.DEPEND_DEBUG_PREFIX)
 
 Entries = namedtuple("Entries", ["delivered", "installed"])
 # This namedtuple is used to hold two items. The first, delivered, is used to
@@ -90,23 +90,22 @@ class UnresolvedDependencyError(DependencyError):
         def __str__(self):
                 dep_str = "\n" + self.file_dep.pretty_print()
                 if self.pvars.not_sat_set:
-                        return _("%(pth)s has unresolved dependency '%(dep)s' "
+                        return _("{pth} has unresolved dependency '{dep}' "
                             "under the following combinations of "
-                            "variants:\n%(combo)s") % \
-                            {
-                                "pth":self.path,
-                                "dep":dep_str + "\n",
-                                "combo":"\n".join([
+                            "variants:\n{combo}").format(
+                                pth=self.path,
+                                dep=dep_str + "\n",
+                                combo="\n".join([
                                     " ".join([
-                                        ("%s:%s" % (name, val))
+                                        ("{0}:{1}".format(name, val))
                                         for name, val in sorted(grp)
                                     ])
                                     for grp in self.pvars.not_sat_set
-                            ])}
+                            ]))
                 else:
-                        return _("%(pth)s has unresolved dependency "
-                            "'%(dep)s'.") % \
-                            { "pth":self.path, "dep":dep_str }
+                        return _("{pth} has unresolved dependency "
+                            "'{dep}'.").format(
+                            pth=self.path, dep=dep_str)
 
 
 class MissingPackageVariantError(DependencyError):
@@ -119,15 +118,15 @@ class MissingPackageVariantError(DependencyError):
                 self.path = pth
 
         def __str__(self):
-                return _("The action delivering %(path)s is tagged with a "
+                return _("The action delivering {path} is tagged with a "
                     "variant type or value not tagged on the package. "
                     "Dependencies on this file may fail to be reported.\n"
-                    "The action's variants are: %(act)s\nThe package's "
-                    "variants are: %(pkg)s") % {
-                        "path": self.path,
-                        "act": self.act_vars,
-                        "pkg": self.pkg_vars
-                    }
+                    "The action's variants are: {act}\nThe package's "
+                    "variants are: {pkg}").format(
+                        path=self.path,
+                        act=self.act_vars,
+                        pkg=self.pkg_vars
+                   )
 
 
 class BadPackageFmri(DependencyError):
@@ -138,8 +137,8 @@ class BadPackageFmri(DependencyError):
                 self.exc = e
 
         def __str__(self):
-                return _("The manifest '%(path)s' has an invalid package "
-                    "FMRI:\n\t%(exc)s") % { "path": self.path, "exc": self.exc }
+                return _("The manifest '{path}' has an invalid package "
+                    "FMRI:\n\t{exc}").format(path=self.path, exc=self.exc)
 
 
 class ExtraVariantedDependency(DependencyError):
@@ -156,31 +155,31 @@ class ExtraVariantedDependency(DependencyError):
                 s = ""
                 for r, diff in sorted(self.rvs.iteritems()):
                         for kind in diff.type_diffs:
-                                s += _("\t%(r)-15s Variant '%(kind)s' is not "
-                                    "declared.\n") % \
-                                    {"r":r, "kind":kind}
+                                s += _("\t{r:15} Variant '{kind}' is not "
+                                    "declared.\n").format(
+                                    r=r, kind=kind)
                         for k, v in diff.value_diffs:
-                                s += _("\t%(r)-15s Variant '%(kind)s' is not "
-                                    "declared to have value '%(val)s'.\n") % \
-                                    {"r":r, "val":v, "kind":k}
+                                s += _("\t{r:15} Variant '{kind}' is not "
+                                    "declared to have value '{val}'.\n").format(
+                                    r=r, val=v, kind=k)
                 if not self.manual:
-                        return _("The package '%(pkg)s' contains actions with "
+                        return _("The package '{pkg}' contains actions with "
                             "the\npaths seen below which have variants set on "
                             "them which are not set on the\npackage.  These "
                             "variants must be set on the package or removed "
-                            "from the actions.\n\n%(rvs)s") % {
-                            "pkg": self.pkg,
-                            "rvs": s
-                        }
+                            "from the actions.\n\n{rvs}").format(
+                            pkg=self.pkg,
+                            rvs=s
+                       )
                 else:
-                        return _("The package '%(pkg)s' contains manually "
+                        return _("The package '{pkg}' contains manually "
                             "specified dependencies\nwhich have variants set "
                             "on them which are not set on the package.  "
                             "These\nvariants must be set on the package or "
-                            "removed from the actions.\n\n%(rvs)s") % {
-                            "pkg": self.pkg,
-                            "rvs": s
-                        }
+                            "removed from the actions.\n\n{rvs}").format(
+                            pkg=self.pkg,
+                            rvs=s
+                       )
 
 class NeedConditionalRequireAny(DependencyError):
         """This exception is used when pkgdepend would need a dependency which
@@ -203,13 +202,13 @@ same FMRI.  Each pair of problematic conditional dependencies follows:
                         i += 1
                         v.simplify(self.pkg_vct)
                         if v.is_empty() or not v.sat_set:
-                                s += _("Pair %s\n") % i
+                                s += _("Pair {0}\n").format(i)
                         else:
-                                s += _("Pair %s is only problematic in the "
-                                    "listed variant combinations:") % i
+                                s += _("Pair {0} is only problematic in the "
+                                    "listed variant combinations:").format(i)
                                 s += "\n\t\t" + "\n\t\t".join([
                                     " ".join([
-                                        ("%s:%s" % (name, val))
+                                        ("{0}:{1}".format(name, val))
                                         for name, val in sorted(grp)
                                     ]) for grp in v.sat_set
                                 ])
@@ -432,7 +431,8 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                 # If we're bypassing all depdendency generation, we can avoid
                 # calling our dispatch_dict function altogether.
                 if (".*" in bypass or "^.*$" in bypass) and not ignore_bypass:
-                        pkg_attrs[bypassed_prefix] = "%s:.*" % a.attrs["path"]
+                        pkg_attrs[bypassed_prefix] = "{0}:.*".format(
+                            a.attrs["path"])
                         continue
                 try:
                         func = dispatch_dict[file_type]
@@ -474,13 +474,13 @@ def __verify_run_path(run_path_str):
                 # require a colon separated string to potentially enforce
                 # ordering in the future
                 return [base.DependencyAnalysisError(
-                    _("Manifest specified multiple values for %s rather "
-                    "than a single colon-separated string.") %
-                    portable.PD_RUN_PATH)]
+                    _("Manifest specified multiple values for {0} rather "
+                    "than a single colon-separated string.").format(
+                    portable.PD_RUN_PATH))]
         if set(run_path_str.split(":")) == set([""]):
                 return [base.DependencyAnalysisError(
-                    _("Manifest did not specify any entries for %s, expecting "
-                    "a colon-separated string.") % portable.PD_RUN_PATH)]
+                    _("Manifest did not specify any entries for {0}, expecting "
+                    "a colon-separated string.").format(portable.PD_RUN_PATH))]
         return []
 
 def __makelist(value):
@@ -533,7 +533,8 @@ def __bypass_deps(ds, bypass, pkg_attrs):
                                 # if it appears to be a filename, make it match
                                 # all paths to that filename.
                                 elif "/" not in item:
-                                        item = ".*%s%s" % (os.path.sep, item)
+                                        item = ".*{0}{1}".format(os.path.sep,
+                                            item)
 
                                 # always anchor our regular expressions,
                                 # otherwise, we get partial matches for files,
@@ -777,8 +778,8 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
                     rec_paths:
                         via_links.append(path)
                         assert vc_intersection.intersects(rec_vc), \
-                            "vc:%s\nvc_intersection:%s" % \
-                            (rec_vc, vc_intersection)
+                            "vc:{0}\nvc_intersection:{1}".format(
+                            rec_vc, vc_intersection)
                         links_found.setdefault(next_path, []).append(
                             (link_pfmri, nearest_pfmri, rec_vc))
                         res_paths.append(LinkInfo(rec_path, rec_pfmri,
@@ -1068,8 +1069,8 @@ def __predicate_path_id_attrget(d):
                 return d[0].attrs["predicate"], \
                     d[0].attrs.get(path_id_prefix, None)
         except KeyError:
-                raise RuntimeError("Expected this to have a predicate:%s" % \
-                    d[0])
+                raise RuntimeError("Expected this to have a predicate:{0}".format(
+                    d[0]))
 
 def __collapse_conditionals(deps):
         """Under certain conditions, conditional dependencies can be transformed

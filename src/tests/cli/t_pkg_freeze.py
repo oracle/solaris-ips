@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -268,10 +268,10 @@ providing a version at which to freeze them.
                     self.api_obj, [new_foo])
                 # Check that the output of pkg list is correct in terms of the F
                 # column.
-                self.pkg("list -Ha %s" % new_foo)
+                self.pkg("list -Ha {0}".format(new_foo))
                 expected = "foo 1.0-0 ---\n"
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
-                self.pkg("list -Ha %s" % existing_foo)
+                self.pkg("list -Ha {0}".format(existing_foo))
                 expected = "foo 1.0-0 -f-\n"
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
                 # This should install the original foo@1.0 package.
@@ -282,15 +282,15 @@ providing a version at which to freeze them.
                 self.pkg("freeze")
 
                 # Test that pkg list reflects the relaxed freeze.
-                self.pkg("list -H %s" % existing_foo)
+                self.pkg("list -H {0}".format(existing_foo))
                 expected = "foo 1.0-0 if-\n"
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
-                self.pkg("list -Haf %s" % new_foo)
+                self.pkg("list -Haf {0}".format(new_foo))
                 expected = "foo 1.0-0 -f-\n"
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
                 # This should work and take foo to the foo@1.0 with the newer
                 # timestamp.
-                self.pkg("update %s" % new_foo)
+                self.pkg("update {0}".format(new_foo))
 
                 # Test that freezing using just the name freezes the installed
                 # package down to the timestamp.  This also tests that freezing

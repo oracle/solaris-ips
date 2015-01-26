@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -48,7 +48,8 @@ if __name__ == "__main__":
         for i in (1, 2, 3):
                 try:
                         t = timeit.Timer(str1, setup1).timeit(n)
-                        print("%20f  %8d actions/sec" % (t, n / t))
+                        print("{0:>20f}  {1:>8d} actions/sec".format(t,
+                            int(round(n / t))))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -66,7 +67,8 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
 
                 try:
                         t = timeit.Timer(str2, setup2).timeit(n)
-                        print("%20f  %8d action comparisons/sec" % (t, n / t))
+                        print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
+                            int(round(n / t))))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -96,7 +98,8 @@ b = bb()
 
                 try:
                         t = timeit.Timer(str3, setup3).timeit(n)
-                        print("%20f  %8d comparisons/sec" % (t, n / t))
+                        print("{0:>20f}  {1:>8d} comparisons/sec".format(t,
+                            int(round(n / t))))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -114,7 +117,8 @@ a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libz
 
                 try:
                         t = timeit.Timer(str4, setup4).timeit(n)
-                        print("%20f  %8d actions to string/sec" % (t, n / t))
+                        print("{0:>20f}  {1:>8d} actions to string/sec".format(t,
+                            int(round(n / t))))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -198,8 +202,8 @@ mf.set_content(m)
                 for i in (1, 2, 3):
 
                         t = timeit.Timer(str5, setup5).timeit(n)
-                        print("%20f %8d manifest contents loads/sec (%d actions/sec)" % \
-                            (t, n / t, (n * 60) / t))
+                        print("{0:>20f} {1:>8d} manifest contents loads/sec ({2:d} actions/sec)".format(
+                            t, int(round(n / t)), int(round((n * 60) / t))))
 
                 n = 1000000
                 str6 = "id(a1)"
@@ -207,7 +211,8 @@ mf.set_content(m)
                 for i in (1, 2, 3):
 
                         t = timeit.Timer(str6, setup4).timeit(n)
-                        print("%20f %8d calls to id(action) /sec" % (t, n / t))
+                        print("{0:>20f} {1:>8d} calls to id(action) /sec".format(t,
+                            int(round(n / t))))
         except KeyboardInterrupt:
                 import sys
                 sys.exit(0)

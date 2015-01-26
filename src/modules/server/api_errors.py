@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 class ApiException(Exception):
         """Base exception class for all server.api exceptions."""
@@ -49,8 +50,8 @@ class VersionException(ApiException):
                 self.received_version = received_version
 
         def __str__(self):
-                return "Incompatible API version '%s' specified; " \
-                    "expected: '%s'." % (self.received_version,
+                return "Incompatible API version '{0}' specified; " \
+                    "expected: '{1}'.".format(self.received_version,
                     self.expected_version)
 
 
@@ -67,6 +68,6 @@ class UnrecognizedOptionsToInfo(ApiException):
                 self._opts = opts
 
         def __str__(self):
-                s = _("Info does not recognize the following options: %s") % \
-                    ", ".join(str(o) for o in self._opts)
+                s = _("Info does not recognize the following options: {0}").format(
+                    ", ".join(str(o) for o in self._opts))
                 return s

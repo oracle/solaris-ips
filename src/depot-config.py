@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -84,19 +84,19 @@ PKG_SERVER_SVC = "svc:/application/pkg/server"
 
 # static string with our versions response
 DEPOT_FRAGMENT_VERSIONS_STR = """\
-pkg-server %s
+pkg-server {0}
 publisher 0 1
 versions 0
 catalog 1
 file 1
 manifest 0
 status 0
-""" % pkg.VERSION
+""".format(pkg.VERSION)
 
 # versions response used when we provide search capability
-DEPOT_VERSIONS_STR = """%sadmin 0
+DEPOT_VERSIONS_STR = """{0}admin 0
 search 0 1
-""" % DEPOT_FRAGMENT_VERSIONS_STR
+""".format(DEPOT_FRAGMENT_VERSIONS_STR)
 
 DEPOT_USER = "pkg5srv"
 DEPOT_GROUP = "pkg5srv"
@@ -113,7 +113,7 @@ def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
         if cmd:
-                text = "%s: %s" % (cmd, text)
+                text = "{0}: {1}".format(cmd, text)
                 pkg_cmd = "pkg.depot-config "
         else:
                 pkg_cmd = "pkg.depot-config: "
@@ -161,10 +161,10 @@ def _chown_dir(dir):
                 os.chown(dir, uid, gid)
         except OSError, err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
-                        raise DepotException(_("Unable to chown %(dir)s to "
-                            "%(user)s:%(group)s: %(err)s") %
-                            {"dir": dir, "user": DEPOT_USER,
-                            "group": DEPOT_GROUP, "err": err})
+                        raise DepotException(_("Unable to chown {dir} to "
+                            "{user}:{group}: {err}").format(
+                            dir=dir, user=DEPOT_USER,
+                            group=DEPOT_GROUP, err=err))
 
 def _get_publishers(root):
         """Given a repository root, return the list of available publishers,
@@ -241,7 +241,7 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
 
                 # Apache needs IPv6 addresses wrapped in square brackets
                 if ":" in host:
-                        host = "[%s]" % host
+                        host = "[{0}]".format(host)
 
                 # check our directories
                 dirs = [runtime_dir]
@@ -252,7 +252,7 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                 for dir in dirs + [template_dir]:
                         if os.path.exists(dir) and not os.path.isdir(dir):
                                 raise DepotException(
-                                    _("%s is not a directory") % dir)
+                                    _("{0} is not a directory").format(dir))
 
                 for dir in dirs:
                         misc.makedirs(dir)
@@ -263,20 +263,20 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                                 num = int(port)
                                 if num <= 0 or num >= 65535:
                                         raise DepotException(
-                                            _("invalid port: %s") % port)
+                                            _("invalid port: {0}").format(port))
                         except ValueError:
-                                raise DepotException(_("invalid port: %s") %
-                                    port)
+                                raise DepotException(
+                                    _("invalid port: {0}").format(port))
 
                 # check our cache size
                 try:
                         num = int(cache_size)
                         if num < 0:
                                 raise DepotException(_("invalid cache size: "
-                                   "%s") % num)
+                                   "{0}").format(num))
                 except ValueError:
-                        raise DepotException(_("invalid cache size: %s") %
-                            cache_size)
+                        raise DepotException(
+                            _("invalid cache size: {0}").format(cache_size))
 
                 httpd_conf_template_path = os.path.join(template_dir,
                     DEPOT_HTTP_TEMPLATE)
@@ -323,12 +323,12 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
 
         except socket.gaierror, err:
                 raise DepotException(
-                    _("Unable to write Apache configuration: %(host)s: "
-                    "%(err)s") % locals())
+                    _("Unable to write Apache configuration: {host}: "
+                    "{err}").format(**locals()))
         except (OSError, IOError, EnvironmentError, apx.ApiException), err:
                 traceback.print_exc(err)
                 raise DepotException(
-                    _("Unable to write depot_httpd.conf: %s") % err)
+                    _("Unable to write depot_httpd.conf: {0}").format(err))
 
 def _write_versions_response(htdocs_path, fragment=False):
         """Writes a static versions/0 response for the Apache depot."""
@@ -347,7 +347,7 @@ def _write_versions_response(htdocs_path, fragment=False):
                 versions_file.close()
         except (OSError, apx.ApiException), err:
                 raise DepotException(
-                    _("Unable to write versions response: %s") % err)
+                    _("Unable to write versions response: {0}").format(err))
 
 def _write_publisher_response(pubs, htdocs_path, repo_prefix):
         """Writes a static publisher/0 response for the depot."""
@@ -375,7 +375,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
 
         except (OSError, apx.ApiException), err:
                 raise DepotException(
-                    _("Unable to write publisher response: %s") % err)
+                    _("Unable to write publisher response: {0}").format(err))
 
 def _write_status_response(status, htdocs_path, repo_prefix):
         """Writes a status status/0 response for the depot."""
@@ -388,7 +388,7 @@ def _write_status_response(status, htdocs_path, repo_prefix):
                             indent=2, sort_keys=True))
         except OSError, err:
                 raise DepotException(
-                    _("Unable to write status response: %s") % err)
+                    _("Unable to write status response: {0}").format(err))
 
 def _createCertificateKey(serial, CN, starttime, endtime,
     dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None,
@@ -465,14 +465,16 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
         if os.path.exists(output_dir):
                 if not os.path.isdir(output_dir):
                         raise DepotException(
-                            _("%s is not a directory") % output_dir)
+                            _("{0} is not a directory").format(output_dir))
         else:
                 misc.makedirs(output_dir)
-        server_id = "%s_%s" % (host, port)
+        server_id = "{0}_{1}".format(host, port)
 
-        cs_prefix = "server_%s" % server_id
-        server_cert_file = os.path.join(output_dir, "%s_cert.pem" % cs_prefix)
-        server_key_file = os.path.join(output_dir, "%s_key.pem" % cs_prefix)
+        cs_prefix = "server_{0}".format(server_id)
+        server_cert_file = os.path.join(output_dir, "{0}_cert.pem".format(
+            cs_prefix))
+        server_key_file = os.path.join(output_dir, "{0}_key.pem".format(
+            cs_prefix))
 
         # If the cert and key files do not exist, then generate one.
         if not os.path.exists(server_cert_file) or not os.path.exists(
@@ -484,20 +486,20 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
                 # the files. Otherwise, generate new ca_cert and ca_key.
                 if not ca_cert_file or not ca_key_file:
                         ca_cert_file = os.path.join(output_dir,
-                            "ca_%s_cert.pem" % server_id)
+                            "ca_{0}_cert.pem".format(server_id))
                         ca_key_file = os.path.join(output_dir,
-                            "ca_%s_key.pem" % server_id)
+                            "ca_{0}_key.pem".format(server_id))
                         ca_cert, ca_key = _createCertificateKey(1, host,
                             0, year_factor * 10, ca_cert_file, ca_key_file)
                 else:
                         if not os.path.exists(ca_cert_file):
                                 raise DepotException(_("Cannot find user "
-                                    "provided CA certificate file: %s")
-                                    % ca_cert_file)
+                                    "provided CA certificate file: {0}").format(
+                                    ca_cert_file))
                         if not os.path.exists(ca_key_file):
                                 raise DepotException(_("Cannot find user "
-                                    "provided CA key file: %s")
-                                    % ca_key_file)
+                                    "provided CA key file: {0}").format(
+                                    ca_key_file))
                         with open(ca_cert_file, "r") as fr:
                                 ca_cert = load_certificate(FILETYPE_PEM,
                                     fr.read())
@@ -518,7 +520,7 @@ def cleanup_htdocs(htdocs_dir):
         except OSError, err:
                 raise DepotException(
                     _("Unable to remove an existing 'htdocs' directory "
-                    "in the runtime directory: %s") % err)
+                    "in the runtime directory: {0}").format(err))
 
 def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=False,
@@ -565,7 +567,7 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
                                 errors.append(str(err))
                 if errors:
                         raise DepotException(_("Unable to write configuration: "
-                            "%s") % "\n".join(errors))
+                            "{0}").format("\n".join(errors)))
 
                 # Write the publisher/0 response for each repository
                 pubs_by_repo = {}
@@ -588,7 +590,7 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
                         _chown_dir(runtime_dir)
                         _chown_dir(cache_dir)
                 else:
-                        msg(_("Created %s/depot.conf") % runtime_dir)
+                        msg(_("Created {0}/depot.conf").format(runtime_dir))
         except (DepotException, OSError, apx.ApiException), err:
                 error(err)
                 ret = EXIT_OOPS
@@ -598,7 +600,7 @@ def get_smf_repo_info():
         """Return a list of repo_info from the online instances of pkg/server
         which are marked as pkg/standalone = False and pkg/readonly = True."""
 
-        smf_instances = smf.check_fmris(None, "%s:*" % PKG_SERVER_SVC)
+        smf_instances = smf.check_fmris(None, "{0}:*".format(PKG_SERVER_SVC))
         repo_info = []
         for fmri in smf_instances:
                 repo_prefix = fmri.split(":")[-1]
@@ -618,7 +620,7 @@ def get_smf_repo_info():
         if not repo_info:
                 raise DepotException(_(
                     "No online, readonly, non-standalone instances of "
-                    "%s found.") % PKG_SERVER_SVC)
+                    "{0} found.").format(PKG_SERVER_SVC))
         return repo_info
 
 def _check_unique_repo_properties(repo_info):
@@ -633,17 +635,19 @@ def _check_unique_repo_properties(repo_info):
         errors = []
         for root, prefix, writable_root in repo_info:
                 if prefix in prefixes:
-                        errors.append(_("prefix %s cannot be used more than "
-                            "once in a given depot configuration") % prefix)
+                        errors.append(_("prefix {0} cannot be used more than "
+                            "once in a given depot configuration").format(
+                            prefix))
                 prefixes.add(prefix)
                 if root in roots:
-                        errors.append(_("repo_root %s cannot be used more "
-                            "than once in a given depot configuration") % root)
+                        errors.append(_("repo_root {0} cannot be used more "
+                            "than once in a given depot configuration").format(
+                            root))
                 roots.add(root)
                 if writable_root and writable_root in writable_roots:
-                        errors.append(_("writable_root %s cannot be used more "
-                            "than once in a given depot configuration") %
-                            writable_root)
+                        errors.append(_("writable_root {0} cannot be used more "
+                            "than once in a given depot configuration").format(
+                            writable_root))
                 writable_roots.add(writable_root)
         if errors:
                 raise DepotException("\n".join(errors))
@@ -657,7 +661,7 @@ def _affix_slash(str):
         if not re.match(r"^([A-Za-z][_A-Za-z0-9.-]*,)?[A-Za-z][_A-Za-z0-9-]*$",
             str):
                 raise DepotException(_("%s is not a valid prefix"))
-        return "%s/" % val
+        return "{0}/".format(val)
 
 def _update_smf_props(smf_fmri, prop_list, orig, dest):
         """Update the smf props after the new prop values are generated."""
@@ -790,15 +794,15 @@ def main_func():
                                         key, value = arg.split("=", 1)
                                 except (AttributeError, ValueError):
                                         usage(
-                                            _("%(opt)s takes argument of form "
-                                            "name=value, not %(arg)s") % {
-                                            "opt": opt, "arg": arg })
+                                            _("{opt} takes argument of form "
+                                            "name=value, not {arg}").format(
+                                            opt=opt, arg=arg))
                                 DebugValues.set_value(key, value)
                         else:
-                                usage("unknown option %s" % opt)
+                                usage("unknown option {0}".format(opt))
 
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
 
         if not runtime_dir:
                 usage(_("required runtime dir option -r missing."))
@@ -848,10 +852,10 @@ def main_func():
                                     output_dir=cert_key_dir)
                                 if ssl_ca_cert_file:
                                         msg(_("Server CA certificate is "
-                                            "located at %s. Please deploy it "
+                                            "located at {0}. Please deploy it "
                                             "into /etc/certs/CA directory of "
-                                            "each client.")
-                                            % ssl_ca_cert_file)
+                                            "each client.").format(
+                                            ssl_ca_cert_file))
                         except (DepotException, EnvironmentError), e:
                                     error(e)
                                     return EXIT_OOPS
@@ -876,17 +880,18 @@ def main_func():
                 else:
                         if not os.path.exists(ssl_cert_file):
                                 error(_("User provided server certificate "
-                                    "file %s does not exist.") % ssl_cert_file)
+                                    "file {0} does not exist.").format(
+                                    ssl_cert_file))
                                 return EXIT_OOPS
                         if not os.path.exists(ssl_key_file):
-                                error(_("User provided server key file %s "
-                                    "does not exist.") % ssl_key_file)
+                                error(_("User provided server key file {0} "
+                                    "does not exist.").format(ssl_key_file))
                                 return EXIT_OOPS
                         if ssl_cert_chain_file and not os.path.exists(
                             ssl_cert_chain_file):
                                 error(_("User provided certificate chain file "
-                                    "%s does not exist.") %
-                                    ssl_cert_chain_file)
+                                    "{0} does not exist.").format(
+                                    ssl_cert_chain_file))
                                 return EXIT_OOPS
         else:
                 if ssl_cert_file or ssl_key_file or ssl_ca_cert_file \
@@ -922,10 +927,10 @@ def main_func():
         # In the future we may produce configuration for different
         # HTTP servers. For now, we only support "apache2"
         if server_type not in KNOWN_SERVER_TYPES:
-                usage(_("unknown server type %(type)s. "
-                    "Known types are: %(known)s") %
-                    {"type": server_type,
-                    "known": ", ".join(KNOWN_SERVER_TYPES)})
+                usage(_("unknown server type {type}. "
+                    "Known types are: {known}").format(
+                    type=server_type,
+                    known=", ".join(KNOWN_SERVER_TYPES)))
 
         try:
                 _check_unique_repo_properties(repo_info)

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import pkg.p5p
@@ -35,12 +35,12 @@ import traceback
 # redirecting stdout for proper WSGI portability
 sys.stdout = sys.stderr
 
-SERVER_OK_STATUS = "%s %s" % (httplib.OK, httplib.responses[httplib.OK])
-SERVER_ERROR_STATUS = "%s %s" % (httplib.INTERNAL_SERVER_ERROR,
+SERVER_OK_STATUS = "{0} {1}".format(httplib.OK, httplib.responses[httplib.OK])
+SERVER_ERROR_STATUS = "{0} {1}".format(httplib.INTERNAL_SERVER_ERROR,
     httplib.responses[httplib.INTERNAL_SERVER_ERROR])
-SERVER_NOTFOUND_STATUS = "%s %s" % (httplib.NOT_FOUND,
+SERVER_NOTFOUND_STATUS = "{0} {1}".format(httplib.NOT_FOUND,
     httplib.responses[httplib.NOT_FOUND])
-SERVER_BADREQUEST_STATUS = "%s %s" % (httplib.BAD_REQUEST,
+SERVER_BADREQUEST_STATUS = "{0} {1}".format(httplib.BAD_REQUEST,
     httplib.responses[httplib.BAD_REQUEST])
 
 response_headers = [("content-type", "application/binary")]
@@ -58,7 +58,7 @@ class UnknownPathException(Exception):
                 self.path = path
 
         def __str__(self):
-                return "Unknown path: %s" % self.path
+                return "Unknown path: {0}".format(self.path)
 
 
 class MalformedQueryException(Exception):
@@ -69,7 +69,7 @@ class MalformedQueryException(Exception):
                 self.reason = reason
 
         def __str__(self):
-                return "Malformed query %s: %s" % (self.query, self.reason)
+                return "Malformed query {0}: {1}".format(self.query, self.reason)
 
 
 class MissingArchiveException(Exception):
@@ -79,7 +79,7 @@ class MissingArchiveException(Exception):
                 self.path = path
 
         def __str__(self):
-                return "Missing p5p archive: %s" % (self.path)
+                return "Missing p5p archive: {0}".format(self.path)
 
 
 class SysrepoP5p(object):
@@ -121,8 +121,8 @@ class SysrepoP5p(object):
 
                 htdocs_path = os.path.join(self.runtime_dir, "htdocs")
                 timestamp_path = \
-                    "%(htdocs_path)s/%(pub)s/%(hsh)s/sysrepo.timestamp" % \
-                    locals()
+                    "{htdocs_path}/{pub}/{hsh}/sysrepo.timestamp".format(
+                    **locals())
 
                 update = False
 
@@ -183,8 +183,8 @@ class SysrepoP5p(object):
                 cat_part = os.path.basename(path)
                 htdocs_path = os.path.join(self.runtime_dir, "htdocs")
                 cat_path = \
-                    "%(htdocs_path)s/%(pub)s/%(hsh)s/catalog/1/%(cat_part)s" % \
-                    locals()
+                    "{htdocs_path}/{pub}/{hsh}/catalog/1/{cat_part}".format(
+                    **locals())
                 self.start_response(SERVER_OK_STATUS, response_headers)
                 if os.path.exists(cat_path):
                         return open(cat_path, "rb")
@@ -219,7 +219,7 @@ class SysrepoP5p(object):
                 """Return our manifest_response. """
 
                 pkg_name = path.replace("manifest/0/", "")
-                fmri = "pkg://%s/%s" % (pub, pkg_name)
+                fmri = "pkg://{0}/{1}".format(pub, pkg_name)
                 mf = None
                 self.start_response(SERVER_OK_STATUS, response_headers)
                 try:
@@ -236,8 +236,8 @@ class SysrepoP5p(object):
                 """Extract the parts from the catalog_dir to the given path."""
 
                 htdocs_path = os.path.join(self.runtime_dir, "htdocs")
-                cat_dir = "%(htdocs_path)s/%(pub)s/%(hsh)s/catalog/1" % \
-                    locals()
+                cat_dir = "{htdocs_path}/{pub}/{hsh}/catalog/1".format(
+                    **locals())
 
                 if os.path.exists(cat_dir):
                         shutil.rmtree(cat_dir)
@@ -271,7 +271,7 @@ class SysrepoP5p(object):
                                 attrs[key] = val
                         except ValueError:
                                 raise MalformedQueryException(self.query,
-                                    "missing key=value pair for %s." % keyval)
+                                    "missing key=value pair for {0}.".format(keyval))
 
                 pub = attrs.get("pub")
                 hsh = attrs.get("hash")
@@ -282,7 +282,7 @@ class SysrepoP5p(object):
                             "missing hash.")
                 if hsh not in self.environ:
                         raise MalformedQueryException(self.query,
-                            "unknown hash %s." % hsh)
+                            "unknown hash {0}.".format(hsh))
                 if not pub:
                         raise MalformedQueryException(self.query,
                             "missing publisher.")
@@ -421,7 +421,7 @@ if __name__ == "__main__":
 
         def start_response(status, response_headers, exc_info=None):
                 """A dummy response function."""
-                print("responding with %s" % status)
+                print("responding with {0}".format(status))
                 if exc_info:
                         print(traceback.format_exc(exc_info))
 
@@ -432,7 +432,7 @@ if __name__ == "__main__":
                 alias = \
                 "de5acae11333890c457665379eec812a67f78dd3=/tmp/archive.p5p"
                 print("usage: sysrepo_p5p <query> <hash>=<path to p5p file>")
-                print("eg: ./sysrepo_p5p.py %s %s" % (query, alias))
+                print("eg: ./sysrepo_p5p.py {0} {1}".format(query, alias))
                 sys.exit(2)
 
         environ = {}

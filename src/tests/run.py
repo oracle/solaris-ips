@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -58,10 +58,10 @@ import warnings
 cov = None
 
 def usage():
-        print("Usage: %s [-ghptv] [-c format] [-b filename] "\
-            "[-o regexp]" % sys.argv[0], file=sys.stderr)
-        print("       %s [-hptvx] [-c format] [-b filename] "\
-            "[-s regexp] [-o regexp]" % sys.argv[0], file=sys.stderr)
+        print("Usage: {0} [-ghptv] [-c format] [-b filename] "\
+            "[-o regexp]".format(sys.argv[0]), file=sys.stderr)
+        print("       {0} [-hptvx] [-c format] [-b filename] "\
+            "[-s regexp] [-o regexp]".format(sys.argv[0]), file=sys.stderr)
         print("""\
    -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
    -b <filename>  Baseline filename
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         if covdir:
                 import coverage
                 os.chmod(covdir, 01777)
-                cov_file = "%s/pkg5" % covdir
+                cov_file = "{0}/pkg5".format(covdir)
                 cov = coverage.coverage(data_file=cov_file, data_suffix=True)
                 cov.start()
         # Make all warnings be errors.
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                     ["generate-baseline", "parseable", "port", "timing",
                     "verbose", "baseline-file", "only"])
         except getopt.GetoptError, e:
-                print("Illegal option -- %s" % e.opt, file=sys.stderr)
+                print("Illegal option -- {0}".format(e.opt), file=sys.stderr)
                 sys.exit(1)
 
         bfile = os.path.join(os.getcwd(), "baseline.txt")
@@ -211,8 +211,8 @@ class Pkg5TestLoader(unittest.TestLoader):
 def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
     time_estimates=None):
         # Test pattern to match against
-        pats = [ re.compile("%s" % pat, re.IGNORECASE) for pat in testpats ]
-        startatpat = re.compile("%s" % startattest, re.IGNORECASE)
+        pats = [ re.compile("{0}".format(pat), re.IGNORECASE) for pat in testpats ]
+        startatpat = re.compile("{0}".format(startattest), re.IGNORECASE)
         seen = False
 
         def _istest(obj):
@@ -234,7 +234,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
         testclasses = []
         # "testdir" will be "api", "cli", etc., so find all the files in that 
         # directory that match the pattern "t_*.py".
-        _vprint("# Loading %s tests:\n" % testdir)
+        _vprint("# Loading {0} tests:\n".format(testdir))
         curlinepos = 0
         for f in sorted(os.listdir(testdir)):
                 if curlinepos == 0:
@@ -252,13 +252,13 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                 try:
                         obj = __import__(name)
                 except ImportError, e:
-                        print("Skipping %s: %s" % (name, str(e)))
+                        print("Skipping {0}: {1}".format(name, str(e)))
                         continue
 
                 if curlinepos != 0 and (curlinepos + len(filename) + 1) >= 78:
                         _vprint("\n#        ")
                         curlinepos = 9
-                _vprint("%s" % filename,)
+                _vprint("{0}".format(filename))
                 curlinepos += len(filename) + 1
 
                 # file object (t_filter, etc)
@@ -279,7 +279,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                                 # Make sure its a test method
                                 if not _istestmethod(attrname, methobj):
                                         continue
-                                full = "%s.%s.%s.%s" % (testdir,
+                                full = "{0}.{1}.{2}.{3}".format(testdir,
                                     filename, cname, attrname)
                                 # Remove this function from our class obj if
                                 # it doesn't match the test pattern
@@ -355,7 +355,7 @@ def generate_coverage(cov_format, includes, omits, dest):
                 os.chown(cov_dest, uid, gid)
                 if cov_format == "html":
                         for f in os.listdir(cov_dest):
-                                os.chown("%s/%s" % (cov_dest, f), uid, gid)
+                                os.chown("{0}/{1}".format(cov_dest, f), uid, gid)
         except EnvironmentError:
                 pass
 
@@ -437,7 +437,7 @@ if __name__ == "__main__":
         # Make sure we capture stdout
         testlogfd, testlogpath = tempfile.mkstemp(suffix='.pkg-test.log')
         testlogfp = os.fdopen(testlogfd, "w")
-        print("# logging to %s" % testlogpath)
+        print("# logging to {0}".format(testlogpath))
         sys.stdout = testlogfp
 
         if timing_file:
@@ -448,7 +448,7 @@ if __name__ == "__main__":
         # Set up coverage for cli tests
         if do_coverage:
                 cov_env = {
-                    "COVERAGE_FILE": "%s/pkg5" % covdir
+                    "COVERAGE_FILE": "{0}/pkg5".format(covdir)
                 }
                 cov_cmd = "coverage run -p"
         else:
@@ -504,7 +504,7 @@ if __name__ == "__main__":
                 newenv = os.environ.copy()
                 newenv.update(cov_env)
                 subprocess.Popen(["coverage", "combine"], env=newenv).wait()
-                os.rename("%s/pkg5" % covdir, ".coverage")
+                os.rename("{0}/pkg5".format(covdir), ".coverage")
                 shutil.rmtree(covdir)
 
                 omits = [

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -61,27 +61,27 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 badpath = self.test_root
 
                 # Verify that bad paths cause exit and good paths succeed.
-                self.pkg("-R %s list" % badpath, exit=1)
-                self.pkg("-R %s list" % imgpath, exit=1)
+                self.pkg("-R {0} list".format(badpath), exit=1)
+                self.pkg("-R {0} list".format(imgpath), exit=1)
 
-                self.pkg("-R %s install foo" % badpath, exit=1)
-                self.pkg("-R %s install foo" % imgpath)
+                self.pkg("-R {0} install foo".format(badpath), exit=1)
+                self.pkg("-R {0} install foo".format(imgpath))
 
-                self.pkg("-R %s list" % badpath, exit=1)
-                self.pkg("-R %s list" % imgpath)
+                self.pkg("-R {0} list".format(badpath), exit=1)
+                self.pkg("-R {0} list".format(imgpath))
 
                 self.pkgsend_bulk(self.rurl, self.foo10)
-                self.pkg("-R %s refresh" % imgpath)
+                self.pkg("-R {0} refresh".format(imgpath))
 
-                self.pkg("-R %s update" % badpath, exit=1)
-                self.pkg("-R %s update --be-name NEWBENAME" % imgpath, exit=1)
-                self.pkg("-R %s update" % imgpath)
+                self.pkg("-R {0} update".format(badpath), exit=1)
+                self.pkg("-R {0} update --be-name NEWBENAME".format(imgpath), exit=1)
+                self.pkg("-R {0} update".format(imgpath))
 
-                self.pkg("-R %s uninstall foo" % badpath, exit=1)
-                self.pkg("-R %s install foo" % imgpath, exit=4)
+                self.pkg("-R {0} uninstall foo".format(badpath), exit=1)
+                self.pkg("-R {0} install foo".format(imgpath), exit=4)
 
-                self.pkg("-R %s info foo" % badpath, exit=1)
-                self.pkg("-R %s info foo" % imgpath)
+                self.pkg("-R {0} info foo".format(badpath), exit=1)
+                self.pkg("-R {0} info foo".format(imgpath))
 
         def test_2_implicit(self):
                 """Ensure that pkg implicit image finding works as expected."""
@@ -111,22 +111,22 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 # PKG_FIND_IMAGE was not set in environment.
                 bad_live_root = os.path.join(self.test_root, "test_2_implicit")
                 os.mkdir(bad_live_root)
-                self.pkg("-D simulate_live_root=%s install foo " % bad_live_root,
+                self.pkg("-D simulate_live_root={0} install foo ".format(bad_live_root),
                      use_img_root=False, exit=1)
 
                 # Should succeed because image is found at simulated live root,
                 # even though one does not exist in CWD.
                 os.chdir(self.test_root)
-                self.pkg("-D simulate_live_root=%s install foo" %
-                    self.img_path(), use_img_root=False)
+                self.pkg("-D simulate_live_root={0} install foo".format(
+                    self.img_path()), use_img_root=False)
 
                 # Should succeed because image is found using CWD and
                 # PKG_FIND_IMAGE was set in environment, even though live root
                 # is not a valid image.
                 os.environ["PKG_FIND_IMAGE"] = "true"
                 os.chdir(self.img_path())
-                self.pkg("-D simulate_live_root=%s uninstall foo" %
-                     bad_live_root, use_img_root=False)
+                self.pkg("-D simulate_live_root={0} uninstall foo".format(
+                     bad_live_root, use_img_root=False))
                 del os.environ["PKG_FIND_IMAGE"]
                 os.chdir(self.test_root)
 

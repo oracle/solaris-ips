@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -59,8 +59,8 @@ class InvalidArchiveIndex(ArchiveErrors):
                 self.__name = arc_name
 
         def __str__(self):
-                return _("%s is not in a supported or recognizable archive "
-                    "index format.") % self.__name
+                return _("{0} is not in a supported or recognizable archive "
+                    "index format.").format(self.__name)
 
 
 class ArchiveIndex(object):
@@ -96,7 +96,7 @@ class ArchiveIndex(object):
         version = None
         CURRENT_VERSION = 0
         COMPATIBLE_VERSIONS = 0,
-        ENTRY_FORMAT = "%s\0%d\0%d\0%d\0%c\0\n"
+        ENTRY_FORMAT = "{0}\0{1:d}\0{2:d}\0{3:d}\0{4}\0\n"
 
         def __init__(self, name, mode="r", version=None):
                 """Open a pkg(5) archive table of contents file.
@@ -155,8 +155,8 @@ class ArchiveIndex(object):
                 """Add an entry for the given archive file to the table of
                 contents."""
 
-                self.__file.write(self.ENTRY_FORMAT % (name, offset, entry_size,
-                    size, typeflag))
+                self.__file.write(self.ENTRY_FORMAT.format(name, offset,
+                    entry_size, size, typeflag))
 
         def offsets(self):
                 """Returns a generator that yields tuples of the form (name,
@@ -212,8 +212,8 @@ class InvalidArchive(ArchiveErrors):
                 self.arc_name = arc_name
 
         def __str__(self):
-                return _("Archive %s is missing, unsupported, or corrupt.") % \
-                    self.arc_name
+                return _("Archive {0} is missing, unsupported, or corrupt.").format(
+                    self.arc_name)
 
 
 class CorruptArchiveFiles(ArchiveErrors):
@@ -227,10 +227,10 @@ class CorruptArchiveFiles(ArchiveErrors):
                 self.files = files
 
         def __str__(self):
-                return _("Package archive %(arc_name)s contains corrupt "
-                    "entries for the requested package file(s):\n%(files)s.") % {
-                    "arc_name": self.arc_name,
-                    "files": "\n".join(self.files) }
+                return _("Package archive {arc_name} contains corrupt "
+                    "entries for the requested package file(s):\n{files}.").format(
+                    arc_name=self.arc_name,
+                    files="\n".join(self.files))
 
 
 class UnknownArchiveFiles(ArchiveErrors):
@@ -244,10 +244,10 @@ class UnknownArchiveFiles(ArchiveErrors):
                 self.files = files
 
         def __str__(self):
-                return _("Package archive %(arc_name)s does not contain the "
-                    "requested package file(s):\n%(files)s.") % {
-                    "arc_name": self.arc_name,
-                    "files": "\n".join(self.files) }
+                return _("Package archive {arc_name} does not contain the "
+                    "requested package file(s):\n{files}.").format(
+                    arc_name=self.arc_name,
+                    files="\n".join(self.files))
 
 
 class UnknownPackageManifest(ArchiveErrors):
@@ -261,8 +261,8 @@ class UnknownPackageManifest(ArchiveErrors):
                 self.pfmri = pfmri
 
         def __str__(self):
-                return _("No package manifest for package '%(pfmri)s' exists "
-                    "in archive %(arc_name)s.") % self.__dict__
+                return _("No package manifest for package '{pfmri}' exists "
+                    "in archive {arc_name}.").format(**self.__dict__)
 
 
 class Archive(object):
@@ -281,7 +281,7 @@ class Archive(object):
 
         __idx_pfx = "pkg5.index."
         __idx_sfx = ".gz"
-        __idx_name = "pkg5.index.%s.gz"
+        __idx_name = "pkg5.index.{0}.gz"
         __idx_ver = ArchiveIndex.CURRENT_VERSION
         __index = None
         __arc_tfile = None
@@ -447,8 +447,8 @@ class Archive(object):
                                         ti.mode = pkg.misc.PKG_DIR_MODE
                                 if ti.name == "pkg5.index.0.gz":
                                         ti.pax_headers["comment"] = \
-                                            "pkg5.archive.version.%d" % \
-                                            self.CURRENT_VERSION
+                                            "pkg5.archive.version.{0:d}".format(
+                                            self.CURRENT_VERSION)
                                 ti.uid = 0
                                 ti.gid = 0
                                 ti.uname = "root"
@@ -456,7 +456,7 @@ class Archive(object):
                                 return ti
                         self.__arc_tfile.gettarinfo = gettarinfo
 
-                        self.__idx_name = self.__idx_name % self.__idx_ver
+                        self.__idx_name = self.__idx_name.format(self.__idx_ver)
 
                         # Create a temporary file to write the index to,
                         # and then create the index.
@@ -1227,8 +1227,8 @@ class Archive(object):
                 # index.
                 fobj, fname = self.__mkstemp()
                 fobj.write("[CONFIGURATION]\nversion = 4\n\n"
-                    "[publisher]\nprefix = %s\n\n"
-                    "[repository]\nversion = 4\n" % self.__default_pub)
+                    "[publisher]\nprefix = {0}\n\n"
+                    "[repository]\nversion = 4\n".format(self.__default_pub))
                 fobj.close()
                 self.add(fname, arcname="pkg5.repository")
 

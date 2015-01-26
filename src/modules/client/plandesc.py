@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -398,7 +398,7 @@ class PlanDescription(object):
                                         mimpl_ver = \
                                             mimpl_ver.get_short_version()
                                 if mimpl and mimpl_ver:
-                                        mimpl += "(@%s)" % mimpl_ver
+                                        mimpl += "(@{0})".format(mimpl_ver)
                                 mimpl_source = mediators[m].get(
                                     "implementation-source")
 
@@ -443,29 +443,31 @@ class PlanDescription(object):
                             (new_ver, new_ver_source)) = ver
                         ((orig_impl, orig_impl_source),
                             (new_impl, new_impl_source)) = impl
-                        out = "mediator %s:\n" % m
+                        out = "mediator {0}:\n".format(m)
                         if orig_ver and new_ver:
-                                out += "           version: %s (%s default) " \
-                                    "-> %s (%s default)\n" % (orig_ver,
+                                out += "           version: {0} ({1} default)" \
+                                    " -> {2} ({3} default)\n".format(orig_ver,
                                     orig_ver_source, new_ver, new_ver_source)
                         elif orig_ver:
-                                out += "           version: %s (%s default) " \
-                                    "-> None\n" % (orig_ver, orig_ver_source)
+                                out += "           version: {0} ({1} default)" \
+                                    " -> None\n".format(orig_ver,
+                                    orig_ver_source)
                         elif new_ver:
                                 out += "           version: None -> " \
-                                    "%s (%s default)\n" % (new_ver,
+                                    "{0} ({1} default)\n".format(new_ver,
                                     new_ver_source)
 
                         if orig_impl and new_impl:
-                                out += "    implementation: %s (%s default) " \
-                                    "-> %s (%s default)\n" % (orig_impl,
+                                out += "    implementation: {0} ({1} default)" \
+                                    " -> {2} ({3} default)\n".format(orig_impl,
                                     orig_impl_source, new_impl, new_impl_source)
                         elif orig_impl:
-                                out += "    implementation: %s (%s default) " \
-                                    "-> None\n" % (orig_impl, orig_impl_source)
+                                out += "    implementation: {0} ({1} default)" \
+                                    " -> None\n".format(orig_impl,
+                                    orig_impl_source)
                         elif new_impl:
                                 out += "    implementation: None -> " \
-                                    "%s (%s default)\n" % (new_impl,
+                                    "{0} ({1} default)\n".format(new_impl,
                                     new_impl_source)
                         ret.append(out)
                 return ret
@@ -558,15 +560,15 @@ class PlanDescription(object):
                 variant/facet changes in this plan"""
                 vs, fs = self.varcets
                 rv = [
-                    "variant %s: %s" % (name[8:], val)
+                    "variant {0}: {1}".format(name[8:], val)
                     for (name, val) in vs
                 ]
                 masked_str = _(" (masked)")
                 for name, v_new, v_old, src, m_old, m_new in fs:
                         m_old = m_old and masked_str or ""
                         m_new = m_new and masked_str or ""
-                        msg = "  facet %s (%s): %s%s -> %s%s" % \
-                            (name[6:], src, v_old, m_old, v_new, m_new)
+                        msg = "  facet {0} ({1}): {2}{3} -> {4}{5}".format(
+                            name[6:], src, v_old, m_old, v_new, m_new)
                         rv.append(msg)
                 return rv
 
@@ -622,7 +624,7 @@ class PlanDescription(object):
                     self.update_actions,
                     self.install_actions):
                 # pylint: enable=W0612
-                        yield "%s -> %s" % (o_act, d_act)
+                        yield "{0} -> {1}".format(o_act, d_act)
 
         def has_release_notes(self):
                 """True if there are release notes for this plan"""
@@ -692,7 +694,7 @@ class PlanDescription(object):
                 """
 
                 assert self.state >= EVALUATED_PKGS, \
-                        "%s >= %s" % (self.state, EVALUATED_PKGS)
+                        "{0} >= {1}".format(self.state, EVALUATED_PKGS)
 
                 # in case this operation doesn't use solver
                 if self._solver_errors is None:

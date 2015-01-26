@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -241,7 +241,8 @@ class TransportRepo(object):
                         # instead of trying to deduce the request's name.
                         if e.url not in mapping:
                                 raise tx.TransportOperationError(
-                                    "No mapping found for URL %s" % e.url)
+                                    "No mapping found for URL {0}".format(
+                                    e.url))
 
                         e.request = mapping[e.url]
 
@@ -274,7 +275,7 @@ class TransportRepo(object):
                                 if c.nodeType == c.TEXT_NODE:
                                         value = c.nodeValue
                                         if value is not None:
-                                                msg += ("\n%s" % value)
+                                                msg += ("\n{0}".format(value))
 
                 return msg
 
@@ -296,7 +297,7 @@ class TransportRepo(object):
 
                         if u not in mapping:
                                 raise tx.TransportOperationError(
-                                    "No mapping found for URL %s" % u)
+                                    "No mapping found for URL {0}".format(u))
 
                         req = mapping[u]
                         reqlist.append(req)
@@ -374,7 +375,7 @@ class HTTPRepo(TransportRepo):
                 self._verdata = None
 
         def __str__(self):
-                return "HTTPRepo url: %s repouri: %s" % (self._url,
+                return "HTTPRepo url: {0} repouri: {1}".format(self._url,
                     self._repouri)
 
         def _add_file_url(self, url, filepath=None, progclass=None,
@@ -455,7 +456,7 @@ class HTTPRepo(TransportRepo):
                 # doesn't support it.
                 pub_prefix = getattr(pub, "prefix", None)
                 if pub_prefix and not methodstr.startswith("open/") and \
-                    not base.endswith("/%s/" % pub_prefix) and \
+                    not base.endswith("/{0}/".format(pub_prefix)) and \
                     self.supports_version("publisher", [1]) > -1:
                         # Append the publisher prefix to the repository URL.
                         base = urlparse.urljoin(base, pub_prefix) + "/"
@@ -585,7 +586,8 @@ class HTTPRepo(TransportRepo):
                 # The only versions this operation is compatible with.
                 assert version == 0 or version == 1
 
-                baseurl = self.__get_request_url("file/%s/" % version, pub=pub)
+                baseurl = self.__get_request_url("file/{0}/".format(version),
+                    pub=pub)
                 requesturl = urlparse.urljoin(baseurl, fhash)
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
@@ -689,7 +691,8 @@ class HTTPRepo(TransportRepo):
                 it contains a ProgressTracker object for the
                 downloads."""
 
-                baseurl = self.__get_request_url("file/%s/" % version, pub=pub)
+                baseurl = self.__get_request_url("file/{0}/".format(version),
+                    pub=pub)
                 urllist = []
                 progclass = None
 
@@ -796,7 +799,7 @@ class HTTPRepo(TransportRepo):
                         progclass = FileProgress
 
                 baseurl = self.__get_request_url("add/0/")
-                request_str = "%s/%s" % (trans_id, action.name)
+                request_str = "{0}/{1}".format(trans_id, action.name)
                 requesturl = urlparse.urljoin(baseurl, request_str)
 
                 if action.data:
@@ -805,7 +808,8 @@ class HTTPRepo(TransportRepo):
                         data = ""
 
                 headers = dict(
-                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
+                    ("X-IPkg-SetAttr{0}".format(i), "{0}={1}".format(k,
+                    attrs[k]))
                     for i, k in enumerate(attrs)
                 )
 
@@ -828,7 +832,7 @@ class HTTPRepo(TransportRepo):
                 requesturl = urlparse.urljoin(baseurl, trans_id)
 
                 headers = dict(
-                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
+                    ("X-IPkg-SetAttr{0}".format(i), "{0}={1}".format(k, attrs[k]))
                     for i, k in enumerate(attrs)
                 )
 
@@ -1164,7 +1168,7 @@ class _FilesystemRepo(TransportRepo):
                             root=path)
                 except cfg.ConfigError, e:
                         reason = _("The configuration file for the repository "
-                            "is invalid or incomplete:\n%s") % e
+                            "is invalid or incomplete:\n{0}").format(e)
                         ex = tx.TransportProtoError("file", errno.EINVAL,
                             reason=reason, repourl=self._url)
                         self.__record_proto_error(ex)
@@ -1265,15 +1269,15 @@ class _FilesystemRepo(TransportRepo):
                                         if return_type == \
                                             sqp.Query.RETURN_ACTIONS:
                                                 fmri_str, fv, line = vals
-                                                yield "%s %s %s %s %s\n" % \
-                                                    (i, return_type, fmri_str,
+                                                yield "{0} {1} {2} {3} {4}\n".format(
+                                                    i, return_type, fmri_str,
                                                     urllib.quote(fv),
                                                     line.rstrip())
                                         elif return_type == \
                                             sqp.Query.RETURN_PACKAGES:
                                                 fmri_str = vals
-                                                yield "%s %s %s\n" % \
-                                                    (i, return_type, fmri_str)
+                                                yield "{0} {1} {2}\n".format(
+                                                    i, return_type, fmri_str)
                 return output()
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
@@ -1373,7 +1377,7 @@ class _FilesystemRepo(TransportRepo):
                         p5i.write(buf, pubs)
                 except Exception, e:
                         reason = "Unable to retrieve publisher configuration " \
-                            "data:\n%s" % e
+                            "data:\n{0}".format(e)
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=reason, repourl=self._url)
                         self.__record_proto_error(ex)
@@ -1391,7 +1395,7 @@ class _FilesystemRepo(TransportRepo):
                             sort_keys=True)
                         buf.write("\n")
                 except Exception, e:
-                        reason = "Unable to retrieve status data:\n%s" % e
+                        reason = "Unable to retrieve status data:\n{0}".format(e)
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=reason, repourl=self._url)
                         self.__record_proto_error(ex)
@@ -1592,9 +1596,9 @@ class _FilesystemRepo(TransportRepo):
                     "versions": ["0"],
                 }
 
-                buf.write("pkg-server %s\n" % pkg.VERSION)
+                buf.write("pkg-server {0}\n".format(pkg.VERSION))
                 buf.write("\n".join(
-                    "%s %s" % (op, " ".join(vers))
+                    "{0} {1}".format(op, " ".join(vers))
                     for op, vers in vops.iteritems()
                 ) + "\n")
                 buf.seek(0)
@@ -1908,7 +1912,7 @@ class _ArchiveRepo(TransportRepo):
                             sort_keys=True)
                         buf.write("\n")
                 except Exception, e:
-                        reason = "Unable to retrieve status data:\n%s" % e
+                        reason = "Unable to retrieve status data:\n{0}".format(e)
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=reason, repourl=self._url)
                         self.__record_proto_error(ex)
@@ -1983,7 +1987,7 @@ class _ArchiveRepo(TransportRepo):
                         p5i.write(buf, pubs)
                 except Exception, e:
                         reason = "Unable to retrieve publisher configuration " \
-                            "data:\n%s" % e
+                            "data:\n{0}".format(e)
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=reason, repourl=self._url)
                         self.__record_proto_error(ex)
@@ -2098,9 +2102,9 @@ class _ArchiveRepo(TransportRepo):
                     "status": ["0"]
                 }
 
-                buf.write("pkg-server %s\n" % pkg.VERSION)
+                buf.write("pkg-server {0}\n".format(pkg.VERSION))
                 buf.write("\n".join(
-                    "%s %s" % (op, " ".join(vers))
+                    "{0} {1}".format(op, " ".join(vers))
                     for op, vers in vops.iteritems()
                 ) + "\n")
                 buf.seek(0)
@@ -2394,8 +2398,8 @@ class RepoCache(object):
                 scheme = repouri.scheme
 
                 if scheme not in RepoCache.supported_schemes:
-                        raise tx.TransportOperationError("Scheme %s not"
-                            " supported by transport." % scheme)
+                        raise tx.TransportOperationError("Scheme {0} not"
+                            " supported by transport.".format(scheme))
 
                 if repouri.key() in self.__cache:
                         return self.__cache[repouri.key()]

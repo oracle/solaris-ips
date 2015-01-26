@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """face - provides the BUI (Browser User Interface) for the image packaging
@@ -74,7 +74,7 @@ def __handle_error(path, error):
         # an error is logged.
         if error != httplib.NOT_FOUND:
                 cherrypy.log("Error encountered while processing "
-                    "template: %s\n" % path, traceback=True)
+                    "template: {0}\n".format(path), traceback=True)
 
         raise cherrypy.NotFound()
 
@@ -128,9 +128,9 @@ def respond(depot, request, response, pub, http_depot=None):
         except sae.VersionException, e:
                 # The user shouldn't see why we can't render a template, but
                 # the reason should be logged (cleanly).
-                cherrypy.log("Template '%(path)s' is incompatible with current "
-                    "server api: %(error)s" % { "path": path,
-                    "error": str(e) })
+                cherrypy.log("Template '{path}' is incompatible with current "
+                    "server api: {error}".format(path=path,
+                    error=str(e)))
                 cherrypy.log("Ensure that the correct --content-root has been "
                     "provided to pkg.depotd.")
                 return __handle_error(request.path_info, httplib.NOT_FOUND)

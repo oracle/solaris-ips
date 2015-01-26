@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -71,7 +71,7 @@ class Scenario(object):
                 self.__total_mb = mb
 
         def run(self):
-                print("SCENARIO: %s" % self.title)
+                print("SCENARIO: {0}".format(self.title))
 
                 total = self.__total_mb * 1024 * 1024
 
@@ -90,7 +90,8 @@ class Scenario(object):
                         else:
                                 c = 100
 
-                        print("bytes left %d; retrieving %d files" % (total, c))
+                        print("bytes left {0:d}; retrieving {1:d} files".format(
+                            total, c))
                         rc.dump()
 
                         # get 100 files
@@ -104,7 +105,7 @@ class Scenario(object):
 misc.setlocale(locale.LC_ALL)
 gettext.install("pkg", "/usr/share/locale")
 
-total_mb = 1000 
+total_mb = 1000
 
 # Scenario 1.  A single origin.
 

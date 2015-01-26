@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -42,8 +42,8 @@ class ScriptNonAbsPath(base.DependencyAnalysisError):
                 self.bin = bin
 
         def __str__(self):
-                return _("%(lp)s says it should be run with '%(bin)s' which is "
-                    "a relative path.") % vars(self)
+                return _("{lp} says it should be run with '{bin}' which is "
+                    "a relative path.").format(**vars(self))
 
 class ScriptDependency(base.PublishingDependency):
         """Class representing the dependency created by having #! at the top
@@ -56,7 +56,7 @@ class ScriptDependency(base.PublishingDependency):
                     base_names, paths, pkg_vars, proto_dir, "script")
 
         def __repr__(self):
-                return "PBDep(%s, %s, %s, %s, %s)" % (self.action,
+                return "PBDep({0}, {1}, {2}, {3}, {4})".format(self.action,
                     self.base_names, self.run_paths, self.pkg_vars,
                     self.dep_vars)
 

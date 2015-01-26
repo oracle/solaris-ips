@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008, 2013 Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -108,7 +108,7 @@
                         if val == selected_version:
                                 attrs = 'selected="selected" '
 
-                        context.write("""<option %svalue="%s">%s</option>\n""" % (
+                        context.write("""<option {0}value="{1}">{2}</option>\n""".format(
                             attrs, val, label))
 %>
                                 </select>

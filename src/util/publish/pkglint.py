@@ -21,7 +21,7 @@
 #
     
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
@@ -47,7 +47,7 @@ import pkg.client.transport.exception as tx
 logger = None
 
 def error(message):
-        logger.error(_("Error: %s") % message)
+        logger.error(_("Error: {0}").format(message))
 
 def msg(message):
         logger.info(message)
@@ -178,12 +178,12 @@ def list_checks(checkers, exclude, verbose=False):
                 if "pkglint_desc" in method.func_dict and not verbose:
                         return method.pkglint_desc
                 else:
-                        return "%s.%s.%s" % (method.im_class.__module__,
+                        return "{0}.{1}.{2}".format(method.im_class.__module__,
                             method.im_class.__name__,
                             method.im_func.func_name)
 
         def emit(name, value):
-                msg("%s %s" % (name.ljust(width), value))
+                msg("{0} {1}".format(name.ljust(width), value))
 
         def print_list(items):
                 k = items.keys()
@@ -233,14 +233,14 @@ def read_manifests(names, lint_logger):
                         f = codecs.open(filename, "rb", "utf-8")
                         data = f.read()
                 except UnicodeDecodeError, e:
-                        lint_logger.critical(_("Invalid file %(file)s: "
-                            "manifest not encoded in UTF-8: %(err)s") %
-                            {"file": filename, "err": e},
+                        lint_logger.critical(_("Invalid file {file}: "
+                            "manifest not encoded in UTF-8: {err}").format(
+                            file=filename, err=e),
                             msgid="lint.manifest002")
                         continue
                 except IOError, e:
                         lint_logger.critical(_("Unable to read manifest file "
-                            "%(file)s: %(err)s") % {"file": filename, "err": e},
+                            "{file}: {err}").format(file=filename, err=e),
                             msgid="lint.manifest001")
                         continue
                 lines.append(data)
@@ -261,16 +261,16 @@ def read_manifests(names, lint_logger):
                                 lineno = "???"
 
                         lint_logger.critical(
-                            _("Error in %(file)s line: %(ln)s: %(err)s ") %
-                            {"file": filename,
-                             "ln": lineno,
-                             "err": str(e)}, "lint.manifest002")
+                            _("Error in {file} line: {ln}: {err} ").format(
+                            file=filename,
+                            ln=lineno,
+                            err=str(e)), "lint.manifest002")
                         manifest = None
                 except InvalidPackageErrors, e:
                         lint_logger.critical(
-                            _("Error in file %(file)s: %(err)s") %
-                            {"file": filename,
-                            "err": str(e)}, "lint.manifest002")
+                            _("Error in file {file}: {err}").format(
+                            file=filename,
+                            err=str(e)), "lint.manifest002")
                         manifest = None
 
                 if manifest and "pkg.fmri" in manifest:
@@ -279,23 +279,23 @@ def read_manifests(names, lint_logger):
                                     pkg.fmri.PkgFmri(manifest["pkg.fmri"])
                         except fmri.IllegalFmri, e:
                                 lint_logger.critical(
-                                    _("Error in file %(file)s: "
-                                    "%(err)s") %
-                                    {"file": filename, "err": e},
+                                    _("Error in file {file}: "
+                                    "{err}").format(
+                                    file=filename, err=e),
                                     "lint.manifest002")
                         if manifest.fmri:
                                 if not manifest.fmri.version:
                                         lint_logger.critical(
-                                            _("Error in file %s: "
+                                            _("Error in file {0}: "
                                             "pkg.fmri does not include a "
-                                            "version string") % filename,
+                                            "version string").format(filename),
                                             "lint.manifest003")
                                 else:
                                         manifests.append(manifest)
 
                 elif manifest:
                         lint_logger.critical(
-                            _("Manifest %s does not declare fmri.") % filename,
+                            _("Manifest {0} does not declare fmri.").format(filename),
                             "lint.manifest003")
                 else:
                         manifests.append(None)

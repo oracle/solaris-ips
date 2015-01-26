@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -99,49 +99,49 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
             "drop mode=0755": "<transform file -> delete mode 0755> ",
             "empty": "<transform file >",
             "empty edit": "<transform file -> edit bar >",
-            "2include": "<include %(X11->Y11)s>\n<include %(X11mode)s>",
-            "include 9": "<include %(include 5)s>",
-            "include 5": "<include %(empty)s>",
+            "2include": "<include {X11->Y11}>\n<include {X11mode}>",
+            "include 9": "<include {include 5}>",
+            "include 5": "<include {empty}>",
             "add bobcat": "<transform file -> add bobcat 1>",
             "print ouch": '<transform file bobcat=1 -> print "ouch" >',
             "abort on bobcat": "<transform file bobcat=1 -> abort >",
             "exit7 on bobcat": "<transform file bobcat=1 -> exit 7>",
             "exit6 on bobcat": "<transform file bobcat=1 -> exit 6 found a bobcat>",
-            "pkg.fmri": "<transform file path=usr/bin/foo -> print pkg attr \"%%{pkg.fmri}\" and the rest>",
-            "pkg.bugs": "<transform file path=usr/bin/foo -> print pkg attr \"%%{bugs}\" and the rest>",
-            "fmrival": "<transform set name=pkg.fmri -> print test of \"%%(value)\" ... or is it?>",
-            "fmrinoval": "<transform set name=pkg.fmri -> print test of \"%%(valuee)\" ... or is it?>",
-            "fmrisaved": "<transform set name=pkg.fmri -> print test of \"%%(valuee;notfound=noprint)\" ... or is it?>",
-            "fmriqsaved": "<transform set name=pkg.fmri -> print test of \"%%(valuee;notfound=\"got quotes\")\" ... or is it?>",
-            "fmrinotsaved": "<transform set name=pkg.fmri -> print test of \"%%(value;notfound=noprint)\" ... or is it?>",
-            "list": "<transform set name=bugs -> print test of listval \"%%(value)\">",
-            "listsep": "<transform set name=bugs -> print test of listval \"%%(value;sep=\",\")\">",
-            "listsufpresep": "<transform set name=bugs -> print test of listval \"%%(value;sep=\", \";prefix=\"bug='\";suffix=\"'\")\">",
-            "nolistsufpre": "<transform set name=justonebug -> print test of \"%%(value;prefix=\"bug='\";suffix=\"'\")\">",
+            "pkg.fmri": "<transform file path=usr/bin/foo -> print pkg attr \"%{{pkg.fmri}}\" and the rest>",
+            "pkg.bugs": "<transform file path=usr/bin/foo -> print pkg attr \"%{{bugs}}\" and the rest>",
+            "fmrival": "<transform set name=pkg.fmri -> print test of \"%(value)\" ... or is it?>",
+            "fmrinoval": "<transform set name=pkg.fmri -> print test of \"%(valuee)\" ... or is it?>",
+            "fmrisaved": "<transform set name=pkg.fmri -> print test of \"%(valuee;notfound=noprint)\" ... or is it?>",
+            "fmriqsaved": "<transform set name=pkg.fmri -> print test of \"%(valuee;notfound=\"got quotes\")\" ... or is it?>",
+            "fmrinotsaved": "<transform set name=pkg.fmri -> print test of \"%(value;notfound=noprint)\" ... or is it?>",
+            "list": "<transform set name=bugs -> print test of listval \"%(value)\">",
+            "listsep": "<transform set name=bugs -> print test of listval \"%(value;sep=\",\")\">",
+            "listsufpresep": "<transform set name=bugs -> print test of listval \"%(value;sep=\", \";prefix=\"bug='\";suffix=\"'\")\">",
+            "nolistsufpre": "<transform set name=justonebug -> print test of \"%(value;prefix=\"bug='\";suffix=\"'\")\">",
             "emitblank": "<transform set name=pkg.fmri -> emit>",
             "emitcomment": "<transform set name=pkg.fmri -> emit # comment>",
-            "emitaction": "<transform set name=pkg.fmri -> emit depend type=incorporate fmri=%%(value)>",
-            "synthetic": "<transform file path=usr/bin/foo -> print %%(pkg.manifest.filename) %%(pkg.manifest.lineno)>",
-            "synthetic2": "<transform file path=usr/bin/foo -> print %%(action.hash) %%(action.key) %%(action.name)>",
-            "synthetic3": "<transform file -> print %%(action.hash)>",
-            "synthetic4": "<transform set -> print %%(action.hash)>",
-            "synthetic5": "<transform set -> print %%(action.hash;notfound=something)>",
+            "emitaction": "<transform set name=pkg.fmri -> emit depend type=incorporate fmri=%(value)>",
+            "synthetic": "<transform file path=usr/bin/foo -> print %(pkg.manifest.filename) %(pkg.manifest.lineno)>",
+            "synthetic2": "<transform file path=usr/bin/foo -> print %(action.hash) %(action.key) %(action.name)>",
+            "synthetic3": "<transform file -> print %(action.hash)>",
+            "synthetic4": "<transform set -> print %(action.hash)>",
+            "synthetic5": "<transform set -> print %(action.hash;notfound=something)>",
             "pkgmatch": "<transform pkg -> default $(MYATTR) false>",
             "pkggen": "<transform pkg $(MYATTR)=false -> emit depend fmri=consolidation type=require>",
             "recurse": "<transform file mode=0777 -> emit file path=usr/bin/bar mode=0777>",
             "rbneeded": "<transform file reboot-needed=true -> emit set name=magic value=true>",
-            "brdefault": "<transform depend fmri=__TBD path=([^/]*)/([^/]*)/ mode=0(.)55 -> default pkg.debug.depend.path %%<1>/%%<2>>",
-            "brdefault2": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<3>>",
-            "brdefault3": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<4>>",
-            "brdefault3a": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<0>>",
-            "brdefault4": "<transform file path=usr/share/locale/([^/]+).* -> default locale.%%<1> true>",
-            "brweirdquote": "<transform file moo=(.*) path='\\'.*/([^/]*)\\'' -> default refs %%<1>,%%<2>>",
-            "bradd": "<transform file path=usr/share/locale/([^/]+).* -> add locale.%%<1> true>",
-            "brset": "<transform file path=usr/share/locale/([^/]+).* -> set locale.%%<1> true>",
-            "bredit": "<transform file path=usr/share/locale/([^/]+).* -> edit path .*/([^/]*\\.mo) another/place/for/locales/%%<1>/\\\\1>",
-            "bredit2": "<transform file path=usr/share/locale/([^/]+).* -> edit path %%<1> LANG>",
+            "brdefault": "<transform depend fmri=__TBD path=([^/]*)/([^/]*)/ mode=0(.)55 -> default pkg.debug.depend.path %<1>/%<2>>",
+            "brdefault2": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %<2>/%<3>>",
+            "brdefault3": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %<2>/%<4>>",
+            "brdefault3a": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %<2>/%<0>>",
+            "brdefault4": "<transform file path=usr/share/locale/([^/]+).* -> default locale.%<1> true>",
+            "brweirdquote": "<transform file moo=(.*) path='\\'.*/([^/]*)\\'' -> default refs %<1>,%<2>>",
+            "bradd": "<transform file path=usr/share/locale/([^/]+).* -> add locale.%<1> true>",
+            "brset": "<transform file path=usr/share/locale/([^/]+).* -> set locale.%<1> true>",
+            "bredit": "<transform file path=usr/share/locale/([^/]+).* -> edit path .*/([^/]*\\.mo) another/place/for/locales/%<1>/\\\\1>",
+            "bredit2": "<transform file path=usr/share/locale/([^/]+).* -> edit path %<1> LANG>",
             "edit1": "<transform file path=usr/(share|lib)/locale.* -> edit path usr/(lib|share)/locale place/\\\\1/langs>",
-            "doublequote": "<transform legacy -> default name %%{pkg.summary}>",
+            "doublequote": "<transform legacy -> default name %{{pkg.summary}}>",
             "delete-with-no-operand": "<transform file -> delete >",
         }
 
@@ -167,7 +167,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 # Map the transform names to path names
                 xformpaths = dict((
-                    (name, os.path.join(self.test_root, "transform_%s" % i))
+                    (name, os.path.join(self.test_root, "transform_{0}".format(i)))
                     for i, name in enumerate(self.transforms.iterkeys())
                 ))
 
@@ -176,7 +176,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # transform files out.
                 for name, path in xformpaths.iteritems():
                         f = file(path, "wb")
-                        self.transforms[name] %= xformpaths
+                        self.transforms[name] = self.transforms[name].format(**xformpaths)
                         f.write(self.transforms[name])
                         f.close()
 
@@ -188,14 +188,14 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                         defines = self.basic_defines
 
                 defines = " ".join([
-                    "-D %s=%s" % (k, v)
+                    "-D {0}={1}".format(k, v)
                     for k, v in defines.iteritems()
                 ])
                 sources = " ".join(sources)
                 if output:
-                        args += " -O %s" % output
+                        args += " -O {0}".format(output)
 
-                cmd = "%s/usr/bin/pkgmogrify %s %s %s" % (
+                cmd = "{0}/usr/bin/pkgmogrify {1} {2} {3}".format(
                     pkg5unittest.g_pkg_path, defines, args, sources)
 
                 self.cmdline_run(cmd, exit=exit)
@@ -227,11 +227,11 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 c = self.__countMatches(regex, path)
 
                 self.failIf(count == c == 0,
-                    "No matches for '%s' found" % regex)
+                    "No matches for '{0}' found".format(regex))
                 if count > 0:
                         self.failUnless(c == count,
-                            "%s matches for '%s' found, %s expected" %
-                            (c, regex, count))
+                            "{0} matches for '{1}' found, {2} expected".format(
+                            c, regex, count))
 
         def assertNoMatch(self, regex, path=None):
                 """Assert that the regular expression 'regex' is not found in
@@ -240,7 +240,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 c = self.__countMatches(regex, path)
 
-                self.assert_(c == 0, "Match for '%s' found unexpectedly" % regex)
+                self.assert_(c == 0, "Match for '{0}' found unexpectedly".format(regex))
 
         def test_1(self):
                 """Basic and nested macro substitution.  Allow a macro to
@@ -320,7 +320,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # Make sure that the -I flag works, with files specified on the
                 # commandline as well as ones <include>d by others.
                 self.pkgmogrify([os.path.basename(self.transforms["2include"]),
-                    source_file], args="-I %s" % self.test_root)
+                    source_file], args="-I {0}".format(self.test_root))
                 self.assertMatch("file NOHASH group=bin mode=0755 owner=root "
                     "path=usr/Y11/bin/Xserver")
 
@@ -359,7 +359,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 # nested tranform error XXX this fails because of a bad transform
                 self.pkgmogrify([self.transforms["include 9"]],
-                    args="-I %s" % self.test_root, exit=1)
+                    args="-I {0}".format(self.test_root), exit=1)
 
                 # Wombats!
                 self.pkgmogrify(["/wombat-farm"], exit=1)
@@ -375,7 +375,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # should cover the "exit gracefully" part of abort.
                 self.pkgmogrify([self.transforms["add bobcat"],
                     self.transforms["abort on bobcat"], source_file],
-                    output=no_output, args="-P %s" % no_print)
+                    output=no_output, args="-P {0}".format(no_print))
 
                 # Make sure neither output nor print file was created.
                 self.failIf(os.access(no_output, os.F_OK))
@@ -384,7 +384,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # Trigger an exit transform with a specific exit code.
                 self.pkgmogrify([self.transforms["add bobcat"],
                     self.transforms["exit7 on bobcat"], source_file],
-                    output=no_output, args="-P %s" % no_print, exit=7)
+                    output=no_output, args="-P {0}".format(no_print), exit=7)
 
                 # Make sure neither output nor print file was created.
                 self.failIf(os.access(no_output, os.F_OK))
@@ -394,7 +394,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # message.
                 self.pkgmogrify([self.transforms["add bobcat"],
                     self.transforms["exit6 on bobcat"], source_file],
-                    output=no_output, args="-P %s" % no_print, exit=6)
+                    output=no_output, args="-P {0}".format(no_print), exit=6)
                 self.assertMatch("found a bobcat")
 
         def test_9(self):
@@ -411,7 +411,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 self.pkgmogrify([self.transforms["add bobcat"],
                     self.transforms["print ouch"], source_file],
                     defines=defines, output=output_file,
-                    args="-P %s" % print_file)
+                    args="-P {0}".format(print_file))
                 self.assertMatch("ouch", path=print_file, count=3)
 
         def test_10(self):
@@ -421,7 +421,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 output_file = os.path.join(self.test_root, "output_file")
 
                 self.pkgmogrify([source_file], output=output_file, defines={})
-                self.cmdline_run("diff %s %s" % (source_file, output_file),
+                self.cmdline_run("diff {0} {1}".format(source_file, output_file),
                     coverage=False)
                 
         def test_11(self):
@@ -460,12 +460,12 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 source_file = os.path.join(self.test_root, "source_file2")
 
-                expect = "^test of \"%s\" ... or is it\?$"
+                expect = "^test of \"{0}\" ... or is it\?$"
                 fmri = "wombat/heaven@1.0,5.11-0.101"
 
                 # Simple %() replacement
                 self.pkgmogrify([self.transforms["fmrival"], source_file])
-                self.assertMatch(expect % fmri)
+                self.assertMatch(expect.format(fmri))
 
                 # We should exit with an error and exit code 1 when the %()
                 # replacement fails because of a missing attribute.
@@ -476,17 +476,17 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # When the attribute is missing but a notfound token is present,
                 # we should see that value show up.
                 self.pkgmogrify([self.transforms["fmrisaved"], source_file])
-                self.assertMatch(expect % "noprint")
+                self.assertMatch(expect.format("noprint"))
 
                 # If the notfound value has quotes, the quoted value should show
                 # up, and the quotes dropped.
                 self.pkgmogrify([self.transforms["fmriqsaved"], source_file])
-                self.assertMatch(expect % '"got quotes"')
+                self.assertMatch(expect.format('"got quotes"'))
 
                 # When a notfound value is present, but the original attribute
                 # is also present, the notfound value should be ignored.
                 self.pkgmogrify([self.transforms["fmrinotsaved"], source_file])
-                self.assertMatch(expect % fmri)
+                self.assertMatch(expect.format(fmri))
 
                 # Basic list-valued attribute
                 self.pkgmogrify([self.transforms["list"], source_file])
@@ -507,7 +507,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 # Synthetic attributes
                 self.pkgmogrify([self.transforms["synthetic"], source_file])
-                self.assertMatch("^%s 4$" % source_file)
+                self.assertMatch("^{0} 4$".format(source_file))
 
                 # Synthetic attributes
                 self.pkgmogrify([self.transforms["synthetic2"], source_file])

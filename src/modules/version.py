@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -312,7 +312,7 @@ class Version(object):
                                 self.build_release = DotSequence(build_string)
 
                 except IllegalDotSequence, e:
-                        raise IllegalVersion("Bad Version: %s" % e)
+                        raise IllegalVersion("Bad Version: {0}".format(e))
 
                 #
                 # In 99% of the cases in which we use date and time, it's solely
@@ -363,7 +363,8 @@ class Version(object):
                 return outstr
 
         def __repr__(self):
-                return "<pkg.fmri.Version '%s' at %#x>" % (self, id(self))
+                return "<pkg.fmri.Version '{0}' at {1:#x}>".format(self,
+                    id(self))
 
         def get_version(self, include_build=True):
                 if include_build:
@@ -379,8 +380,8 @@ class Version(object):
         def get_short_version(self):
                 branch_str = ""
                 if self.branch is not None:
-                        branch_str = "-%s" % self.branch
-                return "%s%s" % (self.release, branch_str)
+                        branch_str = "-{0}".format(self.branch)
+                return "{0}{1}".format(self.release, branch_str)
 
         def set_timestamp(self, timestamp=datetime.datetime.utcnow()):
                 assert type(timestamp) == datetime.datetime
@@ -658,7 +659,7 @@ class MatchingVersion(Version):
                                         setattr(self, attr, val)
                                         break
                 except IllegalDotSequence, e:
-                        raise IllegalVersion("Bad Version: %s" % e)
+                        raise IllegalVersion("Bad Version: {0}".format(e))
 
                 outstr = str(release)
                 if build_release is not None:

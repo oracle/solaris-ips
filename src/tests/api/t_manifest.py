@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -337,7 +337,7 @@ dir mode=0755 owner=bin group=sys path=usr
                         self.assertEqual(kv, ('dir', 'usr'))
                         for a in actions:
                                 acount += 1
-                                #print(" %s %s" % (kv, a))
+                                #print(" {0} {1}".format(kv, a))
                 self.assertEqual(acount, 3)
 
         def test_errors(self):
@@ -479,9 +479,9 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
                 with open(cfile_path, "wb") as f:
                         for a in m1.gen_actions_by_type("dir"):
                                 f.write(
-                                    "dir path=%s %s\n" % (a.attrs["path"],
+                                    "dir path={0} {1}\n".format(a.attrs["path"],
                                         " ".join(
-                                            "%s=%s" % (attr, a.attrs[attr])
+                                            "{0}={1}".format(attr, a.attrs[attr])
                                             for attr in itertools.chain(
                                                 *a.get_varcet_keys())
                                         )

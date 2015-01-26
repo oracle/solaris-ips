@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -513,8 +513,8 @@ class pylint_func(Command):
                 elif not pylint_ver_str or \
                     not supported_pylint_ver(pylint_ver_str):
                         log.warn("WARNING: skipping pylint checks: the "
-                            "installed version %s is older than version %s" %
-                            (pylint_ver_str, req_pylint_version))
+                            "installed version {0} is older than version {1}".format(
+                            pylint_ver_str, req_pylint_version))
                         return
 
                 proto = os.path.join(root_dir, py_install_dir)
@@ -578,47 +578,47 @@ class clint_func(Command):
                 if osname == 'sunos' or osname == "linux":
                         archcmd = lint + lint_flags + \
                             ['-D_FILE_OFFSET_BITS=64'] + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             arch_srcs
                         elfcmd = lint + lint_flags + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
-                            ["%s%s" % ("-l", k) for k in elf_libraries] + \
+                            ["{0}{1}".format("-l", k) for k in elf_libraries] + \
                             elf_srcs
                         _actionscmd = lint + lint_flags + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actions_srcs
                         _actcommcmd = lint + lint_flags + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actcomm_srcs
                         _varcetcmd = lint + lint_flags + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _varcet_srcs
                         pspawncmd = lint + lint_flags + \
                             ['-D_FILE_OFFSET_BITS=64'] + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             pspawn_srcs
                         syscallatcmd = lint + lint_flags + \
                             ['-D_FILE_OFFSET_BITS=64'] + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             syscallat_srcs
                         sysattrcmd = lint + lint_flags + \
                             ['-D_FILE_OFFSET_BITS=64'] + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
-                            ["%s%s" % ("-l", k) for k in sysattr_libraries] + \
+                            ["{0}{1}".format("-l", k) for k in sysattr_libraries] + \
                             sysattr_srcs
                         sha512_tcmd = lint + lint_flags + \
                             ['-D_FILE_OFFSET_BITS=64'] + \
-                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ["{0}{1}".format("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
-                            ["%s%s" % ("-l", k) for k in sha512_t_libraries] + \
+                            ["{0}{1}".format("-l", k) for k in sha512_t_libraries] + \
                             sha512_t_srcs
 
                         print(" ".join(archcmd))
@@ -796,10 +796,11 @@ def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                 if ret != 0:
                         if stderr:
                             stderr.close()
-                        print("install failed and returned %d." % ret,
+                        print("install failed and returned {0:d}.".format(ret),
                             file=sys.stderr)
-                        print("Command was: %s" % " ".join(args),
+                        print("Command was: {0}".fromat(" ".join(args)),
                             file=sys.stderr)
+
                         sys.exit(1)
                 if stderr:
                         stderr.close()
@@ -821,7 +822,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
                 except EnvironmentError, e:
                         if e.errno != errno.ENOENT:
                                 raise DistutilsFileError("could not delete "
-                                    "'%s': %s" % (dst, e))
+                                    "'{0}': {1}".format(dst, e))
 
                 with file(dst, "w") as dfp:
                         while True:
@@ -870,7 +871,7 @@ def intltool_update_maintain():
             missing = open("po/missing", "r")
             print("--------", file=sys.stderr)
             for fn in missing:
-                print("%s" % fn.strip(), file=sys.stderr) 
+                print("{0}".format(fn.strip()), file=sys.stderr)
             print("--------", file=sys.stderr) 
             missing.close()
             print("""\
@@ -887,8 +888,9 @@ in the workspace:""", file=sys.stderr)
             notexist = open("po/notexist", "r")
             print("--------", file=sys.stderr)
             for fn in notexist:
-                print("%s" % fn.strip(), file=sys.stderr) 
-            print("--------", file=sys.stderr) 
+                print("{0}".format(fn.strip()), file=sys.stderr)
+            print("--------", file=sys.stderr)
+
             notexist.close()
             print("Please remove the file names from po/POTFILES.in",
                 file=sys.stderr)
@@ -930,7 +932,7 @@ def i18n_check():
         # A list of the i18n errors we check for in the code
         common_i18n_errors = [
             # This checks that messages with multiple parameters are always
-            # written using "%(name)s" format, rather than just "%s"
+            # written using "{name}" format, rather than just "{0}"
             "format string with unnamed arguments cannot be properly localized"
         ]
 
@@ -1096,8 +1098,8 @@ def syntax_check(filename):
 
                         # Assume it's a tuple of (filename, lineno, col, code)
                         fname, line, col, code = err
-                        res += "line %d, column %s, in %s:\n%s" % (line,
-                            col or "unknown", fname, code)
+                        res += "line {0:d}, column {1}, in {2}:\n{3}".format(
+                            line, col or "unknown", fname, code)
 
                 raise DistutilsError(res)
 
@@ -1168,8 +1170,8 @@ class build_ext_func(_build_ext):
                 d, f = os.path.split(self.build_temp)
 
                 # store our 64-bit extensions elsewhere
-                self.build_temp = d + "/temp64.%s" % \
-                    os.path.basename(self.build_temp).replace("temp.", "")
+                self.build_temp = d + "/temp64.{0}".format(
+                    os.path.basename(self.build_temp).replace("temp.", ""))
                 ext.extra_compile_args += ["-m64"]
                 ext.extra_link_args += ["-m64"]
                 self.build64 = True
@@ -1238,7 +1240,7 @@ class build_py_func(_build_py):
                         except IOError:
                                 ov = None
                         v = get_hg_version()
-                        vstr = 'VERSION = "%s"' % v
+                        vstr = 'VERSION = "{0}"'.format(v)
                         # If the versions haven't changed, there's no need to
                         # recompile.
                         if v == ov:
@@ -1361,7 +1363,7 @@ class build_data_func(Command):
                 i18n_check()
 
                 for l in pkg_locales:
-                        msgfmt("po/%s.po" % l, "po/%s.mo" % l)
+                        msgfmt("po/{0}.po".format(l), "po/{0}.mo".format(l))
 
                 # generate pkg.pot for next translation
                 intltool_update_maintain()
@@ -1391,7 +1393,7 @@ class clean_func(_clean):
                 rm_f("po/.intltool-merge-cache")
 
                 for l in pkg_locales:
-                        rm_f("po/%s.mo" % l)
+                        rm_f("po/{0}.mo".format(l))
 
                 rm_f("po/pkg.pot")
 
@@ -1601,7 +1603,7 @@ if osname == 'sunos':
         # install localizable .xml and its .pot file to put into localizable file package
         data_files += [
             (os.path.join(locale_dir, locale, 'LC_MESSAGES'),
-                [('po/%s.mo' % locale, 'pkg.mo')])
+                [('po/{0}.mo'.format(locale), 'pkg.mo')])
             for locale in pkg_locales
         ]
         # install English .pot file to put into localizable file package

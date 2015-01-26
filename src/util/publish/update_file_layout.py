@@ -19,8 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This program converts a directory structure from the V0layout to the
@@ -46,7 +46,7 @@ def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
         if cmd:
-                text = "%s: %s" % (cmd, text)
+                text = "{0}: {1}".format(cmd, text)
                 pkg_cmd = "pkg.migrate "
         else:
                 pkg_cmd = "pkg.migrate: "

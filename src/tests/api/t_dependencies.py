@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import testutils
@@ -94,84 +94,84 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
         paths.update(smf_paths)
 
         ext_hardlink_manf = """ \
-hardlink path=usr/foo target=../%(syslog_path)s
-hardlink path=usr/bar target=../%(syslog_path)s
-hardlink path=baz target=%(authlog_path)s
-""" % paths
+hardlink path=usr/foo target=../{syslog_path}
+hardlink path=usr/bar target=../{syslog_path}
+hardlink path=baz target={authlog_path}
+""".format(**paths)
 
         int_hardlink_manf = """ \
-hardlink path=usr/foo target=../%(syslog_path)s
-file NOHASH group=sys mode=0644 owner=root path=%(syslog_path)s 
-""" % paths
+hardlink path=usr/foo target=../{syslog_path}
+file NOHASH group=sys mode=0644 owner=root path={syslog_path} 
+""".format(**paths)
 
         int_hardlink_manf_test_symlink = """ \
-hardlink path=usr/foo target=../%(syslog_path)s
+hardlink path=usr/foo target=../{syslog_path}
 file NOHASH group=sys mode=0644 owner=root path=bar/syslog 
-""" % paths
+""".format(**paths)
 
         ext_script_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path}
+""".format(**paths)
 
         int_script_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s
-file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path}
+file NOHASH group=bin mode=0755 owner=root path={ksh_path}
+""".format(**paths)
 
         ext_elf_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(curses_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={curses_path}
+""".format(**paths)
 
         int_elf_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(libc_path)s
-file NOHASH group=bin mode=0755 owner=root path=%(curses_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={libc_path}
+file NOHASH group=bin mode=0755 owner=root path={curses_path}
+""".format(**paths)
 
         ext_python_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(indexer_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={indexer_path}
+""".format(**paths)
 
         ext_python_pkg_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(pkg_path)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={pkg_path}
+""".format(**paths)
 
         python_mod_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path)s
-file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path27)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={py_mod_path}
+file NOHASH group=bin mode=0755 owner=root path={py_mod_path27}
+""".format(**paths)
 
         relative_ext_depender_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(relative_depender)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={relative_depender}
+""".format(**paths)
         relative_int_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=%(relative_dependee)s
-file NOHASH group=bin mode=0755 owner=root path=%(relative_depender)s
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={relative_dependee}
+file NOHASH group=bin mode=0755 owner=root path={relative_depender}
+""".format(**paths)
 
         variant_manf_1 = """ \
 set name=variant.arch value=foo value=bar value=baz
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s
-file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.arch=foo
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path}
+file NOHASH group=bin mode=0755 owner=root path={ksh_path} variant.arch=foo
+""".format(**paths)
 
         variant_manf_2 = """ \
 set name=variant.arch value=foo value=bar value=baz
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s variant.arch=foo
-file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.arch=foo
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path} variant.arch=foo
+file NOHASH group=bin mode=0755 owner=root path={ksh_path} variant.arch=foo
+""".format(**paths)
 
         variant_manf_3 = """ \
 set name=variant.arch value=foo value=bar value=baz
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s variant.arch=bar
-file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.arch=foo
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path} variant.arch=bar
+file NOHASH group=bin mode=0755 owner=root path={ksh_path} variant.arch=foo
+""".format(**paths)
 
         variant_manf_4 = """ \
 set name=variant.arch value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
-file NOHASH group=bin mode=0755 owner=root path=%(script_path)s variant.opensolaris.zone=global
-file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.opensolaris.zone=global
-""" % paths
+file NOHASH group=bin mode=0755 owner=root path={script_path} variant.opensolaris.zone=global
+file NOHASH group=bin mode=0755 owner=root path={ksh_path} variant.opensolaris.zone=global
+""".format(**paths)
 
         python_abs_text = """\
 #!/usr/bin/python
@@ -914,58 +914,58 @@ None of these services or instances declare any dependencies.
 """
 
         int_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={service_single}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+""".format(**paths)
 
         # service_general depends on a service, instances of which are delivered
         # by both of the other SMF manifests
         int_req_svc_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(service_general)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={service_general}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps_alt}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+""".format(**paths)
 
         # a bypassed version of the above, to ensure that the use of
         # full_paths by SMFManifestDependency when multiple files are
         # depended on still works.
         bypassed_int_req_svc_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(service_general)s \
+file NOHASH group=sys mode=0644 owner=root path={service_general} \
     pkg.depend.bypass-generate=.*var/svc/manifest/delivered-many-nodeps-alt.xml
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps_alt}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+""".format(**paths)
 
 
         # service_specific depends on instances delivered by both of the
         # other SMF manifests
         int_req_inst_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(service_single_specific)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={service_single_specific}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps_alt}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+""".format(**paths)
 
         ext_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(service_many)s
-file NOHASH group=sys mode=0644 owner=root path=%(foreign_single_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={service_many}
+file NOHASH group=sys mode=0644 owner=root path={foreign_single_nodeps}
+""".format(**paths)
 
         broken_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(broken)s
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={broken}
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+file NOHASH group=sys mode=0644 owner=root path={service_single}
+""".format(**paths)
 
         delete_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(delete)s
-file NOHASH group=sys mode=0644 owner=root path=%(foreign_single_nodeps)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={delete}
+file NOHASH group=sys mode=0644 owner=root path={foreign_single_nodeps}
+""".format(**paths)
 
         faildeps_smf_manf = """\
-file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
-file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
-file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
-""" % paths
+file NOHASH group=sys mode=0644 owner=root path={delivered_many_nodeps}
+file NOHASH group=sys mode=0644 owner=root path={service_single}
+file NOHASH group=sys mode=0644 owner=root path={service_unknown}
+""".format(**paths)
 
         script_text = "#!/usr/bin/ksh -p\n"
 
@@ -981,124 +981,124 @@ import pkgdep_runpath.pdtest
 
         # standard use of a runpath attribute
         python_runpath_manf = """\
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=opt:$PKGDEPEND_RUNPATH:dummy_directory
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which has an empty runpath (which is zany) - we will
         # throw an error here and want to test for it
         python_empty_runpath_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=""
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which has a broken runpath
         python_invalid_runpath_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=foo pkg.depend.runpath=bar pkg.depend.runpath=opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which needs a runpath in order to generate deps properly
         python_invalid_runpath2_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:foo:$PKGDEPEND_RUNPATH
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
 
         # a manifest that bypasses two files and sets a runpath
         python_bypass_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=opt/pkgdep_runpath/pdtest.py \
     pkg.depend.bypass-generate=usr/lib/python2.6/lib-dynload/pkgdep_runpath/pdtestmodule.so \
     pkg.depend.runpath=opt:$PKGDEPEND_RUNPATH
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest that generates a single dependency, which we want to
         # bypass
         ksh_bypass_manf = """
-file NOHASH group=sys mode=055 owner=root path=%(script_path)s \
+file NOHASH group=sys mode=055 owner=root path={script_path} \
     pkg.depend.bypass-generate=usr/bin/ksh
-""" % paths
+""".format(**paths)
 
         # a manifest that generates a single dependency, which we want to
         # bypass.  Specifying just the filename means we should bypass all
         # paths to that filename (we implicitly add ".*/")
         ksh_bypass_filename_manf = """
-file NOHASH group=sys mode=055 owner=root path=%(script_path)s \
+file NOHASH group=sys mode=055 owner=root path={script_path} \
     pkg.depend.bypass-generate=ksh
-""" % paths
+""".format(**paths)
 
         # a manifest that generates a single dependency, which we want to
         # bypass, duplicating the value
         ksh_bypass_dup_manf = """
-file NOHASH group=sys mode=055 owner=root path=%(script_path)s \
+file NOHASH group=sys mode=055 owner=root path={script_path} \
     pkg.depend.bypass-generate=usr/bin/ksh \
     pkg.depend.bypass-generate=usr/bin/ksh
-""" % paths
+""".format(**paths)
 
         # a manifest that declares bypasses, none of which match the
         # dependences we generate
         python_bypass_nomatch_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=cats \
     pkg.depend.bypass-generate=dogs \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which uses a wildcard to bypass all dependency generation
         python_wildcard_bypass_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=.* \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which uses a file wildcard to bypass generation
         python_wildcard_file_bypass_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=opt/pkgdep_runpath/.* \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which uses a dir wildcard to bypass generation
         python_wildcard_dir_bypass_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=pdtest.py \
     pkg.depend.bypass-generate=pdtest.pyc \
     pkg.depend.bypass-generate=pdtest.pyo \
     pkg.depend.bypass-generate=pdtest.so \
     pkg.depend.bypass-generate=pdtestmodule.so \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         # a manifest which uses a combination of directory, file and normal
         # bypass entries
         python_wildcard_combo_bypass_manf = """
-file NOHASH group=sys mode=0755 owner=root path=%(bypass_path)s \
+file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.bypass-generate=pdtest.py \
     pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/.* \
     pkg.depend.bypass-generate=usr/lib/python2.6/site-packages/pkgdep_runpath/pdtestmodule.so \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_path)s
-file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
-""" % paths
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
+file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
+""".format(**paths)
 
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
@@ -1110,17 +1110,17 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 self.make_misc_files({ path: contents }, prefix="proto")
 
         def make_python_test_files(self, py_version):
-                pdir = "usr/lib/python%s/vendor-packages" % py_version
-                self.make_proto_text_file("%s/pkg_test/__init__.py" % pdir,
+                pdir = "usr/lib/python{0}/vendor-packages".format(py_version)
+                self.make_proto_text_file("{0}/pkg_test/__init__.py".format(pdir),
                     "#!/usr/bin/python\n")
                 self.make_proto_text_file(
-                    "%s/pkg_test/indexer_test/__init__.py" % pdir,
+                    "{0}/pkg_test/indexer_test/__init__.py".format(pdir),
                     "#!/usr/bin/python")
-                self.make_proto_text_file("%s/cProfile.py" % pdir,
+                self.make_proto_text_file("{0}/cProfile.py".format(pdir),
                     self.python_module_text)
-                self.make_proto_text_file("%s/pkg_test/client/foo.py" % pdir,
+                self.make_proto_text_file("{0}/pkg_test/client/foo.py".format(pdir),
                     "#!/usr/bin/python\nimport bar")
-                self.make_proto_text_file("%s/pkg_test/client/bar.py" % pdir,
+                self.make_proto_text_file("{0}/pkg_test/client/bar.py".format(pdir),
                     "#!/usr/bin/python\n")
                 # install these in non-sys.path locations
                 self.make_proto_text_file(self.paths["bypass_path"],
@@ -1131,8 +1131,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     "#!/usr/bin/python2.6")
 
         def make_broken_python_test_file(self, py_version):
-                pdir = "usr/lib/python%s/vendor-packages" % py_version
-                self.make_proto_text_file("%s/cProfile.py" % pdir,
+                pdir = "usr/lib/python{0}/vendor-packages".format(py_version)
+                self.make_proto_text_file("{0}/cProfile.py".format(pdir),
                     "#!/usr/bin/python\n\\1" + self.python_module_text)
                 
 	def make_smf_test_files(self):
@@ -1295,7 +1295,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                     self.paths["ksh_path"])
                         else:
                                 raise RuntimeError("Unexpected "
-                                    "dependency path:%s" % d)
+                                    "dependency path:{0}".format(d))
                                 
         def test_ext_elf(self):
                 """Check that an elf file that requires a library outside its
@@ -1383,10 +1383,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                             "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "%s%s" % (n,s) for s in mod_suffs
+                                "{0}{1}".format(n,s) for s in mod_suffs
                             ]))
                             for n in mod_names] +
-                            [("%s/__init__.py" % n,) for n in pkg_names])
+                            [("{0}/__init__.py".format(n),) for n in pkg_names])
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1396,12 +1396,12 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                 self.assert_(d.is_error())
                                 if d.dep_vars is None:
                                         raise RuntimeError("This dep had "
-                                            "depvars of None:%s" % d)
+                                            "depvars of None:{0}".format(d))
                                 self.assert_(d.dep_vars.is_satisfied())
                                 if not d.dep_key()[0] in expected_deps:
                                         raise RuntimeError("Got this "
-                                            "unexpected dep:%s\n\nd:%s" %
-                                            (d.dep_key()[0], d))
+                                            "unexpected dep:{0}\n\nd:{1}".format(
+                                            d.dep_key()[0], d))
                                 expected_deps.remove(d.dep_key()[0])
                                 self.assertEqual(d.action.attrs["path"],
                                         self.paths["indexer_path"])
@@ -1434,28 +1434,28 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                             "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "%s%s" % (n,s) for s in mod_suffs
+                                "{0}{1}".format(n,s) for s in mod_suffs
                             ]))
                             for n in mod_names] +
-                            [("%s/__init__.py" % n,) for n in pkg_names])
+                            [("{0}/__init__.py".format(n),) for n in pkg_names])
                         if len(es) != 1:
                                 raise RuntimeError("Expected exactly 1 error, "
                                     "got:%\n" + "\n".join([str(s) for s in es]))
                         if es[0].name != "misc_test":
                                 raise RuntimeError("Didn't get the expected "
-                                    "error. Error found was:%s" % es[0])
+                                    "error. Error found was:{0}".format(es[0]))
 
                         self.assertEqual(ms, {})
                         for d in ds:
                                 self.assert_(d.is_error())
                                 if d.dep_vars is None:
                                         raise RuntimeError("This dep had "
-                                            "depvars of None:%s" % d)
+                                            "depvars of None:{0}".format(d))
                                 self.assert_(d.dep_vars.is_satisfied())
                                 if not d.dep_key()[0] in expected_deps:
                                         raise RuntimeError("Got this "
-                                            "unexpected dep:%s\n\nd:%s" %
-                                            (d.dep_key()[0], d))
+                                            "unexpected dep:{0}\n\nd:{1}".format(
+                                            d.dep_key()[0], d))
                                 expected_deps.remove(d.dep_key()[0])
                                 self.assertEqual(d.action.attrs["path"],
                                         self.paths["indexer_path"])
@@ -1495,10 +1495,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "%s%s" % (n,s) for s in mod_suffs
+                                "{0}{1}".format(n,s) for s in mod_suffs
                             ]))
                             for n in mod_names] +
-                            [("%s/__init__.py" % n,) for n in pkg_names])
+                            [("{0}/__init__.py".format(n),) for n in pkg_names])
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1508,12 +1508,12 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                 self.assert_(d.is_error())
                                 if d.dep_vars is None:
                                         raise RuntimeError("This dep had "
-                                            "depvars of None:%s" % d)
+                                            "depvars of None:{0}".format(d))
                                 self.assert_(d.dep_vars.is_satisfied())
                                 if not d.dep_key()[0] in expected_deps:
                                         raise RuntimeError("Got this "
-                                            "unexpected dep:%s\n\nd:%s" %
-                                            (d.dep_key()[0], d))
+                                            "unexpected dep:{0}\n\nd:{1}".format(
+                                            d.dep_key()[0], d))
 
                                 # check the suffixes generated in our
                                 # pkg.debug.depend.path
@@ -1527,9 +1527,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                                     p.endswith(suffix) or
                                                     p == os.path.dirname(
                                                     self.paths["pkg_path"]),
-                                                    "suffix %s not found in "
-                                                    "paths for %s: %s" %
-                                                    (suffix, bn, " ".join(
+                                                    "suffix {0} not found in "
+                                                    "paths for {1}: {2}".format(
+                                                    suffix, bn, " ".join(
                                                     d.run_paths)))
 
                                 expected_deps.remove(d.dep_key()[0])
@@ -1561,8 +1561,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
-                self.assert_(es != 0, "Unexpected errors reported: %s" % es)
-                self.assert_(ds != 2, "Unexpected deps reported: %s" % ds)
+                self.assert_(es != 0, "Unexpected errors reported: {0}".format(es))
+                self.assert_(ds != 2, "Unexpected deps reported: {0}".format(ds))
 
         def test_python_relative_import_generation(self):
                 """This is a test for bug 14094.  It ensures that a python
@@ -1583,7 +1583,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo", ".so",
                     "module.so"]
-                expected_deps = set(["bar%s" % s for s in mod_suffs])
+                expected_deps = set(["bar{0}".format(s) for s in mod_suffs])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1597,9 +1597,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         self.assertEqualDiff(expected_deps, set(d.attrs[pddf]))
                         ep = os.path.dirname(self.paths["relative_depender"])
                         if ep not in d.attrs[pddp]:
-                                raise RuntimeError("Expected %s to be in the "
+                                raise RuntimeError("Expected {0} to be in the "
                                     "list of pkg.debug.depend.path attribute "
-                                    "values, but it wasn't seen." % ep)
+                                    "values, but it wasn't seen.".format(ep))
 
                 t_path = self.make_manifest(
                     self.relative_int_manf)
@@ -1614,11 +1614,11 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                             "\n".join([str(s) for s in es]))
                 self.assertEqual(ms, {})
                 self.assertEqual(len(ds), 2, "Expected two dependencies, "
-                    "got:\n%s" % "\n".join([str(d) for d in ds]))
+                    "got:\n{0}".format("\n".join([str(d) for d in ds])))
                 for d in ds:
                         self.assertEqual(d.attrs[pddt], "script", "Got this "
-                            "dependency which wasn't of the expected type:%s" %
-                            d)
+                            "dependency which wasn't of the expected type:{0}".format(
+                            d))
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
@@ -1636,9 +1636,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         self.assertEqualDiff(expected_deps, set(d.attrs[pddf]))
                         ep = os.path.dirname(self.paths["relative_depender"])
                         if ep not in d.attrs[pddp]:
-                                raise RuntimeError("Expected %s to be in the "
+                                raise RuntimeError("Expected {0} to be in the "
                                     "list of pkg.debug.depend.path attribute "
-                                    "values, but it wasn't seen." % ep)
+                                    "values, but it wasn't seen.".format(ep))
 
         def test_bug_18031(self):
                 """Test that an python file which python cannot import due to a
@@ -1649,8 +1649,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 self.make_broken_python_test_file(2.6)
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
-                self.assert_(es != 2, "Unexpected errors reported: %s" % es)
-                self.assert_(ds != 0, "Unexpected deps reported: %s" % ds)
+                self.assert_(es != 2, "Unexpected errors reported: {0}".format(es))
+                self.assert_(ds != 0, "Unexpected deps reported: {0}".format(ds))
                 for e in es:
                         self.debug(str(e))
 
@@ -1699,7 +1699,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                     d.dep_vars.not_sat_set)
                         else:
                                 raise RuntimeError("Unexpected "
-                                    "dependency path:%s" % (d.dep_key(),))
+                                    "dependency path:{0}".format(d.dep_key()))
 
         def test_variants_2(self):
                 """Test that when the variants of the action with the dependency
@@ -1756,8 +1756,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                     self.paths["ksh_path"])
                         else:
                                 raise RuntimeError(
-                                    "Unexpected dependency path:%s" %
-                                    (d.dep_key(),))
+                                    "Unexpected dependency path:{0}".format(
+                                    d.dep_key()))
 
         def test_variants_3(self):
                 """Test that when the action with the dependency is tagged with
@@ -1801,7 +1801,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                     d.dep_vars.not_sat_set)
                         else:
                                 raise RuntimeError("Unexpected "
-                                    "dependency path:%s" % (d.dep_key(),))
+                                    "dependency path:{0}".format(d.dep_key()))
 
         def test_variants_4(self):
                 """Test that an action with a variant that depends on a
@@ -1867,8 +1867,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                     self.paths["ksh_path"])
                         else:
                                 raise RuntimeError(
-                                    "Unexpected dependency path:%s" % \
-                                    (d.dep_key(),))
+                                    "Unexpected dependency path:{0}".format(
+                                    d.dep_key()))
 
         def test_symlinks(self):
                 """Test that a file is recognized as delivered when a symlink
@@ -1946,8 +1946,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
                 if es[0].file_path != self.paths["curses_path"]:
-                        raise RuntimeError("Wrong file was found missing:\n%s" %
-                            es[0])
+                        raise RuntimeError("Wrong file was found missing:\n{0}".format(
+                            es[0]))
                 self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assertEqual(ms, {})
                 self.assert_(len(d_map) == 0)
@@ -1975,7 +1975,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                             "\n".join([str(s) for s in es]))
                 if len(ms) != 1:
                         raise RuntimeError("Didn't get expected types of "
-                            "missing files:\n%s" % ms)
+                            "missing files:\n{0}".format(ms))
                 self.assertEqual(ms.keys()[0], "empty file")
                 self.assert_(len(d_map) == 0)
 
@@ -2004,8 +2004,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
                 if es[0].file_path != self.paths["syslog_path"]:
-                        raise RuntimeError("Wrong file was found missing:\n%s" %
-                            es[0])
+                        raise RuntimeError("Wrong file was found missing:\n{0}".format(
+                            es[0]))
                 self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assert_(len(ms) == 0)
                 self.assert_(len(ds) == 1)
@@ -2035,10 +2035,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                             "xml", "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "%s%s" % (n,s) for s in mod_suffs
+                                "{0}{1}".format(n,s) for s in mod_suffs
                             ]))
                             for n in mod_names] +
-                            [("%s/__init__.py" % n,) for n in pkg_names])
+                            [("{0}/__init__.py".format(n),) for n in pkg_names])
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -2048,12 +2048,12 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                 self.assert_(d.is_error())
                                 if d.dep_vars is None:
                                         raise RuntimeError("This dep had "
-                                            "depvars of None:%s" % d)
+                                            "depvars of None:{0}".format(d))
                                 self.assert_(d.dep_vars.is_satisfied())
                                 if not d.dep_key()[0] in expected_deps:
                                         raise RuntimeError("Got this "
-                                            "unexpected dep:%s\n\nd:%s" %
-                                            (d.dep_key()[0], d))
+                                            "unexpected dep:{0}\n\nd:{1}".format(
+                                            d.dep_key()[0], d))
                                 expected_deps.remove(d.dep_key()[0])
                                 self.assertEqual(d.action.attrs["path"],
                                         self.paths["indexer_path"])
@@ -2075,8 +2075,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
                 if es[0].file_path != self.paths["indexer_path"]:
-                        raise RuntimeError("Wrong file was found missing:\n%s" %
-                            es[0])
+                        raise RuntimeError("Wrong file was found missing:\n{0}".format(
+                            es[0]))
                 self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assertEqual(len(ds), 0)
                 self.assertEqual(len(ms), 0)
@@ -2114,16 +2114,16 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                 for dep in self.smf_known_deps[fmri]:
                                         if dep not in deps[fmri]:
                                                 self.assert_(False,
-                                                    "%s not found in "
-                                                    "dependencies for %s" %
-                                                    (dep, manifest))
+                                                    "{0} not found in "
+                                                    "dependencies for {1}".format(
+                                                    dep, manifest))
                                 expected = len(self.smf_known_deps[fmri])
                                 actual = len(deps[fmri])
 
                                 self.assertEqual(expected, actual,
-                                    "expected number of deps (%s) != "
-                                    "actual (%s) for %s"
-                                    % (expected, actual, fmri))
+                                    "expected number of deps ({0}) != "
+                                    "actual ({1}) for {2}"
+                                   .format(expected, actual, fmri))
 
 
         def check_smf_fmris(self, pkg_attrs, expected, manifest_name):
@@ -2132,19 +2132,19 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 reported in an assertion message that includes manifest_name."""
 
                 self.assert_(pkg_attrs.has_key("org.opensolaris.smf.fmri"),
-                    "Missing org.opensolaris.smf.fmri key for %s" %
-                    manifest_name)
+                    "Missing org.opensolaris.smf.fmri key for {0}".format(
+                    manifest_name))
 
                 found = len(pkg_attrs["org.opensolaris.smf.fmri"])
                 self.assertEqual(found, len(expected),
-                    "Wrong no. of SMF instances/services found for %s: expected"
-                    " %s got %s" % (manifest_name, len(expected), found))
+                    "Wrong no. of SMF instances/services found for {0}: expected"
+                    " {1} got {2}".format(manifest_name, len(expected), found))
 
                 for fmri in expected:
                             self.assert_(
                                 fmri in pkg_attrs["org.opensolaris.smf.fmri"],
-                                "%s not in list of SMF instances/services "
-                                "from %s" % (fmri, manifest_name))
+                                "{0} not in list of SMF instances/services "
+                                "from {1}".format(fmri, manifest_name))
 
         def print_deps(self, deps):
                 for dep in deps:
@@ -2163,15 +2163,15 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
 
-                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
-                    len(ds))
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got {0}".format(
+                    len(ds)))
                 d = ds[0]
 
                 # verify we have identified the one internal file we depend on
                 actual = d.manifest.replace(self.proto_dir + "/", "")
                 expected = self.paths["delivered_many_nodeps"]
                 self.assertEqual(actual, expected,
-                    "Expected dependency path %s, got %s" % (actual, expected))
+                    "Expected dependency path {0}, got {1}".format(actual, expected))
 
                 self.check_smf_fmris(pkg_attrs,
                     self.smf_fmris["service_single"] +
@@ -2182,8 +2182,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=True,
                     convert=False)
-                self.assert_(len(ds) == 0, "Expected 0 dependencies, got %s" %
-                    len(ds))
+                self.assert_(len(ds) == 0, "Expected 0 dependencies, got {0}".format(
+                    len(ds)))
                 self.assert_(dependencies.is_file_dependency(d))
 
 
@@ -2201,14 +2201,14 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
 
-                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
-                    len(ds))
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got {0}".format(
+                    len(ds)))
 
                 # verify we have identified the one external file we depend on
                 actual = ds[0].manifest.replace(self.proto_dir + "/", "")
                 expected = self.paths["foreign_many_nodeps"]
                 self.assertEqual(actual, expected ,
-                    "Expected dependency path %s, got %s" % (actual, expected))
+                    "Expected dependency path {0}, got {1}".format(actual, expected))
 
                 self.check_smf_fmris(pkg_attrs,
                     self.smf_fmris["service_many"] +
@@ -2239,7 +2239,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 broken_path = os.path.join(self.proto_dir, self.paths["broken"])
                 self.assertEqual(ms["XML document"], broken_path,
-                    "Did not detect broken SMF manifest file: %s != %s" % (
+                    "Did not detect broken SMF manifest file: {0} != {1}".format(
                     broken_path, ms["XML document"]))
 
                 # We should still be able to resolve the other dependencies
@@ -2254,15 +2254,15 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 # our dependency comes from service_single depending on
                 # delivered_many
-                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
-                    len(ds))
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got {0}".format(
+                    len(ds)))
                 d = ds[0]
 
                 # verify we have identified the one internal file we depend on
                 actual = d.manifest.replace(self.proto_dir + "/", "")
                 expected = self.paths["delivered_many_nodeps"]
                 self.assertEqual(actual, expected ,
-                    "Expected dependency path %s, got %s" % (actual, expected))
+                    "Expected dependency path {0}, got {1}".format(actual, expected))
 
                 self.check_smf_fmris(pkg_attrs,
                     self.smf_fmris["service_single"] +
@@ -2281,20 +2281,20 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     convert=False)
 
                 self.assert_(len(es) == 3,
-                    "Detected %s error(s), expected 3" % len(es))
+                    "Detected {0} error(s), expected 3".format(len(es)))
 
                 # our two dependencies come from:
                 # service_single depending on delivered_many_nodeps
                 # service_unknown depending on delivered_many_nodeps
-                self.assert_(len(ds) == 2, "Expected 2 dependencies, got %s" %
-                    len(ds))
+                self.assert_(len(ds) == 2, "Expected 2 dependencies, got {0}".format(
+                    len(ds)))
 
                 for d in ds:
                         actual = d.manifest.replace(self.proto_dir + "/", "")
                         expected = self.paths["delivered_many_nodeps"]
                         self.assertEqual(actual, expected,
-                            "Expected dependency path %s, got %s" %
-                            (actual, expected))
+                            "Expected dependency path {0}, got {1}".format(
+                            actual, expected))
 
                 self.check_smf_fmris(pkg_attrs,
                     self.smf_fmris["service_single"] +
@@ -2314,9 +2314,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     convert=False)
 
                 self.assert_(len(es) == 0,
-                    "Detected %s error(s), expected 0" % len(es))
-                self.assert_(len(ds) == 0, "Expected 0 dependencies, got %s" %
-                    len(ds))
+                    "Detected {0} error(s), expected 0".format(len(es)))
+                self.assert_(len(ds) == 0, "Expected 0 dependencies, got {0}".format(
+                    len(ds)))
                 self.check_smf_fmris(pkg_attrs, self.smf_fmris["delete"] +
                     self.smf_fmris["foreign_single_nodeps"], "delete")
 
@@ -2355,16 +2355,16 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
-                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
-                    len(es))
+                self.assert_(len(es) == 0, "Detected {0} error(s), expected 0".format(
+                    len(es)))
                 self.assert_(len(ds) == 1, "Expected 1 dependency when "
-                    "depending on a service, got %s" % len(ds))
+                    "depending on a service, got {0}".format(len(ds)))
                 # ensure the dependencies are correct.
                 self.assert_(set(ds[0].full_paths) == set([
                     self.paths["delivered_many_nodeps"],
                     self.paths["delivered_many_nodeps_alt"]]),
-                    "Expected two separate full_path entries, got %s" %
-                    ds[0].full_paths)
+                    "Expected two separate full_path entries, got {0}".format(
+                    ds[0].full_paths))
 
                 # for SMF dependencies on services that are satisfied by
                 # multiple instances in separate files, we should have no
@@ -2378,10 +2378,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
-                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
-                    len(es))
-                self.assert_(len(ds) == 2, "Expected 2 dependencies, got %s" %
-                    len(ds))
+                self.assert_(len(es) == 0, "Detected {0} error(s), expected 0".format(
+                    len(es)))
+                self.assert_(len(ds) == 2, "Expected 2 dependencies, got {0}".format(
+                    len(ds)))
 
                 seen_nodeps3 = False
                 seen_nodeps = False
@@ -2393,9 +2393,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                         elif actual == self.paths["delivered_many_nodeps_alt"]:
                                 seen_nodeps3 = True
                         self.assert_(d.run_paths, "Expected a directory path "
-                            "for %s: %s" % (d, d.run_paths))
+                            "for {0}: {1}".format(d, d.run_paths))
                         self.assert_(d.full_paths == [], "Expected an empty "
-                            "list for full_paths, got %s" % d.full_paths)
+                            "list for full_paths, got {0}".format(d.full_paths))
 
                 self.assert_(seen_nodeps3 and seen_nodeps, "Expected "
                     "dependencies were not generated when several SMF "
@@ -2408,15 +2408,15 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
-                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
-                    len(es))
-                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
-                    len(ds))
+                self.assert_(len(es) == 0, "Detected {0} error(s), expected 0".format(
+                    len(es)))
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got {0}".format(
+                    len(ds)))
                 # ensure the dependencies are correct.
                 self.assert_(ds[0].full_paths == \
                     [self.paths["delivered_many_nodeps"]],
-                    "d.full_paths entry was incorrect, got %s" %
-                    ds[0].full_paths)
+                    "d.full_paths entry was incorrect, got {0}".format(
+                    ds[0].full_paths))
 
                 # since we've bypassed a dependency, we should not have
                 # run_paths or base_names
@@ -2432,7 +2432,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
-                self.assert_(es==[], "Unexpected errors reported: %s" % es)
+                self.assert_(es==[], "Unexpected errors reported: {0}".format(es))
 
                 for dep in ds:
                         # only interested in seeing that our runpath was changed
@@ -2486,20 +2486,20 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 if dep.attrs.get("pkg.debug.depend.fullpath", None):
                         for val in ["path", "file"]:
-                                self.assert_("pkg.debug.depend.%s" % val
-                                    not in dep.attrs, "We should not see a %s "
-                                    "entry in this dependency: %s" %
-                                    (val, dep))
+                                self.assert_("pkg.debug.depend.{0}".format(val)
+                                    not in dep.attrs, "We should not see a {0} "
+                                    "entry in this dependency: {1}".format(
+                                    val, dep))
                                 self.assert_(not dep.run_paths,
-                                    "Unexpected run_paths: %s" % dep)
+                                    "Unexpected run_paths: {0}".format(dep))
                                 self.assert_(not dep.base_names,
-                                    "Unexpected base_names: %s" % dep)
+                                    "Unexpected base_names: {0}".format(dep))
                 else:
                         self.assert_("pkg.debug.depend.fullpath" not in
                             dep.attrs, "We should not see a fullpath "
-                            "entry in this dependency: %s" % dep)
+                            "entry in this dependency: {0}".format(dep))
                         self.assert_(not dep.full_paths,
-                            "Unexpected full_paths: %s" % dep)
+                            "Unexpected full_paths: {0}".format(dep))
 
         def verify_bypass(self, ds, es, bypass):
                 """Given a list of dependencies, and a list of bypass paths,
@@ -2512,8 +2512,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 We should never have all three attributes set.
                 """
 
-                self.assert_(len(es) == 0, "Errors reported during bypass: %s" %
-                    es)
+                self.assert_(len(es) == 0, "Errors reported during bypass: {0}".format(
+                    es))
 
                 for dep in ds:
                         # generate all possible paths this dep could represent
@@ -2532,9 +2532,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                         # finally, check the dependencies
                         if dep_paths.intersection(set(bypass)):
-                                self.debug("Some items were not bypassed: %s" %
+                                self.debug("Some items were not bypassed: {0}".format(
                                     "\n".join(sorted(list(
-                                    dep_paths.intersection(set(bypass))))))
+                                    dep_paths.intersection(set(bypass)))))))
                                 return False
                 return True
 
@@ -2556,8 +2556,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                             for dir in dep.run_paths])
                 for item in expected:
                         if item not in dep_paths:
-                                self.debug("Expected to see dependency on %s" %
-                                    item)
+                                self.debug("Expected to see dependency on {0}".format(
+                                    item))
                                 return False
                 return True
 
@@ -2636,8 +2636,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
-                self.assert_(len(es) == 0, "Errors reported during bypass: %s" %
-                    es)
+                self.assert_(len(es) == 0, "Errors reported during bypass: {0}".format(
+                    es))
 
                 # we should have bypassed all dependency generation on all files
                 self.assert_(len(ds) == 0, "Generated dependencies despite "
@@ -2772,8 +2772,8 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 for a, b in [(ds, dsl), (pkg_attrs, pkg_attrsl)]:
                             self.assert_(a == b, "Differences found comparing "
-                                "proto_dir with symlinked proto_dir: %s vs. %s"
-                                % (a, b))
+                                "proto_dir with symlinked proto_dir: {0} vs. {1}"
+                               .format(a, b))
 
 if __name__ == "__main__":
         unittest.main()

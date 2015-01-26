@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -618,7 +618,7 @@ close
 
         def _search_op_common(self, api_obj, remote, query, test_value,
             return_actions, servers, prune_versions):
-                self.debug("Search for: %s" % " ".join([str(q) for q in query]))
+                self.debug("Search for: {0}".format(" ".join([str(q) for q in query])))
                 search_func = api_obj.local_search
                 if remote:
                         search_func = lambda x: api_obj.remote_search(x,
@@ -793,30 +793,30 @@ close
                     svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    "set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "org.opensolaris.smf.fmri:%s" %svc_name,
+                    "org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    ":set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    ":set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "%s *milestone*" % svc_name,
+                    "{0} *milestone*".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0} {1}".format(svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
-                    (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0} example_pkg:set:org.opensolaris.smf.fmri:{1}".format(
+                    svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
-                    (svc_name, svc_name),
+                    "{0} example_pkg:set:org.opensolaris.smf.fmri:{1}".format(
+                    svc_name, svc_name),
                     self.res_smf_svc)
                 # Test that a single escaped colon doesn't cause a traceback.
                 self._search_op(api_obj, True, "\:", set())
@@ -988,30 +988,30 @@ close
                     svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    "set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "org.opensolaris.smf.fmri:%s" %svc_name,
+                    "org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    ":set:org.opensolaris.smf.fmri:%s" % svc_name,
+                    ":set:org.opensolaris.smf.fmri:{0}".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "%s *milestone*" % svc_name,
+                    "{0} *milestone*".format(svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0} {1}".format(svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:org.opensolaris.smf.fmri:%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
-                    (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:{0} example_pkg:set:org.opensolaris.smf.fmri:{1}".format(
+                    svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
-                    (svc_name, svc_name),
+                    "{0} example_pkg:set:org.opensolaris.smf.fmri:{1}".format(
+                    svc_name, svc_name),
                     self.res_smf_svc)
                 # Test that a single escaped colon doesn't cause a traceback.
                 self._search_op(api_obj, True, "\:", set())
@@ -1177,31 +1177,31 @@ close
                 search_func(api_obj, remote, [ip + "example_pkg"], set())
                 search_func(api_obj, remote, [ip + "bin/example_path"],
                     self.res_remote_path_of_example_path)
-                search_func(api_obj, remote, ["(%sbin/example_path)" % ip],
+                search_func(api_obj, remote, ["({0}bin/example_path)".format(ip)],
                     self.res_remote_path_of_example_path)
-                search_func(api_obj, remote, ["<%sexam*:::>" % ip],
+                search_func(api_obj, remote, ["<{0}exam*:::>".format(ip)],
                     set(), return_actions=False)
                 search_func(api_obj, remote,
-                    ["::%scom.sun.service.info_url:" % ip], set())
+                    ["::{0}com.sun.service.info_url:".format(ip)], set())
                 search_func(api_obj, remote,
-                    ["%sbin/e* AND %s*path" % (ip, ip)],
+                    ["{0}bin/e* AND {1}*path".format(ip, ip)],
                     self.res_remote_path_of_example_path)
                 search_func(api_obj, remote,
-                    ["(4851433 AND 4725245) OR :file::%sbin/example_path" % ip],
+                    ["(4851433 AND 4725245) OR :file::{0}bin/example_path".format(ip)],
                     self.res_remote_bug_id |
                     self.res_remote_path_of_example_path)
                 search_func(api_obj, remote,
-                    [":::%sbin/example_path OR (4851433 AND 4725245)" % ip],
+                    [":::{0}bin/example_path OR (4851433 AND 4725245)".format(ip)],
                     self.res_remote_bug_id |
                     self.res_remote_path_of_example_path)
                 search_func(api_obj, remote,
-                    ["%sbin/example_path OR %sbin/example_path" % (ip, ip)],
+                    ["{0}bin/example_path OR {1}bin/example_path".format(ip, ip)],
                     self.res_remote_path_of_example_path)
                 search_func(api_obj, remote,
-                    ["<::path:%sbin/example_path> OR <(a AND b)>" % ip],
+                    ["<::path:{0}bin/example_path> OR <(a AND b)>".format(ip)],
                     self.res_remote_pkg_ret_pkg, return_actions=False)
                 search_func(api_obj, remote,
-                    ["<(a AND b)> OR <%sbin/example_path>" % ip],
+                    ["<(a AND b)> OR <{0}bin/example_path>".format(ip)],
                     self.res_remote_pkg_ret_pkg, return_actions=False)
                 # The tests below here are for testing that multiple queries
                 # to search return the results from both queries (bug 10365)
@@ -1212,11 +1212,11 @@ close
                     ["example_path", "<(a AND b)>"],
                     self.res_remote_path)
                 search_func(api_obj, remote,
-                    [":::%sbin/example_path" % ip, "(4851433 AND 4725245)"],
+                    [":::{0}bin/example_path".format(ip), "(4851433 AND 4725245)"],
                     self.res_remote_bug_id |
                     self.res_remote_path_of_example_path)
                 search_func(api_obj, remote,
-                    ["(4851433 AND 4725245)", ":::%sbin/example_path" % ip],
+                    ["(4851433 AND 4725245)", ":::{0}bin/example_path".format(ip)],
                     self.res_remote_bug_id |
                     self.res_remote_path_of_example_path)
 
@@ -1271,7 +1271,7 @@ close
                 fh.seek(9)
                 # Overwrite the existing version number.
                 # By definition, the version 0 is never used.
-                fh.write("%s" % ver)
+                fh.write("{0}".format(ver))
                 shutil.rmtree(index_dir)
                 shutil.move(index_dir_tmp, index_dir)
 
@@ -1354,11 +1354,11 @@ close
         def _check_err(e, expected_str, expected_code):
                 err = e.read()
                 if expected_code != e.code:
-                        raise RuntimeError("Got wrong code, expected %s got "
-                            "%s" % (expected_code, e.code))
+                        raise RuntimeError("Got wrong code, expected {0} got "
+                            "{1}".format(expected_code, e.code))
                 if expected_str not in err:
                         raise RuntimeError("Got unexpected error message of:\n"
-                            "%s" % err)
+                            "{0}".format(err))
 
 
 class TestApiSearchBasicsP(TestApiSearchBasics):
@@ -2026,10 +2026,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt case_sensitive value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "case_sensitive",
-                    "bv": "FAlse"
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="case_sensitive",
+                    bv="FAlse"
+               )
                 expected_code = 404
                 q_str = "FAlse_2_None_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2041,10 +2041,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt return_type value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "return_type",
-                    "bv": "3"
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="return_type",
+                    bv="3"
+               )
                 expected_code = 404
                 q_str = "False_3_None_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2056,10 +2056,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt return_type value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "return_type",
-                    "bv": "A"
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="return_type",
+                    bv="A"
+               )
                 expected_code = 404
                 q_str = "False_A_None_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2071,10 +2071,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt num_to_return value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "num_to_return",
-                    "bv": "NOne"
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="num_to_return",
+                    bv="NOne"
+               )
                 expected_code = 404
                 q_str = "False_2_NOne_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2086,10 +2086,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt start_point value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "start_point",
-                    "bv": "NOne"
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="start_point",
+                    bv="NOne"
+               )
                 expected_code = 404
                 q_str = "False_2_None_NOne_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2101,10 +2101,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a corrupt case_sensitive value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "case_sensitive",
-                    "bv": ""
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="case_sensitive",
+                    bv=""
+               )
                 expected_code = 404
                 q_str = "_2_None_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2116,10 +2116,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a missing return_type value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "return_type",
-                    "bv": ""
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="return_type",
+                    bv=""
+               )
                 expected_code = 404
                 q_str = "False__None_None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2131,10 +2131,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a missing num_to_return value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "num_to_return",
-                    "bv": ""
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="num_to_return",
+                    bv=""
+               )
                 expected_code = 404
                 q_str = "False_2__None_foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2146,10 +2146,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that a missing start_point value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
-                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
-                    "name": "start_point",
-                    "bv": ""
-                }
+                expected_string = _("{name} had a bad value of '{bv}'").format(
+                    name="start_point",
+                    bv=""
+               )
                 expected_code = 404
                 q_str = "False_2_None__foo"
                 self.validateAssertRaises(urllib2.HTTPError,
@@ -2354,7 +2354,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                                 src = os.path.join(dirpath, ss.MAIN_FILE)
                                 dest = os.path.join(dirpath,
                                     "main_dict.ascii.v1")
-                                self.debug("moving %s to %s" % (src, dest))
+                                self.debug("moving {0} to {1}".format(src, dest))
                                 shutil.move(src, dest)
                 self.dc.start()
 
@@ -2436,14 +2436,14 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                                 tmp = line.split()
                                 s_uuid = tmp[1]
                                 if s_uuid not in uuids:
-                                        raise RuntimeError("Uuid found:%s not "
+                                        raise RuntimeError("Uuid found:{0} not "
                                             "found in list of possible "
-                                            "uuids:%s" % (s_uuid, uuids))
+                                            "uuids:{1}".format(s_uuid, uuids))
                                 found += 1
                 if found != num_expected:
-                        raise RuntimeError(("Found %s instances of a "
-                            "client uuid, expected to find %s.") %
-                            (found, num_expected))
+                        raise RuntimeError(("Found {0} instances of a "
+                            "client uuid, expected to find {1}.").format(
+                            found, num_expected))
 
         def test_bug_9729_1(self):
                 """Test that installing more than
@@ -2453,8 +2453,8 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 pkg_list = []
                 for i in range(0, indexer.MAX_FAST_INDEXED_PKGS + 1):
                         self.pkgsend_bulk(durl,
-                            "open pkg%s@1.0,5.11-0\nclose\n" % i)
-                        pkg_list.append("pkg%s" % i)
+                            "open pkg{0}@1.0,5.11-0\nclose\n".format(i))
+                        pkg_list.append("pkg{0}".format(i))
                 api_obj = self.image_create(durl)
                 self._api_install(api_obj, pkg_list)
 
@@ -2468,8 +2468,8 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 pkg_list = []
                 for i in range(0, indexer.MAX_FAST_INDEXED_PKGS + 3):
                         self.pkgsend_bulk(durl,
-                            "open pkg%s@1.0,5.11-0\nclose\n" % i)
-                        pkg_list.append("pkg%s" % i)
+                            "open pkg{0}@1.0,5.11-0\nclose\n".format(i))
+                        pkg_list.append("pkg{0}".format(i))
                 api_obj = self.image_create(durl)
                 fast_add_loc = os.path.join(self._get_index_dirs()[0],
                     "fast_add.v1")
@@ -2493,8 +2493,8 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 # appropriately when a small number of packages have changed.
                 for i in range(0, 2):
                         self.pkgsend_bulk(durl,
-                            "open pkg%s@2.0,5.11-0\nclose\n" % i)
-                        pkg_list.append("pkg%s" % i)
+                            "open pkg{0}@2.0,5.11-0\nclose\n".format(i))
+                        pkg_list.append("pkg{0}".format(i))
                 api_obj.refresh(immediate=True)
                 self._api_update(api_obj)
                 self._check(set((
@@ -2507,19 +2507,19 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     for v in self._get_lines(fast_remove_loc)
                     )), self.fast_remove_after_first_update)
                 # Check that a local search actually works.
-                test_value = 'pkg:/pkg%s@2.0-0', 'test/pkg%s', \
-                    'set name=pkg.fmri value=pkg://test/pkg%s@2.0,5.11-0:'
+                test_value = 'pkg:/pkg{0}@2.0-0', 'test/pkg{0}', \
+                    'set name=pkg.fmri value=pkg://test/pkg{0}@2.0,5.11-0:'
                 for n in range(0, 2):
-                        tv = set([tuple(v % n for v in test_value)])
+                        tv = set([tuple(v.format(n) for v in test_value)])
                         self._search_op(api_obj, remote=False,
-                            token="pkg%s" % n, test_value=tv)
+                            token="pkg{0}".format(n), test_value=tv)
 
                 # Now check that image update also handles fast_add
                 # appropriately when a large number of packages have changed.
                 for i in range(3, indexer.MAX_FAST_INDEXED_PKGS + 3):
                         self.pkgsend_bulk(durl,
-                            "open pkg%s@2.0,5.11-0\nclose\n" % i)
-                        pkg_list.append("pkg%s" % i)
+                            "open pkg{0}@2.0,5.11-0\nclose\n".format(i))
+                        pkg_list.append("pkg{0}".format(i))
                 api_obj.refresh(immediate=True)
                 self._api_update(api_obj)
                 self._check(set((
@@ -2532,9 +2532,9 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     )), self.fast_remove_after_second_update)
                 # Check that a local search actually works.
                 for n in range(3, indexer.MAX_FAST_INDEXED_PKGS + 3):
-                        tv = set([tuple(v % n for v in test_value)])
+                        tv = set([tuple(v.format(n) for v in test_value)])
                         self._search_op(api_obj, remote=False,
-                            token="pkg%s" % n, test_value=tv)
+                            token="pkg{0}".format(n), test_value=tv)
 
         def test_bug_13485(self):
                 """Test that indexer.Indexer's check_for_updates function works
@@ -2653,7 +2653,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                                 return res
                         else:
                                 raise RuntimeError(
-                                    "Didn't get expected error:%s" % err)
+                                    "Didn't get expected error:{0}".format(err))
                 else:
                         return TestApiSearchBasics._extract_action_from_res(it)
                         
@@ -2725,16 +2725,16 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                                         s_uuid = tmp[1]
                                         if s_uuid != c_uuid:
                                                 raise RuntimeError(
-                                                    "Found uuid:%s doesn't "
-                                                    "match expected uuid:%s, "
-                                                    "d:%s, durl:%s" %
-                                                    (s_uuid, c_uuid, d,
+                                                    "Found uuid:{0} doesn't "
+                                                    "match expected uuid:{1}, "
+                                                    "d:{2}, durl:{3}".format(
+                                                    s_uuid, c_uuid, d,
                                                     self.dcs[d].get_depot_url()))
                                         found += 1
                         if found != num_expected[d]:
-                                raise RuntimeError("d:%s, found %s instances of"
-                                    " a client uuid, expected to find %s." %
-                                    (d, found, num_expected[d]))
+                                raise RuntimeError("d:{0}, found {1} instances of"
+                                    " a client uuid, expected to find {2}.".format(
+                                    d, found, num_expected[d]))
 
         def test_bug_12739(self):
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -145,7 +145,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 except cfg.ConfigError, e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
-                            "valid:\n%s") % e)
+                            "valid:\n{0}").format(e))
 
         def test_0_merge(self):
                 """Verify that merge functionality works as expected."""
@@ -158,9 +158,9 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                         flist.append(f)
 
                 self.merge([
-                    "-d %s" % self.merge_dir,
-                    "-s arch=sparc,%s" % self.durl1,
-                    "-s arch=i386,%s" % self.durl2,
+                    "-d {0}".format(self.merge_dir),
+                    "-s arch=sparc,{0}".format(self.durl1),
+                    "-s arch=i386,{0}".format(self.durl2),
                     " ".join(pkg_names),
                 ])
 
@@ -174,7 +174,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 nlist = nlist.values()
 
                 def get_expected(f):
-                        exp_lines = ["set name=pkg.fmri value=%s" % f]
+                        exp_lines = ["set name=pkg.fmri value={0}".format(f)]
                         for dc in self.dcs.values():
                                 repo = dc.get_repo()
                                 mpath = repo.manifest(f) 

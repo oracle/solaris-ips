@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -281,7 +281,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                 p = propcls("def", allowed=["<abspathname>"],
                     default="/abs/path")
                 for v in ("not/abs/path", "../also/not/not/abs", ""):
-                        self.debug("p: %s" % v)
+                        self.debug("p: {0}".format(v))
                         self.assertRaises(cfg.InvalidPropertyValueError,
                             setattr, p, "value", v)
 
@@ -474,8 +474,8 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                     (["box", "cat"], "['box', 'cat']"),
                     # List literal form uses unicode_escape.
                     ([TH_PACKAGE, "profit"],
-                        u"[u'%s', 'profit']" %
-                        TH_PACKAGE.encode("unicode_escape")),
+                        u"[u'{0}', 'profit']".format(
+                        TH_PACKAGE.encode("unicode_escape"))),
                     (["\xfe", "bob cat"], "['\\xfe', 'bob cat']"),
                 ])
 
@@ -1163,17 +1163,17 @@ int_default = 14400
 publisher_basic =
 publisher_default = example.com
 str_basic =
-str_default = %(uni_txt)s
+str_default = {uni_txt}
 str_allowed = builtin
 str_noneallowed =
 list_basic = []
-list_default = [u'%(uni_escape)s', 'bob cat', 'profit']
+list_default = [u'{uni_escape}', 'bob cat', 'profit']
 list_allowed = ['builtin']
 list_noneallowed = []
 
 [second_section]
 simple_list_basic =
-simple_list_default = bar,foo,%(uni_txt)s
+simple_list_default = bar,foo,{uni_txt}
 simple_list_allowed = builtin
 simple_list_noneallowed =
 uri_basic =
@@ -1182,8 +1182,8 @@ urilist_basic =
 urilist_default = http://example.com/,file:/example/path
 uuid_basic = 
 uuid_default = 16fd2706-8baf-433b-82eb-8c7fada847da
-""" % { "uni_escape": TH_PACKAGE.encode("unicode_escape"),
-    "uni_txt": TH_PACKAGE },
+""".format(uni_escape=TH_PACKAGE.encode("unicode_escape"),
+    uni_txt=TH_PACKAGE),
             1: """\
 [CONFIGURATION]
 version = 1
@@ -1275,10 +1275,10 @@ bool_basic = False
                 conf.set_property("first_section", "str_basic", TH_PACKAGE)
                 self.assertEqualDiff("""\
 [first_section]
-str_basic = %s
+str_basic = {0}
 bool_basic = False
 
-""" % TH_PACKAGE.encode("utf-8"), str(conf))
+""".format(TH_PACKAGE.encode("utf-8")), str(conf))
 
                 #
                 # Test unicode case with and without unicode data.
@@ -1294,10 +1294,10 @@ bool_basic = False
                 conf.set_property("first_section", "str_basic", TH_PACKAGE)
                 self.assertEqualDiff(u"""\
 [first_section]
-str_basic = %s
+str_basic = {0}
 bool_basic = False
 
-""" % TH_PACKAGE, unicode(conf))
+""".format(TH_PACKAGE), unicode(conf))
         
                 # Verify target is None.
                 self.assertEqual(conf.target, None)
@@ -1398,8 +1398,8 @@ str_basic = bob cat
 version = 0
 
 [unknown_section]
-unknown_property = %s
-""" % TH_PACKAGE
+unknown_property = {0}
+""".format(TH_PACKAGE)
                 scpath = self.make_misc_files({ "cfg_cache": content })[0]
                 conf = cfg.FileConfig(scpath, definitions=self._defs)
                 self.assertEqual(conf.version, 0)
@@ -1414,8 +1414,8 @@ unknown_property = %s
 version = 2
 
 [new_section]
-new_property = %s
-""" % TH_PACKAGE
+new_property = {0}
+""".format(TH_PACKAGE)
                 scpath = self.make_misc_files({ "cfg_cache": content })[0]
                 conf = cfg.FileConfig(scpath, definitions=self._defs)
                 self.assertEqual(conf.version, 2)
@@ -1711,11 +1711,11 @@ class TestSMFConfig(_TestConfigBase):
                 <propval name='publisher_default' type='astring' value='example.com' />
                 <propval name='str_basic' type='astring' value='' />
                 <propval name='str_escape' type='astring' value=";, &amp;, (, ), |, ^, &lt;, &gt;, nl&#10;, sp , tab&#9;, bs\\, &apos;, &quot;, `" />
-                <propval name='str_default' type='astring' value='%(uni_txt)s' />
+                <propval name='str_default' type='astring' value='{uni_txt}' />
                 <property name='list_basic' type='astring'/>
                 <property name='list_default' type='ustring'>
                         <ustring_list>
-                                <value_node value="%(uni_txt)s" />
+                                <value_node value="{uni_txt}" />
                                 <value_node value="bob cat" />
                                 <value_node value="profit" />
                         </ustring_list>
@@ -1737,7 +1737,7 @@ class TestSMFConfig(_TestConfigBase):
                         <ustring_list>
                                 <value_node value='bar' />
                                 <value_node value='foo' />
-                                <value_node value='%(uni_txt)s' />
+                                <value_node value='{uni_txt}' />
                         </ustring_list>
                 </property>
                 <property name='simple_list_allowed' type='ustring'>
@@ -1757,7 +1757,7 @@ class TestSMFConfig(_TestConfigBase):
         <stability value='Unstable' />
 </service>
 </service_bundle>
-""" % { "uni_txt": TH_PACKAGE },
+""".format(uni_txt=TH_PACKAGE),
             1: """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
@@ -1896,8 +1896,8 @@ class TestSMFConfig(_TestConfigBase):
 
                 pdir = os.path.dirname(sc_repo_filename)
                 hndl = self.cmdline_run(
-                    "SVCCFG_REPOSITORY=%(sc_repo_filename)s "
-                    "%(SVCCFG_PATH)s import %(manifest)s" % locals(),
+                    "SVCCFG_REPOSITORY={sc_repo_filename} "
+                    "{SVCCFG_PATH} import {manifest}".format(**locals()),
                     coverage=False, handle=True)
                 assert hndl is not None
                 hndl.wait()
@@ -1943,9 +1943,9 @@ class TestSMFConfig(_TestConfigBase):
                 sc_repo_doorpath = self.make_misc_files({ doorname: "" })[0]
                 os.chmod(sc_repo_doorpath, 0600)
 
-                hndl = self.cmdline_run("%(SC_REPO_SERVER)s "
-                    "-d %(sc_repo_doorpath)s -r %(sc_repo_filename)s" %
-                    locals(), coverage=False, handle=True)
+                hndl = self.cmdline_run("{SC_REPO_SERVER} "
+                    "-d {sc_repo_doorpath} -r {sc_repo_filename}".format(
+                    **locals()), coverage=False, handle=True)
                 assert hndl is not None
                 self.__configd = hndl
                 self.__poll_process(hndl, sc_repo_doorpath)
@@ -2067,7 +2067,7 @@ class TestSMFConfig(_TestConfigBase):
                 rfiles = []
                 def test_mfst(svc_fmri, ver, mfst_content, defs,
                     exp_state=None):
-                        mname = "smf-manifest-%d.xml" % ver 
+                        mname = "smf-manifest-{0:d}.xml".format(ver)
                         mpath = self.make_misc_files({ mname: mfst_content })[0]
                         rfiles.append(mpath)
 

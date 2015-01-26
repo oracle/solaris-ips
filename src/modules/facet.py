@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic facet support
@@ -215,7 +215,7 @@ class Facets(dict):
         def __repr__(self):
                 s =  "<"
                 s += ", ".join([
-                    "%s:%s" % (k, dict.__getitem__(self, k))
+                    "{0}:{1}".format(k, dict.__getitem__(self, k))
                     for k in self.__keylist
                 ])
                 s += ">"

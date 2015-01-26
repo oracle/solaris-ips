@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -169,7 +169,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.__vtest(self.rurl, "zos", "nonglobal", "false")
 
                 self.pkg_image_create(self.rurl,
-                    additional_args="--variant variant.arch=%s" % "sparc")
+                    additional_args="--variant variant.arch={0}".format("sparc"))
                 self.pkg("install silver", exit=1)
 
                 # Verify that debug variants are implicitly false and shown in
@@ -182,13 +182,13 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 """ test if install works for spec'd arch"""
 
                 if isdebug:
-                        do_isdebug = "--variant variant.debug.kernel=%s" % isdebug
+                        do_isdebug = "--variant variant.debug.kernel={0}".format(isdebug)
                 else:
                         do_isdebug = ""
                         is_debug = "false"
 
                 self.pkg_image_create(depot,
-                    additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s %s" % (
+                    additional_args="--variant variant.arch={0} --variant variant.opensolaris.zone={1} {2}".format(
                     arch, zone, do_isdebug))
                 self.pkg("install bronze")
                 self.pkg("verify")

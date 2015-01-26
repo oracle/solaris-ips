@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -123,8 +123,8 @@ class DriverAction(generic.Action):
                         fmtargs["retcode"] = ret
                         # XXX Module printing
                         print()
-                        fmt += " failed with return code %(retcode)s"
-                        print(_(fmt) % fmtargs)
+                        fmt += " failed with return code {retcode}"
+                        print(_(fmt).format(**fmtargs))
                         print(("command run was:"), " ".join(args))
                         print("command output was:")
                         print("-" * 60)
@@ -137,9 +137,9 @@ class DriverAction(generic.Action):
                         DriverAction.__usr_sbin_init()
                 rem_base = (DriverAction.update_drv, "-b", image.get_root(), "-d")
                 for i in aliases:
-                        args = rem_base + ("-i", '%s' % i, driver_name)
-                        DriverAction.__call(args, "driver (%(name)s) upgrade (removal "
-                            "of alias '%(alias)s')",
+                        args = rem_base + ("-i", '{0}'.format(i), driver_name)
+                        DriverAction.__call(args, "driver ({name}) upgrade (removal "
+                            "of alias '{alias}')",
                             {"name": driver_name, "alias": i})
 
         @classmethod
@@ -194,7 +194,7 @@ class DriverAction(generic.Action):
                                 file_db.setdefault(name, set()).add(alias)
                                 alias_lines.setdefault(alias, []).append(
                                     (name, len(lines)))
-                                lines.append("%s \"%s\"\n" % tuple(fields))
+                                lines.append("{0} \"{1}\"\n".format(*fields))
                 except IOError:
                         pass
 
@@ -249,33 +249,33 @@ class DriverAction(generic.Action):
                         }
                         if name in driver_actions:
                                 raise RuntimeError("\
-The '%(new)s' driver shares the alias '%(alias)s' with the '%(old)s'\n\
+The '{new}' driver shares the alias '{alias}' with the '{old}'\n\
 driver; both drivers cannot be installed simultaneously.  Please remove\n\
-the package delivering '%(old)s' or ensure that the package delivering\n\
-'%(new)s' will not be installed, and try the operation again." % errdict)
+the package delivering '{old}' or ensure that the package delivering\n\
+'{new}' will not be installed, and try the operation again.".format(**errdict))
                         else:
                                 comment = "# pkg(5): "
                                 lines[line] = comment + lines[line]
                                 # XXX Module printing
                                 if be_name:
                                         print("\
-The '%(new)s' driver shares the alias '%(alias)s' with the '%(old)s'\n\
+The '{new}' driver shares the alias '{alias}' with the '{old}'\n\
 driver, but the system cannot determine how the latter was delivered.\n\
-Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
+Its entry on line {line:d} in /etc/driver_aliases has been commented\n\
 out.  If this driver is no longer needed, it may be removed by booting\n\
-into the '%(be)s' boot environment and invoking 'rem_drv %(old)s'\n\
-as well as removing line %(line)d from /etc/driver_aliases or, before\n\
-rebooting, mounting the '%(be)s' boot environment and running\n\
-'rem_drv -b <mountpoint> %(old)s' and removing line %(line)d from\n\
-<mountpoint>/etc/driver_aliases." % errdict)
+into the '{be}' boot environment and invoking 'rem_drv {old}'\n\
+as well as removing line {line:d} from /etc/driver_aliases or, before\n\
+rebooting, mounting the '{be}' boot environment and running\n\
+'rem_drv -b <mountpoint> {old}' and removing line {line:d} from\n\
+<mountpoint>/etc/driver_aliases.".format(**errdict))
                                 else:
                                         print("\
-The '%(new)s' driver shares the  alias '%(alias)s' with the '%(old)s'\n\
+The '{new}' driver shares the  alias '{alias}' with the '{old}'\n\
 driver, but the system cannot determine how the latter was delivered.\n\
-Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
+Its entry on line {line:d} in /etc/driver_aliases has been commented\n\
 out.  If this driver is no longer needed, it may be removed by invoking\n\
-'rem_drv -b %(imgroot)s %(old)s' as well as removing line %(line)d\n\
-from %(imgroot)s/etc/driver_aliases." % errdict)
+'rem_drv -b {imgroot} {old}' as well as removing line {line:d}\n\
+from {imgroot}/etc/driver_aliases.".format(**errdict))
 
                         dap = image.get_root() + "/etc/driver_aliases"
                         datd, datp = mkstemp(suffix=".driver_aliases",
@@ -314,7 +314,7 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                 if "alias" in self.attrs:
                         args += (
                             "-i",
-                            " ".join([ '"%s"' % x for x in self.attrlist("alias") ])
+                            " ".join([ '"{0}"'.format(x) for x in self.attrlist("alias") ])
                         )
                 if "class" in self.attrs:
                         args += (
@@ -339,7 +339,7 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
 
                 args += ( self.attrs["name"], )
 
-                self.__call(args, "driver (%(name)s) install",
+                self.__call(args, "driver ({name}) install",
                     {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
@@ -347,7 +347,7 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                             self.update_drv, "-b", image.get_root(), "-a",
                             "-m", cp, "clone"
                         )
-                        self.__call(args, "driver (%(name)s) clone permission "
+                        self.__call(args, "driver ({name}) clone permission "
                             "update", {"name": self.attrs["name"]})
 
                 if "devlink" in self.attrs:
@@ -405,9 +405,10 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                 rem_clone = oclone - nclone
 
                 for i in add_alias:
-                        args = add_base + ("-i", '%s' % i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
-                            "of alias '%(alias)s')",
+                        args = add_base + ("-i", '{0}'.format(i),
+                            self.attrs["name"])
+                        self.__call(args, "driver ({name}) upgrade (addition "
+                            "of alias '{alias}')",
                             {"name": self.attrs["name"], "alias": i})
 
                 # Removing aliases has already been taken care of in
@@ -435,7 +436,8 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                         del lines[i]
 
                         for i in add_class:
-                                lines += ["%s\t%s\n" % (self.attrs["name"], i)]
+                                lines += ["{0}\t{1}\n".format(
+                                    self.attrs["name"], i)]
 
                         try:
                                 dcf = file(dcp, "w")
@@ -449,12 +451,12 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                         try:
                                 update_classes(add_class, rem_class)
                         except IOError, e:
-                                print("%s (%s) upgrade (classes modification) "
-                                    "failed %s etc/driver_classes with error: "
-                                    "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[1], e[0], e[2]))
-                                print("tried to add %s and remove %s" %
-                                    (add_class, rem_class))
+                                print("{0} ({1}) upgrade (classes modification) "
+                                    "failed {2} etc/driver_classes with error: "
+                                    "{3} ({4})".format(self.name,
+                                    self.attrs["name"], e[1], e[0], e[2]))
+                                print("tried to add {0} and remove {1}".format(
+                                    add_class, rem_class))
 
                 # We have to update devlink.tab by hand, too.
                 def update_devlinks():
@@ -515,16 +517,16 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                         try:
                                 update_devlinks()
                         except IOError, e:
-                                print("%s (%s) upgrade (devlinks modification) "
-                                    "failed %s etc/devlink.tab with error: "
-                                    "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[1], e[0], e[2]))
+                                print("{0} ({1}) upgrade (devlinks modification) "
+                                    "failed {2} etc/devlink.tab with error: "
+                                    "{3} ({4})".format(self.name,
+                                    self.attrs["name"], e[1], e[0], e[2]))
                         except RuntimeError, e:
-                                print("%s (%s) upgrade (devlinks modification) "
+                                print("{0} ({1}) upgrade (devlinks modification) "
                                     "failed modifying\netc/devlink.tab.  The "
                                     "following entries were to be removed, "
-                                    "but were\nnot found:\n    " %
-                                    (self.name, self.attrs["name"]) +
+                                    "but were\nnot found:\n    ".format(
+                                    self.name, self.attrs["name"]) +
                                     "\n    ".join(e.args[0]))
 
                 # For perms, we do removes first because of a busted starting
@@ -541,26 +543,26 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                 # done in this order, too.
                 for i in rem_perms:
                         args = rem_base + ("-m", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (removal "
-                            "of minor perm '%(perm)s')",
+                        self.__call(args, "driver ({name}) upgrade (removal "
+                            "of minor perm '{perm}')",
                             {"name": self.attrs["name"], "perm": i})
 
                 for i in add_perms:
                         args = add_base + ("-m", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
-                            "of minor perm '%(perm)s')",
+                        self.__call(args, "driver ({name}) upgrade (addition "
+                            "of minor perm '{perm}')",
                             {"name": self.attrs["name"], "perm": i})
 
                 for i in add_privs:
                         args = add_base + ("-P", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
-                            "of privilege '%(priv)s')",
+                        self.__call(args, "driver ({name}) upgrade (addition "
+                            "of privilege '{priv}')",
                             {"name": self.attrs["name"], "priv": i})
 
                 for i in rem_privs:
                         args = rem_base + ("-P", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (removal "
-                            "of privilege '%(priv)s')",
+                        self.__call(args, "driver ({name}) upgrade (removal "
+                            "of privilege '{priv}')",
                             {"name": self.attrs["name"], "priv": i})
 
                 # We remove policies before adding them, since removing a policy
@@ -583,32 +585,32 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                 # minor node.
                                 minornode = "*"
                         else:
-                                print("driver (%s) update (removal of "
-                                    "policy '%s') failed: invalid policy "
-                                    "spec." % (self.attrs["name"], i))
+                                print("driver ({0}) update (removal of "
+                                    "policy '{1}') failed: invalid policy "
+                                    "spec.".format(self.attrs["name"], i))
                                 continue
 
                         args = rem_base + ("-p", minornode, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (removal "
-                            "of policy '%(policy)s')",
+                        self.__call(args, "driver ({name}) upgrade (removal "
+                            "of policy '{policy}')",
                             {"name": self.attrs["name"], "policy": i})
 
                 for i in add_policy:
                         args = add_base + ("-p", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
-                            "of policy '%(policy)s')",
+                        self.__call(args, "driver ({name}) upgrade (addition "
+                            "of policy '{policy}')",
                             {"name": self.attrs["name"], "policy": i})
 
                 for i in rem_clone:
                         args = rem_base + ("-m", i, "clone")
-                        self.__call(args, "driver (%(name)s) upgrade (removal "
-                            "of clone permission '%(perm)s')",
+                        self.__call(args, "driver ({name}) upgrade (removal "
+                            "of clone permission '{perm}')",
                             {"name": self.attrs["name"], "perm": i})
 
                 for i in add_clone:
                         args = add_base + ("-m", i, "clone")
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
-                            "of clone permission '%(perm)s')",
+                        self.__call(args, "driver ({name}) upgrade (addition "
+                            "of clone permission '{perm}')",
                             {"name": self.attrs["name"], "perm": i})
 
         @staticmethod
@@ -682,8 +684,8 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                 if found_major > 1:
                         try:
                                 raise RuntimeError, \
-                                    "More than one entry for driver '%s' in " \
-                                    "/etc/name_to_major" % name
+                                    "More than one entry for driver '{0}' in " \
+                                    "/etc/name_to_major".format(name)
                         except RuntimeError, e:
                                 if collect_errs:
                                         errors.append(e)
@@ -833,43 +835,45 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
 
                 for i, err in enumerate(errors):
                         if isinstance(err, IOError):
-                                errors[i] = "%s: %s" % (err.args[2], err)
+                                errors[i] = "{0}: {1}".format(err.args[2], err)
                         elif isinstance(err, RuntimeError):
                                 errors[i] = _("etc/name_to_major: more than "
-                                    "one entry for '%s' is present") % name
+                                    "one entry for '{0}' is present").format(
+                                    name)
 
                 if not onfs:
                         errors[0:0] = [
-                            _("etc/name_to_major: '%s' entry not present") % name
+                            _("etc/name_to_major: '{0}' entry not present").format(
+                            name)
                         ]
                         return errors, warnings, info
 
                 onfs_aliases = set(onfs.attrlist("alias"))
                 mfst_aliases = set(self.attrlist("alias"))
                 for a in onfs_aliases - mfst_aliases:
-                        warnings.append(_("extra alias '%s' found in "
-                            "etc/driver_aliases") % a)
+                        warnings.append(_("extra alias '{0}' found in "
+                            "etc/driver_aliases").format(a))
                 for a in mfst_aliases - onfs_aliases:
-                        errors.append(_("alias '%s' missing from "
-                        "etc/driver_aliases") % a)
+                        errors.append(_("alias '{0}' missing from "
+                        "etc/driver_aliases").format(a))
 
                 onfs_classes = set(onfs.attrlist("class"))
                 mfst_classes = set(self.attrlist("class"))
                 for a in onfs_classes - mfst_classes:
-                        warnings.append(_("extra class '%s' found in "
-                            "etc/driver_classes") % a)
+                        warnings.append(_("extra class '{0}' found in "
+                            "etc/driver_classes").format(a))
                 for a in mfst_classes - onfs_classes:
-                        errors.append(_("class '%s' missing from "
-                            "etc/driver_classes") % a)
+                        errors.append(_("class '{0}' missing from "
+                            "etc/driver_classes").format(a))
 
                 onfs_perms = set(onfs.attrlist("perms"))
                 mfst_perms = set(self.attrlist("perms"))
                 for a in onfs_perms - mfst_perms:
-                        warnings.append(_("extra minor node permission '%s' "
-                            "found in etc/minor_perm") % a)
+                        warnings.append(_("extra minor node permission '{0}' "
+                            "found in etc/minor_perm").format(a))
                 for a in mfst_perms - onfs_perms:
-                        errors.append(_("minor node permission '%s' missing "
-                            "from etc/minor_perm") % a)
+                        errors.append(_("minor node permission '{0}' missing "
+                            "from etc/minor_perm").format(a))
 
                 # Canonicalize "*" minorspecs to empty
                 policylist = list(onfs.attrlist("policy"))
@@ -886,20 +890,20 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                 policylist[i] = " ".join(f[1:])
                 mfst_policy = set(policylist)
                 for a in onfs_policy - mfst_policy:
-                        warnings.append(_("extra device policy '%s' found in "
-                            "etc/security/device_policy") % a)
+                        warnings.append(_("extra device policy '{0}' found in "
+                            "etc/security/device_policy").format(a))
                 for a in mfst_policy - onfs_policy:
-                        errors.append(_("device policy '%s' missing from "
-                            "etc/security/device_policy") % a)
+                        errors.append(_("device policy '{0}' missing from "
+                            "etc/security/device_policy").format(a))
 
                 onfs_privs = set(onfs.attrlist("privs"))
                 mfst_privs = set(self.attrlist("privs"))
                 for a in onfs_privs - mfst_privs:
-                        warnings.append(_("extra device privilege '%s' found "
-                            "in etc/security/extra_privs") % a)
+                        warnings.append(_("extra device privilege '{0}' found "
+                            "in etc/security/extra_privs").format(a))
                 for a in mfst_privs - onfs_privs:
-                        errors.append(_("device privilege '%s' missing from "
-                            "etc/security/extra_privs") % a)
+                        errors.append(_("device privilege '{0}' missing from "
+                            "etc/security/extra_privs").format(a))
 
                 return errors, warnings, info
 
@@ -916,7 +920,7 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                     self.attrs["name"]
                 )
 
-                self.__call(args, "driver (%(name)s) removal",
+                self.__call(args, "driver ({name}) removal",
                     {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
@@ -924,7 +928,7 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                             self.update_drv, "-b", image.get_root(),
                             "-d", "-m", cp, "clone"
                         )
-                        self.__call(args, "driver (%(name)s) clone permission "
+                        self.__call(args, "driver ({name}) clone permission "
                             "update", {"name": self.attrs["name"]})
 
                 if "devlink" in self.attrs:
@@ -937,10 +941,10 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                 dlf.close()
                                 st = os.stat(dlp)
                         except IOError, e:
-                                print("%s (%s) removal (devlinks modification) "
+                                print("{0} ({1}) removal (devlinks modification) "
                                     "failed reading etc/devlink.tab with error: "
-                                    "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[0], e[1]))
+                                    "{2} ({3})".format(self.name,
+                                    self.attrs["name"], e[0], e[1]))
                                 return
 
                         devlinks = self.attrlist("devlink")
@@ -955,11 +959,11 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                 del lines[lineno]
 
                         if missing_entries:
-                                print("%s (%s) removal (devlinks modification) "
+                                print("{0} ({1}) removal (devlinks modification) "
                                     "failed modifying\netc/devlink.tab.  The "
                                     "following entries were to be removed, "
-                                    "but were\nnot found:\n    " %
-                                    (self.name, self.attrs["name"]) +
+                                    "but were\nnot found:\n    ".format(
+                                    self.name, self.attrs["name"]) +
                                     "\n    ".join(missing_entries))
 
                         try:
@@ -972,10 +976,10 @@ from %(imgroot)s/etc/driver_aliases." % errdict)
                                 os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
                         except EnvironmentError, e:
-                                print("%s (%s) removal (devlinks modification) "
+                                print("{0} ({1}) removal (devlinks modification) "
                                     "failed writing etc/devlink.tab with error: "
-                                    "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[0], e[1]))
+                                    "{2} ({3})".format(self.name,
+                                        self.attrs["name"], e[0], e[1]))
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

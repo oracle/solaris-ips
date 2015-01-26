@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cPickle as pickle
@@ -117,6 +117,6 @@ for l in fileinput.input(args):
         count_entry(mg, d)
 
 # open, trunc
-pklfile = open("%s.%s.pkl" % (stem, timestamp), "wb")
+pklfile = open("{0}.{1}.pkl".format(stem, timestamp), "wb")
 pickle.dump(entry_by_date, pklfile)
 pklfile.close()

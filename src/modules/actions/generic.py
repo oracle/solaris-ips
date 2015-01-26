@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -80,10 +80,10 @@ def quote_attr_value(s):
 
         if " " in s or "'" in s or "\"" in s or s == "":
                 if "\"" not in s:
-                        return '"%s"' % s
+                        return '"{0}"'.format(s)
                 elif "'" not in s:
-                        return "'%s'" % s
-                return '"%s"' % s.replace("\"", "\\\"")
+                        return "'{0}'".format(s)
+                return '"{0}"'.format(s.replace("\"", "\\\""))
         return s
 
 class NSG(type):
@@ -197,10 +197,12 @@ class Action(object):
                 if isinstance(data, basestring):
                         if not os.path.exists(data):
                                 raise pkg.actions.ActionDataError(
-                                    _("No such file: '%s'.") % data, path=data)
+                                    _("No such file: '{0}'.").format(data),
+                                    path=data)
                         elif os.path.isdir(data):
                                 raise pkg.actions.ActionDataError(
-                                    _("'%s' is not a file.") % data, path=data)
+                                    _("'{0}' is not a file.").format(data),
+                                    path=data)
 
                         def file_opener():
                                 return open(data, "rb")
@@ -315,8 +317,8 @@ class Action(object):
                 return out
 
         def __repr__(self):
-                return "<%s object at %#x: %s>" % (self.__class__, id(self),
-                    self)
+                return "<{0} object at {1:#x}: {2}>".format(self.__class__,
+                    id(self), self)
 
         def sig_str(self, a, ver):
                 """Create a stable string representation of an action that
@@ -341,11 +343,12 @@ class Action(object):
                 def q(s):
                         if " " in s or "'" in s or "\"" in s or s == "":
                                 if "\"" not in s:
-                                        return '"%s"' % s
+                                        return '"{0}"'.format(s)
                                 elif "'" not in s:
-                                        return "'%s'" % s
+                                        return "'{0}'".format(s)
                                 else:
-                                        return '"%s"' % s.replace("\"", "\\\"")
+                                        return '"{0}"'.format(
+                                            s.replace("\"", "\\\""))
                         else:
                                 return s
 
@@ -355,7 +358,7 @@ class Action(object):
                         v = self.attrs[k]
                         if type(v) is list:
                                 out += " " + " ".join([
-                                    "%s=%s" % (k, q(lmt)) for lmt in sorted(v)
+                                    "{0}={1}".format(k, q(lmt)) for lmt in sorted(v)
                                 ])
                         elif " " in v or "'" in v or "\"" in v or v == "":
                                 if "\"" not in v:
@@ -442,8 +445,9 @@ class Action(object):
                         except AttributeError:
                                 if shash or ohash:
                                         raise AssertionError("attempt to "
-                                            "compare a %s action to a %s "
-                                            "action") % (self.name, other.name)
+                                            "compare a {0} action to a {1} "
+                                            "action").format(self.name,
+                                            other.name)
 
                 return False
 
@@ -512,8 +516,8 @@ class Action(object):
 
                 if self.key_attr is None:
                         return str(self)
-                return "%s: %s" % \
-                    (self.name, self.attrs.get(self.key_attr, "???"))
+                return "{0}: {1}".format(
+                    self.name, self.attrs.get(self.key_attr, "???"))
 
         def makedirs(self, path, **kw):
                 """Make directory specified by 'path' with given permissions, as
@@ -556,11 +560,11 @@ class Action(object):
                                         # being raised to the caller.
                                         break
 
-                                err_txt = _("Unable to create %(path)s; a "
-                                    "parent directory %(p)s has been replaced "
+                                err_txt = _("Unable to create {path}; a "
+                                    "parent directory {p} has been replaced "
                                     "with a file or link.  Please restore the "
-                                    "parent directory and try again.") % \
-                                    locals()
+                                    "parent directory and try again.").format(
+                                    **locals())
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e,
                                     fmri=kw.get("fmri"))
@@ -595,11 +599,11 @@ class Action(object):
                         except OSError, e:
                                 if e.ernno != errno.ENOTDIR:
                                         raise
-                                err_txt = _("Unable to create %(path)s; a "
-                                    "parent directory %(p)s has been replaced "
+                                err_txt = _("Unable to create {path}; a "
+                                    "parent directory {p} has been replaced "
                                     "with a file or link.  Please restore the "
-                                    "parent directory and try again.") % \
-                                    locals()
+                                    "parent directory and try again.").format(
+                                    **locals())
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e,
                                     fmri=kw.get("fmri"))
@@ -726,9 +730,9 @@ class Action(object):
                                 errors.append("mode", _("mode may only be "
                                     "specified once"))
                         else:
-                                errors.append(("mode", _("'%s' is not a valid "
+                                errors.append(("mode", _("'{0}' is not a valid "
                                     "mode; value must be of the form '644', "
-                                    "'0644', or '04755'.") % raw_mode))
+                                    "'0644', or '04755'.").format(raw_mode)))
 
                 try:
                         owner = self.attrs.get("owner", "").rstrip()
@@ -772,11 +776,11 @@ class Action(object):
                                 src_fmri = pd.removed_users[owner]
 
                                 raise pkg.actions.InvalidActionAttributesError(
-                                    self, [("owner", _("'%(path)s' cannot be "
-                                    "installed; the owner '%(owner)s' was "
-                                    "removed by '%(src_fmri)s'.") % {
-                                    "path": path, "owner": owner,
-                                    "src_fmri": src_fmri })],
+                                    self, [("owner", _("'{path}' cannot be "
+                                    "installed; the owner '{owner}' was "
+                                    "removed by '{src_fmri}'.").format(
+                                    path=path, owner=owner,
+                                    src_fmri=src_fmri))],
                                     fmri=fmri)
                         elif owner in pd.added_users:
                                 # This indicates an error on the part of the
@@ -788,10 +792,10 @@ class Action(object):
                         # the operation plan and is completely unknown or
                         # invalid.
                         raise pkg.actions.InvalidActionAttributesError(
-                            self, [("owner", _("'%(path)s' cannot be "
-                                    "installed; '%(owner)s' is an unknown "
-                                    "or invalid user.") % { "path": path,
-                                    "owner": owner })],
+                            self, [("owner", _("'{path}' cannot be "
+                                    "installed; '{owner}' is an unknown "
+                                    "or invalid user.").format(path=path,
+                                    owner=owner))],
                                     fmri=fmri)
 
                 # The attribute may be missing.
@@ -815,11 +819,11 @@ class Action(object):
                                 src_fmri = pd.removed_groups[group]
 
                                 raise pkg.actions.InvalidActionAttributesError(
-                                    self, [("group", _("'%(path)s' cannot be "
-                                    "installed; the group '%(group)s' was "
-                                    "removed by '%(src_fmri)s'.") % {
-                                    "path": path, "group": group,
-                                    "src_fmri": src_fmri })],
+                                    self, [("group", _("'{path}' cannot be "
+                                    "installed; the group '{group}' was "
+                                    "removed by '{src_fmri}'.").format(
+                                    path=path, group=group,
+                                    src_fmri=src_fmri))],
                                     fmri=pkgplan.destination_fmri)
                         elif group in pd.added_groups:
                                 # This indicates an error on the part of the
@@ -831,10 +835,10 @@ class Action(object):
                         # the operation plan and is completely unknown or
                         # invalid.
                         raise pkg.actions.InvalidActionAttributesError(
-                            self, [("group", _("'%(path)s' cannot be "
-                                    "installed; '%(group)s' is an unknown "
-                                    "or invalid group.") % { "path": path,
-                                    "group": group })],
+                            self, [("group", _("'{path}' cannot be "
+                                    "installed; '{group}' is an unknown "
+                                    "or invalid group.").format(path=path,
+                                    group=group))],
                                     fmri=pkgplan.destination_fmri)
 
                 return owner, group
@@ -861,7 +865,7 @@ class Action(object):
                         if ftype in tmap:
                                 return tmap[ftype]
                         else:
-                                return "Unknown (0x%x)" % ftype
+                                return "Unknown (0x{0:x})".format(ftype)
 
                 mode = owner = group = None
                 if "mode" in self.attrs:
@@ -871,15 +875,16 @@ class Action(object):
                         try:
                                 owner = img.get_user_by_name(owner)
                         except KeyError:
-                                errors.append(_("Owner: %s is unknown") % owner)
+                                errors.append(_("Owner: {0} is unknown").format(
+                                    owner))
                                 owner = None
                 if "group" in self.attrs:
                         group = self.attrs["group"]
                         try:
                                 group = img.get_group_by_name(group)
                         except KeyError:
-                                errors.append(_("Group: %s is unknown ") %
-                                    group)
+                                errors.append(_("Group: {0} is unknown ").format(
+                                    group))
                                 group = None
 
                 path = self.get_installed_path(img.get_root())
@@ -895,47 +900,49 @@ class Action(object):
                                         # nothing more to validate.
                                         return (lstat, errors, warnings, info,
                                             abort)
-                                errors.append(_("Missing: %s does not exist") %
-                                    ftype_to_name(ftype))
+                                errors.append(
+                                    _("Missing: {0} does not exist").format(
+                                    ftype_to_name(ftype)))
                         elif e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission denied"))
                         else:
-                                errors.append(_("Unexpected Error: %s") % e)
+                                errors.append(
+                                    _("Unexpected Error: {0}").format(e))
                         abort = True
 
                 if abort:
                         return lstat, errors, warnings, info, abort
 
                 if ftype is not None and ftype != stat.S_IFMT(lstat.st_mode):
-                        errors.append(_("File Type: '%(found)s' should be "
-                            "'%(expected)s'") % {
-                            "found": ftype_to_name(stat.S_IFMT(lstat.st_mode)),
-                            "expected": ftype_to_name(ftype) })
+                        errors.append(_("File Type: '{found}' should be "
+                            "'{expected}'").format(
+                            found=ftype_to_name(stat.S_IFMT(lstat.st_mode)),
+                            expected=ftype_to_name(ftype)))
                         abort = True
 
                 if owner is not None and lstat.st_uid != owner:
-                        errors.append(_("Owner: '%(found_name)s "
-                            "(%(found_id)d)' should be '%(expected_name)s "
-                            "(%(expected_id)d)'") % {
-                            "found_name": img.get_name_by_uid(lstat.st_uid,
-                            True), "found_id": lstat.st_uid,
-                            "expected_name": self.attrs["owner"],
-                            "expected_id": owner })
+                        errors.append(_("Owner: '{found_name} "
+                            "({found_id:d})' should be '{expected_name} "
+                            "({expected_id:d})'").format(
+                            found_name=img.get_name_by_uid(lstat.st_uid,
+                            True), found_id=lstat.st_uid,
+                            expected_name=self.attrs["owner"],
+                            expected_id=owner))
 
                 if group is not None and lstat.st_gid != group:
-                        errors.append(_("Group: '%(found_name)s "
-                            "(%(found_id)s)' should be '%(expected_name)s "
-                            "(%(expected_id)s)'") % {
-                            "found_name": img.get_name_by_gid(lstat.st_gid,
-                            True), "found_id": lstat.st_gid,
-                            "expected_name": self.attrs["group"],
-                            "expected_id": group })
+                        errors.append(_("Group: '{found_name} "
+                            "({found_id})' should be '{expected_name} "
+                            "({expected_id})'").format(
+                            found_name=img.get_name_by_gid(lstat.st_gid,
+                            True), found_id=lstat.st_gid,
+                            expected_name=self.attrs["group"],
+                            expected_id=group))
 
                 if mode is not None and stat.S_IMODE(lstat.st_mode) != mode:
-                        errors.append(_("Mode: 0%(found).3o should be "
-                            "0%(expected).3o") % {
-                            "found": stat.S_IMODE(lstat.st_mode),
-                            "expected": mode })
+                        errors.append(_("Mode: {found} should be "
+                            "{expected}").format(
+                            found=oct(stat.S_IMODE(lstat.st_mode)),
+                            expected=oct(mode)))
                 return lstat, errors, warnings, info, abort
 
         def needsdata(self, orig, pkgplan):
@@ -1000,19 +1007,19 @@ class Action(object):
                         elif e.errno == errno.EBUSY and os.path.ismount(path):
                                 # User has replaced item with mountpoint, or a
                                 # package has been poorly implemented.
-                                err_txt = _("Unable to remove %s; it is in use "
+                                err_txt = _("Unable to remove {0}; it is in use "
                                     "as a mountpoint.  To continue, please "
                                     "unmount the filesystem at the target "
-                                    "location and try again.") % path
+                                    "location and try again.").format(path)
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e, fmri=fmri)
                         elif e.errno == errno.EBUSY:
                                 # os.path.ismount() is broken for lofs
                                 # filesystems, so give a more generic
                                 # error.
-                                err_txt = _("Unable to remove %s; it is in "
+                                err_txt = _("Unable to remove {0}; it is in "
                                     "use by the system, another process, or "
-                                    "as a mountpoint.") % path
+                                    "as a mountpoint.").format(path)
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e, fmri=fmri)
                         elif e.errno == errno.EPERM and \
@@ -1095,21 +1102,21 @@ class Action(object):
                         if ((attr.startswith("facet.") or
                             attr == "reboot-needed" or attr in single_attrs) and
                             type(self.attrs[attr]) is list):
-                                errors.append((attr, _("%s may only be "
-                                    "specified once") % attr))
+                                errors.append((attr, _("{0} may only be "
+                                    "specified once").format(attr)))
                         elif attr in numeric_attrs:
                                 try:
                                         int(self.attrs[attr])
                                 except (TypeError, ValueError):
-                                        errors.append((attr, _("%s must be an "
-                                            "integer") % attr))
+                                        errors.append((attr, _("{0} must be an "
+                                            "integer").format(attr)))
 
                 for attr in required_attrs:
                         val = self.attrs.get(attr)
                         if not val or \
                             (isinstance(val, basestring) and not val.strip()):
-                                errors.append((attr, _("%s is required") %
-                                    attr))
+                                errors.append((attr,
+                                    _("{0} is required").format(attr)))
 
                 if raise_errors and errors:
                         raise pkg.actions.InvalidActionAttributesError(self,
@@ -1153,10 +1160,10 @@ class Action(object):
 
                 parent_dir = tmp
                 parent_target = os.path.realpath(parent_dir)
-                err_txt = _("Cannot install '%(final_path)s'; parent directory "
-                    "%(parent_dir)s is a link to %(parent_target)s.  To "
+                err_txt = _("Cannot install '{final_path}'; parent directory "
+                    "{parent_dir} is a link to {parent_target}.  To "
                     "continue, move the directory to its original location and "
-                    "try again.") % locals()
+                    "try again.").format(**locals())
                 raise apx.ActionExecutionError(self, details=err_txt,
                     fmri=fmri)
 

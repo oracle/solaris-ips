@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -62,12 +62,12 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
-                        pf = fmri.PkgFmri("foo@%d.0" % i)
+                        pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
                         t = trans.Transaction(durl, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()
                         pkg_fmri, pkg_state = t.close()
-                        self.debug("%s: %s" % (pkg_fmri, pkg_state))
+                        self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
 
         def test_stress_file_publish(self):
                 """Publish lots of packages rapidly ensuring that file
@@ -88,12 +88,12 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
-                        pf = fmri.PkgFmri("foo@%d.0" % i)
+                        pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
                         t = trans.Transaction(location, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()
                         pkg_fmri, pkg_state = t.close()
-                        self.debug("%s: %s" % (pkg_fmri, pkg_state))
+                        self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
 
 
 if __name__ == "__main__":

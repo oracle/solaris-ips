@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -38,7 +38,7 @@ class HardlinkDependency(base.PublishingDependency):
                     base_names, paths, pkg_vars, None, "hardlink")
 
         def __repr__(self):
-                return "HLDep(%s, %s, %s, %s, %s)" % (self.action,
+                return "HLDep({0}, {1}, {2}, {3}, {4})".format(self.action,
                     self.base_names, self.run_paths, self.pkg_vars,
                     self.dep_vars)
 

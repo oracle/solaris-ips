@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -150,10 +150,10 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
 
                 # Verify that one argument can be stdin with no differences for
                 # identical case.
-                self.pkgdiff("- %s < %s" % (self.tree10_p5m, self.tree10_p5m))
+                self.pkgdiff("- {0} < {1}".format(self.tree10_p5m, self.tree10_p5m))
 
                 # Verify that one argument can be stdin with differences.
-                self.pkgdiff("%s - < %s" % (self.tree10_p5m, self.tree20_p5m),
+                self.pkgdiff("{0} - < {1}".format(self.tree10_p5m, self.tree20_p5m),
                     exit=1)
 
         def test_02_type_filter(self):

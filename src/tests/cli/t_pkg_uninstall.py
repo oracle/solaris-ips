@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -130,7 +130,7 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 self.image_create(self.rurl1)
                 self.pkg("install -v renamed holder")
                 self.pkg("verify")
-                self.pkg("set-publisher -P -g %s bogus" % self.rurl2)
+                self.pkg("set-publisher -P -g {0} bogus".format(self.rurl2))
                 self.pkg("unset-publisher test")
                 self.pkg("info quux@1.0 renamed@1.0")
                 self.pkg("uninstall holder renamed")
@@ -149,10 +149,10 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 os.mkdir(lofs_dir)
                 tmp_dir = os.path.join(self.test_root, "image0", "tmp_impl_dir")
                 os.mkdir(tmp_dir)
-                os.system("mount -F lofs %s %s" % (tmp_dir, lofs_dir))
+                os.system("mount -F lofs {0} {1}".format(tmp_dir, lofs_dir))
                 self.pkg("install implicit")
                 self.pkg("uninstall implicit")
-                os.system("umount %s " % lofs_dir)
+                os.system("umount {0} ".format(lofs_dir))
                 os.rmdir(lofs_dir)
                 os.rmdir(tmp_dir)
 

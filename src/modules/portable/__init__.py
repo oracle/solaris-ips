@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -264,7 +264,7 @@ for fragment in fragments:
         # then try the more generic OS Name module (e.g. os_linux),
         # then the OS type module (e.g. os_unix)        
         try:
-                exec('from %s import *' % modname)
+                exec('from {0} import *'.format(modname))
                 break
         except ImportError:
                 pass

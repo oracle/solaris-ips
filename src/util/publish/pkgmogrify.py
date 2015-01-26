@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -50,7 +50,7 @@ def usage(errmsg="", exitcode=2):
         error message.  Causes program to exit."""
 
         if errmsg:
-                print("pkgmogrify: %s" % errmsg, file=sys.stderr)
+                print("pkgmogrify: {0}".format(errmsg), file=sys.stderr)
 
         print(_("""\
 Usage:
@@ -80,9 +80,9 @@ def add_transform(transform, filename, lineno):
                         attrdict[a] = re.compile(attrdict[a])
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%(transform)s) has regexp error "
-                            "(%(err)s) in matching clause"
-                            ) % {"transform": transform, "err": e}
+                            _("transform ({transform}) has regexp error "
+                            "({err}) in matching clause"
+                            ).format(transform=transform, err=e)
 
         op = s[index+2:].strip().split(None, 1)
 
@@ -91,8 +91,8 @@ def add_transform(transform, filename, lineno):
         if op[0] == "drop":
                 if len(op) > 1:
                         raise RuntimeError, \
-                            _("transform (%s) has 'drop' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'drop' operation syntax error"
+                            ).format(transform)
                 operation = lambda a, m, p, f, l: None
 
         elif op[0] == "set":
@@ -100,8 +100,8 @@ def add_transform(transform, filename, lineno):
                         attr, value = shlex.split(op[1])
                 except ValueError:
                         raise RuntimeError, \
-                            _("transform (%s) has 'set' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'set' operation syntax error"
+                            ).format(transform)
                 def set_func(action, matches, pkg_attrs, filename, lineno):
                         newattr = substitute_values(attr, action, matches,
                             pkg_attrs, filename, lineno)
@@ -120,8 +120,8 @@ def add_transform(transform, filename, lineno):
                         attr, value = shlex.split(op[1])
                 except ValueError:
                         raise RuntimeError, \
-                            _("transform (%s) has 'default' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'default' operation syntax error"
+                            ).format(transform)
 
                 def default_func(action, matches, pkg_attrs, filename, lineno):
                         newattr = substitute_values(attr, action, matches,
@@ -135,8 +135,8 @@ def add_transform(transform, filename, lineno):
 
         elif op[0] == "abort":
                 if len(op) > 1:
-                        raise RuntimeError, _("transform (%s) has 'abort' "
-                            "operation syntax error") % transform
+                        raise RuntimeError, _("transform ({0}) has 'abort' "
+                            "operation syntax error").format(transform)
 
                 def abort_func(action, matches, pkg_attrs, filename, lineno):
                         sys.exit(0)
@@ -152,9 +152,9 @@ def add_transform(transform, filename, lineno):
                         try:
                                 exitval = int(args[0])
                         except ValueError:
-                                raise RuntimeError, _("transform (%s) has 'exit' "
-                                    "operation syntax error: illegal exit value") % \
-                                    transform
+                                raise RuntimeError, _("transform ({0}) has 'exit' "
+                                    "operation syntax error: illegal exit value").format(
+                                    transform)
                         if len(args) == 2:
                                 msg = args[1]
 
@@ -173,8 +173,8 @@ def add_transform(transform, filename, lineno):
                         attr, value = shlex.split(op[1])
                 except ValueError:
                         raise RuntimeError, \
-                            _("transform (%s) has 'add' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'add' operation syntax error"
+                            ).format(transform)
 
                 def add_func(action, matches, pkg_attrs, filename, lineno):
                         newattr = substitute_values(attr, action, matches,
@@ -195,14 +195,14 @@ def add_transform(transform, filename, lineno):
         elif op[0] == "edit":
                 if len(op) < 2:
                         raise RuntimeError, \
-                            _("transform (%s) has 'edit' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'edit' operation syntax error"
+                            ).format(transform)
 
                 args = shlex.split(op[1])
                 if len(args) not in [2, 3]:
                         raise RuntimeError, \
-                            _("transform (%s) has 'edit' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'edit' operation syntax error"
+                            ).format(transform)
                 attr = args[0]
 
                 # Run args[1] (the regexp) through substitute_values() with a
@@ -217,9 +217,9 @@ def add_transform(transform, filename, lineno):
                         regexp = args[1]
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%(transform)s) has 'edit' operation "
-                            "with malformed regexp (%(err)s)") % \
-                            {"transform": transform, "err": e}
+                            _("transform ({transform}) has 'edit' operation "
+                            "with malformed regexp ({err})").format(
+                            transform=transform, err=e)
 
                 if len(args) == 3:
                         replace = args[2]
@@ -252,10 +252,10 @@ def add_transform(transform, filename, lineno):
                                 ]
                         except re.error, e:
                                 raise RuntimeError, \
-                                    _("transform (%(transform)s) has edit "
+                                    _("transform ({transform}) has edit "
                                     "operation with replacement string regexp "
-                                    "error %(err)e") % \
-                                    {"transform": transform, "err": e}
+                                    "error {err}").format(
+                                    transform=transform, err=e)
                         return action
 
                 operation = replace_func
@@ -263,23 +263,23 @@ def add_transform(transform, filename, lineno):
         elif op[0] == "delete":
                 if len(op) < 2:
                         raise RuntimeError, \
-                            _("transform (%s) has 'delete' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'delete' operation syntax error"
+                            ).format(transform)
 
                 args = shlex.split(op[1])
                 if len(args) != 2:
                         raise RuntimeError, \
-                            _("transform (%s) has 'delete' operation syntax error"
-                            ) % transform
+                            _("transform ({0}) has 'delete' operation syntax error"
+                            ).format(transform)
                 attr = args[0]
 
                 try:
                         regexp = re.compile(args[1])
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%(transform)s) has 'delete' operation"
-                            "with malformed regexp (%(err)s)") % \
-                            {"transform": transform, "err": e}
+                            _("transform ({transform}) has 'delete' operation"
+                            "with malformed regexp ({err})").format(
+                            transform=transform, err=e)
 
                 def delete_func(action, matches, pkg_attrs, filename, lineno):
                         val = attrval_as_list(action.attrs, attr)
@@ -298,18 +298,18 @@ def add_transform(transform, filename, lineno):
                                         del action.attrs[attr]
                         except re.error, e:
                                 raise RuntimeError, \
-                                    _("transform (%(transform)s) has delete "
+                                    _("transform ({transform}) has delete "
                                     "operation with replacement string regexp "
-                                    "error %(err)e") % \
-                                    {"transform": transform, "err": e}
+                                    "error {err}").format(
+                                    transform=transform, err=e)
                         return action
 
                 operation = delete_func
 
         elif op[0] == "print":
                 if len(op) > 2:
-                        raise RuntimeError, _("transform (%s) has 'print' "
-                            "operation syntax error") % transform
+                        raise RuntimeError, _("transform ({0}) has 'print' "
+                            "operation syntax error").format(transform)
 
                 if len(op) == 1:
                         msg = ""
@@ -320,15 +320,15 @@ def add_transform(transform, filename, lineno):
                         newmsg = substitute_values(msg, action, matches,
                             pkg_attrs, filename, lineno, quote=True)
 
-                        printinfo.append("%s" % newmsg)
+                        printinfo.append("{0}".format(newmsg))
                         return action
 
                 operation = print_func
 
         elif op[0] == "emit":
                 if len(op) > 2:
-                        raise RuntimeError, _("transform (%s) has 'emit' "
-                            "operation syntax error") % transform
+                        raise RuntimeError, _("transform ({0}) has 'emit' "
+                            "operation syntax error").format(transform)
 
                 if len(op) == 1:
                         msg = ""
@@ -351,7 +351,7 @@ def add_transform(transform, filename, lineno):
                 operation = emit_func
 
         else:
-                raise RuntimeError, _("unknown transform operation '%s'") % op[0]
+                raise RuntimeError, _("unknown transform operation '{0}'").format(op[0])
 
         transforms.append((types, attrdict, operation, filename, lineno, transform))
 
@@ -416,17 +416,17 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                                     d.get("notfound", None))
 
                 if attr is None:
-                        raise RuntimeError, _("attribute '%s' not found") % \
-                            attrname
+                        raise RuntimeError, _("attribute '{0}' not found").format(
+                            attrname)
 
                 def q(s):
                         if " " in s or "'" in s or "\"" in s or s == "":
                                 if "\"" not in s:
-                                        return '"%s"' % s
+                                        return '"{0}"'.format(s)
                                 elif "'" not in s:
-                                        return "'%s'" % s
+                                        return "'{0}'".format(s)
                                 else:
-                                        return '"%s"' % s.replace("\"", "\\\"")
+                                        return '"{0}"'.format(s.replace("\"", "\\\""))
                         else:
                                 return s
 
@@ -462,9 +462,9 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                 ref = int(i.string[slice(*i.span())][2:-1])
 
                 if ref == 0 or ref > len(backrefs) - 1:
-                        raise RuntimeError, _("no match group %(group)d "
-                            "(max %(maxgroups)d)") % \
-                            {"group": ref, "maxgroups": len(backrefs) - 1}
+                        raise RuntimeError, _("no match group {group:d} "
+                            "(max {maxgroups:d})").format(
+                            group=ref, maxgroups=len(backrefs) - 1)
 
                 newmsg += msg[prevend:i.start()] + backrefs[ref]
                 prevend = i.end()
@@ -493,7 +493,7 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
         comments = []
         newactions = []
         if verbose:
-                comments.append("#  Action: %s" % action)
+                comments.append("#  Action: {0}".format(action))
         for types, attrdict, operation, filename, lineno, transform in transforms:
                 if action is None:
                         action = PkgAction(pkg_attrs)
@@ -528,8 +528,8 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                         # oddly quoted patterns will sort at the beginning, and
                         # backref matching may be off.
                         matchorder[match.pattern] = -1
-                        for qs in ("%s=%s", "%s=\"%s\"", "%s='%s'"):
-                                pos = s.find(qs % (attr, match.pattern))
+                        for qs in ("{0}={1}", "{0}=\"{1}\"", "{0}='{1}'"):
+                                pos = s.find(qs.format(attr, match.pattern))
                                 if pos != -1:
                                         matchorder[match.pattern] = pos
                                         break
@@ -545,7 +545,7 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                             act_filename, act_lineno)
                 except RuntimeError, e:
                         raise RuntimeError, \
-                            "Transform specified in file %s, line %s reports %s" % (
+                            "Transform specified in file {0}, line {1} reports {2}".format(
                             filename, lineno, e)
                 if isinstance(action, tuple):
                         newactions.append(action[0])
@@ -554,9 +554,9 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                         if not action or \
                             not isinstance(action, basestring) and \
                             orig_attrs != action.attrs:
-                                comments.append("# Applied: %s (file %s line %s)" % (
+                                comments.append("# Applied: {0} (file {1} line {2})".format(
                                     transform, filename, lineno))
-                                comments.append("#  Result: %s" % action)
+                                comments.append("#  Result: {0}".format(action))
                 if not action or isinstance(action, basestring):
                         break
 
@@ -589,7 +589,7 @@ def searching_open(filename, try_cwd=False):
                 try:
                         return filename, file(filename)
                 except IOError, e:
-                        raise RuntimeError, _("Cannot open file: %s") % e
+                        raise RuntimeError, _("Cannot open file: {0}").format(e)
 
         for i in includes:
                 f = os.path.join(i, filename)
@@ -597,9 +597,9 @@ def searching_open(filename, try_cwd=False):
                         try:
                                 return f, file(f)
                         except IOError, e:
-                                raise RuntimeError, _("Cannot open file: %s") % e
+                                raise RuntimeError, _("Cannot open file: {0}").format(e)
 
-        raise RuntimeError, _("File not found: \'%s\'") % filename
+        raise RuntimeError, _("File not found: \'{0}\'").format(filename)
 
 def apply_macros(s):
         """Apply macro subs defined on command line... keep applying
@@ -659,15 +659,15 @@ def read_file(tp, ignoreincludes):
                                         line = line[1:-1]
                                         add_transform(line, filename, lineno)
                                 else:
-                                        raise RuntimeError, _("unknown command %s") % (
+                                        raise RuntimeError, _("unknown command {0}").format(
                                                 line)
                         else:
                                 ret.append((line, filename, lineno))
                 except RuntimeError, e:
-                        error(_("File %(file)s, line %(line)d: %(exception)s") %
-                            {'file': filename,
-                             'line': lineno,
-                             'exception': e},
+                        error(_("File {file}, line {line:d}: {exception}").format(
+                            file=filename,
+                            line=lineno,
+                            exception=e),
                             exitcode=None)
                         raise RuntimeError, "<included from>"
 
@@ -676,8 +676,7 @@ def read_file(tp, ignoreincludes):
 def error(text, exitcode=1):
         """Emit an error message prefixed by the command name """
 
-        print("pkgmogrify: %s" % text, file=sys.stderr)
-
+        print("pkgmogrify: {0}".format(text), file=sys.stderr)
         if exitcode != None:
                 sys.exit(exitcode)
 
@@ -699,7 +698,7 @@ def main_func():
                                 a = arg.split("=", 1)
                                 if a[0] == "":
                                         error(_("macros must be of form name=value"))
-                                macros.update([("$(%s)" % a[0], a[1])])
+                                macros.update([("$({0})".format(a[0]), a[1])])
                         if opt == "-i":
                                 ignoreincludes = True
                         if opt == "-I":
@@ -714,7 +713,7 @@ def main_func():
                                 usage(exitcode=0)
 
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
 
         try:
                 if pargs:
@@ -724,7 +723,7 @@ def main_func():
 
                 lines = []
         except RuntimeError, e:
-                error(_("Error processing input arguments: %s") % e)
+                error(_("Error processing input arguments: {0}").format(e))
         try:
                 for f in infiles:
                         lines.extend(read_file(f, ignoreincludes))
@@ -761,7 +760,7 @@ def main_func():
                 except (pkg.actions.MalformedActionError,
                     pkg.actions.UnknownActionError,
                     pkg.actions.InvalidActionError), e:
-                        error("File %s line %d: %s" % (filename, lineno, e))
+                        error("File {0} line {1:d}: {2}".format(filename, lineno, e))
                 try:
                         if act.name == "set":
                                 name = act.attrs["name"]
@@ -774,7 +773,7 @@ def main_func():
                             filename, lineno)
                         output.append((comment, a, prepended_macro))
                 except RuntimeError, e:
-                        error("File %s line %d: %s" % (filename, lineno, e))
+                        error("File {0} line {1:d}: {2}".format(filename, lineno, e))
 
         try:
                 if printfilename == None:
@@ -783,9 +782,10 @@ def main_func():
                         printfile = file(printfilename, "w")
 
                 for p in printinfo:
-                        print("%s" % p, file=printfile) 
+                        print("{0}".format(p), file=printfile)
+
         except IOError, e:
-                error(_("Cannot write extra data %s") % e)
+                error(_("Cannot write extra data {0}").format(e))
 
         try:
                 if outfilename == None:
@@ -797,14 +797,15 @@ def main_func():
                 for comment, actionlist, prepended_macro in output:
                         if comment:
                                 for l in comment:
-                                        print("%s" % l, file=outfile)
+                                        print("{0}".format(l), file=outfile)
+
                         for i, action in enumerate(actionlist):
                                 if action is None:
                                         continue
                                 if prepended_macro is None:
-                                        s = "%s" % action
+                                        s = "{0}".format(action)
                                 else:
-                                        s = "%s%s" % (prepended_macro, action)
+                                        s = "{0}{1}".format(prepended_macro, action)
                                 # The first action is the original action and
                                 # should be printed; later actions are all
                                 # emitted and should only be printed if not
@@ -815,7 +816,7 @@ def main_func():
                                         print(s, file=outfile)
                                         emitted.add(s)
         except IOError, e:
-                error(_("Cannot write output %s") % e)
+                error(_("Cannot write output {0}").format(e))
 
         return 0
 

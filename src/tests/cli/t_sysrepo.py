@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -91,48 +91,48 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 ret, output = self.sysrepo("--help", out=True, exit=2)
                 self.assert_("Usage:" in output,
-                    "No usage string printed: %s" % output)
+                    "No usage string printed: {0}".format(output))
 
         def test_2_invalid_root(self):
                 """We return an error given an invalid image root"""
 
                 for invalid_root in ["/dev/null", "/etc/passwd", "/proc"]:
-                        ret, output, err = self.sysrepo("-R %s" % invalid_root,
+                        ret, output, err = self.sysrepo("-R {0}".format(invalid_root),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_root in err, "error message "
-                            "did not contain %s: %s" % (invalid_root, err))
+                            "did not contain {0}: {1}".format(invalid_root, err))
 
         def test_3_invalid_cache_dir(self):
                 """We return an error given an invalid cache_dir"""
 
                 for invalid_cache in ["/dev/null", "/etc/passwd"]:
-                        ret, output, err = self.sysrepo("-c %s" % invalid_cache,
+                        ret, output, err = self.sysrepo("-c {0}".format(invalid_cache),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_cache in err, "error message "
-                            "did not contain %s: %s" % (invalid_cache, err))
+                            "did not contain {0}: {1}".format(invalid_cache, err))
 
         def test_4_invalid_hostname(self):
                 """We return an error given an invalid hostname"""
 
                 for invalid_host in ["1.2.3.4.5.6", "pkgsysrepotestname", "."]:
-                        ret, output, err = self.sysrepo("-h %s" % invalid_host,
+                        ret, output, err = self.sysrepo("-h {0}".format(invalid_host),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_host in err, "error message "
-                            "did not contain %s: %s" % (invalid_host, err))
+                            "did not contain {0}: {1}".format(invalid_host, err))
 
         def test_5_invalid_logs_dir(self):
                 """We return an error given an invalid logs_dir"""
 
                 for invalid_log in ["/dev/null", "/etc/passwd"]:
-                        ret, output, err = self.sysrepo("-l %s" % invalid_log,
+                        ret, output, err = self.sysrepo("-l {0}".format(invalid_log),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_log in err, "error message "
-                            "did not contain %s: %s" % (invalid_log, err))
+                            "did not contain {0}: {1}".format(invalid_log, err))
 
                 for invalid_log in ["/proc"]:
                         port = self.next_free_port
-                        ret, output, err = self.sysrepo("-l %s -p %s" %
-                            (invalid_log, port), out=True, stderr=True, exit=0)
+                        ret, output, err = self.sysrepo("-l {0} -p {1}".format(
+                            invalid_log, port), out=True, stderr=True, exit=0)
                         self.assertRaises(pkg5unittest.ApacheStateException,
                             self._start_sysrepo)
                         self.sc.stop()
@@ -141,60 +141,60 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 """We return an error given an invalid port"""
 
                 for invalid_port in [999999, "bobcat", "-1234"]:
-                        ret, output, err = self.sysrepo("-p %s" % invalid_port,
+                        ret, output, err = self.sysrepo("-p {0}".format(invalid_port),
                             out=True, stderr=True, exit=1)
                         self.assert_(str(invalid_port) in err, "error message "
-                            "did not contain %s: %s" % (invalid_port, err))
+                            "did not contain {0}: {1}".format(invalid_port, err))
 
         def test_7_invalid_runtime_dir(self):
                 """We return an error given an invalid runtime_dir"""
 
                 for invalid_runtime in ["/dev/null", "/etc/passwd", "/proc"]:
-                        ret, output, err = self.sysrepo("-r %s" %
-                            invalid_runtime, out=True, stderr=True, exit=1)
+                        ret, output, err = self.sysrepo("-r {0}".format(
+                            invalid_runtime), out=True, stderr=True, exit=1)
                         self.assert_(invalid_runtime in err, "error message "
-                            "did not contain %s: %s" % (invalid_runtime, err))
+                            "did not contain {0}: {1}".format(invalid_runtime, err))
 
         def test_8_invalid_cache_size(self):
                 """We return an error given an invalid cache_size"""
 
                 for invalid_csize in [0, "cats", "-1234"]:
-                        ret, output, err = self.sysrepo("-s %s" % invalid_csize,
+                        ret, output, err = self.sysrepo("-s {0}".format(invalid_csize),
                             out=True, stderr=True, exit=1)
                         self.assert_(str(invalid_csize) in err, "error message "
-                            "did not contain %s: %s" % (invalid_csize, err))
+                            "did not contain {0}: {1}".format(invalid_csize, err))
 
         def test_9_invalid_templates_dir(self):
                 """We return an error given an invalid templates_dir"""
 
                 for invalid_tmp in ["/dev/null", "/etc/passwd", "/proc"]:
-                        ret, output, err = self.sysrepo("-t %s" % invalid_tmp,
+                        ret, output, err = self.sysrepo("-t {0}".format(invalid_tmp),
                             out=True, stderr=True, exit=1)
                         self.assert_(invalid_tmp in err, "error message "
-                            "did not contain %s: %s" % (invalid_tmp, err))
+                            "did not contain {0}: {1}".format(invalid_tmp, err))
 
         def test_10_invalid_http_timeout(self):
                 """We return an error given an invalid http_timeout"""
 
                 for invalid_time in ["cats", "0", "-1"]:
-                        ret, output, err = self.sysrepo("-T %s" %invalid_time,
+                        ret, output, err = self.sysrepo("-T {0}".format(invalid_time),
                             out=True, stderr=True, exit=1)
                         self.assert_("http_timeout" in err, "error message "
-                             "did not contain http_timeout: %s" % err)
+                             "did not contain http_timeout: {0}".format(err))
 
         def test_11_invalid_proxies(self):
                 """We return an error given invalid proxies"""
 
                 for invalid_proxy in ["http://", "https://foo.bar", "-1",
                     "http://user:password@hostname:3128"]:
-                        ret, output, err = self.sysrepo("-w %s" % invalid_proxy,
+                        ret, output, err = self.sysrepo("-w {0}".format(invalid_proxy),
                             out=True, stderr=True, exit=1)
                         self.assert_("http_proxy" in err, "error message "
-                             "did not contain http_proxy: %s" % err)
-                        ret, output, err = self.sysrepo("-W %s" % invalid_proxy,
+                             "did not contain http_proxy: {0}".format(err))
+                        ret, output, err = self.sysrepo("-W {0}".format(invalid_proxy),
                             out=True, stderr=True, exit=1)
                         self.assert_("https_proxy" in err, "error message "
-                             "did not contain https_proxy: %s" % err)
+                             "did not contain https_proxy: {0}".format(err))
 
 
 class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
@@ -290,7 +290,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 cache_dir = os.path.join(self.test_root, "t_sysrepo_cache")
                 port = self.next_free_port
-                self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
+                self.sysrepo("-R {0} -c {1} -p {2}".format(self.get_img_path(),
                     cache_dir, port))
                 self._start_sysrepo()
 
@@ -299,8 +299,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.file_doesnt_contain(self.default_sc_conf,
                     "CacheEnable mem")
                 self.file_doesnt_contain(self.default_sc_conf, "MCacheSize")
-                self.file_contains(self.default_sc_conf, "CacheRoot %s" %
-                    cache_dir)
+                self.file_contains(self.default_sc_conf, "CacheRoot {0}".format(
+                    cache_dir))
 
                 # 2. publish a file, then install using the proxy
                 # check that the proxy has written some content into the cache
@@ -313,11 +313,11 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # 4. ensure memory and None settings are written
                 cache_dir = "None"
-                self.sysrepo("-c %s -p %s" % (cache_dir, port))
+                self.sysrepo("-c {0} -p {1}".format(cache_dir, port))
                 self.file_doesnt_contain(self.default_sc_conf, "CacheEnable")
 
                 cache_dir = "memory"
-                self.sysrepo("-c %s -p %s" % (cache_dir, port))
+                self.sysrepo("-c {0} -p {1}".format(cache_dir, port))
                 self.file_doesnt_contain(self.default_sc_conf,
                     "CacheEnable disk")
                 self.file_contains(self.default_sc_conf, "CacheEnable mem")
@@ -330,14 +330,14 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 logs_dir = os.path.join(self.test_root, "t_sysrepo_logs")
                 port = self.next_free_port
-                self.sysrepo("-l %s -p %s" % (logs_dir, port))
+                self.sysrepo("-l {0} -p {1}".format(logs_dir, port))
                 self._start_sysrepo()
 
                 # 1. grep for the logs dir in the httpd.conf
                 self.file_contains(self.default_sc_conf,
-                    "ErrorLog \"%s/error_log\"" % logs_dir)
+                    "ErrorLog \"{0}/error_log\"".format(logs_dir))
                 self.file_contains(self.default_sc_conf,
-                    "CustomLog \"%s/access_log\"" % logs_dir)
+                    "CustomLog \"{0}/access_log\"".format(logs_dir))
                 # 2. verify our log files exist once the sysrepo has started
                 for name in ["error_log", "access_log"]:
                         os.path.exists(os.path.join(logs_dir, name))
@@ -348,10 +348,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.image_create(prefix="test1", repourl=self.durl1)
 
                 port = self.next_free_port
-                self.sysrepo("-p %s -h localhost" % port)
+                self.sysrepo("-p {0} -h localhost".format(port))
                 self._start_sysrepo()
-                self.file_contains(self.default_sc_conf, "Listen localhost:%s" %
-                    port)
+                self.file_contains(self.default_sc_conf, "Listen localhost:{0}".format(
+                    port))
                 self.sc.stop()
 
         def test_6_permissions(self):
@@ -380,9 +380,9 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         # automatically by self.pkg() because we've got
                         # "versions" as one of the CLI args (it being an
                         # overlapping publisher name)
-                        self.pkg("-R %(img)s set-publisher -g %(url)s %(pub)s" %
-                            {"img": self.get_img_path(),
-                            "url": dc.get_repo_url(), "pub": name})
+                        self.pkg("-R {img} set-publisher -g {url} {pub}".format(
+                            img=self.get_img_path(),
+                            url=dc.get_repo_url(), pub=name))
 
                 # Start a system repo based on the configuration above
                 self.sysrepo("")
@@ -393,13 +393,13 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         pub = dc.get_property("publisher", "prefix")
                         hash = hashlib.sha1("file://" +
                             dc.get_repodir().rstrip("/")).hexdigest()
-                        url = "http://localhost:%(port)s/%(pub)s/%(hash)s/" % \
-                            {"port": self.sysrepo_port, "hash": hash,
-                            "pub": pub}
+                        url = "http://localhost:{port}/{pub}/{hash}/".format(
+                            port=self.sysrepo_port, hash=hash,
+                            pub=pub)
                         self.set_img_path(os.path.join(self.test_root,
                             "sysrepo_image"))
                         self.pkg_image_create(prefix=pub, repourl=url)
-                        self.pkg("-R %s install sample" % self.get_img_path())
+                        self.pkg("-R {0} install sample".format(self.get_img_path()))
 
                 self.sc.stop()
 
@@ -417,24 +417,24 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 urlresult = urllib2.urlparse.urlparse(self.rurl1)
                 symlink_path = os.path.join(self.test_root, "repo_symlink")
                 os.symlink(urlresult.path, symlink_path)
-                symlinked_url = "file://%s" % symlink_path
+                symlinked_url = "file://{0}".format(symlink_path)
 
                 # create a p5p archive
                 p5p_path = os.path.join(self.test_root,
                     "test_8_file_publisher_archive.p5p")
-                p5p_url = "file://%s" % p5p_path
-                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
-                    p5p_path)
+                p5p_url = "file://{0}".format(p5p_path)
+                self.pkgrecv(server_url=self.durl1, command="-a -d {0} sample".format(
+                    p5p_path))
 
                 for file_url in [self.rurl1, symlinked_url, p5p_url]:
                         self.image_create(prefix="test1", repourl=self.durl1)
-                        self.pkg("set-publisher -g %s test1" % file_url)
+                        self.pkg("set-publisher -g {0} test1".format(file_url))
                         self.sysrepo("")
                         self._start_sysrepo()
 
                         hash = hashlib.sha1(file_url.rstrip("/")).hexdigest()
-                        url = "http://localhost:%(port)s/test1/%(hash)s/" % \
-                            {"port": self.sysrepo_port, "hash": hash}
+                        url = "http://localhost:{port}/test1/{hash}/".format(
+                            port=self.sysrepo_port, hash=hash)
                         self.pkg_image_create(prefix="test1", repourl=url)
                         self.pkg("install sample")
                         self.pkg("contents -rm sample")
@@ -449,28 +449,28 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 os.mkdir(v3_repo_root)
                 v3_repo_path = os.path.join(v3_repo_root, "repo")
 
-                self.pkgrepo("create --version 3 %s" % v3_repo_path)
-                self.pkgrepo("-s %s set publisher/prefix=foo" % v3_repo_path)
+                self.pkgrepo("create --version 3 {0}".format(v3_repo_path))
+                self.pkgrepo("-s {0} set publisher/prefix=foo".format(v3_repo_path))
                 for path in [v3_repo_path]:
-                        self.image_create(repourl="file://%s" % path)
-                        self.sysrepo("-R %s" % self.img_path(), exit=1)
+                        self.image_create(repourl="file://{0}".format(path))
+                        self.sysrepo("-R {0}".format(self.img_path()), exit=1)
 
         def test_10_missing_file_repo(self):
                 """Ensure we print the right error message in the face of
                 a missing repository."""
                 repo_path = os.path.join(self.test_root, "test_10_missing_repo")
-                self.pkgrepo("create %s" % repo_path)
-                self.pkgrecv(server_url=self.durl1, command="-d %s sample" %
-                    repo_path)
-                self.pkgrepo("-s %s set publisher/prefix=foo" % repo_path)
-                self.pkgrepo("-s %s rebuild" % repo_path)
-                self.image_create(repourl="file://%s" % repo_path)
+                self.pkgrepo("create {0}".format(repo_path))
+                self.pkgrecv(server_url=self.durl1, command="-d {0} sample".format(
+                    repo_path))
+                self.pkgrepo("-s {0} set publisher/prefix=foo".format(repo_path))
+                self.pkgrepo("-s {0} rebuild".format(repo_path))
+                self.image_create(repourl="file://{0}".format(repo_path))
                 shutil.rmtree(repo_path)
-                ret, output, err = self.sysrepo("-R %s" % self.img_path(),
+                ret, output, err = self.sysrepo("-R {0}".format(self.img_path()),
                     out=True, stderr=True, exit=1)
                 # restore our image before going any further
                 self.assert_("does not exist" in err, "unable to find expected "
-                    "error message in stderr: %s" % err)
+                    "error message in stderr: {0}".format(err))
 
         def test_11_proxy_args(self):
                 """Ensure we write configuration to tell Apache to use a remote
@@ -503,12 +503,12 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         if e.errno == errno.EPERM:
                                 raise pkg5unittest.TestSkippedException(
                                     "User running test does not have "
-                                    "permissions to chown to uid %s" % exp_uid)
+                                    "permissions to chown to uid {0}".format(exp_uid))
                         raise
 
                 # Run sysrepo to create cache directory
                 port = self.next_free_port
-                self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
+                self.sysrepo("-R {0} -c {1} -p {2}".format(self.get_img_path(),
                     cache_dir, port))
 
                 self._start_sysrepo()
@@ -520,7 +520,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # Again run sysrepo and then verify permissions
                 cache_dir = os.path.join(self.test_root, "t_sysrepo_cache")
                 port = self.next_free_port
-                self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
+                self.sysrepo("-R {0} -c {1} -p {2}".format(self.get_img_path(),
                     cache_dir, port))
                 self._start_sysrepo()
 
@@ -551,22 +551,22 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # create a p5p archive
                 p5p_path = os.path.join(self.test_root,
                     "test_12_changing_p5p_archive.p5p")
-                p5p_url = "file://%s" % p5p_path
-                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
-                    p5p_path)
+                p5p_url = "file://{0}".format(p5p_path)
+                self.pkgrecv(server_url=self.durl1, command="-a -d {0} sample".format(
+                    p5p_path))
 
                 # configure an image from which to generate a sysrepo config
                 self.image_create(prefix="test1", repourl=self.durl1)
-                self.pkg("set-publisher -g %s test1" % p5p_url)
+                self.pkg("set-publisher -g {0} test1".format(p5p_url))
                 self.sysrepo("")
                 self._start_sysrepo()
 
                 # create an image which uses the system publisher
                 hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
-                url = "http://localhost:%(port)s/test1/%(hash)s/" % \
-                    {"port": self.sysrepo_port, "hash": hash}
+                url = "http://localhost:{port}/test1/{hash}/".format(
+                    port=self.sysrepo_port, hash=hash)
 
-                self.debug("using %s as repo url" % url)
+                self.debug("using {0} as repo url".format(url))
                 self.pkg_image_create(prefix="test1", repourl=url)
                 self.pkg("install sample")
 
@@ -576,7 +576,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.sample_pkg)
                 os.unlink(p5p_path)
                 self.pkgrecv(server_url=self.durl1,
-                    command="-a -d %s sample new" % p5p_path)
+                    command="-a -d {0} sample new".format(p5p_path))
 
                 # ensure we can install our new packages through the system
                 # publisher url
@@ -607,9 +607,9 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # create a p5p archive
                 p5p_path = os.path.join(self.test_root,
                     "test_13_bad_input.p5p")
-                p5p_url = "file://%s" % p5p_path
-                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
-                    p5p_path)
+                p5p_url = "file://{0}".format(p5p_path)
+                self.pkgrecv(server_url=self.durl1, command="-a -d {0} sample".format(
+                    p5p_path))
                 p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
                 file_url = self.dcs[2].get_repo_url()
                 file_hash = hashlib.sha1(file_url.rstrip("/")).hexdigest()
@@ -617,8 +617,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # configure an image from which to generate a sysrepo config
                 self.image_create(prefix="test1", repourl=self.durl1)
 
-                self.pkg("set-publisher -p %s" % file_url)
-                self.pkg("set-publisher -g %s test1" % p5p_url)
+                self.pkg("set-publisher -p {0}".format(file_url))
+                self.pkg("set-publisher -g {0} test1".format(p5p_url))
                 self.sysrepo("")
                 self._start_sysrepo()
 
@@ -636,25 +636,25 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # which makes sure Apache can deal with the URLs appropriately,
                 # as well as a p5p repository, exercising our mod_wsgi app.
                 for hsh, pub in [("test1", p5p_hash), ("test2", file_hash)]:
-                        queries_404.append("%s/%s/catalog/1/ΰŇﺇ⊂⏣⊅ℇ" %
-                            (pub, hsh))
-                        queries_404.append("%s/%s/catalog/1/%s" %
-                            (pub, hsh, "f" + "u" * 1000))
-                        queries_414.append("%s/%s/catalog/1/%s" %
-                            (pub, hsh, "f" * 900000 + "u"))
+                        queries_404.append("{0}/{1}/catalog/1/ΰŇﺇ⊂⏣⊅ℇ".format(
+                            pub, hsh))
+                        queries_404.append("{0}/{1}/catalog/1/{2}".format(
+                            pub, hsh, "f" + "u" * 1000))
+                        queries_414.append("{0}/{1}/catalog/1/{2}".format(
+                            pub, hsh, "f" * 900000 + "u"))
 
                 def test_response(part, code):
                         """Given a url substring and an expected error code,
                         check that the system repository returns that code
                         for a url constructed from that part."""
-                        url = "http://localhost:%s/%s" % \
-                            (self.sysrepo_port, part)
+                        url = "http://localhost:{0}/{1}".format(
+                            self.sysrepo_port, part)
                         try:
                                 resp =  urllib2.urlopen(url, None, None)
                         except urllib2.HTTPError, e:
                                 if e.code != code:
                                         self.assert_(False,
-                                            "url %s returned: %s" % (url, e))
+                                            "url {0} returned: {1}".format(url, e))
 
                 for url_part in queries_404:
                         test_response(url_part, 404)
@@ -673,16 +673,16 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 p5p_unicode_dir = os.path.join(unicode_dir,
                     "test_14_unicode.p5p")
                 p5p_unicode_file = os.path.join(self.test_root,
-                    "%s.p5p" % unicode_str)
+                    "{0}.p5p".format(unicode_str))
 
                 for p5p_path in [p5p_unicode_dir, p5p_unicode_file]:
-                        p5p_url = "file://%s" % p5p_path
+                        p5p_url = "file://{0}".format(p5p_path)
                         self.pkgrecv(server_url=self.durl1,
-                            command="-a -d %s sample" % p5p_path)
+                            command="-a -d {0} sample".format(p5p_path))
                         p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
 
                         self.image_create()
-                        self.pkg("set-publisher -p %s" % p5p_url)
+                        self.pkg("set-publisher -p {0}".format(p5p_url))
 
                         self.sysrepo("")
                         self._start_sysrepo()
@@ -691,8 +691,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         for path in ["catalog/1/catalog.attrs",
                             "catalog/1/catalog.base.C",
                             "file/1/f5da841b7c3601be5629bb8aef928437de7d534e"]:
-                                url = "http://localhost:%s/test1/%s/%s" % \
-                                    (self.sysrepo_port, p5p_hash, path)
+                                url = "http://localhost:{0}/test1/{1}/{2}".format(
+                                    self.sysrepo_port, p5p_hash, path)
                                 resp = urllib2.urlopen(url, None, None)
                                 self.debug(resp.readlines())
 
@@ -762,7 +762,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # ensure we get a new cache on publisher modification
                 self.file_doesnt_contain(cache_path, self.rurl1)
-                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.pkg("set-publisher -g {0} test1".format(self.rurl1))
                 self.file_doesnt_exist(cache_path)
                 self.sysrepo("")
                 self.file_contains(cache_path, self.rurl1)
@@ -801,7 +801,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # rename the cache file, then symlink it
                 os.rename(full_cache_path, full_cache_path + ".new")
                 os.symlink(full_cache_path + ".new", full_cache_path)
-                self.pkg("set-publisher -G %s test1" % self.durl1)
+                self.pkg("set-publisher -G {0} test1".format(self.durl1))
                 # by running pkg set-publisher, we should have removed the
                 # symlink
                 self.file_doesnt_exist(cache_path)
@@ -838,7 +838,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # check that when a file-repository is inaccessible, the
                 # sysrepo_httpd.conf generated from the cache remains identical
-                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.pkg("set-publisher -g {0} test1".format(self.rurl1))
                 self.sysrepo("", stderr=True)
                 saved_sysrepo_conf = os.path.join(self.test_root,
                     "test_16_config_cache_sysrepo_httpd.conf.old")
@@ -869,7 +869,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # Start a system repository instance that we will use as a
                 # convenient way to configure a simple http proxy
                 alt_logs_dir = os.path.join(self.test_root, "alt_sysrepo_logs")
-                self.sysrepo("-r %s -l %s" % (self.alt_sc_runtime,
+                self.sysrepo("-r {0} -l {1}".format(self.alt_sc_runtime,
                     alt_logs_dir))
                 self._start_sysrepo(alt=True)
                 alt_sc_port = self.sysrepo_port
@@ -877,18 +877,18 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # Start another system-repository using the 1st sysrepo instance
                 # as a http proxy
                 def_logs_dir = os.path.join(self.test_root, "def_sysrepo_logs")
-                self.sysrepo("-r %s -w http://localhost:%s -l %s" %
-                    (self.default_sc_runtime, alt_sc_port, def_logs_dir))
+                self.sysrepo("-r {0} -w http://localhost:{1} -l {2}".format(
+                    self.default_sc_runtime, alt_sc_port, def_logs_dir))
                 self._start_sysrepo()
 
                 # check the configuration
                 self.file_contains(self.default_sc_conf,
-                    "ProxyRemote http http://localhost:%s" % alt_sc_port)
+                    "ProxyRemote http http://localhost:{0}".format(alt_sc_port))
 
                 # configure an image to use the system repository
                 saved_sysrepo_env = os.environ.get("PKG_SYSREPO_URL")
-                os.environ["PKG_SYSREPO_URL"] = "http://localhost:%s" % \
-                    self.sysrepo_port
+                os.environ["PKG_SYSREPO_URL"] = "http://localhost:{0}".format(
+                    self.sysrepo_port)
                 self.image_create()
                 self.pkg("set-property use-system-repo True")
                 self.pkg("refresh")
@@ -938,27 +938,27 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # We use --no-refresh because our proxy doesn't exist
                 self.image_create()
-                self.pkg("set-publisher --no-refresh -g %s "
-                    "--proxy http://foobar test1" % self.durl1)
+                self.pkg("set-publisher --no-refresh -g {0} "
+                    "--proxy http://foobar test1".format(self.durl1))
 
                 self.sysrepo("")
                 self.file_contains(self.default_sc_conf,
-                    "ProxyRemote %s http://foobar" % self.durl1)
+                    "ProxyRemote {0} http://foobar".format(self.durl1))
 
-                self.pkg("set-publisher --no-refresh -g %s "
-                    "--proxy http://bar test2" % self.durl2)
+                self.pkg("set-publisher --no-refresh -g {0} "
+                    "--proxy http://bar test2".format(self.durl2))
 
                 self.sysrepo("")
                 self.file_contains(self.default_sc_conf,
-                    "ProxyRemote %s http://foobar" % self.durl1)
+                    "ProxyRemote {0} http://foobar".format(self.durl1))
                 self.file_contains(self.default_sc_conf,
-                    "ProxyRemote %s http://bar" % self.durl2)
+                    "ProxyRemote {0} http://bar".format(self.durl2))
 
                 # Ensure we fail when an image is set with a proxy we don't
                 # support.
                 self.image_create()
-                self.pkg("set-publisher --no-refresh -g %s "
-                    "--proxy http://user:password@foobar test1" % self.durl1)
+                self.pkg("set-publisher --no-refresh -g {0} "
+                    "--proxy http://user:password@foobar test1".format(self.durl1))
                 self.sysrepo("", exit=1)
 
 
@@ -996,7 +996,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                 # we have to dynamically load the mod_wsgi webapp, since it
                 # lives outside our normal search path
                 mod_name = "sysrepo_p5p"
-                src_name = "%s.py" % mod_name
+                src_name = "{0}.py".format(mod_name)
                 sysrepo_p5p_file = file(os.path.join(self.sysrepo_template_dir,
                     src_name))
                 self.sysrepo_p5p = imp.load_module(mod_name, sysrepo_p5p_file,
@@ -1011,7 +1011,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                     "mod_wsgi_archive.p5p")
 
                 self.pkgrecv(server_url=self.durl,
-                    command="-a -d %s sample new" % self.p5p_path)
+                    command="-a -d {0} sample new".format(self.p5p_path))
                 self.http_status = ""
 
         def test_queries(self):
@@ -1051,15 +1051,15 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                                         sys.stdout = saved_stdout
 
                                 self.assert_(code in self.http_status,
-                                    "Query %s response did not contain %s: %s" %
-                                    (query, code, self.http_status))
+                                    "Query {0} response did not contain {1}: {2}".format(
+                                    query, code, self.http_status))
                                 if expect_content:
                                         self.assert_(seen_content,
-                                            "No content returned for %s" %
-                                            query)
+                                            "No content returned for {0}".format(
+                                            query))
                                 else:
                                         self.assertFalse(seen_content,
-                                            "Unexpected content for %s" % query)
+                                            "Unexpected content for {0}".format(query))
 
                 # the easiest way to get the name of one of the manifests
                 # in the archive is to look for it in the index
@@ -1074,40 +1074,40 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
 
                 queries_200 = [
                     # valid file, matches the hash of the content in misc_files
-                    "pub=test&hash=%s&path=file/1/f890d49474e943dc07a766c21d2bf35d6e527e89" % hsh,
+                    "pub=test&hash={0}&path=file/1/f890d49474e943dc07a766c21d2bf35d6e527e89".format(hsh),
                     # valid catalog parts
-                    "pub=test&hash=%s&path=catalog/1/catalog.attrs" % hsh,
-                    "pub=test&hash=%s&path=catalog/1/catalog.base.C" % hsh,
+                    "pub=test&hash={0}&path=catalog/1/catalog.attrs".format(hsh),
+                    "pub=test&hash={0}&path=catalog/1/catalog.base.C".format(hsh),
                     # valid manifest
-                    "pub=test&hash=%s&path=manifest/0/%s" % (hsh, mf)
+                    "pub=test&hash={0}&path=manifest/0/{1}".format(hsh, mf)
                 ]
 
                 queries_404 = [
                     # wrong path
-                    "pub=test&hash=%s&path=catalog/1/catalog.attrsX" % hsh,
+                    "pub=test&hash={0}&path=catalog/1/catalog.attrsX".format(hsh),
                     # invalid publisher
-                    "pub=WRONG&hash=%s&path=catalog/1/catalog.attrs" % hsh,
+                    "pub=WRONG&hash={0}&path=catalog/1/catalog.attrs".format(hsh),
                     # incorrect path
-                    "pub=test&hash=%s&path=file/1/12u3yt123123" % hsh,
+                    "pub=test&hash={0}&path=file/1/12u3yt123123".format(hsh),
                     # incorrect path (where the first path component is unknown)
-                    "pub=test&hash=%s&path=carrots/1/12u3yt123123" % hsh,
+                    "pub=test&hash={0}&path=carrots/1/12u3yt123123".format(hsh),
                     # incorrect manifest, with an unknown package name
-                    "pub=test&hash=%s&path=manifest/0/foo%s" % (hsh, mf),
+                    "pub=test&hash={0}&path=manifest/0/foo{1}".format(hsh, mf),
                     # incorrect manifest, with an illegal FMRI
-                    "pub=test&hash=%s&path=manifest/0/%sfoo" % (hsh, mf)
+                    "pub=test&hash={0}&path=manifest/0/{1}foo".format(hsh, mf)
                 ]
 
                 queries_400 = [
                     # missing publisher (while p5p files can return content
                     # despite no publisher, our mod_wsgi app requires a
                     # publisher)
-                    "hash=%s&path=catalog/1/catalog.attrs" % hsh,
+                    "hash={0}&path=catalog/1/catalog.attrs".format(hsh),
                     # missing path
-                    "pub=test&hash=%s" % hsh,
+                    "pub=test&hash={0}".format(hsh),
                     # malformed query
                     "&&???&&&",
                     # no hash key
-                    "pub=test&hashX=%s&path=catalog/1/catalog.attrs" % hsh,
+                    "pub=test&hashX={0}&path=catalog/1/catalog.attrs".format(hsh),
                     # unknown hash value
                     "pub=test&hash=carrots&path=catalog/1/catalog.attrs"
                 ]

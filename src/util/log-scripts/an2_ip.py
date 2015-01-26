@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 import datetime
 import fileinput
@@ -32,7 +33,7 @@ from an_report import *
 
 total_by_ip = {}
 
-ip_files = [ "%s-ip.dat" % i for i in sys.argv[2:] ]
+ip_files = [ "{0}-ip.dat".format(i) for i in sys.argv[2:] ]
 ip_files = [ i for i in ip_files if os.path.exists(i) ]
 
 for l in fileinput.input(ip_files):

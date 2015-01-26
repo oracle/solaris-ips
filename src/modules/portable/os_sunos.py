@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -69,8 +69,8 @@ def get_file_type(actions):
                 tmp = file_out.split(":", colon_cnt)
                 res_file_name = ":".join(tmp[0:colon_cnt])
                 if res_file_name != proto_file:
-                        raise RuntimeError("pf:%s rfn:%s file_out:%s" %
-                            (proto_file, res_file_name, file_out))
+                        raise RuntimeError("pf:{0} rfn:{1} file_out:{2}".format(
+                            proto_file, res_file_name, file_out))
                 file_type = tmp[colon_cnt].strip().split()
                 joined_ft = " ".join(file_type)
                 if file_type[0] == "ELF":

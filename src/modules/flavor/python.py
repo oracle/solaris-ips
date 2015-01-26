@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -44,8 +44,8 @@ class PythonModuleMissingPath(base.DependencyAnalysisError):
                 self.localpath = localpath
 
         def __str__(self):
-                return _("Could not find the file for %(name)s imported "
-                    "in %(localpath)s") % self.__dict__
+                return _("Could not find the file for {name} imported "
+                    "in {localpath}").format(**self.__dict__)
 
 
 class PythonMismatchedVersion(base.DependencyAnalysisError):
@@ -62,10 +62,10 @@ class PythonMismatchedVersion(base.DependencyAnalysisError):
                 self.ip = installed_path
 
         def __str__(self):
-                return _("The file to be installed at %(ip)s declares a "
-                    "python version of %(decl_v)s.  However, the path suggests "
-                    "that the version should be %(inst_v)s.  The text of the "
-                    "file can be found at %(lp)s") % self.__dict__
+                return _("The file to be installed at {ip} declares a "
+                    "python version of {decl_v}.  However, the path suggests "
+                    "that the version should be {inst_v}.  The text of the "
+                    "file can be found at {lp}").format(**self.__dict__)
 
 
 class PythonSyntaxError(base.DependencyAnalysisError):
@@ -80,11 +80,11 @@ class PythonSyntaxError(base.DependencyAnalysisError):
                 self.txt = str(s_err)
 
         def __str__(self):
-                return _("The file to be installed at %(ip)s appears to be a "
+                return _("The file to be installed at {ip} appears to be a "
                     "python file but contains a syntax error that prevents "
                     "it from being analyzed.  The text of the file can be found"
-                    "at %(lp)s.  The error happened on line %(line)s at offset "
-                    "%(col)s. The problem was:\n%(txt)s") % self.__dict__
+                    "at {lp}.  The error happened on line {line} at offset "
+                    "{col}. The problem was:\n{txt}").format(**self.__dict__)
 
 
 class PythonSubprocessError(base.DependencyAnalysisError):
@@ -97,8 +97,8 @@ class PythonSubprocessError(base.DependencyAnalysisError):
                 self.err = err
 
         def __str__(self):
-                return _("The command %(cmd)s\nexited with return code %(rc)s "
-                    "and this message:\n%(err)s") % self.__dict__
+                return _("The command {cmd}\nexited with return code {rc} "
+                    "and this message:\n{err}").format(**self.__dict__)
 
 
 class PythonSubprocessBadLine(base.DependencyAnalysisError):
@@ -110,8 +110,9 @@ class PythonSubprocessBadLine(base.DependencyAnalysisError):
                 self.cmd = cmd
 
         def __str__(self):
-                return _("The command %(cmd)s produced the following lines "
-                    "which cannot be understood:\n%(lines)s") % self.__dict__
+                return _("The command {cmd} produced the following lines "
+                    "which cannot be understood:\n{lines}").format(
+                    **self.__dict__)
 
 
 class PythonUnspecifiedVersion(base.PublishingDependency):
@@ -124,12 +125,12 @@ class PythonUnspecifiedVersion(base.PublishingDependency):
                 self.ip = installed_path
 
         def __str__(self):
-                return _("The file to be installed in %(ip)s does not specify "
+                return _("The file to be installed in {ip} does not specify "
                     "a specific version of python either in its installed path "
                     "nor in its text.  Such a file cannot be analyzed for "
                     "dependencies since the version of python it will be used "
-                    "with is unknown.  The text of the file is here: %(lp)s.") \
-                    % self.__dict__
+                    "with is unknown.  The text of the file is here: "
+                    "{lp}.").format(**self.__dict__)
 
 
 class PythonDependency(base.PublishingDependency):
@@ -141,7 +142,7 @@ class PythonDependency(base.PublishingDependency):
                     base_names, run_paths, pkg_vars, proto_dir, "python")
 
         def __repr__(self):
-                return "PythonDep(%s, %s, %s, %s)" % (self.action,
+                return "PythonDep({0}, {1}, {2}, {3})".format(self.action,
                     self.base_names, self.run_paths, self.pkg_vars)
 
 
@@ -221,8 +222,8 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
                 if install_match and script_match and \
                     (file_major != dir_major or file_minor != dir_minor):
                         errs.append(PythonMismatchedVersion(
-                            "%s.%s" % (dir_major, dir_minor),
-                            "%s.%s" % (file_major, file_minor),
+                            "{0}.{1}".format(dir_major, dir_minor),
+                            "{0}.{1}".format(file_major, file_minor),
                             local_file, action.attrs["path"]))
                 if install_match:
                         analysis_major = dir_major
@@ -279,7 +280,7 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
         # appropriate version of python.
         root_dir = os.path.dirname(__file__)
         exec_file = os.path.join(root_dir, "depthlimitedmf.py")
-        cmd = ["python%s.%s" % (analysis_major, analysis_minor), exec_file,
+        cmd = ["python{0}.{1}".format(analysis_major, analysis_minor), exec_file,
             os.path.dirname(action.attrs["path"]), local_file]
 
         if run_paths:

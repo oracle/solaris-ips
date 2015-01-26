@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """feed - routines for generating RFC 4287 Atom feeds for packaging server
@@ -65,7 +65,7 @@ def fmri_to_taguri(f):
         """Generates a 'tag' uri compliant with RFC 4151.  Visit
         http://www.taguri.org/ for more information.
         """
-        return "tag:%s,%s:%s" % (f.publisher,
+        return "tag:{0},{1}:{2}".format(f.publisher,
             f.get_timestamp().strftime("%Y-%m-%d"),
             urllib.unquote(f.get_url_path()))
 
@@ -101,7 +101,8 @@ def set_title(depot, doc, feed, update_ts):
         it = xmini.Text()
         netloc, path = urlparse.urlparse(cherrypy.url())[1:3]
         netloc = netloc.split(":", 1)[0]
-        tag = "tag:%s,%s:%s" % (netloc, update_ts.strftime("%Y-%m-%d"), path) 
+        tag = "tag:{0},{1}:{2}".format(netloc, update_ts.strftime("%Y-%m-%d"),
+            path) 
         it.replaceWholeText(tag)
         i.appendChild(it)
         feed.appendChild(i)
@@ -128,9 +129,9 @@ def set_title(depot, doc, feed, update_ts):
         feed.appendChild(l)
 
 
-add_op = ("Added", "%s was added to the repository.")
-remove_op = ("Removed", "%s was removed from the repository.")
-update_op = ("Updated", "%s, a new version of an existing package, was added "
+add_op = ("Added", "{0} was added to the repository.")
+remove_op = ("Removed", "{0} was removed from the repository.")
+update_op = ("Updated", "{0}, a new version of an existing package, was added "
     "to the repository.")
 
 def add_transaction(request, doc, feed, entry, first):
@@ -166,7 +167,7 @@ def add_transaction(request, doc, feed, entry, first):
                 # XXX Better way to reflect an error?  (Aborting will make a
                 # non-well-formed document.)
                 op_title = "Unknown Operation"
-                op_content = "%s was changed in the repository."
+                op_content = "{0} was changed in the repository."
 
         # Now add a title for our entry.
         etitle = doc.createElement("title")
@@ -185,7 +186,7 @@ def add_transaction(request, doc, feed, entry, first):
 
         # Link to the info output for the given package FMRI.
         e_uri = misc.get_rel_path(request,
-            "info/0/%s" % urllib.quote(str(pfmri)))
+            "info/0/{0}".format(urllib.quote(str(pfmri))))
 
         l = doc.createElement("link")
         l.setAttribute("rel", "alternate")
@@ -194,7 +195,7 @@ def add_transaction(request, doc, feed, entry, first):
 
         # Using the description for the operation performed, add the FMRI and
         # tag information.
-        content_text = op_content % pfmri
+        content_text = op_content.format(pfmri)
 
         co = xmini.Text()
         co.replaceWholeText(content_text)

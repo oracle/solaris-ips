@@ -90,7 +90,7 @@ def make_bundle(filename, **kwargs):
         """
 
         for btype in __all__:
-                bname = "pkg.bundle.%s" % btype
+                bname = "pkg.bundle.{0}".format(btype)
                 bmodule = __import__(bname)
 
                 bmodule = sys.modules[bname]
@@ -98,7 +98,7 @@ def make_bundle(filename, **kwargs):
                         bundle_create = getattr(bmodule, btype)
                         return bundle_create(filename, **kwargs)
 
-        raise TypeError("Unknown bundle type for '%s'" % filename)
+        raise TypeError("Unknown bundle type for '{0}'".format(filename))
 
 
 if __name__ == "__main__":

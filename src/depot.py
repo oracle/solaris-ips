@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -294,10 +294,12 @@ if __name__ == "__main__":
                                 threads = int(arg)
                                 if threads < THREADS_MIN:
                                         raise OptionError, \
-                                            "minimum value is %d" % THREADS_MIN
+                                            "minimum value is {0:d}".format(
+                                            THREADS_MIN)
                                 if threads > THREADS_MAX:
                                         raise OptionError, \
-                                            "maximum value is %d" % THREADS_MAX
+                                            "maximum value is {0:d}".format(
+                                            THREADS_MAX)
                                 ivalues["pkg"]["threads"] = threads
                         elif opt == "-t":
                                 ivalues["pkg"]["socket_timeout"] = arg
@@ -347,14 +349,14 @@ if __name__ == "__main__":
                                             ds.DepotHTTP.REPO_OPS_DEFAULT:
                                                 raise OptionError(
                                                     "Invalid operation "
-                                                    "'%s'." % s)
+                                                    "'{0}'.".format(s))
                                         disable_ops.append(s)
                         elif opt == "--exit-ready":
                                 exit_ready = True
                         elif opt == "--image-root":
                                 ivalues["pkg"]["image_root"] = arg
                         elif opt.startswith("--log-"):
-                                prop = "log_%s" % opt.lstrip("--log-")
+                                prop = "log_{0}".format(opt.lstrip("--log-"))
                                 ivalues["pkg"][prop] = arg
                         elif opt in ("--help", "-?"):
                                 show_usage = True
@@ -507,14 +509,14 @@ if __name__ == "__main__":
                 # Build configuration object.
                 dconf = ds.DepotConfig(target=user_cfg, overrides=ivalues)
         except getopt.GetoptError, _e:
-                usage("pkg.depotd: %s" % _e.msg)
+                usage("pkg.depotd: {0}".format(_e.msg))
         except api_errors.ApiException, _e:
-                usage("pkg.depotd: %s" % str(_e))
+                usage("pkg.depotd: {0}".format(str(_e)))
         except OptionError, _e:
-                usage("pkg.depotd: option: %s -- %s" % (opt, _e))
+                usage("pkg.depotd: option: {0} -- {1}".format(opt, _e))
         except (ArithmeticError, ValueError):
-                usage("pkg.depotd: illegal option value: %s specified " \
-                    "for option: %s" % (arg, opt))
+                usage("pkg.depotd: illegal option value: {0} specified " \
+                    "for option: {1}".format(arg, opt))
 
         if show_usage:
                 usage(retcode=0, full=True)
@@ -612,7 +614,7 @@ if __name__ == "__main__":
                         cherrypy.process.servers.check_port(address, port)
                 except Exception, e:
                         emsg("pkg.depotd: unable to bind to the specified "
-                            "port: %d. Reason: %s" % (port, e))
+                            "port: {0:d}. Reason: {1}".format(port, e))
                         sys.exit(1)
         else:
                 # Not applicable if we're not going to serve content
@@ -663,9 +665,10 @@ if __name__ == "__main__":
                                 p.wait()
                         except Exception, __e:
                                 emsg("pkg.depotd: an error occurred while "
-                                    "executing [%s]; unable to obtain the "
+                                    "executing [{0}]; unable to obtain the "
                                     "passphrase needed to decrypt the SSL "
-                                    "private key file: %s" % (cmdline, __e))
+                                    "private key file: {1}".format(cmdline,
+                                    __e))
                                 sys.exit(1)
                         return p.stdout.read().strip("\n")
 
@@ -673,7 +676,7 @@ if __name__ == "__main__":
                         exec_path = ssl_dialog.split("exec:")[1]
                         if not os.path.isabs(exec_path):
                                 exec_path = os.path.join(pkg_root, exec_path)
-                        cmdline = "%s %s %d" % (exec_path, "''", port)
+                        cmdline = "{0} {1} {2:d}".format(exec_path, "''", port)
                 elif ssl_dialog == "smf" or ssl_dialog.startswith("svc:"):
                         if ssl_dialog == "smf":
                                 # Assume the configuration target was an SMF
@@ -683,7 +686,7 @@ if __name__ == "__main__":
                         else:
                                 svc_fmri = ssl_dialog
                         cmdline = "/usr/bin/svcprop -p " \
-                            "pkg_secure/ssl_key_passphrase %s" % svc_fmri
+                            "pkg_secure/ssl_key_passphrase {0}".format(svc_fmri)
 
                 # The key file requires decryption, but the user has requested
                 # exec-based authentication, so it will have to be decoded first
@@ -700,16 +703,16 @@ if __name__ == "__main__":
                         key_data.seek(0)
                 except EnvironmentError, _e:
                         emsg("pkg.depotd: unable to read the SSL private key "
-                            "file: %s" % _e)
+                            "file: {0}".format(_e))
                         sys.exit(1)
                 except crypto.Error, _e:
                         emsg("pkg.depotd: authentication or cryptography "
                             "failure while attempting to decode\nthe SSL "
-                            "private key file: %s" % _e)
+                            "private key file: {0}".format(_e))
                         sys.exit(1)
                 else:
                         # Redirect the server to the decrypted key file.
-                        ssl_key_file = "/dev/fd/%d" % key_data.fileno()
+                        ssl_key_file = "/dev/fd/{0:d}".format(key_data.fileno())
 
         # Setup our global configuration.
         gconf = {
@@ -753,16 +756,20 @@ if __name__ == "__main__":
                 # stdout and stderr as the Daemonizer (used for test suite and
                 # SMF service) requires this.
                 if log_cfg["access"] == "stdout":
-                        log_cfg["access"] = "/dev/fd/%d" % sys.stdout.fileno()
+                        log_cfg["access"] = "/dev/fd/{0:d}".format(
+                            sys.stdout.fileno())
                 elif log_cfg["access"] == "stderr":
-                        log_cfg["access"] = "/dev/fd/%d" % sys.stderr.fileno()
+                        log_cfg["access"] = "/dev/fd/{0:d}".format(
+                            sys.stderr.fileno())
                 elif log_cfg["access"] == "none":
                         log_cfg["access"] = "/dev/null"
 
                 if log_cfg["errors"] == "stderr":
-                        log_cfg["errors"] = "/dev/fd/%d" % sys.stderr.fileno()
+                        log_cfg["errors"] = "/dev/fd/{0:d}".format(
+                            sys.stderr.fileno())
                 elif log_cfg["errors"] == "stdout":
-                        log_cfg["errors"] = "/dev/fd/%d" % sys.stdout.fileno()
+                        log_cfg["errors"] = "/dev/fd/{0:d}".format(
+                            sys.stdout.fileno())
                 elif log_cfg["errors"] == "none":
                         log_cfg["errors"] = "/dev/null"
 
@@ -783,13 +790,13 @@ if __name__ == "__main__":
                         if dest == "none":
                                 h = logging.StreamHandler(LogSink())
                         else:
-                                h = logging.StreamHandler(eval("sys.%s" % \
-                                    dest))
+                                h = logging.StreamHandler(eval("sys.{0}".format(
+                                    dest)))
 
                         h.setLevel(logging.DEBUG)
                         h.setFormatter(cherrypy._cplogging.logfmt)
-                        log_obj = eval("cherrypy.log.%s" % \
-                            log_type_map[log_type]["attr"])
+                        log_obj = eval("cherrypy.log.{0}".format(
+                            log_type_map[log_type]["attr"]))
                         log_obj.addHandler(h)
                         # Since we've replaced cherrypy's log handler with our
                         # own, we don't want the output directed to a file.
@@ -813,7 +820,7 @@ if __name__ == "__main__":
                         # Already exists, nothing to do.
                         pass
                 except (api_errors.ApiException, sr.RepositoryError), _e:
-                        emsg("pkg.depotd: %s" % _e)
+                        emsg("pkg.depotd: {0}".format(_e))
                         sys.exit(1)
 
         try:
@@ -826,13 +833,13 @@ if __name__ == "__main__":
                     sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except (RuntimeError, sr.RepositoryError), _e:
-                emsg("pkg.depotd: %s" % _e)
+                emsg("pkg.depotd: {0}".format(_e))
                 sys.exit(1)
         except search_errors.IndexingException, _e:
-                emsg("pkg.depotd: %s" % str(_e), "INDEX")
+                emsg("pkg.depotd: {0}".format(str(_e)), "INDEX")
                 sys.exit(1)
         except api_errors.ApiException, _e:
-                emsg("pkg.depotd: %s" % str(_e))
+                emsg("pkg.depotd: {0}".format(str(_e)))
                 sys.exit(1)
 
         if not rebuild and not add_content and not repo.mirror and \

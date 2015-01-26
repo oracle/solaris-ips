@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -82,7 +82,7 @@ def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
         if cmd:
-                text = "%s: %s" % (cmd, text)
+                text = "{0}: {1}".format(cmd, text)
                 pkg_cmd = "pkgrepo "
         else:
                 pkg_cmd = "pkgrepo: "
@@ -235,10 +235,11 @@ def subcmd_remove(conf, args):
                 # removed and exit.
                 packages = set(f for m in matching.values() for f in m)
                 count = len(packages)
-                plist = "\n".join("\t%s" % p.get_fmri(include_build=False) 
+                plist = "\n".join("\t{0}".format(
+                    p.get_fmri(include_build=False))
                     for p in sorted(packages))
-                logger.info(_("%(count)d package(s) will be removed:\n"
-                    "%(plist)s") % locals())
+                logger.info(_("{count:d} package(s) will be removed:\n"
+                    "{plist}").format(**locals()))
                 return EXIT_OK
 
         progtrack = get_tracker()
@@ -248,7 +249,8 @@ def subcmd_remove(conf, args):
                         packages[f.publisher].append(f)
 
         for pub in packages:
-                logger.info(_("Removing packages for publisher %s ...") % pub)
+                logger.info(
+                    _("Removing packages for publisher {0} ...").format(pub))
                 repo.remove_packages(packages[pub], progtrack=progtrack,
                     pub=pub)
                 if len(packages) > 1:
@@ -338,7 +340,7 @@ def subcmd_add_publisher(conf, args):
         abort = False
         for pfx in pargs:
                 if not misc.valid_pub_prefix(pfx):
-                        error(_("Invalid publisher prefix '%s'") % pfx,
+                        error(_("Invalid publisher prefix '{0}'").format(pfx),
                             cmd=subcommand)
                         abort = True
         if abort:
@@ -368,8 +370,8 @@ def subcmd_add_publisher(conf, args):
         if rval == EXIT_OK and existing:
                 # Some of the publishers that were requested for addition
                 # were already known.
-                error(_("specified publisher(s) already exist: %s") %
-                    ", ".join(existing), cmd=subcommand)
+                error(_("specified publisher(s) already exist: {0}").format(
+                    ", ".join(existing)), cmd=subcommand)
                 if new_pubs:
                         return EXIT_PARTIAL
                 return EXIT_OOPS
@@ -407,8 +409,8 @@ def subcmd_remove_publisher(conf, args):
                         inv_pfxs.append(pfx)
 
         if inv_pfxs:
-                error(_("Invalid publisher prefix(es):\n %s") %
-                    "\n ".join(inv_pfxs), cmd=subcommand)
+                error(_("Invalid publisher prefix(es):\n {0}").format(
+                    "\n ".join(inv_pfxs)), cmd=subcommand)
                 return EXIT_OOPS
 
         repo = get_repo(conf, read_only=False, subcommand=subcommand)
@@ -419,16 +421,16 @@ def subcmd_remove_publisher(conf, args):
         left = [pfx for pfx in repo.publishers if pfx not in pargs]
 
         if noexisting:
-                error(_("The following publisher(s) could not be found:\n %s")
-                    % "\n ".join(noexisting), cmd=subcommand)
+                error(_("The following publisher(s) could not be found:\n "
+                    "{0}").format("\n ".join(noexisting)), cmd=subcommand)
                 return EXIT_OOPS
 
         logger.info(_("Removing publisher(s)"))
         for pfx in existing:
                 rstore = repo.get_pub_rstore(pfx)
                 numpkg = rstore.catalog.package_count
-                logger.info(_("\'%(pfx)s\'\t(%(num)s package(s))") %
-                    {"pfx":pfx, "num":str(numpkg)})
+                logger.info(_("\'{pfx}\'\t({num} package(s))").format(
+                    pfx=pfx, num=str(numpkg)))
 
         if dry_run:
                 return EXIT_OK
@@ -443,8 +445,8 @@ def subcmd_remove_publisher(conf, args):
                         _set_repo(conf, subcommand, { "publisher" :  {
                             "prefix" :  left[0]} }, repo)
                         msg(_("The default publisher was removed."
-                            " Setting 'publisher/prefix' to '%s',"
-                            " the only publisher left") % left[0])
+                            " Setting 'publisher/prefix' to '{0}',"
+                            " the only publisher left").format(left[0]))
                 else:
                         _set_repo(conf, subcommand, { "publisher": {
                             "prefix" :  ""} }, repo)
@@ -589,8 +591,8 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
         desired_field_order = (_("SECTION"), _("PROPERTY"), _("VALUE"))
 
         # Default output formatting.
-        def_fmt = "%-" + str(max_sname_len) + "s %-" + str(max_pname_len) + \
-            "s %s"
+        def_fmt = "{0:" + str(max_sname_len) + "} {1:" + str(max_pname_len) + \
+            "} {2}"
 
         if found or (not req_props and out_format == "default"):
                 # print without trailing newline.
@@ -739,8 +741,8 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
             _("VALUE"))
 
         # Default output formatting.
-        def_fmt = "%-" + str(max_pubname_len) + "s %-" + str(max_sname_len) + \
-            "s %-" + str(max_pname_len) + "s %s"
+        def_fmt = "{0:" + str(max_pubname_len) + "} {1:" + str(max_sname_len) + \
+            "} {2:" + str(max_pname_len) + "} {3}"
 
         if found or (not req_props and out_format == "default"):
                 # print without trailing newline.
@@ -820,8 +822,8 @@ def subcmd_info(conf, args):
                                 # friendly (and locale specific).
                                 last_update = pkg.catalog.basic_ts_to_datetime(
                                     last_update)
-                                last_update = "%sZ" % pkg.catalog.datetime_to_ts(
-                                    last_update)
+                                last_update = "{0}Z".format(
+                                    pkg.catalog.datetime_to_ts(last_update))
                         rstatus = _(pub_idx[pfx].get("status", "online"))
                         yield {
                             "publisher": pfx,
@@ -848,7 +850,7 @@ def subcmd_info(conf, args):
         pub_len = str(max(
             [len(desired_field_order[0])] + [len(p) for p in found]
         ))
-        def_fmt = "%-" + pub_len + "s %-8s %-16s %s"
+        def_fmt = "{0:" + pub_len + "} {1:8} {2:16} {3}"
 
         if found or (not pubs and out_format == "default"):
                 # print without trailing newline.
@@ -987,7 +989,7 @@ def subcmd_list(conf, args):
         # Default output formatting.
         max_pub_name_len = str(
             max(list(len(p) for p in found) + [len(_("PUBLISHER"))]))
-        def_fmt = "%-" + max_pub_name_len + "s %-45s %-1s %-s"
+        def_fmt = "{0:" + max_pub_name_len + "} {1:45} {2:1} {3}"
 
         # print without trailing newline.
         sys.stdout.write(misc.get_listing(
@@ -1141,7 +1143,7 @@ using the -t option.""", len(pargs))))
         if manifests and rval == EXIT_OK:
                 lines = misc.list_actions_by_attrs(actionlist, attrs)
                 for line in lines:
-                        text = ("%s" % tuple(line)).rstrip()
+                        text = ("{0}".format(*line)).rstrip()
                         if not text:
                                continue
                         msg(text)
@@ -1154,7 +1156,7 @@ pkgrepo: contents: no packages matching the following patterns you specified
 were found in the repository."""))
                 logger.error("")
                 for p in unmatched:
-                        logger.error("        %s" % p)
+                        logger.error("        {0}".format(p))
                 rval = EXIT_OOPS
 
         return rval
@@ -1230,8 +1232,8 @@ def subcmd_rebuild(conf, args):
         for opt, arg in opts:
                 if opt == "-p":
                         if not misc.valid_pub_prefix(arg):
-                                error(_("Invalid publisher prefix '%s'") % arg,
-                                    cmd=subcommand)
+                                error(_("Invalid publisher prefix '{0}'").format(
+                                    arg), cmd=subcommand)
                         pubs.add(arg)
                 elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
@@ -1279,8 +1281,8 @@ def subcmd_refresh(conf, args):
         for opt, arg in opts:
                 if opt == "-p":
                         if not misc.valid_pub_prefix(arg):
-                                error(_("Invalid publisher prefix '%s'") % arg,
-                                    cmd=subcommand)
+                                error(_("Invalid publisher prefix '{0}'").format(
+                                    arg), cmd=subcommand)
                         pubs.add(arg)
                 elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
@@ -1405,16 +1407,16 @@ def _set_pub(conf, subcommand, props, pubs, repo):
         for sname, sprops in props.iteritems():
                 if sname not in ("publisher", "repository"):
                         usage(_("unknown property section "
-                            "'%s'") % sname, cmd=subcommand)
+                            "'{0}'").format(sname), cmd=subcommand)
                 for pname in sprops:
                         if sname == "publisher" and pname == "prefix":
-                                usage(_("'%s' may not be set using "
-                                    "this command" % pname))
+                                usage(_("'{0}' may not be set using "
+                                    "this command".format(pname)))
                         attrname = pname.replace("-", "_")
                         if not hasattr(publisher.Publisher, attrname) and \
                             not hasattr(publisher.Repository, attrname):
-                                usage(_("unknown property '%s'") %
-                                    pname, cmd=subcommand)
+                                usage(_("unknown property '{0}'").format(
+                                    pname), cmd=subcommand)
 
         if "all" in pubs:
                 # Default to list of all publishers.
@@ -1477,7 +1479,7 @@ def _set_pub(conf, subcommand, props, pubs, repo):
         if failed:
                 for pfx, details in failed:
                         error(_("Unable to set properties for publisher "
-                            "'%(pfx)s':\n%(details)s") % locals())
+                            "'{pfx}':\n{details}").format(**locals()))
                 if len(failed) < len(pubs):
                         return EXIT_PARTIAL
                 return EXIT_OOPS
@@ -1546,8 +1548,8 @@ def __fmt_verify(verify_tuple):
 
         error, path, message, reason = verify_tuple
 
-        formatted_message = "%(error_type)16s: %(message)s\n" % \
-            {"error_type": verify_error_header, "message": message}
+        formatted_message = "{error_type:>16}: {message}\n".format(
+            error_type=verify_error_header, message=message)
         reason["path"] = path
 
         if error == sr.REPO_VERIFY_BADMANIFEST:
@@ -1564,8 +1566,8 @@ def __fmt_verify(verify_tuple):
                 reason_keys = ["pkg", "depend", "type"]
         elif error == sr.REPO_VERIFY_WARN_OPENPERMS:
                 formatted_message = \
-                    "%(error_type)16s: %(message)s\n" % \
-                    {"error_type": verify_warning_header, "message": message}
+                    "{error_type:>16}: {message}\n".format(
+                    error_type=verify_warning_header, message=message)
                 reason_keys = ["permissionspath", "err"]
         else:
                 # A list of the details we provide.  Some error codes
@@ -1581,7 +1583,7 @@ def __fmt_verify(verify_tuple):
                 lines = textwrap.wrap(reason["err"])
                 if len(lines) != 1:
                         for line in lines:
-                                err_str += "%18s\n" % line
+                                err_str += "{0:>18}\n".format(line)
                         reason["err"] = "\n" + err_str.rstrip()
                 else:
                         reason["err"] = lines[0]
@@ -1593,8 +1595,8 @@ def __fmt_verify(verify_tuple):
                 # have 'path' attributes, hence no 'fpath' dictionary entry)
                 if key not in reason:
                         continue
-                formatted_message += "%(key)16s: %(value)s\n" % \
-                    {"key": verify_reason_headers[key], "value": reason[key]}
+                formatted_message += "{key:>16}: {value}\n".format(
+                    key=verify_reason_headers[key], value=reason[key])
 
         formatted_message += "\n"
 
@@ -1638,8 +1640,8 @@ def subcmd_verify(conf, args):
                         conf["repo_uri"] = parse_uri(arg)
                 elif opt == "-p":
                         if not misc.valid_pub_prefix(arg):
-                                error(_("Invalid publisher prefix '%s'") % arg,
-                                    cmd=subcommand)
+                                error(_("Invalid publisher prefix '{0}'").format(
+                                    arg), cmd=subcommand)
                         pubs.add(arg)
                 elif opt == "-d":
                         force_dep_check = True
@@ -1650,8 +1652,8 @@ def subcmd_verify(conf, args):
                                         allowed_checks.remove(arg)
                         else:
                                 usage(_("Invalid verification to be disabled, "
-                                    "please consider: %s") % ", ".join(
-                                    sr.verify_default_checks), cmd=subcommand)
+                                    "please consider: {0}").format(", ".join(
+                                    sr.verify_default_checks)), cmd=subcommand)
                 elif opt == "-i":
                         ignored_dep_files.append(arg)
 
@@ -1734,8 +1736,8 @@ def subcmd_fix(conf, args):
                         verbose = True
                 if opt == "-p":
                         if not misc.valid_pub_prefix(arg):
-                                error(_("Invalid publisher prefix '%s'") % arg,
-                                    cmd=subcommand)
+                                error(_("Invalid publisher prefix '{0}'").format(
+                                    arg), cmd=subcommand)
                         pubs.add(arg)
 
         if pargs:
@@ -1808,16 +1810,16 @@ def subcmd_fix(conf, args):
         if broken_fmris:
                 logger.info(_("Use pkgsend(1) or pkgrecv(1) to republish the\n"
                     "following packages or paths which were quarantined:\n\n\t"
-                    "%s") % \
-                    "\n\t".join([str(f) for f in broken_fmris]))
+                    "{0}").format(
+                    "\n\t".join([str(f) for f in broken_fmris])))
         if failed_fix_paths:
                 logger.info(_("\npkgrepo could not repair the following paths "
-                    "in the repository:\n\n\t%s") %
-                    "\n\t".join([p for p in failed_fix_paths]))
+                    "in the repository:\n\n\t{0}").format(
+                    "\n\t".join([p for p in failed_fix_paths])))
         if bad_deps:
                 logger.info(_("\npkgrepo could not repair the following "
-                    "dependency issues in the repository:\n\n\t%s") %
-                    "\n\t".join([p for p in bad_deps]))
+                    "dependency issues in the repository:\n\n\t{0}").format(
+                    "\n\t".join([p for p in bad_deps])))
         if not (broken_fmris or failed_fix_paths or bad_deps):
                 logger.info(_("No repository fixes required."))
         else:
@@ -1835,7 +1837,7 @@ def main_func():
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:D:?",
                     ["help", "debug="])
         except getopt.GetoptError, e:
-                usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- {0}").format(e.opt))
 
         conf = {}
         show_usage = False
@@ -1848,9 +1850,9 @@ def main_func():
                         try:
                                 key, value = arg.split("=", 1)
                         except (AttributeError, ValueError):
-                                usage(_("%(opt)s takes argument of form "
-                                   "name=value, not %(arg)s") % {
-                                   "opt":  opt, "arg": arg })
+                                usage(_("{opt} takes argument of form "
+                                   "name=value, not {arg}").format(
+                                   opt=opt, arg=arg))
                         DebugValues.set_value(key, value)
 
         if DebugValues:
@@ -1868,17 +1870,17 @@ def main_func():
                 usage(_("no subcommand specified"))
 
         subcommand = subcommand.replace("-", "_")
-        func = globals().get("subcmd_%s" % subcommand, None)
+        func = globals().get("subcmd_{0}".format(subcommand), None)
         if not func:
                 subcommand = subcommand.replace("_", "-")
-                usage(_("unknown subcommand '%s'") % subcommand)
+                usage(_("unknown subcommand '{0}'").format(subcommand))
 
         try:
                 return func(conf, pargs)
         except getopt.GetoptError, e:
                 if e.opt in ("help", "?"):
                         usage(full=True)
-                usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
+                usage(_("illegal option -- {0}").format(e.opt), cmd=subcommand)
 
 
 #
@@ -1916,17 +1918,16 @@ def handle_errors(func, *args, **kwargs):
         except apx.VersionException, __e:
                 error(_("The pkgrepo command appears out of sync with the "
                     "libraries provided\nby pkg:/package/pkg. The client "
-                    "version is %(client)s while the library\nAPI version is "
-                    "%(api)s.") % {'client': __e.received_version,
-                     'api': __e.expected_version
-                    })
+                    "version is {client} while the library\nAPI version is "
+                    "{api}.").format(client=__e.received_version,
+                     api=__e.expected_version))
                 __ret = EXIT_OOPS
         except apx.BadRepositoryURI, __e:
                 error(str(__e))
                 __ret = EXIT_BADOPT
         except apx.InvalidOptionError, __e:
-                error("%s Supported formats: %s" %
-                    (str(__e), LISTING_FORMATS))
+                error("{0} Supported formats: {1}".format(
+                    str(__e), LISTING_FORMATS))
                 __ret = EXIT_BADOPT
         except (apx.ApiException, sr.RepositoryError), __e:
                 error(str(__e))

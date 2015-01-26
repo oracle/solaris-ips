@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -196,9 +196,10 @@ class FileAction(generic.Action):
                                     hash_func)
                         except zlib.error, e:
                                 raise ActionExecutionError(self,
-                                    details=_("Error decompressing payload: %s")
-                                    % (" ".join([str(a) for a in e.args])),
-                                    error=e)
+                                    details=_("Error decompressing payload: "
+                                        "{0}").format(
+                                        " ".join([str(a) for a in e.args])),
+                                        error=e)
                         finally:
                                 tfile.close()
                                 stream.close()
@@ -206,12 +207,12 @@ class FileAction(generic.Action):
                         if shasum != hash_val:
                                 raise ActionExecutionError(self,
                                     details=_("Action data hash verification "
-                                    "failure: expected: %(expected)s computed: "
-                                    "%(actual)s action: %(action)s") % {
-                                        "expected": hash_val,
-                                        "actual": shasum,
-                                        "action": self
-                                    })
+                                    "failure: expected: {expected} computed: "
+                                    "{actual} action: {action}").format(
+                                        expected=hash_val,
+                                        actual=shasum,
+                                        action=self
+                                   ))
 
                 else:
                         temp = final_path
@@ -285,10 +286,10 @@ class FileAction(generic.Action):
                         except ValueError, e:
                                 raise ActionExecutionError(self,
                                     details=_("Could not set system attributes "
-                                    "'%(attrlist)s': %(err)s") % {
-                                        "attrlist": sattr,
-                                        "err": e
-                                    })
+                                    "'{attrlist}': {err}").format(
+                                        attrlist=sattr,
+                                        err=e
+                                   ))
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
@@ -325,10 +326,10 @@ class FileAction(generic.Action):
                 if "preserve" not in self.attrs and \
                     "timestamp" in self.attrs and lstat.st_mtime != \
                     misc.timestamp_to_time(self.attrs["timestamp"]):
-                        errors.append(_("Timestamp: %(found)s should be "
-                            "%(expected)s") % {
-                            "found": misc.time_to_timestamp(lstat.st_mtime),
-                            "expected": self.attrs["timestamp"] })
+                        errors.append(_("Timestamp: {found} should be "
+                            "{expected}").format(
+                            found=misc.time_to_timestamp(lstat.st_mtime),
+                            expected=self.attrs["timestamp"]))
 
                 # avoid checking pkg.size if we have any content-hashes present;
                 # different size files may have the same content-hash
@@ -337,9 +338,9 @@ class FileAction(generic.Action):
                     not set(digest.RANKED_CONTENT_HASH_ATTRS).intersection(
                     set(self.attrs.keys())) and \
                     lstat.st_size != int(self.attrs["pkg.size"]):
-                        errors.append(_("Size: %(found)d bytes should be "
-                            "%(expected)d") % { "found": lstat.st_size,
-                            "expected": int(self.attrs["pkg.size"]) })
+                        errors.append(_("Size: {found:d} bytes should be "
+                            "{expected:d}").format(found=lstat.st_size,
+                            expected=int(self.attrs["pkg.size"])))
 
                 if "preserve" in self.attrs:
                         if args["verbose"] == False or lstat is None:
@@ -384,16 +385,16 @@ class FileAction(generic.Action):
                                             sha1=get_sha1,
                                             sha256=get_sha256)[ehash_attr]
                                 except RuntimeError, e:
-                                        errors.append("ELF content hash: %s" %
-                                            e)
+                                        errors.append(
+                                            "ELF content hash: {0}".format(e))
 
                                 if elfhash is not None and \
                                     elfhash != elfhash_val:
                                         elferror = _("ELF content hash: "
-                                            "%(found)s "
-                                            "should be %(expected)s") % {
-                                            "found": elfhash,
-                                            "expected": elfhash_val }
+                                            "{found} "
+                                            "should be {expected}").format(
+                                            found=elfhash,
+                                            expected=elfhash_val)
 
                         # If we failed to compute the content hash, or the
                         # content hash failed to verify, try the file hash.
@@ -416,10 +417,10 @@ class FileAction(generic.Action):
                                                 errors.append(elferror)
                                         else:
                                                 errors.append(_("Hash: "
-                                                    "%(found)s should be "
-                                                    "%(expected)s") % {
-                                                    "found": sha_hash,
-                                                    "expected": hash_val })
+                                                    "{found} should be "
+                                                    "{expected}").format(
+                                                    found=sha_hash,
+                                                    expected=hash_val))
                                         self.replace_required = True
 
                         # Check system attributes.
@@ -443,16 +444,17 @@ class FileAction(generic.Action):
                                 for a in sattrs:
                                         if a not in set_attrs:
                                                 errors.append(
-                                                    _("System attribute '%s' "
-                                                    "not set") % a)
+                                                    _("System attribute '{0}' "
+                                                    "not set").format(a))
 
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission Denied"))
                         else:
-                                errors.append(_("Unexpected Error: %s") % e)
+                                errors.append(_("Unexpected Error: {0}").format(
+                                    e))
                 except Exception, e:
-                        errors.append(_("Unexpected Exception: %s") % e)
+                        errors.append(_("Unexpected Exception: {0}").format(e))
 
                 return errors, warnings, info
 

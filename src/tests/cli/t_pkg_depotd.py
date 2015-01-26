@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -204,7 +204,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 operation doesn't fail."""
                 depot_url = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(depot_url, self.info10)
-                repourl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                repourl = urlparse.urljoin(depot_url, "info/0/{0}".format(plist[0]))
                 urllib2.urlopen(repourl)
 
         def test_bug_3739(self):
@@ -217,7 +217,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                         for entry in ("BRCMbnx", "BRCMbnx%40a",
                             "BRCMbnx%400.5.11%2C5.11-0.101%3A20081119T231649a"):
                                 try:
-                                        urllib2.urlopen("%s/%s/0/%s" % (durl,
+                                        urllib2.urlopen("{0}/{1}/0/{2}".format(durl,
                                             operation, entry))
                                 except urllib2.HTTPError, e:
                                         if e.code != httplib.BAD_REQUEST:
@@ -230,17 +230,17 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 depot_url = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(depot_url, self.system10)
                 # First, try it un-encoded.
-                repourl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                repourl = urlparse.urljoin(depot_url, "info/0/{0}".format(plist[0]))
                 urllib2.urlopen(repourl)
-                repourl = urlparse.urljoin(depot_url, "manifest/0/%s" %
-                    plist[0])
+                repourl = urlparse.urljoin(depot_url, "manifest/0/{0}".format(
+                    plist[0]))
                 urllib2.urlopen(repourl)
                 # Second, try it encoded.
-                repourl = urlparse.urljoin(depot_url, "info/0/%s" %
-                    urllib.quote(plist[0]))
+                repourl = urlparse.urljoin(depot_url, "info/0/{0}".format(
+                    urllib.quote(plist[0])))
                 urllib2.urlopen(repourl)
-                repourl = urlparse.urljoin(depot_url, "manifest/0/%s" %
-                    urllib.quote(plist[0]))
+                repourl = urlparse.urljoin(depot_url, "manifest/0/{0}".format(
+                    urllib.quote(plist[0])))
                 urllib2.urlopen(repourl)
 
         def test_info(self):
@@ -249,7 +249,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 depot_url = self.dc.get_depot_url();
                 plist = self.pkgsend_bulk(depot_url, self.info20)
 
-                openurl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                openurl = urlparse.urljoin(depot_url, "info/0/{0}".format(plist[0]))
                 content = urllib2.urlopen(openurl).read()
                 # Get text from content.
                 lines = content.splitlines()
@@ -279,7 +279,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                                         info_dic[attr] = ""
 
                 # Read manifest.
-                openurl = urlparse.urljoin(depot_url, "manifest/0/%s" % plist[0])
+                openurl = urlparse.urljoin(depot_url, "manifest/0/{0}".format(plist[0]))
                 content = urllib2.urlopen(openurl).read()
                 manifest = man.Manifest()
                 manifest.set_content(content=content)
@@ -326,7 +326,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo")
                 self.pkg("verify")
 
-                depot_file_url = "file://%s" % self.dc.get_repodir()
+                depot_file_url = "file://{0}".format(self.dc.get_repodir())
                 self.pkgsend_bulk(depot_url, self.bar10)
                 self.pkg("refresh")
 
@@ -347,12 +347,12 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 # any attempts to go outside that directory should fail
                 # with a 404 error.
                 try:
-                        urllib2.urlopen("%s/../../../../bin/pkg" % depot_url)
+                        urllib2.urlopen("{0}/../../../../bin/pkg".format(depot_url))
                 except urllib2.HTTPError, e:
                         if e.code != httplib.NOT_FOUND:
                                 raise
 
-                f = urllib2.urlopen("%s/robots.txt" % depot_url)
+                f = urllib2.urlopen("{0}/robots.txt".format(depot_url))
                 self.assert_(len(f.read()))
                 f.close()
 
@@ -430,7 +430,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
 
                 durl = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend(durl, "append %s" % plist[0])
+                self.pkgsend(durl, "append {0}".format(plist[0]))
                 self.dc.stop()
                 self.dc.start()
                 self.pkgsend(durl, "close")
@@ -441,7 +441,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
 
                 durl = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend(durl, "append %s" % plist[0])
+                self.pkgsend(durl, "append {0}".format(plist[0]))
                 self.pkgsend(durl, "add dir path=tmp/foo mode=0755 "
                     "owner=root group=bin", exit=1)
 
@@ -476,8 +476,8 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(depot_url, self.entire10)
 
                 repourl = urlparse.urljoin(depot_url,
-                    "/en/catalog.shtml?version=%s&action=Browse" %
-                    urllib.quote("entire@1.0,5.11-0"))
+                    "/en/catalog.shtml?version={0}&action=Browse".format(
+                    urllib.quote("entire@1.0,5.11-0")))
 
                 res = urllib2.urlopen(repourl)
 
@@ -567,15 +567,15 @@ class TestDepotController(pkg5unittest.CliTestCase):
                                         self.assert_(os.path.isfile(feed))
                                 except:
                                         raise RuntimeError("Feed cache file "
-                                            "not found at '%s'." % feed)
+                                            "not found at '{0}'.".format(feed))
                 def get_feed(durl, pub=""):
                         start_time = time.time()
                         got = False
                         while not got and (time.time() - start_time) < timeout:
                                 if pub:
-                                        pub = "%s/" % pub
+                                        pub = "{0}/".format(pub)
                                 try:
-                                        urllib2.urlopen("%s%s/feed" % (durl,
+                                        urllib2.urlopen("{0}{1}/feed".format(durl,
                                             pub))
                                         got = True
                                 except urllib2.HTTPError, e:
@@ -672,7 +672,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.__dc.start()
                 durl = self.__dc.get_depot_url()
                 try:
-                        urllib2.urlopen("%s/catalog/1/" % durl)
+                        urllib2.urlopen("{0}/catalog/1/".format(durl))
                 except urllib2.HTTPError, e:
                         self.assertEqual(e.code, httplib.NOT_FOUND)
                 self.__dc.stop()
@@ -685,7 +685,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 durl = self.__dc.get_depot_url()
                 for ver in (0, 1):
                         try:
-                                urllib2.urlopen("%s/catalog/%d/" % (durl, ver))
+                                urllib2.urlopen("{0}/catalog/{1:d}/".format(durl, ver))
                         except urllib2.HTTPError, e:
                                 self.assertEqual(e.code, httplib.NOT_FOUND)
                 self.__dc.stop()
@@ -696,7 +696,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.__dc.start()
                 durl = self.__dc.get_depot_url()
                 try:
-                        urllib2.urlopen("%s/catalog/1/" % durl)
+                        urllib2.urlopen("{0}/catalog/1/".format(durl))
                 except urllib2.HTTPError, e:
                         self.assertEqual(e.code, httplib.FORBIDDEN)
                 self.__dc.stop()
@@ -800,10 +800,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Make sure the PKGDEPOT_CONTROLLER is not set in the newenv.
                 newenv = os.environ.copy()
                 newenv.pop("PKGDEPOT_CONTROLLER", None)
-                cmdargs = "/usr/bin/ctrun -o noorphan %s/usr/lib/pkg.depotd " \
-                    "-p %s -d %s --content-root %s/usr/share/lib/pkg " \
-                    "--readonly </dev/null > %s 2> %s" % \
-                    (pkg5unittest.g_pkg_path, self.next_free_port, repopath,
+                cmdargs = "/usr/bin/ctrun -o noorphan {0}/usr/lib/pkg.depotd " \
+                    "-p {1} -d {2} --content-root {3}/usr/share/lib/pkg " \
+                    "--readonly </dev/null > {4} 2> {5}".format(
+                    pkg5unittest.g_pkg_path, self.next_free_port, repopath,
                     pkg5unittest.g_pkg_path, out_path, err_path)
 
                 curport = self.next_free_port
@@ -819,7 +819,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         begintime = time.time()
                         check_interval = 0.20
                         daemon_started = False
-                        durl = "http://localhost:%s/en/index.shtml" % curport
+                        durl = "http://localhost:{0}/en/index.shtml".format(curport)
 
                         while (time.time() - begintime) <= 40.0:
                                 rc = depot_handle.poll()
@@ -902,8 +902,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                         # Create repository and set publisher origins.
                         self.create_repo(self.dc.get_repodir())
-                        self.pkgrepo("set -s %(repodir)s -p %(pub)s "
-                            "repository/origins=%(durl)s" % locals())
+                        self.pkgrepo("set -s {repodir} -p {pub} "
+                            "repository/origins={durl}".format(**locals()))
 
                         if with_packages:
                                 self.dc.set_readwrite()
@@ -921,7 +921,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                         # Any error responses will cause an
                                         # exception.
                                         response = urllib2.urlopen(
-                                            "%s/%s" % (durl, path))
+                                            "{0}/{1}".format(durl, path))
 
                                         fd, fpath = tempfile.mkstemp(
                                             suffix="html", dir=self.tpath)
@@ -1036,7 +1036,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # and then verify that the parsed response has the expected
                 # package information under the expected publisher.
                 for p in plist:
-                        purl = urlparse.urljoin(durl, "p5i/0/%s" % p)
+                        purl = urlparse.urljoin(durl, "p5i/0/{0}".format(p))
                         pub, pkglist = p5i.parse(location=purl)[0]
 
                         # p5i files contain non-qualified FMRIs as the FMRIs
@@ -1048,7 +1048,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Try again, but only using package stems.
                 for p in plist:
                         stem = fmri.PkgFmri(p).pkg_name
-                        purl = urlparse.urljoin(durl, "p5i/0/%s" % stem)
+                        purl = urlparse.urljoin(durl, "p5i/0/{0}".format(stem))
                         pub, pkglist = p5i.parse(location=purl)[0]
                         self.assertEqual(pkglist, [stem])
 
@@ -1093,12 +1093,12 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         except urllib2.HTTPError, e:
                                 return e.info().items()
                         except Exception, e:
-                                raise RuntimeError("retrieval of %s "
-                                    "failed: %s" % (req_path, str(e)))
+                                raise RuntimeError("retrieval of {0} "
+                                    "failed: {1}".format(req_path, str(e)))
 
                 for req_path in ("publisher/0", 'search/0/%2Fvar%2Ffile',
                     'search/1/False_2_None_None_%2Fvar%2Ffile',
-                    "versions/0", "manifest/0/%s" % pfmri.get_url_path(),
+                    "versions/0", "manifest/0/{0}".format(pfmri.get_url_path()),
                     "catalog/0", "catalog/1/catalog.attrs",
                     "file/0/3aad0bca6f3a6f502c175700ebe90ef36e312d7e",
                     "filelist/0"):
@@ -1166,7 +1166,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 # Check that we can retrieve something.
                 durl = self.dc.get_depot_url()
-                verdata = urllib2.urlopen("%s/versions/0/" % durl)
+                verdata = urllib2.urlopen("{0}/versions/0/".format(durl))
 
         def test_log_depot_daemon(self):
                 """Verify that depot daemon works properly and the error
@@ -1189,7 +1189,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                         # Issue a bad request to trigger the server logging
                         # the error msg.
-                        durl = "http://localhost:%s/catalog/0" % curport
+                        durl = "http://localhost:{0}/catalog/0".format(curport)
                         try:
                                 urllib2.urlopen(durl)
                         except urllib2.URLError, e:

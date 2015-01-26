@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                 elif opt == '-l':
                         test_logging = True
                 else:
-                        print("bad option %s" % opt, file=sys.stderr)
+                        print("bad option {0}".format(opt), file=sys.stderr)
                         sys.exit(2)
 
         if not (test_ttymode or test_nottymode or test_logging):

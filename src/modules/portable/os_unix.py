@@ -19,8 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -111,7 +111,7 @@ def get_group_by_name(name, dirpath, use_file):
                 # ourselves from the current environment.
                 return grp.getgrnam(name).gr_gid
         except KeyError:
-                raise KeyError, "group name not found: %s" % name
+                raise KeyError, "group name not found: {0}".format(name)
 
 def get_user_by_name(name, dirpath, use_file):
         if not already_called():
@@ -129,7 +129,7 @@ def get_user_by_name(name, dirpath, use_file):
                 # ourselves from the current environment.
                 return pwd.getpwnam(name).pw_uid
         except KeyError:
-                raise KeyError, "user name not found: %s" % name
+                raise KeyError, "user name not found: {0}".format(name)
 
 def get_name_by_gid(gid, dirpath, use_file):
         if not already_called():
@@ -147,7 +147,7 @@ def get_name_by_gid(gid, dirpath, use_file):
                 # ourselves from the current environment.
                 return grp.getgrgid(gid).gr_name
         except KeyError:
-                raise KeyError, "group ID not found: %s" % gid
+                raise KeyError, "group ID not found: {0}".format(gid)
 
 def get_name_by_uid(uid, dirpath, use_file):
         if not already_called():
@@ -165,7 +165,7 @@ def get_name_by_uid(uid, dirpath, use_file):
                 # ourselves from the current environment.
                 return pwd.getpwuid(uid).pw_name
         except KeyError:
-                raise KeyError, "user ID not found: %d" % uid
+                raise KeyError, "user ID not found: {0:d}".format(uid)
 
 def load_passwd(dirpath):
         # check if we need to reload cache
@@ -274,8 +274,8 @@ def get_root(path):
 def assert_mode(path, mode):
         fmode = stat.S_IMODE(os.lstat(path).st_mode)
         if mode != fmode:
-                ae = AssertionError("mode mismatch for %s, has %o, want %o" % 
-                    (path, fmode, mode))
+                ae = AssertionError("mode mismatch for {0}, has {1:o}, "
+                    "want {2:o}".format(path, fmode, mode))
                 ae.mode = fmode;
                 raise ae
 

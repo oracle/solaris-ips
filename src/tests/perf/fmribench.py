@@ -22,7 +22,7 @@
 
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -240,18 +240,18 @@ if __name__ == "__main__":
                 action = b[3]
                 tsum = 0
                 itersum = 0
-                print("# %s" % bname)
+                print("# {0}".format(bname))
                 try:
                         for i in (1, 2, 3):
                                 t = timeit.Timer(action, setup).timeit(iter)
-                                print("#   %6.2fs   %9d/sec" % (t, iter / t))
+                                print("#   {0:>6.2f}s   {1:>9d}/sec".format(t, int(round(iter / t))))
                                 tsum += t
                                 itersum += iter
-                        print("#\n%-40s  %9d/sec" % (bname, itersum / tsum))
+                        print("#\n{0:40}  {1:>9d}/sec".format(bname, int(round(itersum / tsum))))
                         print("#\n#")
                 except KeyboardInterrupt:
                         print("Tests stopped at user request.")
                         sys.exit(1)
                 except:
-                        print("#\n%-40s  <Test Failed>" % bname)
+                        print("#\n{0:40}  <Test Failed>".format(bname))
                         raise

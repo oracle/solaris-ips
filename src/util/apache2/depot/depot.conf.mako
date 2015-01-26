@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -62,14 +62,14 @@ context.write("# per-repository versions, publishers and status responses\n")
 
 for repo_prefix in repo_prefixes:
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)sversions/0 "
-            "/%(root)sversions/0/index.html [PT,NE]\n" % locals())
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)spublisher/0 "
-            "/%(root)s%(repo_prefix)spublisher/1/index.html [PT,NE]\n" %
-            locals())
+            "RewriteRule ^/{root}{repo_prefix}versions/0 "
+            "/{root}versions/0/index.html [PT,NE]\n".format(**locals()))
+        context.write("RewriteRule ^/{root}{repo_prefix}publisher/0 "
+            "/{root}{repo_prefix}publisher/1/index.html [PT,NE]\n".format(
+            **locals()))
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)sstatus/0 "
-            "/%(root)s%(repo_prefix)sstatus/0/index.html [PT,NE]\n" % locals())
+            "RewriteRule ^/{root}{repo_prefix}status/0 "
+            "/{root}{repo_prefix}status/0/index.html [PT,NE]\n".format(**locals()))
 %>
 
 <%doc>
@@ -93,29 +93,29 @@ for repo_prefix in repo_prefixes:
                 # basically duplicating how we deal with manifest responses
                 # that have got a publisher included in the URI.
                 context.write(
-                    "RewriteRule ^/%(root)s%(repo_prefix)smanifest/0/.*$ "
-                    "%%{THE_REQUEST} [NE,C]\n" % locals())
+                    "RewriteRule ^/{root}{repo_prefix}manifest/0/.*$ "
+                    "%{{THE_REQUEST}} [NE,C]\n".format(**locals()))
                 context.write("RewriteRule ^GET\ "
-                    "/%(root)s%(repo_prefix)smanifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
-                    "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
-                    % locals())
+                    "/{root}{repo_prefix}manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
+                    "/{root}{repo_prefix}{pub}/publisher/{pub}/pkg/$1/$2 [NE,PT,C]\n"
+                   .format(**locals()))
                 context.write(
-                    "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ "
-		    "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/$1 [NE,L]\n"
-                    % locals())
+                    "RewriteRule ^/{root}{repo_prefix}{pub}/(.*)$ "
+		    "%{{DOCUMENT_ROOT}}/{root}{repo_prefix}{pub}/$1 [NE,L]\n"
+                   .format(**locals()))
 
                 # file responses require more work, so rewrite to
                 # a URI that will get further rewrites later.
                 context.write("RewriteRule "
-                    "^/%(root)s%(repo_prefix)sfile/(.*$) "
-                    "/%(root)s%(repo_prefix)s%(pub)s/file/$1 [NE]\n"
-                    % locals())
+                    "^/{root}{repo_prefix}file/(.*$) "
+                    "/{root}{repo_prefix}{pub}/file/$1 [NE]\n"
+                   .format(**locals()))
                 # for catalog parts, we can easily access the file with one
                 # RewriteRule, so do that, then PT to the Alias directive.
                 context.write("RewriteRule "
-                    "^/%(root)s%(repo_prefix)scatalog/1/(.*$) "
-                    "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/catalog/$1 [NE,PT]\n"
-                    % locals())
+                    "^/{root}{repo_prefix}catalog/1/(.*$) "
+                    "/{root}{repo_prefix}{pub}/publisher/{pub}/catalog/$1 [NE,PT]\n"
+                   .format(**locals()))
 %>
 
 # Write per-publisher rules for publisher, version, file and manifest responses
@@ -128,12 +128,12 @@ for repo_prefix in repo_prefixes:
 <%
         root = context.get("sroot")
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/versions/0 "
-            "%%{DOCUMENT_ROOT}/%(root)sversions/0/index.html [L,NE]\n" % locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/versions/0 "
+            "%{{DOCUMENT_ROOT}}/{root}versions/0/index.html [L,NE]\n".format(**locals()))
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/publisher/0 "
-            "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/publisher/1/index.html [L,NE]\n" %
-            locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/publisher/0 "
+            "%{{DOCUMENT_ROOT}}/{root}{repo_prefix}{pub}/publisher/1/index.html [L,NE]\n".format(
+            **locals()))
 
 %><%doc>
         # Modify the catalog, file and manifest URLs, then 'passthrough' (PT),
@@ -142,9 +142,9 @@ for repo_prefix in repo_prefixes:
 <%
         root = context.get("sroot")
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/catalog/1/(.*)$ "
-            "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/catalog/$1 [NE,PT]" %
-            locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/catalog/1/(.*)$ "
+            "/{root}{repo_prefix}{pub}/publisher/{pub}/catalog/$1 [NE,PT]".format(
+            **locals()))
         %><%doc>
         # file responses are a little tricky - we need to index
         # the first two characters of the filename and use that
@@ -158,9 +158,9 @@ for repo_prefix in repo_prefixes:
 <%
         root = context.get("sroot")
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/file/1/(..)(.*)$ "
-            "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/file/$1/$1$2 [NE,PT]\n"
-            % locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/file/1/(..)(.*)$ "
+            "/{root}{repo_prefix}{pub}/publisher/{pub}/file/$1/$1$2 [NE,PT]\n"
+           .format(**locals()))
         %><%doc>
         # We need to use %THE_REQUEST here to get the undecoded
         # URI from mod_rewrite.  Hang on to your lunch.
@@ -182,17 +182,17 @@ for repo_prefix in repo_prefixes:
 <%
         root = context.get("sroot")
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/manifest/0/.*$ "
-            "%%{THE_REQUEST} [NE,C]\n" % locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/manifest/0/.*$ "
+            "%{{THE_REQUEST}} [NE,C]\n".format(**locals()))
 
         context.write("RewriteRule ^GET\ "
-            "/%(root)s%(repo_prefix)s%(pub)s/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
-            "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
-            % locals())
+            "/{root}{repo_prefix}{pub}/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
+            "/{root}{repo_prefix}{pub}/publisher/{pub}/pkg/$1/$2 [NE,PT,C]\n"
+           .format(**locals()))
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ "
-            "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/$1 [NE,L]\n"
-            % locals())
+            "RewriteRule ^/{root}{repo_prefix}{pub}/(.*)$ "
+            "%{{DOCUMENT_ROOT}}/{root}{repo_prefix}{pub}/$1 [NE,L]\n"
+           .format(**locals()))
 %>
 % endfor pub
 
@@ -202,15 +202,15 @@ root = context.get("sroot")
 for pub, repo_path, repo_prefix, writable_root in pubs:
         paths.add((repo_path, repo_prefix))
         context.write(
-            "Alias /%(root)s%(repo_prefix)s%(pub)s %(repo_path)s\n" %
-            locals())
+            "Alias /{root}{repo_prefix}{pub} {repo_path}\n".format(
+            **locals()))
 for repo_path, repo_prefix in paths:
-        context.write("# an alias to serve %(repo_path)s content.\n"
-            "<Directory \"%(repo_path)s\">\n"
+        context.write("# an alias to serve {repo_path} content.\n"
+            "<Directory \"{repo_path}\">\n"
             "    AllowOverride None\n"
             "    Order allow,deny\n"
             "    Allow from all\n"
-            "</Directory>\n" % locals())
+            "</Directory>\n".format(**locals()))
 %>
 
 # Our versions response.
@@ -226,14 +226,14 @@ for repo_prefix in repo_prefixes:
                     "# Since we're running as a fragment within an existing\n"
                     "# web server, we take a portion of the namespace for ourselves\n")
                 context.write(
-                    "Alias /%(root)s %(runtime_dir)s/htdocs/%(root)s\n" %
-                     locals())
+                    "Alias /{root} {runtime_dir}/htdocs/{root}\n".format(
+                     **locals()))
                 context.write(
-                    "<Directory \"%(runtime_dir)s/htdocs\">\n"
+                    "<Directory \"{runtime_dir}/htdocs\">\n"
                     "    AllowOverride None\n"
                     "    Order allow,deny\n"
                     "    Allow from all\n"
-                    "</Directory>\n" % locals())
+                    "</Directory>\n".format(**locals()))
 %>
 
 # These location matches are based on the final Rewrite paths for file,

@@ -19,8 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 import os
 import platform
@@ -52,7 +52,7 @@ def get_canonical_os_name():
 
         if psl == 'linux':
                 # add distro information for Linux
-                return 'linux_%s' % platform.dist()[0]
+                return 'linux_{0}'.format(platform.dist()[0])
 
         # Workaround for python bug 1082, on Vista, platform.system()
         # returns 'Microsoft'

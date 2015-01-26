@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -115,7 +115,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 log_entry = re.compile(r"\s+".join(entry_comps) + r"\s*\Z")
 
                 logpath = dc.get_logpath()
-                self.debug("check for operation entries in %s" % logpath)
+                self.debug("check for operation entries in {0}".format(logpath))
                 logfile = open(logpath, "r")
                 entries = []
                 for line in logfile.readlines():
@@ -141,7 +141,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                                 continue
                         entries.append(uri)
                 logfile.close()
-                self.debug("Found %s for %s /%s/%s/" % (entries, method, op,
+                self.debug("Found {0} for {1} /{2}/{3}/".format(entries, method, op,
                     op_ver))
                 return entries
 
@@ -326,10 +326,10 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
                 cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
-                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
-                self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
+                self.pkg("set-publisher --no-refresh -O https://{0}1 test1".format(
+                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh -c {0} test1".format(cert_path))
+                self.pkg("set-publisher --no-refresh -k {0} test1".format(key_path))
 
 
                 # This test relies on using the same implementation used in
@@ -362,18 +362,18 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 entries = []
                 for hdr in ("CACHE-CONTROL", "PRAGMA"):
                         logpath = dc.get_logpath()
-                        self.debug("check for HTTP cache headers in %s" %
-                            logpath)
+                        self.debug("check for HTTP cache headers in {0}".format(
+                            logpath))
                         logfile = open(logpath, "r")
                         for line in logfile.readlines():
                                 spos = line.find(hdr)
                                 if spos > -1:
-                                        self.debug("line: %s" % line)
-                                        self.debug("hdr: %s spos: %s" % (hdr, spos))
+                                        self.debug("line: {0}".format(line))
+                                        self.debug("hdr: {0} spos: {1}".format(hdr, spos))
                                         spos += len(hdr) + 1
                                         l = line[spos:].strip()
                                         l = l.strip("()")
-                                        self.debug("l: %s" % l)
+                                        self.debug("l: {0}".format(l))
                                         if l:
                                                 entries.append({ hdr: l })
                 return entries
@@ -421,7 +421,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # file for the incremental update should be returned.
                 expected += [
                     "/catalog/1/catalog.attrs",
-                    "/catalog/1/%s" % update
+                    "/catalog/1/{0}".format(update)
                 ]
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
@@ -445,7 +445,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # All of the entries from the previous operations, and then
                 # entries for each part of the catalog should be returned.
                 expected += ["/catalog/1/catalog.attrs"]
-                expected += ["/catalog/1/%s" % p for p in v1_cat.parts.keys()]
+                expected += ["/catalog/1/{0}".format(p) for p in v1_cat.parts.keys()]
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
 
@@ -468,7 +468,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # request's incremental update failure.
                 expected += ["/catalog/1/catalog.attrs"]
                 expected += ["/catalog/1/catalog.attrs"]
-                expected += ["/catalog/1/%s" % p for p in v1_cat.parts.keys()]
+                expected += ["/catalog/1/{0}".format(p) for p in v1_cat.parts.keys()]
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
 
@@ -490,7 +490,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 update = v1_cat.updates.keys()[-1]
                 expected += [
                     "/catalog/1/catalog.attrs",
-                    "/catalog/1/%s" % update
+                    "/catalog/1/{0}".format(update)
                 ]
                 repo = dc.get_repo()
                 v1_cat = repo.get_catalog("test1")
@@ -510,7 +510,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkg("refresh")
                 expected += ["/catalog/1/catalog.attrs"]
                 expected += ["/catalog/1/catalog.attrs"]
-                expected += ["/catalog/1/%s" % p for p in v1_cat.parts.keys()]
+                expected += ["/catalog/1/{0}".format(p) for p in v1_cat.parts.keys()]
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
 
@@ -534,7 +534,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 update = v1_cat.updates.keys()[-1]
                 expected += [
                     "/catalog/1/catalog.attrs",
-                    "/catalog/1/%s" % update
+                    "/catalog/1/{0}".format(update)
                 ]
                 repo = dc.get_repo()
                 v1_cat = repo.get_catalog("test1")
@@ -561,10 +561,10 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkg("refresh")
                 expected += [
                     "/catalog/1/catalog.attrs",
-                    "/catalog/1/%s" % update,
+                    "/catalog/1/{0}".format(update),
                     "/catalog/1/catalog.attrs",
                 ]
-                expected += ["/catalog/1/%s" % p for p in v1_cat.parts.keys()]
+                expected += ["/catalog/1/{0}".format(p) for p in v1_cat.parts.keys()]
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
 

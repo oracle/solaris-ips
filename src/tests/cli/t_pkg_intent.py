@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -101,7 +101,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 for i in sorted(self.dcs.keys()):
                         dc = self.dcs[i]
                         logpath = dc.get_logpath()
-                        self.debug("check for intent entries in %s" % logpath)
+                        self.debug("check for intent entries in {0}".format(logpath))
                         logfile = open(logpath, "r")
                         for line in logfile.readlines():
                                 spos = line.find(hdr)
@@ -123,9 +123,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 for entry in entries:
                         if entry == expected:
                                 return True
-                self.debug("Intent log entries:\n%s" % (
+                self.debug("Intent log entries:\n{0}".format(
                     "\n".join(str(e) for e in entries)))
-                self.debug("Unable to match:\n%s" % expected)
+                self.debug("Unable to match:\n{0}".format(expected))
                 return False
 
         @staticmethod

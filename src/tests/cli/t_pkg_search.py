@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -122,16 +122,16 @@ close
 """
 
         empty_attr_pkg10_templ = """
-open empty%(ver)s@1.0,5.11-0
-add set name=pkg.fmri value=pkg:/empty%(ver)s@1.0 attr1=''
+open empty{ver}@1.0,5.11-0
+add set name=pkg.fmri value=pkg:/empty{ver}@1.0 attr1=''
 add set name=empty_set value=''
 add depend fmri=example_pkg@1.0 type=optional attr2=''
-add file tmp/group attr3='' mode=0555 owner=root group=bin path=etc/group%(ver)s
-add file tmp/passwd attr3='' mode=0555 owner=root group=bin path=etc/passwd%(ver)s
-add file tmp/shadow attr3='' mode=0555 owner=root group=bin path=etc/shadow%(ver)s
+add file tmp/group attr3='' mode=0555 owner=root group=bin path=etc/group{ver}
+add file tmp/passwd attr3='' mode=0555 owner=root group=bin path=etc/passwd{ver}
+add file tmp/shadow attr3='' mode=0555 owner=root group=bin path=etc/shadow{ver}
 add dir mode=0755 attr4='' owner=root group=bin path=/empty_dir
-add group groupname=foo%(ver)s gid=%(ver)s attr5=''
-add user username=fozzie%(ver)s group=foo uid=%(ver)s attr6=''
+add group groupname=foo{ver} gid={ver} attr5=''
+add user username=fozzie{ver} group=foo uid={ver} attr6=''
 add link target=bin/example_path path=link attr7=''
 close
 """
@@ -485,7 +485,7 @@ adm:NP:6445::::::
                 self.pkg("search -a -r -I ':set:pkg.fmri:exAMple_pkg'", exit=1)
                 self.assert_(self.errout == "" )
 
-                self.pkg("search -a -r %s" %self.large_query, exit=1)
+                self.pkg("search -a -r {0}".format(self.large_query), exit=1)
                 self.assert_(self.errout != "") 
 
         def _run_local_tests(self):
@@ -562,7 +562,7 @@ adm:NP:6445::::::
                 self.pkg("search -a -l 'e* OR <e*>'", exit=1)
                 self._search_op(False, "pkg:/example_path", self.res_local_path)
 
-                self.pkg("search -a -l %s" %self.large_query, exit=1)
+                self.pkg("search -a -l {0}".format(self.large_query), exit=1)
                 self.assert_(self.errout != "") 
 
         def _run_local_empty_tests(self):
@@ -600,7 +600,7 @@ adm:NP:6445::::::
                 self.pkg("search", exit=2)
 
                 # Bug 1541
-                self.pkg("search -s %s bin" % ("httP" + durl[4:]))
+                self.pkg("search -s {0} bin".format("httP" + durl[4:]))
                 self.pkg("search -s ftp://pkg.opensolaris.org:88 bge", exit=1)
 
                 # Testing interaction of -o and -p options
@@ -632,7 +632,7 @@ adm:NP:6445::::::
                 self._search_op(True, "':file::'", self.res_remote_file)
                 self.pkg("search '*'")
                 self.pkg("search -r '*'")
-                self.pkg("search -s %s '*'" % durl)
+                self.pkg("search -s {0} '*'".format(durl))
                 self.pkg("search -l '*'", exit=1)
 
         def test_local_0(self):
@@ -817,17 +817,17 @@ adm:NP:6445::::::
                 self.pkg("search -r 'Intel(R)'", exit=1)
                 self.pkg("search -r 'foo AND <bar>'", exit=1)
 
-                urllib2.urlopen("%s/en/search.shtml?token=foo+AND+<bar>&"
-                    "action=Search" % durl)
-                urllib2.urlopen("%s/en/search.shtml?token=Intel(R)&"
-                    "action=Search" % durl)
+                urllib2.urlopen("{0}/en/search.shtml?token=foo+AND+<bar>&"
+                    "action=Search".format(durl))
+                urllib2.urlopen("{0}/en/search.shtml?token=Intel(R)&"
+                    "action=Search".format(durl))
 
                 pkg5unittest.eval_assert_raises(urllib2.HTTPError,
                     lambda x: x.code == 400, urllib2.urlopen,
-                    "%s/search/1/False_2_None_None_Intel%%28R%%29" % durl)
+                    "{0}/search/1/False_2_None_None_Intel%28R%29".format(durl))
                 pkg5unittest.eval_assert_raises(urllib2.HTTPError,
                     lambda x: x.code == 400, urllib2.urlopen,
-                    "%s/search/1/False_2_None_None_foo%%20%%3Cbar%%3E" % durl)
+                    "{0}/search/1/False_2_None_None_foo%20%3Cbar%3E".format(durl))
 
         def test_bug_10515(self):
                 """Check that -o and -H options work as expected."""
@@ -844,34 +844,34 @@ adm:NP:6445::::::
                 pkg_options = "-o pkg.name -o pkg.shortfmri -o pkg.publisher " \
                     "-o mode"
 
-                self._search_op(True, "-o %s example_path" % o_options,
+                self._search_op(True, "-o {0} example_path".format(o_options),
                     self.res_o_options_remote)
-                self._search_op(True, "-H -o %s example_path" % o_options,
+                self._search_op(True, "-H -o {0} example_path".format(o_options),
                     [self.o_results])
-                self._search_op(True, "-s %s -o %s example_path" %
-                    (durl, o_options), self.res_o_options_remote)
+                self._search_op(True, "-s {0} -o {1} example_path".format(
+                    durl, o_options), self.res_o_options_remote)
 
-                self._search_op(True, "%s -p example_path" % pkg_options,
+                self._search_op(True, "{0} -p example_path".format(pkg_options),
                     self.res_pkg_options_remote)
-                self._search_op(True, "%s '<example_path>'" % pkg_options,
+                self._search_op(True, "{0} '<example_path>'".format(pkg_options),
                     self.res_pkg_options_remote)
 
                 self.pkg("install example_pkg")
-                self._search_op(False, "-o %s example_path" % o_options,
+                self._search_op(False, "-o {0} example_path".format(o_options),
                     self.res_o_options_local)
-                self._search_op(False, "-H -o %s example_path" % o_options,
+                self._search_op(False, "-H -o {0} example_path".format(o_options),
                     [self.o_results_no_pub])
 
-                self._search_op(False, "%s -p example_path" % pkg_options,
+                self._search_op(False, "{0} -p example_path".format(pkg_options),
                     self.res_pkg_options_local)
-                self._search_op(False, "%s '<example_path>'" % pkg_options,
+                self._search_op(False, "{0} '<example_path>'".format(pkg_options),
                     self.res_pkg_options_local)
 
                 id, tid = self._get_index_dirs()
                 shutil.rmtree(id)
-                self._search_op(False, "-o %s example_path" % o_options,
+                self._search_op(False, "-o {0} example_path".format(o_options),
                     self.res_o_options_local)
-                self._search_op(False, "-H -o %s example_path" % o_options,
+                self._search_op(False, "-H -o {0} example_path".format(o_options),
                     [self.o_results_no_pub])
 
         def test_bug_12271_14088(self):
@@ -976,8 +976,8 @@ adm:NP:6445::::::
                 self.pkg("install empty")
                 self.__run_empty_attrs_searches(remote=False)
                 for i in range(0, indexer.MAX_FAST_INDEXED_PKGS + 1):
-                        self.pkgsend_bulk(durl, self.empty_attr_pkg10_templ %
-                            {"ver": i})
+                        self.pkgsend_bulk(durl, self.empty_attr_pkg10_templ.format(
+                            ver=i))
                 self.pkg("install 'empty*'")
                 self.pkg("search 'empty*'")
 
@@ -1007,7 +1007,7 @@ adm:NP:6445::::::
                 expected = \
                 "INDEX ACTION VALUE PACKAGE\n" \
                 "basename file bin/example_path pkg:/example_pkg@1.0-0\n"
-                self.pkg("search -s %s example_path" % self.rurl)
+                self.pkg("search -s {0} example_path".format(self.rurl))
                 actual = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, actual)
@@ -1072,8 +1072,8 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.same_pub1, refresh_index=True)
                 self.pkgsend_bulk(self.durl2, self.same_pub2, refresh_index=True)
                 self.image_create(self.durl1, prefix="samepub")
-                self.pkg("set-publisher -g %s samepub" % self.durl2)
-                self.pkg("search -s %s samepub_file1" % self.durl1)
+                self.pkg("set-publisher -g {0} samepub".format(self.durl2))
+                self.pkg("search -s {0} samepub_file1".format(self.durl1))
 
                 result_same_pub = \
                 "INDEX ACTION VALUE PACKAGE\n" \
@@ -1082,7 +1082,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 actual = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(result_same_pub)
                 self.assertEqualDiff(expected, actual)
-                self.pkg("search -s %s samepub_file1" % self.durl2, exit=1)
+                self.pkg("search -s {0} samepub_file1".format(self.durl2), exit=1)
 
         def test_16190165(self):
                 """ Check that pkg search works fine with structured queries
@@ -1093,7 +1093,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.incorp_pkg11, refresh_index=True)
                 self.pkgsend_bulk(self.durl2, self.incorp_pkg12, refresh_index=True)
                 self.image_create(self.durl1, prefix="test1")
-                self.pkg("set-publisher -g %s test2" % self.durl2)
+                self.pkg("set-publisher -g {0} test2".format(self.durl2))
 
                 expected_out1 = \
                 "incorporate\tdepend\tpkg://test1/example_pkg@1.2,5.11-0\tpkg:/incorp_pkg@1.2-0\n" \
@@ -1150,7 +1150,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 # difference to the content it serves so long as the index was
                 # generated while we were aware of multiple hashes.
                 self.pkgsend_bulk(self.rurl2, self.same_pub2,
-                    refresh_index=True, debug_hash="sha1+%s" % hash_alg)
+                    refresh_index=True, debug_hash="sha1+{0}".format(hash_alg))
                 self.image_create(self.durl2, prefix="samepub")
 
                 # manually calculate the hashes, in case of bugs in
@@ -1158,8 +1158,8 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 sha1_hash = hashlib.sha1("magic").hexdigest()
                 sha2_hash = hash_fun("magic").hexdigest()
 
-                self.pkg("search %s" % sha1_hash)
-                self.pkg("search %s" % sha2_hash)
+                self.pkg("search {0}".format(sha1_hash))
+                self.pkg("search {0}".format(sha2_hash))
 
                 # Check that we're matching on the correct index.
                 # For sha1 hashes, our the 'index' returned is actually the
@@ -1167,19 +1167,19 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 # index was built. We also emit a 2nd search result that shows
                 # 'hash', in order to be consistent with the way we print
                 # the pkg.hash.sha* attribute when dealing with other hashes.
-                self.pkg("search -H -o search.match_type %s" % sha1_hash)
+                self.pkg("search -H -o search.match_type {0}".format(sha1_hash))
                 self.assertEqualDiff(
-                    self.reduceSpaces(self.output), "%s\nhash\n" % sha1_hash)
+                    self.reduceSpaces(self.output), "{0}\nhash\n".format(sha1_hash))
 
-                self.pkg("search -H -o search.match_type %s" % sha2_hash)
+                self.pkg("search -H -o search.match_type {0}".format(sha2_hash))
                 self.assertEqualDiff(
-                    self.reduceSpaces(self.output), "pkg.hash.%s\n" % hash_alg)
+                    self.reduceSpaces(self.output), "pkg.hash.{0}\n".format(hash_alg))
 
                 # check that both searches match the same action
-                self.pkg("search -o action.raw %s" % sha1_hash)
+                self.pkg("search -o action.raw {0}".format(sha1_hash))
                 sha1_action = self.reduceSpaces(self.output)
 
-                self.pkg("search -o action.raw %s" % sha2_hash)
+                self.pkg("search -o action.raw {0}".format(sha2_hash))
                 sha2_action = self.reduceSpaces(self.output)
                 self.assertEqualDiff(sha1_action, sha2_action)
 
@@ -1188,8 +1188,8 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 # (which checks that we're only setting multiple hashes
                 # on actions when hash=sha1+sha256 or hash=sha1+sha512_256
                 # is set)
-                self.pkg("search -s %s %s" % (self.durl1, sha1_hash))
-                self.pkg("search -s %s %s" % (self.durl1, sha2_hash), exit=1)
+                self.pkg("search -s {0} {1}".format(self.durl1, sha1_hash))
+                self.pkg("search -s {0} {1}".format(self.durl1, sha2_hash), exit=1)
 
 
 if __name__ == "__main__":

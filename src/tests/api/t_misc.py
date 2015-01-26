@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -52,7 +52,7 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 foopath = os.path.join(fopath, "o")
 
                 # make the leaf, and ONLY the leaf read-only
-                act = action.fromstr("dir path=%s" % foopath)
+                act = action.fromstr("dir path={0}".format(foopath))
                 act.makedirs(foopath, mode = stat.S_IREAD)
 
                 # Now make sure the directories leading up the leaf

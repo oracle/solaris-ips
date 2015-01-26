@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.query_parser as qp
@@ -181,7 +181,7 @@ tip</span>
                         if val == selected_val:
                                 attrs = 'selected="selected" '
 
-                        context.write("""<option %svalue="%s">%s</option>""" % (
+                        context.write("""<option {0}value="{1}">{2}</option>""".format(
                             attrs, urllib.quote(val, ""), label))
 %>\
                                 </select>

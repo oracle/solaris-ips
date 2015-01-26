@@ -29,7 +29,7 @@
 """
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -161,7 +161,7 @@ class _Stream:
                 self.cmp = self.zlib.compressobj(9, self.zlib.DEFLATED,
                         -self.zlib.MAX_WBITS, self.zlib.DEF_MEM_LEVEL, 0)
                 timestamp = struct.pack("<L", long(time.time()))
-                self.__write("\037\213\010\010%s\002\377" % timestamp)
+                self.__write("\037\213\010\010{0}\002\377".format(timestamp))
                 if self.name.endswith(".gz"):
                         self.name = self.name[:-3]
                 self.__write(self.name + NUL)
@@ -271,7 +271,7 @@ class _Stream:
                 else:
                         buf = self._read(size)
                 self.pos += len(buf)
-                # print("reading %s bytes to %s (%s)" % (size, self.pos, self.fileobj.tell()))
+                # print("reading {0} bytes to {1} ({2})".format(size, self.pos, self.fileobj.tell()))
                 return buf
 
         def _read(self, size):
@@ -442,7 +442,8 @@ class CpioInfo(object):
                 self.padding    = 1
 
         def __repr__(self):
-                return "<%s %r at %#x>" % (self.__class__.__name__, self.name, id(self))
+                return "<{0} {1!r} at {2:#x}>".format(
+                    self.__class__.__name__, self.name, id(self))
 
         @classmethod
         def frombuf(cls, buf, fileobj, cpiofile=None):
@@ -633,7 +634,7 @@ class CpioFile(object):
                         if comptype in cls.OPEN_METH:
                                 func = getattr(cls, cls.OPEN_METH[comptype])
                         else:
-                                raise CompressionError, "unknown compression type %r" % comptype
+                                raise CompressionError, "unknown compression type {0!r}".format(comptype)
                         return func(name, filemode, fileobj)
 
                 elif "|" in mode:
@@ -755,7 +756,7 @@ class CpioFile(object):
                 try:
                         # To extract: 7z e -so <fname>
                         # To create an archive: 7z a -si <fname>
-                        cmd = "7z %s -%s %s" % (
+                        cmd = "7z {0} -{1} {2}".format(
                             {'r':'e',  'w':'a'}[mode],
                             {'r':'so', 'w':'si'}[mode],
                             name)
@@ -793,7 +794,7 @@ class CpioFile(object):
                 """
                 cpioinfo = self._getmember(name)
                 if cpioinfo is None:
-                        raise KeyError, "filename %r not found" % name
+                        raise KeyError, "filename {0!r} not found".format(name)
                 return cpioinfo
 
         def getmembers(self):
@@ -830,7 +831,7 @@ class CpioFile(object):
                         break
 
                 # if cpioinfo.chksum != calc_chksum(buf):
-                #         self._dbg(1, "cpiofile: Bad Checksum %r" % cpioinfo.name)
+                #         self._dbg(1, "cpiofile: Bad Checksum {0!r}".format(cpioinfo.name))
 
                 cpioinfo.offset = self.offset
 
@@ -888,9 +889,11 @@ class CpioFile(object):
 
         def _check(self, mode=None):
                 if self.closed:
-                        raise IOError, "%s is closed" % self.__class__.__name__
+                        raise IOError, "{0} is closed".format(
+                            self.__class__.__name__)
                 if mode is not None and self._mode not in mode:
-                        raise IOError, "bad operation for mode %r" % self._mode
+                        raise IOError, "bad operation for mode {0!r}".format(
+                            self._mode)
 
         def __iter__(self):
                 if self._loaded:
@@ -970,7 +973,8 @@ if __name__ == "__main__":
                 print("  mode:", oct(ci.mode))
                 print("  uid:", ci.uid)
                 print("  gid:", ci.gid)
-                print("  mtime:", ci.mtime, "(%s)" % time.ctime(ci.mtime))
+                print("  mtime:", ci.mtime, "({0})".format(
+                    time.ctime(ci.mtime)))
                 print("  size:", ci.size)
                 print("  name:", ci.name)
                 # f = cf.extractfile(ci)

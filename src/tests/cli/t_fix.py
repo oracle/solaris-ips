@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -164,7 +164,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # Verify that removing the publisher of a package that needs
                 # fixing results in graceful failure (not a traceback).
                 self.file_append(victim, "foobar")
-                self.pkg("set-publisher -P --no-refresh -g %s foo" % self.rurl)
+                self.pkg("set-publisher -P --no-refresh -g {0} foo".format(self.rurl))
                 self.pkg("unset-publisher test")
                 self.pkg("fix", exit=1)
 
@@ -257,7 +257,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         fix_cmd += " -v"
                 if quiet:
                         fix_cmd += " -q"
-                self.pkg("%s %s" % (fix_cmd, pfmri))
+                self.pkg("{0} {1}".format(fix_cmd, pfmri))
 
                 # Now verify that fix actually fixed them.
                 for a in m.gen_actions():
@@ -308,10 +308,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 for p in ("dir@1.0-0", "file@1.0-0", "preserve@1.0-0",
                     "preserve@1.1-0", "preserve@1.2-0", "amber@1.0-0"):
                         pfmri = self.plist[p]
-                        self.pkg("install %s" % pfmri)
+                        self.pkg("install {0}".format(pfmri))
                         self.__do_alter_verify(pfmri)
-                        self.pkg("verify %s" % pfmri)
-                        self.pkg("uninstall %s" % pfmri)
+                        self.pkg("verify {0}".format(pfmri))
+                        self.pkg("uninstall {0}".format(pfmri))
 
         def test_05_driver(self):
                 """Verify that fixing a name collision for drivers doesn't
@@ -354,7 +354,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
  
                 self.image_create(self.rurl)
                 pfmri = self.plist["preserve@1.0-0"]
-                self.pkg("install %s" % pfmri)
+                self.pkg("install {0}".format(pfmri))
                 info = "editable file has been changed"
                 # Test that the output is expected when the file has only info
                 # level mistakes.

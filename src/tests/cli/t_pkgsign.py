@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -156,8 +156,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # The value for crl_host is pulled from DebugValues because
                 # crl__host needs to be set there so the api object calls work
                 # as desired.
-                command = "--debug crl_host=%s %s" % \
-                    (DebugValues["crl_host"], command)
+                command = "--debug crl_host={0} {1}".format(
+                    DebugValues["crl_host"], command)
                 return pkg5unittest.SingleDepotTestCase.pkg(self, command,
                     *args, **kwargs)
 
@@ -290,14 +290,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta3_cert.pem")
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": chain_cert_path
-                }
+                        ch1=chain_cert_path
+                )
                 td = os.environ["TMPDIR"]
                 sd = os.path.join(td, "tmp_sign")
                 os.makedirs(sd)
@@ -428,15 +428,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Test removing and adding chain certs
                 self.pkg("set-publisher --set-property signature-policy=verify "
                     "test")
-                self.pkg("set-publisher --revoke-ca-cert=%s test" % hsh)
+                self.pkg("set-publisher --revoke-ca-cert={0} test".format(hsh))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
                     ["example_pkg"])
-                self.pkg("set-publisher --approve-ca-cert=%s test" %
-                    chain_cert_path)
+                self.pkg("set-publisher --approve-ca-cert={0} test".format(
+                    chain_cert_path))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
-                self.pkg("set-publisher --revoke-ca-cert=%s test" % hsh)
+                self.pkg("set-publisher --revoke-ca-cert={0} test".format(hsh))
                 self.pkg("verify", exit=1)
                 self.pkg("fix", exit=1)
                 self.pkg("set-publisher --set-property signature-policy=ignore "
@@ -455,17 +455,17 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # verifies signatures.
                 self.pkg("verify", exit=1)
                 self.pkg("fix", exit=1)
-                self.pkg("set-publisher --approve-ca-cert=%s test" %
-                    chain_cert_path)
+                self.pkg("set-publisher --approve-ca-cert={0} test".format(
+                    chain_cert_path))
                 self.pkg("verify")
                 self.pkg("fix", exit=4)
                 api_obj = self.get_img_api_obj()
                 self._api_uninstall(api_obj, ["example_pkg"])
 
                 # Test that manually approving a trust anchor works.
-                self.pkg("set-publisher --unset-ca-cert=%s test" % hsh)
-                self.pkg("set-publisher --approve-ca-cert=%s test" %
-                    ta_cert_path)
+                self.pkg("set-publisher --unset-ca-cert={0} test".format(hsh))
+                self.pkg("set-publisher --approve-ca-cert={0} test".format(
+                    ta_cert_path))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -474,13 +474,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 install fails."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
-                            "cs1_ch1_ta3_cert.pem")
-                }
+                        cert=os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"))
 
                 # Specify repository location as relative path.
                 cwd = os.getcwd()
@@ -502,8 +501,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 anything."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {i6} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                       "i1": os.path.join(self.chain_certs_dir,
@@ -519,7 +518,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i6": os.path.join(self.chain_certs_dir,
                           "ch1_ta3_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
@@ -540,8 +539,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def base_multiple_signatures(self, hash_alg):
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                         "key":
                         os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
                         "cert":
@@ -562,15 +561,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         os.path.join(self.chain_certs_dir,
                             "ch5_ta1_cert.pem"),
                         "pkg": plist[0]
-                    }
+                    })
                 self.pkgsign(self.rurl1, sign_args,
-                    debug_hash="sha1+%s" % hash_alg)
+                    debug_hash="sha1+{0}".format(hash_alg))
 
-                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
-                    "name": plist[0],
-                    "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                    "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem")
-                }
+                sign_args = "-k {key} -c {cert} {name}".format(
+                    name=plist[0],
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                    cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"))
+
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -581,7 +580,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Make sure we've got exactly 1 signature with SHA2 hashes
                 self.pkg("contents -m")
-                self.assert_(self.output.count("pkg.chain.%s" % hash_alg) == 1)
+                self.assert_(self.output.count("pkg.chain.{0}".format(hash_alg)) == 1)
                 self.assert_(self.output.count("pkg.chain.chashes") == 1)
                 # and SHA1 hashes on both signatures
                 self.assert_(self.output.count("chain=") == 2)
@@ -609,10 +608,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 verification fail."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i2)s -i %(i3)s "\
-                    "-i %(i4)s -i %(i5)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                sign_args = "-k {key} -c {cert} -i {i2} -i {i3} "\
+                    "-i {i4} -i {i5} {pkg}".format(**{
+                        "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                         "i2":
                         os.path.join(self.chain_certs_dir,
                             "ch2_ta1_cert.pem"),
@@ -626,7 +625,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         os.path.join(self.chain_certs_dir,
                             "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1)
                 self.pkg("set-property signature-policy verify")
@@ -638,8 +637,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                       "i1": os.path.join(self.chain_certs_dir,
@@ -653,7 +652,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i5": os.path.join(self.chain_certs_dir,
                           "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta1")
@@ -667,12 +666,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "ta": ta_path,
-                      "pkg": plist[0]
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      ta=ta_path,
+                      pkg=plist[0]
+                   )
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
@@ -709,11 +708,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 anchor is not included as an intermediate cert."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "pkg": plist[0]
-                    }
+                sign_args = "-k {key} -c {cert} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      pkg=plist[0]
+                   )
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
@@ -773,96 +772,84 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Test that passing a repo that doesn't exist doesn't cause
                 # a traceback.
                 self.pkgsign("http://foobar.baz",
-                    "%(name)s" % { "name": plist[0] }, exit=1)
+                    "{name}".format(name=plist[0]), exit=1)
 
                 # Test that passing no fmris or patterns results in an error.
                 self.pkgsign(self.durl1, "", exit=2)
 
                 # Test bad sig.alg setting.
-                self.pkgsign(self.durl1, "-a foo -k %(key)s -c %(cert)s "
-                    "%(name)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-a foo -k {key} -c {cert} "
+                    "{name}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=2)
 
                 # Test missing cert option
-                self.pkgsign(self.durl1, "-k %(key)s %(name)s" %
-                    { "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-k {key} {name}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      name=plist[0]), exit=2)
                 # Test missing key option
-                self.pkgsign(self.durl1, "-c %(cert) %(name)s" %
-                    { "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-c %(cert) {name}".format(
+                    cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=2)
                 # Test -i with missing -c and -k
-                self.pkgsign(self.durl1, "-i %(i1)s %(name)s" %
-                    { "i1": os.path.join(self.chain_certs_dir,
+                self.pkgsign(self.durl1, "-i {i1} {name}".format(
+                    i1=os.path.join(self.chain_certs_dir,
                           "ch1_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                      name=plist[0]), exit=2)
                 # Test passing a cert as a key
-                self.pkgsign(self.durl1, "-c %(cert)s -k %(cert)s %(name)s" %
-                    { "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=1)
+                self.pkgsign(self.durl1, "-c {cert} -k {cert} {name}".format(
+                    cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=1)
                 # Test passing a non-existent certificate file
-                self.pkgsign(self.durl1, "-c /shouldnotexist -k %(key)s "
-                    "%(name)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-c /shouldnotexist -k {key} "
+                    "{name}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      name=plist[0]), exit=2)
                 # Test passing a non-existent key file
-                self.pkgsign(self.durl1, "-c %(cert)s -k /shouldnotexist "
-                    "%(name)s" % {
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-c {cert} -k /shouldnotexist "
+                    "{name}".format(
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=2)
                 # Test passing a file that's not a key file as a key file
-                self.pkgsign(self.durl1, "-k %(key)s -c %(cert)s %(name)s" %
-                    { "key": os.path.join(self.test_root, "tmp/example_file"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=1)
+                self.pkgsign(self.durl1, "-k {key} -c {cert} {name}".format(
+                    key=os.path.join(self.test_root, "tmp/example_file"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=1)
                 # Test passing a non-existent file as an intermediate cert
-                self.pkgsign(self.durl1, "-k %(key)s -c %(cert)s -i %(i1)s "
-                    "%(name)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "i1": os.path.join(self.chain_certs_dir,
+                self.pkgsign(self.durl1, "-k {key} -c {cert} -i {i1} "
+                    "{name}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      i1=os.path.join(self.chain_certs_dir,
                           "shouldnot/exist"),
-                      "name": plist[0]
-                    }, exit=2)
+                      name=plist[0]), exit=2)
                 # Test passing a directory as an intermediate cert
-                self.pkgsign(self.durl1, "-k %(key)s -c %(cert)s -i %(i1)s "
-                    "%(name)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "i1": self.chain_certs_dir,
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-k {key} -c {cert} -i {i1} "
+                    "{name}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      i1=self.chain_certs_dir,
+                      name=plist[0]), exit=2)
                 # Test setting the signature algorithm to be one which requires
                 # a key and cert, but not passing -k or -c.
-                self.pkgsign(self.durl1, "-a rsa-sha256 %s" % plist[0], exit=2)
+                self.pkgsign(self.durl1, "-a rsa-sha256 {0}".format(plist[0]), exit=2)
                 # Test setting the signature algorithm to be one which does not
                 # use a key and cert, but passing -k and -c.
-                self.pkgsign(self.durl1, "-a sha256 -k %(key)s -c %(cert)s "
-                    "%(name)s" % {
-                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    }, exit=2)
+                self.pkgsign(self.durl1, "-a sha256 -k {key} -c {cert} "
+                    "{name}".format(
+                      key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]), exit=2)
                 # Test that signing a package using a bogus certificate fails.
-                self.pkgsign(self.durl1, "-k %(key)s -c %(cert)s %(name)s" %
-                    { "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.test_root, "tmp/example_file"),
-                      "name": plist[0]
-                    }, exit =1)
+                self.pkgsign(self.durl1, "-k {key} -c {cert} {name}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.test_root, "tmp/example_file"),
+                      name=plist[0]), exit =1)
                 self.pkg_image_create(self.durl1)
                 self.pkg("set-property signature-policy verify")
-                self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join("simple_file"))
+                self.pkg("set-property trust-anchor-directory {0}".format(
+                    os.path.join("simple_file")))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.InvalidPropertyValue, self._api_install,
                     api_obj, ["example_pkg"])
@@ -873,15 +860,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that having a bogus trust anchor will stop install."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                self.pkgsign(self.rurl1, "-k %(key)s -c %(cert)s %(name)s" %
-                    { "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
-                      "name": plist[0]
-                    })
+                self.pkgsign(self.rurl1, "-k {key} -c {cert} {name}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      name=plist[0]))
                 self.pkg_image_create(self.rurl1)
                 self.pkg("set-property signature-policy verify")
-                self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join("simple_file"))
+                self.pkg("set-property trust-anchor-directory {0}".format(
+                    os.path.join("simple_file")))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.InvalidPropertyValue, self._api_install,
                     api_obj, ["example_pkg"])
@@ -890,21 +876,20 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that -n doesn't actually sign packages."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-n -k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-n -k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(additional_args=\
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.RequiredSignaturePolicyException,
                     self._api_install, api_obj, ["example_pkg"])
@@ -916,19 +901,18 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
                 self.pkgsign_simple(self.rurl1, plist[0])
 
-                sign_args = "-a rsa-sha512 -k %(key)s -c %(cert)s -i %(i1)s " \
-                    "%(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-a rsa-sha512 -k {key} -c {cert} -i {i1} " \
+                    "{name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
-                sign_args = "-a sha384 %(name)s" % {"name": plist[0]}
+                sign_args = "-a sha384 {name}".format(name=plist[0])
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -943,14 +927,13 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 an error happens."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")
@@ -978,7 +961,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 happens."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "%(name)s" % { "name": plist[0] }
+                sign_args = "{name}".format(name=plist[0])
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
 
@@ -1021,14 +1004,13 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 an error happens."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")
@@ -1087,15 +1069,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs2_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs2_ch1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1119,15 +1100,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 extension will not have valid signatures."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1.1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1.1_ta3_cert.pem"),
-                        "i1":os.path.join(self.chain_certs_dir,
-                            "ch1.1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1.1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1144,8 +1124,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 extension will not have valid signatures."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(name)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {name}".format(**{
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch5.1_ta1_key.pem"),
@@ -1161,7 +1141,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch4_ta1_cert.pem"),
                         "i5": os.path.join(self.chain_certs_dir,
                             "ch5.1_ta1_cert.pem")
-                }
+                })
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1177,8 +1157,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 certificate results in a broken chain."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2) s " \
-                    "%(name)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "{name}".format(**{
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_cs8_ch1_ta3_key.pem"),
@@ -1188,7 +1168,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "cs8_ch1_ta3_cert.pem"),
                         "i2": os.path.join(self.chain_certs_dir,
                             "ch1_ta3_cert.pem"),
-                }
+                })
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1213,13 +1193,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 that the package's signature doesn't verify."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        cert=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1252,15 +1231,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1.1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1.1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1.1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1.1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1279,15 +1257,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 extension causes an exception to be raised."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs5_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs5_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1310,15 +1287,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 extension causes an exception to be raised."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs6_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs6_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1339,15 +1315,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 certificate is considered valid."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs7_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs7_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1362,15 +1337,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 considered valid."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1.4_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1.4_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1.4_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1.4_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1384,16 +1358,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test --no-index and --no-catalog."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "--no-index --no-catalog -i %(i1)s -k %(key)s " \
-                    "-c %(cert)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "--no-index --no-catalog -i {i1} -k {key} " \
+                    "-c {cert} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1419,15 +1392,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 cs2_path = os.path.join(self.cs_dir, "cs1_ta2_cert.pem")
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s " \
-                    "%(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} " \
+                    "{name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": cs_path,
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        cert=cs_path,
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -1535,15 +1507,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1578,15 +1549,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta5_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta5_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta5_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta5_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1613,15 +1583,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs2_ch1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs2_ch1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1640,15 +1609,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs2_ch1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs2_ch1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1675,8 +1643,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.dcs[1].start()
 
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir, "cs2_ch5_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir, "cs2_ch5_ta1_cert.pem"),
                       "i1": os.path.join(self.chain_certs_dir,
@@ -1690,7 +1658,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i5": os.path.join(self.chain_certs_dir,
                           "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
 
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
@@ -1716,8 +1684,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.dcs[1].start()
 
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir, "cs2_ch5_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir, "cs2_ch5_ta1_cert.pem"),
                       "i1": os.path.join(self.chain_certs_dir,
@@ -1731,7 +1699,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i5": os.path.join(self.chain_certs_dir,
                           "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
 
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
@@ -1750,15 +1718,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r = self.get_repo(self.dcs[1].get_repodir())
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs3_ch1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs3_ch1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1805,15 +1772,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.var_pkg])
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": " ".join(plist),
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=" ".join(plist),
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta4_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta4_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta4_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
@@ -1989,13 +1955,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.dcs[1].set_disable_ops(["add"])
                 self.dcs[1].start()
 
-                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % {
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} {pkg}".format(
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "pkg": plist[0]
-                }
+                        pkg=plist[0])
                 self.pkgsign(self.durl1, sign_args, exit=1)
 
         def test_disabled_file(self):
@@ -2014,15 +1979,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 ignored."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs3_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs3_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -2039,15 +2003,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 ignored."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs4_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs4_ch1_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -2063,15 +2026,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that expiration dates on a chain cert are ignored."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1.2_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1.2_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1.2_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1.2_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -2087,15 +2049,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that expiration dates on a chain cert are ignored."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1.3_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1.3_ta3_cert.pem"),
-                        "i1": os.path.join(self.chain_certs_dir,
-                            "ch1.3_ta3_cert.pem")
-                }
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1.3_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)
@@ -2140,19 +2101,18 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     "ch1_ta3_cert.pem"))
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "i1": ca_path
-                }
+                        i1=ca_path)
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1,
                     additional_args="--set-property signature-policy=require-signatures")
-                self.pkg("set-publisher --approve-ca-cert %s test" % ca_path)
+                self.pkg("set-publisher --approve-ca-cert {0} test".format(ca_path))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -2176,8 +2136,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         if not l.startswith("signature"):
                                 s.append(l)
                                 continue
-                        tmp = l.replace("version=%s" % old_ver,
-                            "version=%s" % new_ver)
+                        tmp = l.replace("version={0}".format(old_ver),
+                            "version={0}".format(new_ver))
                         s.append(tmp)
                 with open(mp, "wb") as fh:
                         for l in s:
@@ -2241,23 +2201,23 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 # Check that the package is installed into the correct image.
                 self.pkg("list example_pkg")
-                self.pkg("-R %s list example_pkg" % self.img_path(0), exit=1)
+                self.pkg("-R {0} list example_pkg".format(self.img_path(0)), exit=1)
                 api_obj = self.get_img_api_obj()
                 self._api_uninstall(api_obj, ["example_pkg"])
                 # Repeat the test using the pkg command interface instead of the
                 # api.
-                self.pkg("-D simulate_cmdpath=%s -R %s install example_pkg" % \
-                    (cmd_path, self.img_path()))
+                self.pkg("-D simulate_cmdpath={0} -R {1} install example_pkg".format(
+                    cmd_path, self.img_path()))
                 self.pkg("list example_pkg")
-                self.pkg("-R %s list example_pkg" % self.img_path(0), exit=1)
+                self.pkg("-R {0} list example_pkg".format(self.img_path(0)), exit=1)
 
         def test_big_pathlen(self):
                 """Test that a chain cert which has a larger pathlen value than
                 is needed is allowed."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir,
                           "cs1_ch5.2_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir,
@@ -2273,7 +2233,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i5": os.path.join(self.chain_certs_dir,
                           "ch5.2_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
@@ -2288,8 +2248,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 is needed is allowed."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} {pkg}".format(**{
                       "key": os.path.join(self.keys_dir,
                           "cs1_ch5.3_ta1_key.pem"),
                       "cert": os.path.join(self.cs_dir,
@@ -2305,7 +2265,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "i5": os.path.join(self.chain_certs_dir,
                           "ch5.3_ta1_cert.pem"),
                       "pkg": plist[0]
-                    }
+                    })
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
@@ -2402,7 +2362,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         # The addition of SHA-256 hashes should still result in
                         # us believing the signatures are identical.
                         self.pkgsign_simple(self.rurl1, plist[0], exit=1,
-                            debug_hash="sha1+%s" % hash_alg)
+                            debug_hash="sha1+{0}".format(hash_alg))
 
                         self.pkg_image_create(self.rurl1)
                         self.seed_ta_dir("ta3")
@@ -2419,9 +2379,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 fails."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "%(name)s" % {
-                        "name": plist[0],
-                }
+                sign_args = "{name}".format(
+                        name=plist[0],
+               )
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkgsign(self.rurl1, sign_args)
 
@@ -2468,7 +2428,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that signing a package in the default publisher of a
                 multi-publisher repository works."""
 
-                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                self.pkgrepo("add_publisher -s {0} pub2".format(self.rurl1))
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 self.pkgsign_simple(self.rurl1, "'ex*'")
@@ -2476,7 +2436,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(additional_args=
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, plist)
 
@@ -2484,7 +2444,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that signing a package in an alternate publisher of a
                 multi-publisher repository works."""
 
-                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                self.pkgrepo("add_publisher -s {0} pub2".format(self.rurl1))
                 plist = self.pkgsend_bulk(self.rurl1, self.pub2_pkg)
 
                 self.pkgsign_simple(self.rurl1, "'*2pk*'")
@@ -2492,7 +2452,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(additional_args=
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, plist)
 
@@ -2501,7 +2461,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 name, the publisher in the sign command is respected.  This test
                 signs the package from the default publisher."""
 
-                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                self.pkgrepo("add_publisher -s {0} pub2".format(self.rurl1))
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.pub2_example])
 
@@ -2510,7 +2470,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(additional_args=
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.RequiredSignaturePolicyException,
                     self._api_install, api_obj, ["pkg://pub2/example_pkg"])
@@ -2521,7 +2481,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 name, the publisher in the sign command is respected.  This test
                 signs the package from the non-default publisher."""
 
-                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                self.pkgrepo("add_publisher -s {0} pub2".format(self.rurl1))
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.pub2_example])
 
@@ -2530,7 +2490,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(additional_args=
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.RequiredSignaturePolicyException,
                     self._api_install, api_obj, ["pkg://test/example_pkg"])
@@ -2540,7 +2500,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that signing a package present in both repositories
                 signs both packages."""
 
-                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                self.pkgrepo("add_publisher -s {0} pub2".format(self.rurl1))
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.pub2_example])
 
@@ -2549,7 +2509,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(additional_args=
                     "--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
-                self.pkg("set-publisher -p %s" % self.rurl1)
+                self.pkg("set-publisher -p {0}".format(self.rurl1))
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["pkg://test/example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
@@ -2593,11 +2553,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         def test_bug_18880_sig(self):
                 plist = self.pkgsend_bulk(self.rurl1, self.bug_18880_pkg)
-                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "pkg": plist[0]
-                    }
+                sign_args = "-k {key} -c {cert} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      pkg=plist[0])
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1, variants={"variant.foo":"bar"})
                 api_obj = self.get_img_api_obj()
@@ -2615,15 +2574,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def test_bug_19055(self):
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.example_pkg20])
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
-                        "name": " ".join(plist),
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} {name}".format(
+                        name=" ".join(plist),
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        ch1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
                 repo = self.dc.get_repo()
                 for pfmri in plist:
@@ -2633,7 +2591,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                                         if l.startswith("signature"):
                                                 found = True
                                                 break
-                        self.assert_(found, "%s was not signed." % pfmri)
+                        self.assert_(found, "{0} was not signed.".format(pfmri))
 
         def test_bug_19114_1(self):
                 """Test that an unparsable trust anchor which isn't needed
@@ -2641,15 +2599,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10])
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
-                        "name": " ".join(plist),
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} {name}".format(
+                        name=" ".join(plist),
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        ch1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1)
                 api_obj = self.get_img_api_obj()
@@ -2667,15 +2624,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10])
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
-                        "name": " ".join(plist),
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} {name}".format(
+                        name=" ".join(plist),
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem")
-                }
+                        ch1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1)
                 api_obj = self.get_img_api_obj()
@@ -2713,21 +2669,20 @@ link mediator=foobar mediator-version=1.6 path=usr/foobar target=whee1.6
                 foo_pth = self.make_manifest(foo)
                 bar_pth = self.make_manifest(bar)
                 self.make_misc_files(["tmp/foo"])
-                self.pkgsend(self.rurl1, "publish -d %s %s" %
-                    (self.test_root, foo_pth))
-                self.pkgsend(self.rurl1, "publish -d %s %s" %
-                    (self.test_root, bar_pth))
+                self.pkgsend(self.rurl1, "publish -d {0} {1}".format(
+                    self.test_root, foo_pth))
+                self.pkgsend(self.rurl1, "publish -d {0} {1}".format(
+                    self.test_root, bar_pth))
                 chain_cert_path = os.path.join(self.chain_certs_dir,
                     "ch1_ta3_cert.pem")
                 ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta3_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s '*'" % {
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} '*'".format(
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": chain_cert_path
-                }
+                        ch1=chain_cert_path)
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1, variants={"variant.num":"one"})
                 self.seed_ta_dir("ta3")
@@ -2754,21 +2709,20 @@ dir mode=0755 owner=root group=bin path=etc2 variant.num=two
                 b_pth = self.make_manifest(b)
                 c_pth = self.make_manifest(c)
                 self.make_misc_files(["tmp/foo"])
-                self.pkgsend(self.rurl1, "publish -d %s %s" %
-                    (self.test_root, b_pth))
-                self.pkgsend(self.rurl1, "publish -d %s %s" %
-                    (self.test_root, c_pth))
+                self.pkgsend(self.rurl1, "publish -d {0} {1}".format(
+                    self.test_root, b_pth))
+                self.pkgsend(self.rurl1, "publish -d {0} {1}".format(
+                    self.test_root, c_pth))
                 chain_cert_path = os.path.join(self.chain_certs_dir,
                     "ch1_ta3_cert.pem")
                 ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta3_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s '*'" % {
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} '*'".format(
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": chain_cert_path
-                }
+                        ch1=chain_cert_path)
                 self.pkgsign(self.rurl1, sign_args)
                 self.image_create(self.rurl1, variants={"variant.num":"one"})
                 self.seed_ta_dir("ta3")
@@ -2825,8 +2779,8 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                 # The value for crl_host is pulled from DebugValues because
                 # crl_host needs to be set there so the api object calls work
                 # as desired.
-                command = "--debug crl_host=%s %s" % \
-                    (DebugValues["crl_host"], command)
+                command = "--debug crl_host={0} {1}".format(
+                    DebugValues["crl_host"], command)
                 return pkg5unittest.ManyDepotTestCase.pkg(self, command,
                     *args, **kwargs)
 
@@ -2859,24 +2813,24 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                 plist = self.pkgsend_bulk(self.rurl2, self.example_pkg10)
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "ta": ta_path,
-                      "pkg": plist[0]
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      ta=ta_path,
+                      pkg=plist[0]
+                   )
 
                 self.pkgsign(self.rurl2, sign_args)
 
                 repo_location = self.dcs[1].get_repodir()
-                self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.rurl1))
                 shutil.rmtree(repo_location)
-                self.pkgrepo("create %s" % repo_location)
+                self.pkgrepo("create {0}".format(repo_location))
 
                 # Add another signature which includes the same chain cert used
                 # in the first signature.
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s -i %(ta)s " \
-                    "%(name)s" % {
+                sign_args = "-k {key} -c {cert} -i {ch1} -i {ta} " \
+                    "{name}".format(**{
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
@@ -2885,18 +2839,18 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                         "ch1": os.path.join(self.chain_certs_dir,
                             "ch1_ta3_cert.pem"),
                         "ta": ta_path,
-                }
+                })
                 self.pkgsign(self.rurl2, sign_args)
-                self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.rurl1))
                 shutil.rmtree(repo_location)
-                self.pkgrepo("create %s" % repo_location)
+                self.pkgrepo("create {0}".format(repo_location))
 
                 # Add another signature to further test duplicate chain
                 # certificates as well as having a chain cert that's a signing
                 # certificate in other signatures.
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(ch1)s -i %(ta)s " \
-                    "-i %(cs1_ch1_ta3)s %(name)s " % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {ch1} -i {ta} " \
+                    "-i {cs1_ch1_ta3} {name} ".format(**{
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch5_ta1_key.pem"),
@@ -2917,9 +2871,9 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                             "ch1_ta3_cert.pem"),
                         "cs1_ch1_ta3": os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                }
+                })
                 self.pkgsign(self.rurl2, sign_args)
-                self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.rurl1))
 
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta1")
@@ -2944,12 +2898,12 @@ close
                 cert_path = os.path.join(self.cs_dir, "cs1_ta2_cert.pem")
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": cert_path,
-                      "ta": ta_path,
-                      "pkg": "a"
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=cert_path,
+                      ta=ta_path,
+                      pkg="a"
+                   )
 
                 self.pkgsign(self.rurl2, sign_args)
 
@@ -2976,8 +2930,8 @@ close
                 fh.write(cert.as_pem())
                 fh.close()
 
-                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
-                    (cache_dir, self.rurl1))
+                self.pkgrecv(self.rurl2, "-c {0} -d {1} '*'".format(
+                    cache_dir, self.rurl1))
 
         def test_sign_pkgrecv_delivered_intermediate_cert(self):
                 """Check that if a cache directory contains an intermediate file
@@ -2992,12 +2946,12 @@ close
 
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "ta": ta_path,
-                      "pkg": "a"
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      ta=ta_path,
+                      pkg="a"
+                   )
 
                 self.pkgsign(self.rurl2, sign_args)
 
@@ -3022,8 +2976,8 @@ close
                         fh.write(cert.as_pem())
                         fh.close()
 
-                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
-                    (cache_dir, self.rurl1))
+                self.pkgrecv(self.rurl2, "-c {0} -d {1} '*'".format(
+                    cache_dir, self.rurl1))
 
         def test_sign_pkgrecv_cache_sign_interaction(self):
                 """Check that if a cache directory is used and multiple packages
@@ -3043,18 +2997,18 @@ close
 
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "ta": ta_path,
-                      "pkg": "'*'"
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      ta=ta_path,
+                      pkg="'*'"
+                   )
 
                 self.pkgsign(self.rurl2, sign_args)
 
                 cache_dir = os.path.join(self.test_root, "cache")
-                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
-                    (cache_dir, self.rurl1))
+                self.pkgrecv(self.rurl2, "-c {0} -d {1} '*'".format(
+                    cache_dir, self.rurl1))
 
         def test_sign_pkgrecv_a(self):
                 """Check that signed packages can be archived."""
@@ -3063,42 +3017,41 @@ close
 
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
-                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
-                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
-                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                      "ta": ta_path,
-                      "pkg": plist[0]
-                    }
+                sign_args = "-k {key} -c {cert} -i {ta} {pkg}".format(
+                    key=os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      cert=os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      ta=ta_path,
+                      pkg=plist[0]
+                   )
 
                 self.pkgsign(self.rurl2, sign_args)
 
                 arch_location = os.path.join(self.test_root, "pkg_arch")
-                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+                self.pkgrecv(self.rurl2, "-a -d {0} example_pkg".format(arch_location))
                 portable.remove(arch_location)
 
                 # Add another signature which includes the same chain cert used
                 # in the first signature.
-                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s -i %(ta)s " \
-                    "%(name)s" % {
-                        "name": plist[0],
-                        "key": os.path.join(self.keys_dir,
+                sign_args = "-k {key} -c {cert} -i {ch1} -i {ta} " \
+                    "{name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
-                        "cert": os.path.join(self.cs_dir,
+                        cert=os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                        "ch1": os.path.join(self.chain_certs_dir,
+                        ch1=os.path.join(self.chain_certs_dir,
                             "ch1_ta3_cert.pem"),
-                        "ta": ta_path,
-                }
+                        ta=ta_path)
                 self.pkgsign(self.rurl2, sign_args)
-                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+                self.pkgrecv(self.rurl2, "-a -d {0} example_pkg".format(arch_location))
                 portable.remove(arch_location)
 
                 # Add another signature to further test duplicate chain
                 # certificates as well as having a chain cert that's a signing
                 # certificate in other signatures.
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(ch1)s -i %(ta)s " \
-                    "-i %(cs1_ch1_ta3)s %(name)s " % {
+                sign_args = "-k {key} -c {cert} -i {i1} -i {i2} " \
+                    "-i {i3} -i {i4} -i {i5} -i {ch1} -i {ta} " \
+                    "-i {cs1_ch1_ta3} {name} ".format(**{
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch5_ta1_key.pem"),
@@ -3119,9 +3072,9 @@ close
                             "ch1_ta3_cert.pem"),
                         "cs1_ch1_ta3": os.path.join(self.cs_dir,
                             "cs1_ch1_ta3_cert.pem"),
-                }
+                })
                 self.pkgsign(self.rurl2, sign_args)
-                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+                self.pkgrecv(self.rurl2, "-a -d {0} example_pkg".format(arch_location))
 
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta1")
@@ -3130,7 +3083,7 @@ close
                 self.pkg("set-property signature-policy verify")
 
                 api_obj = self.get_img_api_obj()
-                self.pkg("install -g file://%s example_pkg" % arch_location)
+                self.pkg("install -g file://{0} example_pkg".format(arch_location))
 
         def test_bug_16861_recv(self):
                 """Check that signed obsolete and renamed packages can be
@@ -3139,9 +3092,9 @@ close
                 plist = self.pkgsend_bulk(self.rurl2, [renamed_pkg,
                     obsolete_pkg])
                 for name in plist:
-                        sign_args = "-k %(key)s -c %(cert)s -i %(i1)s " \
-                            "-i %(i2)s -i %(i3)s -i %(i4)s -i %(i5)s " \
-                            "%(name)s" % {
+                        sign_args = "-k {key} -c {cert} -i {i1} " \
+                            "-i {i2} -i {i3} -i {i4} -i {i5} " \
+                            "{name}".format(**{
                                 "name": name,
                                 "key": os.path.join(self.keys_dir,
                                     "cs1_ch5_ta1_key.pem"),
@@ -3157,10 +3110,10 @@ close
                                     "ch4_ta1_cert.pem"),
                                 "i5": os.path.join(self.chain_certs_dir,
                                     "ch5_ta1_cert.pem"),
-                        }
+                        })
                         self.pkgsign(self.rurl2, sign_args)
 
-                self.pkgrecv(self.rurl2, "-d %s renamed obs" % self.rurl1)
+                self.pkgrecv(self.rurl2, "-d {0} renamed obs".format(self.rurl1))
 
         def test_bug_18463(self):
                 """Check that the crl host is only contacted once, instead of
@@ -3170,15 +3123,15 @@ close
 
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.foo10])
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
-                        "name": "%s %s" % (plist[0], plist[1]),
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(**{
+                        "name": "{0} {1}".format(plist[0], plist[1]),
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch1.1_ta4_key.pem"),
                         "cert": os.path.join(self.cs_dir,
                             "cs1_ch1.1_ta4_cert.pem"),
                         "i1": os.path.join(self.chain_certs_dir,
                             "ch1.1_ta4_cert.pem")
-                }
+                })
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1)

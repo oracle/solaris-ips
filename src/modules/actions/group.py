@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -150,9 +150,9 @@ class GroupAction(generic.Action):
                 should_be.pop("user-list", None)
 
                 errors = [
-                    _("%(entry)s: '%(found)s' should be '%(expected)s'") % {
-                        "entry": a, "found": cur_attrs[a],
-                        "expected": should_be[a] }
+                    _("{entry}: '{found}' should be '{expected}'").format(
+                        entry=a, found=cur_attrs[a],
+                        expected=should_be[a])
                     for a in should_be
                     if cur_attrs[a] != should_be[a]
                 ]

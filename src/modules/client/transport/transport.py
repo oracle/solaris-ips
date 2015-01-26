@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -718,9 +718,9 @@ class Transport(object):
 
                         if not os.path.exists(cadir):
                                 raise tx.TransportOperationError("Unable to "
-                                    "locate a CA directory: %s\n"
-                                    "Secure connection is not available."
-                                    % cadir)
+                                    "locate a CA directory: {0}\n"
+                                    "Secure connection is not "
+                                    "available.".format(cadir))
 
                         self.__cadir = cadir
                         return cadir
@@ -788,15 +788,15 @@ class Transport(object):
                         except pkg.fmri.IllegalFmri, e:
                                 repostats.record_error()
                                 raise tx.TransportOperationError(
-                                    "Could not retrieve catalog from '%s'\n"
-                                    " Unable to parse FMRI. Details follow:\n%s"
-                                    % (pub.prefix, e))
+                                    "Could not retrieve catalog from '{0}'\n"
+                                    " Unable to parse FMRI. Details "
+                                    "follow:\n{1}".format(pub.prefix, e))
                         except EnvironmentError, e:
                                 repostats.record_error()
                                 raise tx.TransportOperationError(
-                                    "Could not retrieve catalog from '%s'\n"
-                                    " Exception: str:%s repr:%r" % (pub.prefix,
-                                    e, e))
+                                    "Could not retrieve catalog from '{0}'\n"
+                                    " Exception: str:{1!s} repr:{2!r}".format(
+                                    pub.prefix, e, e))
 
                 raise failures
 
@@ -814,7 +814,7 @@ class Transport(object):
                 except apx.CatalogError, e:
                         portable.remove(filepath)
                         te = tx.InvalidContentException(filepath,
-                            "CatalogPart failed validation: %s" % e)
+                            "CatalogPart failed validation: {0}".format(e))
                         te.request = filename
                         raise te
                 return
@@ -904,7 +904,7 @@ class Transport(object):
                                 raise apx.PermissionsException(e.filename)
                         else:
                                 raise tx.TransportOperationError(
-                                    "Unable to stat VFS: %s" % e)
+                                    "Unable to stat VFS: {0}".format(e))
                 except AttributeError, e:
                         # os.statvfs is not available on Windows
                         pass
@@ -1043,8 +1043,8 @@ class Transport(object):
                                 repouri_key = d.get_repouri_key()
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
-                                    "api_errors.InvalidP5IFile:%s" %
-                                    (" ".join([str(a) for a in e.args])))
+                                    "api_errors.InvalidP5IFile:{0}".format(
+                                    " ".join([str(a) for a in e.args])))
                                 repostats = self.stats[repouri_key]
                                 repostats.record_error(content=True)
                                 if exc.retryable:
@@ -1149,9 +1149,9 @@ class Transport(object):
 
                                 if hash_val != fhash:
                                         exc = tx.InvalidContentException(
-                                            reason="hash failure:  expected: %s"
-                                            "computed: %s" % (fhash, hash_val),
-                                            url=repouri_key[0],
+                                            reason="hash failure:  expected: {0}"
+                                            "computed: {1}".format(fhash,
+                                            hash_val), url=repouri_key[0],
                                             proxy=repouri_key[1])
                                         repostats.record_error(content=True)
                                         raise exc
@@ -1170,8 +1170,8 @@ class Transport(object):
                         except zlib.error, e:
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
-                                    "zlib.error:%s" %
-                                    (" ".join([str(a) for a in e.args])),
+                                    "zlib.error:{0}".format(
+                                    " ".join([str(a) for a in e.args])),
                                     proxy=repouri_key[1])
                                 repostats.record_error(content=True)
                                 if exc.retryable:
@@ -1221,7 +1221,7 @@ class Transport(object):
                                 
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
-                                    "Invalid stats response: %s" % e,
+                                    "Invalid stats response: {0}".format(e),
                                     proxy=repouri_key[1])
                                 repostats.record_error(content=True)
                                 if exc.retryable:
@@ -1425,7 +1425,7 @@ class Transport(object):
                                 return
                         else:
                                 raise tx.TransportOperationError(
-                                    "Unable to stat VFS: %s" % e)
+                                    "Unable to stat VFS: {0}".format(e))
                 except AttributeError, e:
                         # os.statvfs is not available on Windows
                         pass
@@ -1643,8 +1643,8 @@ class Transport(object):
                                 if must_verify:
                                         assert False, \
                                             "Did not validate manifest; " \
-                                            "unknown publisher %s (%s)." % \
-                                            (fmri.publisher, fmri)
+                                            "unknown publisher {0} ({1}).".format(
+                                            fmri.publisher, fmri)
                                 return False
 
                 try:
@@ -1682,9 +1682,9 @@ class Transport(object):
                         else:
                                 sz = None
                         raise tx.InvalidContentException(mfstpath,
-                            "manifest hash failure: fmri: %s \n"
-                            "expected: %s computed: %s" %
-                            (fmri, chash, newhash), size=sz)
+                            "manifest hash failure: fmri: {0} \n"
+                            "expected: {1} computed: {2}".format(
+                            fmri, chash, newhash), size=sz)
                 return True
 
         @staticmethod
@@ -1732,7 +1732,7 @@ class Transport(object):
                                         raise apx.ReadOnlyFileSystemException(
                                             e.filename)
                                 raise tx.TransportOperationError("Unable to "
-                                    "make directory: %s" % e)
+                                    "make directory: {0}".format(e))
 
         def _get_files_list(self, mfile, flist):
                 """Download the files given in argument 'flist'.  This
@@ -1892,7 +1892,7 @@ class Transport(object):
                                 raise apx.PermissionsException(e.filename)
                         else:
                                 raise tx.TransportOperationError(
-                                    "Unable to stat VFS: %s" % e)
+                                    "Unable to stat VFS: {0}".format(e))
                 except AttributeError, e:
                         # os.statvfs is not available on Windows
                         pass
@@ -2189,7 +2189,7 @@ class Transport(object):
                                 # wasn't found, then raise an unsupported
                                 # exception using the newest version allowed.
                                 raise apx.UnsupportedRepositoryOperation(pub,
-                                    "%s/%d" % (operation, versions[-1]))
+                                    "{0}/{1:d}".format(operation, versions[-1]))
 
         def __chunk_size(self, pub, alt_repo=None, origin_only=False):
                 """Determine the chunk size based upon how many of the known
@@ -2247,7 +2247,7 @@ class Transport(object):
                         raise apx.InvalidDepotResponseException(url,
                             "Transport errors encountered when trying to "
                             "contact repository.\nReported the following "
-                            "errors:\n%s" % e)
+                            "errors:\n{0}".format(e))
 
                 if not self._valid_versions_test(vd):
                         url = pub["origin"]
@@ -2319,7 +2319,7 @@ class Transport(object):
                         estr = "Unable to contact any configured publishers." \
                             "\nThis is likely a network configuration problem."
                         if fail:
-                                estr += "\n%s" % fail
+                                estr += "\n{0}".format(fail)
                         raise apx.InvalidDepotResponseException(None, estr)
 
         @staticmethod
@@ -2544,8 +2544,8 @@ class Transport(object):
                                 s = os.stat(filepath)
                                 portable.remove(filepath)
                                 raise tx.InvalidContentException(path,
-                                    "zlib.error:%s" %
-                                    (" ".join([str(a) for a in e.args])),
+                                    "zlib.error:{0}".format(
+                                    " ".join([str(a) for a in e.args])),
                                     size=s.st_size)
 
                         ifile.close()
@@ -2555,8 +2555,8 @@ class Transport(object):
                                 s = os.stat(filepath)
                                 portable.remove(filepath)
                                 raise tx.InvalidContentException(action.path,
-                                    "hash failure:  expected: %s"
-                                    "computed: %s" % (hash, fhash),
+                                    "hash failure:  expected: {0}"
+                                    "computed: {1}".format(hash, fhash),
                                     size=s.st_size)
                         return
 
@@ -2578,8 +2578,8 @@ class Transport(object):
                         if remove_content:
                                 portable.remove(filepath)
                         raise tx.InvalidContentException(path,
-                            "chash failure: expected: %s computed: %s" % \
-                            (chash, newhash), size=s.st_size)
+                            "chash failure: expected: {0} computed: {1}".format(
+                            chash, newhash), size=s.st_size)
 
         @LockedTransport()
         def publish_add(self, pub, action=None, ccancel=None, progtrack=None,
@@ -3278,7 +3278,7 @@ class MultiFileNI(MultiFile):
                 to the final destination, decompressing, if necessary."""
 
                 dest = os.path.join(self._final_dir, hashval)
-                tmp_prefix = "%s." % hashval
+                tmp_prefix = "{0}.".format(hashval)
 
                 try:
                         os.makedirs(self._final_dir, mode=misc.PKG_DIR_MODE)

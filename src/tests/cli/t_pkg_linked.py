@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -73,7 +73,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         pkgs = [p_foo1_name_gen + ver for ver in p_vers]
         p_foo1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_foo1_name:
-                p_data = "open %s\n" % p_foo1_name[i]
+                p_data = "open {0}\n".format(p_foo1_name[i])
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=foo_bär variant.foo=bar
@@ -85,7 +85,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         pkgs = [p_foo2_name_gen + ver for ver in p_vers]
         p_foo2_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_foo2_name:
-                p_data = "open %s\n" % p_foo2_name[i]
+                p_data = "open {0}\n".format(p_foo2_name[i])
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=foo_bar variant.foo=bar
@@ -98,9 +98,9 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         pkgs = [p_sync1_name_gen + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
-                p_data = "open %s\n" % p_sync1_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync1_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync1_bar variant.foo=bar
@@ -114,9 +114,9 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         pkgs = [p_sync2_name_gen + ver for ver in p_vers]
         p_sync2_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync2_name:
-                p_data = "open %s\n" % p_sync2_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync2_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync2_bar variant.foo=bar
@@ -146,7 +146,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 self.i_api = []
                 self.i_api_reset = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 
@@ -184,10 +184,10 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 cl_expected = set([self.i_name[j] for j in cl])
                 self.assertEqual(cl_found, cl_expected,
                     "error: image has unexpected children\n"
-                    "image: %d, %s, %s\n"
-                    "expected children: %s\n"
-                    "found children: %s\n" %
-                    (i, self.i_name[i], self.i_path[i],
+                    "image: {0:d}, {1}, {2}\n"
+                    "expected children: {3}\n"
+                    "found children: {4}\n".format(
+                    i, self.i_name[i], self.i_path[i],
                     str(cl_expected),
                     str(cl_found)))
 
@@ -197,9 +197,9 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                         cl_found = self.__img_children_names(i)
                         self.assertEqual(set(), cl_found,
                            "error: image has children\n"
-                           "image: %d, %s, %s\n"
-                           "found children: %s\n" %
-                           (i, self.i_name[i], self.i_path[i],
+                           "image: {0:d}, {1}, {2}\n"
+                           "found children: {3}\n".format(
+                           i, self.i_name[i], self.i_path[i],
                            str(cl_found)))
 
         def _v_has_parent(self, il):
@@ -207,15 +207,15 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 for i in il:
                         self.assertEqual(True, self.__img_has_parent(i),
                            "error: image has no parent\n"
-                           "image: %d, %s, %s\n" %
-                           (i, self.i_name[i], self.i_path[i]))
+                           "image: {0:d}, {1}, {2}\n".format(
+                           i, self.i_name[i], self.i_path[i]))
 
         def _v_no_parent(self, il):
                 for i in il:
                         self.assertEqual(False, self.__img_has_parent(i),
                            "error: image has a parent\n"
-                           "image: %d, %s, %s\n" %
-                           (i, self.i_name[i], self.i_path[i]))
+                           "image: {0:d}, {1}, {2}\n".format(
+                           i, self.i_name[i], self.i_path[i]))
 
         def _v_not_linked(self, il):
                 self._v_no_parent(il)
@@ -246,7 +246,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 """Run a 'C' (or other non-python) command."""
                 assert type(args) == str
                 # Ensure 'coverage' is turned off-- it won't work.
-                self.cmdline_run("%s" % args, exit=rv, coverage=False)
+                self.cmdline_run("{0}".format(args), exit=rv, coverage=False)
 
         def _pkg(self, il, cmd, args=None, rv=None, rvdict=None,
             output_cb=None, env_arg=None):
@@ -274,7 +274,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
 
                 for i in il:
                         rv = rvdict.get(i, EXIT_OK)
-                        self.pkg("-R %s %s %s" % (self.i_path[i], cmd, args),
+                        self.pkg("-R {0} {1} {2}".format(self.i_path[i], cmd, args),
                             exit=rv, env_arg=env_arg)
                         if output_cb:
                                 output_cb(self.output)
@@ -303,7 +303,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 # sync each child from parent
                 for c in cl:
                         rv = rvdict.get(c, EXIT_OK)
-                        self._pkg([i], "%s -l %s" % (cmd, self.i_name[c]),
+                        self._pkg([i], "{0} -l {1}".format(cmd, self.i_name[c]),
                             args=args, rv=rv)
 
         def _pkg_child_all(self, i, cmd, args=None, rv=EXIT_OK):
@@ -314,7 +314,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
 
                 if args == None:
                         args = ""
-                self._pkg([i], "%s -a %s" % (cmd, args), rv=rv)
+                self._pkg([i], "{0} -a {1}".format(cmd, args), rv=rv)
 
         def _attach_parent(self, il, p, args=None, rv=EXIT_OK):
                 assert type(il) == list
@@ -327,8 +327,8 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                         args = ""
 
                 for i in il:
-                        self._pkg([i], "attach-linked -p %s %s %s" %
-                            (args, self.i_name[i], self.i_path[p]), rv=rv)
+                        self._pkg([i], "attach-linked -p {0} {1} {2}".format(
+                            args, self.i_name[i], self.i_path[p]), rv=rv)
 
         def _attach_child(self, i, cl, args=None, rv=None, rvdict=None):
                 assert type(i) == int
@@ -352,8 +352,8 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 # attach each child to parent
                 for c in cl:
                         rv = rvdict.get(c, EXIT_OK)
-                        self._pkg([i], "attach-linked -c %s %s %s" %
-                            (args, self.i_name[c], self.i_path[c]),
+                        self._pkg([i], "attach-linked -c {0} {1} {2}".format(
+                            args, self.i_name[c], self.i_path[c]),
                             rv=rv)
 
         def _assertEqual_cb(self, output):
@@ -392,20 +392,20 @@ class TestPkgLinked1(TestPkgLinked):
                 self._pkg([0], "set-property-linked", args=args, rv=rv)
 
                 # can't combine -a and -l
-                args = "-a -l %s" % self.i_name[1]
+                args = "-a -l {0}".format(self.i_name[1])
                 self._pkg([0], "detach-linked", args=args, rv=rv)
                 self._pkg([0], "sync-linked", args=args, rv=rv)
                 self._pkg([0], "audit-linked", args=args, rv=rv)
 
                 # can't combine -I and -i
-                args = "-I -i %s" % self.i_name[1]
+                args = "-I -i {0}".format(self.i_name[1])
                 self._pkg([0], "detach-linked", args=args, rv=rv)
                 self._pkg([0], "sync-linked", args=args, rv=rv)
                 self._pkg([0], "audit-linked", args=args, rv=rv)
                 self._pkg([0], "list-linked", args=args, rv=rv)
 
                 # can't combine -i and -a
-                args = "-a -i %s" % self.i_name[1]
+                args = "-a -i {0}".format(self.i_name[1])
                 self._pkg([0], "detach-linked", args=args, rv=rv)
                 self._pkg([0], "sync-linked", args=args, rv=rv)
                 self._pkg([0], "audit-linked", args=args, rv=rv)
@@ -417,13 +417,13 @@ class TestPkgLinked1(TestPkgLinked):
                 self._pkg([0], "audit-linked", args=args, rv=rv)
 
                 # can't combine -I and -l
-                args = "-I -l %s" % self.i_name[1]
+                args = "-I -l {0}".format(self.i_name[1])
                 self._pkg([0], "detach-linked", args=args, rv=rv)
                 self._pkg([0], "sync-linked", args=args, rv=rv)
                 self._pkg([0], "audit-linked", args=args, rv=rv)
 
                 # can't combine -i and -l with same target
-                args = "-i %s -l %s" % (self.i_name[1], self.i_name[1])
+                args = "-i {0} -l {1}".format(self.i_name[1], self.i_name[1])
                 self._pkg([0], "detach-linked", args=args, rv=rv)
                 self._pkg([0], "sync-linked", args=args, rv=rv)
                 self._pkg([0], "audit-linked", args=args, rv=rv)
@@ -436,7 +436,7 @@ class TestPkgLinked1(TestPkgLinked):
                 self._pkg([0], "set-property-linked", args=args, rv=rv)
 
                 # doesn't accept -l
-                args = "-l %s" % self.i_name[1]
+                args = "-l {0}".format(self.i_name[1])
                 self._pkg([0], "attach-linked", args=args, rv=rv)
                 self._pkg([0], "list-linked", args=args, rv=rv)
 
@@ -453,10 +453,10 @@ class TestPkgLinked1(TestPkgLinked):
                 # can't use be options when managing children
                 for arg in ["--deny-new-be", "--require-new-be",
                     "--be-name=foo"]:
-                        args = "-a %s" % arg
+                        args = "-a {0}".format(arg)
                         self._pkg([0], "sync-linked", args=args, rv=rv)
 
-                        args = "-l %s %s" % (self.i_name[1], arg)
+                        args = "-l {0} {1}".format(self.i_name[1], arg)
                         self._pkg([0], "sync-linked", args=args, rv=rv)
                         self._pkg([0], "set-property-linked", args=args, rv=rv)
 
@@ -466,12 +466,12 @@ class TestPkgLinked1(TestPkgLinked):
                 rv = EXIT_OOPS
 
                 # try using an invalid child name
-                self._pkg([0], "attach-linked -c foobar %s" % \
-                    self.i_path[1], rv=rv)
+                self._pkg([0], "attach-linked -c foobar {0}".format(
+                    self.i_path[1]), rv=rv)
 
                 for lin in ["foobar", self.i_name[1]]:
                         # try using an invalid and unknown child name
-                        args = "-l %s" % lin
+                        args = "-l {0}".format(lin)
 
                         self._pkg([0], "sync-linked", args=args, rv=rv)
                         self._pkg([0], "audit-linked", args=args, rv=rv)
@@ -480,39 +480,39 @@ class TestPkgLinked1(TestPkgLinked):
                         self._pkg([0], "detach-linked", args=args, rv=rv)
 
                         # try to ignore invalid unknown children
-                        args = "-i %s" % lin
+                        args = "-i {0}".format(lin)
 
                         # operations on the parent image
                         self._pkg([0], "sync-linked", args=args, rv=rv)
                         self._pkg([0], "list-linked", args=args, rv=rv)
                         self._pkg([0], "update", args=args, rv=rv)
                         self._pkg([0], "install", args= \
-                            "-i %s %s" % (lin, self.p_foo1_name[1]), rv=rv)
+                            "-i {0} {1}".format(lin, self.p_foo1_name[1]), rv=rv)
                         self._pkg([0], "change-variant", args= \
-                            "-i %s -v variant.foo=baz" % lin, rv=rv)
+                            "-i {0} -v variant.foo=baz".format(lin), rv=rv)
                         # TODO: test change-facet
 
                 rv = EXIT_BADOPT
 
                 for op in ["update", "install", "uninstall"]:
                         # -z and -Z can't be used together
-                        self._pkg([0], "%s -r "
-                            "-z system:img1 -Z system:img1 foo" % op, rv=rv)
+                        self._pkg([0], "{0} -r "
+                            "-z system:img1 -Z system:img1 foo".format(op), rv=rv)
                         # check handling of valid but not existing child names
-                        self._pkg([0], "%s -r -z system:foo %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
-                        self._pkg([0], "%s -r -Z system:foo %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -z system:foo {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -Z system:foo {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
                         # check handling of valid but not existing zone names
-                        self._pkg([0], "%s -r -z foo %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
-                        self._pkg([0], "%s -r -Z foo %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -z foo {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -Z foo {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
                         # check handling of invalid child names
-                        self._pkg([0], "%s -r -z :foo:&& %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
-                        self._pkg([0], "%s -r -Z :foo:&& %s" % \
-                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -z :foo:&& {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "{0} -r -Z :foo:&& {1}".format(
+                            op, self.p_foo1_name[1]), rv=rv)
 
         def test_opts_3_all(self):
                 self._imgs_create(1)
@@ -696,8 +696,8 @@ class TestPkgLinked1(TestPkgLinked):
                 rv = EXIT_OOPS
 
                 # try to link the parent image to a new child with a dup name
-                self._pkg([0], "attach-linked -c %s %s" %
-                    (self.i_name[1], self.i_path[2]), rv=rv)
+                self._pkg([0], "attach-linked -c {0} {1}".format(
+                    self.i_name[1], self.i_path[2]), rv=rv)
 
                 # have a new parent try to link to the p2c child
                 self._attach_child(3, [1], rv=rv)
@@ -728,26 +728,26 @@ class TestPkgLinked1(TestPkgLinked):
                 rv = EXIT_OOPS
 
                 # by default we can't attach (p2c) zone image
-                self._pkg([0], "attach-linked -v -c zone:foo %s" %
-                    self.i_path[1], rv=rv)
+                self._pkg([0], "attach-linked -v -c zone:foo {0}".format(
+                    self.i_path[1]), rv=rv)
                 self._v_not_linked([0, 1])
 
                 # force attach (p2c) zone image
-                self._pkg([0], "attach-linked -v -f -c zone:foo %s" %
-                    self.i_path[1])
+                self._pkg([0], "attach-linked -v -f -c zone:foo {0}".format(
+                    self.i_path[1]))
                 self._v_not_linked([0])
                 self._v_has_parent([1])
 
                 self._imgs_create(2)
 
                 # by default we can't attach (c2p) zone image
-                self._pkg([1], "attach-linked -v -p zone:foo %s" %
-                    self.i_path[0], rv=rv)
+                self._pkg([1], "attach-linked -v -p zone:foo {0}".format(
+                    self.i_path[0]), rv=rv)
                 self._v_not_linked([0, 1])
 
                 # force attach (c2p) zone image
-                self._pkg([1], "attach-linked -v -f -p zone:foo %s" %
-                    self.i_path[0])
+                self._pkg([1], "attach-linked -v -f -p zone:foo {0}".format(
+                    self.i_path[0]))
                 self._v_not_linked([0])
                 self._v_has_parent([1])
 
@@ -786,7 +786,7 @@ class TestPkgLinked1(TestPkgLinked):
                                 # empty the parent image
                                 self.set_image(0)
                                 self.image_destroy()
-                                self._ccmd("mkdir -p %s" % self.i_path[0])
+                                self._ccmd("mkdir -p {0}".format(self.i_path[0]))
                         if i == 1:
                                 # delete the parent image
                                 self.set_image(0)
@@ -795,7 +795,7 @@ class TestPkgLinked1(TestPkgLinked):
                         # operations that need to access the parent should fail
                         self._pkg([1], "sync-linked", rv=rv)
                         self._pkg([1], "audit-linked", rv=rv)
-                        self._pkg([1], "install %s" % self.p_foo1_name[1], \
+                        self._pkg([1], "install {0}".format(self.p_foo1_name[1]), \
                             rv=rv)
                         self._pkg([1], "image-update", rv=rv)
 
@@ -816,16 +816,16 @@ class TestPkgLinked1(TestPkgLinked):
                         if i == 0:
                                 # corrupt the child image
                                 self._ccmd("mkdir -p "
-                                    "%s/%s" % (self.i_path[1],
+                                    "{0}/{1}".format(self.i_path[1],
                                     image.img_user_prefix))
                                 self._ccmd("mkdir -p "
-                                    "%s/%s" % (self.i_path[1],
+                                    "{0}/{1}".format(self.i_path[1],
                                     image.img_root_prefix))
                         if i == 1:
                                 # delete the child image
                                 self.set_image(1)
                                 self.image_destroy()
-                                self._ccmd("mkdir -p %s" % self.i_path[1])
+                                self._ccmd("mkdir -p {0}".format(self.i_path[1]))
                         if i == 2:
                                 # delete the child image
                                 self.set_image(1)
@@ -833,16 +833,16 @@ class TestPkgLinked1(TestPkgLinked):
 
 
                         # child should still be listed
-                        self._pkg([0], "list-linked -H > %s" % outfile)
-                        self._ccmd("cat %s" % outfile)
-                        self._ccmd("egrep '^%s[ 	]' %s" %
-                            (self.i_name[1], outfile))
+                        self._pkg([0], "list-linked -H > {0}".format(outfile))
+                        self._ccmd("cat {0}".format(outfile))
+                        self._ccmd("egrep '^{0}[ 	]' {1}".format(
+                            self.i_name[1], outfile))
 
                         # child should still be listed
-                        self._pkg([0], "property-linked -H -l %s > %s" %
-                            (self.i_name[1], outfile))
-                        self._ccmd("cat %s" % outfile)
-                        self._ccmd("egrep '^li-' %s" % outfile)
+                        self._pkg([0], "property-linked -H -l {0} > {1}".format(
+                            self.i_name[1], outfile))
+                        self._ccmd("cat {0}".format(outfile))
+                        self._ccmd("egrep '^li-' {0}".format(outfile))
 
                         # operations that need to access child should fail
                         self._pkg_child(0, [1], "sync-linked", rv=rv)
@@ -862,9 +862,9 @@ class TestPkgLinked1(TestPkgLinked):
                 outfile = os.path.join(self.test_root, "res")
 
                 # it's ok to use -I with no children
-                self._pkg([0], "list-linked -H -I > %s" % outfile)
-                self._ccmd("cat %s" % outfile)
-                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._pkg([0], "list-linked -H -I > {0}".format(outfile))
+                self._ccmd("cat {0}".format(outfile))
+                self._ccmd("egrep '^$|.' {0}".format(outfile), rv=EXIT_OOPS)
 
         def test_ignore_2_ok(self):
                 self._imgs_create(3)
@@ -872,24 +872,24 @@ class TestPkgLinked1(TestPkgLinked):
                 outfile = os.path.join(self.test_root, "res")
 
                 # ignore one child
-                self._pkg([0], "list-linked -H -i %s > %s" %
-                    (self.i_name[1], outfile))
-                self._ccmd("cat %s" % outfile)
-                self._ccmd("egrep '^%s[ 	]' %s" %
-                    (self.i_name[1], outfile), rv=EXIT_OOPS)
-                self._ccmd("egrep '^%s[ 	]' %s" %
-                    (self.i_name[2], outfile))
+                self._pkg([0], "list-linked -H -i {0} > {1}".format(
+                    self.i_name[1], outfile))
+                self._ccmd("cat {0}".format(outfile))
+                self._ccmd("egrep '^{0}[ 	]' {1}".format(
+                    self.i_name[1], outfile), rv=EXIT_OOPS)
+                self._ccmd("egrep '^{0}[ 	]' {1}".format(
+                    self.i_name[2], outfile))
 
                 # manually ignore all children
-                self._pkg([0], "list-linked -H -i %s -i %s > %s" %
-                    (self.i_name[1], self.i_name[2], outfile))
-                self._ccmd("cat %s" % outfile)
-                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._pkg([0], "list-linked -H -i {0} -i {1} > {2}".format(
+                    self.i_name[1], self.i_name[2], outfile))
+                self._ccmd("cat {0}".format(outfile))
+                self._ccmd("egrep '^$|.' {0}".format(outfile), rv=EXIT_OOPS)
 
                 # automatically ignore all children
-                self._pkg([0], "list-linked -H -I > %s" % outfile)
-                self._ccmd("cat %s" % outfile)
-                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._pkg([0], "list-linked -H -I > {0}".format(outfile))
+                self._ccmd("cat {0}".format(outfile))
+                self._ccmd("egrep '^$|.' {0}".format(outfile), rv=EXIT_OOPS)
 
         def test_no_pkg_updates_1_empty_via_attach(self):
                 """test --no-pkg-updates with an empty image."""
@@ -923,14 +923,14 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different un-synced packages into each image
                 for i in [0, 1, 2]:
-                        self._pkg([i], "install -v %s" % self.p_foo1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_foo1_name[i]))
 
                 self._attach_child(0, [1], args="--no-pkg-updates")
                 self._attach_parent([2], 0, args="--no-pkg-updates")
 
                 # verify the un-synced packages
                 for i in [0, 1, 2]:
-                        self._pkg([i], "list -v %s" % self.p_foo1_name[i])
+                        self._pkg([i], "list -v {0}".format(self.p_foo1_name[i]))
 
         def test_no_pkg_updates_2_foo_via_sync(self):
                 """test --no-pkg-updates with a non-empty image."""
@@ -938,7 +938,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different un-synced packages into each image
                 for i in range(4):
-                        self._pkg([i], "install -v %s" % self.p_foo1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_foo1_name[i]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2], args="--linked-md-only")
@@ -953,7 +953,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # verify the un-synced packages
                 for i in range(4):
-                        self._pkg([i], "list -v %s" % self.p_foo1_name[i])
+                        self._pkg([i], "list -v {0}".format(self.p_foo1_name[i]))
 
         def test_no_pkg_updates_2_foo_via_set_property_linked_TODO(self):
                 """test --no-pkg-updates with a non-empty image."""
@@ -965,14 +965,14 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install the same synced packages into each image
                 for i in range(3):
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[1])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[1]))
 
                 self._attach_child(0, [1], args="--no-pkg-updates")
                 self._attach_parent([2], 0, args="--no-pkg-updates")
 
                 # verify the synced packages
                 for i in range(3):
-                        self._pkg([i], "list -v %s" % self.p_sync1_name[1])
+                        self._pkg([i], "list -v {0}".format(self.p_sync1_name[1]))
 
         def test_no_pkg_updates_3_sync_via_sync(self):
                 """test --no-pkg-updates with an in sync package"""
@@ -980,7 +980,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install the same synced packages into each image
                 for i in range(4):
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[1])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[1]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2], args="--linked-md-only")
@@ -988,7 +988,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # verify the synced packages
                 for i in range(4):
-                        self._pkg([i], "list -v %s" % self.p_sync1_name[1])
+                        self._pkg([i], "list -v {0}".format(self.p_sync1_name[1]))
 
                 self._pkg_child(0, [1], "sync-linked -v --no-pkg-updates",
                     rv=EXIT_NOP)
@@ -1007,7 +1007,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different synced packages into each image
                 for i in range(3):
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[i+1])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[i+1]))
 
                 self._attach_child(0, [1], args="--no-pkg-updates",
                     rv=EXIT_OOPS)
@@ -1016,7 +1016,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # verify packages
                 for i in range(3):
-                        self._pkg([i], "list -v %s" % self.p_sync1_name[i+1])
+                        self._pkg([i], "list -v {0}".format(self.p_sync1_name[i+1]))
 
         def test_no_pkg_updates_3_fail_via_sync(self):
                 """test --no-pkg-updates with an out of sync package"""
@@ -1024,7 +1024,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different synced packages into each image
                 for i in range(4):
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[i+1])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[i+1]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2], args="--linked-md-only")
@@ -1039,7 +1039,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # verify packages
                 for i in range(3):
-                        self._pkg([i], "list -v %s" % self.p_sync1_name[i+1])
+                        self._pkg([i], "list -v {0}".format(self.p_sync1_name[i+1]))
 
         def test_no_pkg_updates_3_fail_via_set_property_linked_TODO(self):
                 pass
@@ -1062,7 +1062,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different un-synced packages into each image
                 for i in [0, 1, 2, 3]:
-                        self._pkg([i], "install -v %s" % self.p_foo1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_foo1_name[i]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1075,7 +1075,7 @@ class TestPkgLinked1(TestPkgLinked):
                 self._imgs_create(4)
 
                 # install synced package into parent
-                self._pkg([0], "install -v %s" % self.p_sync1_name[0])
+                self._pkg([0], "install -v {0}".format(self.p_sync1_name[0]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1089,7 +1089,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install same synced packages into parent and some children
                 for i in [0, 1, 2, 3]:
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[0])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[0]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1104,7 +1104,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different synced package into some child images
                 for i in [1, 3]:
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[i]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1119,7 +1119,7 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # install different synced package into each image
                 for i in range(4):
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[i]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1136,9 +1136,9 @@ class TestPkgLinked2(TestPkgLinked):
                 self._imgs_create(3)
 
                 # install newer sync'ed package into child
-                self._pkg([0], "install -v %s" % self.p_sync1_name[2])
-                self._pkg([1], "install -v %s" % self.p_sync1_name[1])
-                self._pkg([2], "install -v %s" % self.p_sync1_name[1])
+                self._pkg([0], "install -v {0}".format(self.p_sync1_name[2]))
+                self._pkg([1], "install -v {0}".format(self.p_sync1_name[1]))
+                self._pkg([2], "install -v {0}".format(self.p_sync1_name[1]))
 
                 # attach should fail
                 self._attach_child(0, [1], args="-vn", rv=EXIT_OOPS)
@@ -1174,9 +1174,9 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg([1, 2], "image-update -v", rv=EXIT_OOPS)
 
                 # trying to sync via install should fail
-                self._pkg([1, 2], "install -vn %s", self.p_sync1_name[0],
+                self._pkg([1, 2], "install -vn {0}", self.p_sync1_name[0],
                     rv=EXIT_OOPS)
-                self._pkg([1, 2], "install -v %s", self.p_sync1_name[0],
+                self._pkg([1, 2], "install -v {0}", self.p_sync1_name[0],
                     rv=EXIT_OOPS)
 
                 # verify the child is still divereged
@@ -1188,11 +1188,11 @@ class TestPkgLinked2(TestPkgLinked):
 
                 # install different synced package into each image
                 for i in [0, 1, 2, 3, 4]:
-                        self._pkg([i], "install -v %s" % self.p_sync1_name[i])
+                        self._pkg([i], "install -v {0}".format(self.p_sync1_name[i]))
 
                 # install unsynced packages to make sure they aren't molested
-                self._pkg([0], "install -v %s" % self.p_foo1_name[1])
-                self._pkg([1, 2, 3, 4], "install -v %s" % self.p_foo1_name[2])
+                self._pkg([0], "install -v {0}".format(self.p_foo1_name[1]))
+                self._pkg([1, 2, 3, 4], "install -v {0}".format(self.p_foo1_name[2]))
 
                 # use --linked-md-only so we don't install constraints package
                 self._attach_child(0, [1, 2, 3], args="--linked-md-only")
@@ -1247,26 +1247,26 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg_child_all(0, "sync-linked -v", rv=EXIT_NOP)
 
                 # check unsynced packages
-                self._pkg([1, 2, 3, 4], "list -v %s" % self.p_foo1_name[2])
+                self._pkg([1, 2, 3, 4], "list -v {0}".format(self.p_foo1_name[2]))
 
         def test_sync_2_via_attach(self):
                 self._imgs_create(3)
 
                 # install different synced package into each image
-                self._pkg([0], "install -v %s" % self.p_sync1_name[1])
-                self._pkg([1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0], "install -v {0}".format(self.p_sync1_name[1]))
+                self._pkg([1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install unsynced packages to make sure they aren't molested
-                self._pkg([0], "install -v %s" % self.p_foo1_name[1])
-                self._pkg([1, 2], "install -v %s" % self.p_foo1_name[2])
+                self._pkg([0], "install -v {0}".format(self.p_foo1_name[1]))
+                self._pkg([1, 2], "install -v {0}".format(self.p_foo1_name[2]))
 
                 # attach children
                 self._attach_child(0, [1])
                 self._attach_parent([2], 0)
 
                 # check synced and unsynced packages
-                self._pkg([1, 2], "list -v %s" % self.p_sync1_name[1])
-                self._pkg([1, 2], "list -v %s" % self.p_foo1_name[2])
+                self._pkg([1, 2], "list -v {0}".format(self.p_sync1_name[1]))
+                self._pkg([1, 2], "list -v {0}".format(self.p_foo1_name[2]))
 
         def __test_linked_sync_via_child_op(self, op, op_args, **kwargs):
                 """Verify that if we do a operation "op" on a child image, it
@@ -1284,22 +1284,22 @@ class TestPkgLinked2(TestPkgLinked):
                 self._attach_parent([2, 3], 0)
 
                 # install synced package into each image
-                self._pkg([0, 1, 2, 3], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2, 3], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install unsynced packages
-                self._pkg([0], "install -v %s" % self.p_foo1_name[1])
-                self._pkg([1, 2, 3], "install -v %s" % self.p_foo1_name[2])
+                self._pkg([0], "install -v {0}".format(self.p_foo1_name[1]))
+                self._pkg([1, 2, 3], "install -v {0}".format(self.p_foo1_name[2]))
 
                 # update the parent image while ignoring the children (there
                 # by putting them out of sync)
-                self._pkg([0], "install -I -v %s" % self.p_sync1_name[1])
+                self._pkg([0], "install -I -v {0}".format(self.p_sync1_name[1]))
 
                 # explicitly sync metadata in children 1 and 2
                 self._pkg([0], "sync-linked -a --linked-md-only")
                 self._pkg([2], "sync-linked --linked-md-only")
 
                 # plan op
-                self._pkg([1, 2, 3], "%s -nv %s" % (op, op_args))
+                self._pkg([1, 2, 3], "{0} -nv {1}".format(op, op_args))
 
                 # verify child images are still diverged
                 self._pkg([1, 2, 3], "audit-linked", rv=EXIT_DIVERGED)
@@ -1312,7 +1312,7 @@ class TestPkgLinked2(TestPkgLinked):
                 # execute op
                 def output_cb(output):
                         self.assertEqualParsable(output, **kwargs)
-                self._pkg([1, 2, 3], "%s --parsable=0 %s" % (op, op_args),
+                self._pkg([1, 2, 3], "{0} --parsable=0 {1}".format(op, op_args),
                     output_cb=output_cb)
 
                 # verify sync via audit and sync (which should be a noop)
@@ -1345,22 +1345,22 @@ class TestPkgLinked2(TestPkgLinked):
                 self._attach_child(0, [1, 2])
 
                 # install synced package into each image
-                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install unsynced packages
-                self._pkg([0], "install -v %s" % self.p_foo1_name[1])
-                self._pkg([1, 2], "install -v %s" % self.p_foo1_name[2])
+                self._pkg([0], "install -v {0}".format(self.p_foo1_name[1]))
+                self._pkg([1, 2], "install -v {0}".format(self.p_foo1_name[2]))
 
                 # update the parent image while ignoring the children (there
                 # by putting them out of sync)
-                self._pkg([0], "install -I -v %s" % self.p_sync1_name[1])
+                self._pkg([0], "install -I -v {0}".format(self.p_sync1_name[1]))
 
                 # explicitly sync metadata in child 1
-                self._pkg([0], "sync-linked --linked-md-only -l %s" %
-                    self.i_name[1])
+                self._pkg([0], "sync-linked --linked-md-only -l {0}".format(
+                    self.i_name[1]))
 
                 # plan op
-                self._pkg([0], "%s -nv %s" % (op, op_args))
+                self._pkg([0], "{0} -nv {1}".format(op, op_args))
 
                 # verify child images are still diverged
                 self._pkg([1], "audit-linked", rv=EXIT_DIVERGED)
@@ -1373,7 +1373,7 @@ class TestPkgLinked2(TestPkgLinked):
                 # execute op
                 def output_cb(output):
                         self.assertEqualParsable(output, **kwargs)
-                self._pkg([0], "%s --parsable=0 %s" % (op, op_args),
+                self._pkg([0], "{0} --parsable=0 {1}".format(op, op_args),
                     output_cb=output_cb)
 
                 # verify sync via audit and sync (which should be a noop)
@@ -1388,8 +1388,8 @@ class TestPkgLinked2(TestPkgLinked):
                 for i in synced_children:
                         self._pkg([i], "audit-linked")
                         self._pkg([i], "sync-linked", rv=EXIT_NOP)
-                        self._pkg([0], "audit-linked -l %s" % self.i_name[i])
-                        self._pkg([0], "sync-linked -l %s" % self.i_name[i],
+                        self._pkg([0], "audit-linked -l {0}".format(self.i_name[i]))
+                        self._pkg([0], "sync-linked -l {0}".format(self.i_name[i]),
                             rv=EXIT_NOP)
 
         def test_linked_sync_via_update(self):
@@ -1638,12 +1638,12 @@ class TestPkgLinked3(TestPkgLinked):
                 self._imgs_create(2)
 
                 # install synced package into each image
-                self._pkg([0, 1], "install -v %s" % self.p_sync1_name[1])
+                self._pkg([0, 1], "install -v {0}".format(self.p_sync1_name[1]))
 
                 self._attach_parent([1], 0)
 
                 # update parent image
-                self._pkg([0], "install -v %s" % self.p_sync1_name[0])
+                self._pkg([0], "install -v {0}".format(self.p_sync1_name[0]))
 
                 # there should be no updates with --no-parent-sync
                 self._pkg([1], "sync-linked -v --no-parent-sync", rv=EXIT_NOP)
@@ -1651,11 +1651,11 @@ class TestPkgLinked3(TestPkgLinked):
                     "variant.foo=bar", rv=EXIT_NOP)
                 self._pkg([1], "change-facet -v --no-parent-sync "
                     "facet.foo=False")
-                self._pkg([1], "install -v --no-parent-sync %s" % \
-                    self.p_foo1_name[1])
+                self._pkg([1], "install -v --no-parent-sync {0}".format(
+                    self.p_foo1_name[1]))
                 self._pkg([1], "update -v --no-parent-sync")
-                self._pkg([1], "uninstall -v --no-parent-sync %s" % \
-                    self.p_foo1_name[0])
+                self._pkg([1], "uninstall -v --no-parent-sync {0}".format(
+                    self.p_foo1_name[0]))
 
                 # an audit without a parent sync should thingk we're in sync
                 self._pkg([1], "audit-linked --no-parent-sync")
@@ -1671,7 +1671,7 @@ class TestPkgLinked3(TestPkgLinked):
                 self._imgs_create(3)
 
                 # install synced package into parent
-                self._pkg([0], "install -v %s" % self.p_sync1_name[1])
+                self._pkg([0], "install -v {0}".format(self.p_sync1_name[1]))
 
                 # attach children
                 self._attach_child(0, [1])
@@ -1679,34 +1679,34 @@ class TestPkgLinked3(TestPkgLinked):
 
                 # try to install a different vers of synced package
                 for i in [0, 2, 3, 4]:
-                        self._pkg([1, 2], "install -v %s" % \
-                            self.p_sync1_name[i], rv=EXIT_OOPS)
+                        self._pkg([1, 2], "install -v {0}".format(
+                            self.p_sync1_name[i]), rv=EXIT_OOPS)
 
                 # try to install a different synced package
                 for i in [0, 1, 2, 3, 4]:
-                        self._pkg([1, 2], "install -v %s" % \
-                            self.p_sync2_name[i], rv=EXIT_OOPS)
+                        self._pkg([1, 2], "install -v {0}".format(
+                            self.p_sync2_name[i]), rv=EXIT_OOPS)
 
                 # install random un-synced package
-                self._pkg([1, 2], "install -v %s" % self.p_foo1_name[0])
+                self._pkg([1, 2], "install -v {0}".format(self.p_foo1_name[0]))
 
                 # install the same ver of a synced package in the child
-                self._pkg([1, 2], "install -v %s" % self.p_sync1_name[1])
+                self._pkg([1, 2], "install -v {0}".format(self.p_sync1_name[1]))
 
         def test_verify(self):
                 self._imgs_create(5)
 
                 # install synced package into each image
-                self._pkg([0, 1], "install -v %s" % self.p_sync1_name[1])
+                self._pkg([0, 1], "install -v {0}".format(self.p_sync1_name[1]))
 
                 # test with a newer synced package
-                self._pkg([2], "install -v %s" % self.p_sync1_name[0])
+                self._pkg([2], "install -v {0}".format(self.p_sync1_name[0]))
 
                 # test with an older synced package
-                self._pkg([3], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([3], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # test with a different synced package
-                self._pkg([4], "install -v %s" % self.p_sync2_name[2])
+                self._pkg([4], "install -v {0}".format(self.p_sync2_name[2]))
 
                 self._attach_parent([1], 0)
                 self._attach_parent([2, 3, 4], 0, args="--linked-md-only")
@@ -1736,18 +1736,18 @@ class TestPkgLinked3(TestPkgLinked):
 
                 # paths for the linked image metadata files
                 md_files = [
-                        "%s/var/pkg/linked/linked_ppkgs" % self.i_path[i]
+                        "{0}/var/pkg/linked/linked_ppkgs".format(self.i_path[i])
                         for i in [1, 2]
                 ]
 
                 if install:
                         for i in [0, 1, 2]:
-                                self._pkg([i], "install -v %s" % install)
+                                self._pkg([i], "install -v {0}".format(install))
 
                 # delete linked image metadata files
                 for f in md_files:
                         self.file_exists(f)
-                        self._ccmd("rm %s" % f)
+                        self._ccmd("rm {0}".format(f))
 
                 # verify that audit-linked can handle missing metadata.
                 self._pkg([0], "audit-linked -a")
@@ -1813,7 +1813,7 @@ class TestPkgLinked3(TestPkgLinked):
 
                 # paths for the linked image metadata files
                 md_files = [
-                        "%s/var/pkg/linked/linked_ppubs" % self.i_path[i]
+                        "{0}/var/pkg/linked/linked_ppubs".format(self.i_path[i])
                         for i in [1, 2]
                 ]
 
@@ -1823,7 +1823,7 @@ class TestPkgLinked3(TestPkgLinked):
                 # delete linked image metadata files
                 for f in md_files:
                         self.file_exists(f)
-                        self._ccmd("rm %s" % f)
+                        self._ccmd("rm {0}".format(f))
 
                 # verify that audit-linked can handle missing metadata.
                 self._pkg([0], "audit-linked -a")
@@ -1880,7 +1880,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
 
                 def output_cb(output):
                         self.assertEqualParsable(output, **kwargs)
-                self._pkg([0], "%s -r --parsable=0 %s" % (op, args),
+                self._pkg([0], "{0} -r --parsable=0 {1}".format(op, args),
                     output_cb=output_cb)
 
         def test_recursive_install(self):
@@ -1902,7 +1902,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # remove pkgs from children, leave parent alone, try again
-                self._pkg([1,2], "uninstall %s" % self.foo1_list[0])
+                self._pkg([1,2], "uninstall {0}".format(self.foo1_list[0]))
 
                 self._recursive_pkg("install", self.foo1_list[0],
                     add_packages=[],
@@ -1916,7 +1916,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # remove pkgs from parent, leave children alone, try again
-                self._pkg([0], "uninstall %s" % self.foo1_list[0])
+                self._pkg([0], "uninstall {0}".format(self.foo1_list[0]))
 
                 self._recursive_pkg("install", self.foo1_list[0],
                     add_packages=[self.foo1_list[0]],
@@ -1937,7 +1937,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1])
 
                 # install some packages to remove
-                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+                self._pkg([0, 1], "install {0}".format(self.foo1_list[0]))
 
                 # uninstall package which is present in parent and child
                 self._recursive_pkg("uninstall", self.foo1_list[0],
@@ -1949,7 +1949,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install pkg back into child, leave parent alone, try again
-                self._pkg([1], "install %s" % self.foo1_list[0])
+                self._pkg([1], "install {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("uninstall", self.foo1_list[0],
                     remove_packages=[],
                     child_images=[{
@@ -1959,7 +1959,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install pkg back into parent, leave child alone, try again
-                self._pkg([0], "install %s" % self.foo1_list[0])
+                self._pkg([0], "install {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("uninstall", self.foo1_list[0],
                     remove_packages=[self.foo1_list[0]],
                     child_images=[{
@@ -1976,7 +1976,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1])
 
                 # install some packages to update
-                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+                self._pkg([0, 1], "install {0}".format(self.foo1_list[0]))
 
                 # update package which is present in parent and child
                 self._recursive_pkg("update", self.foo1_list[3],
@@ -1991,7 +1991,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # downgrade child, leave parent alone, try again
-                self._pkg([1], "update %s" % self.foo1_list[0])
+                self._pkg([1], "update {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("update", self.foo1_list[3],
                     change_packages=[],
                     child_images=[{
@@ -2004,7 +2004,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # downgrade parent, leave child alone, try again
-                self._pkg([0], "update %s" % self.foo1_list[0])
+                self._pkg([0], "update {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("update", self.foo1_list[3],
                     change_packages=[[self.foo1_list[0], self.foo1_list[3]]],
                     child_images=[{
@@ -2021,7 +2021,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1])
 
                 # install some packages
-                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+                self._pkg([0, 1], "install {0}".format(self.foo1_list[0]))
 
                 # change variant in parent and child
                 self._recursive_pkg("change-variant", "variant.foo=baz",
@@ -2146,7 +2146,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 # We are only interested if the correct children are selected
                 # for a certain operation so we make sure that operations on
                 # the parent are always a nop.
-                self._pkg([0], "install %s" % self.foo1_list[0])
+                self._pkg([0], "install {0}".format(self.foo1_list[0]))
 
                 # install into all children
                 self._recursive_pkg("install", self.foo1_list[0],
@@ -2163,7 +2163,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install only into img1
-                self._pkg([1,2,3], "uninstall %s" % self.foo1_list[0])
+                self._pkg([1,2,3], "uninstall {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("install -z system:img1", self.foo1_list[0],
                     child_images=[{
                         "image_name": "system:img1",
@@ -2172,7 +2172,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install only into img1 and img3
-                self._pkg([1], "uninstall %s" % self.foo1_list[0])
+                self._pkg([1], "uninstall {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("install -z system:img1 -z system:img3",
                     self.foo1_list[0],
                     child_images=[{
@@ -2185,7 +2185,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install into all but img1
-                self._pkg([1,3], "uninstall %s" % self.foo1_list[0])
+                self._pkg([1,3], "uninstall {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("install -Z system:img1", self.foo1_list[0],
                     child_images=[{
                         "image_name": "system:img2",
@@ -2197,7 +2197,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 ])
 
                 # install into all but img1 and img3
-                self._pkg([2,3], "uninstall %s" % self.foo1_list[0])
+                self._pkg([2,3], "uninstall {0}".format(self.foo1_list[0]))
                 self._recursive_pkg("install -Z system:img1 -Z system:img3",
                     self.foo1_list[0],
                     child_images=[{
@@ -2215,7 +2215,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1, 2])
 
                 # install synced package into each image
-                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install new version of synced pkg in parent and one child
                 # explicitly, second child should get synced too
@@ -2240,7 +2240,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1, 2])
 
                 # install synced package into each image
-                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install new version of synced pkg in parent and one child
                 # explicitly, second child should get synced too
@@ -2264,7 +2264,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1, 2])
 
                 # install synced package into each image
-                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # install new version of synced pkg in parent and one child
                 # explicitly, second child should get synced too
@@ -2289,7 +2289,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._attach_child(0, [1, 2])
 
                 # install synced package into each image
-                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_sync1_name[2]))
 
                 # uninstall synced pkg from all images
                 self._recursive_pkg("uninstall", self.p_sync1_name[2],
@@ -2310,125 +2310,125 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                         """
                             open kernel@1.0,5.11-0.1
                             add depend type=require fmri=pkg:/incorp
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open kernel@1.0,5.11-0.2
                             add depend type=require fmri=pkg:/incorp
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open network@1.0,5.11-0.1
                             add depend type=require fmri=pkg:/incorp
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open network@1.0,5.11-0.2
                             add depend type=require fmri=pkg:/incorp
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open incorp@1.0,5.11-0.1
                             add depend type=incorporate fmri=kernel@1.0,5.11-0.1
                             add depend type=incorporate fmri=network@1.0,5.11-0.1
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                          """
                             open incorp@1.0,5.11-0.2
                             add depend type=incorporate fmri=kernel@1.0,5.11-0.2
                             add depend type=incorporate fmri=network@1.0,5.11-0.2
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open kernel@1.0,5.11-0.1.1.0
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr1
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open kernel@1.0,5.11-0.1.1.1
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr1
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open kernel@1.0,5.11-0.1.2.0
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr2
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open network@1.0,5.11-0.1.1.0
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr1
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open network@1.0,5.11-0.1.1.1
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr1
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open network@1.0,5.11-0.1.2.0
                             add depend type=require fmri=pkg:/incorp
                             add depend type=require fmri=pkg:/idr2
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open idr1@1.0,5.11-0.1.1.0
                             add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.0
                             add depend type=incorporate fmri=network@1.0,5.11-0.1.1.0
                             add depend type=require fmri=idr1_entitlement
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open idr1@1.0,5.11-0.1.1.1
                             add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.1
                             add depend type=incorporate fmri=network@1.0,5.11-0.1.1.1
                             add depend type=require fmri=idr1_entitlement
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open idr2@1.0,5.11-0.1.2.0
                             add depend type=incorporate fmri=kernel@1.0,5.11-0.1.2.0
                             add depend type=incorporate fmri=network@1.0,5.11-0.1.2.0
                             add depend type=require fmri=idr2_entitlement
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open idr1_entitlement@1.0,5.11-0
                             add depend type=exclude fmri=no-idrs
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         """
                             open idr2_entitlement@1.0,5.11-0
                             add depend type=exclude fmri=no-idrs
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
 
                         # hack to prevent idrs from being installed from repo...
 
                         """
                             open no-idrs@1.0,5.11-0
-                            add depend type=parent fmri=%s
-                            close """ % pkg.actions.depend.DEPEND_SELF,
+                            add depend type=parent fmri={0}
+                            close """.format(pkg.actions.depend.DEPEND_SELF),
                 )
 
                 # publish additional idr packages
@@ -2480,7 +2480,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
 
                 # switch back to base version of kernel and network
                 self._pkg([0], "update -v -r "
-                    "--reject idr2 --reject 'idr2_*' %s %s" % (kernel_fmri,
+                    "--reject idr2 --reject 'idr2_*' {0} {1}".format(kernel_fmri,
                     network_fmri))
 
                 # reinstall idr1, then update to version 2 of base kernel
@@ -2516,35 +2516,35 @@ class TestFacetInheritance(TestPkgLinked):
             "tmp/sync3",
         ]
         p_foo_template = """
-            open foo@%(ver)d
+            open foo@{ver:d}
             add file tmp/foo1 mode=0555 owner=root group=bin path=foo1_foo1 facet.foo1=true
             add file tmp/foo2 mode=0555 owner=root group=bin path=foo1_foo2 facet.foo2=true
             add file tmp/foo3 mode=0555 owner=root group=bin path=foo1_foo3 facet.foo3=true
             close"""
         p_sync1_template = """
-            open sync1@%(ver)d
+            open sync1@{ver:d}
             add file tmp/sync1 mode=0555 owner=root group=bin path=sync1_sync1 facet.sync1=true
             add file tmp/sync2 mode=0555 owner=root group=bin path=sync1_sync2 facet.sync2=true
             add file tmp/sync3 mode=0555 owner=root group=bin path=sync1_sync3 facet.sync3=true
             add depend type=parent fmri=feature/package/dependency/self
             close"""
         p_sync2_template = """
-            open sync2@%(ver)d
+            open sync2@{ver:d}
             add file tmp/sync1 mode=0555 owner=root group=bin path=sync2_sync1 facet.sync1=true
             add file tmp/sync2 mode=0555 owner=root group=bin path=sync2_sync2 facet.sync2=true
             add file tmp/sync3 mode=0555 owner=root group=bin path=sync2_sync3 facet.sync3=true
             add depend type=parent fmri=feature/package/dependency/self
             close"""
         p_inc1_template = """
-            open inc1@%(ver)d
+            open inc1@{ver:d}
             add depend type=require fmri=sync1
-            add depend type=incorporate fmri=sync1@%(ver)d facet.123456=true
+            add depend type=incorporate fmri=sync1@{ver:d} facet.123456=true
             add depend type=parent fmri=feature/package/dependency/self
             close"""
         p_inc2_template = """
-            open inc2@%(ver)d
+            open inc2@{ver:d}
             add depend type=require fmri=sync2
-            add depend type=incorporate fmri=sync2@%(ver)d facet.456789=true
+            add depend type=incorporate fmri=sync2@{ver:d} facet.456789=true
             add depend type=parent fmri=feature/package/dependency/self
             close"""
 
@@ -2558,7 +2558,7 @@ class TestFacetInheritance(TestPkgLinked):
         p_data = []
         for i in range(2):
                 for j in p_data_template:
-                        p_data.append(j % {"ver": (i + 1)})
+                        p_data.append(j.format(ver=(i + 1)))
         p_fmri = {}
 
         def setUp(self):
@@ -2576,7 +2576,7 @@ class TestFacetInheritance(TestPkgLinked):
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
                         f = fmri.PkgFmri(fmristr)
-                        pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
+                        pkgstr = "{0}@{1}".format(f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 
                 # setup image names and paths
@@ -2585,7 +2585,7 @@ class TestFacetInheritance(TestPkgLinked):
                 self.i_api = []
                 self.i_api_reset = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 
@@ -2599,8 +2599,8 @@ class TestFacetInheritance(TestPkgLinked):
                 self._attach_parent([2], 0)
 
                 # install packages with inheritable facets in all images
-                self._pkg([0, 1, 2], "install -v %s" % self.p_fmri["inc1@2"])
-                self._pkg([0, 1, 2], "install -v %s" % self.p_fmri["inc2@2"])
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_fmri["inc1@2"]))
+                self._pkg([0, 1, 2], "install -v {0}".format(self.p_fmri["inc2@2"]))
 
                 # verify that there are no facets set in any images
                 self._pkg([0, 1, 2], "facet -H -F tsv", \
@@ -2612,12 +2612,12 @@ class TestFacetInheritance(TestPkgLinked):
                 for i in [0, 1, 2]:
                         i2 = i + 1
                         self._pkg([i], "change-facet "
-                            "sync%d=False foo%d=True" % (i2, i2))
+                            "sync{0:d}=False foo{1:d}=True".format(i2, i2))
                 for i in [0, 1, 2]:
                         i2 = i + 1
                         output = \
-                            "facet.foo%d\tTrue\tlocal\n" % i2 + \
-                            "facet.sync%d\tFalse\tlocal\n" % i2
+                            "facet.foo{0:d}\tTrue\tlocal\n".format(i2) + \
+                            "facet.sync{0:d}\tFalse\tlocal\n".format(i2)
                         self._pkg([i], "facet -H -F tsv", \
                             output_cb=self._assertEqual_cb(output))
 
@@ -2628,8 +2628,8 @@ class TestFacetInheritance(TestPkgLinked):
                         i2 = i + 1
                         output = \
                             "facet.123456\tFalse\tparent\n" + \
-                            "facet.foo%d\tTrue\tlocal\n" % i2 + \
-                            "facet.sync%d\tFalse\tlocal\n" % i2
+                            "facet.foo{0:d}\tTrue\tlocal\n".format(i2) + \
+                            "facet.sync{0:d}\tFalse\tlocal\n".format(i2)
                         self._pkg([i], "facet -H -F tsv", \
                             output_cb=self._assertEqual_cb(output))
 
@@ -2640,8 +2640,8 @@ class TestFacetInheritance(TestPkgLinked):
                 for i in [1, 2]:
                         i2 = i + 1
                         output = \
-                            "facet.foo%d\tTrue\tlocal\n" % i2 + \
-                            "facet.sync%d\tFalse\tlocal\n" % i2
+                            "facet.foo{0:d}\tTrue\tlocal\n".format(i2) + \
+                            "facet.sync{0:d}\tFalse\tlocal\n".format(i2)
                         self._pkg([i], "facet -H -F tsv", \
                             output_cb=self._assertEqual_cb(output))
 
@@ -2654,8 +2654,8 @@ class TestFacetInheritance(TestPkgLinked):
                 for i in [1, 2]:
                         i2 = i + 1
                         output = \
-                            "facet.foo%d\tTrue\tlocal\n" % i2 + \
-                            "facet.sync%d\tFalse\tlocal\n" % i2
+                            "facet.foo{0:d}\tTrue\tlocal\n".format(i2) + \
+                            "facet.sync{0:d}\tFalse\tlocal\n".format(i2)
                         self._pkg([i], "facet -H -F tsv", \
                             output_cb=self._assertEqual_cb(output))
 
@@ -2680,7 +2680,7 @@ class TestFacetInheritance(TestPkgLinked):
                     output_cb=self._assertEqual_cb(output))
 
                 # install packages with inheritable facets in the parent
-                self._pkg([0], "install -v %s" % self.p_fmri["inc1@2"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["inc1@2"]))
 
                 # verify that three facets are inherited
                 output = ""
@@ -2691,7 +2691,7 @@ class TestFacetInheritance(TestPkgLinked):
                     output_cb=self._assertEqual_cb(output))
 
                 # install packages with inheritable facets in the parent
-                self._pkg([0], "install -v %s" % self.p_fmri["inc2@2"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["inc2@2"]))
 
                 # verify that five facets are inherited
                 output = ""
@@ -2704,7 +2704,7 @@ class TestFacetInheritance(TestPkgLinked):
                     output_cb=self._assertEqual_cb(output))
 
                 # remove packages with inheritable facets in the parent
-                self._pkg([0], "uninstall -v %s" % self.p_fmri["inc1@2"])
+                self._pkg([0], "uninstall -v {0}".format(self.p_fmri["inc1@2"]))
 
                 # verify that three facets are inherited
                 output = ""
@@ -2715,7 +2715,7 @@ class TestFacetInheritance(TestPkgLinked):
                     output_cb=self._assertEqual_cb(output))
 
                 # remove packages with inheritable facets in the parent
-                self._pkg([0], "uninstall -v %s" % self.p_fmri["inc2@2"])
+                self._pkg([0], "uninstall -v {0}".format(self.p_fmri["inc2@2"]))
 
                 # verify that no facets are inherited
                 output = ""
@@ -2729,7 +2729,7 @@ class TestFacetInheritance(TestPkgLinked):
                 self._imgs_create(1)
 
                 # install a package with facets in the image
-                self._pkg([0], "install -v %s" % self.p_fmri["foo@2"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["foo@2"]))
 
                 # set a facet
                 self._pkg([0], "change-facet 'f*1'=False")
@@ -2762,12 +2762,12 @@ class TestFacetInheritance(TestPkgLinked):
                 self._attach_parent([2], 0)
 
                 # install a package with inheritable facets in the parent
-                self._pkg([0], "install -v %s" % self.p_fmri["inc1@2"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["inc1@2"]))
 
                 for fv in ["True", "False"]:
 
                         # set inheritable facet locally in children
-                        self._pkg([1, 2], "change-facet 123456=%s" % fv)
+                        self._pkg([1, 2], "change-facet 123456={0}".format(fv))
 
                         # disable inheritable facet in parent
                         self._pkg([0], "change-facet 123456=False")
@@ -2777,7 +2777,7 @@ class TestFacetInheritance(TestPkgLinked):
                         output = "facet.123456\tFalse\tparent\n"
                         output_m = \
                             "facet.123456\tFalse\tparent\tFalse\n" + \
-                            "facet.123456\t%s\tlocal\tTrue\n" % fv
+                            "facet.123456\t{0}\tlocal\tTrue\n".format(fv)
                         for i in [1, 2]:
                                 self._pkg([i], "facet -H -F tsv", \
                                     output_cb=self._assertEqual_cb(output))
@@ -2789,8 +2789,8 @@ class TestFacetInheritance(TestPkgLinked):
                         self._pkg([2], "sync-linked")
 
                         # verify the local child setting is restored
-                        output = "facet.123456\t%s\tlocal\n" % fv
-                        output_m = "facet.123456\t%s\tlocal\tFalse\n" % fv
+                        output = "facet.123456\t{0}\tlocal\n".format(fv)
+                        output_m = "facet.123456\t{0}\tlocal\tFalse\n".format(fv)
                         for i in [1, 2]:
                                 self._pkg([i], "facet -H -F tsv", \
                                     output_cb=self._assertEqual_cb(output))
@@ -2809,7 +2809,7 @@ class TestFacetInheritance(TestPkgLinked):
                 self._attach_parent([2], 0)
 
                 # install a package with inheritable facets in the parent
-                self._pkg([0], "install -v %s" % self.p_fmri["inc1@2"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["inc1@2"]))
 
                 # disable inheritable facet in parent
                 self._pkg([0], "change-facet 123456=False")
@@ -2831,13 +2831,13 @@ class TestFacetInheritance(TestPkgLinked):
                 for fv in ["True", "False"]:
 
                         # set inheritable facet locally in children
-                        self._pkg([1, 2], "change-facet 123456=%s" % fv)
+                        self._pkg([1, 2], "change-facet 123456={0}".format(fv))
 
                         # verify inheritable facet is disabled in children
                         output = "facet.123456\tFalse\tparent\n"
                         output_m = \
                             "facet.123456\tFalse\tparent\tFalse\n" + \
-                            "facet.123456\t%s\tlocal\tTrue\n" % fv
+                            "facet.123456\t{0}\tlocal\tTrue\n".format(fv)
                         for i in [1, 2]:
                                 self._pkg([i], "facet -H -F tsv", \
                                     output_cb=self._assertEqual_cb(output))
@@ -2846,7 +2846,7 @@ class TestFacetInheritance(TestPkgLinked):
 
                         # re-set inheritable facet locall in children
                         # this is a noop
-                        self._pkg([1, 2], "change-facet 123456=%s" % fv,
+                        self._pkg([1, 2], "change-facet 123456={0}".format(fv),
                             rv=EXIT_NOP)
 
                         # clear inheritable facet in the parent
@@ -2854,8 +2854,8 @@ class TestFacetInheritance(TestPkgLinked):
                         self._pkg([2], "sync-linked")
 
                         # verify the local child setting is restored
-                        output = "facet.123456\t%s\tlocal\n" % fv
-                        output_m = "facet.123456\t%s\tlocal\tFalse\n" % fv
+                        output = "facet.123456\t{0}\tlocal\n".format(fv)
+                        output_m = "facet.123456\t{0}\tlocal\tFalse\n".format(fv)
                         for i in [1, 2]:
                                 self._pkg([i], "facet -H -F tsv", \
                                     output_cb=self._assertEqual_cb(output))
@@ -2903,8 +2903,8 @@ class TestFacetInheritance(TestPkgLinked):
                 self._attach_parent([2], 0)
 
                 # install synced incorporations
-                self._pkg([0, 1, 2], "install -v %s %s" %
-                    (self.p_fmri["inc1@1"], self.p_fmri["foo@1"]))
+                self._pkg([0, 1, 2], "install -v {0} {1}".format(
+                    self.p_fmri["inc1@1"], self.p_fmri["foo@1"]))
 
                 # disable a random facet in all images
                 self._pkg([0, 1, 2], "change-facet -I foo=False")
@@ -2946,7 +2946,7 @@ class TestFacetInheritance(TestPkgLinked):
                 latest facet data still gets pushed/pulled to child images."""
 
                 self.__test_facet_inheritance_via_op(
-                    "install -v %s" % self.p_fmri["inc1@1"])
+                    "install -v {0}".format(self.p_fmri["inc1@1"]))
 
         def test_facet_inheritance_via_noop_change_facet(self):
                 """Verify that if we do a noop change-facet operation on a
@@ -2962,7 +2962,7 @@ class TestFacetInheritance(TestPkgLinked):
                 child images."""
 
                 self.__test_facet_inheritance_via_op(
-                    "uninstall -v %s" % self.p_fmri["foo@1"])
+                    "uninstall -v {0}".format(self.p_fmri["foo@1"]))
 
         def test_facet_inheritance_cleanup_via_detach(self):
                 """Verify that if we detach a child linked image, that any
@@ -2974,8 +2974,8 @@ class TestFacetInheritance(TestPkgLinked):
                 self._attach_parent([2], 0)
 
                 # install synced incorporations
-                self._pkg([0, 1, 2], "install -v %s %s" %
-                    (self.p_fmri["inc1@1"], self.p_fmri["foo@1"]))
+                self._pkg([0, 1, 2], "install -v {0} {1}".format(
+                    self.p_fmri["inc1@1"], self.p_fmri["foo@1"]))
 
                 # disable a random facet in all images
                 self._pkg([0, 1, 2], "change-facet -I foo=False")
@@ -2991,15 +2991,15 @@ class TestFacetInheritance(TestPkgLinked):
 
                 # simulate detaching children via metadata only
                 # verify the inherited facets don't get removed
-                self._pkg([0], "detach-linked --linked-md-only -n -l %s" %
-                    self.i_name[1])
+                self._pkg([0], "detach-linked --linked-md-only -n -l {0}".format(
+                    self.i_name[1]))
                 self._pkg([2], "detach-linked --linked-md-only -n")
                 self._pkg([1, 2], "facet -H -F tsv",
                     output_cb=self._assertEqual_cb(output))
 
                 # simulate detaching children
                 # verify the inherited facets don't get removed
-                self._pkg([0], "detach-linked -n -l %s" % self.i_name[1])
+                self._pkg([0], "detach-linked -n -l {0}".format(self.i_name[1]))
                 self._pkg([2], "detach-linked -n")
                 self._pkg([1, 2], "facet -H -F tsv",
                     output_cb=self._assertEqual_cb(output))
@@ -3007,8 +3007,8 @@ class TestFacetInheritance(TestPkgLinked):
                 # detach children via metadata only
                 # verify the inherited facets don't get removed
                 # (they can't get removed until we modify the image)
-                self._pkg([0], "detach-linked --linked-md-only -l %s" %
-                    self.i_name[1])
+                self._pkg([0], "detach-linked --linked-md-only -l {0}".format(
+                    self.i_name[1]))
                 self._pkg([2], "detach-linked --linked-md-only")
                 self._pkg([1, 2], "facet -H -F tsv",
                     output_cb=self._assertEqual_cb(output))
@@ -3025,15 +3025,15 @@ class TestFacetInheritance(TestPkgLinked):
                 # change-facet operation, which requires updating all
                 # packages, but since we've specified no pkg updates this must
                 # fail.)
-                self._pkg([0], "detach-linked --no-pkg-updates -l %s" %
-                    self.i_name[1], rv=EXIT_OOPS)
+                self._pkg([0], "detach-linked --no-pkg-updates -l {0}".format(
+                    self.i_name[1]), rv=EXIT_OOPS)
                 self._pkg([2], "detach-linked --no-pkg-updates", rv=EXIT_OOPS)
                 self._pkg([1, 2], "facet -H -F tsv",
                     output_cb=self._assertEqual_cb(output))
 
                 # detach children
                 # verify the inherited facets get removed
-                self._pkg([0], "detach-linked -l %s" % self.i_name[1])
+                self._pkg([0], "detach-linked -l {0}".format(self.i_name[1]))
                 self._pkg([2], "detach-linked")
                 output = "facet.foo\tFalse\tlocal\n"
                 self._pkg([1, 2], "facet -H -F tsv",
@@ -3053,19 +3053,19 @@ class TestFacetInheritance(TestPkgLinked):
 
                 # paths for the linked image metadata files
                 md_files = [
-                        "%s/var/pkg/linked/linked_pfacets" % self.i_path[i]
+                        "{0}/var/pkg/linked/linked_pfacets".format(self.i_path[i])
                         for i in [1, 2]
                 ]
 
                 # isntall foo into each image
-                self._pkg([0], "install -v %s" % self.p_fmri["foo@1"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["foo@1"]))
 
                 # install synced incorporation and package
-                self._pkg([0], "install -v %s" % self.p_fmri["inc1@1"])
+                self._pkg([0], "install -v {0}".format(self.p_fmri["inc1@1"]))
                 self._pkg([2], "sync-linked")
 
                 if pfacets:
-                        self._pkg([0], "change-facet %s" % pfacets)
+                        self._pkg([0], "change-facet {0}".format(pfacets))
                         self._pkg([2], "sync-linked")
 
                 # verify the child facet settings
@@ -3082,7 +3082,7 @@ class TestFacetInheritance(TestPkgLinked):
                 # delete linked image metadata files
                 for f in md_files:
                         self.file_exists(f)
-                        self._ccmd("rm %s" % f)
+                        self._ccmd("rm {0}".format(f))
 
                 # verify the child facet settings
                 self._pkg([1, 2], "facet -H -F tsv", \
@@ -3145,7 +3145,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
             open common@1,5.11-0
             close"""
         p_AA_sync_template = """
-            open AA-sync@%(ver)d,5.11-0
+            open AA-sync@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
             add depend type=require fmri=common
             add depend type=require fmri=A-incorp-sync
@@ -3153,7 +3153,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 variant.foo=bar
             close"""
         p_AB_sync_template = """
-            open AB-sync@%(ver)d,5.11-0
+            open AB-sync@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
             add depend type=require fmri=common
             add depend type=require fmri=A-incorp-sync
@@ -3161,45 +3161,45 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 variant.foo=bar
             close"""
         p_BA_template = """
-            open BA@%(ver)d,5.11-0
+            open BA@{ver:d},5.11-0
             add depend type=require fmri=common
             add depend type=require fmri=B-incorp-sync
             close"""
         p_CA_template = """
-            open CA@%(ver)d,5.11-0
+            open CA@{ver:d},5.11-0
             add depend type=require fmri=common
             add depend type=require fmri=C-incorp
             close"""
         p_A_incorp_sync_template = """
-            open A-incorp-sync@%(ver)d,5.11-0
+            open A-incorp-sync@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
-            add depend type=incorporate fmri=AA-sync@%(ver)d facet.AA-sync=true
-            add depend type=incorporate fmri=AB-sync@%(ver)d facet.AA-sync=true
+            add depend type=incorporate fmri=AA-sync@{ver:d} facet.AA-sync=true
+            add depend type=incorporate fmri=AB-sync@{ver:d} facet.AA-sync=true
             add depend type=parent fmri=feature/package/dependency/self \
                 variant.foo=bar
             close"""
         p_B_incorp_sync_template = """
-            open B-incorp-sync@%(ver)d,5.11-0
+            open B-incorp-sync@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
-            add depend type=incorporate fmri=BA@%(ver)d facet.BA=true
+            add depend type=incorporate fmri=BA@{ver:d} facet.BA=true
             add depend type=parent fmri=feature/package/dependency/self \
                 variant.foo=bar
             close"""
         p_C_incorp_template = """
-            open C-incorp@%(ver)d,5.11-0
-            add depend type=incorporate fmri=CA@%(ver)d facet.CA=true
+            open C-incorp@{ver:d},5.11-0
+            add depend type=incorporate fmri=CA@{ver:d} facet.CA=true
             close"""
         p_entire_sync_template = """
-            open entire-sync@%(ver)d,5.11-0
+            open entire-sync@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
             add depend type=require fmri=A-incorp-sync
-            add depend type=incorporate fmri=A-incorp-sync@%(ver)d \
+            add depend type=incorporate fmri=A-incorp-sync@{ver:d} \
                 facet.A-incorp-sync=true
             add depend type=require fmri=B-incorp-sync
-            add depend type=incorporate fmri=B-incorp-sync@%(ver)d \
+            add depend type=incorporate fmri=B-incorp-sync@{ver:d} \
                 facet.B-incorp-sync=true
             add depend type=require fmri=C-incorp
-            add depend type=incorporate fmri=C-incorp@%(ver)d \
+            add depend type=incorporate fmri=C-incorp@{ver:d} \
                 facet.C-incorp=true
             add depend type=parent fmri=feature/package/dependency/self \
                 variant.foo=bar
@@ -3219,7 +3219,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
         p_data = [p_misc, p_common]
         for i in range(4):
                 for j in p_data_template:
-                        p_data.append(j % {"ver": (i + 1)})
+                        p_data.append(j.format(ver=(i + 1)))
         p_fmri = {}
 
         def setUp(self):
@@ -3234,7 +3234,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
                         f = fmri.PkgFmri(fmristr)
-                        pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
+                        pkgstr = "{0}@{1}".format(f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 
                 # setup image names and paths
@@ -3243,7 +3243,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 self.i_api = []
                 self.i_api_reset = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 
@@ -3271,8 +3271,8 @@ class TestConcurrentFacetChange(TestPkgLinked):
                     "CA@2",
                     "entire-sync@2",
                 ]
-                self._pkg([0], "change-facet -v %s" % " ".join(parent_facets))
-                self._pkg([0], "install -v %s" % " ".join(parent_pkgs))
+                self._pkg([0], "change-facet -v {0}".format(" ".join(parent_facets)))
+                self._pkg([0], "install -v {0}".format(" ".join(parent_pkgs)))
 
                 # setup the child image
                 child_facets = [
@@ -3287,14 +3287,14 @@ class TestConcurrentFacetChange(TestPkgLinked):
                     "CA@1",
                     "entire-sync@1",
                 ]
-                self._pkg([1], "change-facet -v %s" % " ".join(child_facets))
+                self._pkg([1], "change-facet -v {0}".format(" ".join(child_facets)))
                 if child_variants is not None:
-                        self._pkg([1], "change-variant -v %s" %
-                            " ".join(child_variants))
-                self._pkg([1], "install -v %s" % " ".join(child_pkgs))
+                        self._pkg([1], "change-variant -v {0}".format(
+                            " ".join(child_variants)))
+                self._pkg([1], "install -v {0}".format(" ".join(child_pkgs)))
                 if extra_child_pkgs:
-                        self._pkg([1], "install -v %s" %
-                            " ".join(extra_child_pkgs))
+                        self._pkg([1], "install -v {0}".format(
+                            " ".join(extra_child_pkgs)))
 
                 # attach the child but don't sync it
                 self._attach_parent([1], 0, args="--linked-md-only")
@@ -3306,8 +3306,8 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 # try and then execute op
                 def output_cb(output):
                         self.assertEqualParsable(output, **kwargs)
-                self._pkg([1], "%s -nv %s" % (op, op_args))
-                self._pkg([1], "%s --parsable=0 %s" % (op, op_args),
+                self._pkg([1], "{0} -nv {1}".format(op, op_args))
+                self._pkg([1], "{0} --parsable=0 {1}".format(op, op_args),
                     output_cb=output_cb)
 
                 # verify sync via audit and sync (which should be a noop)
@@ -3537,8 +3537,8 @@ class TestConcurrentFacetChange(TestPkgLinked):
                     "CA@3",
                     "entire-sync@3",
                 ]
-                self._pkg([0], "change-facet -v %s" % " ".join(parent_facets))
-                self._pkg([0], "install -v %s" % " ".join(parent_pkgs))
+                self._pkg([0], "change-facet -v {0}".format(" ".join(parent_facets)))
+                self._pkg([0], "install -v {0}".format(" ".join(parent_pkgs)))
 
                 # attach the child.
                 self._attach_parent([1], 0)
@@ -3556,8 +3556,8 @@ class TestConcurrentFacetChange(TestPkgLinked):
                     "CA@2",
                     "entire-sync@3",
                 ]
-                self._pkg([1], "change-facet -v %s" % " ".join(child_facets))
-                self._pkg([1], "install -v %s" % " ".join(child_pkgs))
+                self._pkg([1], "change-facet -v {0}".format(" ".join(child_facets)))
+                self._pkg([1], "install -v {0}".format(" ".join(child_pkgs)))
 
                 # a request to detach the child without any package updates
                 # should fail.
@@ -3577,7 +3577,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
                     "CA@2",
                     "entire-sync@3",
                 ])
-                self._pkg([1], "list -v %s" % " ".join(child_fmris))
+                self._pkg([1], "list -v {0}".format(" ".join(child_fmris)))
                 output  = "facet.C*\tFalse\tlocal\n"
                 self._pkg([1], "facet -H -F tsv",
                     output_cb=self._assertEqual_cb(output))
@@ -3600,13 +3600,13 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
             open common@1,5.11-0
             close"""
         p_A_template = """
-            open A@%(ver)d,5.11-0
+            open A@{ver:d},5.11-0
             add set name=pkg.depend.install-hold value=A
             add depend type=require fmri=common
             add depend type=incorporate fmri=common@1
             close"""
         p_B_template = """
-            open B@%(ver)d,5.11-0
+            open B@{ver:d},5.11-0
             add set name=variant.foo value=bar value=baz
             add set name=pkg.depend.install-hold value=B
             add depend type=parent fmri=feature/package/dependency/self \
@@ -3615,22 +3615,22 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
             add depend type=incorporate fmri=common@1
             close"""
         p_C_template = """
-            open C@%(ver)d,5.11-0
+            open C@{ver:d},5.11-0
             add set name=pkg.depend.install-hold value=C
             add depend type=require fmri=common
             add depend type=incorporate fmri=common@1
             close"""
         p_BB_template = """
-            open BB@%(ver)d,5.11-0
+            open BB@{ver:d},5.11-0
             add depend type=require fmri=B
-            add depend type=incorporate fmri=B@%(ver)d
+            add depend type=incorporate fmri=B@{ver:d}
             close"""
         p_BC_template = """
-            open BC@%(ver)d,5.11-0
+            open BC@{ver:d},5.11-0
             add depend type=require fmri=B
-            add depend type=incorporate fmri=B@%(ver)d
+            add depend type=incorporate fmri=B@{ver:d}
             add depend type=require fmri=C
-            add depend type=incorporate fmri=C@%(ver)d
+            add depend type=incorporate fmri=C@{ver:d}
             close"""
 
         p_data_template = [
@@ -3643,7 +3643,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
         p_data = [p_common]
         for i in range(4):
                 for j in p_data_template:
-                        p_data.append(j % {"ver": (i + 1)})
+                        p_data.append(j.format(ver=(i + 1)))
         p_fmri = {}
 
         def setUp(self):
@@ -3658,7 +3658,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
                         f = fmri.PkgFmri(fmristr)
-                        pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
+                        pkgstr = "{0}@{1}".format(f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 
                 # setup image names and paths
@@ -3667,7 +3667,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
                 self.i_api = []
                 self.i_api_reset = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 
@@ -3683,7 +3683,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
                 self._pkg([0], "install -v B@2")
 
                 # install A@1 and B@1 in the child
-                self._pkg([1], "install -v %s" % child_pkgs)
+                self._pkg([1], "install -v {0}".format(child_pkgs))
 
                 # the parent dependency only exists under variant.foo=bar, if
                 # we change variant.foo the parent dependency should go away.
@@ -3704,7 +3704,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
                 def output_cb(output):
                         if op_rv == EXIT_OK:
                                 self.assertEqualParsable(output, **kwargs)
-                self._pkg([1], "%s --parsable=0 %s" % (op, op_args),
+                self._pkg([1], "{0} --parsable=0 {1}".format(op, op_args),
                     rv=op_rv, output_cb=output_cb)
 
         def test_linked_install_hold_relax_all(self):
@@ -3885,9 +3885,9 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
         pkgs = [p_sync1_name_gen + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
-                p_data = "open %s\n" % p_sync1_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync1_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     close\n"""
                 p_sync1.append(p_data)
@@ -3917,8 +3917,8 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
                 if phys_mem < phys_mem_req:
                         raise pkg5unittest.TestSkippedException(
                             "Not enough memory, "\
-                            "%d GB required, %d GB detected.\n" %
-                            (phys_mem_req, phys_mem))
+                            "{0:d} GB required, {1:d} GB detected.\n".format(
+                            phys_mem_req, phys_mem))
 
         def pkg(self, *args, **kwargs):
                 """This is a wrapper function to disable coverage for all
@@ -3963,7 +3963,7 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
                 # create an image with a synced package
                 self.set_image(0)
                 self.image_create(repourl=self.rurl1)
-                self.pkg("install -v %s" % self.p_sync1_name[1])
+                self.pkg("install -v {0}".format(self.p_sync1_name[1]))
 
                 # create copies of the image.
                 for i in range(1, self.max_image_count):
@@ -3971,8 +3971,8 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
 
                 # attach the copies as children of the original image
                 for i in range(1, self.max_image_count):
-                        name = "system:img%d" % i
-                        cmd = "attach-linked --linked-md-only -c %s %s" % (
+                        name = "system:img{0:d}".format(i)
+                        cmd = "attach-linked --linked-md-only -c {0} {1}".format(
                             name, self.img_path(i))
                         self.pkg(cmd)
 
@@ -4102,9 +4102,9 @@ exit 0""".strip("\n")
         pkgs = [p_sync1_name_gen + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
-                p_data = "open %s\n" % p_sync1_name[i]
-                p_data += "add depend type=parent fmri=%s" % \
-                    pkg.actions.depend.DEPEND_SELF
+                p_data = "open {0}\n".format(p_sync1_name[i])
+                p_data += "add depend type=parent fmri={0}".format(
+                    pkg.actions.depend.DEPEND_SELF)
                 p_data += """
                     close\n"""
                 p_sync1.append(p_data)
@@ -4127,14 +4127,14 @@ exit 0""".strip("\n")
                 self.i_name = []
                 self.i_path = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 
         def __mk_bin(self, path, txt):
                 with file(path, "w+") as fobj:
                         print(txt, file=fobj)
-                self.cmdline_run("chmod a+x %s" % path, coverage=False)
+                self.cmdline_run("chmod a+x {0}".format(path), coverage=False)
 
         def __mk_zone_bins(self, base_path):
 
@@ -4158,14 +4158,14 @@ exit 0""".strip("\n")
         def __attach_child(self, base_path, pdir, cdir, exit=EXIT_OK):
                 ppath, cpath, cname = \
                     self.__attach_params(base_path, pdir, cdir)
-                self.pkg("-R %s attach-linked -c system:%s %s" %
-                    (ppath, cname, cpath), exit=exit)
+                self.pkg("-R {0} attach-linked -c system:{1} {2}".format(
+                    ppath, cname, cpath), exit=exit)
 
         def __attach_parent(self, base_path, cdir, pdir, exit=EXIT_OK):
                 ppath, cpath, cname = \
                     self.__attach_params(base_path, pdir, cdir)
-                self.pkg("-R %s attach-linked -p system:%s %s" %
-                    (cpath, cname, ppath), exit=exit)
+                self.pkg("-R {0} attach-linked -p system:{1} {2}".format(
+                    cpath, cname, ppath), exit=exit)
 
         def __try_attach(self, base_path, i1, i2):
                 self.__attach_child(base_path, i1, i2, exit=EXIT_OOPS)
@@ -4175,7 +4175,7 @@ exit 0""".strip("\n")
                 """Create images (in directory order)"""
                 for d in sorted(img_dirs):
                         p = os.path.join(base_path, d)
-                        self.cmdline_run("mkdir -p %s" % p, coverage=False)
+                        self.cmdline_run("mkdir -p {0}".format(p), coverage=False)
                         self.image_create(self.rurl1, destroy=False, img_path=p)
 
         def __define_limages(self, base_path, types, locs):
@@ -4244,7 +4244,7 @@ exit 0""".strip("\n")
                 ])
                 for pdir in parents:
                         p = os.path.join(base_path, pdir)
-                        self.pkg("-R %s audit-linked -a" % p)
+                        self.pkg("-R {0} audit-linked -a".format(p))
 
                 children = set([
                     cdir
@@ -4253,13 +4253,13 @@ exit 0""".strip("\n")
                 ])
                 for pdir in parents:
                         p = os.path.join(base_path, cdir)
-                        self.pkg("-R %s audit-linked" % p)
+                        self.pkg("-R {0} audit-linked".format(p))
 
         def __ccmd(self, args, rv=0):
                 """Run a 'C' (or other non-python) command."""
                 assert type(args) == str
                 # Ensure 'coverage' is turned off-- it won't work.
-                self.cmdline_run("%s" % args, exit=rv, coverage=False)
+                self.cmdline_run("{0}".format(args), exit=rv, coverage=False)
 
         def __list_linked_check(self, ipath, lipaths,
             bin_zonename, bin_zoneadm):
@@ -4271,14 +4271,14 @@ exit 0""".strip("\n")
                 outfile1 = os.path.join(ipath, "__list_linked_check")
 
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' "
-                    "--debug bin_zoneadm='%s' "
-                    "-R %s list-linked > %s" %
-                    (bin_zonename, bin_zoneadm, ipath, outfile1))
-                self.__ccmd("cat %s" % outfile1)
+                    "--debug bin_zonename='{0}' "
+                    "--debug bin_zoneadm='{1}' "
+                    "-R {2} list-linked > {3}".format(
+                    bin_zonename, bin_zoneadm, ipath, outfile1))
+                self.__ccmd("cat {0}".format(outfile1))
                 for lipath in lipaths:
-                        self.__ccmd("egrep '[ 	]%s[ 	]*$' %s" %
-                            (lipath, outfile1))
+                        self.__ccmd("egrep '[ 	]{0}[ 	]*$' {1}".format(
+                            lipath, outfile1))
 
         def __check_linked_props(self, ipath, liname, props,
             bin_zonename, bin_zoneadm):
@@ -4296,28 +4296,28 @@ exit 0""".strip("\n")
                         liname = ""
 
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' "
-                    "--debug bin_zoneadm='%s' "
-                    "-R %s property-linked %s -H > %s" %
-                    (bin_zonename, bin_zoneadm,
+                    "--debug bin_zonename='{0}' "
+                    "--debug bin_zoneadm='{1}' "
+                    "-R {2} property-linked {3} -H > {4}".format(
+                    bin_zonename, bin_zoneadm,
                     ipath, liname, outfile1))
-                self.__ccmd("cat %s" % outfile1)
+                self.__ccmd("cat {0}".format(outfile1))
 
                 for p, v in props.iteritems():
                         if v is None:
                                 # verify property is not present
                                 self.__ccmd(
-                                    "grep \"^%s[ 	]\" %s" %
-                                    (p, outfile1), rv=1)
+                                    "grep \"^{0}[ 	]\" {1}".format(
+                                    p, outfile1), rv=1)
                                 continue
 
                         # verify property and value
-                        self.__ccmd("grep \"^%s[ 	]\" %s > %s" %
-                            (p, outfile1, outfile2))
-                        self.__ccmd("cat %s" % outfile2)
+                        self.__ccmd("grep \"^{0}[ 	]\" {1} > {2}".format(
+                            p, outfile1, outfile2))
+                        self.__ccmd("cat {0}".format(outfile2))
                         # verify property and value
-                        self.__ccmd("grep \"[ 	]%s[ 	]*$\" %s" %
-                            (v, outfile2))
+                        self.__ccmd("grep \"[ 	]{0}[ 	]*$\" {1}".format(
+                            v, outfile2))
 
         def test_linked_paths_moves(self):
                 """Create trees of linked images, with different relative path
@@ -4349,7 +4349,7 @@ exit 0""".strip("\n")
                                 pnew = os.path.join(base_path, pnew)
 
                                 # move the parent to a temporary location
-                                self.__ccmd("mv %s %s" % (pcur, tmp_path))
+                                self.__ccmd("mv {0} {1}".format(pcur, tmp_path))
 
                                 # cleanup old directory, avoid "rm -rf"
                                 d = pcur
@@ -4357,12 +4357,12 @@ exit 0""".strip("\n")
                                         d = os.path.dirname(d)
                                         if len(d) <= len(base_path):
                                                 break
-                                        self.__ccmd("rmdir %s" % d)
+                                        self.__ccmd("rmdir {0}".format(d))
 
                                 # move the parent to it's new location
                                 self.__ccmd(
-                                    "mkdir -p %s" % os.path.dirname(pnew))
-                                self.__ccmd("mv %s %s" % (tmp_path, pnew))
+                                    "mkdir -p {0}".format(os.path.dirname(pnew)))
+                                self.__ccmd("mv {0} {1}".format(tmp_path, pnew))
 
                                 # verify that the images can find each other
                                 self.__audit_limages(pnew, limages)
@@ -4405,12 +4405,12 @@ exit 0""".strip("\n")
                 ppath, cpath, cname = \
                     self.__attach_params(base_path, "./", "1/")
 
-                self.pkg("--debug simulate_live_root='%s' "
-                    "-R %s attach-linked -c system:%s %s" %
-                    (cpath, ppath, cname, cpath), exit=EXIT_OOPS)
-                self.pkg("--debug simulate_live_root='%s' "
-                    "-R %s attach-linked -p system:%s %s" %
-                    (cpath, cpath, cname, ppath), exit=EXIT_OOPS)
+                self.pkg("--debug simulate_live_root='{0}' "
+                    "-R {1} attach-linked -c system:{2} {3}".format(
+                    cpath, ppath, cname, cpath), exit=EXIT_OOPS)
+                self.pkg("--debug simulate_live_root='{0}' "
+                    "-R {1} attach-linked -p system:{2} {3}".format(
+                    cpath, cpath, cname, ppath), exit=EXIT_OOPS)
 
         def test_linked_paths_no_intermediate_imgs(self):
                 """You can't link images if there are intermediate image in
@@ -4444,7 +4444,7 @@ exit 0""".strip("\n")
 
                 # move the images
                 pnew = os.path.join(self.img_path(0), "images2")
-                self.__ccmd("mv %s %s" % (base_path, pnew))
+                self.__ccmd("mv {0} {1}".format(base_path, pnew))
                 base_path = pnew
 
                 self.__attach_parent(base_path, "p/",   "./",
@@ -4473,7 +4473,7 @@ exit 0""".strip("\n")
                 self.__create_limages(base_path, limages)
                 for i in range(len(limages)):
                         ipath = os.path.join(base_path, limages[i][0])
-                        self.pkg("-R %s install sync1@1.0" % ipath)
+                        self.pkg("-R {0} install sync1@1.0".format(ipath))
                 self.__attach_limages(base_path, limages)
 
                 for i in range(len(limages)):
@@ -4486,30 +4486,30 @@ exit 0""".strip("\n")
 
                         # plan update
                         ipath = os.path.join(base_path, limages[i][0])
-                        self.pkg("-R %s update --stage=plan" % ipath)
+                        self.pkg("-R {0} update --stage=plan".format(ipath))
 
                         # move images to /a
-                        self.__ccmd("mv %s %s" % (base_path, tmp_path))
+                        self.__ccmd("mv {0} {1}".format(base_path, tmp_path))
                         new_path = os.path.join(base_path, "a")
-                        self.__ccmd("mkdir -p %s" % os.path.dirname(new_path))
-                        self.__ccmd("mv %s %s" % (tmp_path, new_path))
+                        self.__ccmd("mkdir -p {0}".format(os.path.dirname(new_path)))
+                        self.__ccmd("mv {0} {1}".format(tmp_path, new_path))
 
                         # finish update
                         ipath = os.path.join(new_path, limages[i][0])
-                        self.pkg("-R %s update --stage=prepare" % ipath)
-                        self.pkg("-R %s update --stage=execute" % ipath)
+                        self.pkg("-R {0} update --stage=prepare".format(ipath))
+                        self.pkg("-R {0} update --stage=execute".format(ipath))
 
                         # move images back
                         # cleanup old directory, avoid "rm -rf"
-                        self.__ccmd("mv %s %s" % (new_path, tmp_path))
+                        self.__ccmd("mv {0} {1}".format(new_path, tmp_path))
                         d = new_path
                         while True:
                                 d = os.path.dirname(d)
                                 if len(d) < len(base_path):
                                         break
-                                self.__ccmd("rmdir %s" % d)
-                        self.__ccmd("mkdir -p %s" % os.path.dirname(base_path))
-                        self.__ccmd("mv %s %s" % (tmp_path, base_path))
+                                self.__ccmd("rmdir {0}".format(d))
+                        self.__ccmd("mkdir -p {0}".format(os.path.dirname(base_path)))
+                        self.__ccmd("mv {0} {1}".format(tmp_path, base_path))
 
         def test_linked_paths_staged_with_zones(self):
                 """Simulate staged packaging operations involving zones."""
@@ -4530,41 +4530,41 @@ exit 0""".strip("\n")
 
                 # create images, install packages, and link them
                 self.__create_images(base_path, img_dirs)
-                self.pkg("-R %s install sync1@1.1" % gzpath)
-                self.pkg("-R %s install sync1@1.0" % ngzpath)
+                self.pkg("-R {0} install sync1@1.1".format(gzpath))
+                self.pkg("-R {0} install sync1@1.0".format(ngzpath))
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s attach-linked -v -f -c zone:z1 %s" %
-                    (bin_zonename, "/bin/true", gzpath, ngzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} attach-linked -v -f -c zone:z1 {3}".format(
+                    bin_zonename, "/bin/true", gzpath, ngzpath))
 
                 # plan update
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s update -vvv --stage=plan" %
-                    (bin_zonename, bin_zoneadm, gzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} update -vvv --stage=plan".format(
+                    bin_zonename, bin_zoneadm, gzpath))
 
                 # move images to /a
-                self.__ccmd("mv %s %s" % (base_path, tmp_path))
+                self.__ccmd("mv {0} {1}".format(base_path, tmp_path))
                 base_path = os.path.join(base_path, "a")
                 gzpath = os.path.join(base_path, img_dirs[0])
                 ngzpath = os.path.join(base_path, img_dirs[1])
                 os.environ["PKG_GZR"] = gzpath.rstrip(os.sep)
-                self.__ccmd("mkdir -p %s" % os.path.dirname(base_path))
-                self.__ccmd("mv %s %s" % (tmp_path, gzpath))
+                self.__ccmd("mkdir -p {0}".format(os.path.dirname(base_path)))
+                self.__ccmd("mv {0} {1}".format(tmp_path, gzpath))
 
                 # finish update
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s update --stage=prepare" %
-                    (bin_zonename, bin_zoneadm, gzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} update --stage=prepare".format(
+                    bin_zonename, bin_zoneadm, gzpath))
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s update --stage=execute" %
-                    (bin_zonename, bin_zoneadm, gzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} update --stage=execute".format(
+                    bin_zonename, bin_zoneadm, gzpath))
 
                 # verify that all the images got updated
-                self.pkg("-R %s list sync1@1.2" % gzpath)
-                self.pkg("-R %s list sync1@1.2" % ngzpath)
+                self.pkg("-R {0} list sync1@1.2".format(gzpath))
+                self.pkg("-R {0} list sync1@1.2".format(ngzpath))
 
                 del os.environ["PKG_GZR"]
 
@@ -4595,9 +4595,9 @@ exit 0""".strip("\n")
                 self.__attach_child(base_path, "", img_dirs[1])
                 self.__attach_parent(base_path, img_dirs[2], "")
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s attach-linked -v -f -c zone:z1 %s" %
-                    (bin_zonename, "/bin/true", gzpath, ngzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} attach-linked -v -f -c zone:z1 {3}".format(
+                    bin_zonename, "/bin/true", gzpath, ngzpath))
 
                 # Make sure that list-linked displays the correct paths.
                 for ipath, lipaths in [
@@ -4651,7 +4651,7 @@ exit 0""".strip("\n")
                             "li-current-path": ngzpath,
                             "li-parent": None,
                             "li-path": "/",
-                            "li-path-transform": "('/', '%s')" % ngzpath,
+                            "li-path-transform": "('/', '{0}')".format(ngzpath),
                             }],
                     ]:
                         self.__check_linked_props(ipath, liname, props,
@@ -4661,10 +4661,10 @@ exit 0""".strip("\n")
                 ogzpath, os1path, os2path, ongzpath = img_paths
 
                 # move images to /a
-                self.__ccmd("mv %s %s" % (base_path, tmp_path))
+                self.__ccmd("mv {0} {1}".format(base_path, tmp_path))
                 base_path = os.path.join(base_path, "a")
-                self.__ccmd("mkdir -p %s" % os.path.dirname(base_path))
-                self.__ccmd("mv %s %s" % (tmp_path, base_path))
+                self.__ccmd("mkdir -p {0}".format(os.path.dirname(base_path)))
+                self.__ccmd("mv {0} {1}".format(tmp_path, base_path))
 
                 # update paths
                 img_paths = [
@@ -4691,47 +4691,47 @@ exit 0""".strip("\n")
                             "li-current-path": gzpath,
                             "li-parent": None,
                             "li-path": ogzpath,
-                            "li-path-transform": "('%s', '%s')" %
-                                (ogzpath, gzpath)
+                            "li-path-transform": "('{0}', '{1}')".format(
+                                ogzpath, gzpath)
                             }],
                         [ gzpath, "system:s1", {
                             "li-current-parent": None,
                             "li-current-path": s1path,
                             "li-parent": None,
                             "li-path": os1path,
-                            "li-path-transform": "('%s', '%s')" %
-                                (ogzpath, gzpath)
+                            "li-path-transform": "('{0}', '{1}')".format(
+                                ogzpath, gzpath)
                             }],
                         [ gzpath, "zone:z1", {
                             "li-current-parent": None,
                             "li-current-path": ngzpath,
                             "li-parent": None,
                             "li-path": ongzpath,
-                            "li-path-transform": "('%s', '%s')" %
-                                (ogzpath, gzpath)
+                            "li-path-transform": "('{0}', '{1}')".format(
+                                ogzpath, gzpath)
                             }],
                         [ s1path, None, {
                             "li-current-parent": None,
                             "li-current-path": s1path,
                             "li-parent": None,
                             "li-path": os1path,
-                            "li-path-transform": "('%s', '%s')" %
-                                (ogzpath, gzpath)
+                            "li-path-transform": "('{0}', '{1}')".format(
+                                ogzpath, gzpath)
                             }],
                         [ s2path, None, {
                             "li-current-parent": gzpath,
                             "li-current-path": s2path,
                             "li-parent": ogzpath,
                             "li-path": os2path,
-                            "li-path-transform": "('%s', '%s')" %
-                                (ogzpath, gzpath)
+                            "li-path-transform": "('{0}', '{1}')".format(
+                                ogzpath, gzpath)
                             }],
                         [ ngzpath, None, {
                             "li-current-parent": None,
                             "li-current-path": ngzpath,
                             "li-parent": None,
                             "li-path": "/",
-                            "li-path-transform": "('/', '%s')" % ngzpath,
+                            "li-path-transform": "('/', '{0}')".format(ngzpath),
                             }],
                     ]:
                         self.__check_linked_props(ipath, liname, props,
@@ -4765,12 +4765,12 @@ exit 0""".strip("\n")
                 # create images and link them
                 self.__create_images(base_path, img_dirs)
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' --debug bin_zoneadm='%s' "
-                    "-R %s attach-linked -v -f -c zone:z1 %s" %
-                    (bin_zonename, "/bin/true", gzpath, ngzpath))
+                    "--debug bin_zonename='{0}' --debug bin_zoneadm='{1}' "
+                    "-R {2} attach-linked -v -f -c zone:z1 {3}".format(
+                    bin_zonename, "/bin/true", gzpath, ngzpath))
 
                 # now delete the global zone linked image metadata
-                self.__ccmd("rm %svar/pkg/linked/*" % gzpath)
+                self.__ccmd("rm {0}var/pkg/linked/*".format(gzpath))
 
                 # Make sure that list-linked displays the correct paths.
                 for ipath, lipaths in [
@@ -4787,14 +4787,14 @@ exit 0""".strip("\n")
                             "li-current-path": gzpath,
                             "li-parent": None,
                             "li-path": "/",
-                            "li-path-transform": "('/', '%s')" % gzpath,
+                            "li-path-transform": "('/', '{0}')".format(gzpath),
                             }],
                         [ gzpath, "zone:z1", {
                             "li-current-parent": None,
                             "li-current-path": ngzpath,
                             "li-parent": None,
                             "li-path": "/z1/root/",
-                            "li-path-transform": "('/', '%s')" % gzpath,
+                            "li-path-transform": "('/', '{0}')".format(gzpath),
                             }],
                     ]:
                         self.__check_linked_props(ipath, liname, props,
@@ -4815,7 +4815,7 @@ exit 0""".strip("\n")
                 self.__attach_child(image1,  "", "c/")
                 for d in img_dirs:
                         p = os.path.join(image1, d)
-                        self.pkg("-R %s install sync1@1.0" % p)
+                        self.pkg("-R {0} install sync1@1.0".format(p))
 
                 # Initialize an API object.
                 api_inst = self.get_img_api_obj(
@@ -4827,8 +4827,8 @@ exit 0""".strip("\n")
                 api_inst.prepare()
 
                 # clone the current images to an alternate location
-                self.__ccmd("mkdir -p %s" % image2)
-                self.__ccmd("cd %s; find . | cpio -pdm %s" % (image1, image2))
+                self.__ccmd("mkdir -p {0}".format(image2))
+                self.__ccmd("cd {0}; find . | cpio -pdm {1}".format(image1, image2))
 
                 # Update the API object to point to the new location and
                 # execute the udpate.
@@ -4844,7 +4844,7 @@ exit 0""".strip("\n")
 
                 base_path = self.img_path(0).rstrip(os.sep) + os.sep
                 gzpath = os.path.join(base_path, "gzpath/")
-                self.__ccmd("mkdir -p %s" % gzpath)
+                self.__ccmd("mkdir -p {0}".format(gzpath))
 
                 # fake zoneadm binary used for testing
                 zoneadm_sh = """
@@ -4865,10 +4865,10 @@ exit 0""".strip("\n")
                 self.image_create(self.rurl1, destroy=False, img_path=gzpath)
 
                 self.pkg("--debug zones_supported=1 "
-                    "--debug bin_zonename='%s' "
-                    "--debug bin_zoneadm='%s' "
-                    "-R %s list-linked" %
-                    (bin_zonename, bin_zoneadm, gzpath), exit=EXIT_OOPS)
+                    "--debug bin_zonename='{0}' "
+                    "--debug bin_zoneadm='{1}' "
+                    "-R {2} list-linked".format(
+                    bin_zonename, bin_zoneadm, gzpath), exit=EXIT_OOPS)
 
                 self.assert_(self.output == "")
                 self.assert_("this is invalid zoneadm list -p output." in
@@ -4880,7 +4880,7 @@ exit 0""".strip("\n")
 
                 base_path = self.img_path(0).rstrip(os.sep) + os.sep
                 gzpath = os.path.join(base_path, "gzpath_with_a_:colon/")
-                self.__ccmd("mkdir -p %s" % gzpath)
+                self.__ccmd("mkdir -p {0}".format(gzpath))
 
                 os.environ["PKG_GZR"] = gzpath.rstrip(os.sep)
 

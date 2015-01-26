@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This module provides a basic interface to smf.
@@ -69,7 +69,7 @@ class NonzeroExitException(Exception):
                 return str(self)
 
         def __str__(self):
-                return "Cmd %s exited with status %d, and output '%s'" %\
+                return "Cmd {0} exited with status {1:d}, and output '{2}'" %\
                     (self.cmd, self.return_code, self.output)
 
 
@@ -92,7 +92,7 @@ def __call(args, zone=None):
                 buf = proc.stdout.readlines()
                 ret = proc.wait()
         except OSError, e:
-                raise RuntimeError, "cannot execute %s: %s" % (args, e)
+                raise RuntimeError, "cannot execute {0}: {1}".format(args, e)
 
         if ret != 0:
                 raise NonzeroExitException(args, ret, buf)
@@ -148,7 +148,7 @@ def check_fmris(attr, fmris, zone=None):
 
                 fmris.remove(fmri)
                 if is_glob:
-                        cmd = (svcs_path, "-H", "-o", "fmri", "%s" % fmri)
+                        cmd = (svcs_path, "-H", "-o", "fmri", "{0}".format(fmri))
                         try:
                                 instances = __call(cmd, zone=zone)
                                 for instance in instances:
@@ -159,8 +159,8 @@ def check_fmris(attr, fmris, zone=None):
                 else:
                         logger.error(_("FMRI pattern might implicitly match " \
                             "more than one service instance."))
-                        logger.error(_("Actuators for %(attr)s will not be run " \
-                            "for %(fmri)s.") % locals())
+                        logger.error(_("Actuators for {attr} will not be run " \
+                            "for {fmri}.").format(**locals()))
         return fmris
 
 def get_props(svcfmri, zone=None):
@@ -177,13 +177,14 @@ def get_props(svcfmri, zone=None):
         ])
 
 def set_prop(fmri, prop, value, zone=None):
-        args = (svccfg_path, "-s", fmri, "setprop", "%s=%s" % (prop, value))
+        args = (svccfg_path, "-s", fmri, "setprop", "{0}={1}".format(prop,
+            value))
         __call(args, zone=zone)
 
 def get_prop(fmri, prop, zone=None):
         args = (svcprop_path, "-c", "-p", prop, fmri)
         buf = __call(args, zone=zone)
-        assert len(buf) == 1, "Was expecting one entry, got:%s" % buf
+        assert len(buf) == 1, "Was expecting one entry, got:{0}".format(buf)
         buf = buf[0].rstrip("\n")
         return buf
 
@@ -197,7 +198,7 @@ def enable(fmris, temporary=False, sync_timeout=0, zone=None):
         if sync_timeout:
                 args.append("-s")
                 if sync_timeout != -1:
-                        args.append("-T %d" % sync_timeout)
+                        args.append("-T {0:d}".format(sync_timeout))
         if temporary:
                 args.append("-t")
         # fmris could be a list so explicit cast is necessary
@@ -210,7 +211,7 @@ def disable(fmris, temporary=False, sync_timeout=0, zone=None):
                 fmris = (fmris,)
         args = [svcadm_path, "disable", "-s"]
         if sync_timeout > 0:
-                args.append("-T %d" % sync_timeout)
+                args.append("-T {0:d}".format(sync_timeout))
         if temporary:
                 args.append("-t")
         # fmris could be a list so explicit cast is necessary
@@ -234,7 +235,7 @@ def refresh(fmris, sync_timeout=0, zone=None):
         if sync_timeout:
                 args.append("-s")
                 if sync_timeout != -1:
-                        args.append("-T %d" % sync_timeout)
+                        args.append("-T {0:d}".format(sync_timeout))
         # fmris could be a list so explicit cast is necessary
         __call(tuple(args) + tuple(fmris), zone=zone)
 
@@ -247,6 +248,6 @@ def restart(fmris, sync_timeout=0, zone=None):
         if sync_timeout:
                 args.append("-s")
                 if sync_timeout != -1:
-                        args.append("-T %d" % sync_timeout)
+                        args.append("-T {0:d}".format(sync_timeout))
         # fmris could be a list so explicit cast is necessary
         __call(tuple(args) + tuple(fmris), zone=zone)
