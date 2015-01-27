@@ -2099,21 +2099,22 @@ def rehydrate(op, api_inst, pargs, noexecute, publishers, quiet, verbose):
             _verbose=verbose, publishers=publishers)
 
 def fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
-    be_name, new_be, noexecute, omit_headers, quiet, show_licenses, verbose):
+    be_name, new_be, noexecute, omit_headers, parsable_version, quiet,
+    show_licenses, verbose):
         """Fix packaging errors found in the image."""
 
         return __api_op(op, api_inst, args=pargs, _accept=accept,
             _noexecute=noexecute, _omit_headers=omit_headers, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose, backup_be=backup_be,
             backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, new_be=new_be)
+            be_name=be_name, new_be=new_be, _parsable_version=parsable_version)
 
-def verify(op, api_inst, pargs, omit_headers, quiet, verbose):
+def verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose):
         """Determine if installed packages match manifests."""
 
         rval = __api_op(PKG_OP_FIX, api_inst, args=pargs, _noexecute=True,
             _omit_headers=omit_headers, _quiet=quiet, _quiet_plan=True,
-            _verbose=verbose)
+            _verbose=verbose, _parsable_version=parsable_version)
 
         if rval == EXIT_NOP:
                 # Nothing to fix.

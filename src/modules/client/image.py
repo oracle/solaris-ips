@@ -2225,7 +2225,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 e.pfmri = fmri
                                 yield e.sig, [e], [], []
                         except apx.InvalidResourceLocation, e:
-                                yield [], [e], [], []
+                                yield None, [e], [], []
 
                 progresstracker.plan_add_progress(
                     progresstracker.PLAN_PKG_VERIFY, nitems=0)

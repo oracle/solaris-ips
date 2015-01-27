@@ -1468,20 +1468,21 @@ class ImagePlan(object):
                         # related messages output for it.
                         for act, errors, warnings, pinfo in self.image.verify(
                             pfmri, pt, verbose=True, forever=True):
-                                    # determine the package's status and message
-                                    # type
-                                    if errors:
-                                            failed = True
-                                            result = _("ERROR")
-                                            msg_type = MSG_ERROR
-                                            # something needs fix for this action
-                                            needs_fix.append(act)
-                                    elif not failed and warnings:
-                                            result = _("WARNING")
-                                            msg_type = MSG_WARNING
+                                # determine the package's status and message
+                                # type
+                                if errors:
+                                        failed = True
+                                        result = _("ERROR")
+                                        msg_type = MSG_ERROR
+                                        # Some errors are based on policy (e.g.
+                                        # signature policy) and not a specific
+                                        # action, so act may be None.
+                                        needs_fix.append(act)
+                                elif not failed and warnings:
+                                        result = _("WARNING")
+                                        msg_type = MSG_WARNING
 
-                                    entries.append((act, errors, warnings,
-                                        pinfo))
+                                entries.append((act, errors, warnings, pinfo))
 
                         self.pd.add_item_message(ffmri, timestamp,
                             msg_type, _("{pkg_name:70} {result:>7}").format(
@@ -1518,6 +1519,9 @@ class ImagePlan(object):
 
                         if not needs_fix:
                                 continue
+
+                        # Eliminate policy-based entries with no repair action.
+                        needs_fix = [x for x in needs_fix if x is not None]
                         repairs.append((pfmri, needs_fix))
                 if proposed_fixes:
                         pt.plan_done(pt.PLAN_PKG_VERIFY)

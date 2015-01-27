@@ -415,13 +415,14 @@ class FileAction(generic.Action):
                                                     "been changed"))
                                         elif elferror:
                                                 errors.append(elferror)
+                                                self.replace_required = True
                                         else:
                                                 errors.append(_("Hash: "
                                                     "{found} should be "
                                                     "{expected}").format(
                                                     found=sha_hash,
                                                     expected=hash_val))
-                                        self.replace_required = True
+                                                self.replace_required = True
 
                         # Check system attributes.
                         # Since some attributes like 'archive' or 'av_modified'
@@ -512,6 +513,7 @@ class FileAction(generic.Action):
                 # boundaries.
                 is_file = os.path.isfile(final_path)
 
+                changed_hash = False
                 if orig:
                         # We must use the same hash algorithm when comparing old
                         # and new actions. Look for the most-preferred common
@@ -574,6 +576,11 @@ class FileAction(generic.Action):
                                 if pres_type in ("renameold", "renamenew"):
                                         return pres_type
                                 return True
+                        elif not changed_hash and chash == orig_hash_val:
+                                # If packaged content has not changed since last
+                                # version and on-disk content matches the last
+                                # version, preserve on-disk file.
+                                return True
 
                 return False
 
@@ -621,7 +628,11 @@ class FileAction(generic.Action):
 
                 if (changed_hash and (not bothelf or
                     common_orig_elfhash != common_elfhash)):
-                        return True
+                        if ("preserve" not in self.attrs or
+                            not pkgplan.origin_fmri or
+                            (pkgplan.destination_fmri.version <
+                            pkgplan.origin_fmri.version)):
+                                return True
                 elif orig:
                         # It's possible that the file content hasn't changed
                         # for an upgrade case, but the file is missing.  This

@@ -878,12 +878,14 @@ opts_fix = \
     opts_table_nqv + \
     opts_table_licenses + \
     opts_table_no_headers + \
+    opts_table_parsable + \
     []
 
 opts_verify = \
     opts_table_quiet + \
     opts_table_verbose + \
     opts_table_no_headers + \
+    opts_table_parsable + \
     [
     opts_table_cb_nqv
 ]

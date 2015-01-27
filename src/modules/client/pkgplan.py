@@ -25,8 +25,11 @@
 #
 
 import copy
+import grp
 import itertools
 import os
+import pwd
+import stat
 
 import pkg.actions
 import pkg.actions.directory as directory
@@ -214,6 +217,40 @@ class PkgPlan(object):
                 self.destination_fmri = df
                 self.__destination_mfst = dm
 
+        def __get_orig_act(self, dest):
+                """Generate the on-disk state (attributes) of the action
+                that fail verification."""
+
+                if not dest.has_payload or "path" not in dest.attrs:
+                        return
+
+                path = os.path.join(self.image.root, dest.attrs["path"])
+                try:
+                        pstat = os.lstat(path)
+                except Exception:
+                        # If file to repair isn't on-disk, treat as install
+                        return
+
+                act = pkg.actions.fromstr(str(dest))
+                act.attrs["mode"] = oct(stat.S_IMODE(pstat.st_mode))
+                try:
+                        owner = pwd.getpwuid(pstat.st_uid).pw_name
+                        group = grp.getgrgid(pstat.st_gid).gr_name
+                except KeyError:
+                        # If associated user / group can't be determined, treat
+                        # as install. This is not optimal for repairs, but
+                        # ensures proper ownership of file is set.
+                        return
+                act.attrs["owner"] = owner
+                act.attrs["group"] = group
+
+                # No need to generate hash of on-disk content as verify
+                # short-circuits hash comparison by setting replace_required
+                # flag on action.  The same is true for preserved files which
+                # will automatically handle content replacement if needed based
+                # on the result of _check_preserve.
+                return act
+
         def propose_repair(self, fmri, mfst, install, remove, autofix=False):
                 self.propose(fmri, mfst, fmri, mfst)
                 # self.origin_fmri = None
@@ -224,15 +261,25 @@ class PkgPlan(object):
                 # Create a list of (src, dst) pairs for the actions to send to
                 # execute_repair.
 
-                self.__repair_actions = {
-                    # src is none for repairs.
-                    "install": [(None, x) for x in install],
-                    # dest is none for removals.
-                    "remove": [(x, None) for x in remove],
-                }
-
                 if autofix:
+                        # If an uninstall causes a fixup to happen, we can't
+                        # generate an on-disk state action because the result
+                        # of needsdata is different between propose and execute.
+                        # Therefore, we explicitly assign None to src for actions
+                        # to be installed.
+                        self.__repair_actions = {
+                            # src is none for repairs
+                            "install": [(None, x) for x in install],
+                            # dest is none for removals.
+                            "remove": [(x, None) for x in remove],
+                        }
                         self._autofix_pkgs.append(fmri)
+                else:
+                        self.__repair_actions = {
+                            # src can be None or an action representing on-disk state
+                            "install": [(self.__get_orig_act(x), x) for x in install],
+                            "remove": [(x, None) for x in remove],
+                        }
 
         def get_actions(self):
                 raise NotImplementedError()

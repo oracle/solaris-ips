@@ -33,6 +33,7 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
 import shutil
+import tempfile
 import time
 import unittest
 
@@ -73,6 +74,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
         preserve10 = """
             open preserve@1.0,5.11-0
             add file amber1 path=amber1 mode=755 owner=root group=bin preserve=true timestamp="20080731T001051Z"
+            add file amber2 path=amber2 mode=755 owner=root group=bin preserve=true timestamp="20080731T001051Z"
             close """
 
         preserve11 = """
@@ -105,20 +107,26 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add file tmp/empty path=/etc/security/extra_privs mode=644 owner=root group=sys
             close """
 
+        sysattr = """
+            open sysattr@1.0-0
+            add file amber1 mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1 timestamp=20100731T014051Z
+            add file amber2 mode=0555 owner=root group=bin sysattr=sensitive path=amber2 timestamp=20100731T014051Z
+            close"""
+
         misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum", "amber1", "amber2"]
 
         misc_files2 = { "tmp/empty": "" }
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
                 self.make_misc_files(self.misc_files)
                 self.make_misc_files(self.misc_files2)
                 self.plist = {}
                 for p in self.pkgsend_bulk(self.rurl, (self.amber10,
                     self.licensed13, self.dir10, self.file10, self.preserve10,
                     self.preserve11, self.preserve12, self.driver10,
-                    self.driver_prep10)):
+                    self.driver_prep10, self.sysattr)):
                         pfmri = fmri.PkgFmri(p)
                         pfmri.publisher = None
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
@@ -231,7 +239,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
 
-        def __do_alter_verify(self, pfmri, verbose=False, quiet=False):
+        def __do_alter_verify(self, pfmri, verbose=False, quiet=False, exit=0,
+            parsable=False):
                 # Alter the owner, group, mode, and timestamp of all files (and
                 # directories) to something different than the package declares.
                 m = manifest.Manifest()
@@ -257,8 +266,14 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         fix_cmd += " -v"
                 if quiet:
                         fix_cmd += " -q"
-                self.pkg("{0} {1}".format(fix_cmd, pfmri))
+                if parsable:
+                        fix_cmd += " --parsable=0"
 
+                self.pkg("{0} {1}".format(fix_cmd, pfmri), exit=exit)
+                if exit != 0:
+                        return exit
+
+                editables = []
                 # Now verify that fix actually fixed them.
                 for a in m.gen_actions():
                         if a.name not in ("file", "dir"):
@@ -276,24 +291,44 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         # Verify that preserved files don't get renamed, and
                         # the new ones are not installed if the file wasn't
                         # missing already.
-                        preserve = a.attrs.get("preserve", None)
+                        preserve = a.attrs.get("preserve")
                         if preserve == "renamenew":
                                 self.assert_(not os.path.exists(fpath + ".new"))
                         elif preserve == "renameold":
                                 self.assert_(not os.path.exists(fpath + ".old"))
 
+                        if preserve:
+                                editables.append("{0}".format(a.attrs["path"]))
+
                         # Verify timestamp (if applicable).
-                        ts = a.attrs.get("timestamp", None)
+                        ts = a.attrs.get("timestamp")
                         if ts:
                                 expected = misc.timestamp_to_time(ts)
                                 actual = lstat.st_mtime
                                 if preserve:
-                                        # Timestamp should not match expected
-                                        # for preserved files that already
-                                        # existed.
-                                        self.assertNotEqual(expected, actual)
+                                        self.assertNotEqual(expected, actual,
+                                            "timestamp expected {expected} == "
+                                            "actual {actual} for "
+                                            "{fname}".format(
+                                                expected=expected,
+                                                actual=actual, fname=fname))
                                 else:
-                                        self.assertEqual(expected, actual)
+                                        self.assertEqual(expected, actual,
+                                            "timestamp expected {expected} != "
+                                            "actual {actual} for "
+                                            "{fname}".format(
+                                                expected=expected,
+                                                actual=actual, fname=fname))
+
+                # Verify the parsable output (if applicable).
+                if parsable:
+                        if editables:
+                                self.assertEqualParsable(self.output,
+                                    affect_packages=["{0}".format(pfmri)],
+                                    change_editables=[["updated", editables]])
+                        else:
+                                self.assertEqualParsable(self.output,
+                                    affect_packages=["{0}".format(pfmri)])
 
         def test_04_permissions(self):
                 """Ensure that files and directories will have their owner,
@@ -331,6 +366,81 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix drv")
                 self.pkg("verify")
 
+        def test_06_download(self):
+                """Test that pkg fix won't try to download all data for
+                files that fail verification when the data is not going
+                to be used."""
+
+                # If only attributes are wrong and no local modification
+                # is on the file content, fix doesn't need to download the
+                # file data.
+
+                # Test the system attribute.
+                # Need to create an image in /var/tmp since sysattrs don't work
+                # in tmpfs.
+                old_img_path = self.img_path()
+                self.set_img_path(tempfile.mkdtemp(prefix="test-suite",
+                    dir="/var/tmp"))
+                self.image_create(self.durl)
+                self.pkg("install sysattr")
+                self.pkg("verify")
+                fpath = os.path.join(self.img_path(), "amber1")
+
+                # Need to get creative here to remove the system attributes
+                # since you need the sys_linkdir privilege which we don't have:
+                # see run.py:393
+                # So we re-create the file with correct owner and mode and the
+                # only thing missing are the sysattrs.
+                portable.remove(fpath)
+                portable.copyfile(os.path.join(self.test_root, "amber1"),
+                    fpath)
+                os.chmod(fpath, 0555)
+                os.chown(fpath, -1, 2)
+                self.pkg("verify", exit=1)
+                # Make the repository offline.
+                self.dc.stop()
+                # If only attributes on a file are wrong, pkg fix still
+                # succeeds even if the repository is offline.
+                self.pkg("fix sysattr")
+                self.pkg("verify")
+                self.dc.start()
+                shutil.rmtree(self.img_path())
+
+                # Test other attributes: mode, owner, group and timestamp.
+                self.image_create(self.durl)
+                for p in ("file@1.0-0","preserve@1.0-0", "preserve@1.1-0",
+                        "preserve@1.2-0", "amber@1.0-0", "sysattr@1.0-0"):
+                        pfmri = self.plist[p]
+                        self.pkg("install {0}".format(pfmri))
+                        self.dc.stop()
+                        self.__do_alter_verify(pfmri, parsable=True)
+                        self.pkg("verify --parsable=0 {0}".format(pfmri))
+                        self.pkg("uninstall {0}".format(pfmri))
+                        self.dc.start()
+
+                # If modify the file content locally and its attributes, for the
+                # editable file delivered with preserve=true, fix doesn't need to
+                # download the file data.
+                pfmri = self.plist["preserve@1.0-0"]
+                self.pkg("install {0}".format(pfmri))
+                self.file_append("amber1", "junk")
+                self.dc.stop()
+                self.__do_alter_verify(pfmri, verbose=True)
+                self.pkg("uninstall {0}".format(pfmri))
+                self.dc.start()
+
+                # For editable files delivered with preserve=renamenew or
+                # preserve=renameold, and non-editable files, fix needs to
+                # download the file data.
+                for p in ("file@1.0-0", "preserve@1.1-0", "preserve@1.2-0"):
+                        pfmri = self.plist[p]
+                        self.pkg("install {0}".format(pfmri))
+                        self.file_append("amber1", "junk")
+                        self.dc.stop()
+                        self.__do_alter_verify(pfmri, verbose=True, exit=1)
+                        self.pkg("uninstall {0}".format(pfmri))
+                        self.dc.start()
+
         def test_fix_changed_manifest(self):
                 """Test that running package fix won't change the manifest of an
                 installed package even if it has changed in the repository."""
@@ -351,7 +461,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
         def test_fix_output(self):
                 """Test that the output and exit code works fine for pkg fix."""
- 
+
                 self.image_create(self.rurl)
                 pfmri = self.plist["preserve@1.0-0"]
                 self.pkg("install {0}".format(pfmri))
@@ -373,7 +483,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 assert(self.output == "")
 
                 # Test that the output is expected when the file has both info
-                # and error level mistakes. 
+                # and error level mistakes.
                 self.__do_alter_verify(pfmri)
                 assert info not in self.output
                 self.__do_alter_verify(pfmri, verbose=True)
