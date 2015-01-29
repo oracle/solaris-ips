@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Provides the interfaces and exceptions needed to determine which packages
@@ -44,6 +44,7 @@ from collections import defaultdict
 from itertools import chain
 from pkg.client.debugvalues import DebugValues
 from pkg.client.firmware import Firmware
+from pkg.client.pkgdefs import PKG_OP_UNINSTALL, PKG_OP_UPDATE
 from pkg.misc import EmptyI, EmptyDict, N_
 
 SOLVER_INIT    = "Initialized"
@@ -209,6 +210,13 @@ class PkgSolver(object):
 
                 # cache of firmware dependencies
                 self.__firmware = Firmware()
+
+                self.__triggered_ops = {
+                    PKG_OP_UNINSTALL : {
+                        PKG_OP_UPDATE    : set(),
+                        PKG_OP_UNINSTALL : set(),
+                    },
+                }
 
         def __str__(self):
                 s = "Solver: ["
@@ -695,6 +703,20 @@ class PkgSolver(object):
                         exp.solver_errors = self.get_trim_errors()
                 raise exp
 
+        def add_triggered_op(self, trigger_op, exec_op, fmris):
+                """Add the set of FMRIs in 'fmris' to the internal dict of
+                pkg-actuators. 'trigger_op' is the operation which triggered
+                the pkg change, 'exec_op' is the operation which is supposed to
+                be executed."""
+
+                assert trigger_op in self.__triggered_ops, "%s is " \
+                    "not a valid trigger op for pkg actuators" % trigger_op
+                assert exec_op in self.__triggered_ops[trigger_op], "%s is " \
+                    "not a valid execution op for pkg actuators" % exec_op
+                assert isinstance(fmris, set)
+
+                self.__triggered_ops[trigger_op][exec_op] |= fmris
+
         def solve_install(self, existing_freezes, proposed_dict,
             new_variants=None, excludes=EmptyI,
             reject_set=frozenset(), trim_proposed_installed=True,
@@ -748,6 +770,20 @@ class PkgSolver(object):
                 is on."""
 
                 pt = self.__begin_solve()
+
+                # reject_set is a frozenset(), need to make copy to modify
+                r_set = set(reject_set)
+                for f in self.__triggered_ops[PKG_OP_UNINSTALL][PKG_OP_UPDATE]:
+                        if f.pkg_name in proposed_dict:
+                                proposed_dict[f.pkg_name].append(f)
+                        else:
+                                proposed_dict[f.pkg_name] = [f]
+                for f in \
+                    self.__triggered_ops[PKG_OP_UNINSTALL][PKG_OP_UNINSTALL]:
+                        r_set.add(f.pkg_name)
+                # re-freeze reject set
+                reject_set = frozenset(r_set)
+
                 proposed_pkgs = set(proposed_dict)
 
                 if new_variants:
@@ -826,6 +862,15 @@ class PkgSolver(object):
                                 if verlist[-1].version < f.version:
                                         # Assume downgrade is intentional.
                                         continue
+                        valid_trigger = False
+                        for tf in self.__triggered_ops[
+                            PKG_OP_UNINSTALL][PKG_OP_UPDATE]:
+                                if tf.pkg_name == f.pkg_name:
+                                        self.__trim_older(tf)
+                                        valid_trigger = True
+                        if valid_trigger:
+                                continue
+
                         self.__trim_older(f)
 
                 # trim fmris we excluded via proposed_fmris
@@ -1166,11 +1211,51 @@ class PkgSolver(object):
 
                 proposed_removals = set(uninstall_list) | renamed_set
 
+                # find pkgs which are going to be installed/updated
+                triggered_set = set()
+                for f in self.__triggered_ops[PKG_OP_UNINSTALL][PKG_OP_UPDATE]:
+                        triggered_set.add(f)
+
                 # check for dependents
                 for pfmri in proposed_removals:
                         self.__progress()
                         dependents = self.__get_dependents(pfmri, excludes) - \
                             proposed_removals
+
+                        # Check if any of the dependents are going to be updated
+                        # to a different version which might not have the same
+                        # dependency constraints. If so, remove from dependents
+                        # list.
+
+                        # Example:
+                        # A@1 depends on B
+                        # A@2 does not depend on B
+                        #
+                        # A@1 is currently installed, B is requested for removal
+                        # -> not allowed
+                        # pkg actuator updates A to 2
+                        # -> now removal of B is allowed
+                        candidates = dict(
+                             (tf, f)
+                             for f in dependents
+                             for tf in triggered_set
+                             if f.pkg_name == tf.pkg_name
+                        )
+
+                        for tf in candidates:
+                                remove = True
+                                for da in self.__get_dependency_actions(tf,
+                                    excludes):
+                                        if da.attrs["type"] != "require":
+                                                continue
+                                        pkg_name = pkg.fmri.PkgFmri(
+                                            da.attrs["fmri"]).pkg_name
+                                        if pkg_name == pfmri.pkg_name:
+                                                remove = False
+                                                break
+                                if remove:
+                                        dependents.remove(candidates[tf])
+
                         if dependents:
                                 raise api_errors.NonLeafPackageException(pfmri,
                                     dependents)

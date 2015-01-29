@@ -1537,3 +1537,57 @@ class PkgActionChecker(base.ActionChecker):
 
         facet_value.pkglint_desc = _("facet value should be set to "
             "a valid value in an action attribute")
+
+        def supported_pkg_actuator(self, action, manifest, engine,
+            pkglint_id="013"):
+                """pkg_actuators should be set to a valid value in pkg(5)"""
+
+                start_pattern = "pkg.additional-"
+                supported_actuators = [
+                    start_pattern + "update-on-uninstall",
+                    start_pattern  + "uninstall-on-uninstall",
+                ]
+
+                if not "name" in action.attrs or \
+                    not action.attrs["name"].startswith(start_pattern):
+                        return
+
+                if not action.attrs["name"] in supported_actuators:
+                        engine.warning(
+                            _("invalid package actuator name {attr} in {fmri}\n"
+                            "supported values: {sact}").format(
+                                attr=action.attrs["name"],
+                                fmri=manifest.fmri,
+                                sact=", ".join(supported_actuators)
+                            ), msgid="{0}{1}".format(self.name, pkglint_id))
+
+                if  action.attrs["name"] == \
+                    start_pattern + "uninstall-on-uninstall":
+                        for v in action.attrlist("value"):
+                                pfmri = pkg.fmri.PkgFmri(v)
+                                if not pfmri.version:
+                                        continue
+                                engine.warning("invalid package-triggered "
+                                    "uninstall FMRI {tf} in {fmri}: should "
+                                    "not contain a version".format(
+                                        tf=str(pfmri),
+                                        fmri=manifest.fmri
+                                    ), msgid="{0}{1}".format(self.name,
+                                        pkglint_id))
+
+                if  action.attrs["name"] == \
+                    start_pattern + "update-on-uninstall":
+                        for v in action.attrlist("value"):
+                                pfmri = pkg.fmri.PkgFmri(v)
+                                if pfmri.version:
+                                        continue
+                                engine.warning("invalid package-triggered "
+                                    "update FMRI {tf} in {fmri}: should "
+                                    "contain a specific version".format(
+                                        tf=str(pfmri),
+                                        fmri=manifest.fmri
+                                    ), msgid="{0}{1}".format(self.name,
+                                        pkglint_id))
+
+        supported_pkg_actuator.pkglint_desc = _("package actuator should be "
+            "set to a valid value")

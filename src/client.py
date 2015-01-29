@@ -740,7 +740,7 @@ def __display_plan(api_inst, verbose, noexecute, op=None):
                 if verbose > 0:
                         disp.extend(["fmris", "mediators", "services",
                                      "variants/facets", "boot-archive",
-                                     "release-notes", "editable"])
+                                     "release-notes", "editable", "actuators"])
                 if verbose > 1:
                         disp.append("actions")
                 if verbose > 2:
@@ -943,6 +943,34 @@ made will not be reflected on the next boot.
                                 logger.info("    {0}".format(pver))
                                 last_parent = pparent
 
+                if "actuators" in disp:
+                        # print pkg which have been altered due to pkg actuators
+                        # e.g:
+                        #
+                        # Package-triggered Operations:
+                        # TriggerPackage
+                        #     update
+                        #         PackageA
+                        #         PackageB
+                        #     uninstall
+                        #         PackageC
+
+                        first = True
+                        for trigger_pkg, act_dict in plan.gen_pkg_actuators():
+                                if first:
+                                        first = False
+                                        if need_blank:
+                                                logger.info("")
+                                        need_blank = True
+                                        logger.info(
+                                            _("Package-triggered Operations:"))
+                                logger.info(trigger_pkg)
+                                for exec_op in sorted(act_dict):
+                                        logger.info("    {0}".format(exec_op))
+                                        for pkg in sorted(act_dict[exec_op]):
+                                                logger.info(
+                                                    "        {0}".format(pkg))
+
         if "services" in disp and not plan.new_be:
                 last_action = None
                 for action, smf_fmri in plan.services:
@@ -1063,6 +1091,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         services_affected = []
         mediators_changed = []
         editables_changed = []
+        pkg_actuators = {}
         licenses = []
         if child_images is None:
                 child_images = []
@@ -1095,6 +1124,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
                 space_required = plan.bytes_added
                 services_affected = plan.services
                 mediators_changed = plan.mediators
+                pkg_actuators = [(p, a) for (p, a) in plan.gen_pkg_actuators()]
 
                 emoved, eremoved, einstalled, eupdated = \
                     plan.get_editable_changes()
@@ -1163,6 +1193,10 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
             "space-required": space_required,
             "version": parsable_version,
         }
+
+        if pkg_actuators:
+                ret["package-actuators"] = pkg_actuators
+
         # The image name for the parent image is always None.  If this image is
         # a child image, then the image name will be set when the parent image
         # processes this dictionary.
@@ -3019,7 +3053,7 @@ def info(api_inst, args):
                 __append_attr_tuples(_("Branch"), str(pi.branch))
                 __append_attr_tuples(_("Packaging Date"), pi.packaging_date)
                 __append_attr_tuples(_("Size"), misc.bytes_to_str(pi.size))
-                __append_attr_tuples(_("FMRI"), 
+                __append_attr_tuples(_("FMRI"),
                     pi.fmri.get_fmri(include_build=False))
                 # XXX add license/copyright info here?
 

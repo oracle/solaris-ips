@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a package attribute
@@ -31,7 +31,7 @@ attribute of a package (package metadata).  Attributes are typed, and the
 possible types are: XXX."""
 
 import generic
-import pkg.fmri as fmri
+import pkg.fmri
 import pkg.actions
 
 class AttributeAction(generic.Action):
@@ -96,7 +96,7 @@ class AttributeAction(generic.Action):
                                             self.attrs["name"], v, None))
                         return  tmp
                 elif self.attrs["name"] in ("fmri", "pkg.fmri"):
-                        fmri_obj = fmri.PkgFmri(self.attrs["value"])
+                        fmri_obj = pkg.fmri.PkgFmri(self.attrs["value"])
 
                         lst = [
                             fmri_obj.get_pkg_stem(include_scheme=False),
@@ -125,7 +125,7 @@ class AttributeAction(generic.Action):
 
         def has_category_info(self):
                 return self.attrs["name"] == "info.classification"
-        
+
         def parse_category_info(self):
                 rval = []
                 # Some logic is inlined here for performance reasons.
@@ -160,6 +160,22 @@ class AttributeAction(generic.Action):
                         # value is permitted.
                         generic.Action._validate(self, fmri=fmri,
                             single_attrs=("value",))
+                elif name.startswith("pkg.additional-"):
+                        # For pkg actuators, just test that the values are valid
+                        # FMRIs. We want to prevent the system from failing when
+                        # newer, currently unknown actuators are encountered.
+                        errors = []
+                        fmris = self.attrlist("value")
+                        for f in fmris:
+                                try:
+                                        pkg.fmri.PkgFmri(f)
+                                except pkg.fmri.IllegalFmri as e:
+                                        errors.append((name, str(e)))
+                        if errors:
+                                raise pkg.actions.InvalidActionAttributesError(
+                                    self, errors, fmri=fmri)
+
+                        generic.Action._validate(self, fmri=fmri)
                 else:
                         # In all other cases, multiple values are assumed to be
                         # permissible.

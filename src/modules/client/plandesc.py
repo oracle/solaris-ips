@@ -130,6 +130,7 @@ class PlanDescription(object):
                 "updated": [[str]],
             },
             "_item_msgs": collections.defaultdict(list),
+            "_pkg_actuators": { str: { str: [ str ] } },
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
             "child_op_vectors": [ ( str, [ li.LinkedImageName ], {}, bool ) ],
@@ -244,6 +245,9 @@ class PlanDescription(object):
                 self._bytes_avail = 0   # avail space for fs
 
                 self._act_timed_out = False
+
+                # Pkg actuators
+                self._pkg_actuators = {}
 
         @staticmethod
         def getstate(obj, je_state=None, reset_volatiles=False):
@@ -740,6 +744,33 @@ class PlanDescription(object):
                 assert type(timeout) == int, "Actuator timeout must be an "\
                     "integer."
                 self._actuators.set_timeout(timeout)
+
+        def add_pkg_actuator(self, trigger_pkg, exec_op, cpkg):
+                """Add a pkg actuator to the plan. The internal dictionary looks
+                like this:
+                        {  trigger_pkg: {
+                                          exec_op : [ changed pkg, ... ],
+                                          ...
+                                        },
+                          ...
+                        }
+                """
+
+                if trigger_pkg in self._pkg_actuators:
+                        if exec_op in self._pkg_actuators[trigger_pkg]:
+                                self._pkg_actuators[trigger_pkg][
+                                    exec_op].append(cpkg)
+                                self._pkg_actuators[trigger_pkg][exec_op].sort()
+                        else:
+                                self._pkg_actuators[trigger_pkg][exec_op] = \
+                                    [cpkg]
+                else:
+                        self._pkg_actuators[trigger_pkg] = {exec_op: [cpkg]}
+
+        def gen_pkg_actuators(self):
+                """Pkg actuators which got triggered by operation."""
+                for trigger_pkg in sorted(self._pkg_actuators):
+                        yield (trigger_pkg, self._pkg_actuators[trigger_pkg])
 
         @property
         def actuator_timed_out(self):

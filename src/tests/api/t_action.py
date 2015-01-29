@@ -622,6 +622,17 @@ Incorrect attribute list.
                         nact = "user username=user {0}=abc".format(attr)
                         assert_invalid_attrs(nact)
 
+                # Malformed pkg actuators
+                assert_invalid_attrs(
+                    "set name=pkg.additional-update-on-uninstall "
+                    "value=&@M")
+                assert_invalid_attrs(
+                    "set name=pkg.additional-update-on-uninstall "
+                    "value=A@1 value=&@M")
+                # Unknown actuator (should pass)
+                act = action.fromstr(
+                    "set name=pkg.additional-update-on-update value=A@1")
+                act.validate()
 
 if __name__ == "__main__":
         unittest.main()

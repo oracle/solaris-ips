@@ -1072,7 +1072,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 p = subprocess.Popen(["/usr/bin/ls", "-/", "c", fpath],
                     stdout=subprocess.PIPE)
                 out, err = p.communicate()
-                # sensitive attr is not in 11 FCS, so no closing } 
+                # sensitive attr is not in 11 FCS, so no closing }
                 expected = "{AH-S---m----"
                 self.assertTrue(expected in out, out)
 
@@ -1468,6 +1468,119 @@ class TestPkgInstallRepoPerTest(pkg5unittest.SingleDepotTestCase):
                     self.img_path(), "bin", "cat")))
 
 
+class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
+        """Test package actuators"""
+        persistent_setup = True
+
+        pkgs = (
+                """
+                    open A@0.5,5.11-0
+                    close """,
+                """
+                    open A@1.0,5.11-0
+                    close """,
+                """
+                    open A@2.0,5.11-0
+                    close """,
+                """
+                    open B@1.0,5.11-0
+                    close """,
+                """
+                    open B@2.0,5.11-0
+                    close """,
+                """
+                    open trigger@1.0,5.11-0
+                    add set name=pkg.additional-update-on-uninstall value=A@2
+                    close """,
+                """
+                    open trigger@2.0,5.11-0
+                    add set pkg.additional-update-on-uninstall=A@1
+                    close """,
+                """
+                    open trigger@3.0,5.11-0
+                    add set name=pkg.additional-uninstall-on-uninstall value=A
+                    close """,
+                """
+                    open trigger@4.0,5.11-0
+                    add set pkg.additional-uninstall-on-uninstall=A
+                    close """,
+                """
+                    open trigger@5.0,5.11-0
+                    add set name=pkg.additional-uninstall-on-uninstall value=A@2 value=B@2
+                    close """,
+                """
+                    open evil@1.0,5.11-0
+                    add set name=pkg.additional-update-on-uninstall value=evil@2
+                    close """,
+                """
+                    open evil@2.0,5.11-0
+                    close """,
+                )
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.pkgsend_bulk(self.rurl, self.pkgs)
+
+        def test_basics(self):
+                """Test that pkg actuators work as expected."""
+                # prepare image
+                self.image_create(self.rurl)
+                self.pkg("install A@1")
+                self.pkg("install -v trigger@1")
+                self.pkg("list A@1 trigger@1")
+
+                # update on uninstall
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A@2")
+
+                self.pkg("install -v trigger@2")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A@1")
+
+                # uninstall on uninstall
+                self.pkg("install -v trigger@3")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A", exit=1)
+
+                self.pkg("install -v trigger@4 A@1")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A", exit=1)
+
+                # multiple values
+                self.pkg("install -v trigger@5 A@1 B@1")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A B", exit=1)
+
+                # test that uninstall actuators also work when pkg is rejected
+                self.pkg("install -v A@1 trigger@1")
+                self.pkg("list A@1")
+                # install with reject
+                self.pkg("install --reject trigger B@1")
+                self.pkg("list A@2")
+                # update with reject
+                self.pkg("install -v trigger@2")
+                self.pkg("update -v --reject trigger B@2")
+                self.pkg("list A@1")
+
+                # self-referencing (evil) pkgs
+                self.pkg("install -v evil@1")
+                # solver will complain about passing same pkg to reject and
+                # proposed dict
+                self.pkg("uninstall -v evil@1", exit=1)
+                # try workaround
+                self.cmdline_run("pkg -R %s -D ignore-pkg-actuators=true " \
+                    "uninstall -v evil@1" % self.get_img_path())
+                self.pkg("list evil", exit=1)
+
+                # Test overlapping user and actuator pkg requests.
+                # Since actuators are treated like user requests, the solver
+                # will pick the latest one.
+                self.pkg("install -v A@1 trigger@1")
+                # update with reject
+                self.pkg("update --parsable=0 --reject trigger A@0.5")
+                self.pkg("list A@2")
+
+
 class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
         """Test --reject option to pkg update/install"""
         persistent_setup = True
@@ -1494,6 +1607,11 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
 
                 """
                     open kernel@1.0,5.11-0.1
+                    add depend type=require fmri=pkg:/incorp
+                    close """,
+
+                """
+                    open kernelX@1.0,5.11-0.1
                     add depend type=require fmri=pkg:/incorp
                     close """,
 
@@ -1532,6 +1650,12 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                     close """,
 
                 """
+                    open kernelX@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=pkg:/incorp
+                    add depend type=require fmri=pkg:/idrX
+                    close """,
+
+                """
                     open idr1@1.0,5.11-0.1.1.0
                     add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.0
                     add depend type=require fmri=idr1_entitlement
@@ -1547,6 +1671,13 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                     open idr2@1.0,5.11-0.1.2.0
                     add depend type=incorporate fmri=kernel@1.0,5.11-0.1.2.0
                     add depend type=require fmri=idr2_entitlement
+                    close """,
+
+                """
+                    open idrX@1.0,5.11-0.1.1.0
+                    add set name=pkg.additional-update-on-uninstall value=kernelX@1.0,5.11-0.1
+                    add depend type=incorporate fmri=kernelX@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=idr1_entitlement
                     close """,
 
                 """
@@ -1693,6 +1824,31 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 # ensure pattern matching works as expected for update.
                 self.pkg("update -v --reject 'idr1*' '*incorp@1.0-0.2'")
                 self.pkg("list  kernel@1.0,5.11-0.2")
+
+        def test_idr_removal(self):
+                """IDR removal with pkg actuators."""
+                self.image_create(self.rurl)
+                self.pkg("install no-idrs")
+                self.pkg("install -v kernelX@1.0,5.11-0.1")
+                self.pkg("list kernelX@1.0,5.11-0.1")
+
+                # try installing idr
+                self.pkg("install -v --reject no-idrs idr1_entitlement")
+                self.pkg("install -v idrX@1.0,5.11-0.1.1.0")
+                # check if IDR pkgs got installed
+                self.pkg("list idrX@1.0,5.11-0.1.1.0")
+                self.pkg("list kernelX@1.0,5.11-0.1.1.0")
+
+                # uninstall IDR
+                self.pkg("uninstall -v idrX@1.0,5.11-0.1.1.0")
+                self.pkg("list kernelX@1.0,5.11-0.1")
+
+                # try with reject
+                self.pkg("install -v idrX@1.0,5.11-0.1.1.0")
+                self.pkg("list idrX@1.0,5.11-0.1.1.0")
+                self.pkg("list kernelX@1.0,5.11-0.1.1.0")
+                self.pkg("install --reject idrX B")
+                self.pkg("list kernelX@1.0,5.11-0.1")
 
         def test_update(self):
                 self.image_create(self.rurl)
@@ -3901,7 +4057,7 @@ adm
                 # assert that the current pkg gate has the correct hash ranking
                 self.assertTrue(len(digest.RANKED_CONTENT_HASH_ATTRS) > 0)
                 self.assertEqual(digest.RANKED_CONTENT_HASH_ATTRS[0], "elfhash")
-                
+
                 # test that pkgrecv, pkgrepo verify, pkg install and pkg verify
                 # do not complain about unknown hash
                 self.pkgrecv("{0} -a -d {1} '*'".format(repo_dir,
@@ -3910,7 +4066,7 @@ adm
                 self.image_create(self.rurl, destroy=True)
                 self.pkg("install -v {0}".format(elf1))
                 # Note that we pass verification if any of the hashes match, but
-                # we require by default that the content hash matches. 
+                # we require by default that the content hash matches.
                 self.pkg("verify")
 
 

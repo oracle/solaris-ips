@@ -117,6 +117,8 @@ class ImagePlan(object):
                 self.__match_rm = {} # dict of fmri -> pattern
                 self.__match_update = {} # dict of fmri -> pattern
 
+                self.__pkg_actuators = set()
+
                 self.pd = None
                 if pd is None:
                         pd = plandesc.PlanDescription(op)
@@ -426,6 +428,127 @@ class ImagePlan(object):
                         ignore_inst_parent_deps = True
                         return solver_cb(ignore_inst_parent_deps)
 
+        def __add_actuator(self, trigger_fmri, trigger_op, exec_op, values,
+            solver_inst, installed_dict):
+                """Add a single actuator to the solver 'solver_inst' and update
+                the plan. 'trigger_fmri' is pkg which triggered the operation
+                and is only used in the plan. 'trigger_op' is the name of the
+                operation which triggered the change, 'exec_op' is the name of
+                the operation which should be performed.
+                'values' contains the fmris of the pkgs which should get
+                changed."""
+
+                if not isinstance(values, list):
+                        values = [values]
+
+                pub_ranks = self.image.get_publisher_ranks()
+
+                matched_vals, unmatched = self.__match_user_fmris(
+                    self.image, values, self.MATCH_INST_STEMS, pub_ranks=pub_ranks,
+                    installed_pkgs=installed_dict, raise_not_installed=False)
+
+                triggered_fmris = set()
+                for m in matched_vals.values():
+                        triggered_fmris |= set(m)
+
+                # When matching on the requested FMRI remove the versions which
+                # might be already in the image because we don't want them in
+                # the proposed list for the solver. Otherwise we might trim on
+                # the installed version which prevents us from downgrading.
+                for t in triggered_fmris.copy():
+                        if t in installed_dict.values():
+                                triggered_fmris.remove(t)
+                        else:
+                                self.__pkg_actuators.add((trigger_fmri,
+                                    t.pkg_name, trigger_op, exec_op))
+
+                solver_inst.add_triggered_op(trigger_op, exec_op,
+                    triggered_fmris)
+
+
+        def __decode_pkg_actuator_attrs(self, action, op):
+                """Read and decode pkg actuator data from action 'action'."""
+
+                # we ignore any non-supported operations
+                supported_exec_ops = [pkgdefs.PKG_OP_UPDATE,
+                    pkgdefs.PKG_OP_UNINSTALL]
+
+                if not action.attrs["name"].startswith("pkg.additional-"):
+                        return
+
+                # e.g.: set name=pkg.additional-update-on-uninstall value=...
+                try:
+                        trigger_op = action.attrs["name"].split("-")[3]
+                        exec_op = action.attrs["name"].split("-")[1]
+                except KeyError:
+                        # Ignore invalid pkg actuators.
+                        return
+
+                if trigger_op != op or exec_op not in supported_exec_ops:
+                        # Ignore unsupported pkg actuators.
+                        return
+
+                for f in action.attrlist("value"):
+                        # Ignore values which are not valid FMRIs, we don't
+                        # support globbing here.
+                        try:
+                                pkg.fmri.PkgFmri(f)
+                        except pkg.fmri.IllegalFmri:
+                                continue
+                        yield (exec_op, f)
+
+        def __set_pkg_actuators(self, fmris, op, solver_inst):
+                """Check the manifests for the pkgs specified by 'fmris' and add
+                them to the solver instance specified by 'solver_inst'. 'op'
+                defines the trigger operation which called this function."""
+
+                trigger_entries = {}
+
+                ignore = DebugValues["ignore-pkg-actuators"]
+                if ignore and ignore.lower() == "true":
+                        return
+
+                # build installed dict
+                installed_dict = ImagePlan.__fmris2dict(
+                    self.image.gen_installed_pkgs())
+                pub_ranks = self.image.get_publisher_ranks()
+
+                # Match only on installed stems. This makes sure no new pkgs
+                # will get installed when an update is specified.
+                matched_vals, unmatched = self.__match_user_fmris(
+                    self.image, fmris, self.MATCH_INST_VERSIONS,
+                    pub_ranks=pub_ranks, installed_pkgs=installed_dict,
+                    raise_not_installed=False)
+
+                pfmris = set()
+                for m in matched_vals:
+                        pfmris |= set(matched_vals[m])
+
+                for f in pfmris:
+                        if not isinstance(f, pkg.fmri.PkgFmri):
+                                f = pkg.fmri.PkgFmri(f)
+                        for a in self.image.get_catalog(
+                            self.image.IMG_CATALOG_INSTALLED).get_entry_actions(
+                            f, [pkg.catalog.Catalog.SUMMARY]):
+                                for exec_op, efmri in \
+                                    self.__decode_pkg_actuator_attrs(a, op):
+                                        self.__add_actuator(f, op,
+                                            exec_op, efmri, solver_inst,
+                                            installed_dict)
+
+        def __add_pkg_actuators_to_pd(self, user_pkgs):
+                """ Add pkg actuators to PlanDescription. Skip any changes which
+                would have been triggered by an actuator but were also requested
+                explicitly by the user to avoid confusion. """
+
+                for (tf, p, t, e) in self.__pkg_actuators:
+                        for (before, after) in self.pd._fmri_changes:
+                                if (before and before.pkg_name == p or
+                                    after and after.pkg_name == p) and \
+                                    p not in user_pkgs:
+                                        self.pd.add_pkg_actuator(tf.pkg_name, e,
+                                            p)
+
         def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
             reject_list=misc.EmptyI, fmri_changes=None, exact_install=False):
@@ -501,6 +624,10 @@ class ImagePlan(object):
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
+                        if reject_set:
+                                self.__set_pkg_actuators(reject_set,
+                                    pkgdefs.PKG_OP_UNINSTALL, solver)
+
                         # run solver
                         new_vector, new_avoid_obs = \
                             solver.solve_install(
@@ -535,6 +662,8 @@ class ImagePlan(object):
                     li_pkg_updates=li_pkg_updates,
                     new_variants=new_variants, new_facets=new_facets,
                     fmri_changes=fmri_changes)
+
+                self.__add_pkg_actuators_to_pd(reject_set)
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -1081,6 +1210,10 @@ class ImagePlan(object):
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
+                        # check for triggered ops
+                        self.__set_pkg_actuators(pkgs_to_uninstall,
+                            pkgdefs.PKG_OP_UNINSTALL, solver)
+
                         # run solver
                         new_vector, new_avoid_obs = \
                             solver.solve_uninstall(
@@ -1099,6 +1232,9 @@ class ImagePlan(object):
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
                     new_facets=new_facets)
+
+                self.__add_pkg_actuators_to_pd(
+                    [x.pkg_name for x in proposed_removals])
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -1150,6 +1286,10 @@ class ImagePlan(object):
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
+                        if reject_set:
+                                self.__set_pkg_actuators(reject_set,
+                                    pkgdefs.PKG_OP_UNINSTALL, solver)
+
                         # run solver
                         if pkgs_update:
                                 new_vector, new_avoid_obs = \
@@ -1184,6 +1324,8 @@ class ImagePlan(object):
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
                     new_facets=new_facets)
+
+                self.__add_pkg_actuators_to_pd(reject_set)
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -1444,7 +1586,7 @@ class ImagePlan(object):
                         ]))
                 else:
                         proposed_fixes = [
-                            f 
+                            f
                             for f in self.image.gen_installed_pkgs(ordered=True)
                         ]
 
