@@ -2725,8 +2725,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # update that child's spinner
                 self.__linked_spinners[i] = \
-                    (self.__linked_spinners[i] + 1).format(len(
-                        self.__spinner_chars))
+                    (self.__linked_spinners[i] + 1) % len(self.__spinner_chars)
                 spinners = "".join([
                         self.__spinner_chars[i]
                         for i in self.__linked_spinners
