@@ -515,16 +515,15 @@ class Transaction(object):
                                         else:
                                                 get_sha1 = False
 
-                                        dyn = elf.get_dynamic(
-                                            elf_name, sha1=get_sha1,
-                                            sha256=get_sha256)
+                                        hashes = elf.get_hashes(elf_name,
+                                            sha1=get_sha1, sha256=get_sha256)
 
                                         if get_sha1:
-                                                action.attrs[elf1] = dyn[elf1]
+                                                action.attrs[elf1] = hashes[elf1]
 
                                         if get_sha256:
                                                 action.attrs[elf256] = \
-                                                    dyn[elf256]
+                                                    hashes[elf256]
 
                                 except elf.ElfError:
                                         pass

@@ -176,7 +176,7 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
 
         try:
                 ei = elf.get_info(proto_file)
-                ed = elf.get_dynamic(proto_file, sha1=False, sha256=False)
+                ed = elf.get_dynamic(proto_file)
         except elf.ElfError as e:
                 raise BadElfFile(proto_file, e)
         deps = [

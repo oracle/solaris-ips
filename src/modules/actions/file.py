@@ -381,7 +381,7 @@ class FileAction(generic.Action):
                                         else:
                                                 get_sha256 = False
                                                 get_sha1 = True
-                                        elfhash = elf.get_dynamic(path,
+                                        elfhash = elf.get_hashes(path,
                                             sha1=get_sha1,
                                             sha256=get_sha256)[ehash_attr]
                                 except RuntimeError as e:

@@ -20,12 +20,13 @@
  */
 
 /*
- *  Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <libelf.h>
 #include <gelf.h>
 
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -255,75 +256,32 @@ getheaderinfo(int fd)
 	return (hi);
 }
 
-/*
- * For ELF nontriviality: Need to turn an ELF object into a unique hash.
- *
- * From Eric Saxe's investigations, we see that the following sections can
- * generally be ignored:
- *
- *    .SUNW_signature, .comment, .SUNW_dof, .debug, .plt, .rela.bss,
- *    .rela.plt, .line, .note
- *
- * Conversely, the following sections are generally significant:
- *
- *    .rodata.str1.8, .rodata.str1.1, .rodata, .data1, .data, .text
- *
- * Accordingly, we will hash on the latter group of sections to determine our
- * ELF hash.
- */
-static int
-hashsection(char *name)
-{
-	if (strcmp(name, ".SUNW_signature") == 0 ||
-	    strcmp(name, ".comment") == 0 ||
-	    strcmp(name, ".SUNW_dof") == 0 ||
-	    strcmp(name, ".debug") == 0 ||
-	    strcmp(name, ".plt") == 0 ||
-	    strcmp(name, ".rela.bss") == 0 ||
-	    strcmp(name, ".rela.plt") == 0 ||
-	    strcmp(name, ".line") == 0 ||
-	    strcmp(name, ".note") == 0 ||
-	    strcmp(name, ".compcom") == 0)
-		return (0);
-
-	return (1);
-}
+typedef struct hashcb_data {
+	char		*base;
+	SHA1_CTX	*s1c;
+	SHA256_CTX	*s2c;
+} hashcb_data_t;
 
 /*
- * Reads a section in 64k increments, adding it to the hash.
+ * Hashes a range from an mmap'd elf file
  */
-static int
-readhash(int fd, SHA1_CTX *shc, SHA256_CTX *shc2, off_t offset, off_t size,
-    int sha1, int sha256)
+static void
+elfhash_cb(size_t offset, size_t size, void *udata)
 {
-	off_t n;
-	char hashbuf[64 * 1024];
-	ssize_t rbytes;
+	hashcb_data_t *h = (hashcb_data_t *)udata;
 
 	if (!size)
-		return (0);
+		return;
 
-	if (lseek(fd, offset, SEEK_SET) == -1) {
-		PyErr_SetFromErrno(PyExc_IOError);
-		return (-1);
+	if (h->s1c != NULL) {
+		SHA1Update(h->s1c, h->base + offset, size);
 	}
 
-	do {
-		n = MIN(size, sizeof (hashbuf));
-		if ((rbytes = read(fd, hashbuf, n)) == -1) {
-			PyErr_SetFromErrno(PyExc_IOError);
-			return (-1);
-		}
-                if (sha1 > 0) {
-		        SHA1Update(shc, hashbuf, rbytes);
-                }
-                if (sha256 > 0) {
-                        SHA256Update(shc2, hashbuf, rbytes);
-                }
-		size -= rbytes;
-	} while (size != 0);
+	if (h->s2c != NULL) {
+		SHA256Update(h->s2c, h->base + offset, size);
+	}
 
-	return (0);
+	return;
 }
 
 /*
@@ -331,11 +289,9 @@ readhash(int fd, SHA1_CTX *shc, SHA256_CTX *shc2, off_t offset, off_t size,
  * information we want from an ELF file.  Returns NULL
  * if it can't find everything (eg. not ELF file, wrong
  * class of ELF file).
- * If sha1 is > 0, we produce an SHA1 hash as part of the returned dictionary.
- * If sha256 is > 0, we include an SHA2 256 hash in the returned dictionary.
  */
 dyninfo_t *
-getdynamic(int fd, int sha1, int sha256)
+getdynamic(int fd)
 {
 	Elf		*elf = NULL;
 	Elf_Scn		*scn = NULL;
@@ -383,12 +339,6 @@ getdynamic(int fd, int sha1, int sha256)
 	}
 
 	/* get useful sections */
-        if (sha1 > 0) {
-                SHA1Init(&shc);
-        }
-        if (sha256 > 0) {
-                SHA256Init(&shc2);
-        }
 	while ((scn = elf_nextscn(elf, scn))) {
 		if (gelf_getshdr(scn, &shdr) != &shdr) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
@@ -398,36 +348,6 @@ getdynamic(int fd, int sha1, int sha256)
 		if (!(name = elf_strptr(elf, sh_str, shdr.sh_name))) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto bad;
-		}
-
-		if (hashsection(name) && (sha1 > 0 || sha256 > 0)) {
-			if (shdr.sh_type == SHT_NOBITS) {
-				/*
-				 * We can't just push shdr.sh_size into
-				 * SHA1Update(), as its raw bytes will be
-				 * different on x86 than they are on sparc.
-				 * Convert to network byte-order first.
-				 */
-				uint64_t n = shdr.sh_size;
-				uint64_t mask = 0xffffffff00000000ULL;
-				uint32_t top = htonl((uint32_t)((n & mask) >> 32));
-				uint32_t bot = htonl((uint32_t)n);
-                                if (sha1 > 0) {
-				        SHA1Update(&shc, &top, sizeof (top));
-                                        SHA1Update(&shc, &bot, sizeof (bot));
-                                }
-                                if (sha256 > 0) {
-                                        SHA256Update(&shc2, &top, sizeof (top));
-                                        SHA256Update(&shc2, &bot, sizeof (bot));
-                                }
-			} else {
-				int hash;
-                                hash = readhash(fd, &shc, &shc2, shdr.sh_offset,
-				    shdr.sh_size, sha1, sha256);
-
-				if (hash == -1)
-					goto bad;
-			}
 		}
 
 		switch (shdr.sh_type) {
@@ -604,12 +524,6 @@ getdynamic(int fd, int sha1, int sha256)
 	dyn->deps = deps;
 	dyn->def = def;
 	dyn->vers = verdef;
-        if (sha1 > 0) {
-	        SHA1Final(dyn->hash, &shc);
-        }
-        if (sha256 > 0) {
-                SHA256Final(dyn->hash256, &shc2);
-        }
 	return (dyn);
 
 bad:
@@ -631,4 +545,81 @@ dyninfo_free(dyninfo_t *dyn)
 	liblist_free(dyn->vers);
 	(void) elf_end(dyn->elf);
 	free(dyn);
+}
+
+/*
+ * gethashes - returns a struct filled with the hashes computed from an ELF
+ * file.  Returns NULL if it encounters a problem (eg. not ELF file, offset out
+ * of range).
+ */
+hashinfo_t *
+gethashes(int fd, int dosha1, int dosha2)
+{
+	hashinfo_t	*hashes = NULL;
+	hashcb_data_t	hdata = { NULL, NULL, NULL };
+	Elf		*elf;
+	struct stat	status;
+
+	if ((elf_version(EV_CURRENT) == EV_NONE) ||
+	    ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL)) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		return (NULL);
+	}
+
+	if ((fstat(fd, &status) == -1) ||
+	    ((hdata.base = mmap(NULL, status.st_size, PROT_READ, MAP_PRIVATE,
+	    fd, 0)) == MAP_FAILED)) {
+		PyErr_SetString(ElfError, strerror(errno));
+		goto hash_out;
+	}
+	    
+	if (dosha1 > 0) {
+		hdata.s1c = (SHA1_CTX *)malloc(sizeof (SHA1_CTX));
+		if (hdata.s1c == NULL) {
+			(void) PyErr_NoMemory();
+		        goto hash_out;
+		}
+		SHA1Init(hdata.s1c);
+	}
+
+	if (dosha2 > 0) {
+		hdata.s2c = (SHA256_CTX *)malloc(sizeof (SHA256_CTX));
+		if (hdata.s2c == NULL) {
+			(void) PyErr_NoMemory();
+			goto hash_out;
+		}
+		SHA256Init(hdata.s2c);
+	}
+
+	if (!gelf_sign_range(elf, elfhash_cb, ELF_SR_INTERPRET, &hdata)) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		goto hash_out;
+	}
+
+	if ((hashes = malloc(sizeof (hashinfo_t))) == NULL) {
+		(void) PyErr_NoMemory();
+		goto hash_out;
+	}
+
+	if (dosha1 > 0) {
+		SHA1Final(hashes->hash, hdata.s1c);
+	}
+
+	if (dosha2 > 0) {
+		SHA256Final(hashes->hash256, hdata.s2c);
+	}
+
+hash_out:
+	(void) elf_end(elf);
+
+	if (hdata.base)
+		munmap(hdata.base, status.st_size);
+
+	if (hdata.s1c)
+		free(hdata.s1c);
+
+	if (hdata.s2c)
+		free(hdata.s2c);
+
+	return (hashes);
 }
