@@ -152,6 +152,13 @@ class SignatureAction(generic.Action):
                         for attr in chashes:
                                 chain_chshes[attr].append(
                                     chashes[attr].hexdigest())
+
+                # Remove any unused hash attributes.
+                for cattrs in (chain_hshes, chain_chshes):
+                        for attr in list(cattrs.keys()):
+                                if not cattrs[attr]:
+                                        cattrs.pop(attr, None)
+ 
                 if chain_hshes:
                         # These attributes are stored as a single value with
                         # spaces in it rather than multiple values to ensure

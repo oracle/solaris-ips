@@ -682,12 +682,9 @@ class Archive(object):
 
                         # Signature actions require special handling.
                         if a.name == "signature":
-                                pref_cattr, chain_val, func = \
-                                    digest.get_least_preferred_hash(a,
-                                    hash_type=digest.CHAIN)
-
-                                for chain in chain_val.split():
-                                        payloads.add(chain)
+                                for c in a.get_chain_certs(
+                                    least_preferred=True):
+                                        payloads.add(c)
 
                                 if repo:
                                         # This bit of logic only possible if

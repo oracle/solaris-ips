@@ -1607,11 +1607,9 @@ class _RepoStore(object):
 
                                 # Signature actions have additional payloads.
                                 if a.name == "signature":
-                                        chain_attr, chain_val, chain_func = \
-                                            digest.get_least_preferred_hash(a,
-                                            hash_type=digest.CHAIN)
-                                        for chain in chain_val.split():
-                                                hashes.add(chain)
+                                        for c in a.get_chain_certs(
+                                            least_preferred=True):
+                                                hashes.add(c)
                         return hashes
 
                 self.__lock_rstore()
@@ -2066,6 +2064,9 @@ class _RepoStore(object):
                                         # several hashes, we need to add each
                                         # fname in the chain and corresponding
                                         # preferred hash to our set of hashes.
+                                        if not fname or not hval:
+                                                continue
+
                                         fnames = fname.split()
                                         chains = hval.split()
                                         for fitem, citem in zip(

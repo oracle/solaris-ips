@@ -536,6 +536,27 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 if sha512_supported:
                         self.base_multiple_signatures("sha512_256")
 
+        def test_no_empty_chain(self):
+                """Test that signing do not create empty chain"""
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10,
+                    debug_hash="sha1+sha512")
+                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % {
+                    "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                    "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                    "pkg": plist[0]}
+
+                self.pkgsign(self.rurl1, sign_args)
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta2")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+                # Make sure signing haven't created empty chain attrs
+                self.pkg("contents -m")
+                self.assert_(self.output.count("chain=") == 0)
+
         def base_multiple_signatures(self, hash_alg):
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
