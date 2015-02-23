@@ -3917,7 +3917,7 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
                 if phys_mem < phys_mem_req:
                         raise pkg5unittest.TestSkippedException(
                             "Not enough memory, "\
-                            "{0:d} GB required, {1:d} GB detected.\n".format(
+                            "{0:f} GB required, {1:f} GB detected.\n".format(
                             phys_mem_req, phys_mem))
 
         def pkg(self, *args, **kwargs):

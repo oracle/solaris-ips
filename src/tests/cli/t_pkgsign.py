@@ -604,8 +604,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assert_(self.output.count("pkg.chain.{0}".format(hash_alg)) == 1)
                 self.assert_(self.output.count("pkg.chain.chashes") == 1)
                 # and SHA1 hashes on both signatures
-                self.assert_(self.output.count("chain=") == 2)
-                self.assert_(self.output.count("chain.chashes=") == 2)
+                self.assert_(self.output.count("chain=") == 1)
+                self.assert_(self.output.count("chain.chashes=") == 1)
 
                 self._api_uninstall(api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy require-signatures")
