@@ -1471,9 +1471,9 @@ class PkgActionChecker(base.ActionChecker):
                         return
 
                 username = action.attrs["username"]
-                if len(username) > 8:
+                if len(username) > 32:
                         engine.error(
-                            _("Username {name} in {pkg} > 8 chars").format(
+                            _("Username {name} in {pkg} > 32 chars").format(
                             name=username,
                             pkg=manifest.fmri),
                             msgid="{0}{1}.1".format(self.name, pkglint_id))
