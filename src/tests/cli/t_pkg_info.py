@@ -182,6 +182,47 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install jade")
                 self.pkg("verify -v")
 
+                # Now remove the manifest and manifest cache for jade and retry
+                # the info for an unprivileged user both local and remote.
+                pfmri = fmri.PkgFmri(plist[0])
+                mdir = os.path.dirname(self.get_img_manifest_path(pfmri))
+                shutil.rmtree(mdir)
+                self.assertFalse(os.path.exists(mdir))
+
+                mcdir = self.get_img_manifest_cache_dir(pfmri)
+                shutil.rmtree(mcdir)
+                self.assertFalse(os.path.exists(mcdir))
+
+                # A remote request should work even though local manifest is gone.
+                self.pkg("info -r jade", su_wrap=True)
+
+                # A local request should succeed even though manifest is missing
+                # since we can still retrieve it from the publisher repository.
+                self.pkg("info jade", su_wrap=True)
+
+                # Remove the publisher, and verify a remote or local request
+                # fails since the manifest isn't cached within the image and we
+                # can't retrieve it.
+                self.pkg("unset-publisher test")
+                self.pkg("info -r jade", su_wrap=True, exit=1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
+
+                self.pkg("info jade", su_wrap=True, exit=1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
+
+                self.pkg("set-publisher test")
+                self.pkg("info -r jade", su_wrap=True, exit=1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
+
+                self.pkg("info jade", su_wrap=True, exit=1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
+
+                self.pkg("set-publisher -p {0} test".format(self.durl))
+
                 # Check local info
                 self.pkg("info jade | grep 'State: Installed'")
                 self.pkg("info jade | grep '      Category: Applications/Sound and Video'")
@@ -210,12 +251,17 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.__check_qoutput(errout=False)
                 self.pkg("info -r turquoise")
 
-                # Now remove the manifest for turquoise and retry the info -r
-                # for an unprivileged user.
-                mdir = os.path.dirname(self.get_img_manifest_path(
-                    fmri.PkgFmri(plist[1])))
+                # Now remove the manifest and manifest cache for turquoise and
+                # retry the info -r for an unprivileged user.
+                pfmri = fmri.PkgFmri(plist[1])
+                mdir = os.path.dirname(self.get_img_manifest_path(pfmri))
                 shutil.rmtree(mdir)
                 self.assertFalse(os.path.exists(mdir))
+
+                mcdir = self.get_img_manifest_cache_dir(pfmri)
+                shutil.rmtree(mcdir)
+                self.assertFalse(os.path.exists(mcdir))
+
                 self.pkg("info -r turquoise", su_wrap=True)
 
                 # Verify output.

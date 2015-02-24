@@ -28,8 +28,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import shutil
 import unittest
 
+import pkg.fmri as fmri
 
 class TestCommandLine(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -140,7 +142,8 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 self.image_destroy()
 
         def test_uninstall_implicit(self):
-                """Test for bug 16769328.""" 
+                """Verify uninstall fails gracefully if needed during implicit
+                directory removal.""" 
 
                 self.make_misc_files("tmp/file1")
                 self.pkgsend_bulk(self.rurl1, (self.implicit11))
@@ -155,6 +158,50 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 os.system("umount {0} ".format(lofs_dir))
                 os.rmdir(lofs_dir)
                 os.rmdir(tmp_dir)
+
+        def test_uninstall_missing_manifest(self):
+                """Verify graceful failure if a package being removed has a
+                missing manifest."""
+
+                def remove_man(pfmri):
+                        # Now remove the manifest and manifest cache for package
+                        # and retry the info for an unprivileged user both local
+                        # and remote.
+                        mdir = os.path.dirname(self.get_img_manifest_path(
+                            pfmri))
+                        shutil.rmtree(mdir)
+                        self.assertFalse(os.path.exists(mdir))
+
+                        mcdir = self.get_img_manifest_cache_dir(pfmri)
+                        shutil.rmtree(mcdir)
+                        self.assertFalse(os.path.exists(mcdir))
+
+                pfmri = fmri.PkgFmri(self.pkgsend_bulk(self.rurl1,
+                    self.quux10)[0])
+                self.image_create(self.rurl1)
+
+                # Install a package.
+                self.pkg("install quux")
+
+                # Should succeed since original manifest can still be retrieved.
+                remove_man(pfmri)
+                self.pkg("uninstall -nv quux")
+                remove_man(pfmri)
+
+                # Should fail since publisher no longer exists and should
+                # explain why.
+                self.pkg("unset-publisher test")
+                self.pkg("uninstall -nv quux", exit=1)
+                self.assert_(len(self.errout) > 1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
+
+                # Should fail because publisher has no configured repositories
+                # and should explain why.
+                self.pkg("set-publisher test")
+                self.pkg("uninstall -nv quux", exit=1)
+                self.assert_("no errors" not in self.errout, self.errout)
+                self.assert_("Unknown" not in self.errout, self.errout)
 
         def test_ignore_missing(self):
                 """Test that uninstall shows correct behavior w/ and w/o

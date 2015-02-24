@@ -3384,7 +3384,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         target = os.path.join(pub.meta_root,
                                             entry)
                                         if os.path.isdir(target):
-                                                shutil.rmtree(target)
+                                                shutil.rmtree(target,
+                                                    ignore_errors=True)
                                         else:
                                                 portable.remove(target)
 
@@ -3400,7 +3401,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         if proot not in exdirs:
                                                 # This removes all manifest data
                                                 # for a given package stem.
-                                                shutil.rmtree(proot)
+                                                shutil.rmtree(proot,
+                                                    ignore_errors=True)
                                                 continue
 
                                         # Remove only manifest data for packages
@@ -3416,7 +3418,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 shutil.rmtree(self._get_publisher_cache_root(
                                     pub.prefix), ignore_errors=True)
                         except EnvironmentError, e:
-                                raise apx._convert_error(e)
+                                if e.errno != errno.ENOENT:
+                                        raise apx._convert_error(e)
 
                 if rebuild:
                         self.__rebuild_image_catalogs(progtrack=progtrack)

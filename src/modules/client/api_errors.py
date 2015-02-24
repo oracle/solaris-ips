@@ -1805,9 +1805,12 @@ class NoPublisherRepositories(TransportError):
                 self.publisher = prefix
 
         def __str__(self):
-                return _("Unable to retrieve requested package data for "
-                    "publisher {0}; no repositories are currently configured "
-                    "for use with this publisher.").format(self.publisher)
+                return _("""
+The requested operation requires that one or more package repositories are
+configured for publisher '{0}'.
+
+Use 'pkg set-publisher' to add new package repositories or restore previously
+configured package repositories for publisher '{0}'.""").format(self.publisher)
 
 
 class MoveRelativeToSelf(PublisherError):

@@ -1295,7 +1295,12 @@ class Transport(object):
                 header = None
 
                 if not pub:
-                        pub = self.cfg.get_publisher(pub_prefix)
+                        try:
+                                pub = self.cfg.get_publisher(pub_prefix)
+                        except apx.UnknownPublisher:
+                                # Publisher has likely been removed but we need
+                                # data from it.
+                                raise apx.NoPublisherRepositories(pub_prefix)
 
                 if isinstance(pub, publisher.Publisher):
                         header = self.__build_header(intent=intent,
@@ -1447,7 +1452,14 @@ class Transport(object):
                         else:
                                 eid = fmri.publisher
 
-                        pub = self.cfg.get_publisher(fmri.publisher)
+                        try:
+                                pub = self.cfg.get_publisher(fmri.publisher)
+                        except apx.UnknownPublisher:
+                                # Publisher has likely been removed but we need
+                                # data from it.
+                                raise apx.NoPublisherRepositories(
+                                    fmri.publisher)
+
                         header = self.__build_header(intent=intent,
                             uuid=self.__get_uuid(pub))
 
@@ -2177,14 +2189,14 @@ class Transport(object):
 
                         if not repo_found and fail:
                                 raise fail
-                        if not repo_found and operation and versions:
-                                if not origins and \
-                                    isinstance(pub, publisher.Publisher):
-                                        # Special error case; no transport
-                                        # configuration available for this
-                                        # publisher.
-                                        raise apx.NoPublisherRepositories(pub)
 
+                        if not origins and \
+                            isinstance(pub, publisher.Publisher):
+                                # Special error case; no transport configuration
+                                # available for this publisher.
+                                raise apx.NoPublisherRepositories(pub)
+
+                        if not repo_found and operation and versions:
                                 # If a versioned operation was requested and
                                 # wasn't found, then raise an unsupported
                                 # exception using the newest version allowed.

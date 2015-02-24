@@ -118,6 +118,29 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     self.bogus_url))
                 self.pkg("unset-publisher test3 test4")
 
+                # Ensure that some package manifests are cached for the
+                # publisher.
+                self.pkg("info -r '//test/*'")
+
+                # Now verify that success occurs when attempting to remove a
+                # publisher that has already had its private directory removed
+                # from $IMG_DIR/pkg.
+                api_inst = self.get_img_api_obj()
+                pub = api_inst.get_publisher(prefix="test")
+                self.assert_(os.path.exists(pub.meta_root))
+                pub.remove_meta_root()
+                self.assert_(not os.path.exists(pub.meta_root))
+
+                pub_cache_path = os.path.join(self.img_path(), "var", "pkg",
+                    "cache", "publisher", "test")
+                self.assert_(os.path.exists(pub_cache_path),
+                    os.listdir(os.path.join(self.img_path(), "var", "pkg",
+                    "cache", "publisher")))
+                shutil.rmtree(pub_cache_path)
+                self.assert_(not os.path.exists(pub_cache_path))
+
+                self.pkg("unset-publisher test")
+
         def test_publisher_uuid(self):
                 """verify uuid is set manually and automatically for a
                 publisher"""
@@ -283,7 +306,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "a.example.com")
 
         def test_missing_perms(self):
-                """Bug 2393"""
+                """Verify graceful failure if certificates are unreadable by
+                unprivileged users."""
 
                 self.image_create(self.rurl, prefix="test")
 
