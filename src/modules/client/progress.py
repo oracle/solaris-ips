@@ -2136,7 +2136,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 if outspec.first:
                         if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
                                 self._pe.cprint("{0} ... ".format(
-                                    self.lintitems.name, end=''))
+                                    self.lintitems.name), end='')
                         elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
                                 self._pe.cprint("# --- {0} ---".format(
                                     self.lintitems.name))

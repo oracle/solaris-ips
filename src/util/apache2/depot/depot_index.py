@@ -716,19 +716,19 @@ class Pkg5Dispatch(object):
                         # Convert the error to a 404 to obscure implementation
                         # from the client, but log the original error to the
                         # server logs.
-                        error = cherrypy._cperror._HTTPErrorTemplate.format(
-                            status=httplib.NOT_FOUND,
-                            message=httplib.responses[httplib.NOT_FOUND],
-                            traceback="",
-                            version=cherrypy.__version__)
+                        error = cherrypy._cperror._HTTPErrorTemplate % \
+                            {"status": httplib.NOT_FOUND,
+                            "message": httplib.responses[httplib.NOT_FOUND],
+                            "traceback": "",
+                            "version": cherrypy.__version__}
                         print("Path that raised exception was {0}".format(
                             cherrypy.request.path_info))
                         print(message)
                         return error
                 else:
-                        error = cherrypy._cperror._HTTPErrorTemplate.format(
-                            status=httplib.NOT_FOUND, message=message,
-                            traceback="", version=cherrypy.__version__)
+                        error = cherrypy._cperror._HTTPErrorTemplate % \
+                            {"status": httplib.NOT_FOUND, "message": message,
+                            "traceback": "", "version": cherrypy.__version__}
                         return error
 
         def dispatch(self, path_info):

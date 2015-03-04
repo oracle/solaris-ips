@@ -297,7 +297,7 @@ class DepotHTTP(_Depot):
                         if key in response.headers:
                                 del response.headers[key]
 
-                return _HTTPErrorTemplate.format(**kwargs)
+                return _HTTPErrorTemplate % kwargs
 
         def _get_req_pub(self):
                 """Private helper function to retrieve the publisher prefix
