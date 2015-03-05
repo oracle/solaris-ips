@@ -3033,8 +3033,14 @@ class ImagePlan(object):
                         #
                         # First, check for on-disk content changes.
                         opath = orig.get_installed_path(self.image.get_root())
-                        pres_type = dest._check_preserve(orig, ap.p,
-                            orig_path=opath)
+                        try:
+                                pres_type = dest._check_preserve(orig, ap.p,
+                                    orig_path=opath)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        continue
+                                else:
+                                        raise
 
                         final_path = dest.get_installed_path(
                             self.image.get_root())

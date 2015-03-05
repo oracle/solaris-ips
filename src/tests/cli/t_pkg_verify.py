@@ -55,6 +55,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add file dricon_mp path=/etc/minor_perm mode=644 owner=root group=sys preserve=true
             add file dricon_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
             add file dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
+            add file permission mode=0600 owner=root group=bin path=/etc/permission preserve=true
             add driver name=zigit alias=pci8086,1234
             close
             """
@@ -72,7 +73,8 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
            "dricon_cls": """\n""",
            "dricon_mp": """\n""",
            "dricon_dp": """\n""",
-           "dricon_ep": """\n"""
+           "dricon_ep": """\n""",
+           "permission": ""
         }
 
         def setUp(self):
@@ -112,6 +114,10 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # Should not fail since informational messages are not
                 # fatal.
                 self.pkg_verify("foo")
+                # Unprivileged users don't cause a traceback.
+                retcode, output = self.pkg_verify("foo", su_wrap=True, out=True,
+                    exit=1)
+                self.assert_("Traceback" not in output)
 
                 # Should not output anything when using -q.
                 self.pkg_verify("-q foo")
