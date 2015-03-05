@@ -332,7 +332,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.durl, (self.foo10, self.quux10))
                 try:
                         api_obj = self.image_create(self.durl, prefix="bobcat")
-                except api_errors.CatalogRefreshException, e:
+                except api_errors.CatalogRefreshException as e:
                         self.debug("\n".join(str(x[-1]) for x in e.failed))
                         raise
 
@@ -1084,7 +1084,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.image_create()
                 try:
                         api_obj.write_syspub("", [], 999)
-                except api_errors.UnsupportedP5SVersion, e:
+                except api_errors.UnsupportedP5SVersion as e:
                         str(e)
                 else:
                         raise RuntimeError("Expected write_syspub to raise "

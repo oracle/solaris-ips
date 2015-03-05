@@ -339,7 +339,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         continue
                                 try:
                                         trusted_ca = m2.X509.load_cert(pth)
-                                except m2.X509.X509Error, e:
+                                except m2.X509.X509Error as e:
                                         self.__bad_trust_anchors.append(
                                             (pth, str(e)))
                                 else:
@@ -402,12 +402,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 self.history.log_operation_start(op,
                                     be_name=be_name, be_uuid=be_uuid)
                         yield
-                except apx.ImageLockedError, e:
+                except apx.ImageLockedError as e:
                         # Don't unlock the image if the call failed to
                         # get the lock.
                         error = e
                         raise
-                except Exception, e:
+                except Exception as e:
                         error = e
                         self.unlock()
                         raise
@@ -439,7 +439,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         # Attempt to obtain a file lock.
                         self.__lockfile.lock(blocking=blocking)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         exc = None
                         if e.errno == errno.ENOENT:
                                 return
@@ -588,7 +588,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # happen later during an operation
                                         # that requires the file.)
                                         return
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         # Ensure ssl_dir exists; makedirs handles any errors.
@@ -607,7 +607,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                 # Ensure file can be read by unprivileged users.
                                 os.chmod(dest, misc.PKG_FILE_MODE)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         return dest
 
@@ -679,7 +679,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     global_settings.sysrepo_pub_cache_path)
                 try:
                         portable.remove(cache_path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise apx._convert_error(e)
 
@@ -724,7 +724,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for sd in img_dirs:
                         try:
                                 misc.makedirs(os.path.join(root, sd))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
         def __set_dirs(self, imgtype, root, startd=None, progtrack=None,
@@ -755,7 +755,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if os.path.isdir(root):
                         try:
                                 cwd = os.getcwd()
-                        except Exception, e:
+                        except Exception as e:
                                 # If current directory can't be obtained for any
                                 # reason, ignore the error.
                                 cwd = None
@@ -763,7 +763,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         try:
                                 os.chdir(root)
                                 self.__root = os.getcwd()
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         finally:
                                 if cwd:
@@ -800,7 +800,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 shutil.rmtree(epath)
                                         else:
                                                 portable.remove(epath)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise apx._convert_error(e)
                 elif not purge:
                         # Determine if the version 4 configuration file exists.
@@ -943,7 +943,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # move it somewhere else.
                 try:
                         os.makedirs(self._incoming_cache_dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__write_cache_dir = tempfile.mkdtemp(
                                     prefix="download-{0:d}-".format(
@@ -1162,7 +1162,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         newest[f.pkg_name] = max(nver,
                                             f.version)
 
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # If a catalog file is just missing, ignore it.
                                 # If there's a worse error, make sure the user
                                 # knows about it.
@@ -1257,7 +1257,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         # Ensure Image directory structure is valid.
                         self.mkdirs()
-                except apx.PermissionsException, e:
+                except apx.PermissionsException as e:
                         if not allow_unprivileged:
                                 raise
                         # An unprivileged user is attempting to use the
@@ -1275,7 +1275,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 tmp_root = self.imgdir + ".new"
                 try:
                         shutil.rmtree(tmp_root)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno in (errno.EROFS, errno.EPERM) and \
                             allow_unprivileged:
                                 # Bail.
@@ -1285,7 +1285,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 try:
                         self.mkdirs(root=tmp_root, version=self.CURRENT_VERSION)
-                except apx.PermissionsException, e:
+                except apx.PermissionsException as e:
                         # Same handling needed as above; but not after this.
                         if not allow_unprivileged:
                                 raise
@@ -1309,7 +1309,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 assert os.path.isfile(src)
                                 try:
                                         os.link(src, dest)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise apx._convert_error(e)
 
                 # Next, link history data into place.
@@ -1398,7 +1398,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 misc.makedirs(os.path.dirname(dest))
                                 try:
                                         os.link(src, dest)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise apx._convert_error(e)
 
                         # Link manifest.
@@ -1408,7 +1408,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         misc.makedirs(os.path.dirname(dest))
                         try:
                                 os.link(src, dest)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                 # Next, copy the old configuration into the new location using
@@ -1424,7 +1424,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 dest = os.path.join(tmp_root, "pkg5.image")
                 try:
                         portable.copyfile(src, dest)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
                 # Update the new configuration's version information and then
@@ -1458,7 +1458,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if os.path.exists(old_repo):
                                 new_repo = os.path.join(tmp_root, "repo")
                                 portable.rename(old_repo, new_repo)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
                 self.find_root(self.root, exact_match=True, progtrack=progtrack)
 
@@ -1783,7 +1783,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                     uri.ssl_cert,
                                                     prefix=p.prefix,
                                                     uri=uri)
-                                        except apx.ExpiredCertificate, e:
+                                        except apx.ExpiredCertificate as e:
                                                 errors.append(e)
 
                                 if uri.ssl_key:
@@ -1794,7 +1794,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                             uri.ssl_key,
                                                             publisher=p,
                                                             uri=uri)
-                                        except EnvironmentError, e:
+                                        except EnvironmentError as e:
                                                 raise apx._convert_error(e)
 
                 if errors:
@@ -2053,7 +2053,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 try:
                         shutil.rmtree(self.imgdir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def properties(self):
@@ -2098,7 +2098,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 pub.validate_config()
                                 self.refresh_publishers(pubs=[pub],
                                     progtrack=progtrack)
-                        except Exception, e:
+                        except Exception as e:
                                 # Remove the newly added publisher since
                                 # it is invalid or the retrieval failed.
                                 if not pub.sys_pub:
@@ -2142,7 +2142,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Before continuing, validate SSL information.
                 try:
                         self.check_cert_validity(pubs=[pub])
-                except apx.ExpiringCertificate, e:
+                except apx.ExpiringCertificate as e:
                         logger.error(str(e))
 
                 self.cfg.publishers[pub.prefix] = pub
@@ -2156,7 +2156,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 fh = open(ca, "rb")
                                 s = fh.read()
                                 fh.close()
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         raise apx.MissingFileArgumentException(
                                             ca)
@@ -2221,10 +2221,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     manf.gen_actions(), pub, self.trust_anchors,
                                     self.cfg.get_policy(
                                         "check-certificate-revocation"))
-                        except apx.SigningException, e:
+                        except apx.SigningException as e:
                                 e.pfmri = fmri
                                 yield e.sig, [e], [], []
-                        except apx.InvalidResourceLocation, e:
+                        except apx.InvalidResourceLocation as e:
                                 yield None, [e], [], []
 
                 progresstracker.plan_add_progress(
@@ -2441,9 +2441,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
                             intent=intent, alt_pub=alt_pub)
-                except apx.ActionExecutionError, e:
+                except apx.ActionExecutionError as e:
                         raise
-                except pkg.actions.ActionError, e:
+                except pkg.actions.ActionError as e:
                         raise apx.InvalidPackageErrors([e])
 
                 return m
@@ -2591,7 +2591,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         mpath = self.get_manifest_path(pfmri)
                         try:
                                 portable.remove(mpath)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise apx._convert_error(e)
 
@@ -2656,7 +2656,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         shutil.rmtree(orig_state_root, True)
 
                         progtrack.job_add_progress(progtrack.JOB_IMAGE_STATE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # shutil.Error can contains a tuple of lists of errors.
                         # Some of the error entries may be a tuple others will
                         # be a string due to poor error handling in shutil.
@@ -2735,7 +2735,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 croot = os.path.join(self._statedir, name)
                 try:
                         os.makedirs(croot)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno in (errno.EACCES, errno.EROFS):
                                 # Allow operations to work for
                                 # unprivileged users.
@@ -2884,7 +2884,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         open(pathname, "w")
                         os.chmod(pathname, file_mode)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -2902,7 +2902,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # delete the flag file.
                 try:
                         portable.remove(pathname)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -3275,13 +3275,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # operations.
                 try:
                         self.check_cert_validity(pubs=pubs_to_refresh)
-                except apx.ExpiringCertificate, e:
+                except apx.ExpiringCertificate as e:
                         logger.error(str(e))
 
                 try:
                         # Ensure Image directory structure is valid.
                         self.mkdirs()
-                except Exception, e:
+                except Exception as e:
                         self.history.log_operation_end(error=e)
                         raise
 
@@ -3299,12 +3299,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if pub.refresh(full_refresh=full_refresh,
                                     immediate=immediate, progtrack=progtrack):
                                         updated = True
-                        except apx.PermissionsException, e:
+                        except apx.PermissionsException as e:
                                 failed.append((pub, e))
                                 # No point in continuing since no data can
                                 # be written.
                                 break
-                        except apx.ApiException, e:
+                        except apx.ApiException as e:
                                 failed.append((pub, e))
                                 continue
                         finally:
@@ -3417,7 +3417,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # publisher if possible.
                                 shutil.rmtree(self._get_publisher_cache_root(
                                     pub.prefix), ignore_errors=True)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise apx._convert_error(e)
 
@@ -3598,7 +3598,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         os.chmod(sp, misc.PKG_FILE_MODE)
                         os.chmod(op, misc.PKG_FILE_MODE)
                         os.chmod(bp, misc.PKG_FILE_MODE)
-                except BaseException, e:
+                except BaseException as e:
                         try:
                                 os.unlink(sp)
                                 os.unlink(op)
@@ -3618,7 +3618,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         portable.rename(sp, stripped_path)
                         portable.rename(op, offsets_path)
                         portable.rename(bp, conflicting_keys_path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__action_cache_dir = self.temporary_dir()
                                 stripped_path = os.path.join(
@@ -3655,7 +3655,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         try:
                                 portable.remove(os.path.join(
                                     self.__action_cache_dir, fname))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         continue
                                 raise apx._convert_error(e)
@@ -3668,7 +3668,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         of = open(os.path.join(self.__action_cache_dir,
                             "actions.offsets"), "rb")
-                except IOError, e:
+                except IOError as e:
                         if e.errno != errno.ENOENT:
                                 raise
                         actdict, otimestamp = self._create_fast_lookups()
@@ -3752,7 +3752,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if version != "VERSION 1":
                                         return None
                                 return set(l.rstrip() for l in fh)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 return None
                         raise
@@ -3944,7 +3944,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # Force standard mode.
                         os.chmod(rval, misc.PKG_DIR_MODE)
                         return rval
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
                                 atexit.register(shutil.rmtree,
@@ -3972,7 +3972,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         fd, name = tempfile.mkstemp(dir=self.__tmpdir)
                         if close:
                                 os.close(fd)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
                                 atexit.register(shutil.rmtree,
@@ -4270,17 +4270,17 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         raise RuntimeError(
                                             "Unknown api op: {0}".format(_op))
 
-                        except apx.ActionExecutionError, e:
+                        except apx.ActionExecutionError as e:
                                 raise
-                        except pkg.actions.ActionError, e:
+                        except pkg.actions.ActionError as e:
                                 raise apx.InvalidPackageErrors([e])
                         except apx.ApiException:
                                 raise
                         try:
                                 self.__call_imageplan_evaluate(ip)
-                        except apx.ActionExecutionError, e:
+                        except apx.ActionExecutionError as e:
                                 raise
-                        except pkg.actions.ActionError, e:
+                        except pkg.actions.ActionError as e:
                                 raise apx.InvalidPackageErrors([e])
                 finally:
                         self.__cleanup_alt_pkg_certs()
@@ -4533,7 +4533,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # to prevent the operation from
                                         # continuing in these cases.
                                         useimg = False
-                                except apx.CatalogRefreshException, cre:
+                                except apx.CatalogRefreshException as cre:
                                         cre.errmessage = \
                                             _("pkg(5) update check failed.")
                                         raise
@@ -4653,7 +4653,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         tf.close()
                         portable.rename(tmp_file, state_file)
 
-                except Exception, e:
+                except Exception as e:
                         logger.warn("Cannot save avoid list: {0}".format(
                             str(e)))
                         return
@@ -4685,9 +4685,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if os.path.isfile(state_file):
                         try:
                                 version, d = json.load(file(state_file))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
-                        except ValueError, e:
+                        except ValueError as e:
                                 raise apx.InvalidFreezeFile(state_file)
                         if version != self.__FROZEN_DICT_VERSION:
                                 raise apx.UnknownFreezeFileVersion(
@@ -4708,7 +4708,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 json.dump(
                                     (self.__FROZEN_DICT_VERSION, new_dict), tf)
                         portable.rename(tmp_file, state_file)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
                 self.__rebuild_image_catalogs()
 

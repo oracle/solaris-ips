@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -41,7 +40,7 @@ def chown(path, owner, group):
         # However, we don't want to fail an install because of this.
         try:
                 return os.chown(path, owner, group)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if owner == -2 and e.errno == errno.EINVAL:
                         return os.chown(path, -1, group)
                 raise

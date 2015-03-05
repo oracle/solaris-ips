@@ -819,7 +819,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
         with file(src, "r") as sfp:
                 try:
                         os.unlink(dst)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise DistutilsFileError("could not delete "
                                     "'{0}': {1}".format(dst, e))
@@ -1089,7 +1089,7 @@ def syntax_check(filename):
             distutils.utils module) is broken, and doesn't stop on error. """
         try:
                 py_compile.compile(filename, os.devnull, doraise=True)
-        except py_compile.PyCompileError, e:
+        except py_compile.PyCompileError as e:
                 res = ""
                 for err in e.exc_value:
                         if isinstance(err, basestring):
@@ -1271,7 +1271,7 @@ class build_py_func(_build_py):
 
                 try:
                         dst_mtime = os.stat(outfile).st_mtime
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.ENOENT:
                                 raise
                         dst_mtime = time.time()
@@ -1378,7 +1378,7 @@ def rm_f(filepath):
 
         try:
                 os.unlink(filepath)
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
 

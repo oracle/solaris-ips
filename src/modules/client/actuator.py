@@ -235,7 +235,7 @@ class Actuator(object):
 
                 try:
                         func(*args, **kwargs)
-                except smf.NonzeroExitException, nze:
+                except smf.NonzeroExitException as nze:
                         if nze.return_code == smf.EXIT_TIMEOUT:
                                 self.act_timed_out = True
                         elif " ".join(nze.output).startswith("zlogin:"):

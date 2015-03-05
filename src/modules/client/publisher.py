@@ -1262,7 +1262,7 @@ class Publisher(object):
                 lcfile = os.path.join(self.meta_root, "last_refreshed")
                 try:
                         mod_time = os.stat(lcfile).st_mtime
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 return None
                         raise
@@ -1311,7 +1311,7 @@ class Publisher(object):
                         # tracking file.
                         try:
                                 portable.remove(lcfile)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # If the file can't be removed due to
                                 # permissions, a read-only filesystem, or
                                 # because it doesn't exist, continue on.
@@ -1330,7 +1330,7 @@ class Publisher(object):
                                     misc.time_to_timestamp(
                                     calendar.timegm(value.utctimetuple()))))
                                 os.close(fd)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ELOOP:
                                         raise api_errors.UnexpectedLinkError(
                                             os.path.dirname(lcfile),
@@ -1346,7 +1346,7 @@ class Publisher(object):
                         # can be used to track the information with the actual
                         # time (in UTC) contained within.
                         create_tracker()
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
 
@@ -1357,7 +1357,7 @@ class Publisher(object):
                                 # If the directory can't be created due to
                                 # permissions, move on.
                                 pass
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # If the directory can't be created due to a
                                 # read-only filesystem, move on.
                                 if e.errno != errno.EROFS:
@@ -1524,7 +1524,7 @@ pkg unset-publisher {0}
                 for path in (self.meta_root, self.catalog_root):
                         try:
                                 os.makedirs(path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
@@ -1540,7 +1540,7 @@ pkg unset-publisher {0}
                     self.__subj_root, self.__crl_root):
                         try:
                                 os.makedirs(path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno in (errno.EACCES, errno.EROFS):
                                         pass
                                 elif e.errno != errno.EEXIST:
@@ -1675,7 +1675,7 @@ pkg unset-publisher {0}
                                         shutil.rmtree(opath)
                                 else:
                                         portable.remove(opath)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise api_errors._convert_error(e)
 
                 # if the catalog already exists on disk, is empty, and if
@@ -1696,7 +1696,7 @@ pkg unset-publisher {0}
                                 try:
                                         portable.remove(os.path.join(
                                             self.catalog_root, entry))
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise apx._convert_error(e)
 
                 # If there's only one origin, then just symlink its catalog
@@ -1911,7 +1911,7 @@ pkg unset-publisher {0}
                         if full_refresh or v0_cat.origin() not in repo.origins:
                                 try:
                                         v0_cat.destroy(root=croot)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno == errno.EACCES:
                                                 raise api_errors.PermissionsException(
                                                     e.filename)
@@ -1939,7 +1939,7 @@ pkg unset-publisher {0}
                         # catalog retrieval instead.
                         try:
                                 v0_cat.destroy(root=croot)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
@@ -2096,7 +2096,7 @@ pkg unset-publisher {0}
                 try:
                         misc.makedirs(croot)
                         tempdir = tempfile.mkdtemp(dir=croot)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -2266,7 +2266,7 @@ pkg unset-publisher {0}
 
                 try:
                         shutil.rmtree(self.meta_root)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -2377,7 +2377,7 @@ pkg unset-publisher {0}
 
                 try:
                         return m2.X509.load_cert_string(s)
-                except m2.X509.X509Error, e:
+                except m2.X509.X509Error as e:
                         if pkg_hash is not None:
                                 raise api_errors.BadFileFormat(_("The file "
                                     "with hash {0} was expected to be a PEM "
@@ -2398,7 +2398,7 @@ pkg unset-publisher {0}
                 try:
                         with open(pkg_hash_pth, "wb") as fh:
                                 fh.write(cert.as_pem())
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         file_problem = True
 
                 # Note that while we store certs by their subject hashes,
@@ -2417,7 +2417,7 @@ pkg unset-publisher {0}
                                 try:
                                         portable.link(pkg_hash_pth, fn)
                                         made_link = True
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         pass
                         if not made_link:
                                 self.__issuers.setdefault(subj_hsh, []).append(
@@ -2482,7 +2482,7 @@ pkg unset-publisher {0}
                                 cert = m2.X509.load_cert(pth)
                                 res.append(cert)
                                 c += 1
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         t = api_errors._convert_error(e,
                             [errno.ENOENT])
                         if t:
@@ -2640,7 +2640,7 @@ pkg unset-publisher {0}
                 # try to retrieve it from the server.
                 try:
                         tmp_fd, tmp_pth = tempfile.mkstemp(dir=self.__crl_root)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno in (errno.EACCES, errno.EPERM):
                                 tmp_fd, tmp_pth = tempfile.mkstemp()
                         else:
@@ -2696,7 +2696,7 @@ pkg unset-publisher {0}
                 # it as valid.
                 try:
                         ext = cert.get_ext("crlDistributionPoints")
-                except LookupError, e:
+                except LookupError as e:
                         return True
                 uri = ext.get_value()
                 crl = self.__get_crl(uri)
@@ -2765,7 +2765,7 @@ pkg unset-publisher {0}
                                     "PATHLEN:" in supported_vs:
                                         try:
                                                 cert_pathlen = int(v[len("PATHLEN:"):])
-                                        except ValueError, e:
+                                        except ValueError as e:
                                                 raise api_errors.UnsupportedExtensionValue(cert, ext, v)
                                         if cur_pathlen > cert_pathlen:
                                                 raise api_errors.PathlenTooShort(cert, cur_pathlen, cert_pathlen)
@@ -2932,7 +2932,7 @@ pkg unset-publisher {0}
                                                             cur_pathlen)
                                                         self.__check_revocation(c,
                                                             ca_dict, use_crls)
-                                                except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate), e:
+                                                except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate) as e:
                                                         certs_with_problems.append(e)
                                                         problem = True
                                                 # If this certificate has no

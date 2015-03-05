@@ -1206,7 +1206,7 @@ class Config(object):
                 pval.append(value)
                 try:
                         propobj.value = pval
-                except PropertyConfigError, e:
+                except PropertyConfigError as e:
                         if hasattr(e, "section") and not e.section:
                                 e.section = section
                         raise
@@ -1324,7 +1324,7 @@ class Config(object):
                 else:
                         try:
                                 propobj.value = pval
-                        except PropertyConfigError, e:
+                        except PropertyConfigError as e:
                                 if hasattr(e, "section") and not e.section:
                                         e.section = section
                                 raise
@@ -1366,7 +1366,7 @@ class Config(object):
                 propobj = self._get_matching_property(section, name)
                 try:
                         propobj.value = value
-                except PropertyConfigError, e:
+                except PropertyConfigError as e:
                         if hasattr(e, "section") and not e.section:
                                 e.section = section
                         raise
@@ -1481,7 +1481,7 @@ class FileConfig(Config):
                 try:
                         efile = codecs.open(self._target, mode="rb",
                             encoding="utf-8")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 # Assume default configuration.
                                 pass
@@ -1531,7 +1531,7 @@ class FileConfig(Config):
                                         pass
                                 try:
                                         propobj.value = value
-                                except PropertyConfigError, e:
+                                except PropertyConfigError as e:
                                         if hasattr(e, "section") and \
                                             not e.section:
                                                 e.section = section
@@ -1591,7 +1591,7 @@ class FileConfig(Config):
                         st = None
                         try:
                                 st = os.stat(self._target)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
 
@@ -1599,7 +1599,7 @@ class FileConfig(Config):
                                 os.fchmod(fd, stat.S_IMODE(st.st_mode))
                                 try:
                                         portable.chown(fn, st.st_uid, st.st_gid)
-                                except OSError, e:
+                                except OSError as e:
                                         if e.errno != errno.EPERM:
                                                 raise
                         else:
@@ -1610,7 +1610,7 @@ class FileConfig(Config):
                                         cp.write(ef)
                         portable.rename(fn, self._target)
                         self._dirty = False
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -1839,7 +1839,7 @@ class SMFConfig(Config):
                                 # Finally, set the property value.
                                 try:
                                         propobj.value = value
-                                except PropertyConfigError, e:
+                                except PropertyConfigError as e:
                                         if hasattr(e, "section") and \
                                             not e.section:
                                                 e.section = section

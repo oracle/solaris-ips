@@ -159,7 +159,7 @@ def _chown_dir(dir):
         gid = portable.get_group_by_name(DEPOT_GROUP, None, False)
         try:
                 os.chown(dir, uid, gid)
-        except OSError, err:
+        except OSError as err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
                         raise DepotException(_("Unable to chown {dir} to "
                             "{user}:{group}: {err}").format(
@@ -178,7 +178,7 @@ def _get_publishers(root):
                 if repository.version != 4:
                         raise DepotException(
                             _("pkg.depot-config only supports v4 repositories"))
-        except Exception, e:
+        except Exception as e:
                 raise DepotException(e)
 
         all_pubs = [pub.prefix for pub in repository.get_publishers()]
@@ -321,11 +321,11 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                 with file(conf_path, "wb") as conf_file:
                         conf_file.write(conf_text)
 
-        except socket.gaierror, err:
+        except socket.gaierror as err:
                 raise DepotException(
                     _("Unable to write Apache configuration: {host}: "
                     "{err}").format(**locals()))
-        except (OSError, IOError, EnvironmentError, apx.ApiException), err:
+        except (OSError, IOError, EnvironmentError, apx.ApiException) as err:
                 traceback.print_exc(err)
                 raise DepotException(
                     _("Unable to write depot_httpd.conf: {0}").format(err))
@@ -345,7 +345,7 @@ def _write_versions_response(htdocs_path, fragment=False):
                             DEPOT_VERSIONS_STR)
 
                 versions_file.close()
-        except (OSError, apx.ApiException), err:
+        except (OSError, apx.ApiException) as err:
                 raise DepotException(
                     _("Unable to write versions response: {0}").format(err))
 
@@ -373,7 +373,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
                     pub_file:
                         p5i.write(pub_file, pub_objs)
 
-        except (OSError, apx.ApiException), err:
+        except (OSError, apx.ApiException) as err:
                 raise DepotException(
                     _("Unable to write publisher response: {0}").format(err))
 
@@ -386,7 +386,7 @@ def _write_status_response(status, htdocs_path, repo_prefix):
                 with file(status_path, "w") as status_file:
                         status_file.write(json.dumps(status, ensure_ascii=False,
                             indent=2, sort_keys=True))
-        except OSError, err:
+        except OSError as err:
                 raise DepotException(
                     _("Unable to write status response: {0}").format(err))
 
@@ -517,7 +517,7 @@ def cleanup_htdocs(htdocs_dir):
         """Destroy any existing "htdocs" directory."""
         try:
                 shutil.rmtree(htdocs_dir, ignore_errors=True)
-        except OSError, err:
+        except OSError as err:
                 raise DepotException(
                     _("Unable to remove an existing 'htdocs' directory "
                     "in the runtime directory: {0}").format(err))
@@ -563,7 +563,7 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
                                         misc.makedirs(writable_root)
                                         _chown_dir(writable_root)
 
-                        except DepotException, err:
+                        except DepotException as err:
                                 errors.append(str(err))
                 if errors:
                         raise DepotException(_("Unable to write configuration: "
@@ -591,7 +591,7 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
                         _chown_dir(cache_dir)
                 else:
                         msg(_("Created {0}/depot.conf").format(runtime_dir))
-        except (DepotException, OSError, apx.ApiException), err:
+        except (DepotException, OSError, apx.ApiException) as err:
                 error(err)
                 ret = EXIT_OOPS
         return ret
@@ -801,7 +801,7 @@ def main_func():
                         else:
                                 usage("unknown option {0}".format(opt))
 
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         if not runtime_dir:
@@ -856,7 +856,7 @@ def main_func():
                                             "into /etc/certs/CA directory of "
                                             "each client.").format(
                                             ssl_ca_cert_file))
-                        except (DepotException, EnvironmentError), e:
+                        except (DepotException, EnvironmentError) as e:
                                     error(e)
                                     return EXIT_OOPS
 
@@ -874,7 +874,7 @@ def main_func():
                                                 _update_smf_props(smf_fmri, prop_list,
                                                     orig, dest)
                                         except (smf.NonzeroExitException,
-                                            RuntimeError), e:
+                                            RuntimeError) as e:
                                                 error(e)
                                                 return EXIT_OOPS
                 else:
@@ -921,7 +921,7 @@ def main_func():
         if use_smf_instances:
                 try:
                         repo_info = get_smf_repo_info()
-                except DepotException, e:
+                except DepotException as e:
                         error(e)
 
         # In the future we may produce configuration for different
@@ -934,7 +934,7 @@ def main_func():
 
         try:
                 _check_unique_repo_properties(repo_info)
-        except DepotException, e:
+        except DepotException as e:
                 error(e)
 
         ret = refresh_conf(repo_info, log_dir, host, port, runtime_dir,
@@ -961,13 +961,13 @@ def handle_errors(func, *args, **kwargs):
                 # one handle the other instances.
                 try:
                         __ret = func(*args, **kwargs)
-                except (MemoryError, EnvironmentError), __e:
+                except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
-        except SystemExit, __e:
+        except SystemExit as __e:
                 raise __e
         except (PipeError, KeyboardInterrupt):
                 # Don't display any messages here to prevent possible further

@@ -78,7 +78,7 @@ def add_transform(transform, filename, lineno):
         for a in attrdict:
                 try:
                         attrdict[a] = re.compile(attrdict[a])
-                except re.error, e:
+                except re.error as e:
                         raise RuntimeError, \
                             _("transform ({transform}) has regexp error "
                             "({err}) in matching clause"
@@ -215,7 +215,7 @@ def add_transform(transform, filename, lineno):
                         regexp = re.compile(args[1])
                 except (AttributeError, RuntimeError):
                         regexp = args[1]
-                except re.error, e:
+                except re.error as e:
                         raise RuntimeError, \
                             _("transform ({transform}) has 'edit' operation "
                             "with malformed regexp ({err})").format(
@@ -250,7 +250,7 @@ def add_transform(transform, filename, lineno):
                                     rx.sub(newrep, v)
                                     for v in val
                                 ]
-                        except re.error, e:
+                        except re.error as e:
                                 raise RuntimeError, \
                                     _("transform ({transform}) has edit "
                                     "operation with replacement string regexp "
@@ -275,7 +275,7 @@ def add_transform(transform, filename, lineno):
 
                 try:
                         regexp = re.compile(args[1])
-                except re.error, e:
+                except re.error as e:
                         raise RuntimeError, \
                             _("transform ({transform}) has 'delete' operation"
                             "with malformed regexp ({err})").format(
@@ -296,7 +296,7 @@ def add_transform(transform, filename, lineno):
                                         action.attrs[attr] = new_val
                                 else:
                                         del action.attrs[attr]
-                        except re.error, e:
+                        except re.error as e:
                                 raise RuntimeError, \
                                     _("transform ({transform}) has delete "
                                     "operation with replacement string regexp "
@@ -345,7 +345,7 @@ def add_transform(transform, filename, lineno):
                                 return (pkg.actions.fromstr(newmsg), action)
                         except (pkg.actions.MalformedActionError,
                             pkg.actions.UnknownActionError,
-                            pkg.actions.InvalidActionError), e:
+                            pkg.actions.InvalidActionError) as e:
                                 raise RuntimeError(e)
 
                 operation = emit_func
@@ -543,7 +543,7 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                                 orig_attrs = action.attrs.copy()
                         action = operation(action, matches, pkg_attrs,
                             act_filename, act_lineno)
-                except RuntimeError, e:
+                except RuntimeError as e:
                         raise RuntimeError, \
                             "Transform specified in file {0}, line {1} reports {2}".format(
                             filename, lineno, e)
@@ -588,7 +588,7 @@ def searching_open(filename, try_cwd=False):
             os.path.exists(filename):
                 try:
                         return filename, file(filename)
-                except IOError, e:
+                except IOError as e:
                         raise RuntimeError, _("Cannot open file: {0}").format(e)
 
         for i in includes:
@@ -596,7 +596,7 @@ def searching_open(filename, try_cwd=False):
                 if os.path.exists(f):
                         try:
                                 return f, file(f)
-                        except IOError, e:
+                        except IOError as e:
                                 raise RuntimeError, _("Cannot open file: {0}").format(e)
 
         raise RuntimeError, _("File not found: \'{0}\'").format(filename)
@@ -663,7 +663,7 @@ def read_file(tp, ignoreincludes):
                                                 line)
                         else:
                                 ret.append((line, filename, lineno))
-                except RuntimeError, e:
+                except RuntimeError as e:
                         error(_("File {file}, line {line:d}: {exception}").format(
                             file=filename,
                             line=lineno,
@@ -712,7 +712,7 @@ def main_func():
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         try:
@@ -722,13 +722,13 @@ def main_func():
                         infiles =  [("<stdin>", sys.stdin)]
 
                 lines = []
-        except RuntimeError, e:
+        except RuntimeError as e:
                 error(_("Error processing input arguments: {0}").format(e))
         try:
                 for f in infiles:
                         lines.extend(read_file(f, ignoreincludes))
                         lines.append((None, f[0], None))
-        except RuntimeError, e:
+        except RuntimeError as e:
                 sys.exit(1)
 
         output = []
@@ -759,7 +759,7 @@ def main_func():
                         act = pkg.actions.fromstr(line)
                 except (pkg.actions.MalformedActionError,
                     pkg.actions.UnknownActionError,
-                    pkg.actions.InvalidActionError), e:
+                    pkg.actions.InvalidActionError) as e:
                         error("File {0} line {1:d}: {2}".format(filename, lineno, e))
                 try:
                         if act.name == "set":
@@ -772,7 +772,7 @@ def main_func():
                         comment, a = apply_transforms(act, pkg_attrs, verbose,
                             filename, lineno)
                         output.append((comment, a, prepended_macro))
-                except RuntimeError, e:
+                except RuntimeError as e:
                         error("File {0} line {1:d}: {2}".format(filename, lineno, e))
 
         try:
@@ -784,7 +784,7 @@ def main_func():
                 for p in printinfo:
                         print("{0}".format(p), file=printfile)
 
-        except IOError, e:
+        except IOError as e:
                 error(_("Cannot write extra data {0}").format(e))
 
         try:
@@ -815,7 +815,7 @@ def main_func():
                                 elif s not in emitted:
                                         print(s, file=outfile)
                                         emitted.add(s)
-        except IOError, e:
+        except IOError as e:
                 error(_("Cannot write output {0}").format(e))
 
         return 0
@@ -829,9 +829,9 @@ if __name__ == "__main__":
                 exit_code = main_func()
         except (PipeError, KeyboardInterrupt):
                 exit_code = 1
-        except SystemExit, __e:
+        except SystemExit as __e:
                 exit_code = __e
-        except Exception, __e:
+        except Exception as __e:
                 traceback.print_exc()
                 error(misc.get_traceback_message(), exitcode=None)
                 exit_code = 99

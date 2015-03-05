@@ -2664,7 +2664,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # been emptied.
                 try:
                         self._api_install(api_obj, ["example_pkg"])
-                except apx.BrokenChain, e:
+                except apx.BrokenChain as e:
                         assert len(e.ext_exs) == 1
                 else:
                         raise RuntimeError("Didn't get expected exception")

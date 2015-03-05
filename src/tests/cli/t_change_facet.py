@@ -94,7 +94,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                         try:
                                 self.assert_file_is_there(file_path,
                                     negate=not exist)
-                        except AssertionError, e:
+                        except AssertionError as e:
                                 error += "\n{0}".format(e)
 
                 if error:
@@ -108,7 +108,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 try:
                         f = file(file_path)
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT and negate:
                                 return
                         self.assert_(False, "File {0} is missing".format(path))

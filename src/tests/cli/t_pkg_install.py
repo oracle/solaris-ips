@@ -10271,7 +10271,7 @@ adm
                 path = os.path.join(self.get_img_path(), "dir/pathname")
                 try:
                         f = open(path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 self.assert_(False, "File dir/pathname does not exist")
                         else:
@@ -10357,7 +10357,7 @@ adm
                 dir_path = os.path.join(self.get_img_path(), path)
                 try:
                         st = os.stat(dir_path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 self.assert_(False, "Directory {0} does not exist".format(path))
                         else:

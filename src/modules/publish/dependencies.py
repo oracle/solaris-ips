@@ -456,7 +456,7 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                                 deps.extend(ds)
                                 elist.extend(errs)
                                 __update_pkg_attrs(pkg_attrs, attrs)
-                        except base.DependencyAnalysisError, e:
+                        except base.DependencyAnalysisError as e:
                                 elist.append(e)
         for a in mfst.gen_actions_by_type("hardlink"):
                 deps.extend(hardlink.process_hardlink_deps(a, pkg_vars))
@@ -546,7 +546,7 @@ def __bypass_deps(ds, bypass, pkg_attrs):
                                         if not item.startswith("^"):
                                                 item = "^" + item
                                         bypass_regexps.append(re.compile(item))
-                except re.error, e:
+                except re.error as e:
                         raise base.InvalidDependBypassValue(item, e)
 
                 for path in full_paths:
@@ -586,7 +586,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
         m = manifest.Manifest()
         try:
                 fh = open(fp, "rb")
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 raise apx._convert_error(e)
         acts = []
         missing_files = []
@@ -607,7 +607,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                             basedirs=basedirs,
                             load_data=load_data)
 
-                except actions.ActionDataError, e:
+                except actions.ActionDataError as e:
                         new_a, local_path, used_bd = actions.internalizestr(
                             l, basedirs=basedirs, load_data=False)
                         if new_a.name == "license":
@@ -617,7 +617,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                                 missing_files.append(base.MissingFile(
                                     new_a.attrs["path"], basedirs))
                                 continue
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         action_errs.append(e)
                         continue
                 else:
@@ -630,7 +630,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                                 a.attrs[portable.PD_PROTO_DIR_LIST] = basedirs
                 try:
                         a.validate()
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         action_errs.append(e)
                 else:
                         acts.append(a)
@@ -1662,7 +1662,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                                 add_fmri_path_mapping(tmp_files, tmp_links,
                                     pfmri, mfst, use_template=True)
                                 pkg_cnt += 1
-                except apx.InventoryException, e:
+                except apx.InventoryException as e:
                         # If "*" didn't match any packages, then the image was
                         # empty.
                         try:
@@ -1701,7 +1701,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                 try:
                         if pfmri is None:
                                 pfmri = fmri.PkgFmri(name)
-                except fmri.IllegalFmri, e:
+                except fmri.IllegalFmri as e:
                         raise BadPackageFmri(mp, e)
                 add_fmri_path_mapping(files.delivered, links, pfmri, mfst,
                     distro_vars)
@@ -1729,7 +1729,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                         try:
                                 r = split_off_variants(d, pkg_vars)
                                 ds.append(r)
-                        except __NotSubset, e:
+                        except __NotSubset as e:
                                 diff = bad_ds.setdefault(d.attrs[reason_prefix],
                                     variants.VCTDifference(set(), set()))
                                 diff.type_diffs.update(e.diff.type_diffs)
@@ -1755,7 +1755,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                                 r = split_off_variants(d, pkg_vars,
                                     satisfied=True)
                                 deps.append(r)
-                        except __NotSubset, e:
+                        except __NotSubset as e:
                                 diff = bad_deps.setdefault(
                                     d.attrs.get("fmri", None),
                                     variants.VCTDifference(set(), set()))

@@ -111,13 +111,13 @@
                     num_to_return=(rpp + 1),
                     matching_version=mver,
                     return_latest=not sav)
-        except qp.QueryLengthExceeded, e:
+        except qp.QueryLengthExceeded as e:
                 results = None
                 query_error = str(e)
-        except qp.QueryException, e:
+        except qp.QueryException as e:
                 results = None
                 query_error = str(e)
-        except Exception, e:
+        except Exception as e:
                 results = None
                 query_error = urllib.quote(str(e))
 

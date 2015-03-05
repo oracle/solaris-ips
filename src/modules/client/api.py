@@ -595,7 +595,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 try:
                         self._img.check_cert_validity()
-                except apx.ExpiringCertificate, e:
+                except apx.ExpiringCertificate as e:
                         logger.warning(e)
                 except:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -2457,7 +2457,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         secs = time.mktime(local_dt.timetuple())
                         utc_dt = datetime.datetime.utcfromtimestamp(secs)
                         return utc_dt.strftime("%Y%m%dT%H%M%SZ")
-                except ValueError, e:
+                except ValueError as e:
                         raise apx.HistoryRequestException(e)
 
         def __get_history_paths(self, time_val, utc_now):
@@ -2570,7 +2570,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not times:
                         try:
                                 entries = os.listdir(self._img.history.path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         # No history to list.
                                         return
@@ -2583,7 +2583,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 try:
                         uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
-                except apx.ApiException, e:
+                except apx.ApiException as e:
                         uuid_be_dic = {}
 
                 for entry in entries:
@@ -2592,7 +2592,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 yield history.History(
                                     root_dir=self._img.history.root_dir,
                                     filename=entry, uuid_be_dic=uuid_be_dic)
-                        except apx.HistoryLoadException, e:
+                        except apx.HistoryLoadException as e:
                                 if e.parse_failure:
                                         # Ignore corrupt entries.
                                         continue
@@ -2685,21 +2685,21 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         try:
                                 self._img.imageplan.preexecute()
-                        except search_errors.ProblematicPermissionsIndexException, e:
+                        except search_errors.ProblematicPermissionsIndexException as e:
                                 raise apx.ProblematicPermissionsIndexException(e)
                         except:
                                 raise
 
                         self._disable_cancel()
                         self.__prepared = True
-                except apx.CanceledException, e:
+                except apx.CanceledException as e:
                         self._cancel_done()
                         if self._img.history.operation_name:
                                 # If an operation is in progress, log
                                 # the error and mark its end.
                                 self.log_operation_end(error=e)
                         raise
-                except Exception, e:
+                except Exception as e:
                         self._cancel_cleanup_exception()
                         if self._img.history.operation_name:
                                 # If an operation is in progress, log
@@ -2774,7 +2774,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 try:
                                         be.create_backup_be(
                                             be_name=self.__backup_be_name)
-                                except Exception, e:
+                                except Exception as e:
                                         self.log_operation_end(error=e)
                                         raise
                                 except:
@@ -2791,7 +2791,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 try:
                                         be.init_image_recovery(self._img,
                                             self.__be_name)
-                                except Exception, e:
+                                except Exception as e:
                                         self.log_operation_end(error=e)
                                         raise
                                 except:
@@ -2817,12 +2817,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         try:
                                 try:
                                         self._img.imageplan.execute()
-                                except apx.WrapIndexingException, e:
+                                except apx.WrapIndexingException as e:
                                         raise_later = e
 
                                 if not self._img.linked.nothingtodo():
                                         self._img.linked.syncmd()
-                        except RuntimeError, e:
+                        except RuntimeError as e:
                                 if self.__new_be == True:
                                         be.restore_image()
                                 else:
@@ -2830,26 +2830,26 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
                                 raise
-                        except search_errors.IndexLockedException, e:
+                        except search_errors.IndexLockedException as e:
                                 error = apx.IndexLockedException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except search_errors.ProblematicPermissionsIndexException, e:
+                        except search_errors.ProblematicPermissionsIndexException as e:
                                 error = apx.ProblematicPermissionsIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except search_errors.InconsistentIndexException, e:
+                        except search_errors.InconsistentIndexException as e:
                                 error = apx.CorruptedIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except NonzeroExitException, e:
+                        except NonzeroExitException as e:
                                 # Won't happen during update
                                 be.restore_install_uninstall()
                                 error = apx.ActuatorException(e)
                                 self.log_operation_end(error=error)
                                 raise error
 
-                        except Exception, e:
+                        except Exception as e:
                                 if self.__new_be == True:
                                         be.restore_image()
                                 else:
@@ -3321,12 +3321,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 progtrack.refresh_start_pub(pub)
                                 try:
                                         pub.refresh()
-                                except apx.PermissionsException, e:
+                                except apx.PermissionsException as e:
                                         failed.append((pub, e))
                                         # No point in continuing since no data
                                         # can be written.
                                         break
-                                except apx.ApiException, e:
+                                except apx.ApiException as e:
                                         failed.append((pub, e))
                                         continue
                                 finally:
@@ -4410,7 +4410,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
                                     description=description, attrs=attrs))
-                except apx.InventoryException, e:
+                except apx.InventoryException as e:
                         if e.illegal:
                                 self.log_operation_end(
                                     result=RESULT_FAILED_BAD_REQUEST)
@@ -4613,9 +4613,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if q.return_type == \
                                     query_p.Query.RETURN_PACKAGES:
                                         query.propagate_pkg_return()
-                        except query_p.BooleanQueryException, e:
+                        except query_p.BooleanQueryException as e:
                                 raise apx.BooleanQueryException(e)
-                        except query_p.ParseError, e:
+                        except query_p.ParseError as e:
                                 raise apx.ParseError(e)
                         self._img.update_index_dir()
                         assert self._img.index_dir
@@ -4632,7 +4632,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     self._img.gen_installed_pkgs,
                                     self._img.get_manifest_path,
                                     self._img.list_excludes())
-                        except search_errors.InconsistentIndexException, e:
+                        except search_errors.InconsistentIndexException as e:
                                 raise apx.InconsistentIndexException(e)
                         # i is being inserted to track which query the results
                         # are for.  None is being inserted since there is no
@@ -4640,7 +4640,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         try:
                                 for r in res:
                                         yield i, None, r
-                        except apx.SlowSearchUsed, e:
+                        except apx.SlowSearchUsed as e:
                                 ssu = e
                 if ssu:
                         raise ssu
@@ -4729,9 +4729,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 new_qs.append(query_p.Query(str(query),
                                     q.case_sensitive, q.return_type,
                                     q.num_to_return, q.start_point))
-                        except query_p.BooleanQueryException, e:
+                        except query_p.BooleanQueryException as e:
                                 raise apx.BooleanQueryException(e)
-                        except query_p.ParseError, e:
+                        except query_p.ParseError as e:
                                 raise apx.ParseError(e)
 
                 query_str_and_args_lst = new_qs
@@ -4780,15 +4780,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         except apx.NegativeSearchResult:
                                 continue
                         except (apx.InvalidDepotResponseException,
-                            apx.TransportError), e:
+                            apx.TransportError) as e:
                                 # Alternate source failed portal test or can't
                                 # be contacted at all.
                                 failed.append((descriptive_name, e))
                                 continue
-                        except apx.UnsupportedSearchError, e:
+                        except apx.UnsupportedSearchError as e:
                                 unsupported.append((descriptive_name, e))
                                 continue
-                        except apx.MalformedSearchRequest, e:
+                        except apx.MalformedSearchRequest as e:
                                 ex = self._validate_search(
                                     query_str_and_args_lst)
                                 if ex:
@@ -4825,7 +4825,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         except apx.CanceledException:
                                 raise
-                        except apx.TransportError, e:
+                        except apx.TransportError as e:
                                 failed.append((descriptive_name, e))
                                 continue
 
@@ -4888,9 +4888,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         qp = query_p.QueryParser(l)
                         try:
                                 query = qp.parse(q.text)
-                        except query_p.BooleanQueryException, e:
+                        except query_p.BooleanQueryException as e:
                                 return apx.BooleanQueryException(e)
-                        except query_p.ParseError, e:
+                        except query_p.ParseError as e:
                                 return apx.ParseError(e)
 
                 return None
@@ -4911,7 +4911,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self.__progresstracker, self._img.list_excludes())
                         ind.rebuild_index_from_scratch(
                             self._img.gen_installed_pkgs())
-                except search_errors.ProblematicPermissionsIndexException, e:
+                except search_errors.ProblematicPermissionsIndexException as e:
                         error = apx.ProblematicPermissionsIndexException(e)
                         self.log_operation_end(error=error)
                         raise error
@@ -5092,7 +5092,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     search_after=search_after,
                                     search_before=search_before,
                                     search_first=search_first)
-                except apx.CanceledException, e:
+                except apx.CanceledException as e:
                         self._cancel_done()
                         raise
                 finally:
@@ -5111,7 +5111,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Before continuing, validate SSL information.
                 try:
                         self._img.check_cert_validity(pubs=[pub])
-                except apx.ExpiringCertificate, e:
+                except apx.ExpiringCertificate as e:
                         logger.warning(str(e))
 
                 def origins_changed(oldr, newr):
@@ -5261,7 +5261,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # time the client checks to see if a refresh is
                                 # needed and is allowed, one will be performed.
                                 pub.last_refreshed = None
-                except Exception, e:
+                except Exception as e:
                         # If any of the above fails, the original publisher
                         # information needs to be restored so that state is
                         # consistent.
@@ -5438,7 +5438,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         npat.version = \
                                             pkg.version.Version(pat_ver)
 
-                        except (fmri.FmriError, pkg.version.VersionError), e:
+                        except (fmri.FmriError, pkg.version.VersionError) as e:
                                 # Whatever the error was, return it.
                                 error = e
                         yield (pat, error, npat, matcher)
@@ -5459,7 +5459,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self._img.allow_ondisk_upgrade = True
                         return self._img.update_format(
                             progtrack=self.__progresstracker)
-                except apx.CanceledException, e:
+                except apx.CanceledException as e:
                         self._cancel_done()
                         raise
                 finally:
@@ -5548,7 +5548,7 @@ class Query(query_p.Query):
                 try:
                         query_p.Query.__init__(self, text, case_sensitive,
                             return_type, num_to_return, start_point)
-                except query_p.QueryLengthExceeded, e:
+                except query_p.QueryLengthExceeded as e:
                         raise apx.ParseError(e)
 
 
@@ -5695,7 +5695,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         destroy_root = False
         try:
                 destroy_root = not os.path.exists(root)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.errno == errno.EACCES:
                         raise apx.PermissionsException(
                             e.filename)
@@ -5722,7 +5722,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                             ssl_cert,
                                             prefix=prefix,
                                             uri=repo_uri)
-                                except apx.ExpiringCertificate, e:
+                                except apx.ExpiringCertificate as e:
                                         logger.warning(e)
 
                         repo = publisher.RepositoryURI(repo_uri,
@@ -5776,7 +5776,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                             ssl_cert,
                                             prefix=prefix,
                                             uri=origins[0])
-                                except apx.ExpiringCertificate, e:
+                                except apx.ExpiringCertificate as e:
                                         logger.warning(e)
 
                         repo = publisher.Repository()
@@ -5830,7 +5830,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 img.create(pubs, facets=facets, is_zone=is_zone,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
                     variants=variants, props=props)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.errno == errno.EACCES:
                         raise apx.PermissionsException(
                             e.filename)

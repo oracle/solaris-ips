@@ -491,7 +491,7 @@ def list_inventory(op, api_inst, pargs,
                         # executing this command and that the
                         # refresh doesn't matter.
                         pass
-                except api_errors.CatalogRefreshException, e:
+                except api_errors.CatalogRefreshException as e:
                         succeeded = display_catalog_failures(e,
                             ignore_perms_failure=True)
                         if succeeded != e.total:
@@ -619,13 +619,13 @@ def list_inventory(op, api_inst, pargs,
                 return EXIT_OK
         except (api_errors.InvalidPackageErrors,
             api_errors.ActionExecutionError,
-            api_errors.PermissionsException), e:
+            api_errors.PermissionsException) as e:
                 error(e, cmd=op)
                 return EXIT_OOPS
-        except api_errors.CatalogRefreshException, e:
+        except api_errors.CatalogRefreshException as e:
                 display_catalog_failures(e)
                 return EXIT_OOPS
-        except api_errors.InventoryException, e:
+        except api_errors.InventoryException as e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
@@ -662,7 +662,7 @@ def list_inventory(op, api_inst, pargs,
                                     patterns=e.notfound, raise_unmatched=True):
                                         pub, stem, ver = entry[0]
                                         no_updates.append(stem)
-                        except api_errors.InventoryException, exc:
+                        except api_errors.InventoryException as exc:
                                 not_installed = exc.notfound
 
                         err_str = ""
@@ -1306,16 +1306,16 @@ def __api_prepare_plan(operation, api_inst):
         # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
+        except (api_errors.PermissionsException, api_errors.UnknownErrors) as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return EXIT_OOPS
-        except api_errors.TransportError, e:
+        except api_errors.TransportError as e:
                 # move past the progress tracker line.
                 msg("\n")
                 raise e
-        except api_errors.PlanLicenseErrors, e:
+        except api_errors.PlanLicenseErrors as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 logger.error("\n")
@@ -1328,15 +1328,15 @@ def __api_prepare_plan(operation, api_inst):
                     "use the --accept option.  To display all of the related "
                     "licenses, use the --licenses option."))
                 return EXIT_LICENSE
-        except api_errors.InvalidPlanError, e:
+        except api_errors.InvalidPlanError as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return EXIT_OOPS
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.ImageInsufficentSpace, e:
+        except api_errors.ImageInsufficentSpace as e:
                 error(str(e))
                 return EXIT_OOPS
         except KeyboardInterrupt:
@@ -1356,18 +1356,18 @@ def __api_execute_plan(operation, api_inst):
                         rval = EXIT_ACTUATOR
                 else:
                         rval = EXIT_OK
-        except RuntimeError, e:
+        except RuntimeError as e:
                 error(_("{operation} failed: {err}").format(
                     operation=operation, err=e))
                 rval = EXIT_OOPS
         except (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
-            api_errors.InvalidPackageErrors), e:
+            api_errors.InvalidPackageErrors) as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 rval = EXIT_OOPS
-        except (api_errors.LinkedImageException), e:
+        except (api_errors.LinkedImageException) as e:
                 error(_("{operation} failed (linked image exception(s)):\n"
                     "{err}").format(operation=operation, err=e))
                 rval = e.lix_exitrv
@@ -1380,32 +1380,32 @@ def __api_execute_plan(operation, api_inst):
                     "Please retry this operation on an alternate boot "
                     "environment.").format(operation))
                 rval = EXIT_NOTLIVE
-        except api_errors.CorruptedIndexException, e:
+        except api_errors.CorruptedIndexException as e:
                 error("The search index appears corrupted.  Please rebuild the "
                     "index with 'pkg rebuild-index'.")
                 rval = EXIT_OOPS
-        except api_errors.ProblematicPermissionsIndexException, e:
+        except api_errors.ProblematicPermissionsIndexException as e:
                 error(str(e))
                 error(_("\n(Failure to consistently execute pkg commands as a "
                     "privileged user is often a source of this problem.)"))
                 rval = EXIT_OOPS
-        except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
+        except (api_errors.PermissionsException, api_errors.UnknownErrors) as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 rval = EXIT_OOPS
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 rval = EXIT_OOPS
-        except api_errors.BEException, e:
+        except api_errors.BEException as e:
                 error(e)
                 rval = EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException:
                 raise
-        except api_errors.ImageInsufficentSpace, e:
+        except api_errors.ImageInsufficentSpace as e:
                 error(str(e))
                 rval = EXIT_OOPS
-        except Exception, e:
+        except Exception as e:
                 error(_("An unexpected error happened during "
                     "{operation}: {err}").format(
                     operation=operation, err=e))
@@ -1452,7 +1452,7 @@ def __api_alloc(imgdir, exact_match, pkg_image_used):
                 return api.ImageInterface(imgdir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME,
                     exact_match=exact_match)
-        except api_errors.ImageNotFoundException, e:
+        except api_errors.ImageNotFoundException as e:
                 if e.user_specified:
                         if pkg_image_used:
                                 error(_("No image rooted at '{0}' "
@@ -1463,10 +1463,10 @@ def __api_alloc(imgdir, exact_match, pkg_image_used):
                 else:
                         error(_("No image found."))
                 return
-        except api_errors.PermissionsException, e:
+        except api_errors.PermissionsException as e:
                 error(e)
                 return
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return
 
@@ -1659,7 +1659,7 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                         display_plan(_api_inst, child_plans, _noexecute,
                             _omit_headers, _op, _parsable_version, _quiet,
                             _quiet_plan, _show_licenses, _stage, _verbose)
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(e, cmd=_op)
                         return EXIT_OOPS
 
@@ -1696,7 +1696,7 @@ def __api_plan_save(api_inst):
                                 os.unlink(path)
                         if re.search("^pkgs\.[0-9]+\.json$", f):
                                 os.unlink(path)
-        except OSError, e:
+        except OSError as e:
                 raise api_errors._convert_error(e)
 
         pkg_timer.record("saving plan", logger=logger)
@@ -1710,7 +1710,7 @@ def __api_plan_load(api_inst, stage, origins):
         try:
                 with open(path) as fobj:
                         plan._load(fobj)
-        except OSError, e:
+        except OSError as e:
                 raise api_errors._convert_error(e)
 
         pkg_timer.record("loading plan", logger=logger)
@@ -1729,7 +1729,7 @@ def __api_plan_delete(api_inst):
         path = __api_plan_file(api_inst)
         try:
                 os.unlink(path)
-        except OSError, e:
+        except OSError as e:
                 raise api_errors._convert_error(e)
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
@@ -2327,7 +2327,7 @@ def set_mediator(op, api_inst, pargs,
                         try:
                                 __display_parsable_plan(api_inst,
                                     parsable_version)
-                        except api_errors.ApiException, e:
+                        except api_errors.ApiException as e:
                                 error(e, cmd=op)
                                 return EXIT_OOPS
                 else:
@@ -2345,7 +2345,7 @@ def set_mediator(op, api_inst, pargs,
         if parsable_version is not None:
                 try:
                         __display_parsable_plan(api_inst, parsable_version)
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(e, cmd=op)
                         return EXIT_OOPS
 
@@ -2408,7 +2408,7 @@ def unset_mediator(op, api_inst, pargs,
                         try:
                                 __display_parsable_plan(api_inst,
                                     parsable_version)
-                        except api_errors.ApiException, e:
+                        except api_errors.ApiException as e:
                                 error(e, cmd=op)
                                 return EXIT_OOPS
                 else:
@@ -2420,7 +2420,7 @@ def unset_mediator(op, api_inst, pargs,
         if parsable_version is not None:
                 try:
                         __display_parsable_plan(api_inst, parsable_version)
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(e, cmd=op)
                         return EXIT_OOPS
 
@@ -2507,7 +2507,7 @@ def freeze(api_inst, args):
                         logger.info(_("{name} was frozen at {ver}").format(
                             name=pfmri.pkg_name, ver=vertext))
                 return EXIT_OK
-        except api_errors.FreezePkgsException, e:
+        except api_errors.FreezePkgsException as e:
                 error("\n{0}".format(e), cmd="freeze")
                 return EXIT_OOPS
         except:
@@ -2544,7 +2544,7 @@ def __display_cur_frozen(api_inst, display_headers):
 
         try:
                 lst = sorted(api_inst.get_frozen_list())
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return EXIT_OOPS
         if len(lst) == 0:
@@ -2649,7 +2649,7 @@ def v1_extract_info(tup, return_type, pub):
                         return False
                 try:
                         action = actions.fromstr(action.rstrip())
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         error(_("The repository returned an invalid or "
                             "unsupported action.\n{0}").format(e))
                         return False
@@ -2743,10 +2743,10 @@ def search(api_inst, args):
         try:
                 query = [api.Query(qtext, case_sensitive,
                     return_actions)]
-        except api_errors.BooleanQueryException, e:
+        except api_errors.BooleanQueryException as e:
                 error(e)
                 return EXIT_OOPS
-        except api_errors.ParseError, e:
+        except api_errors.ParseError as e:
                 error(e)
                 return EXIT_OOPS
 
@@ -2785,7 +2785,7 @@ def search(api_inst, args):
                                                 query_num, pub, \
                                                     (v, return_type, tmp) = \
                                                     raw_value
-                                        except ValueError, e:
+                                        except ValueError as e:
                                                 error(_("The repository "
                                                     "returned a malformed "
                                                     "result:{0!r}").format(
@@ -2833,7 +2833,7 @@ def search(api_inst, args):
                                                         page_timeout = min(
                                                             page_timeout * 2,
                                                             max_timeout)
-                        except api_errors.ApiException, e:
+                        except api_errors.ApiException as e:
                                 err = e
                         lines = list(misc.list_actions_by_attrs(unprocessed_res,
                             attrs, show_all=True, remove_consec_dup_lines=True,
@@ -2864,20 +2864,20 @@ def search(api_inst, args):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
                 return EXIT_OOPS
-        except api_errors.ProblematicSearchServers, e:
+        except api_errors.ProblematicSearchServers as e:
                 error(e)
                 bad_res = True
-        except api_errors.SlowSearchUsed, e:
+        except api_errors.SlowSearchUsed as e:
                 error(e)
         except (api_errors.IncorrectIndexFileHash,
             api_errors.InconsistentIndexException):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
                 return EXIT_OOPS
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return EXIT_OOPS
         if good_res and bad_res:
@@ -2941,13 +2941,13 @@ def info(api_inst, args):
         try:
                 ret = api_inst.info(pargs, info_local, info_needed,
                     ranked=info_remote, repos=origins)
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
                 return EXIT_OOPS
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return EXIT_OOPS
 
@@ -3418,18 +3418,18 @@ def list_contents(api_inst, args):
                 for pfmri, summ, cats, states, pattrs in res:
                         manifests.append(api_inst.get_manifest(pfmri,
                             all_variants=display_raw, repos=origins))
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.InvalidPackageErrors, e:
+        except api_errors.InvalidPackageErrors as e:
                 error(str(e), cmd=subcommand)
                 api_inst.log_operation_end(
                     result=RESULT_FAILED_UNKNOWN)
                 return EXIT_OOPS
-        except api_errors.CatalogRefreshException, e:
+        except api_errors.CatalogRefreshException as e:
                 display_catalog_failures(e)
                 return EXIT_OOPS
-        except api_errors.InventoryException, e:
+        except api_errors.InventoryException as e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
@@ -3569,19 +3569,19 @@ def __refresh(api_inst, pubs, full_refresh=False):
                 # refresh to occur immediately.
                 api_inst.refresh(full_refresh=full_refresh,
                     immediate=True, pubs=pubs)
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.PublisherError, e:
+        except api_errors.PublisherError as e:
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
                 return EXIT_OOPS
-        except (api_errors.UnknownErrors, api_errors.PermissionsException), e:
+        except (api_errors.UnknownErrors, api_errors.PermissionsException) as e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return EXIT_OOPS
-        except api_errors.CatalogRefreshException, e:
+        except api_errors.CatalogRefreshException as e:
                 if display_catalog_failures(e) == 0:
                         return EXIT_OOPS
                 return EXIT_PARTIAL
@@ -3633,7 +3633,7 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
 
         try:
                 return func(*args, **kwargs)
-        except api_errors.CatalogRefreshException, e:
+        except api_errors.CatalogRefreshException as e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
@@ -3642,7 +3642,7 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                 for pub, err in e.failed:
                         txt += "   \n{0}".format(err)
                 return EXIT_OOPS, txt
-        except api_errors.InvalidDepotResponseException, e:
+        except api_errors.InvalidDepotResponseException as e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
@@ -3657,13 +3657,13 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                     "point to a valid pkg repository.\nPlease check the URI "
                     "and the client's network configuration."
                     "\nAdditional details:\n\n{0}").format(str(e))
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
                 format_update_error(e)
                 return EXIT_OOPS, ""
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
@@ -3885,7 +3885,7 @@ def publisher_set(api_inst, args):
         try:
                 ret = _set_pub_error_wrap(get_pubs, name,
                     [api_errors.UnsupportedRepositoryOperation])
-        except api_errors.UnsupportedRepositoryOperation, e:
+        except api_errors.UnsupportedRepositoryOperation as e:
                 # Fail if the operation can't be done automatically.
                 error(str(e), cmd="set-publisher")
                 logger.error(_("""
@@ -4085,7 +4085,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                         if reset_uuid:
                                 pub.reset_client_uuid()
                         repo = pub.repository
-                except api_errors.UnknownPublisher, e:
+                except api_errors.UnknownPublisher as e:
                         if not origin_uri and not add_origins and \
                             (remove_origins or remove_mirrors or
                             remove_prop_values or add_mirrors):
@@ -4212,7 +4212,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                                     os.path.join(orig_cwd, ca))
                                 with open(ca, "rb") as fh:
                                         s = fh.read()
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         raise api_errors.MissingFileArgumentException(
                                             ca)
@@ -4250,12 +4250,12 @@ def publisher_unset(api_inst, args):
 
                 try:
                         api_inst.remove_publisher(prefix=name, alias=name)
-                except api_errors.ImageFormatUpdateNeeded, e:
+                except api_errors.ImageFormatUpdateNeeded as e:
                         format_update_error(e)
                         return EXIT_OOPS
                 except (api_errors.PermissionsException,
                     api_errors.PublisherError,
-                    api_errors.ModifyingSyspubException), e:
+                    api_errors.ModifyingSyspubException) as e:
                         errors.append((name, e))
                 finally:
                         progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)
@@ -4367,7 +4367,7 @@ def publisher_list(api_inst, args):
                                 cert = misc.validate_ssl_cert(ssl_cert)
                         except (EnvironmentError,
                             api_errors.CertificateError,
-                            api_errors.PermissionsException), e:
+                            api_errors.PermissionsException) as e:
                                 # If the cert information can't be retrieved,
                                 # add the errors to a list and continue on.
                                 errors.append(e)
@@ -4653,10 +4653,10 @@ def property_add_value(api_inst, args):
         # XXX image property management should be in pkg.client.api
         try:
                 img.add_property_value(propname, propvalue)
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
@@ -4675,10 +4675,10 @@ def property_remove_value(api_inst, args):
         # XXX image property management should be in pkg.client.api
         try:
                 img.remove_property_value(propname, propvalue)
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
@@ -4720,10 +4720,10 @@ def property_set(api_inst, args):
         # XXX image property management should be in pkg.client.api
         try:
                 img.set_properties(props)
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
@@ -4746,10 +4746,10 @@ def property_unset(api_inst, args):
         for p in pargs:
                 try:
                         img.delete_property(p)
-                except api_errors.ImageFormatUpdateNeeded, e:
+                except api_errors.ImageFormatUpdateNeeded as e:
                         format_update_error(e)
                         return EXIT_OOPS
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(str(e), cmd=subcommand)
                         return EXIT_OOPS
 
@@ -4990,7 +4990,7 @@ def pubcheck_linked(op, api_inst, pargs):
 
         try:
                 api_inst.linked_publisher_check()
-        except api_errors.ImageLockedError, e:
+        except api_errors.ImageLockedError as e:
                 error(e)
                 return EXIT_LOCKED
 
@@ -5176,7 +5176,7 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
                 try:
                         __display_parsable_plan(api_inst, parsable_version,
                             p_dicts)
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(e, cmd=op)
                         return EXIT_OOPS
         return rv
@@ -5249,7 +5249,7 @@ def attach_linked(op, api_inst, pargs,
                 try:
                         __display_parsable_plan(api_inst, parsable_version,
                             [p_dict])
-                except api_errors.ApiException, e:
+                except api_errors.ApiException as e:
                         error(e, cmd=op)
                         return EXIT_OOPS
         return rv
@@ -5419,7 +5419,7 @@ def image_create(args):
                     ssl_key=ssl_key, repo_uri=repo_uri, variants=variants,
                     props=set_props)
                 img = _api_inst.img
-        except api_errors.InvalidDepotResponseException, e:
+        except api_errors.InvalidDepotResponseException as e:
                 # Ensure messages are displayed after the spinner.
                 logger.error("\n")
                 error(_("The URI '{pub_url}' does not appear to point to a "
@@ -5430,14 +5430,14 @@ def image_create(args):
                     cmd=cmd_name)
                 print_proxy_config()
                 return EXIT_OOPS
-        except api_errors.CatalogRefreshException, cre:
+        except api_errors.CatalogRefreshException as cre:
                 # Ensure messages are displayed after the spinner.
                 error("", cmd=cmd_name)
                 if display_catalog_failures(cre) == 0:
                         return EXIT_OOPS
                 else:
                         return EXIT_PARTIAL
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(str(e), cmd=cmd_name)
                 return EXIT_OOPS
         finally:
@@ -5460,14 +5460,14 @@ def rebuild_index(api_inst, pargs):
 
         try:
                 api_inst.rebuild_search_index()
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS
         except api_errors.CorruptedIndexException:
                 error("The search index appears corrupted.  Please rebuild the "
                     "index with 'pkg rebuild-index'.", cmd="rebuild-index")
                 return EXIT_OOPS
-        except api_errors.ProblematicPermissionsIndexException, e:
+        except api_errors.ProblematicPermissionsIndexException as e:
                 error(str(e))
                 error(_("\n(Failure to consistently execute pkg commands as a "
                     "privileged user is often a source of this problem.)"))
@@ -5608,7 +5608,7 @@ def history_list(api_inst, args):
                         for he in api_inst.gen_history(limit=display_limit,
                             times=time_vals):
                                 yield he
-                except api_errors.HistoryException, e:
+                except api_errors.HistoryException as e:
                         error(str(e), cmd="history")
                         sys.exit(EXIT_OOPS)
 
@@ -5823,7 +5823,7 @@ def update_format(api_inst, pargs):
 
         try:
                 res = api_inst.update_format()
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(str(e), cmd="update-format")
                 return EXIT_OOPS
 
@@ -6109,7 +6109,7 @@ def main_func():
 
         try:
                 orig_cwd = os.getcwd()
-        except OSError, e:
+        except OSError as e:
                 try:
                         orig_cwd = os.environ["PWD"]
                         if not orig_cwd or orig_cwd[0] != "/":
@@ -6120,7 +6120,7 @@ def main_func():
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",
                     ["debug=", "help", "runid="])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         runid = None
@@ -6208,7 +6208,7 @@ def main_func():
                 try:
                         pkg_timer.record("client startup", logger=logger)
                         ret = func(pargs)
-                except getopt.GetoptError, e:
+                except getopt.GetoptError as e:
                         usage(_("illegal option -- {0}").format(e.opt),
                             cmd=subcommand)
                 return ret
@@ -6251,7 +6251,7 @@ def main_func():
                 # if there are no options for an op, it has its own processing
                 try:
                         return func(api_inst, pargs)
-                except getopt.GetoptError, e:
+                except getopt.GetoptError as e:
                         usage(_("illegal option -- {0}").format(e.opt),
                             cmd=subcommand)
 
@@ -6268,7 +6268,7 @@ def main_func():
                 opts = options.opts_assemble(subcommand, api_inst, opt_dict,
                     add_table=cmd_opts, cwd=orig_cwd)
 
-        except api_errors.InvalidOptionError, e:
+        except api_errors.InvalidOptionError as e:
 
                 # We can't use the string representation of the exception since
                 # it references internal option names. We substitute the CLI
@@ -6349,7 +6349,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                 # one handle the other instances.
                 try:
                         __ret = func(*args, **kwargs)
-                except (MemoryError, EnvironmentError), __e:
+                except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
@@ -6358,7 +6358,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                                     result=RESULT_FAILED_OUTOFMEMORY)
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
-        except SystemExit, __e:
+        except SystemExit as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
                 raise __e
@@ -6368,26 +6368,26 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = EXIT_OOPS
-        except api_errors.LinkedImageException, __e:
+        except api_errors.LinkedImageException as __e:
                 error(_("Linked image exception(s):\n{0}").format(
                       str(__e)))
                 __ret = __e.lix_exitrv
-        except api_errors.CertificateError, __e:
+        except api_errors.CertificateError as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_CONFIGURATION)
                 error(__e)
                 __ret = EXIT_OOPS
-        except api_errors.PublisherError, __e:
+        except api_errors.PublisherError as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_BAD_REQUEST)
                 error(__e)
                 __ret = EXIT_OOPS
-        except api_errors.ImageLockedError, __e:
+        except api_errors.ImageLockedError as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_LOCKED)
                 error(__e)
                 __ret = EXIT_LOCKED
-        except api_errors.TransportError, __e:
+        except api_errors.TransportError as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_TRANSPORT)
                 logger.error(_("\nErrors were encountered while attempting "
@@ -6396,14 +6396,14 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                 logger.error(_("Details follow:\n\n{0}").format(__e))
                 print_proxy_config()
                 __ret = EXIT_OOPS
-        except api_errors.InvalidCatalogFile, __e:
+        except api_errors.InvalidCatalogFile as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_STORAGE)
                 logger.error(_("""
 An error was encountered while attempting to read image state information
 to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                 __ret = EXIT_OOPS
-        except api_errors.InvalidDepotResponseException, __e:
+        except api_errors.InvalidDepotResponseException as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_TRANSPORT)
                 logger.error(_("\nUnable to contact a valid package "
@@ -6414,7 +6414,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                 logger.error(_("\nAdditional details:\n\n{0}").format(__e))
                 print_proxy_config()
                 __ret = EXIT_OOPS
-        except api_errors.HistoryLoadException, __e:
+        except api_errors.HistoryLoadException as __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
                 if _api_inst:
@@ -6423,7 +6423,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                     "history information\nabout past client operations."))
                 error(__e)
                 __ret = EXIT_OOPS
-        except api_errors.HistoryStoreException, __e:
+        except api_errors.HistoryStoreException as __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
                 if _api_inst:
@@ -6433,7 +6433,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                     "history."))
                 error(__e)
                 __ret = EXIT_OOPS
-        except api_errors.HistoryPurgeException, __e:
+        except api_errors.HistoryPurgeException as __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
                 if _api_inst:
@@ -6442,7 +6442,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                     "client history."))
                 error(__e)
                 __ret = EXIT_OOPS
-        except api_errors.VersionException, __e:
+        except api_errors.VersionException as __e:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
                 error(_("The pkg command appears out of sync with the libraries"
@@ -6452,9 +6452,9 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                     api=__e.expected_version
                     ))
                 __ret = EXIT_OOPS
-        except api_errors.WrapSuccessfulIndexingException, __e:
+        except api_errors.WrapSuccessfulIndexingException as __e:
                 __ret = EXIT_OK
-        except api_errors.WrapIndexingException, __e:
+        except api_errors.WrapIndexingException as __e:
                 def _wrapper():
                         raise __e.wrapped
                 __ret = handle_errors(_wrapper, non_wrap_print=False)
@@ -6466,9 +6466,9 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                 s += _("\n\nDespite the error while indexing, the operation "
                     "has completed successfuly.")
                 error(s)
-        except api_errors.ReadOnlyFileSystemException, __e:
+        except api_errors.ReadOnlyFileSystemException as __e:
                 __ret = EXIT_OOPS
-        except api_errors.UnexpectedLinkError, __e:
+        except api_errors.UnexpectedLinkError as __e:
                 error("\n" + str(__e))
                 __ret = EXIT_OOPS
         except:

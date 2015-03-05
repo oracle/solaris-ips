@@ -1375,7 +1375,7 @@ class TermQuery(object):
                                     self._dir_path, "pkg",
                                     matching_pfmri.get_name(),
                                     str(matching_pfmri.version)), "rb")
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
                                 continue
@@ -1446,7 +1446,7 @@ class TermQuery(object):
                                         offsets = tmp_set
                                 else:
                                         offsets &= tmp_set
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
                                 # If the file doesn't exist, then no actions
@@ -1464,7 +1464,7 @@ class TermQuery(object):
                                         offsets = tmp_set
                                 else:
                                         offsets &= tmp_set
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
                                 # If the file doesn't exist, then no actions

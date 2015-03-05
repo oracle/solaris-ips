@@ -226,7 +226,7 @@ def subcmd_remove(conf, args):
         # Find matching packages.
         try:
                 matching, refs = repo.get_matching_fmris(pargs, pubs=pubs)
-        except apx.PackageMatchErrors, e:
+        except apx.PackageMatchErrors as e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
 
@@ -1435,10 +1435,10 @@ def _set_pub(conf, subcommand, props, pubs, repo):
                 try:
                         # Get a copy of the existing publisher.
                         pub = copy.copy(repo.get_publisher(pfx))
-                except sr.RepositoryUnknownPublisher, e:
+                except sr.RepositoryUnknownPublisher as e:
                         pub = publisher.Publisher(pfx)
                         new_pub = True
-                except sr.RepositoryError, e:
+                except sr.RepositoryError as e:
                         failed.append((pfx, e))
                         continue
 
@@ -1467,7 +1467,7 @@ def _set_pub(conf, subcommand, props, pubs, repo):
                                                 else:
                                                         val = [val]
                                         setattr(target, attrname, val)
-                except apx.ApiException, e:
+                except apx.ApiException as e:
                         failed.append((pfx, e))
                         continue
 
@@ -1836,7 +1836,7 @@ def main_func():
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:D:?",
                     ["help", "debug="])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         conf = {}
@@ -1877,7 +1877,7 @@ def main_func():
 
         try:
                 return func(conf, pargs)
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 if e.opt in ("help", "?"):
                         usage(full=True)
                 usage(_("illegal option -- {0}").format(e.opt), cmd=subcommand)
@@ -1901,35 +1901,35 @@ def handle_errors(func, *args, **kwargs):
                 # one handle the other instances.
                 try:
                         __ret = func(*args, **kwargs)
-                except (MemoryError, EnvironmentError), __e:
+                except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
-        except SystemExit, __e:
+        except SystemExit as __e:
                 raise __e
-        except (IOError, PipeError, KeyboardInterrupt), __e:
+        except (IOError, PipeError, KeyboardInterrupt) as __e:
                 # Don't display any messages here to prevent possible further
                 # broken pipe (EPIPE) errors.
                 if isinstance(__e, IOError) and __e.errno != errno.EPIPE:
                         error(str(__e))
                 __ret = EXIT_OOPS
-        except apx.VersionException, __e:
+        except apx.VersionException as __e:
                 error(_("The pkgrepo command appears out of sync with the "
                     "libraries provided\nby pkg:/package/pkg. The client "
                     "version is {client} while the library\nAPI version is "
                     "{api}.").format(client=__e.received_version,
                      api=__e.expected_version))
                 __ret = EXIT_OOPS
-        except apx.BadRepositoryURI, __e:
+        except apx.BadRepositoryURI as __e:
                 error(str(__e))
                 __ret = EXIT_BADOPT
-        except apx.InvalidOptionError, __e:
+        except apx.InvalidOptionError as __e:
                 error("{0} Supported formats: {1}".format(
                     str(__e), LISTING_FORMATS))
                 __ret = EXIT_BADOPT
-        except (apx.ApiException, sr.RepositoryError), __e:
+        except (apx.ApiException, sr.RepositoryError) as __e:
                 error(str(__e))
                 __ret = EXIT_OOPS
         except:

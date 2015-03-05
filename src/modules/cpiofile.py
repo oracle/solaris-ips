@@ -824,7 +824,7 @@ class CpioFile(object):
                                 return None
                         try:
                                 cpioinfo = CpioInfo.frombuf(buf, self.fileobj, self)
-                        except ValueError, e:
+                        except ValueError as e:
                                 if self.offset == 0:
                                         raise ReadError, "empty, unreadable or compressed file"
                                 return None

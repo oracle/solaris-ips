@@ -114,7 +114,7 @@ class LegacyAction(generic.Action):
                 try:
                         file(os.path.join(pkgplan.image.get_root(),
                             "var/sadm/install/contents"), "a").close()
-                except IOError, e:
+                except IOError as e:
                         if e.errno != errno.ENOENT:
                                 raise
 
@@ -129,7 +129,7 @@ class LegacyAction(generic.Action):
                         lfile = os.path.join(pkgdir, "pkginfo.{0:d}".format(i))
                         try:
                                 os.unlink(lfile)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         break
                                 raise
@@ -173,7 +173,7 @@ class LegacyAction(generic.Action):
 
                 try:
                         os.unlink(pkginfo)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.ENOENT:
                                 raise
 

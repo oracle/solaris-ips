@@ -125,7 +125,7 @@ def respond(depot, request, response, pub, http_depot=None):
                     "Cache-Control": "no-cache, no-transform, must-revalidate"
                     })
                 return __render_template(depot, request, path, pub, http_depot)
-        except sae.VersionException, e:
+        except sae.VersionException as e:
                 # The user shouldn't see why we can't render a template, but
                 # the reason should be logged (cleanly).
                 cherrypy.log("Template '{path}' is incompatible with current "
@@ -134,14 +134,14 @@ def respond(depot, request, response, pub, http_depot=None):
                 cherrypy.log("Ensure that the correct --content-root has been "
                     "provided to pkg.depotd.")
                 return __handle_error(request.path_info, httplib.NOT_FOUND)
-        except IOError, e:
+        except IOError as e:
                 return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)
-        except mako.exceptions.TemplateLookupException, e:
+        except mako.exceptions.TemplateLookupException as e:
                 # The above exception indicates that mako could not locate the
                 # template (in most cases, Mako doesn't seem to always clearly
                 # differentiate).
                 return __handle_error(path, httplib.NOT_FOUND)
-        except sae.RedirectException, e:
+        except sae.RedirectException as e:
                 raise cherrypy.HTTPRedirect(e.data)
         except:
                 return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)

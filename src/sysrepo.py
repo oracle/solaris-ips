@@ -186,7 +186,7 @@ def _get_image(image_dir):
                 if api_inst.root != image_dir:
                         msg(_("Problem getting image at {0}").format(
                             image_dir))
-        except Exception, err:
+        except Exception as err:
                 raise SysrepoException(
                     _("Unable to get image at {dir}: {reason}").format(
                     dir=image_dir,
@@ -233,7 +233,7 @@ def _follow_redirects(uri_list, http_timeout):
                         ret_uris.update(set(
                             [item.replace("/versions/0", "").rstrip("/")
                             for item in handler.redirects]))
-                except urllib2.URLError, err:
+                except urllib2.URLError as err:
                         # We need to log this, and carry on - the url
                         # could become available at a later date.
                         msg(_("WARNING: unable to access {uri} when checking "
@@ -329,7 +329,7 @@ def _load_publisher_info(api_inst, image_dir):
         try:
                 try:
                         st_cache = os.lstat(cache_path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 return None, None
                         else:
@@ -359,14 +359,14 @@ def _load_publisher_info(api_inst, image_dir):
                         try:
                                 __validate_pub_info(pub_info, no_uri_pubs,
                                     api_inst)
-                        except SysrepoException, e:
+                        except SysrepoException as e:
                                 error(_("Invalid config cache at {0} "
                                     "generating fresh configuration.").format(
                                     cache_path))
                                 return None, None
 
         # If we have any problems loading the publisher info, we explain why.
-        except IOError, e:
+        except IOError as e:
                 error(_("Unable to load config from {cache_path}: {e}").format(
                     **locals()))
                 return None, None
@@ -394,7 +394,7 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
                         simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
                         os.chmod(cache_path, 0600)
-        except IOError, e:
+        except IOError as e:
                 error(_("Unable to store config to {cache_path}: {e}").format(
                     **locals()))
 
@@ -528,7 +528,7 @@ def _chown_cache_dir(dir):
         gid = portable.get_group_by_name("bin", None, False)
         try:
                 os.chown(dir, uid, gid)
-        except OSError, err:
+        except OSError as err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
                         raise SysrepoException(
                             _("Unable to chown to {user}:{group}: "
@@ -564,7 +564,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                                 # directory.
                                 if dir == cache_dir:
                                         _chown_cache_dir(dir)
-                        except OSError, err:
+                        except OSError as err:
                                 if err.errno != errno.EEXIST:
                                         raise
 
@@ -603,7 +603,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                                         raise Exception("missing netloc")
                                 if not _valid_proxy(val):
                                         raise Exception("unsupported proxy")
-                        except Exception, e:
+                        except Exception as e:
                                 raise SysrepoException(
                                     _("invalid {key}: {val}: {err}").format(
                                     key=key, val=val, err=str(e)))
@@ -636,11 +636,11 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 httpd_conf_file = file(httpd_conf_path, "wb")
                 httpd_conf_file.write(httpd_conf_text)
                 httpd_conf_file.close()
-        except socket.gaierror, err:
+        except socket.gaierror as err:
                 raise SysrepoException(
                     _("Unable to write sysrepo_httpd.conf: {host}: "
                     "{err}").format(**locals()))
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
                 raise SysrepoException(
                     _("Unable to write sysrepo_httpd.conf: {0}").format(err))
 
@@ -671,7 +671,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
                             "# this space intentionally left blank\n")
                         crypto_file.close()
                 os.chmod(crypto_path, 0400)
-        except OSError, err:
+        except OSError as err:
                 raise SysrepoException(
                     _("unable to write crypto.txt file: {0}").format(err))
 
@@ -712,7 +712,7 @@ def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
                                             SYSREPO_PUB_FILENAME]), "w")
                                         publisher_file.write(publisher_text)
                                         publisher_file.close()
-        except OSError, err:
+        except OSError as err:
                 raise SysrepoException(
                     _("unable to write publisher response: {0}").format(err))
 
@@ -728,7 +728,7 @@ def _write_versions_response(htdocs_path):
                     "w")
                 versions_file.write(SYSREPO_VERSIONS_STR)
                 versions_file.close()
-        except OSError, err:
+        except OSError as err:
                 raise SysrepoException(
                     _("Unable to write versions response: {0}").format(err))
 
@@ -747,7 +747,7 @@ def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
                 pub_prefixes.extend(no_uri_pubs)
                 api_inst.write_syspub(os.path.join(sysrepo_path, "index.html"),
                     pub_prefixes, 0)
-        except (OSError, apx.ApiException), err:
+        except (OSError, apx.ApiException) as err:
                 raise SysrepoException(
                     _("Unable to write syspub response: {0}").format(err))
 
@@ -763,7 +763,7 @@ def _chown_runtime_dir(runtime_dir):
         gid = portable.get_group_by_name(SYSREPO_GROUP, None, False)
         try:
                 misc.recursive_chown_dir(runtime_dir, uid, gid)
-        except OSError, err:
+        except OSError as err:
                 if not os.environ.get("PKG5_TEST_ENV", None):
                         raise SysrepoException(
                             _("Unable to chown to {user}:{group}: "
@@ -775,7 +775,7 @@ def cleanup_conf(runtime_dir=None):
         """Destroys an old configuration."""
         try:
                 shutil.rmtree(runtime_dir, ignore_errors=True)
-        except OSError, err:
+        except OSError as err:
                 raise SysrepoException(
                     _("Unable to cleanup old configuration: {0}").format(err))
 
@@ -791,7 +791,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                 cleanup_conf(runtime_dir=runtime_dir)
                 try:
                         http_timeout = int(http_timeout)
-                except ValueError, err:
+                except ValueError as err:
                         raise SysrepoException(
                             _("invalid value for http_timeout: {0}").format(err))
                 if http_timeout < 1:
@@ -801,7 +801,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                         api_inst = _get_image(image_root)
                         uri_pub_map, no_uri_pubs = _get_publisher_info(api_inst,
                             http_timeout, api_inst.root)
-                except SysrepoException, err:
+                except SysrepoException as err:
                         raise SysrepoException(
                             _("unable to get publisher information: {0}").format(
                             err))
@@ -809,7 +809,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                         htdocs_path = os.path.join(runtime_dir,
                             SYSREPO_HTDOCS_DIRNAME)
                         os.makedirs(htdocs_path)
-                except OSError, err:
+                except OSError as err:
                         raise SysrepoException(
                             _("unable to create htdocs dir: {0}").format(err))
 
@@ -823,7 +823,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                 _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map,
                     no_uri_pubs)
                 _chown_runtime_dir(runtime_dir)
-        except SysrepoException, err:
+        except SysrepoException as err:
                 error(err)
                 ret = EXIT_OOPS
         return ret
@@ -835,7 +835,7 @@ def main_func():
 
         try:
                 orig_cwd = os.getcwd()
-        except OSError, e:
+        except OSError as e:
                 try:
                         orig_cwd = os.environ["PWD"]
                         if not orig_cwd or orig_cwd[0] != "/":
@@ -887,7 +887,7 @@ def main_func():
                         else:
                                 usage()
 
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         if not port:
@@ -918,19 +918,19 @@ def handle_errors(func, *args, **kwargs):
                 # one handle the other instances.
                 try:
                         __ret = func(*args, **kwargs)
-                except (MemoryError, EnvironmentError), __e:
+                except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
-        except SystemExit, __e:
+        except SystemExit as __e:
                 raise __e
         except (PipeError, KeyboardInterrupt):
                 # Don't display any messages here to prevent possible further
                 # broken pipe (EPIPE) errors.
                 __ret = EXIT_OOPS
-        except apx.VersionException, __e:
+        except apx.VersionException as __e:
                 error(_("The sysrepo command appears out of sync with the "
                     "libraries provided\nby pkg:/package/pkg. The client "
                     "version is {client} while the library\nAPI version is "

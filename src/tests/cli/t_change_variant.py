@@ -161,7 +161,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
 
                 try:
                         f = file(file_path)
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT and negate:
                                 return
                         raise

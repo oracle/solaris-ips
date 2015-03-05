@@ -340,7 +340,7 @@ class PkgPlan(object):
                                             dest_pub, self.image.trust_anchors,
                                             self.image.cfg.get_policy(
                                                 "check-certificate-revocation"))
-                                except apx.SigningException, e:
+                                except apx.SigningException as e:
                                         e.pfmri = self.destination_fmri
                                         if isinstance(e, apx.BrokenChain):
                                                 e.ext_exs.extend(
@@ -566,7 +566,7 @@ class PkgPlan(object):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
-                except Exception, e:
+                except Exception as e:
                         logger.error("Action install failed for '{0}' ({1}):\n  "
                             "{2}: {3}".format(dest.attrs.get(dest.key_attr,
                             id(dest)), self.destination_fmri.get_pkg_stem(),
@@ -582,7 +582,7 @@ class PkgPlan(object):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
-                except Exception, e:
+                except Exception as e:
                         logger.error("Action upgrade failed for '{0}' ({1}):\n "
                             "{2}: {3}".format(dest.attrs.get(dest.key_attr,
                             id(dest)), self.destination_fmri.get_pkg_stem(),
@@ -598,7 +598,7 @@ class PkgPlan(object):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
-                except Exception, e:
+                except Exception as e:
                         logger.error("Action removal failed for '{0}' ({1}):\n "
                             "{2}: {3}".format(src.attrs.get(src.key_attr,
                             id(src)), self.origin_fmri.get_pkg_stem(),

@@ -125,7 +125,7 @@ class ArchiveIndex(object):
                 try:
                         self.__file = pkg.pkggzip.PkgGzipFile(self.__name,
                             self.__mode)
-                except IOError, e:
+                except IOError as e:
                         if e.errno:
                                 raise
                         # Underlying gzip library raises this exception if the
@@ -182,7 +182,7 @@ class ArchiveIndex(object):
                                 l = None
                 except ValueError:
                         raise InvalidArchiveIndex(self.__name)
-                except IOError, e:
+                except IOError as e:
                         if e.errno:
                                 raise
                         # Underlying gzip library raises this exception if the
@@ -336,7 +336,7 @@ class Archive(object):
                 try:
                         self.__arc_file = open(self.__arc_name, arc_mode,
                             128*1024)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno in (errno.ENOENT, errno.EISDIR):
                                 raise InvalidArchive(self.__arc_name)
                         raise apx._convert_error(e)
@@ -357,7 +357,7 @@ class Archive(object):
                 try:
                         self.__arc_tfile = ptf.PkgTarFile.open(mode=mode,
                             fileobj=self.__arc_file, format=tf.PAX_FORMAT)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
                 except Exception:
                         # Likely not an archive or the archive is corrupt.
@@ -409,7 +409,7 @@ class Archive(object):
                         except tf.TarError:
                                 # Read error encountered.
                                 raise InvalidArchive(self.__arc_name)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         # After extraction, the current archive file offset
@@ -430,7 +430,7 @@ class Archive(object):
                                 # and failing later, bail now.
                                 os.unlink(idxfn)
                                 raise InvalidArchive(self.__arc_name)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                 elif "w" in mode:
@@ -511,7 +511,7 @@ class Archive(object):
                 except tf.TarError:
                         # Read error encountered.
                         raise InvalidArchive(self.__arc_name)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def __mkdtemp(self):
@@ -522,7 +522,7 @@ class Archive(object):
 
                 try:
                         return tempfile.mkdtemp(dir=self.__temp_dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def __mkstemp(self):
@@ -533,7 +533,7 @@ class Archive(object):
                 try:
                         fd, fn = tempfile.mkstemp(dir=self.__temp_dir)
                         fobj = os.fdopen(fd, "wb")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
                 return fobj, fn
 
@@ -796,7 +796,7 @@ class Archive(object):
                                         pkg.portable.copyfile(
                                             os.path.join(croot, part),
                                             os.path.join(path, part))
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise apx._convert_error(e)
                         else:
                                 # Use default extraction logic.
@@ -852,7 +852,7 @@ class Archive(object):
                 try:
                         pkg.portable.copyfile(os.path.join(croot, part),
                             os.path.join(path, part))
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def extract_package_files(self, hashes, path, pub=None):
@@ -972,7 +972,7 @@ class Archive(object):
                         except tf.TarError:
                                 # Read error encountered.
                                 raise InvalidArchive(self.__arc_name)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         if member.name != src:
@@ -997,7 +997,7 @@ class Archive(object):
                 except tf.TarError:
                         # Read error encountered.
                         raise InvalidArchive(self.__arc_name)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
                 if not isinstance(member, tf.TarInfo):
@@ -1012,7 +1012,7 @@ class Archive(object):
                         if os.stat(dest).st_size != member.size:
                                 raise CorruptArchiveFiles(self.__arc_name,
                                     [src])
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def get_file(self, src):
@@ -1185,7 +1185,7 @@ class Archive(object):
                 try:
                         if os.path.exists(self.__temp_dir):
                                 shutil.rmtree(self.__temp_dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
         def __close_fh(self):
@@ -1263,7 +1263,7 @@ class Archive(object):
                                 nfiles += 1
                                 idxbytes = fs.st_size
                                 nbytes += idxbytes
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         progtrack.archive_set_goal(

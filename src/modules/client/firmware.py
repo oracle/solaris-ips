@@ -108,7 +108,7 @@ class Firmware(object):
                                             ).format(str(ret), " ".join(args),
                                             "\n".join(buf))))
 
-                        except OSError, e:
+                        except OSError as e:
                                 # we have no enumerator installed.  This can
                                 # occur if this driver is being installed
                                 # for the first time or, more likely, we

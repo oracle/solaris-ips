@@ -478,7 +478,7 @@ class DependencyAction(generic.Action):
                                 try:
                                         pkg.fmri.PkgFmri(f)
                                 except (pkg.version.VersionError,
-                                    pkg.fmri.FmriError), e:
+                                    pkg.fmri.FmriError) as e:
                                         if attr == "fmri" and f == "__TBD":
                                                 # pkgdepend uses this special
                                                 # value.

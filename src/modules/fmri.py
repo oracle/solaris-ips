@@ -133,7 +133,7 @@ class PkgFmri(object):
                                 try:
                                         self.version = Version(
                                             fmri[veridx + 1:], build_release)
-                                except VersionError, iv:
+                                except VersionError as iv:
                                         raise IllegalFmri(fmri,
                                             IllegalFmri.BAD_VERSION,
                                             nested_exc=iv)
@@ -514,7 +514,7 @@ class MatchingPkgFmri(PkgFmri):
         def __init__(self, *args, **kwargs):
                 try:
                         PkgFmri.__init__(self, *args, **kwargs)
-                except IllegalFmri, e:
+                except IllegalFmri as e:
                         raise IllegalMatchingFmri(e.fmri, e.reason,
                             detail=e.detail, nested_exc=e.nested_exc)
 

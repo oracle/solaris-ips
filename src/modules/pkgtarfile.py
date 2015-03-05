@@ -93,7 +93,7 @@ class PkgTarFile(tarfile.TarFile):
                 try:
                         self._extract_member(tarinfo, os.path.join(
                             path, filename))
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if self.errorlevel > 0:
                                 raise
                         else:
@@ -104,7 +104,7 @@ class PkgTarFile(tarfile.TarFile):
                                         self._dbg(1,
                                             "tarfile: {0} {1!r}".format(
                                             e.strerror, e.filename))
-                except tarfile.ExtractError, e:
+                except tarfile.ExtractError as e:
                         if self.errorlevel > 1:
                                 raise
                         else:

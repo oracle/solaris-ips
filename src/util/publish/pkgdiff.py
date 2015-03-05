@@ -90,7 +90,7 @@ def main_func():
                         elif opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         if len(pargs) != 2:
@@ -131,9 +131,9 @@ def main_func():
                                 m.set_content(content=sys.stdin.read())
                         else:
                                 m.set_content(pathname=p)
-        except (pkg.actions.ActionError, apx.InvalidPackageErrors), e:
+        except (pkg.actions.ActionError, apx.InvalidPackageErrors) as e:
                 error(_("Action error in file {p}: {e}").format(**locals()))
-        except (EnvironmentError, apx.ApiException), e:
+        except (EnvironmentError, apx.ApiException) as e:
                 error(e)
 
         #
@@ -372,9 +372,9 @@ if __name__ == "__main__":
                 exit_code = main_func()
         except (PipeError, KeyboardInterrupt):
                 exit_code = 1
-        except SystemExit, __e:
+        except SystemExit as __e:
                 exit_code = __e
-        except Exception, __e:
+        except Exception as __e:
                 traceback.print_exc()
                 error(misc.get_traceback_message(), exitcode=None)
                 exit_code = 99

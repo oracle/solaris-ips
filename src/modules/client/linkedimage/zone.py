@@ -154,14 +154,14 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 # check if we're running in the gz
                 try:
                         self.__in_gz_cached = (_zonename() == ZONE_GLOBAL)
-                except OSError, e:
+                except OSError as e:
                         # W0212 Access to a protected member
                         # pylint: disable=W0212
                         if ignore_errors:
                                 # default to being in the global zone
                                 return True
                         raise apx._convert_error(e)
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         if ignore_errors:
                                 # default to being in the global zone
                                 return True
@@ -244,14 +244,14 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 try:
                         zdict = _list_zones(self.__img.root,
                             self.__linked.get_path_transform())
-                except OSError, e:
+                except OSError as e:
                         # W0212 Access to a protected member
                         # pylint: disable=W0212
                         if ignore_errors:
                                 # don't cache the result
                                 return []
                         raise apx._convert_error(e)
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         if ignore_errors:
                                 # don't cache the result
                                 return []

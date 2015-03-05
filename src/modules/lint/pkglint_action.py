@@ -1223,7 +1223,7 @@ class PkgActionChecker(base.ActionChecker):
                                 mf = engine.follow_renames(action.attrs["pkg"],
                                     target=manifest.fmri, old_mfs=[],
                                     legacy=True)
-                        except base.LintException, e:
+                        except base.LintException as e:
                                 # we've tried to rename to ourselves
                                 engine.error(
                                     _("legacy renaming: {0}").format(str(e)),
@@ -1342,7 +1342,7 @@ class PkgActionChecker(base.ActionChecker):
                 try:
                         mf = engine.follow_renames(
                             dep_fmri, old_mfs=[], warn_on_obsolete=True)
-                except base.LintException, err:
+                except base.LintException as err:
                         found_obsolete = True
                         engine.error("{0} {1}".format(msg.format(manifest.fmri),
                             err), msgid=lint_id)
@@ -1450,7 +1450,7 @@ class PkgActionChecker(base.ActionChecker):
                         return
                 try:
                         action.validate()
-                except ActionError, err:
+                except ActionError as err:
                         # we want the details all on one line to
                         # stay consistent with the rest of the pkglint
                         # error messaging

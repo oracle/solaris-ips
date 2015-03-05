@@ -670,13 +670,13 @@ class Transport(object):
 
                                 return fobj
 
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
 
-                        except tx.TransportProtoError, e:
+                        except tx.TransportProtoError as e:
                                 if e.code in (httplib.NOT_FOUND, errno.ENOENT):
                                         raise apx.UnsupportedSearchError(e.url,
                                             "search/1")
@@ -690,7 +690,7 @@ class Transport(object):
                                 else:
                                         raise
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                         fobj = None
@@ -768,30 +768,30 @@ class Transport(object):
 
                                 return
 
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportProtoError, e:
+                        except tx.TransportProtoError as e:
                                 if e.code == httplib.NOT_MODIFIED:
                                         return
                                 elif e.retryable:
                                         failures.append(e)
                                 else:
                                         raise
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
                                         raise
-                        except pkg.fmri.IllegalFmri, e:
+                        except pkg.fmri.IllegalFmri as e:
                                 repostats.record_error()
                                 raise tx.TransportOperationError(
                                     "Could not retrieve catalog from '{0}'\n"
                                     " Unable to parse FMRI. Details "
                                     "follow:\n{1}".format(pub.prefix, e))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 repostats.record_error()
                                 raise tx.TransportOperationError(
                                     "Could not retrieve catalog from '{0}'\n"
@@ -811,7 +811,7 @@ class Transport(object):
 
                 try:
                         catalog.verify(filepath)
-                except apx.CatalogError, e:
+                except apx.CatalogError as e:
                         portable.remove(filepath)
                         te = tx.InvalidContentException(filepath,
                             "CatalogPart failed validation: {0}".format(e))
@@ -899,13 +899,13 @@ class Transport(object):
                         # Set the file buffer size to the blocksize of our
                         # filesystem.
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: {0}".format(e))
-                except AttributeError, e:
+                except AttributeError as e:
                         # os.statvfs is not available on Windows
                         pass
 
@@ -928,7 +928,7 @@ class Transport(object):
                                     header, ts, progtrack=progtrack, pub=pub,
                                     redownload=redownload,
                                     revalidate=revalidate)
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that the client just gave up, make a note
                                 # of this condition and try another host.
@@ -978,7 +978,7 @@ class Transport(object):
 
                                 try:
                                         self._verify_catalog(s, download_dir)
-                                except tx.InvalidContentException, e:
+                                except tx.InvalidContentException as e:
                                         repostats.record_error(content=True)                                        
                                         failedreqs.append(e.request)
                                         failures.append(e)
@@ -1033,13 +1033,13 @@ class Transport(object):
                                 # If parse succeeds, then the data is valid.
                                 pub_data = p5i.parse(data=infostr)
                                 return [pub for pub, ignored in pub_data if pub]
-                        except tx.ExcessiveTransientFailure, e:
+                        except tx.ExcessiveTransientFailure as e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(e.failures)
 
-                        except apx.InvalidP5IFile, e:
+                        except apx.InvalidP5IFile as e:
                                 repouri_key = d.get_repouri_key()
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
@@ -1052,7 +1052,7 @@ class Transport(object):
                                 else:
                                         raise exc
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -1080,12 +1080,12 @@ class Transport(object):
                                     ccancel=ccancel)
                                 infostr = resp.read()
                                 return p5s.parse(repo_uri.get_host(), infostr)
-                        except tx.ExcessiveTransientFailure, e:
+                        except tx.ExcessiveTransientFailure as e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(e.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -1161,13 +1161,13 @@ class Transport(object):
 
                                 return content
 
-                        except tx.ExcessiveTransientFailure, e:
+                        except tx.ExcessiveTransientFailure as e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(e.failures)
 
-                        except zlib.error, e:
+                        except zlib.error as e:
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
                                     "zlib.error:{0}".format(
@@ -1179,7 +1179,7 @@ class Transport(object):
                                 else:
                                         raise exc
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -1211,13 +1211,13 @@ class Transport(object):
 
                                 # If parse succeeds, then the data is valid.
                                 return dict(json.loads(infostr))
-                        except tx.ExcessiveTransientFailure, e:
+                        except tx.ExcessiveTransientFailure as e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(e.failures)
 
-                        except (TypeError, ValueError), e:
+                        except (TypeError, ValueError) as e:
                                 
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
@@ -1229,7 +1229,7 @@ class Transport(object):
                                 else:
                                         raise exc
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -1267,13 +1267,13 @@ class Transport(object):
                                     pub=pub)
                                 return
 
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -1347,14 +1347,14 @@ class Transport(object):
 
                                 return m
 
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
                                 mcontent = None
 
-                        except tx.InvalidContentException, e:
+                        except tx.InvalidContentException as e:
                                 # We might be able to retrive uncorrupted
                                 # content. If this was the last retry, then
                                 # we're out of luck.
@@ -1362,14 +1362,14 @@ class Transport(object):
                                 mcontent = None
                                 repostats.record_error(content=True)
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                         mcontent = None
                                 else:
                                         raise
 
-                        except (apx.InvalidPackageErrors, ActionError), e:
+                        except (apx.InvalidPackageErrors, ActionError) as e:
                                 if verified:
                                         raise
                                 repostats.record_error(content=True)
@@ -1425,13 +1425,13 @@ class Transport(object):
                         # set the file buffer size to the blocksize of
                         # our filesystem
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 return
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: {0}".format(e))
-                except AttributeError, e:
+                except AttributeError as e:
                         # os.statvfs is not available on Windows
                         pass
 
@@ -1532,7 +1532,7 @@ class Transport(object):
                         try:
                                 errlist = d.get_manifests(mfstlist,
                                     download_dir, progtrack=progtrack, pub=pub)
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, record this for later
                                 # and try a different host.
@@ -1579,7 +1579,7 @@ class Transport(object):
                                         fmri = mxfr[s][1]
                                         verified = self._verify_manifest(fmri,
                                             dl_path)
-                                except tx.InvalidContentException, e:
+                                except tx.InvalidContentException as e:
                                         e.request = s
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
@@ -1594,7 +1594,7 @@ class Transport(object):
                                             contents=mcontent, excludes=excludes,
                                             pathname=self.cfg.get_pkg_pathname(fmri))
                                 except (apx.InvalidPackageErrors,
-                                    ActionError), e:
+                                    ActionError) as e:
                                         if verified:
                                                 # If the manifest was physically
                                                 # valid, but can't be logically
@@ -1736,7 +1736,7 @@ class Transport(object):
                 if not os.path.exists(newdir):
                         try:
                                 os.makedirs(newdir)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise apx.PermissionsException(
                                             e.filename)
@@ -1792,7 +1792,7 @@ class Transport(object):
                         try:
                                 errlist = d.get_files(filelist, download_dir,
                                     progtrack, v, header, pub=pub)
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, record this for later
                                 # and try a different host.
@@ -1840,7 +1840,7 @@ class Transport(object):
                                 try:
                                         self._verify_content(mfile[s][0],
                                             dl_path)
-                                except tx.InvalidContentException, e:
+                                except tx.InvalidContentException as e:
                                         mfile.subtract_progress(e.size)
                                         e.request = s                                        
                                         repostats.record_error(content=True)
@@ -1899,13 +1899,13 @@ class Transport(object):
                         # set the file buffer size to the blocksize of
                         # our filesystem
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: {0}".format(e))
-                except AttributeError, e:
+                except AttributeError as e:
                         # os.statvfs is not available on Windows
                         pass
 
@@ -1966,7 +1966,7 @@ class Transport(object):
                                 # Save this information for later use, too.
                                 self.__fill_repo_vers(d, vers)
                                 return vers
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
@@ -1974,13 +1974,13 @@ class Transport(object):
                                         f.url = d.get_url()
                                         failures.append(f)
 
-                        except tx.InvalidContentException, e:
+                        except tx.InvalidContentException as e:
                                 repostats.record_error(content=True)
                                 e.reason = "Unable to parse repository's " \
                                     "versions/0 response"
                                 failures.append(e)
 
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 e.url = d.get_url()
                                 if e.retryable:
                                         failures.append(e)
@@ -2001,7 +2001,7 @@ class Transport(object):
                             s.split(None, 1)
                             for s in (l.strip() for l in verlines)
                         )
-                except ValueError, e:
+                except ValueError as e:
                         raise tx.InvalidContentException(e)
 
         def __fill_repo_vers(self, repo, vers=None, ccancel=None):
@@ -2159,7 +2159,7 @@ class Transport(object):
                                                         self.__fill_repo_vers(
                                                             repo,
                                                             ccancel=ccancel)
-                                                except tx.TransportException, ex:
+                                                except tx.TransportException as ex:
                                                         # Encountered a
                                                         # transport error while
                                                         # trying to contact this
@@ -2249,7 +2249,7 @@ class Transport(object):
 
                 try:
                         vd = self._get_versions(pub, ccancel=ccancel)
-                except tx.TransportException, e:
+                except tx.TransportException as e:
                         # Failure when contacting server.  Report
                         # this as an error.  Attempt to report
                         # the specific origin that failed, and
@@ -2302,7 +2302,7 @@ class Transport(object):
                         try:
                                 vd = self._get_versions(pub, ccancel=ccancel,
                                     alt_repo=alt_repo)
-                        except tx.TransportException, ex:
+                        except tx.TransportException as ex:
                                 # Encountered a transport error while
                                 # trying to contact this publisher.
                                 # Pick another publisher instead.
@@ -2552,7 +2552,7 @@ class Transport(object):
                                         hash_type=digest.HASH)
                                 fhash = misc.gunzip_from_stream(ifile, ofile,
                                     hash_func=hash_func)
-                        except zlib.error, e:
+                        except zlib.error as e:
                                 s = os.stat(filepath)
                                 portable.remove(filepath)
                                 raise tx.InvalidContentException(path,
@@ -2613,12 +2613,12 @@ class Transport(object):
                                 d.publish_add(action, header=header,
                                     progtrack=progtrack, trans_id=trans_id)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2647,12 +2647,12 @@ class Transport(object):
                                 d.publish_add_file(pth, header=header,
                                     trans_id=trans_id)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2677,12 +2677,12 @@ class Transport(object):
                                 state, fmri = d.publish_abandon(header=header,
                                     trans_id=trans_id)
                                 return state, fmri
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2712,12 +2712,12 @@ class Transport(object):
                                     trans_id=trans_id,
                                     add_to_catalog=add_to_catalog)
                                 return state, fmri
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2744,12 +2744,12 @@ class Transport(object):
                                     client_release=client_release,
                                     pkg_name=pkg_name)
                                 return trans_id
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2771,12 +2771,12 @@ class Transport(object):
                         try:
                                 d.publish_rebuild(header=header, pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2807,12 +2807,12 @@ class Transport(object):
                                     client_release=client_release,
                                     pkg_name=pkg_name)
                                 return trans_id
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2836,12 +2836,12 @@ class Transport(object):
                                 d.publish_rebuild_indexes(header=header,
                                     pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2865,12 +2865,12 @@ class Transport(object):
                                 d.publish_rebuild_packages(header=header,
                                     pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2893,12 +2893,12 @@ class Transport(object):
                         try:
                                 d.publish_refresh(header=header, pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2925,12 +2925,12 @@ class Transport(object):
                                 d.publish_refresh_indexes(header=header,
                                     pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -2954,12 +2954,12 @@ class Transport(object):
                                 d.publish_refresh_packages(header=header,
                                     pub=pub)
                                 return
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(ex.failures)
-                        except tx.TransportException, e:
+                        except tx.TransportException as e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
@@ -3294,7 +3294,7 @@ class MultiFileNI(MultiFile):
 
                 try:
                         os.makedirs(self._final_dir, mode=misc.PKG_DIR_MODE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -3306,7 +3306,7 @@ class MultiFileNI(MultiFile):
                 try:
                         fd, fn = tempfile.mkstemp(dir=self._final_dir,
                             prefix=tmp_prefix)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)
@@ -3331,7 +3331,7 @@ class MultiFileNI(MultiFile):
                 try:
                         os.chmod(fn, misc.PKG_FILE_MODE)
                         portable.rename(fn, dest)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:

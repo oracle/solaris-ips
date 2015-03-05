@@ -499,7 +499,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         os.mkdir(cache_dir)
                         os.chown(cache_dir, exp_uid, 1)
                         os.rmdir(cache_dir)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.EPERM:
                                 raise pkg5unittest.TestSkippedException(
                                     "User running test does not have "
@@ -651,7 +651,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                             self.sysrepo_port, part)
                         try:
                                 resp =  urllib2.urlopen(url, None, None)
-                        except urllib2.HTTPError, e:
+                        except urllib2.HTTPError as e:
                                 if e.code != code:
                                         self.assert_(False,
                                             "url {0} returned: {1}".format(url, e))

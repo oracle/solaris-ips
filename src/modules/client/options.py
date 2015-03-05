@@ -341,11 +341,11 @@ def opts_table_cb_li_recurse(api_inst, opts, opts_new):
                 try:
                         lin = api_inst.parse_linked_name(ulin,
                             allow_unknown=True)
-                except LinkedImageException, e:
+                except LinkedImageException as e:
                         try:
                                 lin = api_inst.parse_linked_name(
                                     "zone:{0}".format(ulin), allow_unknown=True)
-                        except LinkedImageException, e:
+                        except LinkedImageException as e:
                                 pass
                 if lin is None or lin not in li_child_list:
                         raise InvalidOptionError(msg=

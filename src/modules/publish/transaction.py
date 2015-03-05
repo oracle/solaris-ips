@@ -147,7 +147,7 @@ class NullTransaction(object):
                         # Perform additional publication-time validation of
                         # actions before further processing is done.
                         action.validate(fmri=self.pkg_name)
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
@@ -235,23 +235,23 @@ class TransportTransaction(object):
                         except sr.RepositoryExistsError:
                                 # Already exists, nothing to do.
                                 pass
-                        except (apx.ApiException, sr.RepositoryError), e:
+                        except (apx.ApiException, sr.RepositoryError) as e:
                                 raise TransactionOperationError(None,
                                     msg=str(e))
 
                 try:
                         repo = sr.Repository(properties=repo_props,
                             root=self.path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise TransactionOperationError(None, msg=_(
                             "An error occurred while trying to "
                             "initialize the repository directory "
                             "structures:\n{0}").format(e))
-                except cfg.ConfigError, e:
+                except cfg.ConfigError as e:
                         raise TransactionRepositoryConfigError(str(e))
-                except sr.RepositoryInvalidError, e:
+                except sr.RepositoryInvalidError as e:
                         raise TransactionRepositoryInvalidError(str(e))
-                except sr.RepositoryError, e:
+                except sr.RepositoryError as e:
                         raise TransactionOperationError(None,
                             msg=str(e))
 
@@ -266,7 +266,7 @@ class TransportTransaction(object):
                         # Perform additional publication-time validation of
                         # actions before further processing is done.
                         action.validate()
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
@@ -274,7 +274,7 @@ class TransportTransaction(object):
                         self.transport.publish_add(self.publisher,
                             action=action, trans_id=self.trans_id,
                             progtrack=self.progtrack)
-                except apx.TransportError, e:
+                except apx.TransportError as e:
                         msg = str(e)
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=msg)
@@ -293,7 +293,7 @@ class TransportTransaction(object):
                 try:
                         self.transport.publish_add_file(self.publisher,
                             pth=pth, trans_id=self.trans_id)
-                except apx.TransportError, e:
+                except apx.TransportError as e:
                         msg = str(e)
                         raise TransactionOperationError("add_file",
                             trans_id=self.trans_id, msg=msg)
@@ -315,7 +315,7 @@ class TransportTransaction(object):
                         try:
                                 state, fmri = self.transport.publish_abandon(
                                     self.publisher, trans_id=self.trans_id)
-                        except apx.TransportError, e:
+                        except apx.TransportError as e:
                                 msg = str(e)
                                 raise TransactionOperationError("abandon",
                                     trans_id=self.trans_id, msg=msg)
@@ -324,7 +324,7 @@ class TransportTransaction(object):
                                 state, fmri = self.transport.publish_close(
                                     self.publisher, trans_id=self.trans_id,
                                     add_to_catalog=add_to_catalog)
-                        except apx.TransportError, e:
+                        except apx.TransportError as e:
                                 msg = str(e)
                                 raise TransactionOperationError("close",
                                     trans_id=self.trans_id, msg=msg)
@@ -341,7 +341,7 @@ class TransportTransaction(object):
                         trans_id = self.transport.publish_open(self.publisher,
                             client_release=os_util.get_os_release(),
                             pkg_name=self.pkg_name)
-                except apx.TransportError, e:
+                except apx.TransportError as e:
                         msg = str(e)
                         raise TransactionOperationError("open",
                             trans_id=self.trans_id, msg=msg)
@@ -365,7 +365,7 @@ class TransportTransaction(object):
                         trans_id = self.transport.publish_append(self.publisher,
                             client_release=os_util.get_os_release(),
                             pkg_name=self.pkg_name)
-                except apx.TransportError, e:
+                except apx.TransportError as e:
                         msg = str(e)
                         raise TransactionOperationError("append",
                             trans_id=self.trans_id, msg=msg)
@@ -387,7 +387,7 @@ class TransportTransaction(object):
 
                 try:
                         self.transport.publish_refresh_indexes(self.publisher)
-                except apx.TransportError, e:
+                except apx.TransportError as e:
                         msg = str(e)
                         raise TransactionOperationError(op,
                             trans_id=self.trans_id, msg=msg)

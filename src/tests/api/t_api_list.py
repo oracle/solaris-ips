@@ -1526,7 +1526,7 @@ add set name=pkg.description value="{desc}"
                 try:
                         returned = self.__get_returned(api_obj.LIST_ALL,
                             api_obj=api_obj, patterns=patterns, variants=True)
-                except api_errors.InventoryException, e:
+                except api_errors.InventoryException as e:
                         self.assertEqualDiff(expected, e.illegal)
                 else:
                         raise RuntimeError("InventoryException not raised!")

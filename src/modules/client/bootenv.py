@@ -454,7 +454,7 @@ class BootEnv(object):
                 try:
                         ret = subprocess.call(cmd,
                             stdout = open(os.devnull), stderr=subprocess.STDOUT)
-                except OSError, e:
+                except OSError as e:
                         logger.error(_("pkg: A system error {e} was "
                             "caught executing {cmd}").format(e=e,
                             cmd=" ".join(cmd)))
@@ -547,7 +547,7 @@ beadm activate {be_name_clone}
                                 activate_live_be()
                         else:
                                 activate_be()
-                except Exception, e:
+                except Exception as e:
                         caught_exception = e
                         if relock:
                                 # Re-lock be image.
@@ -594,7 +594,7 @@ beadm activate {be_name_clone}
 
                                 self.destroy_snapshot()
                                 os.rmdir(self.clone_dir)
-                        except Exception, e:
+                        except Exception as e:
                                 self.img.history.log_operation_error(error=e)
                                 raise e
 

@@ -362,7 +362,7 @@ def fetch_catalog(src_pub, tracker, txport, target_catalog,
         try:
                 src_pub.refresh(full_refresh=True, immediate=True,
                     progtrack=tracker, include_updates=include_updates)
-        except apx.TransportError, e:
+        except apx.TransportError as e:
                 # Assume that a catalog doesn't exist for the target publisher,
                 # and drive on.  If there was an actual failure due to a
                 # transport issue, let the failure happen whenever some other
@@ -409,7 +409,7 @@ def main_func():
                 opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:np:rs:v",
                     ["cert=", "key=", "dcert=", "dkey=", "newest", "raw",
                     "debug=", "clone"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("Illegal option -- {0}").format(e.opt))
 
         for opt, arg in opts:
@@ -575,7 +575,7 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
                 try:
                         matches, refs, unmatched = \
                             src_cat.get_matching_fmris(pargs)
-                except apx.PackageMatchErrors, e:
+                except apx.PackageMatchErrors as e:
                         abort(str(e))
 
                 # Track anything that failed to match.
@@ -662,7 +662,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 for f in matches:
                         try:
                                 m = get_manifest(f, xport_cfg)
-                        except apx.InvalidPackageErrors, e:
+                        except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
                         good_matches.append(f)
@@ -680,7 +680,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         try:
                                 fs = os.stat(m.pathname)
                                 arc_bytes += fs.st_size
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         tracker.manifest_fetch_progress(completion=True)
@@ -797,7 +797,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
         try:
                 repo = sr.Repository(read_only=False,
                     root=target.get_pathname())
-        except sr.RepositoryInvalidError, e:
+        except sr.RepositoryInvalidError as e:
                 txt = str(e) + "\n\n"
                 txt += _("To create a repository, use the pkgrepo command.")
                 abort(err=txt)
@@ -815,7 +815,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                         shutil.rmtree(old_c_root)
                         shutil.move(c_root, old_c_root)
                         shutil.copytree(src_cat_root, c_root)
-                except Exception, e:
+                except Exception as e:
                         abort(err=_("Unable to copy catalog files: {0}").format(
                             e))
                 return old_c_root
@@ -978,7 +978,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 for f, i in to_add:
                         try:
                                 m = get_manifest(f, xport_cfg)
-                        except apx.InvalidPackageErrors, e:
+                        except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
                         getb, getf, sendb, sendcb = get_sizes(m)
@@ -999,7 +999,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                         try:
                                 misc.makedirs(dir_name)
                                 shutil.move(src_path, dst_path)
-                        except Exception, e:
+                        except Exception as e:
                                 txt = _("Unable to copy manifest: {0}").format(e)
                                 abort(err=txt)
 
@@ -1074,7 +1074,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
 
                 try:
                         ret = subprocess.call(args)
-                except OSError, e:
+                except OSError as e:
                         raise RuntimeError, "cannot execute {0}: {1}".format(
                             args, e)
 
@@ -1088,7 +1088,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                                 shutil.move(old_c_root, c_root)
                         else:
                                 shutil.rmtree(old_c_root)
-                except Exception, e:
+                except Exception as e:
                         error(_("Unable to remove catalog files: {0}").format(e))
                         # We don't abort here to make sure we can
                         # restore/delete as much as we can.
@@ -1179,12 +1179,12 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 try:
                                         t = trans.Transaction(target,
                                             xport=dest_xport, pub=targ_pub)
-                                except trans.TransactionRepositoryInvalidError, e:
+                                except trans.TransactionRepositoryInvalidError as e:
                                         txt = str(e) + "\n\n"
                                         txt += _("To create a repository, use "
                                             "the pkgrepo command.")
                                         abort(err=txt)
-                                except trans.TransactionRepositoryConfigError, e:
+                                except trans.TransactionRepositoryConfigError as e:
                                         txt = str(e) + "\n\n"
                                         txt += _("The repository configuration "
                                             "for the repository located at "
@@ -1194,14 +1194,14 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                             "of the repository or create a new "
                                             "one.").format(target)
                                         abort(err=txt)
-                                except trans.TransactionError, e:
+                                except trans.TransactionError as e:
                                         abort(err=e)
                 else:
                         basedir = target = os.path.abspath(target)
                         if not os.path.exists(basedir):
                                 try:
                                         os.makedirs(basedir, misc.PKG_DIR_MODE)
-                                except Exception, e:
+                                except Exception as e:
                                         error(_("Unable to create basedir "
                                             "'{dir}': {err}").format(
                                             dir=basedir, err=e))
@@ -1248,7 +1248,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 continue
                         try:
                                 m = get_manifest(f, xport_cfg)
-                        except apx.InvalidPackageErrors, e:
+                        except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
                         pkgs_to_get.append(f)
@@ -1379,7 +1379,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                         t.add_file(fname)
                                 # Always defer catalog update.
                                 t.close(add_to_catalog=False)
-                        except trans.TransactionError, e:
+                        except trans.TransactionError as e:
                                 abort(err=e)
 
                         # Dump data retrieved so far after each successful
@@ -1394,7 +1394,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                         # and shouldn't be dumped.
                                         shutil.rmtree(cache_dir)
                                         misc.makedirs(cache_dir)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         misc.makedirs(dest_xport_cfg.incoming_root)
 
@@ -1444,7 +1444,7 @@ if __name__ == "__main__":
                 else:
                         __ret = 1
         except (pkg.actions.ActionError, trans.TransactionError, RuntimeError,
-            apx.ApiException), _e:
+            apx.ApiException) as _e:
                 error(_e)
                 try:
                         cleanup(True)
@@ -1461,13 +1461,13 @@ if __name__ == "__main__":
                         __ret = 99
                 else:
                         __ret = 1
-        except SystemExit, _e:
+        except SystemExit as _e:
                 try:
                         cleanup(False)
                 except:
                         __ret = 99
                 raise _e
-        except EnvironmentError, _e:
+        except EnvironmentError as _e:
                 if _e.errno != errno.ENOSPC and _e.errno != errno.EDQUOT:
                         raise
 

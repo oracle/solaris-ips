@@ -89,7 +89,7 @@ class FileAction(generic.Action):
                         to rename the file to itself."""
                         try:
                                 os.rename(path, path)
-                        except OSError, err:
+                        except OSError as err:
                                 if err.errno != errno.EACCES:
                                         raise
                                 return True
@@ -173,7 +173,7 @@ class FileAction(generic.Action):
                     os.path.isdir(final_path):
                         try:
                                 os.rmdir(final_path)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         pass
                                 elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):
@@ -194,7 +194,7 @@ class FileAction(generic.Action):
                                     digest.get_preferred_hash(self)
                                 shasum = misc.gunzip_from_stream(stream, tfile,
                                     hash_func)
-                        except zlib.error, e:
+                        except zlib.error as e:
                                 raise ActionExecutionError(self,
                                     details=_("Error decompressing payload: "
                                         "{0}").format(
@@ -219,7 +219,7 @@ class FileAction(generic.Action):
 
                 try:
                         os.chmod(temp, mode)
-                except OSError, e:
+                except OSError as e:
                         # If the file didn't exist, assume that's intentional,
                         # and drive on.
                         if e.errno != errno.ENOENT:
@@ -229,7 +229,7 @@ class FileAction(generic.Action):
 
                 try:
                         portable.chown(temp, owner, group)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.EPERM:
                                 raise
 
@@ -238,7 +238,7 @@ class FileAction(generic.Action):
                 if do_content and old_path:
                         try:
                                 portable.rename(final_path, old_path)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.ENOENT:
                                         # Only care if file isn't gone already.
                                         raise
@@ -246,7 +246,7 @@ class FileAction(generic.Action):
                 # This is safe even if temp == final_path.
                 try:
                         portable.rename(temp, final_path)
-                except OSError, e:
+                except OSError as e:
                         raise api_errors.FileInUseException(final_path)
 
                 # Handle timestamp if specified (and content was installed).
@@ -254,7 +254,7 @@ class FileAction(generic.Action):
                         t = misc.timestamp_to_time(self.attrs["timestamp"])
                         try:
                                 os.utime(final_path, (t, t))
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EACCES:
                                         raise
 
@@ -277,13 +277,13 @@ class FileAction(generic.Action):
 
                         try:
                                 portable.fsetattr(final_path, arg)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EINVAL:
                                         raise
                                 raise ActionExecutionError(self,
                                     details=_("System attributes are not "
                                     "supported on the target filesystem."))
-                        except ValueError, e:
+                        except ValueError as e:
                                 raise ActionExecutionError(self,
                                     details=_("Could not set system attributes "
                                     "'{attrlist}': {err}").format(
@@ -384,7 +384,7 @@ class FileAction(generic.Action):
                                         elfhash = elf.get_dynamic(path,
                                             sha1=get_sha1,
                                             sha256=get_sha256)[ehash_attr]
-                                except RuntimeError, e:
+                                except RuntimeError as e:
                                         errors.append(
                                             "ELF content hash: {0}".format(e))
 
@@ -448,13 +448,13 @@ class FileAction(generic.Action):
                                                     _("System attribute '{0}' "
                                                     "not set").format(a))
 
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission Denied"))
                         else:
                                 errors.append(_("Unexpected Error: {0}").format(
                                     e))
-                except Exception, e:
+                except Exception as e:
                         errors.append(_("Unexpected Exception: {0}").format(e))
 
                 return errors, warnings, info
@@ -673,7 +673,7 @@ class FileAction(generic.Action):
                 try:
                         # Make file writable so it can be deleted.
                         os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 # Already gone; don't care.
                                 return
@@ -693,7 +693,7 @@ class FileAction(generic.Action):
                                         pkgplan.salvage(path)
                                         # Nothing more to do.
                                         return
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         # Already gone; don't care.
                                         return
@@ -746,7 +746,7 @@ class FileAction(generic.Action):
                 saved_name = image.temporary_file()
                 try:
                         misc.copyfile(full_path, saved_name)
-                except OSError, err:
+                except OSError as err:
                         if err.errno != errno.ENOENT:
                                 raise
 

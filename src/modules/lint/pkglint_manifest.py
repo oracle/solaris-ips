@@ -268,7 +268,7 @@ class PkgManifestChecker(base.ManifestChecker):
                                     msgid="{0}{1}.5".format(self.name,
                                     pkglint_id))
 
-                except base.LintException, err:
+                except base.LintException as err:
                         engine.error(_("package renaming: {0}").format(str(err)),
                             msgid="{0}{1}.4".format(self.name, pkglint_id))
 

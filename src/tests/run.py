@@ -106,7 +106,7 @@ if __name__ == "__main__":
                 opts, pargs = getopt.getopt(sys.argv[1:], "a:c:dfghj:lpqtuvxb:o:s:z:",
                     ["generate-baseline", "parseable", "port", "timing",
                     "verbose", "baseline-file", "only"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 print("Illegal option -- {0}".format(e.opt), file=sys.stderr)
                 sys.exit(1)
 
@@ -251,7 +251,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
 
                 try:
                         obj = __import__(name)
-                except ImportError, e:
+                except ImportError as e:
                         print("Skipping {0}: {1}".format(name, str(e)))
                         continue
 
@@ -478,12 +478,12 @@ if __name__ == "__main__":
                 try:
                         res = runner.run(suite_list, jobs, port,
                             time_estimates, quiet, bfile)
-                except pkg5unittest.Pkg5TestCase.failureException, e:
+                except pkg5unittest.Pkg5TestCase.failureException as e:
                         exitval = 1
                         print(file=sys.stderr)
                         print(e, file=sys.stderr)
                         break
-                except pkg5unittest.TestStopException, e:
+                except pkg5unittest.TestStopException as e:
                         exitval = 1
                         print(file=sys.stderr)
                         break
@@ -522,7 +522,7 @@ if __name__ == "__main__":
                             omits, "cov_pkg_path")
                         generate_coverage(coverage_format, None,
                             proto + omits, "cov_tests")
-                except Exception, e:
+                except Exception as e:
                         print(e, file=sys.stderr)                        
                         exitval = 1
 

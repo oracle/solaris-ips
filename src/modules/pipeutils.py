@@ -271,7 +271,7 @@ class PipeFile(object):
                         fcntl_rv = fcntl.ioctl(self.__pipefd,
                             fcntl.I_RECVFD, fcntl_args)
                         fd = struct.unpack('i', fcntl_rv)[0]
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENXIO:
                                 # other end of the connection was closed
                                 return -1

@@ -320,7 +320,7 @@ if __name__ == "__main__":
                 try:
                         callableObj(*args, **kwargs)
 
-                except excClass, e:
+                except excClass as e:
                         if re.search(regexp, str(e)):
                                 return
                         raise self.failureException, \
@@ -335,7 +335,7 @@ if __name__ == "__main__":
 
                 try:
                         callableObj(*args, **kwargs)
-                except excClass, e:
+                except excClass as e:
                         str(e)
                         return
                 else:
@@ -599,7 +599,7 @@ if __name__ == "__main__":
                 self.__didtearDown = False
                 try:
                         os.makedirs(self.__test_root, 0755)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.EEXIST:
                                 raise e
                 if getattr(self, "need_ro_data", False):
@@ -664,7 +664,7 @@ if __name__ == "__main__":
                 if hasattr(self, "killalldepots"):
                         try:
                                 self.killalldepots()
-                        except Exception, e:
+                        except Exception as e:
                                 print(str(e), file=sys.stderr)
 
                 #
@@ -732,7 +732,7 @@ if __name__ == "__main__":
                         except KeyboardInterrupt:
                                 # Try hard to make sure we've done a teardown.
                                 needtodie = True
-                        except TestSkippedException, err:
+                        except TestSkippedException as err:
                                 result.addSkip(self, err)
                         except:
                                 error_added = True
@@ -764,7 +764,7 @@ if __name__ == "__main__":
                         # make sure we restore our directory if it still exists.
                         try:
                                 os.chdir(pwd)
-                        except OSError, e:
+                        except OSError as e:
                                 # If directory doesn't exist anymore it doesn't
                                 # matter.
                                 if e.errno != errno.ENOENT:
@@ -790,7 +790,7 @@ if __name__ == "__main__":
                 if os.path.dirname(outputfile) != "":
                         try:
                                 os.makedirs(os.path.dirname(outputfile))
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EEXIST:
                                         raise
                 if prog_text:
@@ -976,7 +976,7 @@ if __name__ == "__main__":
                 if isinstance(output, basestring):
                         try:
                                 outd = json.loads(output)
-                        except Exception, e:
+                        except Exception as e:
                                 raise RuntimeError("JSON couldn't parse the "
                                     "output.\nError was: {0}\nOutput was:\n{1}".format(
                                     e, output))
@@ -1150,21 +1150,21 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 inst, tdf = test.getTeardownFunc()
                 try:
                         tdf()
-                except Exception, e:
+                except Exception as e:
                         print(str(e), file=sys.stderr)
                         pass
 
                 if getattr(test, "persistent_setup", None):
                         try:
                                 test.reallytearDown()
-                        except Exception, e:
+                        except Exception as e:
                                 print(str(e), file=sys.stderr)
                                 pass
 
                 if hasattr(inst, "killalldepots"):
                         try:
                                 inst.killalldepots()
-                        except Exception, e:
+                        except Exception as e:
                                 print(str(e), file=sys.stderr)
                                 pass
                 raise TestStopException()
@@ -1211,7 +1211,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 if os.path.exists(test.test_root):
                         try:
                                 misc.copytree(test.test_root, archive_path)
-                        except socketerror, e:
+                        except socketerror as e:
                                 pass
                 else:
                         # If the test has failed without creating its directory,
@@ -1814,7 +1814,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         try:
                                 shutil.rmtree(os.path.join(g_tempdir,
                                     "ips.test.{0}".format(os.getpid())))
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         #
                                         # seems to sporadically happen if we
@@ -1889,7 +1889,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         try:
                                 shutil.rmtree(os.path.join(g_tempdir,
                                     "ips.test.{0}".format(os.getpid())))
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
                         return result
@@ -1973,9 +1973,9 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 inq.put("STOP")
                         for p in p_dict:
                                 p_dict[p].join()
-                except KeyboardInterrupt, TestStopException:
+                except KeyboardInterrupt as TestStopException:
                         terminate = True
-                except Exception, e:
+                except Exception as e:
                         print(e)
                         print("dfdfdf")
                         terminate = True
@@ -2800,7 +2800,7 @@ class CliTestCase(Pkg5TestCase):
                                 self.pkgrepo("-s {0} refresh --no-catalog".format(
                                     depot_url), su_wrap=su_wrap,
                                     debug_hash=debug_hash)
-                except UnexpectedExitCodeException, e:
+                except UnexpectedExitCodeException as e:
                         if e.exitcode != exit:
                                 raise
                         retcode = e.exitcode
@@ -3153,7 +3153,7 @@ class CliTestCase(Pkg5TestCase):
                         self.debug("prep_depot: starting depot")
                         try:
                                 dc.start()
-                        except Exception, e:
+                        except Exception as e:
                                 self.debug("prep_depot: failed to start "
                                     "depot!: {0}".format(e))
                                 raise
@@ -3465,7 +3465,7 @@ class ManyDepotTestCase(CliTestCase):
 
                         try:
                                 os.makedirs(testdir, 0755)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EEXIST:
                                         raise e
 
@@ -3586,10 +3586,10 @@ class ApacheDepotTestCase(ManyDepotTestCase):
                         # first.
                         try:
                                 self.acs[name].stop()
-                        except Exception, e:
+                        except Exception as e:
                                 try:
                                         self.acs[name].kill()
-                                except Exception, e:
+                                except Exception as e:
                                         pass
                 self.acs[name] = ac
 
@@ -3610,12 +3610,12 @@ class ApacheDepotTestCase(ManyDepotTestCase):
                                     name))
                                 try:
                                         ac.stop()
-                                except Exception, e :
+                                except Exception as e :
                                         try:
                                                 self.debug("killing apache "
                                                     "instance {0}".format(name))
                                                 ac.kill()
-                                        except Exception, e:
+                                        except Exception as e:
                                                 self.debug("Unable to kill "
                                                     "apache instance {0}. This "
                                                     "could cause subsequent "
@@ -4204,7 +4204,7 @@ def debug(s):
 def mkdir_eexist_ok(p):
         try:
                 os.mkdir(p)
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.EEXIST:
                         raise e
 
@@ -4264,7 +4264,7 @@ def fakeroot_create():
 
         try:
                 os.stat(cmd_path)
-        except OSError, e:
+        except OSError as e:
                 pass
         else:
                 # fakeroot already exists
@@ -4313,7 +4313,7 @@ def fakeroot_create():
 def eval_assert_raises(ex_type, eval_ex_func, func, *args):
         try:
                 func(*args)
-        except ex_type, e:
+        except ex_type as e:
                 print(str(e))
                 if not eval_ex_func(e):
                         raise
@@ -4365,11 +4365,11 @@ class ApacheController(object):
         def _network_ping(self):
                 try:
                         urllib2.urlopen(self.__url)
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code == httplib.FORBIDDEN:
                                 return True
                         return False
-                except urllib2.URLError, e:
+                except urllib2.URLError as e:
                         if isinstance(e.reason, ssl.SSLError):
                                 return True
                         return False
@@ -4545,7 +4545,7 @@ class SysrepoController(ApacheController):
         def _network_ping(self):
                 try:
                         urllib2.urlopen(urlparse.urljoin(self.url, "syspub/0"))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code == httplib.FORBIDDEN:
                                 return True
                         return False
@@ -4567,7 +4567,7 @@ class HttpDepotController(ApacheController):
                         # so that we don't initialize the BUI code yet.
                         urllib2.urlopen(urlparse.urljoin(self.url,
                             "versions/0"))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code == httplib.FORBIDDEN:
                                 return True
                         return False

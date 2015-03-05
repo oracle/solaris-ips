@@ -90,17 +90,17 @@ class _JSONWriter(object):
                         # Set the file buffer size to the blocksize of our
                         # filesystem.
                         self.__bufsz = destvfs[statvfs.F_BSIZE]
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
-                except AttributeError, e:
+                except AttributeError as e:
                         # os.statvfs is not available on some platforms.
                         pass
 
                 try:
                         tfile = open(pathname, "wb", self.__bufsz)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -253,7 +253,7 @@ class CatalogPartBase(object):
 
                 try:
                         mod_time = os.stat(self.pathname).st_mtime
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 return None
                         raise
@@ -272,7 +272,7 @@ class CatalogPartBase(object):
                         if os.path.exists(self.pathname):
                                 try:
                                         portable.remove(self.pathname)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno == errno.EACCES:
                                                 raise api_errors.PermissionsException(
                                                     e.filename)
@@ -301,7 +301,7 @@ class CatalogPartBase(object):
 
                 try:
                         fobj = file(location, "rb")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 raise api_errors.RetrievalError(e,
                                     location=location)
@@ -315,9 +315,9 @@ class CatalogPartBase(object):
 
                 try:
                         struct = json.load(fobj)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise api_errors.RetrievalError(e)
-                except ValueError, e:
+                except ValueError as e:
                         # Not a valid catalog file.
                         raise api_errors.InvalidCatalogFile(location)
 
@@ -358,7 +358,7 @@ class CatalogPartBase(object):
                 # Ensure the permissions on the new file are correct.
                 try:
                         os.chmod(self.pathname, self.__file_mode)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -1638,7 +1638,7 @@ class Catalog(object):
                 for astr in actions:
                         try:
                                 a = pkg.actions.fromstr(astr)
-                        except pkg.actions.ActionError, e:
+                        except pkg.actions.ActionError as e:
                                 # Accumulate errors and continue so that as
                                 # much of the action data as possible can be
                                 # parsed.
@@ -1873,7 +1873,7 @@ class Catalog(object):
                                         npat.version = \
                                             pkg.version.Version(pat_ver)
 
-                        except (fmri.FmriError, pkg.version.VersionError), e:
+                        except (fmri.FmriError, pkg.version.VersionError) as e:
                                 # Whatever the error was, return it.
                                 error = e
                         yield (pat, error, npat, matcher)
@@ -1973,7 +1973,7 @@ class Catalog(object):
                                                     "{0:o}".format(fmode)))
                                 else:
                                         os.chmod(pathname, self.__file_mode)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # If the file doesn't exist yet, move on.
                                 if e.errno == errno.ENOENT:
                                         continue
@@ -2395,7 +2395,7 @@ class Catalog(object):
 
                         try:
                                 portable.remove(pname)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)

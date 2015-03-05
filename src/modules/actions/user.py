@@ -173,7 +173,7 @@ class UserAction(generic.Action):
                         pw.writefile()
                         gr.writefile()
                         ftp.writefile()
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
                         # If we're in the postinstall phase and the files
@@ -188,7 +188,7 @@ class UserAction(generic.Action):
                         if "uid" in self.attrs:
                                 img._usersbyname[self.attrs["username"]] = \
                                     int(self.attrs["uid"])
-                except KeyError, e:
+                except KeyError as e:
                         # cannot find group
                         self.validate() # should raise error if no group in action
                         txt = _("{group} is an unknown or invalid group").format(
@@ -224,13 +224,13 @@ class UserAction(generic.Action):
 
                 try:
                         pw, gr, ftp, cur_attrs = self.readstate(img, username)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission denied"))
                         else:
                                 errors.append(_("Unexpected Error: {0}").format(e))
                         return errors, warnings, info
-                except KeyError, e:
+                except KeyError as e:
                         errors.append(_("{group} is an unknown or invalid group").format(
                             group=self.attrs.get("group", "None")))
                         return errors, warnings, info
@@ -301,7 +301,7 @@ class UserAction(generic.Action):
                         pw.writefile()
                         gr.writefile()
                         ftp.writefile()
-                except KeyError, e:
+                except KeyError as e:
                         # Already gone; don't care.
                         if e.args[0] != (self.attrs["username"],):
                                 raise

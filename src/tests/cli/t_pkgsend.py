@@ -304,7 +304,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                             "set")))
                         req = urllib2.Request(url=url, headers=headers)
                         urllib2.urlopen(req)
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         err_txt = e.read()
                         self.assert_("The specified Action attribute "
                             "value" in err_txt)
@@ -691,7 +691,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 dirname = os.path.dirname(entry)
                                 try:
                                         os.makedirs(os.path.join(pkgroot, dirname))
-                                except OSError, err: # in case the dir exists already
+                                except OSError as err: # in case the dir exists already
                                         if err.errno != os.errno.EEXIST:
                                                 raise
                                 fpath = os.path.join(pkgroot, entry)
@@ -707,7 +707,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                         elif ftype == "d":
                                 try:
                                         os.makedirs(os.path.join(pkgroot, entry), mode)
-                                except OSError, err:
+                                except OSError as err:
                                         if err.errno != os.errno.EEXIST:
                                                 raise
 

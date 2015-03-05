@@ -982,7 +982,7 @@ class Manifest(object):
 
                         try:
                                 yield actions.fromstr(l)
-                        except actions.ActionError, e:
+                        except actions.ActionError as e:
                                 # Accumulate errors and continue so that as
                                 # much of the action data as possible can be
                                 # parsed.
@@ -1033,7 +1033,7 @@ class Manifest(object):
                         try:
                                 with open(pathname, "rb") as mfile:
                                         content = mfile.read()
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
                 if isinstance(content, basestring):
                         if signatures:
@@ -1181,7 +1181,7 @@ class Manifest(object):
 
                 try:
                         file_handle = file(file_path, "rb")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
                         log((_("{fp}:\n{e}").format(
@@ -1230,7 +1230,7 @@ class Manifest(object):
                         if l and l[0] != "#":
                                 try:
                                         action = actions.fromstr(l)
-                                except actions.ActionError, e:
+                                except actions.ActionError as e:
                                         log((_("{fp}:\n{e}").format(
                                             fp=file_path, e=e)))
                                 else:
@@ -1242,7 +1242,7 @@ class Manifest(object):
                                                             np
                                                 try:
                                                         inds = action.generate_indices()
-                                                except KeyError, k:
+                                                except KeyError as k:
                                                         log(_("{fp} contains "
                                                             "an action which is"
                                                             " missing the "
@@ -1296,7 +1296,7 @@ class Manifest(object):
 
                 try:
                         os.makedirs(t_dir, mode=PKG_DIR_MODE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -1307,7 +1307,7 @@ class Manifest(object):
 
                 try:
                         fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -1328,7 +1328,7 @@ class Manifest(object):
                 try:
                         os.chmod(fn, PKG_FILE_MODE)
                         portable.rename(fn, mfst_path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
@@ -1610,7 +1610,7 @@ class FactoredManifest(Manifest):
                         try:
                                 fd, fn = tempfile.mkstemp(dir=t_dir,
                                     prefix=t_prefix)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                         f = os.fdopen(fd, "wb")
@@ -1624,7 +1624,7 @@ class FactoredManifest(Manifest):
                                         # Signature verification is done using
                                         # the raw manifest.
                                         f.writelines(self._gen_attrs_to_str())
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         finally:
                                 f.close()
@@ -1633,7 +1633,7 @@ class FactoredManifest(Manifest):
                                 os.chmod(fn, PKG_FILE_MODE)
                                 portable.rename(fn,
                                     self.__cache_path("manifest.{0}".format(n)))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                 def create_cache(name, refs):
@@ -1644,7 +1644,7 @@ class FactoredManifest(Manifest):
                                         f.writelines(refs())
                                 os.chmod(fn, PKG_FILE_MODE)
                                 portable.rename(fn, self.__cache_path(name))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
                 create_cache("manifest.dircache", self._gen_dirs_to_str)
@@ -1665,7 +1665,7 @@ class FactoredManifest(Manifest):
                                 try:
                                         portable.remove(os.path.join(
                                             cache_root, cname))
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno != errno.ENOENT:
                                                 raise
 
@@ -1675,7 +1675,7 @@ class FactoredManifest(Manifest):
                                 os.rmdir(cache_root)
                         except:
                                 pass
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 # Only raise error if failure wasn't due to
                                 # cache directory not existing.
@@ -1702,16 +1702,16 @@ class FactoredManifest(Manifest):
                                                     publisher=self.publisher)
                                         ]
                                 return
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise apx._convert_error(e)
-                        except actions.ActionError, e:
+                        except actions.ActionError as e:
                                 # Cache file is malformed; hopefully due to bugs
                                 # that have been resolved (as opposed to actual
                                 # corruption).  Assume we should just ignore the
                                 # cache and load action data.
                                 try:
                                         self.clear_cache(self.__cache_root)
-                                except Exception, e:
+                                except Exception as e:
                                         # Ignore errors encountered during cache
                                         # dump for this specific case.
                                         pass
@@ -1789,7 +1789,7 @@ class FactoredManifest(Manifest):
                                         elif _attr_matches(a, attr_match):
                                                 yield a
 
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 self._absent_cache.append(atype)
                                 return # no such action in this manifest

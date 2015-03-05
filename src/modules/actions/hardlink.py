@@ -85,7 +85,7 @@ class HardLinkAction(link.LinkAction):
 
                 try:
                         os.link(fulltarget, path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise ActionExecutionError(self, error=e)
 
@@ -132,7 +132,7 @@ class HardLinkAction(link.LinkAction):
                                 errors.append(_("Broken: Path and Target ({0}) "
                                     "inodes not the same").format(
                                     self.get_target_path()))
-                except OSError, e:
+                except OSError as e:
                         errors.append(_("Unexpected Error: {0}").format(e))
 
                 return errors, warnings, info

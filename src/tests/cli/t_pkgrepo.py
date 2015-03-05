@@ -977,7 +977,7 @@ test1\t1\tonline\t2011-08-04T20:34:58Z
                                 r for r in repo.search([query])
                             ][0]
                         )
-                except Exception, e:
+                except Exception as e:
                         self.debug("query exception: {0}".format(e))
                         self.assert_(isinstance(e,
                             sr.RepositorySearchUnavailableError))

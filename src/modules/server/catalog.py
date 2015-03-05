@@ -118,7 +118,7 @@ class ServerCatalog(object):
                 if not os.path.exists(cat_root):
                         try:
                                 os.makedirs(cat_root)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno in (errno.EACCES, errno.EROFS):
                                         return
                                 raise
@@ -135,7 +135,7 @@ class ServerCatalog(object):
                         path = os.path.normpath(os.path.join(root, fname))
                         try:
                                 portable.remove(path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
 
@@ -157,13 +157,13 @@ class ServerCatalog(object):
                                         try:
                                                 portable.assert_mode(fpath,
                                                     self.file_mode)
-                                        except AssertionError, ae:
+                                        except AssertionError as ae:
                                                 bad_modes.append((fpath,
                                                     "{0:o}".format(self.file_mode),
                                                     "{0:o}".format(ae.mode)))
                                 else:
                                         os.chmod(fpath, self.file_mode)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # If the files don't exist yet, move on.
                                 if e.errno == errno.ENOENT:
                                         continue
@@ -174,7 +174,7 @@ class ServerCatalog(object):
                                 try:
                                         portable.assert_mode(fpath,
                                             self.file_mode)
-                                except AssertionError, ae:
+                                except AssertionError as ae:
                                         bad_modes.append((fpath,
                                             "{0:o}".format(self.file_mode),
                                             "{0:o}".format(ae.mode)))
@@ -237,7 +237,7 @@ class ServerCatalog(object):
                 # create an empty catalog file, and then open it read only.
                 try:
                         pfile = file(self.catalog_file, "rb")
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
                                 file(self.catalog_file, "wb").close()
@@ -358,7 +358,7 @@ class ServerCatalog(object):
 
                 try:
                         cfile = file(self.catalog_file, "r")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # Missing catalog is fine; other errors need to
                         # be reported.
                         if e.errno == errno.ENOENT:
@@ -425,7 +425,7 @@ class ServerCatalog(object):
                 try:
                         pfile = file(os.path.normpath(
                             os.path.join(self.catalog_root, "catalog")), "r")
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT:
                                 return
                         else:
@@ -440,7 +440,7 @@ class ServerCatalog(object):
                                 yield self.__parse_entry(entry, self.pub)
                         except (KeyboardInterrupt, SystemExit):
                                 raise
-                        except Exception, e:
+                        except Exception as e:
                                 raise RuntimeError("corrupt catalog entry for "
                                     "publisher '{0}': {1}".format(self.pub,
                                     entry))
@@ -533,7 +533,7 @@ class ServerCatalog(object):
                                         # new format catalogs.
                                         try:
                                                 f = fmri.PkgFmri(s[2:])
-                                        except fmri.IllegalFmri, e:
+                                        except fmri.IllegalFmri as e:
                                                 bad_fmri = e
                                                 continue
 
@@ -599,7 +599,7 @@ class ServerCatalog(object):
                         os.chmod(tmpfile, self.file_mode)
                         portable.rename(tmpfile, finalpath)
 
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # This may get called in a situation where
                         # the user does not have write access to the attrs
                         # file.
@@ -629,7 +629,7 @@ class ServerCatalog(object):
                                 cfile = file(os.path.normpath(
                                     os.path.join(self.catalog_root, "catalog")),
                                     "r")
-                        except IOError, e:
+                        except IOError as e:
                                 # Missing catalog is fine; other errors need to
                                 # be reported.
                                 if e.errno == errno.ENOENT:
@@ -671,7 +671,7 @@ class ServerCatalog(object):
                                 attr_stat = os.stat(os.path.normpath(
                                     os.path.join(self.catalog_root, "attrs")))
                                 attr_sz = attr_stat.st_size
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         attr_sz = 0
                                 else:
@@ -680,7 +680,7 @@ class ServerCatalog(object):
                                 cat_stat =  os.stat(os.path.normpath(
                                     os.path.join(self.catalog_root, "catalog")))
                                 cat_sz = cat_stat.st_size
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         cat_sz = 0
                                 else:

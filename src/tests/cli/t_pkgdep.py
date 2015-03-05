@@ -1071,7 +1071,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 try:
                         self.assertEqualDiff(expected_but_not_seen,
                             seen_but_not_expected)
-                except AssertionError, e:
+                except AssertionError as e:
                         # This code is used to make the differences between
                         # expected and seen depend actions with all their debug
                         # information clearer.

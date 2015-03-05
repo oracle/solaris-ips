@@ -47,7 +47,7 @@ def valid_mediator_version(value):
                 try:
                         version.Version(value)
                         return True, None
-                except version.VersionError, e:
+                except version.VersionError as e:
                         error = str(e)
 
         if error:
@@ -102,7 +102,7 @@ def valid_mediator_implementation(value, allow_empty_version=False):
                 if iver or (iver == "" and not allow_empty_version):
                         try:
                                 version.Version(iver)
-                        except version.VersionError, e:
+                        except version.VersionError as e:
                                 error = str(e)
 
                 if not error and iname and re.match("^[a-zA-Z0-9\-]+$", iname):

@@ -445,7 +445,7 @@ class History(object):
                         for a in file(rpath, "r"):
                                 yield a.rstrip()
 
-                except Exception, e:
+                except Exception as e:
                         raise apx.HistoryLoadException(e)
                         
         def clear(self):
@@ -552,7 +552,7 @@ class History(object):
                 try:
                         if not uuid_be_dic:
                                 uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
-                except apx.ApiException, e:
+                except apx.ApiException as e:
                         uuid_be_dic = {}
 
                 try:
@@ -573,7 +573,7 @@ class History(object):
                                             })
                 except KeyboardInterrupt:
                         raise
-                except Exception, e:
+                except Exception as e:
                         raise apx.HistoryLoadException(e)
 
         def __serialize_client_data(self, d):
@@ -678,7 +678,7 @@ class History(object):
                                 # created.  Assume that if the parent structure
                                 # does not exist, it shouldn't be created.
                                 os.mkdir(self.path, misc.PKG_DIR_MODE)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno not in (errno.EROFS, errno.EACCES,
                                     errno.ENOENT):
                                         # Ignore read-only file system and
@@ -691,7 +691,7 @@ class History(object):
                                 return
                         except KeyboardInterrupt:
                                 raise
-                        except Exception, e:
+                        except Exception as e:
                                 raise apx.HistoryStoreException(e)
 
                 # Repeatedly attempt to write the history (only if it's because
@@ -708,7 +708,7 @@ class History(object):
                                     encoding=sys.getdefaultencoding())
                                 f.close()
                                 return
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EEXIST:
                                         name, ext = os.path.splitext(
                                             os.path.basename(pathname))
@@ -731,7 +731,7 @@ class History(object):
                                 return
                         except KeyboardInterrupt:
                                 raise
-                        except Exception, e:
+                        except Exception as e:
                                 raise apx.HistoryStoreException(e)
 
         def purge(self, be_name=None, be_uuid=None):
@@ -747,13 +747,13 @@ class History(object):
                         shutil.rmtree(self.path)
                 except KeyboardInterrupt:
                         raise
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno in (errno.ENOENT, errno.ESRCH):
                                 # History already purged; record as successful.
                                 self.operation_result = RESULT_SUCCEEDED
                                 return
                         raise apx.HistoryPurgeException(e)
-                except Exception, e:
+                except Exception as e:
                         raise apx.HistoryPurgeException(e)
                 else:
                         self.operation_result = RESULT_SUCCEEDED

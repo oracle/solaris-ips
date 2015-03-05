@@ -238,7 +238,7 @@ def main_func():
 
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal option -- {0}").format(e.opt))
 
         if not source_list:
@@ -429,7 +429,7 @@ def main_func():
                             processdict, source_list, variant_list, variants,
                             tracker, xport, dest_repo, dest_xport, pkg_tmpdir,
                             dry_run=dry_run)
-                except (trans.TransactionError, PkgmergeException), e:
+                except (trans.TransactionError, PkgmergeException) as e:
                         errors.add(str(e))
                         tracker.reset()
                         continue
@@ -781,7 +781,7 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
         # list of actions that are the same in each manifest.
         try:
                 action_lists = list(manifest.Manifest.comm(manifest_list))
-        except manifest.ManifestError, e:
+        except manifest.ManifestError as e:
                 raise PkgmergeException(
                     "Duplicate action(s) in package \"{0}\": \n{1}".format(
                     new_fmri.pkg_name, e))
@@ -904,7 +904,7 @@ def match_user_fmris(patterns, cat):
                         versions.append(fmri.version)
                         fmris.append(fmri)
                 except (pkg.fmri.FmriError,
-                    pkg.version.VersionError), e:
+                    pkg.version.VersionError) as e:
                         raise PkgmergeException(str(e))
 
         # Create a dictionary of patterns, with each value being a
@@ -984,14 +984,14 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError, pkg.fmri.FmriError, apx.ApiException), __e:
+            RuntimeError, pkg.fmri.FmriError, apx.ApiException) as __e:
                 print("pkgmerge: {0}".format(__e), file=sys.stderr)
                 __ret = 1
         except (PipeError, KeyboardInterrupt):
                 __ret = 1
-        except SystemExit, __e:
+        except SystemExit as __e:
                 raise __e
-        except Exception, __e:
+        except Exception as __e:
                 traceback.print_exc()
                 error(misc.get_traceback_message(), exitcode=None)
                 __ret = 99

@@ -282,7 +282,7 @@ class DepotController(object):
                             "versions/0")
                         url = urllib2.urlopen(repourl)
                         url.close()
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         # Server returns NOT_MODIFIED if catalog is up
                         # to date
                         if e.code == httplib.NOT_MODIFIED:

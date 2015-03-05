@@ -122,7 +122,7 @@ class SignatureAction(generic.Action):
                         try:
                                 fs = os.stat(pth)
                                 chain_sizes.append(str(fs.st_size))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise pkg.actions.ActionDataError(e, path=pth)
                         # misc.get_data_digest takes care of closing the file
                         # that's opened below.
@@ -452,7 +452,7 @@ class SignatureAction(generic.Action):
                         pub.verify_chain(cert, trust_anchors, 0, use_crls,
                             required_names=required_names,
                             usages=CODE_SIGNING_USE)
-                except apx.SigningException, e:
+                except apx.SigningException as e:
                         e.act = self
                         raise
                 # Check that the certificate verifies against this signature.

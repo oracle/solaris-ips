@@ -637,7 +637,7 @@ close
                                         res = self._extract_package_from_res(res)
                                 res = set(res)
                                 break
-                        except api_errors.ProblematicSearchServers, e:
+                        except api_errors.ProblematicSearchServers as e:
                                 pass
 
                 self._check(set(res), test_value)
@@ -1345,7 +1345,7 @@ close
         def validateAssertRaises(ex_type, validate_func, func, *args, **kwargs):
                 try:
                         func(*args, **kwargs)
-                except ex_type, e:
+                except ex_type as e:
                         validate_func(e)
                 else:
                         raise RuntimeError("Didn't raise expected exception.")
@@ -2649,7 +2649,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                                             pkg_name)).get_short_fmri(), piece,
                                             TestApiSearchBasics._replace_act(
                                             act)),)
-                        except err, e:
+                        except err as e:
                                 return res
                         else:
                                 raise RuntimeError(

@@ -77,7 +77,7 @@ class DirectoryAction(generic.Action):
                 try:
                         self.makedirs(path, mode=mode,
                             fmri=pkgplan.destination_fmri)
-                except OSError, e:
+                except OSError as e:
                         if e.filename != path:
                                 # makedirs failed for some component
                                 # of the path.
@@ -175,7 +175,7 @@ class DirectoryAction(generic.Action):
                 elif mode != omode:
                         try:
                                 os.chmod(path, mode)
-                        except Exception, e:
+                        except Exception as e:
                                 if e.errno != errno.EPERM and e.errno != \
                                     errno.ENOSYS:
                                         # Assume chmod failed due to a
@@ -198,7 +198,7 @@ class DirectoryAction(generic.Action):
                 if not orig or oowner != owner or ogroup != group:
                         try:
                                 portable.chown(path, owner, group)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EPERM and \
                                     e.errno != errno.ENOSYS:
                                         raise
@@ -216,7 +216,7 @@ class DirectoryAction(generic.Action):
                 path = self.get_installed_path(pkgplan.image.get_root())
                 try:
                         os.rmdir(path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 pass
                         elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):

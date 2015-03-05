@@ -83,7 +83,7 @@ def main_func():
                         # non-preferred layout to the preferred layout during a
                         # lookup.
                         fm.lookup(f)
-        except file_manager.UnrecognizedFilePaths, e:
+        except file_manager.UnrecognizedFilePaths as e:
                 emsg(e)
                 return 1
         return 0
@@ -102,7 +102,7 @@ if __name__ == "__main__":
                 # one handle the other instances.
                 try:
                         __ret = main_func()
-                except (MemoryError, EnvironmentError), __e:
+                except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
@@ -110,7 +110,7 @@ if __name__ == "__main__":
                                 __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
                         error("\n" + misc.out_of_memory())
                         __ret = 1
-        except SystemExit, __e:
+        except SystemExit as __e:
                 raise
         except (PipeError, KeyboardInterrupt):
                 if __img:

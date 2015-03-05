@@ -424,7 +424,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 dcf = file(dcp, "r")
                                 lines = dcf.readlines()
                                 dcf.close()
-                        except IOError, e:
+                        except IOError as e:
                                 e.args += ("reading",)
                                 raise
 
@@ -443,14 +443,14 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 dcf = file(dcp, "w")
                                 dcf.writelines(lines)
                                 dcf.close()
-                        except IOError, e:
+                        except IOError as e:
                                 e.args += ("writing",)
                                 raise
 
                 if add_class or rem_class:
                         try:
                                 update_classes(add_class, rem_class)
-                        except IOError, e:
+                        except IOError as e:
                                 print("{0} ({1}) upgrade (classes modification) "
                                     "failed {2} etc/driver_classes with error: "
                                     "{3} ({4})".format(self.name,
@@ -468,7 +468,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 lines = dlf.readlines()
                                 dlf.close()
                                 st = os.stat(dlp)
-                        except IOError, e:
+                        except IOError as e:
                                 e.args += ("reading",)
                                 raise
 
@@ -506,7 +506,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 os.chmod(dltp, st.st_mode)
                                 os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 e.args += ("writing",)
                                 raise
 
@@ -516,12 +516,12 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                 if "devlink" in orig.attrs or "devlink" in self.attrs:
                         try:
                                 update_devlinks()
-                        except IOError, e:
+                        except IOError as e:
                                 print("{0} ({1}) upgrade (devlinks modification) "
                                     "failed {2} etc/devlink.tab with error: "
                                     "{3} ({4})".format(self.name,
                                     self.attrs["name"], e[1], e[0], e[2]))
-                        except RuntimeError, e:
+                        except RuntimeError as e:
                                 print("{0} ({1}) upgrade (devlinks modification) "
                                     "failed modifying\netc/devlink.tab.  The "
                                     "following entries were to be removed, "
@@ -668,7 +668,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                              "etc/name_to_major", minfields=2, maxfields=2):
                                 if fields[0] == name:
                                         found_major += 1
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/name_to_major",)
                         if collect_errs:
                                 errors.append(e)
@@ -686,7 +686,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 raise RuntimeError, \
                                     "More than one entry for driver '{0}' in " \
                                     "/etc/name_to_major".format(name)
-                        except RuntimeError, e:
+                        except RuntimeError as e:
                                 if collect_errs:
                                         errors.append(e)
                                 else:
@@ -701,7 +701,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                              "etc/driver_aliases", minfields=2, maxfields=2):
                                 if fields[0] == name:
                                         act.attrs["alias"].append(fields[1])
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/driver_aliases",)
                         if collect_errs:
                                 errors.append(e)
@@ -715,7 +715,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                              "etc/driver_classes", minfields=2, maxfields=2):
                                 if fields[0] == name:
                                         act.attrs["class"].append(fields[1])
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/driver_classes",)
                         if collect_errs:
                                 errors.append(e)
@@ -743,7 +743,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 elif major == "clone" and minor == name:
                                         act.attrs["clone_perms"].append(
                                             minor + " " + " ".join(fields[1:]))
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/minor_perm",)
                         if collect_errs:
                                 errors.append(e)
@@ -754,7 +754,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                 try:
                         dpf = file(os.path.normpath(os.path.join(
                             img.get_root(), "etc/security/device_policy")))
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/security/device_policy",)
                         if collect_errs:
                                 errors.append(e)
@@ -793,7 +793,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                 try:
                         dpf = file(os.path.normpath(os.path.join(
                             img.get_root(), "etc/security/extra_privs")))
-                except IOError, e:
+                except IOError as e:
                         e.args += ("etc/security/extra_privs",)
                         if collect_errs:
                                 errors.append(e)
@@ -940,7 +940,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 lines = dlf.readlines()
                                 dlf.close()
                                 st = os.stat(dlp)
-                        except IOError, e:
+                        except IOError as e:
                                 print("{0} ({1}) removal (devlinks modification) "
                                     "failed reading etc/devlink.tab with error: "
                                     "{2} ({3})".format(self.name,
@@ -975,7 +975,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 os.chmod(dltp, st.st_mode)
                                 os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 print("{0} ({1}) removal (devlinks modification) "
                                     "failed writing etc/devlink.tab with error: "
                                     "{2} ({3})".format(self.name,

@@ -103,7 +103,7 @@ def consistent_open(data_list, directory, timeout = 1):
                                         missing = None
                                         cur_version = None
                                         break
-                        except IOError, e:
+                        except IOError as e:
                                 if e.errno == errno.ENOENT:
                                         # If the index file is missing, ensure
                                         # that previous files were missing as

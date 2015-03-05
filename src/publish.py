@@ -162,13 +162,13 @@ def trans_create_repository(repo_uri, args):
         try:
                 trans.Transaction(repo_uri, create_repo=True,
                     repo_props=repo_props, xport=xport, pub=pub)
-        except trans.TransactionRepositoryConfigError, e:
+        except trans.TransactionRepositoryConfigError as e:
                 error(e, cmd="create-repository")
                 emsg(_("Invalid repository configuration values were "
                     "specified using --set-property or required values are "
                     "missing.  Please provide the correct and/or required "
                     "values using the --set-property option."))
-        except trans.TransactionError, e:
+        except trans.TransactionError as e:
                 error(e, cmd="create-repository")
                 return 1
         return 0
@@ -334,7 +334,7 @@ def trans_publish(repo_uri, fargs):
         else:
                 try:
                         filelist = [(f, file(f)) for f in pargs]
-                except IOError, e:
+                except IOError as e:
                         error(e, cmd="publish")
                         return 1
 
@@ -345,7 +345,7 @@ def trans_publish(repo_uri, fargs):
         for filename, f in filelist:
                 try:
                         data = f.read()
-                except IOError, e:
+                except IOError as e:
                         error(e, cmd="publish")
                         return 1
                 lines += data
@@ -356,7 +356,7 @@ def trans_publish(repo_uri, fargs):
         m = pkg.manifest.Manifest()
         try:
                 m.set_content(content=lines)
-        except apx.InvalidPackageErrors, err:
+        except apx.InvalidPackageErrors as err:
                 e = err.errors[0]
                 lineno = e.lineno
                 for i, tup in enumerate(linecnts):
@@ -486,7 +486,7 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 try:
                         filelist = [(f, file(f)) for f in pargs]
-                except IOError, e:
+                except IOError as e:
                         error(e, cmd="include")
                         return 1
 
@@ -497,7 +497,7 @@ def trans_include(repo_uri, fargs, transaction=None):
         for filename, f in filelist:
                 try:
                         data = f.read()
-                except IOError, e:
+                except IOError as e:
                         error(e, cmd="include")
                         return 1
                 lines.append(data)
@@ -508,7 +508,7 @@ def trans_include(repo_uri, fargs, transaction=None):
         m = pkg.manifest.Manifest()
         try:
                 m.set_content(content="\n".join(lines))
-        except apx.InvalidPackageErrors, err:
+        except apx.InvalidPackageErrors as err:
                 e = err.errors[0]
                 lineno = e.lineno
                 for i, tup in enumerate(linecnts):
@@ -627,10 +627,10 @@ def trans_import(repo_uri, args, visitors=[]):
                         else:
                                 if not abandon:
                                         t.add(action)
-        except TypeError, e:
+        except TypeError as e:
                 error(e, cmd="import")
                 return 1
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.errno == errno.ENOENT:
                         error("{0}: '{1}'".format(e.args[1], e.filename),
                             cmd="import")
@@ -676,10 +676,10 @@ def trans_generate(args, visitors=[]):
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]
                         print(action)
-        except TypeError, e:
+        except TypeError as e:
                 error(e, cmd="generate")
                 return 1
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.errno == errno.ENOENT:
                         error("{0}: '{1}'".format(e.args[1], e.filename),
                             cmd="generate")
@@ -700,7 +700,7 @@ def trans_refresh_index(repo_uri, args):
         try:
                 t = trans.Transaction(repo_uri, xport=xport,
                     pub=pub).refresh_index()
-        except trans.TransactionError, e:
+        except trans.TransactionError as e:
                 error(e, cmd="refresh-index")
                 return 1
         return 0
@@ -745,7 +745,7 @@ def main_func():
                                 DebugValues.set_value(key, value)
                         elif opt in ("--help", "-?"):
                                 show_usage = True
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         if repo_uri and not repo_uri.startswith("null:"):
@@ -811,10 +811,10 @@ def main_func():
                                         printed_space = True
                                 error(err, cmd=subcommand)
                                 ret = 1
-        except pkg.bundle.InvalidBundleException, e:
+        except pkg.bundle.InvalidBundleException as e:
                 error(e, cmd=subcommand)
                 ret = 1
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal {cmd} option -- {opt}").format(
                     cmd=subcommand, opt=e.opt))
 
@@ -837,7 +837,7 @@ if __name__ == "__main__":
                 __ret = 1
         except (pkg.actions.ActionError, trans.TransactionError,
             EnvironmentError, RuntimeError, pkg.fmri.FmriError,
-            apx.ApiException), _e:
+            apx.ApiException) as _e:
                 if isinstance(_e, EnvironmentError) and \
                     _e.errno == errno.ENOMEM:
                         error("\n" + misc.out_of_memory())
@@ -849,7 +849,7 @@ if __name__ == "__main__":
         except MemoryError:
                 error("\n" + misc.out_of_memory())
                 __ret = 1
-        except SystemExit, _e:
+        except SystemExit as _e:
                 raise _e
         except:
                 traceback.print_exc()

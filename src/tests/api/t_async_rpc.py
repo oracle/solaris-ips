@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -164,7 +164,7 @@ class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
 
                 try:
                         rv = ac.result()
-                except AsyncCallException, ex:
+                except AsyncCallException as ex:
                         # we explicity delete the client rpc object to try and
                         # ensure that any connection to the server process
                         # gets closed (so that the server process exits).

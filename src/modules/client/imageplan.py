@@ -404,7 +404,7 @@ class ImagePlan(object):
 
                 try:
                         return solver_cb(ignore_inst_parent_deps)
-                except api_errors.PlanCreationException, e:
+                except api_errors.PlanCreationException as e:
                         # if we're currently in sync don't retry the
                         # operation
                         if self.image.linked.insync(latest_md=False):
@@ -3036,7 +3036,7 @@ class ImagePlan(object):
                         try:
                                 pres_type = dest._check_preserve(orig, ap.p,
                                     orig_path=opath)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         continue
                                 else:
@@ -3170,7 +3170,7 @@ class ImagePlan(object):
                                         # download cache is stored.
                                         pd._cbytes_added += \
                                             os.stat(mpath).st_size * 3
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise api_errors._convert_error(e)
                         pd._cbytes_added += cpbytes
                         pd._bytes_added += pbytes
@@ -4330,7 +4330,7 @@ class ImagePlan(object):
                                         try:
                                                 ind.check_index_has_exactly_fmris(
                                                         self.image.gen_installed_pkg_names())
-                                        except se.IncorrectIndexFileHash, e:
+                                        except se.IncorrectIndexFileHash as e:
                                                 self.__preexecuted_indexing_error = \
                                                     api_errors.WrapSuccessfulIndexingException(
                                                         e,
@@ -4341,7 +4341,7 @@ class ImagePlan(object):
                                                         self.image.\
                                                             gen_installed_pkgs()
                                                         )
-                        except se.IndexingException, e:
+                        except se.IndexingException as e:
                                 # If there's a problem indexing, we want to
                                 # attempt to finish the installation anyway. If
                                 # there's a problem updating the index on the
@@ -4399,10 +4399,10 @@ class ImagePlan(object):
                         for p in self.pd.pkg_plans:
                                 try:
                                         p.preexecute()
-                                except api_errors.PkgLicenseErrors, e:
+                                except api_errors.PkgLicenseErrors as e:
                                         # Accumulate all license errors.
                                         lic_errors.append(e)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno == errno.EACCES:
                                                 raise api_errors.PermissionsException(
                                                     e.filename)
@@ -4418,7 +4418,7 @@ class ImagePlan(object):
                                 for p in self.pd.pkg_plans:
                                         p.download(self.__progtrack,
                                             self.__check_cancel)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
@@ -4427,7 +4427,7 @@ class ImagePlan(object):
                                             e.filename)
                                 raise
                         except (api_errors.InvalidDepotResponseException,
-                            api_errors.TransportError), e:
+                            api_errors.TransportError) as e:
                                 if p and p._autofix_pkgs:
                                         e._autofix_pkgs = p._autofix_pkgs
                                 raise
@@ -4466,7 +4466,7 @@ class ImagePlan(object):
                 try:
                         for p in self.pd.pkg_plans:
                                 p.cacheload()
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -4654,7 +4654,7 @@ class ImagePlan(object):
                                         self.image.cfg.set_property("property",
                                             "dehydrated", self.operations_pubs)
                                         self.image.save_config()
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EPERM:
                                         raise api_errors.PermissionsException(
@@ -4740,7 +4740,7 @@ class ImagePlan(object):
                                 raise api_errors.WrapIndexingException(e,
                                     traceback.format_exc(),
                                     traceback.format_stack())
-                        except Exception, e:
+                        except Exception as e:
                                 # It's important to delete and rebuild
                                 # from scratch rather than using the
                                 # existing indexer because otherwise the
@@ -4760,7 +4760,7 @@ class ImagePlan(object):
                                             excludes=self.__new_excludes)
                                         ind.rebuild_index_from_scratch(
                                             self.image.gen_installed_pkgs())
-                                except Exception, e:
+                                except Exception as e:
                                         raise api_errors.WrapIndexingException(
                                             e, traceback.format_exc(),
                                             traceback.format_stack())
@@ -4881,7 +4881,7 @@ class ImagePlan(object):
                                 matchers.append(matcher)
                                 pubs.append(fmri.publisher)
                                 fmris.append(fmri)
-                        except pkg.fmri.FmriError, e:
+                        except pkg.fmri.FmriError as e:
                                 illegals.append(e)
                 patterns = npatterns
                 del npatterns, seen
@@ -5101,7 +5101,7 @@ class ImagePlan(object):
                                 fmris.append(fmri)
 
                         except (pkg.fmri.FmriError,
-                            pkg.version.VersionError), e:
+                            pkg.version.VersionError) as e:
                                 illegals.append(e)
                 patterns = npatterns
                 del npatterns, seen

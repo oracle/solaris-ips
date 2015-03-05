@@ -209,7 +209,7 @@ class PlainLogFormatter(LogFormatter):
                                         linted_flag = linted(action=self.action,
                                             manifest=self.manifest,
                                             lint_id=msg.msgid)
-                                except DuplicateLintedAttrException, err:
+                                except DuplicateLintedAttrException as err:
                                         lint_key = ("{0} pkglint001.6".format(
                                             LEVELS[ERROR]))
                                         self.logger.warning("{0}{1}".format(

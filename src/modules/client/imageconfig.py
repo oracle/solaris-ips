@@ -737,7 +737,7 @@ class ImageConfig(cfg.FileConfig):
                             DA_FILE)
                         try:
                                 portable.remove(da_path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 # Don't care if the file is already gone.
                                 if e.errno != errno.ENOENT:
                                         exc = apx._convert_error(e)
@@ -1101,7 +1101,7 @@ class BlendedConfig(object):
                                         port = smf.get_prop(
                                             "application/pkg/zones-proxy-client",
                                             "config/listen_port")
-                                except smf.NonzeroExitException, e:
+                                except smf.NonzeroExitException as e:
                                         # If we can't get information out of
                                         # smf, try using pkg/sysrepo.
                                         try:
@@ -1112,7 +1112,7 @@ class BlendedConfig(object):
                                                 port = smf.get_prop(
                                                     "application/pkg/system-repository:default",
                                                     "config/port")
-                                        except smf.NonzeroExitException, e:
+                                        except smf.NonzeroExitException as e:
                                                 raise apx.UnknownSysrepoConfiguration()
                                 self.__proxy_url = "http://{0}:{1}".format(host, port)
                         # We use system=True so that we don't try to retrieve
@@ -1137,7 +1137,7 @@ class BlendedConfig(object):
                                                 # system repository
                                                 # configuration.
                                                 portable.remove(syscfg_path)
-                                        except OSError, e:
+                                        except OSError as e:
                                                 if e.errno == errno.ENOENT:
                                                         # Check to see whether
                                                         # we'll be able to write
@@ -1151,7 +1151,7 @@ class BlendedConfig(object):
                                                             syscfg_path, None)
                                                 else:
                                                         raise
-                                except OSError, e:
+                                except OSError as e:
                                         if e.errno in \
                                             (errno.EACCES, errno.EROFS):
                                                 # A permissions error means that

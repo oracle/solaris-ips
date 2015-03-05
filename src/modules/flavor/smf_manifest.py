@@ -269,7 +269,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                         if instance is None:
                                 continue
 
-                except ValueError, err:
+                except ValueError as err:
                         elist.append(_("Problem resolving {fmri}: {err}").format(
                             **locals()))
                         continue
@@ -279,7 +279,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                 try:
                         dep_fmris = set(
                             get_smf_dependencies(fmri, instance_deps))
-                except ValueError, err:
+                except ValueError as err:
                         elist.append(
                             _("Problem determining dependencies for {fmri}:"
                             "{err}").format(**locals()))
@@ -289,7 +289,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                         try:
                                 manifests = resolve_smf_dependency(dep_fmri,
                                     instance_mf)
-                        except ValueError, err:
+                        except ValueError as err:
                                 # we've declared an SMF dependency, but can't
                                 # determine what file delivers it from the known
                                 # SMF manifests in either the proto area or the

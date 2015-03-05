@@ -211,7 +211,7 @@ class Action(object):
                                 try:
                                         fs = os.stat(data)
                                         self.attrs["pkg.size"] = str(fs.st_size)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         raise \
                                             pkg.actions.ActionDataError(
                                             e, path=data)
@@ -249,7 +249,7 @@ class Action(object):
                                                 # file object.
                                                 sz = len(data)
                                                 data = StringIO(data)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 raise pkg.actions.ActionDataError(e)
 
                 self.attrs["pkg.size"] = str(sz)
@@ -547,7 +547,7 @@ class Action(object):
                         p = os.path.join(*pathlist[:i + 1])
                         try:
                                 fs = os.lstat(p)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         break
                                 raise
@@ -585,7 +585,7 @@ class Action(object):
                                         os.chmod(path, mode)
                                 if uid != fs.st_uid or gid != fs.st_gid:
                                         portable.chown(path, uid, gid)
-                        except  OSError, e:
+                        except  OSError as e:
                                 if e.errno != errno.EPERM and \
                                     e.errno != errno.ENOSYS:
                                         raise
@@ -596,7 +596,7 @@ class Action(object):
                         p = os.path.join(*pathlist[:i])
                         try:
                                 os.mkdir(p, fs.st_mode)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.ernno != errno.ENOTDIR:
                                         raise
                                 err_txt = _("Unable to create {path}; a "
@@ -611,7 +611,7 @@ class Action(object):
                         os.chmod(p, fs.st_mode)
                         try:
                                 portable.chown(p, fs.st_uid, fs.st_gid)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EPERM:
                                         raise
 
@@ -624,7 +624,7 @@ class Action(object):
                 os.chmod(path, mode)
                 try:
                         portable.chown(path, uid, gid)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.EPERM:
                                 raise
 
@@ -892,7 +892,7 @@ class Action(object):
                 lstat = None
                 try:
                         lstat = os.lstat(path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.ENOENT:
                                 if self.attrs.get("preserve", "") == "legacy":
                                         # It's acceptable for files with
@@ -1000,7 +1000,7 @@ class Action(object):
 
                 try:
                         portable.remove(path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 # Already gone; don't care.
                                 return
@@ -1040,7 +1040,7 @@ class Action(object):
                         # if it isn't empty, salvage it.
                         try:
                                 os.rmdir(path)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno in (errno.EPERM, errno.EACCES):
                                         # Raise permissions exceptions as-is.
                                         raise

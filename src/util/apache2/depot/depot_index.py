@@ -178,7 +178,7 @@ class BackgroundTask(object):
                                         self.__q.task_done()
                                         if self.__q.unfinished_tasks == 0:
                                                 self.__keep_busy = False
-                        except Exception, e:
+                        except Exception as e:
                                 print("Failure encountered executing "
                                     "background task {0!r}.".format(self))
 
@@ -191,7 +191,7 @@ class BackgroundTask(object):
                         if self.__keep_busy:
                                 try:
                                         urllib.urlopen(self.__busy_url).close()
-                                except Exception, e:
+                                except Exception as e:
                                         print("Failure encountered retrieving "
                                             "busy url {0}: {1}".format(
                                             self.__busy_url, e))
@@ -339,7 +339,7 @@ class WsgiDepot(object):
                         try:
                                 repo = sr.Repository(root=path, read_only=True,
                                     writable_root=writable_root)
-                        except sr.RepositoryError, e:
+                        except sr.RepositoryError as e:
                                 print("Unable to load repository: {0}".format(e))
                                 continue
 
@@ -645,7 +645,7 @@ class WsgiDepot(object):
                         try:
                                 self.bgtask.put(repo.refresh_index,
                                     pub=pub_prefix)
-                        except Queue.Full, e:
+                        except Queue.Full as e:
                                 retries = 10
                                 success = False
                                 while retries > 0 and not success:
@@ -655,7 +655,7 @@ class WsgiDepot(object):
                                                     repo.refresh_index,
                                                     pub=pub_prefix)
                                                 success = True
-                                        except Exception, ex:
+                                        except Exception as ex:
                                                 pass
                                 if not success:
                                         raise cherrypy.HTTPError(
@@ -775,7 +775,7 @@ class Pkg5Dispatch(object):
                         else:
                                 cherrypy.response.body = self.app.default(*toks,
                                     **params)
-                except Exception, e:
+                except Exception as e:
                         if isinstance(e, cherrypy.HTTPRedirect):
                                 raise
                         elif isinstance(e, cherrypy.HTTPError):

@@ -107,7 +107,7 @@ def fetch_catalog(src_pub, xport, temp_root):
 def __make_tmp_cert(d, pth):
         try:
                 cert = m2.X509.load_cert(pth)
-        except m2.X509.X509Error, e:
+        except m2.X509.X509Error as e:
                 raise api_errors.BadFileFormat(_("The file {0} was expected to "
                     "be a PEM certificate but it could not be read.").format(
                     pth))
@@ -125,7 +125,7 @@ def main_func():
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "a:c:i:k:ns:D:",
                     ["help", "no-index", "no-catalog"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         show_usage = False
@@ -252,7 +252,7 @@ def main_func():
                 for pat in pats:
                         try:
                                 p_obj = fmri.MatchingPkgFmri(pat)
-                        except fmri.IllegalMatchingFmri, e:
+                        except fmri.IllegalMatchingFmri as e:
                                 errors.append(e)
                                 continue
                         pub_prefix = p_obj.get_publisher()
@@ -325,7 +325,7 @@ def main_func():
                                         try:
                                                 if a.identical(a2, hsh):
                                                         cnt += 1
-                                        except api_errors.AlmostIdentical, e:
+                                        except api_errors.AlmostIdentical as e:
                                                 e.pkg = pfmri
                                                 errors.append(e)
                                                 almost_identical = True
@@ -358,7 +358,7 @@ def main_func():
                                     include_build=False)))
                                 successful_publish = True
                         except (api_errors.ApiException, fmri.FmriError,
-                            trans.TransactionError), e:
+                            trans.TransactionError) as e:
                                 errors.append(e)
                 if errors:
                         error("\n".join([str(e) for e in errors]))
@@ -367,7 +367,7 @@ def main_func():
                         else:
                                 return EXIT_OOPS
                 return EXIT_OK
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return EXIT_OOPS
         finally:
@@ -384,7 +384,7 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = EXIT_OOPS
-        except SystemExit, _e:
+        except SystemExit as _e:
                 raise _e
         except:
                 traceback.print_exc()

@@ -182,7 +182,7 @@ class Transaction(object):
                 try:
                         self.fmri = fmri.PkgFmri(self.pkg_name,
                             self.client_release)
-                except fmri.FmriError, e:
+                except fmri.FmriError as e:
                         raise TransactionOperationError(e)
 
                 # Version is required for publication.
@@ -241,7 +241,7 @@ class Transaction(object):
 
                 try:
                         os.makedirs(self.dir, misc.PKG_DIR_MODE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EEXIST:
                                 raise TransactionAlreadyOpenError(
                                     trans_basename)
@@ -296,7 +296,7 @@ class Transaction(object):
                 try:
                         self.fmri = fmri.PkgFmri(self.pkg_name,
                             self.client_release)
-                except fmri.FmriError, e:
+                except fmri.FmriError as e:
                         raise TransactionOperationError(e)
 
                 # Version and timestamp is required for appending.
@@ -340,7 +340,7 @@ class Transaction(object):
 
                 try:
                         os.makedirs(self.dir, misc.PKG_DIR_MODE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EEXIST:
                                 raise TransactionAlreadyOpenError(
                                     trans_basename)
@@ -391,7 +391,7 @@ class Transaction(object):
                 try:
                         tfpath = os.path.join(self.dir, "manifest")
                         tfile = file(tfpath, tmode)
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT:
                                 return
                         raise
@@ -434,7 +434,7 @@ class Transaction(object):
                 # Discard the in-flight transaction data.
                 try:
                         shutil.rmtree(self.dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # Ensure that the error goes to stderr, and then drive
                         # on as the actual package was published.
                         misc.emsg(e)
@@ -445,7 +445,7 @@ class Transaction(object):
                 # state transition from TRANSACTING to ABANDONED
                 try:
                         shutil.rmtree(self.dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.filename == self.dir and e.errno != errno.ENOENT:
                                 raise
                 return "ABANDONED"
@@ -458,7 +458,7 @@ class Transaction(object):
                 # before further processing is done.
                 try:
                         action.validate()
-                except actions.ActionError, e:
+                except actions.ActionError as e:
                         raise TransactionOperationError(e)
 
                 if self.append_trans and action.name != "signature":
@@ -499,7 +499,7 @@ class Transaction(object):
 
                                 try:
                                         elf_info = elf.get_info(elf_name)
-                                except elf.ElfError, e:
+                                except elf.ElfError as e:
                                         raise TransactionContentError(e)
 
                                 try:
@@ -539,7 +539,7 @@ class Transaction(object):
 
                         try:
                                 dst_path = self.rstore.file(fname)
-                        except Exception, e:
+                        except Exception as e:
                                 # The specific exception can't be named here due
                                 # to the cyclic dependency between this class
                                 # and the repository class.
@@ -628,7 +628,7 @@ class Transaction(object):
                             None)[0]
                         fname = hashes[default_hash_attr]
                         dst_path = self.rstore.file(fname)
-                except Exception, e:
+                except Exception as e:
                         # The specific exception can't be named here due
                         # to the cyclic dependency between this class
                         # and the repository class.

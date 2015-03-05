@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import grp
@@ -95,11 +95,11 @@ class DirectoryBundle(pkg.bundle.Bundle):
                 if not self.use_default_owner:
                         try:
                                 owner = pwd.getpwuid(pstat.st_uid).pw_name
-                        except KeyError, e:
+                        except KeyError as e:
                                 owner = None
                         try:
                                 group = grp.getgrgid(pstat.st_gid).gr_name
-                        except KeyError, e:
+                        except KeyError as e:
                                 group = None
 
                         if not owner and not group:

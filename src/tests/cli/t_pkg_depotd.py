@@ -219,7 +219,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                                 try:
                                         urllib2.urlopen("{0}/{1}/0/{2}".format(durl,
                                             operation, entry))
-                                except urllib2.HTTPError, e:
+                                except urllib2.HTTPError as e:
                                         if e.code != httplib.BAD_REQUEST:
                                                 raise
 
@@ -348,7 +348,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 # with a 404 error.
                 try:
                         urllib2.urlopen("{0}/../../../../bin/pkg".format(depot_url))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code != httplib.NOT_FOUND:
                                 raise
 
@@ -578,7 +578,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                                         urllib2.urlopen("{0}{1}/feed".format(durl,
                                             pub))
                                         got = True
-                                except urllib2.HTTPError, e:
+                                except urllib2.HTTPError as e:
                                         self.debug(str(e))
                                         time.sleep(1)
                         self.assert_(got)
@@ -673,7 +673,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 durl = self.__dc.get_depot_url()
                 try:
                         urllib2.urlopen("{0}/catalog/1/".format(durl))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         self.assertEqual(e.code, httplib.NOT_FOUND)
                 self.__dc.stop()
 
@@ -686,7 +686,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 for ver in (0, 1):
                         try:
                                 urllib2.urlopen("{0}/catalog/{1:d}/".format(durl, ver))
-                        except urllib2.HTTPError, e:
+                        except urllib2.HTTPError as e:
                                 self.assertEqual(e.code, httplib.NOT_FOUND)
                 self.__dc.stop()
 
@@ -697,7 +697,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 durl = self.__dc.get_depot_url()
                 try:
                         urllib2.urlopen("{0}/catalog/1/".format(durl))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         self.assertEqual(e.code, httplib.FORBIDDEN)
                 self.__dc.stop()
 
@@ -830,7 +830,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                         f = urllib2.urlopen(durl)
                                         daemon_started = True
                                         break
-                                except urllib2.URLError, e:
+                                except urllib2.URLError as e:
                                         time.sleep(check_interval)
 
                         if not daemon_started:
@@ -1063,7 +1063,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 try:
                         urllib2.urlopen(urlparse.urljoin(durl,
                             "p5i/0/nosuchpackage"))
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code != httplib.NOT_FOUND:
                                 raise
 
@@ -1090,9 +1090,9 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 rinfo = urllib2.urlopen(urlparse.urljoin(durl,
                                     req_path)).info()
                                 return rinfo.items()
-                        except urllib2.HTTPError, e:
+                        except urllib2.HTTPError as e:
                                 return e.info().items()
-                        except Exception, e:
+                        except Exception as e:
                                 raise RuntimeError("retrieval of {0} "
                                     "failed: {1}".format(req_path, str(e)))
 
@@ -1192,7 +1192,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         durl = "http://localhost:{0}/catalog/0".format(curport)
                         try:
                                 urllib2.urlopen(durl)
-                        except urllib2.URLError, e:
+                        except urllib2.URLError as e:
                                 pass
                         # Stop the depot daemon.
                         self.__depot_daemon_stop(depot_handle)

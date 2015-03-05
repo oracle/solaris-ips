@@ -106,7 +106,7 @@ def generate(args):
         try:
                 opts, pargs = getopt.getopt(args, "d:D:Ik:Mm?",
                     ["help"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         remove_internal_deps = True
@@ -174,12 +174,12 @@ def generate(args):
         try:
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
                     proto_dirs, dyn_tok_conv, run_paths, remove_internal_deps)
-        except (actions.MalformedActionError, actions.UnknownActionError), e:
+        except (actions.MalformedActionError, actions.UnknownActionError) as e:
                 error(_("Could not parse manifest {manifest} because of the "
                     "following line:\n{line}").format(manifest=manf,
                     line=e.actionstr))
                 return 1
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return 1
 
@@ -218,7 +218,7 @@ def resolve(args, img_dir):
         extra_external_info = False
         try:
                 opts, pargs = getopt.getopt(args, "d:e:Emos:Sv")
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
         for opt, arg in opts:
                 if opt == "-d":
@@ -288,7 +288,7 @@ def resolve(args, img_dir):
                                                 if l and not l.startswith("#"):
                                                         system_patterns.append(
                                                             l)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         error("{0}: '{1}'".format(
                                             e.args[1], e.filename),
@@ -309,7 +309,7 @@ def resolve(args, img_dir):
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     progress.QuietProgressTracker(), None, PKG_CLIENT_NAME,
                     exact_match=provided_image_dir)
-        except api_errors.ImageNotFoundException, e:
+        except api_errors.ImageNotFoundException as e:
                 if e.user_specified:
                         if pkg_image_used:
                                 error(_("No image rooted at '{0}' "
@@ -320,10 +320,10 @@ def resolve(args, img_dir):
                 else:
                         error(_("No image found."))
                 return 1
-        except api_errors.PermissionsException, e:
+        except api_errors.PermissionsException as e:
                 error(e)
                 return 1
-        except api_errors.ImageFormatUpdateNeeded, e:
+        except api_errors.ImageFormatUpdateNeeded as e:
                 # This should be a very rare error case.
                 format_update_error(e)
                 return 1
@@ -332,14 +332,14 @@ def resolve(args, img_dir):
                 pkg_deps, errs, unused_fmris, external_deps = \
                     dependencies.resolve_deps(manifest_paths, api_inst,
                         system_patterns, prune_attrs=not verbose)
-        except (actions.MalformedActionError, actions.UnknownActionError), e:
+        except (actions.MalformedActionError, actions.UnknownActionError) as e:
                 error(_("Could not parse one or more manifests because of "
                     "the following line:\n{0}").format(e.actionstr))
                 return 1
-        except dependencies.DependencyError, e:
+        except dependencies.DependencyError as e:
                 error(e)
                 return 1
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 return 1
         ret_code = 0
@@ -490,7 +490,7 @@ def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
         if not os.path.exists(out_dir):
                 try:
                         os.makedirs(out_dir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         e_dic = {"dir": out_dir}
                         if len(e.args) > 0:
                                 e_dic["err"] = e.args[1]
@@ -548,7 +548,7 @@ def main_func():
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:?",
                     ["help"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
 
         show_usage = False
@@ -590,10 +590,10 @@ if __name__ == "__main__":
 
         try:
                 __ret = main_func()
-        except api_errors.MissingFileArgumentException, e:
+        except api_errors.MissingFileArgumentException as e:
                 error("The manifest file {0} could not be found.".format(e.path))
                 __ret = 1
-        except api_errors.VersionException, __e:
+        except api_errors.VersionException as __e:
                 error(_("The {cmd} command appears out of sync with the lib"
                     "raries provided\nby pkg:/package/pkg. The client version "
                     "is {client} while the library\nAPI version is {api}").format(
@@ -602,17 +602,17 @@ if __name__ == "__main__":
                     api=__e.expected_version
                     ))
                 __ret = 1
-        except api_errors.ApiException, e:
+        except api_errors.ApiException as e:
                 error(e)
                 __ret = 1
-        except RuntimeError, _e:
+        except RuntimeError as _e:
                 emsg("{0}: {1}".format(PKG_CLIENT_NAME, _e))
                 __ret = 1
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 1
-        except SystemExit, _e:
+        except SystemExit as _e:
                 raise _e
         except:
                 traceback.print_exc()

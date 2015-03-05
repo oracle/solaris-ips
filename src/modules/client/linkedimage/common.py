@@ -1076,7 +1076,7 @@ class LinkedImage(object):
 
                 try:
                         self.__syncmd_from_parent()
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         if not catch_exception:
                                 raise e
                         return LI_RVTuple(e.lix_exitrv, e, None)
@@ -1665,7 +1665,7 @@ class LinkedImage(object):
                 # path must be an image
                 try:
                         img_prefix = ar.ar_img_prefix(path)
-                except OSError, e:
+                except OSError as e:
                         raise apx.LinkedImageException(lin=lin,
                             child_op_failed=("find", path, e))
                 if not img_prefix:
@@ -1692,7 +1692,7 @@ class LinkedImage(object):
                 img_li_data_props = os.path.join(img_prefix, PATH_PROP)
                 try:
                         exists = ar.ar_exists(path, img_li_data_props)
-                except OSError, e:
+                except OSError as e:
                         # W0212 Access to a protected member
                         # pylint: disable=W0212
                         raise apx._convert_error(e)
@@ -1739,7 +1739,7 @@ class LinkedImage(object):
                         image."""
                         try:
                                 tmp = ar.ar_img_prefix(d)
-                        except OSError, e:
+                        except OSError as e:
                                 # W0212 Access to a protected member
                                 # pylint: disable=W0212
                                 raise apx._convert_error(e)
@@ -1813,7 +1813,7 @@ class LinkedImage(object):
                 cwd = os.getcwd()
                 try:
                         os.chdir(path)
-                except OSError, e:
+                except OSError as e:
                         e = apx.LinkedImageException(lin=lin,
                             child_op_failed=("access", path, e))
                         return LI_RVTuple(e.lix_exitrv, e, None)
@@ -1830,7 +1830,7 @@ class LinkedImage(object):
                 try:
                         self.__validate_child_attach(lin, path, props,
                             allow_relink=allow_relink)
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         return LI_RVTuple(e.lix_exitrv, e, None)
 
                 # make a copy of the options and start updating them
@@ -1857,7 +1857,7 @@ class LinkedImage(object):
                 # update the child
                 try:
                         lic = LinkedImageChild(self, lin)
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         return LI_RVTuple(e.lix_exitrv, e, None)
 
                 rvdict = {}
@@ -2155,7 +2155,7 @@ class LinkedImage(object):
                                             _progtrack, ignore_syncmd_nop,
                                             _syncmd_tmp, **kwargs)
                                         lic_setup.append(lic)
-                                except apx.LinkedImageException, e:
+                                except apx.LinkedImageException as e:
                                         _rvdict[lic.child_name] = \
                                             LI_RVTuple(e.lix_exitrv, e, None)
 
@@ -2308,7 +2308,7 @@ class LinkedImage(object):
                         try:
                                 lic = LinkedImageChild(self, lin)
                                 lic_dict[lin] = lic
-                        except apx.LinkedImageException, e:
+                        except apx.LinkedImageException as e:
                                 rvdict[lin] = LI_RVTuple(e.lix_exitrv, e, None)
 
                 if failfast:
@@ -2707,7 +2707,7 @@ class LinkedImageChild(object):
 
                 try:
                         imgdir = ar.ar_img_prefix(self.child_path)
-                except OSError, e:
+                except OSError as e:
                         raise apx.LinkedImageException(lin=lin,
                             child_op_failed=("find", self.child_path, e))
 
@@ -2785,7 +2785,7 @@ class LinkedImageChild(object):
                         if not tmp:
                                 ar.ar_rename(root, path_tmp, path)
 
-                except OSError, e:
+                except OSError as e:
                         raise apx.LinkedImageException(lin=self.child_name,
                             child_op_failed=("metadata update",
                             self.child_path, e))
@@ -2895,7 +2895,7 @@ class LinkedImageChild(object):
 
                 try:
                         updated = self.__syncmd(pmd, tmp=tmp, test=test)
-                except apx.LinkedImageException, e:
+                except apx.LinkedImageException as e:
                         self.__child_op_rvtuple = \
                             LI_RVTuple(e.lix_exitrv, e, None)
                         return False
@@ -3322,7 +3322,7 @@ class LinkedImageChild(object):
                 p_dict = None
                 try:
                         p_dict = json.loads(stdout)
-                except ValueError, e:
+                except ValueError as e:
                         # JSON raises a subclass of ValueError when it
                         # can't parse a string.
 
@@ -3559,7 +3559,7 @@ def save_data(path, data, root="/", catch_exception=True):
 
                 # atomically create the desired file
                 ar.ar_rename(root, pathtmp, path)
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 if catch_exception:
@@ -3583,7 +3583,7 @@ def load_data(path, missing_ok=False, root="/", decode=True,
                 data = json.load(fobj, encoding="utf-8",
                     object_hook=object_hook)
                 fobj.close()
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 if catch_exception:
@@ -3723,7 +3723,7 @@ def path_exists(path, root="/"):
 
         try:
                 return ar.ar_exists(root, path)
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 raise apx._convert_error(e)
@@ -3733,7 +3733,7 @@ def path_isdir(path):
 
         try:
                 return ar.ar_isdir("/", path)
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 raise apx._convert_error(e)
@@ -3743,7 +3743,7 @@ def path_mkdir(path, mode):
 
         try:
                 return ar.ar_mkdir("/", path, mode)
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 raise apx._convert_error(e)
@@ -3753,7 +3753,7 @@ def path_unlink(path, noent_ok=False):
 
         try:
                 return ar.ar_unlink("/", path, noent_ok=noent_ok)
-        except OSError, e:
+        except OSError as e:
                 # W0212 Access to a protected member
                 # pylint: disable=W0212
                 raise apx._convert_error(e)

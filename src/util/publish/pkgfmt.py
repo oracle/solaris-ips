@@ -535,7 +535,7 @@ def main_func():
                                 opt_unwrap = True
                         elif opt in ("--help", "-?"):
                                 usage(exitcode=0)
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
         if len(opt_set - set(["-f"])) > 1:
                 usage(_("only one of [cdu] may be specified"))
@@ -591,7 +591,7 @@ def main_func():
                         # assumption is that it might be used in a pipeline.)
                         if formatted:
                                 print(formatted, end="")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EPIPE:
                                 # User closed input or output (i.e. killed piped
                                 # program before all input was read or output
@@ -650,15 +650,15 @@ def main_func():
                                 mode = os.stat(fname).st_mode
                                 os.chmod(tname, mode)
                                 os.rename(tname, fname)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 error(str(e), exitcode=1)
-                except (EnvironmentError, IOError), e:
+                except (EnvironmentError, IOError) as e:
                         error(str(e), exitcode=1)
                 finally:
                         if tname:
                                 try:
                                         pkg.portable.remove(tname)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno != errno.ENOENT:
                                                 raise
 
@@ -705,7 +705,7 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 1
-        except SystemExit, _e:
+        except SystemExit as _e:
                 raise _e
         except:
                 traceback.print_exc()

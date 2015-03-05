@@ -508,11 +508,11 @@ if __name__ == "__main__":
 
                 # Build configuration object.
                 dconf = ds.DepotConfig(target=user_cfg, overrides=ivalues)
-        except getopt.GetoptError, _e:
+        except getopt.GetoptError as _e:
                 usage("pkg.depotd: {0}".format(_e.msg))
-        except api_errors.ApiException, _e:
+        except api_errors.ApiException as _e:
                 usage("pkg.depotd: {0}".format(str(_e)))
-        except OptionError, _e:
+        except OptionError as _e:
                 usage("pkg.depotd: option: {0} -- {1}".format(opt, _e))
         except (ArithmeticError, ValueError):
                 usage("pkg.depotd: illegal option value: {0} specified " \
@@ -612,7 +612,7 @@ if __name__ == "__main__":
         if not exit_ready:
                 try:
                         cherrypy.process.servers.check_port(address, port)
-                except Exception, e:
+                except Exception as e:
                         emsg("pkg.depotd: unable to bind to the specified "
                             "port: {0:d}. Reason: {1}".format(port, e))
                         sys.exit(1)
@@ -663,7 +663,7 @@ if __name__ == "__main__":
                                         stdout=subprocess.PIPE,
                                         stderr=None)
                                 p.wait()
-                        except Exception, __e:
+                        except Exception as __e:
                                 emsg("pkg.depotd: an error occurred while "
                                     "executing [{0}]; unable to obtain the "
                                     "passphrase needed to decrypt the SSL "
@@ -701,11 +701,11 @@ if __name__ == "__main__":
                         key_data.write(crypto.dump_privatekey(
                             crypto.FILETYPE_PEM, pkey))
                         key_data.seek(0)
-                except EnvironmentError, _e:
+                except EnvironmentError as _e:
                         emsg("pkg.depotd: unable to read the SSL private key "
                             "file: {0}".format(_e))
                         sys.exit(1)
-                except crypto.Error, _e:
+                except crypto.Error as _e:
                         emsg("pkg.depotd: authentication or cryptography "
                             "failure while attempting to decode\nthe SSL "
                             "private key file: {0}".format(_e))
@@ -819,7 +819,7 @@ if __name__ == "__main__":
                 except sr.RepositoryExistsError:
                         # Already exists, nothing to do.
                         pass
-                except (api_errors.ApiException, sr.RepositoryError), _e:
+                except (api_errors.ApiException, sr.RepositoryError) as _e:
                         emsg("pkg.depotd: {0}".format(_e))
                         sys.exit(1)
 
@@ -832,13 +832,13 @@ if __name__ == "__main__":
                     read_only=readonly, root=inst_root,
                     sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
-        except (RuntimeError, sr.RepositoryError), _e:
+        except (RuntimeError, sr.RepositoryError) as _e:
                 emsg("pkg.depotd: {0}".format(_e))
                 sys.exit(1)
-        except search_errors.IndexingException, _e:
+        except search_errors.IndexingException as _e:
                 emsg("pkg.depotd: {0}".format(str(_e)), "INDEX")
                 sys.exit(1)
-        except api_errors.ApiException, _e:
+        except api_errors.ApiException as _e:
                 emsg("pkg.depotd: {0}".format(str(_e)))
                 sys.exit(1)
 
@@ -856,30 +856,30 @@ if __name__ == "__main__":
                         if repo.root and exit_ready:
                                 repo.refresh_index()
                 except (sr.RepositoryError, search_errors.IndexingException,
-                    api_errors.ApiException), e:
+                    api_errors.ApiException) as e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
         elif rebuild:
                 try:
                         repo.rebuild(build_index=True)
-                except sr.RepositoryError, e:
+                except sr.RepositoryError as e:
                         emsg(str(e), "REBUILD")
                         sys.exit(1)
                 except (search_errors.IndexingException,
                     api_errors.UnknownErrors,
-                    api_errors.PermissionsException), e:
+                    api_errors.PermissionsException) as e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
         elif add_content:
                 try:
                         repo.add_content()
                         repo.refresh_index()
-                except sr.RepositoryError, e:
+                except sr.RepositoryError as e:
                         emsg(str(e), "ADD_CONTENT")
                         sys.exit(1)
                 except (search_errors.IndexingException,
                     api_errors.UnknownErrors,
-                    api_errors.PermissionsException), e:
+                    api_errors.PermissionsException) as e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
 
@@ -948,7 +948,7 @@ if __name__ == "__main__":
         try:
                 root = cherrypy.Application(depot)
                 cherrypy.quickstart(root, config=conf)
-        except Exception, _e:
+        except Exception as _e:
                 emsg("pkg.depotd: unknown error starting depot server, " \
                     "illegal option value specified?")
                 emsg(_e)

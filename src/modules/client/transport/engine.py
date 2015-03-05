@@ -868,7 +868,7 @@ class CurlTransportEngine(TransportEngine):
                         try:
                                 hdl.fobj = open(treq.filepath, "wb+",
                                     self.__file_bufsz)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
@@ -914,7 +914,7 @@ class CurlTransportEngine(TransportEngine):
                         try:
                                 hdl.r_fobj = open(treq.read_filepath, "rb",
                                     self.__file_bufsz)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
@@ -1019,7 +1019,7 @@ class CurlTransportEngine(TransportEngine):
                                         hdl.fileprog.abort()
                                 try:
                                         os.remove(hdl.filepath)
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno != errno.ENOENT:
                                                 raise \
                                                     tx.TransportOperationError(

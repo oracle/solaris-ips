@@ -124,7 +124,7 @@ def copyfile(src_path, dst_path):
         shutil.copy2(src_path, dst_path)
         try:
                 portable.chown(dst_path, fs.st_uid, fs.st_gid)
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.EPERM:
                         raise
 
@@ -171,7 +171,7 @@ def copytree(src, dst):
                                 try:
                                         sock.bind(d_path)
                                         sock.close()
-                                except sock.error, _e:
+                                except sock.error as _e:
                                         # Store original exception so that the
                                         # real cause of failure can be raised if
                                         # this fails.
@@ -210,7 +210,7 @@ def move(src, dst):
 
         try:
                 os.rename(src, dst)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 s = os.lstat(src)
 
                 if e.errno == errno.EXDEV:
@@ -445,7 +445,7 @@ def msg(*text):
 
         try:
                 print(' '.join([str(l) for l in text]))
-        except IOError, e:
+        except IOError as e:
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
                 raise
@@ -455,7 +455,7 @@ def emsg(*text):
 
         try:
                 print(' '.join([str(l) for l in text]), file=sys.stderr)
-        except IOError, e:
+        except IOError as e:
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
                 raise
@@ -888,7 +888,7 @@ def out_of_memory():
                 vmusage = __getvmusage()
                 if vmusage is not None:
                         vsz = bytes_to_str(vmusage, fmt="{num}.0f{unit}")
-        except (MemoryError, EnvironmentError), __e:
+        except (MemoryError, EnvironmentError) as __e:
                 if isinstance(__e, EnvironmentError) and \
                     __e.errno != errno.ENOMEM:
                         raise
@@ -1068,7 +1068,7 @@ def build_cert(path, uri=None, pub=None):
                 cf = file(path, "rb")
                 certdata = cf.read()
                 cf.close()
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.errno == errno.ENOENT:
                         raise api_errors.NoSuchCertificate(path, uri=uri,
                             publisher=pub)
@@ -1080,7 +1080,7 @@ def build_cert(path, uri=None, pub=None):
 
         try:
                 return osc.load_certificate(osc.FILETYPE_PEM, certdata)
-        except osc.Error, e:
+        except osc.Error as e:
                 # OpenSSL.crypto.Error
                 raise api_errors.InvalidCertificate(path, uri=uri,
                     publisher=pub)
@@ -1219,7 +1219,7 @@ def makedirs(pathname):
 
         try:
                 os.makedirs(pathname, PKG_DIR_MODE)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.filename == pathname and (e.errno == errno.EEXIST or
                     os.path.exists(e.filename)):
                         return
@@ -1384,7 +1384,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
         # Parse options.
         try:
                 opts, pargs = getopt.getopt(args, opts_s_str, opts_l_list)
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage_cb(_("illegal option -- {0}").format(e.opt), cmd=op)
 
         def get_default(option):
@@ -1510,7 +1510,7 @@ def get_dir_size(path):
                     for d, dnames, fnames in os.walk(path)
                     for fname in fnames
                 )
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
@@ -1699,7 +1699,7 @@ def truncate_file(f, size=0):
                 f.truncate(size)
         except IOError:
                 pass
-        except OSError, e:
+        except OSError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
@@ -1710,7 +1710,7 @@ def flush_output():
                 sys.stdout.flush()
         except IOError:
                 pass
-        except OSError, e:
+        except OSError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
@@ -1718,7 +1718,7 @@ def flush_output():
                 sys.stderr.flush()
         except IOError:
                 pass
-        except OSError, e:
+        except OSError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
@@ -2432,7 +2432,7 @@ class AsyncCall(object):
                         rv = e = None
                         try:
                                 rv = cb(*args, **kwargs)
-                        except Exception, e:
+                        except Exception as e:
                                 self.e = self.__e
                                 self.e.e = e
                                 self.e.tb = traceback.format_exc()
@@ -2440,7 +2440,7 @@ class AsyncCall(object):
 
                         self.rv = rv
 
-                except Exception, e:
+                except Exception as e:
                         # if we raise an exception here, we're hosed
                         self.rv = None
                         self.e = self.__e

@@ -104,7 +104,7 @@ def get_group_by_name(name, dirpath, use_file):
         try: 
                 load_groups(dirpath)
                 return groups[dirpath][name].gr_gid
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
                 # If the password file doesn't exist, bootstrap
@@ -122,7 +122,7 @@ def get_user_by_name(name, dirpath, use_file):
         try: 
                 load_passwd(dirpath)
                 return users[dirpath][name].pw_uid
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
                 # If the password file doesn't exist, bootstrap
@@ -140,7 +140,7 @@ def get_name_by_gid(gid, dirpath, use_file):
         try: 
                 load_groups(dirpath)
                 return gids[dirpath][gid].gr_name
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
                 # If the password file doesn't exist, bootstrap
@@ -158,7 +158,7 @@ def get_name_by_uid(uid, dirpath, use_file):
         try: 
                 load_passwd(dirpath)
                 return uids[dirpath][uid].pw_name
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
                 # If the password file doesn't exist, bootstrap
@@ -234,7 +234,7 @@ def chown(path, owner, group):
 def rename(src, dst):
         try:
                 os.rename(src, dst)
-        except OSError, e:
+        except OSError as e:
                 # Handle the case where we tried to rename a file across a
                 # filesystem boundary.
                 if e.errno != errno.EXDEV or not os.path.isfile(src):
@@ -246,7 +246,7 @@ def rename(src, dst):
                 try:
                         fd, tmpdst = tempfile.mkstemp(suffix=".pkg5.xdev",
                             dir=os.path.dirname(dst))
-                except OSError, e:
+                except OSError as e:
                         # If we don't have sufficient permissions to put the
                         # file where we want it, then higher levels can deal
                         # with that effectively, but people will want to know

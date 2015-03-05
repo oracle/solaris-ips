@@ -86,7 +86,7 @@ class GroupAction(generic.Action):
                 gr.setvalue(template)
                 try:
                         gr.writefile()
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
                         # If we're in the postinstall phase and the
@@ -170,7 +170,7 @@ class GroupAction(generic.Action):
                 if "user-list" not in cur_attrs:
                         try:
                                 gr.removevalue(self.attrs)
-                        except KeyError, e:
+                        except KeyError as e:
                                 # Already gone; don't care.
                                 pass
                         else:

@@ -133,7 +133,7 @@ class PkgRemote(object):
                 try:
                         p = pkg.pkgsubprocess.Popen(pkg_cmd,
                             stdout=fstdout, stderr=fstderr)
-                except OSError, e:
+                except OSError as e:
                         # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 
@@ -345,7 +345,7 @@ class PkgRemote(object):
                 try:
                         # Catch "Exception"; pylint: disable=W0703
                         rv = rpc_method(**kwargs)
-                except Exception, e:
+                except Exception as e:
                         self.__debug_msg("caught exception\n{0}".format(
                             traceback.format_exc()), t1=True)
                 else:
@@ -471,7 +471,7 @@ class PkgRemote(object):
                 rvtuple = e = None
                 try:
                         rvtuple = self.__async_rpc_caller.result()
-                except pkg.misc.AsyncCallException, e:
+                except pkg.misc.AsyncCallException as e:
                         pass
 
                 # assume we didn't get any results

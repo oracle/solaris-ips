@@ -248,7 +248,7 @@ def get_manifest(repo, pub, pfmri):
         mani = manifest.Manifest(pfmri)
         try:
                 mani.set_content(pathname=path)
-        except Exception, e:
+        except Exception as e:
                 abort(err=_("Can not open manifest file {file}: {err}\n"
                     "Please run 'pkgrepo verify -s {rroot}' to check the "
                     "integrity of the repository.").format(
@@ -632,7 +632,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
                                 repo_modified = True
                                 repo_finished = False
                                 portable.rename(rmani.pathname, path)
-                        except OSError, e:
+                        except OSError as e:
                                 abort(err=_("Could not reversion manifest "
                                     "{path}: {err}").format(path=path,
                                     err=str(e)))
@@ -679,7 +679,7 @@ def main_func():
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "?c:i:np:r:s:",
                     ["help"])
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal option -- {0}").format(e.opt))
 
         dry_run = False
@@ -735,7 +735,7 @@ def main_func():
         try:
                 target_repo = sr.Repository(read_only=dry_run,
                     root=target.get_pathname())
-        except sr.RepositoryError, e:
+        except sr.RepositoryError as e:
                 abort(str(e))
 
         tracker = get_tracker()
@@ -796,11 +796,11 @@ if __name__ == "__main__":
                 cleanup()
                 __ret = pkgdefs.EXIT_OOPS
         except (actions.ActionError, RuntimeError,
-            api_errors.ApiException), _e:
+            api_errors.ApiException) as _e:
                 error(_e)
                 cleanup()
                 __ret = pkgdefs.EXIT_OOPS
-        except SystemExit, _e:
+        except SystemExit as _e:
                 cleanup()
                 raise _e
         except:

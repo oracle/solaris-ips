@@ -177,7 +177,7 @@ class ActionChecker(Checker):
                         engine.advise_loggers(action=action, manifest=manifest)
                         try:
                                 func(action, manifest, engine)
-                        except Exception, err:
+                        except Exception as err:
                                 # Checks are still run on actions that are
                                 # marked as pkg.linted. If one of those checks
                                 # results in an exception, we need to handle
@@ -246,7 +246,7 @@ class ManifestChecker(Checker):
                                     ConfigParser.SafeConfigParser()
                                 self.classification_data.readfp(
                                     open(self.classification_path))
-                        except Exception, err:
+                        except Exception as err:
                                 # any exception thrown here results in a null
                                 # classification_data object.  We deal with that
                                 # later.
@@ -268,7 +268,7 @@ class ManifestChecker(Checker):
                         engine.advise_loggers(manifest=manifest)
                         try:
                                 func(manifest, engine)
-                        except Exception, err:
+                        except Exception as err:
                                 # see ActionChecker.check(..)
                                 if engine.linted(manifest=manifest,
                                     lint_id=pkglint_id):

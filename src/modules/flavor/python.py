@@ -268,10 +268,10 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
                         for name in missing:
                                 errs.append(PythonModuleMissingPath(name,
                                     action.attrs[PD_LOCAL_PATH]))
-                except SyntaxError, e:
+                except SyntaxError as e:
                         errs.append(PythonSyntaxError(e, action.attrs["path"],
                             local_file))
-                except Exception, e:
+                except Exception as e:
                         errs.append(e)
                 return deps, errs, {}
 
@@ -288,7 +288,7 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
         try:
                 sp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-        except Exception, e:
+        except Exception as e:
                 return [], [PythonSubprocessError(None, " ".join(cmd),\
                     str(e))], {}
         out, err = sp.communicate()

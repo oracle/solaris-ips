@@ -104,7 +104,7 @@ def make_bundle(filename, **kwargs):
 if __name__ == "__main__":
         try:
                 b = make_bundle(sys.argv[1])
-        except TypeError, e:
+        except TypeError as e:
                 print(e)
                 sys.exit(1)
 

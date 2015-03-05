@@ -146,7 +146,7 @@ class MultiPlatformAPIChecker(BaseChecker):
                 try:
                     fullname = get_module_part(fullname,
                                                context_file=node.root().file)
-                except ImportError, ex:
+                except ImportError as ex:
                     # this is checked elsewhere in pylint (F0401)
                     continue
             if alias == None:

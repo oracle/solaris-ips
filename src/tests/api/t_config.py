@@ -1925,7 +1925,7 @@ class TestSMFConfig(_TestConfigBase):
                         if contact == False:
                                 raise RuntimeError("Process did not launch "
                                     "successfully.")
-                except (KeyboardInterrupt, RuntimeError), e:
+                except (KeyboardInterrupt, RuntimeError) as e:
                         try:
                                 hndl.kill()
                         finally:

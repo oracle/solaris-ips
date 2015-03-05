@@ -2242,7 +2242,7 @@ import sys
 if __name__ == "__main__":
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "cp:")
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {{0}}").format(e.opt))
 
         prop_dict = {{
@@ -2278,7 +2278,7 @@ import sys
 if __name__ == "__main__":
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "cp:")
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
                 usage(_("illegal global option -- {{0}}").format(e.opt))
 
         prop_dict = {{

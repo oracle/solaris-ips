@@ -311,7 +311,7 @@ class Version(object):
                                         build_string = "5.11"
                                 self.build_release = DotSequence(build_string)
 
-                except IllegalDotSequence, e:
+                except IllegalDotSequence as e:
                         raise IllegalVersion("Bad Version: {0}".format(e))
 
                 #
@@ -658,7 +658,7 @@ class MatchingVersion(Version):
                                                 val = MatchingDotSequence(val)
                                         setattr(self, attr, val)
                                         break
-                except IllegalDotSequence, e:
+                except IllegalDotSequence as e:
                         raise IllegalVersion("Bad Version: {0}".format(e))
 
                 outstr = str(release)

@@ -370,7 +370,7 @@ class LintEngine(object):
                         (checkers, excluded) = \
                             base.get_checkers(sys.modules[name], config)
                         return (checkers, excluded)
-                except (KeyError, ImportError), err:
+                except (KeyError, ImportError) as err:
                         raise base.LintException(err)
 
         def _unique_checkers(self):
@@ -409,7 +409,7 @@ class LintEngine(object):
                 try:
                         conf = pkg.lint.config.PkglintConfig(
                             config_file=config).config
-                except (pkg.lint.config.PkglintConfigException), err:
+                except (pkg.lint.config.PkglintConfigException) as err:
                         raise LintEngineSetupException(err)
 
                 excl = []
@@ -442,7 +442,7 @@ class LintEngine(object):
                                         self.checkers.extend(checkers)
                                         self.excluded_checkers.extend(exclude)
 
-                                except base.LintException, err:
+                                except base.LintException as err:
                                         raise LintEngineSetupException(
                                             _("Error parsing config value for "
                                             "{key}: {err}").format(**locals()))
@@ -554,7 +554,7 @@ class LintEngine(object):
                                             self.get_tracker(),
                                             self.tracker_phase)
 
-                        except LintEngineException, err:
+                        except LintEngineException as err:
                                 raise LintEngineSetupException(
                                     _("Unable to create lint image: {0}").format(
                                     str(err)))
@@ -589,7 +589,7 @@ class LintEngine(object):
                                             self.get_tracker(),
                                             self.tracker_phase)
 
-                        except LintEngineException, err:
+                        except LintEngineException as err:
                                 raise LintEngineSetupException(
                                     _("Unable to create reference image: {0}").format(
                                     str(err)))
@@ -846,7 +846,7 @@ class LintEngine(object):
                                 # to refresh now, rather than waiting for some
                                 # update interval
                                 api_inst.refresh(immediate=True)
-                except Exception, err:
+                except Exception as err:
                         raise LintEngineSetupException(
                             _("Unable to get image at {dir}: {reason}").format(
                             dir=image_dir,
@@ -883,7 +883,7 @@ class LintEngine(object):
                             facets=pkg.facet.Facets(), force=False,
                             progtrack=tracker, refresh_allowed=refresh_allowed,
                             repo_uri=repo_uris[0])
-                except (ApiException, OSError, IOError), err:
+                except (ApiException, OSError, IOError) as err:
                         raise LintEngineSetupException(err)
 
                 # Check to see if multiple repositories are specified.
@@ -891,7 +891,7 @@ class LintEngine(object):
                 if repo_uris:
                         try:
                                 self._set_publisher(api_inst, repo_uris)
-                        except ApiException, e:
+                        except ApiException as e:
                                 api_inst._img.destroy()
                                 if os.path.abspath(image_dir) != "/" and \
                                     os.path.exists(image_dir):
@@ -1043,7 +1043,7 @@ class LintEngine(object):
                 for checker in self.checkers:
                         try:
                                 checker.shutdown(self)
-                        except base.LintException, err:
+                        except base.LintException as err:
                                 self.error(err)
                 self.checkers = []
 
@@ -1216,7 +1216,7 @@ class LintEngine(object):
                 try:
                         ret = base.linted(action=action, manifest=manifest,
                             lint_id=lint_id)
-                except base.DuplicateLintedAttrException, err:
+                except base.DuplicateLintedAttrException as err:
                         self.error(err, msgid="pkglint001.6")
                 return ret
 

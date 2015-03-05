@@ -140,7 +140,7 @@ class LockFile(object):
                 # Attempt to lock the file.
                 try:
                         fcntl.lockf(lf, lock_type)
-                except IOError, e:
+                except IOError as e:
                         if e.errno not in (errno.EAGAIN, errno.EACCES):
                                 self._lock.release()
                                 raise

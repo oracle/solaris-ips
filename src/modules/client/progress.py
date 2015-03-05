@@ -2269,7 +2269,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 try:
                         self._pe = printengine.POSIXPrintEngine(output_file,
                             ttymode=True)
-                except printengine.PrintEngineException, e:
+                except printengine.PrintEngineException as e:
                         raise ProgressTrackerException(
                             "Couldn't create print engine: {0}".format(
                             " ".join(e.args)))

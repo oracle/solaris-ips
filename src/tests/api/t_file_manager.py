@@ -60,7 +60,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
         def check_exception(func, ex, str_bits, *args, **kwargs):
                 try:
                         func(*args, **kwargs)
-                except ex, e:
+                except ex as e:
                         s = str(e)
                         for b in str_bits:
                                 if b not in s:
@@ -198,7 +198,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 try:
                         for i in fm2.walk():
                                 fs.remove(i)
-                except file_manager.UnrecognizedFilePaths, e:
+                except file_manager.UnrecognizedFilePaths as e:
                         self.assertEqual(e.fps, [p[len(self.base_dir) + 1:]])
                 self.assertEqual(fs, set())
 

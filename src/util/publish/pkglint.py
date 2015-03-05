@@ -153,13 +153,13 @@ def main_func():
                 lint_engine.teardown()
                 lint_logger.close()
 
-        except engine.LintEngineSetupException, err:
+        except engine.LintEngineSetupException as err:
                 # errors during setup are likely to be caused by bad
                 # input or configuration, not lint errors in manifests.
                 error(err)
                 return 2
 
-        except engine.LintEngineException, err:
+        except engine.LintEngineException as err:
                 error(err)
                 return 1
 
@@ -232,13 +232,13 @@ def read_manifests(names, lint_logger):
                 try:
                         f = codecs.open(filename, "rb", "utf-8")
                         data = f.read()
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                         lint_logger.critical(_("Invalid file {file}: "
                             "manifest not encoded in UTF-8: {err}").format(
                             file=filename, err=e),
                             msgid="lint.manifest002")
                         continue
-                except IOError, e:
+                except IOError as e:
                         lint_logger.critical(_("Unable to read manifest file "
                             "{file}: {err}").format(file=filename, err=e),
                             msgid="lint.manifest001")
@@ -251,7 +251,7 @@ def read_manifests(names, lint_logger):
                 manifest = pkg.manifest.Manifest()
                 try:
                         manifest.set_content(content="\n".join(lines))
-                except pkg.actions.ActionError, e:
+                except pkg.actions.ActionError as e:
                         lineno = e.lineno
                         for i, tup in enumerate(linecnts):
                                 if lineno > tup[0] and lineno <= tup[1]:
@@ -266,7 +266,7 @@ def read_manifests(names, lint_logger):
                             ln=lineno,
                             err=str(e)), "lint.manifest002")
                         manifest = None
-                except InvalidPackageErrors, e:
+                except InvalidPackageErrors as e:
                         lint_logger.critical(
                             _("Error in file {file}: {err}").format(
                             file=filename,
@@ -277,7 +277,7 @@ def read_manifests(names, lint_logger):
                         try:
                                 manifest.fmri = \
                                     pkg.fmri.PkgFmri(manifest["pkg.fmri"])
-                        except fmri.IllegalFmri, e:
+                        except fmri.IllegalFmri as e:
                                 lint_logger.critical(
                                     _("Error in file {file}: "
                                     "{err}").format(
@@ -319,9 +319,9 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 2
-        except SystemExit, __e:
+        except SystemExit as __e:
                 __ret = __e.code
-        except (apx.InvalidDepotResponseException, tx.TransportFailures), __e:
+        except (apx.InvalidDepotResponseException, tx.TransportFailures) as __e:
                 error(__e)
                 __ret = 2
         except:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -71,7 +71,7 @@ def parse(data=None, fileobj=None, location=None):
                 try:
                         fileobj = urllib2.urlopen(location)
                 except (EnvironmentError, ValueError,
-                    urllib2.HTTPError), e:
+                    urllib2.HTTPError) as e:
                         raise api_errors.RetrievalError(e,
                             location=location)
 
@@ -80,9 +80,9 @@ def parse(data=None, fileobj=None, location=None):
                         dump_struct = json.loads(data)
                 else:
                         dump_struct = json.load(fileobj)
-        except (EnvironmentError, urllib2.HTTPError), e:
+        except (EnvironmentError, urllib2.HTTPError) as e:
                 raise api_errors.RetrievalError(e)
-        except ValueError, e:
+        except ValueError as e:
                 # Not a valid JSON file.
                 raise api_errors.InvalidP5IFile(e)
 
@@ -135,7 +135,7 @@ def parse(data=None, fileobj=None, location=None):
                 pkglist = dump_struct.get("packages", [])
                 if pkglist:
                         result.append((None, pkglist))
-        except (api_errors.PublisherError, TypeError, ValueError), e:
+        except (api_errors.PublisherError, TypeError, ValueError) as e:
                 raise api_errors.InvalidP5IFile(str(e))
         return result
 

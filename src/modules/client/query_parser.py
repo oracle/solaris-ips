@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import os
 import sys
@@ -431,7 +431,7 @@ class TermQuery(qp.TermQuery):
 
                 try:
                         return qp.TermQuery._read_pkg_dirs(self, fmris)
-                except se.InconsistentIndexException, e:
+                except se.InconsistentIndexException as e:
                         raise api_errors.InconsistentIndexException(e)
 
         def remove_root(self, img_root):

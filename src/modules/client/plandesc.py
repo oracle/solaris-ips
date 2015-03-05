@@ -320,7 +320,7 @@ class PlanDescription(object):
                         fobj.truncate()
                         json.dump(state, fobj, encoding="utf-8")
                         fobj.flush()
-                except OSError, e:
+                except OSError as e:
                         # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 
@@ -335,7 +335,7 @@ class PlanDescription(object):
                 try:
                         fobj.seek(0)
                         state = json.load(fobj, encoding="utf-8")
-                except OSError, e:
+                except OSError as e:
                         # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 

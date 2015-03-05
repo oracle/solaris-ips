@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -293,7 +293,7 @@ class CatalogInterface(_Interface):
                         try:
                                 pfmri = None
                                 pfmri = self.get_matching_pattern_fmris(pattern)
-                        except pkg.fmri.IllegalFmri, e:
+                        except pkg.fmri.IllegalFmri as e:
                                 illegals.append(pattern)
                                 continue
                         else:
@@ -345,7 +345,7 @@ class CatalogInterface(_Interface):
                                 mfst = manifest.Manifest(f)
                                 try:
                                         mpath = self._depot.repo.manifest(f)
-                                except srepo.RepositoryError, e:
+                                except srepo.RepositoryError as e:
                                         notfound.append(f)
                                         continue
 

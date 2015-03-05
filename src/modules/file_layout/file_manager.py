@@ -185,7 +185,7 @@ class FileManager(object):
                                 try:
                                         portable.rename(cur_full_path,
                                             dest_full_path)
-                                except OSError, e:
+                                except OSError as e:
                                         if e.errno != errno.ENOENT:
                                                 raise
 
@@ -196,7 +196,7 @@ class FileManager(object):
 
                                         try:
                                                 os.makedirs(p_ddir)
-                                        except EnvironmentError, e:
+                                        except EnvironmentError as e:
                                                 if e.errno == errno.EACCES or \
                                                     e.errno == errno.EROFS:
                                                         raise FMPermissionsException(
@@ -253,7 +253,7 @@ class FileManager(object):
                         # file into the old place first.
                         try:
                                 portable.rename(src_path, cur_full_path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EROFS:
                                         raise FMPermissionsException(e.filename)
@@ -264,13 +264,13 @@ class FileManager(object):
                         try:
                                 # Move the file into place.
                                 portable.rename(src_path, dest_full_path)
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 p_dir = os.path.dirname(dest_full_path)
                                 if e.errno == errno.ENOENT and \
                                     not os.path.isdir(p_dir):
                                         try:
                                                 os.makedirs(p_dir)
-                                        except EnvironmentError, e:
+                                        except EnvironmentError as e:
                                                 if e.errno == errno.EACCES or \
                                                     e.errno == errno.EROFS:
                                                         raise FMPermissionsException(
@@ -314,7 +314,7 @@ class FileManager(object):
                 if cur_full_path:
                         try:
                                 os.removedirs(os.path.dirname(cur_full_path))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT or \
                                     e.errno == errno.EEXIST:
                                         pass
@@ -340,7 +340,7 @@ class FileManager(object):
                         try:
                                 portable.remove(cur_full_path)
                                 os.removedirs(os.path.dirname(cur_full_path))
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT or \
                                     e.errno == errno.EEXIST:
                                         pass

@@ -122,7 +122,7 @@ def ar_open(root, path, flags,
         root_fd = os.open(root, os.O_RDONLY)
         try:
                 root = __fd_to_path(root_fd)
-        except OSError, e:
+        except OSError as e:
                 # W0511 XXX / FIXME Comments; pylint: disable=W0511
                 # XXX: __fd_to_path() can return ENOENT due to 6964121
                 # pylint: enable=W0511
@@ -137,7 +137,7 @@ def ar_open(root, path, flags,
         try:
                 path_tmp = os.path.join(root, path)
                 path_fd = os.open(path_tmp, flags)
-        except OSError, e:
+        except OSError as e:
                 if e.errno != errno.ENOENT or not create:
                         raise e
 
@@ -152,7 +152,7 @@ def ar_open(root, path, flags,
                 try:
                         path_dir_fd = \
                             ar_open(root, path_dir, os.O_RDONLY)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.EREMOTE:
                                 raise e
                         raise OSError(errno.EREMOTE, eremote)
@@ -161,7 +161,7 @@ def ar_open(root, path, flags,
                 try:
                         path_fd = sat.openat(path_dir_fd, path_file,
                             flags|os.O_CREAT|os.O_EXCL, mode)
-                except OSError, e:
+                except OSError as e:
                         os.close(path_dir_fd)
                         raise e
 
@@ -172,7 +172,7 @@ def ar_open(root, path, flags,
         # verify that the file we opened lives in the alternate root
         try:
                 path = __fd_to_path(path_fd)
-        except OSError, e:
+        except OSError as e:
                 # W0511 XXX / FIXME Comments; pylint: disable=W0511
                 # XXX: __fd_to_path() can return ENOENT due to 6964121
                 # pylint: enable=W0511
@@ -189,7 +189,7 @@ def ar_open(root, path, flags,
                 # the user wanted us to truncate the file
                 try:
                         os.ftruncate(path_fd, 0)
-                except OSError, e:
+                except OSError as e:
                         os.close(path_fd)
                         raise e
 
@@ -217,14 +217,14 @@ def ar_unlink(root, path, noent_ok=False):
 
         try:
                 path_dir_fd = ar_open(root, path_dir, os.O_RDONLY)
-        except OSError, e:
+        except OSError as e:
                 if noent_ok and e.errno == errno.ENOENT:
                         return
                 raise e
 
         try:
                 sat.unlinkat(path_dir_fd, path_file, 0)
-        except OSError, e:
+        except OSError as e:
                 os.close(path_dir_fd)
                 if noent_ok and e.errno == errno.ENOENT:
                         return
@@ -263,13 +263,13 @@ def ar_rename(root, src, dst):
         src_dir_fd = ar_open(root, src_dir, os.O_RDONLY)
         try:
                 dst_dir_fd = ar_open(root, dst_dir, os.O_RDONLY)
-        except OSError, e:
+        except OSError as e:
                 os.close(src_dir_fd)
                 raise e
 
         try:
                 sat.renameat(src_dir_fd, src_file, dst_dir_fd, dst_file)
-        except OSError, e:
+        except OSError as e:
                 os.close(src_dir_fd)
                 os.close(dst_dir_fd)
                 raise e
@@ -298,7 +298,7 @@ def ar_mkdir(root, path, mode):
         path_dir_fd = ar_open(root, path_dir, os.O_RDONLY)
         try:
                 sat.mkdirat(path_dir_fd, path_file, mode)
-        except OSError, e:
+        except OSError as e:
                 os.close(path_dir_fd)
                 raise e
 
@@ -314,7 +314,7 @@ def ar_stat(root, path):
 
         try:
                 fd = ar_open(root, path, os.O_RDONLY)
-        except OSError, e:
+        except OSError as e:
                 raise e
         si = os.fstat(fd)
         os.close(fd)
@@ -329,7 +329,7 @@ def ar_isdir(root, path):
 
         try:
                 si = ar_stat(root, path)
-        except OSError, e:
+        except OSError as e:
                 if e.errno == errno.ENOENT:
                         return False
                 raise e
@@ -347,7 +347,7 @@ def ar_exists(root, path):
 
         try:
                 fd = ar_open(root, path, os.O_RDONLY)
-        except OSError, e:
+        except OSError as e:
                 if e.errno == errno.ENOENT:
                         return False
                 raise e
@@ -377,7 +377,7 @@ def ar_diff(root, path1, path2):
                         if len(b1) != len(b2) or b1 != b2:
                                 diff = True
                                 break
-        except OSError, e:
+        except OSError as e:
                 if fd1:
                         os.close(fd1)
                 if fd2:

@@ -916,7 +916,7 @@ class PkgSolver(object):
                 # remove any versions from proposed_dict that are in trim_dict
                 try:
                         self.__trim_proposed(proposed_dict)
-                except api_errors.PlanCreationException, exp:
+                except api_errors.PlanCreationException as exp:
                         # One or more proposed packages have been rejected.
                         self.__raise_install_error(exp, inc_list, proposed_dict,
                             set(), excludes)
@@ -960,7 +960,7 @@ class PkgSolver(object):
                 # as trim dict has been updated w/ missing dependencies
                 try:
                         self.__trim_proposed(proposed_dict)
-                except api_errors.PlanCreationException, exp:
+                except api_errors.PlanCreationException as exp:
                         # One or more proposed packages have been rejected.
                         self.__raise_install_error(exp, inc_list, proposed_dict,
                             possible_set, excludes)
@@ -982,7 +982,7 @@ class PkgSolver(object):
                     proposed_dict=proposed_dict)
                 try:
                         self.__assert_installed_allowed(proposed=proposed_pkgs)
-                except api_errors.PlanCreationException, exp:
+                except api_errors.PlanCreationException as exp:
                         # One or more installed packages can't be retained or
                         # upgraded.
                         self.__raise_install_error(exp, inc_list, proposed_dict,
@@ -998,7 +998,7 @@ class PkgSolver(object):
                 saved_solver = self.__save_solver()
                 try:
                         saved_solution = self.__solve()
-                except api_errors.PlanCreationException, exp:
+                except api_errors.PlanCreationException as exp:
                         # no solution can be found.
                         self.__raise_install_error(exp, inc_list, proposed_dict,
                             possible_set, excludes)
@@ -1747,7 +1747,7 @@ class PkgSolver(object):
                                  dotrim, check_req=True)[1]
                         ])
 
-                except DependencyException, e:
+                except DependencyException as e:
                         self.__trim(fmri, e.reason_id, e.reason,
                             fmri_adds=e.fmris)
                         return set([])
@@ -2402,7 +2402,7 @@ class PkgSolver(object):
                         try:
                                 matching = self.__parse_dependency(a, fmri,
                                     check_req=True)[1]
-                        except DependencyException, e:
+                        except DependencyException as e:
                                 self.__trim(fmri, e.reason_id, e.reason,
                                     fmri_adds=e.fmris)
                                 s = _("No suitable version of required package "

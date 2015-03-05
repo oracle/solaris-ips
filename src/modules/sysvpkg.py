@@ -138,7 +138,7 @@ class SolarisPackage(object):
                                                 fo = g
                                         else:
                                                 raise IOError, "not a package"
-                                except IOError, e:
+                                except IOError as e:
                                         if e.args[0] not in (
                                             "Not a gzipped file",
                                             "not a package"):
@@ -201,7 +201,9 @@ class SolarisPackage(object):
 
                 try:
                         fp = file(self.pkgpath + "/install/depend")
-                except IOError, (err, msg):
+                except IOError as xxx_todo_changeme:
+                        # Missing depend file is just fine
+                        (err, msg) = xxx_todo_changeme.args
                         # Missing depend file is just fine
                         if err == errno.ENOENT:
                                 return []

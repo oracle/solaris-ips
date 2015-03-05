@@ -187,7 +187,7 @@ class POSIXPrintEngine(PrintEngine):
                         #
                         if outmsg.endswith("\n"):
                                 self.__needs_nl = False
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise

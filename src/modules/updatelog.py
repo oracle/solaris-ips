@@ -61,7 +61,7 @@ class UpdateLog(object):
                                 UpdateLog._recv_updates(c, path, ts)
                         else:
                                 catalog.ServerCatalog.recv(c, path, pub)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -128,7 +128,7 @@ class UpdateLog(object):
                                         if l[2] in tuple("CV"):
                                                 try:
                                                         f = fmri.PkgFmri(l[3])
-                                                except fmri.IllegalFmri, e:
+                                                except fmri.IllegalFmri as e:
                                                         bad_fmri = e
                                                         mts = pts
                                                         continue
@@ -152,7 +152,7 @@ class UpdateLog(object):
 
                 try:
                         pfile = file(catpath, "rb")
-                except IOError, e:
+                except IOError as e:
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
                                 file(catpath, "wb").close()

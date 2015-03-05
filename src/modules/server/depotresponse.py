@@ -28,8 +28,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys as _sys
@@ -79,7 +78,7 @@ class DepotResponse(_cpwsgi.AppResponse):
                 except self.throws:
                         self.close()
                         raise
-                except _cherrypy.InternalRedirect, ir:
+                except _cherrypy.InternalRedirect as ir:
                         self.environ['cherrypy.previous_request'] = _cherrypy.serving.request
                         self.close()
                         self.iredirect(ir.path, ir.query_string)

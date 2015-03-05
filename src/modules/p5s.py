@@ -77,7 +77,7 @@ def parse(proxy_host, data):
 
         try:
                 dump_struct = json.loads(data)
-        except ValueError, e:
+        except ValueError as e:
                 # Not a valid JSON file.
                 raise api_errors.InvalidP5SFile(e)
 
@@ -153,7 +153,7 @@ def parse(proxy_host, data):
                     "signature-required-names")
                 if req_names is not None:
                         props["signature-required-names"] = req_names
-        except (api_errors.PublisherError, TypeError, ValueError), e:
+        except (api_errors.PublisherError, TypeError, ValueError) as e:
                 raise api_errors.InvalidP5SFile(str(e))
         return pubs, props
 

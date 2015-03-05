@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import uuid as uuidm
@@ -308,7 +307,7 @@ class StreamingFileObj(object):
 
                         try:
                                 engine.run()
-                        except tx.ExcessiveTransientFailure, ex:
+                        except tx.ExcessiveTransientFailure as ex:
                                 s = engine.check_status([self.__url])
                                 ex.failures = s
                                 self.__lock.release()

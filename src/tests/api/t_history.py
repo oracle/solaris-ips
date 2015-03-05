@@ -306,7 +306,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 try:
                         he = history.History(root_dir=h.root_dir,
                             filename=entry)
-                except apx.HistoryLoadException, e:
+                except apx.HistoryLoadException as e:
                         if not e.parse_failure:
                                 raise
                         pass

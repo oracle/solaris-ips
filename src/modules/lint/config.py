@@ -63,7 +63,7 @@ class PkglintConfig(object):
                                 # error reporting, so we'll just try to open
                                 # the file
                                 file(config_file, "r").close()
-                        except (EnvironmentError), err:
+                        except (EnvironmentError) as err:
                                 raise PkglintConfigException(
                                     _("unable to read config file: {0} ").format(
                                     err))
@@ -79,7 +79,7 @@ class PkglintConfig(object):
 
                         # sanity check our config by looking for a known key
                         self.config.get("pkglint", "log_level")
-                except ConfigParser.Error, err:
+                except ConfigParser.Error as err:
                         raise PkglintConfigException(
                             _("missing or corrupt pkglintrc file "
                             "{config_file}: {err}").format(**locals()))

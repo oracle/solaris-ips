@@ -475,7 +475,7 @@ class _RepoStore(object):
                 misc.makedirs(tempdir)
                 try:
                         return tempfile.mkdtemp(dir=tempdir)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)
@@ -555,7 +555,7 @@ class _RepoStore(object):
                 m = pkg.manifest.Manifest(pfmri)
                 try:
                         m.set_content(pathname=mpath, signatures=sig)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 raise RepositoryManifestNotFoundError(
                                     e.filename)
@@ -682,7 +682,7 @@ class _RepoStore(object):
                 try:
                         # Attempt to obtain a file lock.
                         self.__lockfile.lock(blocking=blocking)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 self.__lock.release()
                                 raise apx.PermissionsException(
@@ -733,7 +733,7 @@ class _RepoStore(object):
                 portable.rename(self.index_root, self.index_root + ".old")
                 try:
                         shutil.rmtree(self.index_root + ".old")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)
@@ -795,7 +795,7 @@ class _RepoStore(object):
                                         except (apx.InvalidPackageErrors,
                                             actions.ActionError,
                                             fmri.FmriError,
-                                            pkg.version.VersionError), e:
+                                            pkg.version.VersionError) as e:
                                                 # Don't add packages with
                                                 # corrupt manifests to the
                                                 # catalog.
@@ -805,7 +805,7 @@ class _RepoStore(object):
                                                     "{name}; invalid "
                                                     "manifest: {error}").format(
                                                     name=name, error=e))
-                                        except apx.DuplicateCatalogEntry, e:
+                                        except apx.DuplicateCatalogEntry as e:
                                                 # Raise dups if not in
                                                 # incremental mode.
                                                 if not incremental:
@@ -910,7 +910,7 @@ class _RepoStore(object):
                 def get_file_lm(pathname):
                         try:
                                 mod_time = os.stat(pathname).st_mtime
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno == errno.ENOENT:
                                         return None
                                 raise
@@ -1017,7 +1017,7 @@ class _RepoStore(object):
                         try:
                                 if self.catalog.exists:
                                         self.catalog_version = 1
-                        except apx.CatalogError, e:
+                        except apx.CatalogError as e:
                                 if not allow_invalid:
                                         raise
 
@@ -1065,7 +1065,7 @@ class _RepoStore(object):
                         # Ensure the permissions on the new temporary catalog
                         # directory are correct.
                         os.chmod(tmp_cat_root, misc.PKG_DIR_MODE)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # shutil.Error can contains a tuple of lists of errors.
                         # Some of the error entries may be a tuple others will
                         # be a string due to poor error handling in shutil.
@@ -1202,7 +1202,7 @@ class _RepoStore(object):
                         pstate = t.abandon()
                         self.__discard_transaction(trans_id)
                         return pstate
-                except trans.TransactionError, e:
+                except trans.TransactionError as e:
                         raise RepositoryError(e)
 
         def add(self, trans_id, action):
@@ -1219,7 +1219,7 @@ class _RepoStore(object):
                 t = self.__get_transaction(trans_id)
                 try:
                         t.add_content(action)
-                except trans.TransactionError, e:
+                except trans.TransactionError as e:
                         raise RepositoryError(e)
 
         def add_content(self, refresh_index=False):
@@ -1264,7 +1264,7 @@ class _RepoStore(object):
                 t = self.__get_transaction(trans_id)
                 try:
                         t.add_file(data, size)
-                except trans.TransactionError, e:
+                except trans.TransactionError as e:
                         raise RepositoryError(e)
                 return
 
@@ -1406,7 +1406,7 @@ class _RepoStore(object):
                         self.__discard_transaction(trans_id)
                         return pfmri, pstate
                 except (apx.CatalogError,
-                    trans.TransactionError), e:
+                    trans.TransactionError) as e:
                         raise RepositoryError(e)
 
         def file(self, fhash):
@@ -1500,7 +1500,7 @@ class _RepoStore(object):
                         t.open(self, client_release, pfmri)
                         self.__in_flight_trans[t.get_basename()] = t
                         return t.get_basename()
-                except trans.TransactionError, e:
+                except trans.TransactionError as e:
                         raise RepositoryError(e)
 
         def append(self, client_release, pfmri):
@@ -1520,7 +1520,7 @@ class _RepoStore(object):
                         t.append(self, client_release, pfmri)
                         self.__in_flight_trans[t.get_basename()] = t
                         return t.get_basename()
-                except trans.TransactionError, e:
+                except trans.TransactionError as e:
                         raise RepositoryError(e)
 
         def refresh_index(self):
@@ -1541,7 +1541,7 @@ class _RepoStore(object):
                         try:
                                 try:
                                         self.__refresh_index()
-                                except se.InconsistentIndexException, e:
+                                except se.InconsistentIndexException as e:
                                         s = _("Index corrupted or out of date. "
                                             "Removing old index directory ({0}) "
                                             " and rebuilding search "
@@ -1551,11 +1551,11 @@ class _RepoStore(object):
                                                 self.__rebuild(
                                                     build_catalog=False,
                                                     build_index=True)
-                                        except se.IndexingException, e:
+                                        except se.IndexingException as e:
                                                 self.__log(str(e), "INDEX")
-                                except se.IndexingException, e:
+                                except se.IndexingException as e:
                                         self.__log(str(e), "INDEX")
-                        except EnvironmentError, e:
+                        except EnvironmentError as e:
                                 if e.errno in (errno.EACCES, errno.EROFS):
                                         if self.writable_root:
                                                 raise RepositoryError(
@@ -1770,7 +1770,7 @@ class _RepoStore(object):
                                 """rmdir; but ignores non-empty directories."""
                                 try:
                                         os.rmdir(d)
-                                except OSError, e:
+                                except OSError as e:
                                         if e.errno not in (
                                             errno.ENOTEMPTY,
                                             errno.EEXIST):
@@ -1786,10 +1786,10 @@ class _RepoStore(object):
                                         for entry in os.listdir(self.file_root):
                                                 rmdir(os.path.join(
                                                     self.file_root, entry))
-                                except EnvironmentError, e:
+                                except EnvironmentError as e:
                                         if e.errno != errno.ENOENT:
                                                 raise
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
                 finally:
                         # This ensures batch_mode is reset in the event of an
@@ -1891,7 +1891,7 @@ class _RepoStore(object):
                                             sqp.Query.fromstr(s))
                                 else:
                                         query_lst.append(s)
-                except sqp.QueryException, e:
+                except sqp.QueryException as e:
                         raise RepositoryError(e)
                 return [_search(q) for q in query_lst]
 
@@ -1921,7 +1921,7 @@ class _RepoStore(object):
                         st = None
                         try:
                                 st = os.stat(p5ipath)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.ENOENT:
                                         raise
 
@@ -1929,7 +1929,7 @@ class _RepoStore(object):
                                 os.fchmod(fd, stat.S_IMODE(st.st_mode))
                                 try:
                                         portable.chown(fn, st.st_uid, st.st_gid)
-                                except OSError, e:
+                                except OSError as e:
                                         if e.errno != errno.EPERM:
                                                 raise
                         else:
@@ -1939,7 +1939,7 @@ class _RepoStore(object):
                                 with codecs.EncodedFile(f, "utf-8") as ef:
                                         p5i.write(ef, [pub])
                         portable.rename(fn, p5ipath)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         elif e.errno == errno.EROFS:
@@ -2084,7 +2084,7 @@ class _RepoStore(object):
                         m = self._get_manifest(pfmri)
                 except apx.InvalidPackageErrors:
                         return (REPO_VERIFY_BADMANIFEST, path, {})
-                except apx.PermissionsException, e:
+                except apx.PermissionsException as e:
                         return (REPO_VERIFY_PERM, path, {"err": str(e),
                             "pkg": pfmri})
 
@@ -2105,10 +2105,10 @@ class _RepoStore(object):
                                 return (REPO_VERIFY_BADHASH, path,
                                     {"actual": actual, "hash": h,
                                     "pkg": pfmri})
-                except (ValueError, zlib.error), e:
+                except (ValueError, zlib.error) as e:
                         return (REPO_VERIFY_BADGZIP, path,
                             {"hash": h, "pkg": pfmri})
-                except IOError, e:
+                except IOError as e:
                         if e.errno in [errno.EACCES, errno.EPERM]:
                                 return (REPO_VERIFY_PERM, path,
                                     {"err": str(e), "hash": h,
@@ -2128,7 +2128,7 @@ class _RepoStore(object):
                         # if it's a directory, we'll try to list it
                         if stat.S_ISDIR(st.st_mode):
                                 os.listdir(path)
-                except OSError, e:
+                except OSError as e:
                         if e.errno in [errno.EPERM, errno.EACCES]:
                                 if not pfmri:
                                         return (REPO_VERIFY_MFPERM, path,
@@ -2149,13 +2149,13 @@ class _RepoStore(object):
                                 sig.verify_sig(m.gen_actions(), pub,
                                     trust_anchors, use_crls,
                                     required_names=sig_required_names)
-                        except apx.UnverifiedSignature, e:
+                        except apx.UnverifiedSignature as e:
                                 errors.append((REPO_VERIFY_BADSIG, path,
                                     {"err": str(e), "pkg": pfmri}))
-                        except apx.CertificateException, e:
+                        except apx.CertificateException as e:
                                 errors.append((REPO_VERIFY_BADSIG, path,
                                     {"err": str(e), "pkg": pfmri}))
-                        except apx.TransportError, e:
+                        except apx.TransportError as e:
                                 errors.append((REPO_VERIFY_BADSIG, path,
                                    {"err": str(e), "pkg": pfmri}))
                 return errors
@@ -2273,7 +2273,7 @@ class _RepoStore(object):
                                 vers = len(os.listdir(mfdir))
                                 if vers > 1:
                                         goal += vers - 1
-                        except OSError, e:
+                        except OSError as e:
                                 # being unable to read the manifest dir is bad,
                                 # but we'll deal with it later
                                 continue
@@ -2330,7 +2330,7 @@ class _RepoStore(object):
                                                 raise Exception(
                                                     "{0} is not a file".format(
                                                     path))
-                                except Exception, e:
+                                except Exception as e:
                                         # Assume the error is result of an
                                         # unexpected file in the directory. We
                                         # don't know the FMRI here, so use None.
@@ -2368,7 +2368,7 @@ class _RepoStore(object):
                                                 path = self.cache_store.lookup(
                                                      fname,
                                                      check_existence=False)
-                                        except apx.PermissionsException, e:
+                                        except apx.PermissionsException as e:
                                                 # if we can't even get the path
                                                 # within the repository, then
                                                 # we'll do the best we can to
@@ -2456,7 +2456,7 @@ class _RepoStore(object):
                         for err in self.__gen_verify(progtrack, pub,
                             trust_anchors, sig_required_names, use_crls):
                                 yield err
-                except (Exception, EnvironmentError), e:
+                except (Exception, EnvironmentError) as e:
                         import traceback
                         traceback.print_exc(e)
                         raise apx._convert_error(e)
@@ -2561,7 +2561,7 @@ class _RepoStore(object):
                         qdir = os.path.join(quarantine_root, dir)
                         try:
                                 os.makedirs(qdir)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno != errno.EEXIST:
                                         raise
                         dest = os.path.join(qdir, basename)
@@ -2577,7 +2577,7 @@ class _RepoStore(object):
                         try:
                                 shutil.move(path, qdir)
                                 fixed_paths.add(path)
-                        except Exception, e:
+                        except Exception as e:
                                 status = REPO_FIX_FAILED
                                 message = _("Unable to quarantine {path}: "
                                     "{err}").format(path=path, err=e)
@@ -2693,7 +2693,7 @@ class Repository(object):
                         if not create and self.root and \
                             os.path.isfile(self.root):
                                 raise RepositoryInvalidError(self.root)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         raise apx._convert_error(e)
 
                 cfgpathname = None
@@ -2845,7 +2845,7 @@ class Repository(object):
 
                 try:
                         fs = os.stat(self.root)
-                except OSError, e:
+                except OSError as e:
                         # If the stat failed due to this, then assume the
                         # repository is possibly valid but that there is a
                         # permissions issue.
@@ -2958,7 +2958,7 @@ class Repository(object):
                 # Save a new configuration (or refresh existing).
                 try:
                         self.cfg.write()
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         # If we're unable to write due to the following
                         # errors, it isn't critical to the operation of
                         # the repository.
@@ -3085,7 +3085,7 @@ class Repository(object):
                                     os.path.exists(repo_tmp_path) :
                                         portable.rename(pub_path,
                                         repo_tmp_path)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)
@@ -3127,7 +3127,7 @@ class Repository(object):
                         return tempfile.mkdtemp(prefix="rm." + pfx + ".",
                             dir=tempdir)
 
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)
@@ -3150,7 +3150,7 @@ class Repository(object):
                 try:
                         if not isinstance(pfmri, fmri.PkgFmri):
                                 pfmri = fmri.PkgFmri(pfmri, client_release)
-                except fmri.FmriError, e:
+                except fmri.FmriError as e:
                         raise RepositoryInvalidFMRIError(e)
 
                 if pub and not pfmri.publisher:
@@ -3158,7 +3158,7 @@ class Repository(object):
 
                 try:
                         rstore = self.get_pub_rstore(pfmri.publisher)
-                except RepositoryUnknownPublisher, e:
+                except RepositoryUnknownPublisher as e:
                         if not pfmri.publisher:
                                 # No publisher given in FMRI and no default
                                 # publisher so treat as invalid FMRI.
@@ -3396,7 +3396,7 @@ class Repository(object):
                 try:
                         if not isinstance(pfmri, fmri.PkgFmri):
                                 pfmri = fmri.PkgFmri(pfmri)
-                except fmri.FmriError, e:
+                except fmri.FmriError as e:
                         raise RepositoryInvalidFMRIError(e)
 
                 if not pub and pfmri.publisher:
@@ -3407,7 +3407,7 @@ class Repository(object):
                 if pub:
                         try:
                                 rstore = self.get_pub_rstore(pub)
-                        except RepositoryUnknownPublisher, e:
+                        except RepositoryUnknownPublisher as e:
                                 raise RepositoryManifestNotFoundError(pfmri)
                         return rstore.manifest(pfmri)
 
@@ -3434,7 +3434,7 @@ class Repository(object):
                 try:
                         if not isinstance(pfmri, fmri.PkgFmri):
                                 pfmri = fmri.PkgFmri(pfmri, client_release)
-                except fmri.FmriError, e:
+                except fmri.FmriError as e:
                         raise RepositoryInvalidFMRIError(e)
 
                 if pub and not pfmri.publisher:
@@ -3442,7 +3442,7 @@ class Repository(object):
 
                 try:
                         rstore = self.get_pub_rstore(pfmri.publisher)
-                except RepositoryUnknownPublisher, e:
+                except RepositoryUnknownPublisher as e:
                         if not pfmri.publisher:
                                 # No publisher given in FMRI and no default
                                 # publisher so treat as invalid FMRI.
@@ -3583,7 +3583,7 @@ class Repository(object):
                                 if pfmri.publisher:
                                         pubs.add(pfmri.publisher)
                                 plist.add(pfmri)
-                        except fmri.FmriError, e:
+                        except fmri.FmriError as e:
                                 raise RepositoryInvalidFMRIError(e)
 
                 if len(pubs) > 1:
@@ -3600,7 +3600,7 @@ class Repository(object):
 
                 try:
                         rstore = self.get_pub_rstore(pub)
-                except RepositoryUnknownPublisher, e:
+                except RepositoryUnknownPublisher as e:
                         for p in plist:
                                 if not pfmri.publisher:
                                         # No publisher given in FMRI and no
@@ -3973,7 +3973,7 @@ class Repository(object):
                         with open(filename) as igfd:
                                 lines = igfd.readlines()
                         return lines
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 raise RepositoryNoSuchFileError(e.filename)
                         if e.errno == errno.EACCES:
@@ -4003,7 +4003,7 @@ class Repository(object):
                                 dumentry = "set name='bogus' value=0 " + entry
                                 try:
                                         act = actions._actions.fromstr(dumentry)
-                                except actions.ActionError, e:
+                                except actions.ActionError as e:
                                         raise RepositoryInvalidIgnoreDepEntryError(igf, entry)
                                 attrs = act.attrs
                                 attrs.pop("name")
@@ -4069,7 +4069,7 @@ class Repository(object):
                                         else:
                                                 ignored_pkgs_dict[istem].append(
                                                     attrs)
-                                except fmri.FmriError, e:
+                                except fmri.FmriError as e:
                                         raise RepositoryInvalidIgnoreDepFMRIError(igf, e.fmri)
                 return ignored_pkgs_dict
 
@@ -4112,7 +4112,7 @@ class Repository(object):
                     foundpubs):
                         try:
                                 afmri = fmri.PkgFmri(apkg)
-                        except fmri.FmriError, e:
+                        except fmri.FmriError as e:
                                 raise RepositoryInvalidFMRIError(e)
                         tracker.repo_verify_start_pkg(afmri)
 
@@ -4360,7 +4360,7 @@ def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
 
         try:
                 os.makedirs(path, misc.PKG_DIR_MODE)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.filename == path and (e.errno == errno.EEXIST or
                     os.path.exists(e.filename)):
                         entries = os.listdir(e.filename)
@@ -4386,7 +4386,7 @@ def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
                 try:
                         with file(os.path.join(path, "cfg_cache"), "wb") as cf:
                                 cf.write("\n")
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(
                                     e.filename)

@@ -142,7 +142,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
 
                 try:
                         return repo.Repository(root=path)
-                except cfg.ConfigError, e:
+                except cfg.ConfigError as e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
                             "valid:\n{0}").format(e))

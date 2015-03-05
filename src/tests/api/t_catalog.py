@@ -98,7 +98,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 target = os.path.join(self.test_root, name)
                 try:
                         os.makedirs(target, misc.PKG_DIR_MODE)
-                except OSError, e:
+                except OSError as e:
                         if e.errno != errno.EEXIST:
                                 raise e
                 return os.path.abspath(target)

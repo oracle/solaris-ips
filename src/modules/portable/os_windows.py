@@ -189,7 +189,7 @@ def rename(src, dst):
         """
         try:
                 os.rename(src, dst)
-        except OSError, err:
+        except OSError as err:
                 if err.errno != errno.EEXIST:
                         raise
                 try:
@@ -206,7 +206,7 @@ def remove(path):
         """
         try:
                 os.unlink(path)
-        except OSError, err:
+        except OSError as err:
                 if err.errno != errno.EACCES:
                         raise
                 move_to_trash(path)

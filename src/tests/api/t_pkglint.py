@@ -2107,7 +2107,7 @@ class TestLogFormatter(log.LogFormatter):
                         try:
                                 linted_flag = linted(action=self.action,
                                     manifest=self.manifest, lint_id=msg.msgid)
-                        except DuplicateLintedAttrException, err:
+                        except DuplicateLintedAttrException as err:
                                 self.messages.append("{0}\t{1}".format(
                                     "pkglint001.6", "Logging error: {0}".format(err)))
                                 self.ids.append("pkglint001.6")
@@ -3496,7 +3496,7 @@ def read_manifests(names, lint_logger):
                 linecounter = 0 # running total
                 try:
                         data = file(filename).read()
-                except IOError, e:
+                except IOError as e:
                         lint_logger.error("Unable to read manifest file {0}".format(
                             filename, msgid="lint.manifest001"))
                         continue
@@ -3508,7 +3508,7 @@ def read_manifests(names, lint_logger):
                 manifest = pkg.manifest.Manifest()
                 try:
                         manifest.set_content("\n".join(lines))
-                except pkg.actions.ActionError, e:
+                except pkg.actions.ActionError as e:
                         lineno = e.lineno
                         for i, tup in enumerate(linecnts):
                                 if lineno > tup[0] and lineno <= tup[1]:

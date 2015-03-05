@@ -142,7 +142,7 @@ class SysrepoP5p(object):
 
                         try:
                                 st_p5p = os.stat(self.p5p_path)
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == os.errno.ENOENT:
                                         raise MissingArchiveException(
                                             self.p5p_path)
@@ -151,14 +151,14 @@ class SysrepoP5p(object):
                                 if st_ts.st_mtime < st_p5p.st_mtime:
                                         open(timestamp_path, "wb").close()
                                         update = True
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == os.errno.ENOENT:
                                         open(timestamp_path, "wb").close()
                                         update = True
 
-                except MissingArchiveException, e:
+                except MissingArchiveException as e:
                         raise
-                except Exception, e:
+                except Exception as e:
                         self.log_exception()
                 finally:
                         p5p_update_lock.release()
@@ -172,9 +172,9 @@ class SysrepoP5p(object):
                 try:
                         return self.p5p.get_package_file(os.path.basename(path),
                             pub=pub)
-                except pkg.p5p.UnknownArchiveFiles, e:
+                except pkg.p5p.UnknownArchiveFiles as e:
                         self.log_exception(status=SERVER_NOTFOUND_STATUS)
-                except Exception, e:
+                except Exception as e:
                         self.log_exception()
 
         def _catalog_response(self, path, pub, hsh):
@@ -202,14 +202,14 @@ class SysrepoP5p(object):
                                 self.p5p.extract_catalog1(cat_part, cat_dir,
                                     pub=pub)
                                 return open(cat_path, "rb")
-                        except (pkg.p5p.UnknownArchiveFiles, IOError), e:
+                        except (pkg.p5p.UnknownArchiveFiles, IOError) as e:
                                 self.log_exception(
                                     status=SERVER_NOTFOUND_STATUS)
-                        except Exception, e:
+                        except Exception as e:
                                 self.log_exception()
                         finally:
                                 p5p_update_lock.release()
-                except OSError, e:
+                except OSError as e:
                         if e.errno == os.errno.ENOENT:
                                 return open(cat_path, "rb")
                         else:
@@ -225,11 +225,11 @@ class SysrepoP5p(object):
                 try:
                         mf = self.p5p.get_package_manifest(fmri, raw=True)
                         return mf
-                except pkg.p5p.UnknownPackageManifest, e:
+                except pkg.p5p.UnknownPackageManifest as e:
                         self.log_exception(status=SERVER_NOTFOUND_STATUS)
-                except pkg.fmri.IllegalFmri, e:
+                except pkg.fmri.IllegalFmri as e:
                         self.log_exception(status=SERVER_NOTFOUND_STATUS)
-                except Exception, e:
+                except Exception as e:
                         self.log_exception()
 
         def _precache_catalog(self, pub, hsh):
@@ -253,7 +253,7 @@ class SysrepoP5p(object):
                                         self.p5p.extract_catalog1(part, cat_dir,
                                             pub=pub)
 
-                except pkg.p5p.UnknownArchiveFiles, e:
+                except pkg.p5p.UnknownArchiveFiles as e:
                         # if the catalog part is unavailable,
                         # we ignore this for now.  It will be
                         # reported later anyway.
@@ -346,18 +346,18 @@ class SysrepoP5p(object):
                                 buf = self._manifest_response(path, pub)
                         else:
                                 raise UnknownPathException(path)
-                except OSError, e:
+                except OSError as e:
                         print(e.errno)
                         if e.errno == os.errno.ENOENT:
                                 self.log_Exception(
                                     status=SERVER_NOTFOUND_STATUS)
-                except UnknownPathException, e:
+                except UnknownPathException as e:
                         self.log_exception(status=SERVER_NOTFOUND_STATUS)
-                except MalformedQueryException, e:
+                except MalformedQueryException as e:
                         self.log_exception(status=SERVER_BADREQUEST_STATUS)
-                except MissingArchiveException, e:
+                except MissingArchiveException as e:
                         self.log_exception()
-                except Exception, e:
+                except Exception as e:
                         self.log_exception()
                 return buf
 

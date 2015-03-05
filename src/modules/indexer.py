@@ -63,7 +63,7 @@ def makedirs(pathname):
 
         try:
                 os.makedirs(pathname, PKG_DIR_MODE)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
                 if e.filename == pathname and (e.errno == errno.EEXIST or
                     os.path.exists(e.filename)):
                         return
@@ -874,7 +874,7 @@ class Indexer(object):
                 try:
                         shutil.rmtree(self._index_dir + ".old")
                         makedirs(self._index_dir)
-                except OSError, e:
+                except OSError as e:
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
@@ -925,7 +925,7 @@ class Indexer(object):
                 data = ss.IndexStoreSet("full_fmri_list")
                 try:
                         data.open(index_root)
-                except IOError, e:
+                except IOError as e:
                         if not os.path.exists(os.path.join(
                                 index_root, data.get_file_name())):
                                 return fmri_set
@@ -1000,7 +1000,7 @@ class Indexer(object):
                 try:
                         # Attempt to obtain a file lock.
                         self.__lockfile.lock(blocking=blocking)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 # If a lock was requested, and the only
                                 # reason for failure was because the

@@ -78,7 +78,7 @@ if __name__ == "__main__":
                         print("---test_logging---", file=output_file)
                         print(("-" * 60), output_file)
                         printengine.test_logging_printengine(output_file)
-        except printengine.PrintEngineException, e:
+        except printengine.PrintEngineException as e:
                 print(e, file=sys.stderr)
                 sys.exit(1)
         except:

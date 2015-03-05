@@ -534,7 +534,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                                     "Failed to open {0}: {1}".format(url_path,
                                     url_obj.code))
                                 url_obj.close()
-                        except urllib2.HTTPError, e:
+                        except urllib2.HTTPError as e:
                                 self.debug("Failed to open {0}: {1}".format(
                                     url_path, e))
                                 raise
@@ -567,7 +567,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 try:
                         url_obj = urllib2.urlopen(bad_url, timeout=10)
                         url_obj.close()
-                except urllib2.HTTPError, e:
+                except urllib2.HTTPError as e:
                         if e.code == 404:
                                 raised_404 = True
                 self.assert_(raised_404, "Didn't get a 404 opening {0}".format(
@@ -836,7 +836,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                                 h = u.headers.get(header, "")
                                 if value in h:
                                         return True
-                        except Exception, e:
+                        except Exception as e:
                                 self.assert_(False, "Error opening {0}: {1}".format(
                                     url, e))
                         return ret

@@ -348,7 +348,7 @@ Incorrect attribute list.
 
                 try:
                         action.fromstr(text)
-                except action.MalformedActionError, e:
+                except action.MalformedActionError as e:
                         assert e.actionstr == text
                         malformed = True
 
@@ -454,7 +454,7 @@ Incorrect attribute list.
                         bad_act = action.fromstr(astr)
                         try:
                                 bad_act.validate()
-                        except Exception, e:
+                        except Exception as e:
                                 self.debug(str(e))
                         else:
                                 self.debug("expected failure validating: {0}".format(
