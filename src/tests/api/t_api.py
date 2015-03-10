@@ -623,7 +623,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Verify that output matches expected output.
                 fobj.seek(0)
                 output = fobj.read()
-                self.assertEqualDiff(output, self.p5i_bobcat)
+                self.assertEqualJSON(output, self.p5i_bobcat)
 
                 def validate_results(results):
                         # First result should be 'bobcat' publisher and its

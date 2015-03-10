@@ -31,7 +31,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import operator
 import os
 import itertools

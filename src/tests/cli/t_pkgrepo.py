@@ -1800,7 +1800,7 @@ test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T20345
   }
 ]
 """
-                self.assertEqualDiff(expected, self.output)
+                self.assertEqualJSON(expected, self.output)
 
                 # Verify ability to list specific packages.
                 self.pkgrepo("list -s {0} -H -F tsv tree amber@2.0".format(repo_path))

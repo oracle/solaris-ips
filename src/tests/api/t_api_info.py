@@ -33,7 +33,6 @@ import unittest
 import os
 import re
 import shutil
-import difflib
 import time
 
 import pkg.client.api as api

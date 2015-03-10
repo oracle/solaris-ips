@@ -29,7 +29,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import errno
 import unittest
 import cStringIO
@@ -131,7 +130,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Verify that output matches expected output.
                 fobj.seek(0)
                 output = fobj.read()
-                self.assertPrettyEqual(output, self.p5i_bobcat)
+                self.assertEqualJSON(self.p5i_bobcat, output)
 
                 def validate_results(results):
                         # First result should be 'bobcat' publisher and its
@@ -201,17 +200,6 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
                     location=location)
 
-        def assertPrettyEqual(self, actual, expected):
-                if actual == expected:
-                        return
-
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
-                raise AssertionError(output)
-
         def test_parse_write_partial(self):
                 """Verify that a p5i file with various parts of a publisher's
                 repository configuration omitted will still parse and write
@@ -241,7 +229,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Verify that output matches expected output.
                 fobj.seek(0)
                 output = fobj.read()
-                self.assertPrettyEqual(output, expected)
+                self.assertEqualJSON(expected, output)
 
                 # Now parse the result and verify no repositories are defined.
                 pub, pkg_names = p5i.parse(data=output)[0]
@@ -288,12 +276,12 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Verify that output matches expected output.
                 fobj.seek(0)
                 output = fobj.read()
-                self.assertPrettyEqual(output, expected)
+                self.assertEqualJSON(expected, output)
 
                 # Now parse the result and verify that there is a repository,
                 # but without origins information.
                 pub, pkg_names = p5i.parse(data=output)[0]
-                self.assertPrettyEqual(pub.repository.origins, [])
+                self.assertEqualDiff([], pub.repository.origins)
 
 
 if __name__ == "__main__":

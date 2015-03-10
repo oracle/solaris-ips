@@ -334,7 +334,8 @@ class PlanDescription(object):
 
                 try:
                         fobj.seek(0)
-                        state = json.load(fobj, encoding="utf-8")
+                        state = json.load(fobj, encoding="utf-8",
+                            object_hook=pkg.misc.json_hook)
                 except OSError as e:
                         # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)

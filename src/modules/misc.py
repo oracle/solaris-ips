@@ -251,7 +251,7 @@ def url_affix_trailing_slash(u):
 
         return u
 
-_client_version = "pkg/{0} ({1} {2}; {3} {4}; {{0}}; {{1}}".format(
+_client_version = "pkg/{0} ({1} {2}; {3} {4}; {{0}}; {{1}})".format(
     VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
 
@@ -1860,9 +1860,9 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                 data_type, name, desc_type, data)
 
         # We should not see unicode strings getting passed in. The assert is
-        # necessary since we force unicode objects back into escaped str
-        # objects during json_decode which would convert unicode to str objects
-        # unintentionally.
+        # necessary since we use the PkgDecoder hook function during json_decode
+        # to convert unicode objects back into escaped str objects, which would
+        # otherwise do that conversion unintentionally.
         assert not isinstance(data_type, unicode), \
             "unexpected unicode string: {0}".format(data)
 
@@ -2066,12 +2066,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                 # sanity check that the data type matches the description
                 assert issubclass(data_type, desc_type), \
                     "unexpected {0} for {1}, expected: {2}, value: {3}".format(
-                        data_type, name, desc_type, rv)
-
-                # Pkg handles unicode strings as escaped ascii strings but JSON
-                # will return them as unicode objects. Convert back to ascii.
-                if isinstance(data, unicode):
-                        data = data.encode("utf8")
+                        data_type, name, desc_type, data)
 
                 if not finish:
                         return data
@@ -2094,7 +2089,6 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
         # we don't need to do anything for basic types
         for t in json_types_immediates:
                 if issubclass(desc_type, t):
-                        rv = None
                         return jd_return(name, data, desc, finish, jd_state)
 
         # decode elements nested in a dictionary
@@ -2165,7 +2159,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                         rv = rvtype([])
                         return jd_return(name, rv, desc, finish, jd_state)
 
-                # check if we're not encoding nested elements
+                # check if we're not decoding nested elements
                 if len(desc) == 0:
                         rv = rvtype(data)
                         return jd_return(name, rv, desc, finish, jd_state)
@@ -2288,6 +2282,20 @@ def json_diff(name, d0, d1, alld0, alld1):
                 for i in range(len(d0)):
                         new_name = "{0}[{1:d}]".format(name, i)
                         json_diff(new_name, d0[i], d1[i], alld0, alld1)
+
+def json_hook(dct):
+        """Hook routine used by the JSON module to ensure that unicode objects
+        are converted to string objects."""
+
+        rvdct = {}
+        for k, v in dct.iteritems():
+                if type(k) == unicode:
+                        k = k.encode("utf-8")
+                if type(v) == unicode:
+                        v = v.encode("utf-8")
+
+                rvdct[k] = v
+        return rvdct
 
 class Timer(object):
         """A class which can be used for measuring process times (user,

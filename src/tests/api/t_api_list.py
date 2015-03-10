@@ -30,7 +30,6 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import calendar
-import difflib
 import os
 import pprint
 import re
@@ -277,20 +276,6 @@ add set name=pkg.description value="{desc}"
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.pkg("set-publisher -g " + self.rurl2 + " test2")
 
-        def assertPrettyEqual(self, actual, expected):
-                if actual == expected:
-                        return
-
-                actual = pprint.pformat(actual, indent=2)
-                expected = pprint.pformat(expected, indent=2)
-
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
-                raise AssertionError(output)
-
         def __get_expected_entry(self, pub, stem, ver, installed=False):
                 states = self.__get_pkg_states(pub, stem, ver,
                     installed=installed)
@@ -414,7 +399,7 @@ add set name=pkg.description value="{desc}"
                     pubs=pubs, variants=variants)
 
                 # Compare returned and expected.
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 self.debug(pprint.pformat(returned))
                 if num_expected is not None:
@@ -486,7 +471,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 42)
 
                 # Next, check no variants case (which has to be done
@@ -520,7 +505,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 6)
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
@@ -536,7 +521,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0")
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 4)
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
@@ -548,7 +533,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 3, "apple",
                         "1.2.0,5.11-0")
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
         def test_list_03_cats(self):
@@ -648,7 +633,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True)
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Verify the results for LIST_INSTALLED_NEWEST.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -682,7 +667,7 @@ add set name=pkg.description value="{desc}"
                 ]
 
                 self.assertEqual(len(returned), 12)
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, including variants.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -716,7 +701,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11",
                         installed=False),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Verify results of LIST_INSTALLED_NEWEST when not including
                 # the publisher of installed packages.
@@ -733,7 +718,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 19, "zoo",
                         "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj)
@@ -764,7 +749,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 19, "zoo",
                         "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # uninstalling 'quux' and 'qux'.
@@ -800,7 +785,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
@@ -839,7 +824,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, including variants.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -874,7 +859,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11"),
                     self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, including only a specific package version, which
                 # should show the requested versions even though newer
@@ -891,7 +876,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
                     self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, including only a specific package version, which
                 # should show the requested versions even though newer
@@ -911,7 +896,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11"),
                     self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Test results after installing packages and only listing the
                 # installed packages.
@@ -938,7 +923,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11",
                         installed=True),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 3)
 
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -964,7 +949,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test last but specify patterns for versions newer than
                 # what is installed; nothing should be returned as
@@ -975,7 +960,7 @@ add set name=pkg.description value="{desc}"
                     api_obj=api_obj, patterns=["apple@1.2.1,5.11-1",
                         "corge@1.0", "qux@1.0"])
                 expected = []
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Remove corge, install grault, retest for
                 # LIST_INSTALLED_NEWEST.  corge, grault, qux, and
@@ -1019,7 +1004,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Now verify that publisher search order determines the entries
                 # that are listed when those entries are part of an installed
@@ -1067,7 +1052,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, specifying versions older than the newest, with
                 # some older than that allowed by the incorporation (should
@@ -1080,7 +1065,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 3, "apple",
                         "1.2.0,5.11-0"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, specifying versions newer than that allowed by the
                 # incorporation.
@@ -1106,7 +1091,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Re-test, only including test2's packages.  Since none of
                 # the other packages are installed for test1, and they meet
@@ -1127,7 +1112,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Change test2 to be ranked higher than test1.
                 pub = api_obj.get_publisher(prefix="test2", duplicate=True)
@@ -1159,7 +1144,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Now install one of the incorporated packages and check
                 # that test2 is still listed for the remaining package
@@ -1194,7 +1179,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Reset publisher search order and re-test.
                 pub = api_obj.get_publisher(prefix="test1", duplicate=True)
@@ -1224,7 +1209,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Reset image state for following tests.
                 for pd in api_obj.gen_plan_uninstall(["*"]):
@@ -1264,7 +1249,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test1", 3, "apple",
                         "1.2.0,5.11-0", installed=True),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Verify the results for LIST_UPGRADABLE when publisher
                 # repository no longer has installed package.
@@ -1274,7 +1259,7 @@ add set name=pkg.description value="{desc}"
 
                 returned = self.__get_returned(api_obj.LIST_UPGRADABLE,
                     api_obj=api_obj)
-                self.assertPrettyEqual(returned, [])
+                self.assertEqualDiff([], returned)
 
                 # Reset image state for following tests.
                 self.pkg("set-publisher -G '*' -g " + self.rurl1 + " test1")
@@ -1319,7 +1304,7 @@ add set name=pkg.description value="{desc}"
                     for p in all_pkgs
                     for sc in get_pkg_cats(p)
                 ))
-                self.assertPrettyEqual(returned, all_cats)
+                self.assertEqualDiff(all_cats, returned)
 
                 # Verify all case with a few different pub combos.
                 combos = [
@@ -1332,7 +1317,7 @@ add set name=pkg.description value="{desc}"
 
                 for combo, expected in combos:
                         returned = api_obj.get_pkg_categories(pubs=combo)
-                        self.assertPrettyEqual(returned, expected)
+                        self.assertEqualDiff(expected, returned)
 
                 # Now install different sets of packages and ensure the
                 # results match what is expected.
@@ -1367,7 +1352,7 @@ add set name=pkg.description value="{desc}"
                             for p in pkgs
                             for sc in get_pkg_cats(p)
                         ))
-                        self.assertPrettyEqual(returned, expected)
+                        self.assertEqualDiff(expected, returned)
 
                         # Prepare for next test.
                         # skip corge since it's renamed
@@ -1408,7 +1393,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 10)
 
                 # Next, check all variants, but with exact and partial match.
@@ -1422,7 +1407,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
                 # Next, check all variants, but for publisher and exact
@@ -1435,7 +1420,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 1)
 
                 # Should return no matches.
@@ -1443,7 +1428,7 @@ add set name=pkg.description value="{desc}"
                 returned = self.__get_returned(api_obj.LIST_ALL,
                     api_obj=api_obj, patterns=patterns, variants=True)
                 expected = []
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
 
                 # Next, check all variants, but for exact match case only.
                 patterns = ["pkg:/bat/bar"]
@@ -1456,7 +1441,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
                 # Next, check version matching for a single pattern.
@@ -1470,7 +1455,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 3, "apple",
                         "1.2.0,5.11-0"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
                 patterns = ["apple@1.0"]
@@ -1483,7 +1468,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 1, "apple",
                         "1.0,5.11-0"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
                 patterns = ["apple@*,*-1"]
@@ -1496,7 +1481,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 6, "apple",
                         "1.2.1,5.11-1"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 2)
 
                 # Next, check version matching for multiple patterns.
@@ -1512,7 +1497,7 @@ add set name=pkg.description value="{desc}"
                     self.__get_exp_pub_entry("test2", 8, "baz", "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
                 ]
-                self.assertPrettyEqual(returned, expected)
+                self.assertEqualDiff(expected, returned)
                 self.assertEqual(len(returned), 5)
 
                 # Finally, verify that specifying an illegal pattern will

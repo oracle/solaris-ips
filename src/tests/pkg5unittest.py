@@ -679,10 +679,13 @@ if __name__ == "__main__":
                         for d in os.listdir(self.__test_root):
                                 path = os.path.join(self.__test_root, d)
                                 self.debug("removing: {0}".format(path))
-                                if os.path.isdir(path):
-                                        shutil.rmtree(path)
-                                else:
+                                try:
                                         os.remove(path)
+                                except OSError as e:
+                                        if e.errno == errno.EPERM:
+                                                shutil.rmtree(path)
+                                        else:
+                                                raise
 
         def tearDown(self):
                 # In reality this call does nothing.
@@ -923,6 +926,17 @@ if __name__ == "__main__":
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
+
+        def assertEqualJSON(self, expected, actual, msg=""):
+                """Compare two JSON-encoded strings."""
+                je = json.loads(expected)
+                ja = json.loads(actual)
+                try:
+                        misc.json_diff("test", je, ja, je, ja)
+                except AssertionError as e:
+                        if msg:
+                                msg += "\n"
+                        self.fail(msg + str(e))
 
         def assertEqualDiff(self, expected, actual, bound_white_space=False,
             msg=""):
@@ -1973,11 +1987,10 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 inq.put("STOP")
                         for p in p_dict:
                                 p_dict[p].join()
-                except KeyboardInterrupt as TestStopException:
+                except (KeyboardInterrupt, TestStopException):
                         terminate = True
                 except Exception as e:
                         print(e)
-                        print("dfdfdf")
                         terminate = True
                         raise
                 finally:

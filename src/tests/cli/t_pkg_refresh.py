@@ -27,7 +27,6 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import hashlib
 import os
 import re
@@ -85,13 +84,6 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
 
-        def assert_equal_diff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
-
         def get_op_entries(self, dc, op, op_ver, method="GET"):
                 """Scan logpath for a specific depotcontroller looking for
                 access log entries for an operation.  Returns a list of request
@@ -145,25 +137,10 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                     op_ver))
                 return entries
 
-        def _check(self, expected, actual):
-                tmp_e = expected.splitlines()
-                tmp_e.sort()
-                tmp_a = actual.splitlines()
-                tmp_a.sort()
-                if tmp_e == tmp_a:
-                        return True
-                else:
-                        self.assertEqual(tmp_e, tmp_a,
-                            "Actual output differed from expected output.\n" +
-                            "\n".join(difflib.unified_diff(
-                                tmp_e, tmp_a,
-                                "Expected output", "Actual output",
-                                lineterm="")))
-
-        def checkAnswer(self,expected, actual):
-                return self._check(
-                    self.reduce_spaces(expected),
-                    self.reduce_spaces(actual))
+        def checkAnswer(self, expected, actual):
+                self.assertEqualDiff(
+                    self.reduce_spaces(expected).splitlines().sort(),
+                    self.reduce_spaces(actual).splitlines().sort())
 
  	def test_refresh_cli_options(self):
                 """Test refresh and options."""

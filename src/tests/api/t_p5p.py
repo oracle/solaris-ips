@@ -29,7 +29,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import errno
 import hashlib
 import unittest
