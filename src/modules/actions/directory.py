@@ -71,12 +71,12 @@ class DirectoryAction(generic.Action):
         def directory_references(self):
                 return [os.path.normpath(self.attrs["path"])]
 
-        def __create_directory(self, pkgplan, path, mode):
+        def __create_directory(self, pkgplan, path, mode, **kwargs):
                 """Create a directory."""
 
                 try:
                         self.makedirs(path, mode=mode,
-                            fmri=pkgplan.destination_fmri)
+                            fmri=pkgplan.destination_fmri, **kwargs)
                 except OSError as e:
                         if e.filename != path:
                                 # makedirs failed for some component
@@ -201,7 +201,10 @@ class DirectoryAction(generic.Action):
                         except OSError as e:
                                 if e.errno != errno.EPERM and \
                                     e.errno != errno.ENOSYS:
-                                        raise
+                                        # Assume chown failed due to a
+                                        # recoverable error.
+                                        self.__create_directory(pkgplan, path,
+                                            mode, uid=owner, gid=group)
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
@@ -231,7 +234,7 @@ class DirectoryAction(generic.Action):
                         elif e.errno == errno.EBUSY and os.path.ismount(path):
                                 # User has replaced directory with mountpoint,
                                 # or a package has been poorly implemented.
-				if not self.attrs.get("implicit"):
+                                if not self.attrs.get("implicit"):
                                         err_txt = _("Unable to remove {0}; it is "
                                             "in use as a mountpoint. To "
                                             "continue, please unmount the "
@@ -245,7 +248,7 @@ class DirectoryAction(generic.Action):
                                 # os.path.ismount() is broken for lofs
                                 # filesystems, so give a more generic
                                 # error.
-				if not self.attrs.get("implicit"):
+                                if not self.attrs.get("implicit"):
                                         err_txt = _("Unable to remove {0}; it "
                                             "is in use by the system, another "
                                             "process, or as a "
