@@ -19,15 +19,14 @@ rem information: Portions Copyright [yyyy] [name of copyright owner]
 rem
 rem CDDL HEADER END
 rem
-rem Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-rem Use is subject to license terms.
+rem Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 rem
 
 setlocal
 set CMDSCRIPT=client.py
 set MY_HOME=%~dp0
 set MY_IPS_BASE=%MY_HOME%\..\..
-set PYTHONPATH=%PYTHONPATH%;%MY_IPS_BASE%\usr\lib\python2.6\vendor-packages
+set PYTHONPATH=%PYTHONPATH%;%MY_IPS_BASE%\usr\lib\python2.7\vendor-packages
 set MY_BASE=%MY_HOME%\..\..\..
 set PATH=%MY_BASE%\python;%PATH%
 set PYTHONUNBUFFERED=yes

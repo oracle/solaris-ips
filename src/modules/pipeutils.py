@@ -36,7 +36,6 @@ The following classes are implemented to allow HTTP client operations over a
 pipe:
         PipedHTTPResponse
         PipedHTTPConnection
-        PipedHTTP
 
 The following classes are implemented to allow RPC servers operations
 over a pipe:
@@ -180,13 +179,13 @@ class PipeFile(object):
                 """Required to support select.select()."""
                 return self.__pipefd
 
-        def readline(self):
+        def readline(self, *args):
                 """Read one entire line from the pipe.
                 Can block waiting for input."""
 
                 if self.__readfh is not None:
                         # read from the fd that we received over the pipe
-                        data = self.__readfh.readline()
+                        data = self.__readfh.readline(*args)
                         if data != "":
                                 return data
                         # the fd we received over the pipe is empty
@@ -198,7 +197,7 @@ class PipeFile(object):
                         return ""
                 self.__readfh = os.fdopen(fd)
                 # return data from the received fd
-                return self.readline()
+                return self.readline(*args)
 
         def read(self, size=-1):
                 """Read at most size bytes from the pipe.
@@ -329,6 +328,10 @@ class PipeSocket(PipeFile):
                 # Unused argument; pylint: disable=W0613
                 return
 
+        def setsockopt(self, *args):
+                """set socket opt."""
+                pass
+
 
 class PipedHTTPResponse(httplib.HTTPResponse):
         """Create a httplib.HTTPResponse like object that can be used with
@@ -379,25 +382,6 @@ class PipedHTTPConnection(httplib.HTTPConnection):
                 return self.sock.fileno()
 
 
-class PipedHTTP(httplib.HTTP):
-        """Create httplib.HTTP like object that can be used with
-        a pipe as a transport.  We override the minimum number of parent
-        routines necessary.
-
-        xmlrpclib uses the legacy httplib.HTTP class interfaces (instead of
-        the newer class httplib.HTTPConnection interfaces), so we need to
-        provide a "Piped" compatibility class that wraps the httplib.HTTP
-        compatibility class."""
-
-        _connection_class = PipedHTTPConnection
-
-        @property
-        def sock(self):
-                """Return the "socket" associated with this HTTP pipe
-                connection."""
-                return self._conn.sock
-
-
 class _PipedTransport(rpc.Transport):
         """Create a Transport object which can create new PipedHTTP
         connections via an existing pipe."""
@@ -407,6 +391,7 @@ class _PipedTransport(rpc.Transport):
                 self.__http_enc = http_enc
                 rpc.Transport.__init__(self)
                 self.verbose = False
+                self._extra_headers = None
 
         def __del__(self):
                 # make sure the destructor gets called for our connection
@@ -422,8 +407,8 @@ class _PipedTransport(rpc.Transport):
                 """Create a new PipedHTTP connection to the server.  This
                 involves creating a new pipe, and sending one end of the pipe
                 to the server, and then wrapping the local end of the pipe
-                with a PipedHTTP object.  This object can then be subsequently
-                used to issue http requests."""
+                with a PipedHTTPConnection object.  This object can then be
+                subsequently used to issue http requests."""
                 # Redefining name from outer scope; pylint: disable=W0621
 
                 assert self.__pipe_file is not None
@@ -434,8 +419,8 @@ class _PipedTransport(rpc.Transport):
 
                 if self.__http_enc:
                         # we're using http encapsulation so return a
-                        # PipedHTTP connection object
-                        return PipedHTTP(client_pipefd)
+                        # PipedHTTPConnection object
+                        return PipedHTTPConnection(client_pipefd)
 
                 # we're not using http encapsulation so return a
                 # PipeSocket object

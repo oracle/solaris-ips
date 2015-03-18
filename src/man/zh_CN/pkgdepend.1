@@ -179,7 +179,7 @@ foo    bar</screen>
 </example>
 <example><title>绕过依赖项生成</title>
 <para>将 <filename>opt/python</filename> 附加到给定 Python 脚本的标准 Python 运行路径，然后根据名称为 <literal>test</literal> 的所有 Python 模块绕过作为 <filename>opt/python/foo/file.py </filename> 提供的文件的依赖项生成。</para>
-<para>避免针对 <filename>usr/lib/python2.6/vendor-packages/xdg </filename> 中提供的任何文件生成依赖项。</para>
+<para>避免针对 <filename>usr/lib/python2.7/vendor-packages/xdg </filename> 中提供的任何文件生成依赖项。</para>
 <screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
 set name=pkg.summary value="My test package"
@@ -195,7 +195,7 @@ file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
     pkg.depend.bypass-generate=.*/test.py.* &bsol;
     pkg.depend.bypass-generate=.*/testmodule.so &bsol;
     pkg.depend.bypass-generate=.*/test.so &bsol;
-    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.7/vendor-packages/xdg/.* &bsol;
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
 $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>

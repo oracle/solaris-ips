@@ -9,31 +9,20 @@
     pkg:/developer/gnome/gnome-doc-utils
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
-    pkg:/library/python-2/cherrypy-26
-    pkg:/library/python-2/coverage-26
-    pkg:/library/python-2/jsonrpclib-26
-    pkg:/library/python-2/locale-services
-    pkg:/library/python-2/m2crypto-26
-    pkg:/library/python-2/mako-26
-    pkg:/library/python-2/ply-26
-    pkg:/library/python-2/pybonjour-26
-    pkg:/library/python-2/pycurl-26
-    pkg:/library/python-2/pyopenssl-26
-    pkg:/library/python-2/simplejson-26
-    pkg:/library/python/cherrypy-26
-    pkg:/library/python/coverage-26
-    pkg:/library/python/jsonrpclib-26
+    pkg:/library/python/cherrypy-27
+    pkg:/library/python/coverage-27
+    pkg:/library/python/jsonrpclib-27
     pkg:/library/python/locale-services
-    pkg:/library/python/m2crypto-26
-    pkg:/library/python/mako-26
-    pkg:/library/python/ply-26
-    pkg:/library/python/pybonjour-26
-    pkg:/library/python/pycurl-26
-    pkg:/library/python/pyopenssl-26
-    pkg:/library/python/simplejson-26
+    pkg:/library/python/m2crypto-27
+    pkg:/library/python/mako-27
+    pkg:/library/python/ply-27
+    pkg:/library/python/pybonjour-27
+    pkg:/library/python/pycurl-27
+    pkg:/library/python/pyopenssl-27
+    pkg:/library/python/simplejson-27
     pkg:/package/svr4
-    pkg:/runtime/python-26
     pkg:/runtime/python-27
+    pkg:/runtime/python-34
     pkg:/service/network/dns/mdns
     pkg:/shell/ksh
     pkg:/shell/ksh93
@@ -51,5 +40,5 @@
     pkg:/text/locale
     pkg:/text/tidy
     pkg:/web/server/apache-22
-    pkg:/web/server/apache-22/module/apache-wsgi-26
+    pkg:/web/server/apache-22/module/apache-wsgi-27
     pkg:/web/wget

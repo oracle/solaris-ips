@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python2.7
 #
 # CDDL HEADER START
 #
@@ -103,7 +103,7 @@ extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 
 # Extract Python minor version.
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('2.6', '2.7')
+assert py_version in ('2.7', '3.4')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 scripts_dir = 'usr/bin'
@@ -705,9 +705,11 @@ class install_func(_install):
                                 else:
                                         file_util.copy_file(src, dest, update=1)
 
-                # Don't install the scripts for python 2.7.
-                if py_version == '2.7':
-                        return
+                # XXX Uncomment it when we need to deliver python 3.4 version
+                # of modules.
+                # Don't install the scripts for python 3.4. Uncomment it when
+                # if py_version == '3.4':
+                #        return
                 for d, files in scripts[osname].iteritems():
                         for (srcname, dstname) in files:
                                 dst_dir = util.change_root(self.root_dir, d)
@@ -798,7 +800,7 @@ def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                             stderr.close()
                         print("install failed and returned {0:d}.".format(ret),
                             file=sys.stderr)
-                        print("Command was: {0}".fromat(" ".join(args)),
+                        print("Command was: {0}".format(" ".join(args)),
                             file=sys.stderr)
 
                         sys.exit(1)
@@ -872,7 +874,7 @@ def intltool_update_maintain():
             print("--------", file=sys.stderr)
             for fn in missing:
                 print("{0}".format(fn.strip()), file=sys.stderr)
-            print("--------", file=sys.stderr) 
+            print("--------", file=sys.stderr)
             missing.close()
             print("""\
 Please evaluate whether any of the above file(s) needs localization.

@@ -50,9 +50,9 @@ class PythonModuleMissingPath(base.DependencyAnalysisError):
 
 class PythonMismatchedVersion(base.DependencyAnalysisError):
         """Exception that is raised when a module is installed into a path
-        associated with a known version of python (/usr/lib/python2.4 for
+        associated with a known version of python (/usr/lib/python2.7 for
         example) but has a different version of python specified in its
-        #! line (#!/usr/bin/python2.5 for example)."""
+        #! line (#!/usr/bin/python3.4 for example)."""
 
         def __init__(self, installed_version, declared_version, local_file,
             installed_path):

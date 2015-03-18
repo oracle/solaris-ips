@@ -7,11 +7,11 @@
 
 <refentry id="pkg-5">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum>
-<refmiscinfo class="date">28 May 2014</refmiscinfo>
+<refmiscinfo class="date">28 Jan 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man5;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -365,8 +365,8 @@ file path=opt/secret_file sysattr=HT</programlisting>
 time on the file. The <literal>timestamp</literal> attribute value must be
 expressed in UTC in ISO-8601 format, omitting the colons and hyphens.</para>
 <para>The <literal>timestamp</literal> attribute is essential when packaging <filename>.pyc</filename> or <filename>.pyo</filename> files for Python. The related <filename>.py</filename> file for the <filename>.pyc</filename> or <filename>.pyo</filename> files must be marked with the timestamp embedded within those files, as shown in the following example:</para>
-<programlisting>file path=usr/lib/python2.6/vendor-packages/pkg/__init__.pyc ...
-file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
+<programlisting>file path=usr/lib/python2.7/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
      timestamp=20130311T221521Z ...</programlisting>
 </listitem>
 </varlistentry>
@@ -456,8 +456,8 @@ of nonnegative integers) of the interface described by the <literal>mediator</li
 This attribute is required if <literal>mediator</literal> is specified and <literal>
 mediator-implementation</literal> is not. A local system administrator can
 set the version to use explicitly. The value specified should generally match
-the version of the package delivering the link (for example, <literal>runtime/python-26
-</literal> should use <literal>mediator-version=2.6</literal>), although this
+the version of the package delivering the link (for example, <literal>runtime/python-27
+</literal> should use <literal>mediator-version=2.7</literal>), although this
 is not required.</para>
 </listitem>
 </varlistentry>

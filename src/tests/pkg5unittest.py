@@ -1074,7 +1074,7 @@ class _OverTheWireResults(object):
         list_attrs = ["baseline_failures", "errors", "failures", "skips",
             "timing"]
         num_attrs = ["mismatches", "num_successes", "testsRun"]
-        
+
         def __init__(self, res):
                 self.errors = [(str(test), err) for  test, err in res.errors]
                 self.failures = [(str(test), err) for test, err in res.failures]
@@ -1126,7 +1126,7 @@ class _CombinedResult(_OverTheWireResults):
                         v += getattr(o, n)
                         setattr(self, n, v)
 
-        
+
 class _Pkg5TestResult(unittest._TextTestResult):
         baseline = None
         machsep = "|"
@@ -1503,7 +1503,7 @@ def find_names(s):
         mod = l[0]
         c = l[1].split(".")[0]
         return mod, c
-                
+
 def q_makeResult(s, o, b, bail_on_fail, show_on_expected_fail, a, cov):
         """Construct a test result for use in the parallel test suite."""
 
@@ -1511,7 +1511,7 @@ def q_makeResult(s, o, b, bail_on_fail, show_on_expected_fail, a, cov):
             show_on_expected_fail=show_on_expected_fail, archive_dir=a)
         res.coverage = cov
         return res
-                        
+
 def q_run(inq, outq, i, o, baseline_filepath, bail_on_fail,
     show_on_expected_fail, a, cov, port, suite_name):
         """Function used to run the test suite in parallel.
@@ -3084,7 +3084,7 @@ class CliTestCase(Pkg5TestCase):
         def validate_html_file(self, fname, exit=0, comment="",
             options="-utf8 -quiet", drop_prop_attrs=False):
                 """ Run a html file specified by fname through a html validator
-                    (tidy). The drop_prop_attrs parameter can be used to ignore 
+                    (tidy). The drop_prop_attrs parameter can be used to ignore
                     proprietary attributes which would otherwise make tidy fail.
                 """
                 if drop_prop_attrs:
@@ -3800,7 +3800,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
                     "https.conf")
                 with open(self.https_conf_path, "wb") as fh:
                         fh.write(self.https_conf.format(**conf_dict))
-                
+
                 ac = ApacheController(self.https_conf_path,
                     self.https_port, self.common_config_dir, https=True,
                     testcase=self)
@@ -3832,7 +3832,7 @@ PidFile "{pidfile}"
 # ports, instead of the default. See also the <VirtualHost>
 # directive.
 #
-# Change this to Listen on specific IP addresses as shown below to 
+# Change this to Listen on specific IP addresses as shown below to
 # prevent Apache from glomming onto all bound IP addresses.
 #
 Listen 0.0.0.0:{https_port}
@@ -3847,7 +3847,7 @@ Listen 0.0.0.0:{bad_proxy_port}
 # Dynamic Shared Object (DSO) Support
 #
 # To be able to use the functionality of a module which was built as a DSO you
-# have to place corresponding `LoadModule' lines within the appropriate 
+# have to place corresponding `LoadModule' lines within the appropriate
 # (32-bit or 64-bit module) /etc/apache2/2.2/conf.d/modules-*.load file so that
 # the directives contained in it are actually available _before_ they are used.
 #
@@ -3861,7 +3861,7 @@ Include /etc/apache2/2.2/conf.d/modules-32.load
 <IfModule !mpm_netware_module>
 #
 # If you wish httpd to run as a different user or group, you must run
-# httpd as root initially and it will switch.  
+# httpd as root initially and it will switch.
 #
 # User/Group: The name (or #number) of the user/group to run httpd as.
 # It is usually good practice to create a dedicated user and group for
@@ -3903,10 +3903,10 @@ DocumentRoot "/"
 #
 # Each directory to which Apache has access can be configured with respect
 # to which services and features are allowed and/or disabled in that
-# directory (and its subdirectories). 
+# directory (and its subdirectories).
 #
-# First, we configure the "default" to be a very restrictive set of 
-# features.  
+# First, we configure the "default" to be a very restrictive set of
+# features.
 #
 <Directory />
     Options None
@@ -3935,8 +3935,8 @@ DocumentRoot "/"
 </IfModule>
 
 #
-# The following lines prevent .htaccess and .htpasswd files from being 
-# viewed by Web clients. 
+# The following lines prevent .htaccess and .htpasswd files from being
+# viewed by Web clients.
 #
 <FilesMatch "^\.ht">
     Order allow,deny
@@ -4578,8 +4578,11 @@ class HttpDepotController(ApacheController):
                 try:
                         # Ping the versions URL, rather than the default /
                         # so that we don't initialize the BUI code yet.
-                        urllib2.urlopen(urlparse.urljoin(self.url,
-                            "versions/0"))
+                        repourl = urlparse.urljoin(self.url, "versions/0")
+                        # Disable SSL peer verification, we just want to check
+                        # if the depot is running.
+                        urllib2.urlopen(repourl,
+                            context=ssl._create_unverified_context())
                 except urllib2.HTTPError as e:
                         if e.code == httplib.FORBIDDEN:
                                 return True

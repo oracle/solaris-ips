@@ -415,7 +415,11 @@ class LintEngine(object):
                 excl = []
 
                 try:
-                        excl = conf.get("pkglint", "pkglint.exclude").split()
+                        excl = conf.get("pkglint", "pkglint.exclude")
+                        if excl is None:
+                                excl = ""
+                        else:
+                                excl = excl.split()
                 except ConfigParser.NoOptionError:
                         pass
 

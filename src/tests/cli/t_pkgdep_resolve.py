@@ -61,14 +61,14 @@ depend fmri=__TBD pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=
 file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
 """
         multi_deps = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/v-p/pkg/client/indexer.py
-depend fmri=__TBD pkg.debug.depend.file=usr/bin/python2.6 pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=script type=require
-depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.6/v-p/pkg/misc.py pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=python type=require
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/v-p/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=usr/bin/python2.7 pkg.debug.depend.reason=usr/lib/python2.7/v-p/pkg/client/indexer.py pkg.debug.depend.type=script type=require
+depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.7/v-p/pkg/misc.py pkg.debug.depend.reason=usr/lib/python2.7/v-p/pkg/client/indexer.py pkg.debug.depend.type=python type=require
 """
 
         misc_manf = """\
 set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.6/v-p/pkg/misc.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.7/v-p/pkg/misc.py
 """
 
         simp_manf = """\
@@ -181,66 +181,66 @@ file NOHASH path=platform/foo/baz/no_such_named_file group=sys mode=0600 owner=r
 """
 
         multi_file_dep_manf = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
-depend fmri=__TBD pkg.debug.depend.file=search_storage.py pkg.debug.depend.file=search_storage.pyc pkg.debug.depend.file=search_storage/__init__.py pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py pkg.debug.depend.type=python type=require
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=search_storage.py pkg.debug.depend.file=search_storage.pyc pkg.debug.depend.file=search_storage/__init__.py pkg.debug.depend.path=usr/lib/python2.7/pkg pkg.debug.depend.path=usr/lib/python2.7/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.7/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.7/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.7/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.7/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.7/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python2.7/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.7/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python27.zip/pkg pkg.debug.depend.reason=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py pkg.debug.depend.type=python type=require
 """
 
         multi_file_dep_fullpath_manf = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py
 depend fmri=__TBD pkg.debug.depend.file=search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage.py \
-        pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage.pyc \
-    pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage.pyc \
-        pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage/__init__.py \
-    pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage/__init__.py \
-    pkg.debug.depend.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-dynload/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-old/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-tk/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/plat-sunos5/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/site-packages/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gst-0.10/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gtk-2.0/pkg/search_storage.py \
+        pkg.debug.depend.fullpath=usr/lib/python27.zip/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-dynload/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-old/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-tk/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/plat-sunos5/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/site-packages/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gst-0.10/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gtk-2.0/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python27.zip/pkg/search_storage.pyc \
+        pkg.debug.depend.fullpath=usr/lib/python2.7/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-dynload/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-old/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/lib-tk/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/plat-sunos5/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/site-packages/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gst-0.10/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.7/vendor-packages/gtk-2.0/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python27.zip/pkg/search_storage/__init__.py \
+    pkg.debug.depend.reason=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py \
     pkg.debug.depend.type=python type=require
 """
 
         multi_file_sat_both = """\
 set name=fmri value=pkg:/sat_both
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.py
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/search_storage.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/search_storage.pyc
 """
 
         multi_file_sat_py = """\
 set name=fmri value=pkg:/sat_py
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.py
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/lib-tk/pkg/search_storage.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/search_storage.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/lib-tk/pkg/search_storage.py
 """
         multi_file_sat_pyc = """\
 set name=fmri value=pkg:/sat_pyc
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.7/vendor-packages/pkg/search_storage.pyc
 """
 
         inst_pkg = """\
 open example2_pkg@1.0,5.11-0
-add file tmp/foo mode=0555 owner=root group=bin path=/usr/bin/python2.6
+add file tmp/foo mode=0555 owner=root group=bin path=/usr/bin/python2.7
 close"""
 
         var_pkg = """\
@@ -326,7 +326,7 @@ close
         # there's a single variant.arch value set here,
         # but no variant.opensolaris.zone values
         installed_18045 = """\
-open runtime/python26@2.6.4,5.11-0.161
+open runtime/python-27@2.7.8,5.11-0.161
 add set name=variant.foo value=i386
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
 close
@@ -342,7 +342,7 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
         # there's a single variant.arch value set here,
         # and variant.opensolaris.zone values
         installed_18045_reverse = """\
-open runtime/python26@2.6.4,5.11-0.161
+open runtime/python-27@2.7.8,5.11-0.161
 add set name=variant.foo value=i386
 add set name=variant.opensolaris.zone value=global value=nonglobal
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
@@ -358,7 +358,7 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
         # there's a single variant.arch value set here,
         # but no variant.opensolaris.zone values
         installed_18045_mixed = """\
-open runtime/python26@2.6.4,5.11-0.161
+open runtime/python-27@2.7.8,5.11-0.161
 add set name=variant.foo value=i386
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
 close
@@ -804,11 +804,11 @@ dependency resolution:
                         if d.attrs["fmri"] == p2_name:
                                 self.assertEqual(
                                     d.attrs["{0}.file".format(self.depend_dp)],
-                                    ["usr/lib/python2.6/v-p/pkg/misc.py"])
+                                    ["usr/lib/python2.7/v-p/pkg/misc.py"])
                         elif d.attrs["fmri"] == p3_name:
                                 self.assertEqual(
                                     d.attrs["{0}.file".format(self.depend_dp)],
-                                    ["usr/bin/python2.6"])
+                                    ["usr/bin/python2.7"])
                         else:
                                 raise RuntimeError("Got unexpected fmri "
                                     "{0} for in dependency {1}".format(
@@ -829,11 +829,11 @@ dependency resolution:
                         if d.attrs["fmri"] == p2_name:
                                 self.assertEqual(
                                     d.attrs["{0}.file".format(self.depend_dp)],
-                                    ["usr/lib/python2.6/v-p/pkg/misc.py"])
+                                    ["usr/lib/python2.7/v-p/pkg/misc.py"])
                         elif d.attrs["fmri"] == p3_name:
                                 self.assertEqual(
                                     d.attrs["{0}.file".format(self.depend_dp)],
-                                    ["usr/bin/python2.6"])
+                                    ["usr/bin/python2.7"])
                         else:
                                 raise RuntimeError("Got unexpected fmri "
                                     "{0} for in dependency {1}".format(
@@ -844,7 +844,7 @@ dependency resolution:
                                 self.assertEqual(e.path, m1_path)
                                 self.assertEqual(e.file_dep.attrs[
                                     "{0}.file".format(self.depend_dp)],
-                                    "usr/bin/python2.6")
+                                    "usr/bin/python2.7")
                         else:
                                 raise RuntimeError("Unexpected error:{0}".format(e))
 
@@ -1454,7 +1454,7 @@ depend fmri=pkg2 type=require variant.foo=bar
 
                 self.pkgsend_bulk(self.rurl, self.installed_18045)
                 self.api_obj.refresh(immediate=True)
-                self._api_install(self.api_obj, ["runtime/python26"])
+                self._api_install(self.api_obj, ["runtime/python-27"])
                 dep_path = self.make_manifest(self.bug_18045_dep)
 
                 pkg_deps, errs, unused_fmris, external_deps = \
@@ -1464,12 +1464,12 @@ depend fmri=pkg2 type=require variant.foo=bar
                             "errors:\n{0}".format("\n".join([
                             "{0}".format(e,) for e in errs])))
                 self.assertEqualDiff(set(), unused_fmris)
-                self.assertEqualDiff(set(["runtime/python26"]), external_deps)
+                self.assertEqualDiff(set(["runtime/python-27"]), external_deps)
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
                 self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
-                    "pkg:/runtime/python26@2.6.4-0.161"))
+                    "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18045_reverse(self):
                 """Test that when a package with variants has a file dependency
@@ -1478,7 +1478,7 @@ depend fmri=pkg2 type=require variant.foo=bar
 
                 self.pkgsend_bulk(self.rurl, self.installed_18045_reverse)
                 self.api_obj.refresh(immediate=True)
-                self._api_install(self.api_obj, ["runtime/python26"])
+                self._api_install(self.api_obj, ["runtime/python-27"])
                 dep_path = self.make_manifest(self.bug_18045_dep_reverse)
 
                 pkg_deps, errs, unused_fmris, external_deps = \
@@ -1488,12 +1488,12 @@ depend fmri=pkg2 type=require variant.foo=bar
                             "errors:\n{0}".format("\n".join([
                             "{0}".format(e,) for e in errs])))
                 self.assertEqualDiff(set(), unused_fmris)
-                self.assertEqualDiff(set(["runtime/python26"]), external_deps)
+                self.assertEqualDiff(set(["runtime/python-27"]), external_deps)
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
                 self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
-                    "pkg:/runtime/python26@2.6.4-0.161"))
+                    "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18045_mixed(self):
                 """Test that when a package with variants has a file dependency
@@ -1502,7 +1502,7 @@ depend fmri=pkg2 type=require variant.foo=bar
 
                 self.pkgsend_bulk(self.rurl, self.installed_18045_mixed)
                 self.api_obj.refresh(immediate=True)
-                self._api_install(self.api_obj, ["runtime/python26"])
+                self._api_install(self.api_obj, ["runtime/python-27"])
                 dep_path = self.make_manifest(self.bug_18045_dep_mixed)
 
                 pkg_deps, errs, unused_fmris, external_deps = \
@@ -1512,12 +1512,12 @@ depend fmri=pkg2 type=require variant.foo=bar
                             "errors:\n{0}".format("\n".join([
                             "{0}".format(e,) for e in errs])))
                 self.assertEqualDiff(set(), unused_fmris)
-                self.assertEqualDiff(set(["runtime/python26"]), external_deps)
+                self.assertEqualDiff(set(["runtime/python-27"]), external_deps)
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
                 self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
-                    "pkg:/runtime/python26@2.6.4-0.161"))
+                    "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18077(self):
                 """Test that a package with manually annotated group,

@@ -101,7 +101,11 @@ class Checker(object):
                         # any keyword args, in order.
                         return "{0}{1}".format(name, arg_spec.defaults[c - i])
 
-                excl = self.config.get("pkglint", "pkglint.exclude").split()
+                excl = self.config.get("pkglint", "pkglint.exclude")
+                if excl is None:
+                        excl = ""
+                else:
+                        excl = excl.split()
                 for item in inspect.getmembers(self, inspect.ismethod):
                         method = item[1]
                         # register the methods in the object that correspond
@@ -297,7 +301,11 @@ def get_checkers(module, config):
         checkers = []
         excluded_checkers = []
 
-        exclude = config.get("pkglint", "pkglint.exclude").split()
+        exclude = config.get("pkglint", "pkglint.exclude")
+        if exclude is None:
+                exclude = ""
+        else:
+                exclude = exclude.split()
         for cl in inspect.getmembers(module, inspect.isclass):
                 myclass = cl[1]
                 if issubclass(myclass, Checker):

@@ -7,11 +7,11 @@
 
 <refentry id="pkgdepend-1">
 <refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">12 Jul 2013</refmiscinfo>
+<refmiscinfo class="date">28 Jan 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgdepend</refname><refpurpose>Image Packaging System dependency analyzer</refpurpose></refnamediv>
@@ -281,7 +281,7 @@ foo</filename> whose content directory is in /.</para>
 for a given Python script, and bypass dependency generation against all Python
 modules called <literal>test</literal> for a file delivered as <filename>opt/python/foo/file.py
 </filename>.</para>
-<para>Avoid generating dependencies against any file delivered in <filename>usr/lib/python2.6/vendor-packages/xdg
+<para>Avoid generating dependencies against any file delivered in <filename>usr/lib/python2.7/vendor-packages/xdg
 </filename>.</para>
 <screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
@@ -298,7 +298,7 @@ file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
     pkg.depend.bypass-generate=.*/test.py.* &bsol;
     pkg.depend.bypass-generate=.*/testmodule.so &bsol;
     pkg.depend.bypass-generate=.*/test.so &bsol;
-    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.7/vendor-packages/xdg/.* &bsol;
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
 $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>

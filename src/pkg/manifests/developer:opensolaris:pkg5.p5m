@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
@@ -36,12 +36,12 @@ depend type=require fmri=pkg:/developer/gnome/gettext
 depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
-depend type=require fmri=pkg:/library/python-2/coverage-26
-depend type=require fmri=pkg:/library/python-2/jsonrpclib-26
-depend type=require fmri=pkg:/library/python-2/locale-services
+depend type=require fmri=pkg:/library/python/coverage-27
+depend type=require fmri=pkg:/library/python/jsonrpclib-27
+depend type=require fmri=pkg:/library/python/locale-services
 depend type=require fmri=pkg:/package/svr4
-depend type=require fmri=pkg:/runtime/python-26
 depend type=require fmri=pkg:/runtime/python-27
+depend type=require fmri=pkg:/runtime/python-34
 depend type=require fmri=pkg:/system/header
 depend type=require fmri=pkg:/system/linker
 depend type=require fmri=pkg:/system/locale/extra
@@ -50,4 +50,4 @@ depend type=require fmri=pkg:/text/gnu-gettext
 depend type=require fmri=pkg:/text/locale
 depend type=require fmri=pkg:/text/tidy
 depend type=require fmri=pkg:/web/server/apache-22
-depend type=require fmri=pkg:/web/server/apache-22/module/apache-wsgi-26
+depend type=require fmri=pkg:/web/server/apache-22/module/apache-wsgi-27

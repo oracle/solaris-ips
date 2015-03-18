@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -71,8 +70,8 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 os.close(fd1)
                 os.close(fd2)
                 portable.rename(path1, path2)
-                self.failIf(os.path.exists(path1))
-                self.failUnless(os.path.exists(path2))
+                self.assertFalse(os.path.exists(path1))
+                self.assertTrue(os.path.exists(path2))
                 fd2 = os.open(path2, os.O_RDONLY)
                 self.assertEquals(os.read(fd2, 3), "foo")
                 os.close(fd2)

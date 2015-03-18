@@ -5162,7 +5162,7 @@ adm:NP:6445::::::
 
                 # Make sure we didn't get a second zerg line
                 dllines = readfile()
-                self.failUnless(len(dllines) == 3, msg=dllines)
+                self.assertTrue(len(dllines) == 3, msg=dllines)
                 assertContents(dllines, ["zerg", "borg", "warg"])
 
                 # Now for the same test on upgrade
@@ -5171,7 +5171,7 @@ adm:NP:6445::::::
 
                 self.pkg("{0} devlinktest@2.0".format(install_cmd))
                 dllines = readfile()
-                self.failUnless(len(dllines) == 4, msg=dllines)
+                self.assertTrue(len(dllines) == 4, msg=dllines)
                 assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
 
         def test_driver_aliases_upgrade(self):

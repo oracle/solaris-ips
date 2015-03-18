@@ -158,8 +158,8 @@ file path=opt/secret_file sysattr=HT</programlisting>
 <varlistentry><term><literal>timestamp</literal></term>
 <listitem><para>この属性は、ファイルに対するアクセスおよび変更時間を設定するために使用します。<literal>timestamp</literal> 属性値は、コロンおよびハイフンを省略した、ISO-8601 形式の UTC で表現する必要があります。</para>
 <para><literal>timestamp</literal> 属性は、Python 用の <filename>.pyc</filename> または <filename>.pyo</filename> ファイルをパッケージングする場合に不可欠です。<filename>.pyc</filename> または <filename>.pyo</filename> ファイルに関連する <filename>.py</filename> ファイルは、次の例で示すように、これらのファイル内に埋め込まれたタイムスタンプを使用してマーク付けする必要があります。</para>
-<programlisting>file path=usr/lib/python2.6/vendor-packages/pkg/__init__.pyc ...
-file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
+<programlisting>file path=usr/lib/python2.7/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
      timestamp=20130311T221521Z ...</programlisting>
 </listitem>
 </varlistentry>
@@ -212,7 +212,7 @@ file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-version</literal></term>
-<listitem><para><literal>mediator</literal> 属性で記述されたインタフェースの (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。この属性は、<literal>mediator</literal> が指定され、<literal>mediator-implementation</literal> は指定されていない場合に必要です。ローカルシステム管理者は、使用するバージョンを明示的に設定できます。指定された値は一般に、リンクを提供しているパッケージのバージョンに一致するようにしてください (たとえば、<literal>runtime/python-26</literal> は <literal>mediator-version=2.6</literal> を使用します)。ただし、これは必須ではありません。</para>
+<listitem><para><literal>mediator</literal> 属性で記述されたインタフェースの (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。この属性は、<literal>mediator</literal> が指定され、<literal>mediator-implementation</literal> は指定されていない場合に必要です。ローカルシステム管理者は、使用するバージョンを明示的に設定できます。指定された値は一般に、リンクを提供しているパッケージのバージョンに一致するようにしてください (たとえば、<literal>runtime/python-27</literal> は <literal>mediator-version=2.7</literal> を使用します)。ただし、これは必須ではありません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>

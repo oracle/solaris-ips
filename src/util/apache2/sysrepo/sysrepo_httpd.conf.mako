@@ -59,7 +59,7 @@ LoadModule dir_module libexec/64/mod_dir.so
 LoadModule alias_module libexec/64/mod_alias.so
 LoadModule rewrite_module libexec/64/mod_rewrite.so
 LoadModule env_module libexec/64/mod_env.so
-LoadModule wsgi_module libexec/64/mod_wsgi-2.6.so
+LoadModule wsgi_module libexec/64/mod_wsgi-2.7.so
 
 # We only alias a specific script, not all files in ${sysrepo_template_dir}
 WSGIScriptAlias /wsgi_p5p ${sysrepo_template_dir}/sysrepo_p5p.py
@@ -285,7 +285,7 @@ ProxyRemote https ${https_proxy}
 <%
                         if proxy:
                                 context.write(
-                                    "ProxyRemote %(uri)s %(proxy)s\n" % locals()
+                                    "ProxyRemote {uri} {proxy}\n".format(**locals())
                                     )
 %>
                 % endfor pub
@@ -325,7 +325,7 @@ CacheDisable /versions
 CacheDisable /syspub
 <%
 	for p in sorted(set(v[0] for l in uri_pub_map.values() for v in l )):
-	        context.write("CacheDisable /%s/catalog\n" % p)
+	        context.write("CacheDisable /{0}/catalog\n".format(p))
 %>
 
 </IfModule>
@@ -370,8 +370,8 @@ SSLProxyProtocol all
                 % if uri.startswith("https:"):
 <%
                         no_https = uri.replace("https:", "http:")
-                        context.write("RewriteRule ^proxy:%(no_https)s/(.*)$ "
-                            "%(uri)s/$1 [P,NE]" % locals())
+                        context.write("RewriteRule ^proxy:{no_https}/(.*)$ "
+                            "{uri}/$1 [P,NE]".format(**locals()))
 %>
                 % elif uri.startswith("file:"):
 <%doc>
@@ -381,21 +381,21 @@ SSLProxyProtocol all
 <%
                         # File and p5p-based repositories get our static
                         # versions and publisher responses
-                        context.write("RewriteRule ^/%(pub)s/%(hash)s/versions/0 "
-                            "%%{DOCUMENT_ROOT}/versions/0/index.html [L,NE]\n" % locals())
-                        context.write("RewriteRule ^/%(pub)s/%(hash)s/publisher/0 "
-                            "%%{DOCUMENT_ROOT}/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]\n" % locals())
+                        context.write("RewriteRule ^/{pub}/{hash}/versions/0 "
+                            "%{{DOCUMENT_ROOT}}/versions/0/index.html [L,NE]\n".format(**locals()))
+                        context.write("RewriteRule ^/{pub}/{hash}/publisher/0 "
+                            "%{{DOCUMENT_ROOT}}/{pub}/{hash}/publisher/0/index.html [L,NE]\n".format(**locals()))
                         # A p5p archive repository
                         if utype == "file":
-                                repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
-                                context.write("# %s %s\n" % (uri, hash))
+                                repo_path = "/{0}".format(uri.replace("file:", "").lstrip("/"))
+                                context.write("# %s %s\n".format(uri, hash))
                                 # We 'passthrough' (PT), letting our
                                 # WSGIScriptAlias pick up the request from here.
-                                context.write("RewriteRule /%(pub)s/%(hash)s/(.*) "
-                                    "/wsgi_p5p?pub=%(pub)s&hash=%(hash)s&path=$1 [NE,PT]\n" %
-                                    locals())
-                                context.write("SetEnv %(hash)s %(repo_path)s\n" %
-                                    locals())
+                                context.write("RewriteRule /{pub}/{hash}/(.*) "
+                                    "/wsgi_p5p?pub={pub}&hash={hash}&path=$1 [NE,PT]\n".format(
+                                    **locals()))
+                                context.write("SetEnv {hash} {repo_path}\n".format(
+                                    **locals()))
                                 continue
 %><%doc>
                         # We have a file-based repository
@@ -404,9 +404,9 @@ SSLProxyProtocol all
                         # the URL instead.
                         </%doc>
 <%                      context.write(
-                            "RewriteRule ^/%(pub)s/%(hash)s/catalog/1/(.*)$ "
-                            "/%(pub)s/%(hash)s/publisher/%(pub)s/catalog/$1 [NE,PT]" %
-                            locals())
+                            "RewriteRule ^/{pub}/{hash}/catalog/1/(.*)$ "
+                            "/{pub}/{hash}/publisher/{pub}/catalog/$1 [NE,PT]".format(
+                            **locals()))
 %><%doc>
                         # file responses are a little tricky - we need to index
                         # the first two characters of the filename and use that
@@ -417,9 +417,9 @@ SSLProxyProtocol all
                         # gets rewritten as:
                         # http://localhost:15000/pkg5-nightly/abcdef/publisher/pkg5-nightly/file/87/87ad645695abb22b2959f73d22022c5cffeccb13
                         </%doc>
-<%                      context.write("RewriteRule ^/%(pub)s/%(hash)s/file/1/(..)(.*)$ "
-                            "/%(pub)s/%(hash)s/publisher/%(pub)s/file/$1/$1$2 [NE,PT]\n"
-                            % locals())
+<%                      context.write("RewriteRule ^/{pub}/{hash}/file/1/(..)(.*)$ "
+                            "/{pub}/{hash}/publisher/{pub}/file/$1/$1$2 [NE,PT]\n"
+                           .format(**locals()))
 %><%doc>
                         # We need to use %THE_REQUEST here to get the undecoded
                         # URI from mod_rewrite.  Hang on to your lunch.
@@ -438,19 +438,19 @@ SSLProxyProtocol all
                         # which we eventually rewrite as:
                         #  -> '/pkg5-nightly/abcdef/publisher/pkg5-nightly/pkg/package%2Fsysrepo/0.5.11%2C5.11-0.159%3A20110308T011843Z'
 </%doc><%
-                        context.write("RewriteRule ^/%(pub)s/%(hash)s/manifest/0/.*$ "
-                            "%%{THE_REQUEST} [NE,C]\n" % locals())
+                        context.write("RewriteRule ^/{pub}/{hash}/manifest/0/.*$ "
+                            "%{{THE_REQUEST}} [NE,C]\n".format(**locals()))
 
                         context.write("RewriteRule ^GET\ "
-                            "/%(pub)s/%(hash)s/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
-                            "/%(pub)s/%(hash)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
-                            % locals())
-                        context.write("RewriteRule ^/%(pub)s/%(hash)s/(.*)$ %%{DOCUMENT_ROOT}/%(pub)s/%(hash)s/$1 [NE,L]"
-                            % locals())
+                            "/{pub}/{hash}/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
+                            "/{pub}/{hash}/publisher/{pub}/pkg/$1/$2 [NE,PT,C]\n"
+                           .format(**locals()))
+                        context.write("RewriteRule ^/{pub}/{hash}/(.*)$ %{{DOCUMENT_ROOT}}/{pub}/{hash}/$1 [NE,L]"
+                           .format(**locals()))
 %>
                 % else:
-<%                      context.write("RewriteRule ^proxy:%(uri)s/(.*)$ "
-                            "%(uri)s/$1 [NE,P]" % locals())
+<%                      context.write("RewriteRule ^proxy:{uri}/(.*)$ "
+                            "{uri}/$1 [NE,P]".format(**locals()))
 %>
                 % endif
         % endfor pub
@@ -463,13 +463,13 @@ SSLProxyProtocol all
                 </%doc>
                 % if uri.startswith("file:") and utype == "dir":
 <%
-                      repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
-                      context.write("# a file repository alias to serve %(uri)s content.\n"
-                          "<Directory \"%(repo_path)s\">\n"
+                      repo_path = "/{0}".format(uri.replace("file:", "").lstrip("/"))
+                      context.write("# a file repository alias to serve {uri} content.\n"
+                          "<Directory \"{repo_path}\">\n"
                           "    AllowOverride None\n"
                           "    Order allow,deny\n"
                           "    Allow from 127.0.0.1\n"
-                          "</Directory>\n" % locals())
+                          "</Directory>\n".format(**locals()))
 %>
                       % if cache_dir != None:
 CacheDisable /${pub}/${hash}/catalog
@@ -489,7 +489,7 @@ context.write("ProxyPass / !")
 %>
 % for uri in reversed(sorted(uri_pub_map.keys())):
         % if uri.startswith("http"):
-<%              context.write("ProxyPass / %s retry=0" % uri) %>
+<%              context.write("ProxyPass / {0} retry=0".format(uri)) %>
         % endif
 % endfor uri
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python2.7
 #
 # CDDL HEADER START
 #
@@ -3237,14 +3237,14 @@ def create_output_format(display_headers, widths, justs, line):
                 ]
                 for n in range(len(line_widths)):
                         if line_widths[n] < 0:
-                                fmt += "{{{0}:<{1}}} ".format(n,
+                                fmt += "{{{0}!s:<{1}}} ".format(n,
                                     -line_widths[n])
                         else:
-                                fmt += "{{{0}:>{1}}} ".format(n,
+                                fmt += "{{{0}!s:>{1}}} ".format(n,
                                     line_widths[n])
                 return fmt
         for n in range(len(widths)):
-                fmt += "{{{0}}}\t".format(n)
+                fmt += "{{{0}!s}}\t".format(n)
         fmt.rstrip("\t")
         return fmt
 
@@ -4974,7 +4974,7 @@ def list_linked(op, api_inst, pargs,
                 width = max(width, len(li_header[col]))
                 if (fmt != ''):
                         fmt += "\t"
-                fmt += "{{{0}:{1}}}".format(col, width)
+                fmt += "{{{0}!s:{1}}}".format(col, width)
 
         if not omit_headers:
                 msg(fmt.format(*li_header))
@@ -5114,7 +5114,7 @@ def audit_linked(op, api_inst, pargs,
 
         # display audit return values
         width = max(max([len(k) for k in rvdict.keys()]), 8)
-        fmt = "{{0:{0}}}\t{{1}}".format(width)
+        fmt = "{{0!s:{0}}}\t{{1}}".format(width)
         if not omit_headers:
                 msg(fmt.format("NAME", "STATUS"))
 

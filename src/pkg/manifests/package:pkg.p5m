@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -31,7 +31,7 @@ set name=variant.arch value=$(ARCH)
 dir  path=$(PYDIR)
 dir  path=$(PYDIRVP)
 dir  path=$(PYDIRVP)/pkg
-file path=$(PYDIRVP)/pkg-0.1-py2.6.egg-info
+file path=$(PYDIRVP)/pkg-0.1-py2.7.egg-info
 dir  path=$(PYDIRVP)/pkg/64
 file path=$(PYDIRVP)/pkg/64/_varcet.so
 file path=$(PYDIRVP)/pkg/64/sha512_t.so

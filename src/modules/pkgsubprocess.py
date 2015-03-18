@@ -37,7 +37,6 @@ except ImportError:
         pass
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call"]
-py_version = '.'.join(platform.python_version_tuple()[:2])
 
 def call(*args, **kwargs):
         return Popen(*args, **kwargs).wait()
@@ -53,10 +52,10 @@ class Popen(subprocess.Popen):
 
         if "posix_spawnp" in globals():
 
-                def __execute(self, args, executable, preexec_fn,
+                def _execute_child(self, args, executable, preexec_fn,
                     close_fds, cwd, env, universal_newlines, startupinfo,
-                    creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite,
-                    errread, errwrite, to_close=None):
+                    creationflags, shell, to_close, p2cread, p2cwrite, c2pread,
+                    c2pwrite, errread, errwrite):
                         """Execute program using posix spawn"""
 
                         if isinstance(args, types.StringTypes):
@@ -179,25 +178,4 @@ class Popen(subprocess.Popen):
                                 _close_in_parent(c2pwrite)
                         if errwrite and errread:
                                 _close_in_parent(errwrite)
-
-                if py_version == '2.6':
-                        def _execute_child(self, args, executable, preexec_fn,
-                            close_fds, cwd, env, universal_newlines, startupinfo,
-                            creationflags, shell, p2cread, p2cwrite, c2pread,
-                            c2pwrite, errread, errwrite):
-                                self.__execute(args, executable, preexec_fn,
-                                    close_fds, cwd, env, universal_newlines,
-                                    startupinfo, creationflags, shell, p2cread,
-                                    p2cwrite, c2pread, c2pwrite, errread, errwrite)
-
-                elif py_version == '2.7':
-                        def _execute_child(self, args, executable, preexec_fn,
-                            close_fds, cwd, env, universal_newlines, startupinfo,
-                            creationflags, shell, to_close, p2cread, p2cwrite,
-                            c2pread, c2pwrite, errread, errwrite):
-                                self.__execute(args, executable, preexec_fn,
-                                    close_fds, cwd, env, universal_newlines,
-                                    startupinfo, creationflags, shell, p2cread,
-                                    p2cwrite, c2pread, c2pwrite, errread,
-                                    errwrite, to_close=to_close)
 

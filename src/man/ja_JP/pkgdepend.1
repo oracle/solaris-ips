@@ -179,7 +179,7 @@ foo    bar</screen>
 </example>
 <example><title>依存関係の生成をバイパスする</title>
 <para>指定された Python スクリプトの標準の Python 実行パスに <filename>opt/python</filename> を追加し、<filename>opt/python/foo/file.py</filename> として提供されるファイルの <literal>test</literal> という名前のすべての Python モジュールに対する依存関係の生成をバイパスします。</para>
-<para><filename>usr/lib/python2.6/vendor-packages/xdg</filename> で提供されたすべてのファイルに対する依存関係の生成を回避します。</para>
+<para><filename>usr/lib/python2.7/vendor-packages/xdg</filename> で提供されたすべてのファイルに対する依存関係の生成を回避します。</para>
 <screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
 set name=pkg.summary value="My test package"
@@ -195,7 +195,7 @@ file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
     pkg.depend.bypass-generate=.*/test.py.* &bsol;
     pkg.depend.bypass-generate=.*/testmodule.so &bsol;
     pkg.depend.bypass-generate=.*/test.so &bsol;
-    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.7/vendor-packages/xdg/.* &bsol;
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
 $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -81,7 +81,7 @@ LoadModule alias_module libexec/64/mod_alias.so
 LoadModule rewrite_module libexec/64/mod_rewrite.so
 LoadModule headers_module libexec/64/mod_headers.so
 LoadModule env_module libexec/64/mod_env.so
-LoadModule wsgi_module libexec/64/mod_wsgi-2.6.so
+LoadModule wsgi_module libexec/64/mod_wsgi-2.7.so
 LoadModule cache_module libexec/64/mod_cache.so
 LoadModule disk_cache_module libexec/64/mod_disk_cache.so
 LoadModule deflate_module libexec/64/mod_deflate.so
@@ -101,9 +101,9 @@ WSGIScriptAlias ${sroot}/depot ${template_dir}/depot_index.py
         test_proto = os.environ.get("PKG5_TEST_PROTO", None)
         if test_proto:
                 context.write("""
-WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path=%s/usr/lib/python2.6
-SetEnv PKG5_TEST_PROTO %s
-""" % (test_proto, test_proto))
+WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path={0}/usr/lib/python2.7
+SetEnv PKG5_TEST_PROTO {1}
+""".format(test_proto, test_proto))
         else:
                 context.write("""
 WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300
@@ -158,8 +158,8 @@ ServerAdmin you@example.com
         servername = context.get("host")
         serverport = context.get("port")
         if ":" not in servername:
-                context.write("ServerName %(host)s:%(port)s\n" %
-                    {"host": servername, "port": serverport})
+                context.write("ServerName {host}:{port}\n".format(
+                    host=servername, port=serverport))
 %>
 
 #
@@ -342,13 +342,13 @@ CacheMaxFileSize 45690876
         if ssl_cert_file_path and ssl_key_file_path:
                 context.write("""
 # DNS domain name of the server
-ServerName %s
+ServerName {0}
 # enable SSL
 SSLEngine On
 # Location of the server certificate and key.
-""" % context.get("host", "localhost"))
-                context.write("SSLCertificateFile %s\n" % ssl_cert_file_path)
-                context.write("SSLCertificateKeyFile %s\n" % ssl_key_file_path)
+""".format(context.get("host", "localhost")))
+                context.write("SSLCertificateFile {0}\n".format(ssl_cert_file_path))
+                context.write("SSLCertificateKeyFile {0}\n".format(ssl_key_file_path))
                 context.write("""
 # Intermediate CA certificate file. Required if your server certificate
 # is not signed by a top-level CA directly but an intermediate authority.
@@ -358,8 +358,8 @@ SSLEngine On
                 ssl_cert_chain_file_path = context.get("ssl_cert_chain_file",
                     "")
                 if ssl_cert_chain_file_path:
-                        context.write("SSLCertificateChainFile %s\n" %
-                            ssl_cert_chain_file_path)
+                        context.write("SSLCertificateChainFile {0}\n".format(
+                            ssl_cert_chain_file_path))
                 else:
                         context.write("# SSLCertificateChainFile /cert_path\n")
 %>
@@ -378,18 +378,18 @@ RewriteRule ^${sroot}[/]?$ ${sroot}/depot/repos.shtml [NE,PT]
                     (repo_path, repo_prefix.rstrip("/"), writable_root))
         for repo_path, repo_prefix, writable_root in path_info:
                 context.write(
-                    "SetEnv PKG5_REPOSITORY_%(repo_prefix)s %(repo_path)s\n" %
-                    locals())
+                    "SetEnv PKG5_REPOSITORY_{repo_prefix} {repo_path}\n".format(
+                    **locals()))
                 if writable_root:
                         context.write(
-                            "SetEnv PKG5_WRITABLE_ROOT_%(repo_prefix)s "
-                            "%(writable_root)s\n" % locals())
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)s/[/]?$ "
-                    "%(root)s/depot/%(repo_prefix)s/ [NE,PT]\n" %
-                    locals())
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)s/([a-z][a-z])[/]?$ "
-                    "%(root)s/depot/%(repo_prefix)s/$1 [NE,PT]\n" %
-                    locals())
+                            "SetEnv PKG5_WRITABLE_ROOT_{repo_prefix} "
+                            "{writable_root}\n".format(**locals()))
+                context.write("RewriteRule ^/{root}{repo_prefix}/[/]?$ "
+                    "{root}/depot/{repo_prefix}/ [NE,PT]\n".format(
+                    **locals()))
+                context.write("RewriteRule ^/{root}{repo_prefix}/([a-z][a-z])[/]?$ "
+                    "{root}/depot/{repo_prefix}/$1 [NE,PT]\n".format(
+                    **locals()))
 %>
 % for pub, repo_path, repo_prefix, writable_root in pubs:
 % if int(cache_size) > 0:
@@ -403,36 +403,36 @@ CacheEnable disk /${root}${repo_prefix}${pub}/manifest
         #
         root = context.get("sroot")
         # search responses
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/search/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/search/$1 [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/search/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/search/$1 [NE,PT]\n".format(
+            **locals()))
         # admin responses
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/admin/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/admin/$1 [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/admin/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/admin/$1 [NE,PT]\n".format(
+            **locals()))
         # info responses
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/info/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/info/$1 [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/info/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/info/$1 [NE,PT]\n".format(
+            **locals()))
         # p5i responses
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/p5i/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/p5i/$1 [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/p5i/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/p5i/$1 [NE,PT]\n".format(
+            **locals()))
         # Deal with languages - any two letter language code.
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/([a-z][a-z])/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/$1/$2 [NE,PT]\n" %
-            locals())
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/([a-z][a-z])$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/$1/ [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/([a-z][a-z])/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/$1/$2 [NE,PT]\n".format(
+            **locals()))
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/([a-z][a-z])$ "
+            "{root}/depot/{repo_prefix}{pub}/$1/ [NE,PT]\n".format(
+            **locals()))
         # Deal with just the publisher
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s[/]?$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/ [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}[/]?$ "
+            "{root}/depot/{repo_prefix}{pub}/ [NE,PT]\n".format(
+            **locals()))
         # redirect themes requests into the CherryPy code
-        context.write("RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/_themes/(.*)$ "
-            "%(root)s/depot/%(repo_prefix)s%(pub)s/_themes/$1 [NE,PT]\n" %
-            locals())
+        context.write("RewriteRule ^/{root}{repo_prefix}{pub}/_themes/(.*)$ "
+            "{root}/depot/{repo_prefix}{pub}/_themes/$1 [NE,PT]\n".format(
+            **locals()))
 %>
 % endfor pub
 RewriteRule ^${sroot}/_themes/(.*)$ ${sroot}/depot/_themes/$1 [NE,PT]
@@ -445,34 +445,34 @@ RewriteRule ^${sroot}/repos.shtml$ ${sroot}/depot/repos.shtml [NE,PT]
         # default publisher set in the repository.
         #
         root = context.get("sroot")
-        context.write("# Map the default publishers for %(repo_path)s to "
-            "%(pub)s\n" % locals())
+        context.write("# Map the default publishers for {repo_path} to "
+            "{pub}\n".format(**locals()))
 
         if "pub" != None:
                 # search
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)ssearch/(.*)$ "
-                    "%(root)s/depot/%(repo_prefix)s%(pub)s/search/$1 [NE,PT]\n"
-                    % locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}search/(.*)$ "
+                    "{root}/depot/{repo_prefix}{pub}/search/$1 [NE,PT]\n"
+                   .format(**locals()))
                 # admin
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)sadmin/(.*)$ "
-                    "%(root)s/depot/%(repo_prefix)s%(pub)s/admin/$1 [NE,PT]\n"
-                    % locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}admin/(.*)$ "
+                    "{root}/depot/{repo_prefix}{pub}/admin/$1 [NE,PT]\n"
+                   .format(**locals()))
                 # info
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)sinfo/(.*)$ "
-                    "%(root)s/depot/%(repo_prefix)s%(pub)s/info/$1 [NE,PT]\n"
-                    % locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}info/(.*)$ "
+                    "{root}/depot/{repo_prefix}{pub}/info/$1 [NE,PT]\n"
+                   .format(**locals()))
                 # p5i
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)sp5i/(.*)$ "
-                    "%(root)s/depot/%(repo_prefix)s%(pub)s/p5i/$1 [NE,PT]\n"
-                    % locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}p5i/(.*)$ "
+                    "{root}/depot/{repo_prefix}{pub}/p5i/$1 [NE,PT]\n"
+                   .format(**locals()))
                 # Deal with languages - any two-letter language code.
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)s([a-z][a-z])/(.*)$ "
-                        "%(root)s/depot/%(repo_prefix)s%(pub)s/$1/$2 [NE,PT]\n" %
-                        locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}([a-z][a-z])/(.*)$ "
+                        "{root}/depot/{repo_prefix}{pub}/$1/$2 [NE,PT]\n".format(
+                        **locals()))
                 # redirect themes requests into the CherryPy code
-                context.write("RewriteRule ^/%(root)s%(repo_prefix)s_themes/(.*)$ "
-                    "%(root)s/depot/%(repo_prefix)s%(pub)s/_themes/$1 [NE,PT]\n" %
-                    locals())
+                context.write("RewriteRule ^/{root}{repo_prefix}_themes/(.*)$ "
+                    "{root}/depot/{repo_prefix}{pub}/_themes/$1 [NE,PT]\n".format(
+                    **locals()))
 %>
 % endfor pub
 

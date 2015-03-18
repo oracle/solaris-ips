@@ -87,7 +87,7 @@ def setup_environment(path_to_proto, debug=False, system_test=False):
         pkg_path = os.path.realpath(pkg_path)
         proto_area = os.path.realpath(proto_area)
 
-        pkgs = os.path.join(pkg_path, "usr/lib/python2.6/vendor-packages")
+        pkgs = os.path.join(pkg_path, "usr/lib/python2.7/vendor-packages")
         bins = os.path.join(pkg_path, "usr/bin")
         sys.path.insert(1, pkgs)
 

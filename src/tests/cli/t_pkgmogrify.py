@@ -226,10 +226,10 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 c = self.__countMatches(regex, path)
 
-                self.failIf(count == c == 0,
+                self.assertFalse(count == c == 0,
                     "No matches for '{0}' found".format(regex))
                 if count > 0:
-                        self.failUnless(c == count,
+                        self.assertTrue(c == count,
                             "{0} matches for '{1}' found, {2} expected".format(
                             c, regex, count))
 
@@ -378,8 +378,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                     output=no_output, args="-P {0}".format(no_print))
 
                 # Make sure neither output nor print file was created.
-                self.failIf(os.access(no_output, os.F_OK))
-                self.failIf(os.access(no_print, os.F_OK))
+                self.assertFalse(os.access(no_output, os.F_OK))
+                self.assertFalse(os.access(no_print, os.F_OK))
 
                 # Trigger an exit transform with a specific exit code.
                 self.pkgmogrify([self.transforms["add bobcat"],
@@ -387,8 +387,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                     output=no_output, args="-P {0}".format(no_print), exit=7)
 
                 # Make sure neither output nor print file was created.
-                self.failIf(os.access(no_output, os.F_OK))
-                self.failIf(os.access(no_print, os.F_OK))
+                self.assertFalse(os.access(no_output, os.F_OK))
+                self.assertFalse(os.access(no_print, os.F_OK))
 
                 # Trigger an exit transform with a specific exit code and
                 # message.

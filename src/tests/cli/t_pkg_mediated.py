@@ -175,50 +175,50 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             close """
 
         pkg_python = """
-            open pkg://test/runtime/python-26@2.6.0
-            add set name=pkg.summary value="Example python package"
-            add file tmp/foopy path=/usr/bin/python2.6 owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.6 mediator=python mediator-version=2.6
-            close
             open pkg://test/runtime/python-27@2.7.0
             add set name=pkg.summary value="Example python package"
             add file tmp/foopy path=/usr/bin/python2.7 owner=root group=bin mode=0555
             add link path=/usr/bin/python target=python2.7 mediator=python mediator-version=2.7
             close
-            open pkg://test/runtime/python-unladen-swallow-26@2.6.0
-            add set name=pkg.summary value="Example python implementation package"
-            add file tmp/foopyus path=/usr/bin/python2.6-unladen-swallow owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.6-unladen-swallow mediator=python mediator-version=2.6 mediator-implementation=unladen-swallow
+            open pkg://test/runtime/python-34@3.4.0
+            add set name=pkg.summary value="Example python package"
+            add file tmp/foopy path=/usr/bin/python3.4 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python3.4 mediator=python mediator-version=3.4
             close
             open pkg://test/runtime/python-unladen-swallow-27@2.7.0
             add set name=pkg.summary value="Example python implementation package"
             add file tmp/foopyus path=/usr/bin/python2.7-unladen-swallow owner=root group=bin mode=0555
             add link path=/usr/bin/python target=python2.7-unladen-swallow mediator=python mediator-version=2.7 mediator-implementation=unladen-swallow
             close
-            open pkg://test/runtime/python-unladen-swallow-28@2.8.0
+            open pkg://test/runtime/python-unladen-swallow-34@3.4.0
+            add set name=pkg.summary value="Example python implementation package"
+            add file tmp/foopyus path=/usr/bin/python3.4-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python3.4-unladen-swallow mediator=python mediator-version=3.4 mediator-implementation=unladen-swallow
+            close
+            open pkg://test/runtime/python-unladen-swallow-35@3.5.0
             add set name=pkg.summary value="Example python versioned implementation package"
-            add file tmp/foopyus path=/usr/bin/python2.8-unladen-swallow owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.8-unladen-swallow mediator=python mediator-version=2.8 mediator-implementation=unladen-swallow@2.8
+            add file tmp/foopyus path=/usr/bin/python3.5-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python3.5-unladen-swallow mediator=python mediator-version=3.5 mediator-implementation=unladen-swallow@3.5
             close """
 
         pkg_multi_python = """
-            open pkg://test/runtime/multi-impl-python-26@2.6.0
+            open pkg://test/runtime/multi-impl-python-27@2.7.0
             add set name=pkg.summary value="Example python package with multiple implementations"
-            add file tmp/foopy path=/usr/bin/python2.6 owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.6 mediator=python mediator-implementation=cpython
-            add file tmp/foopyus path=/usr/bin/python2.6-unladen-swallow owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.6-unladen-swallow mediator=python mediator-implementation=unladen-swallow
+            add file tmp/foopy path=/usr/bin/python2.7 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.7 mediator=python mediator-implementation=cpython
+            add file tmp/foopyus path=/usr/bin/python2.7-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.7-unladen-swallow mediator=python mediator-implementation=unladen-swallow
             close
-            open pkg://test/runtime/multi-impl-ver-python@2.7.0
+            open pkg://test/runtime/multi-impl-ver-python@3.4.0
             add set name=pkg.summary value="Example python implementation package with multiple implementations and versions"
-            add file tmp/foopy path=/usr/bin/python2.6 owner=root group=bin mode=0555
-            add link path=/usr/bin/python target=python2.6 mediator=python mediator-version=2.6
-            add file tmp/foopyus path=/usr/bin/python2.6-unladen-swallow owner=root group=bin mode=0555
             add file tmp/foopy path=/usr/bin/python2.7 owner=root group=bin mode=0555
             add link path=/usr/bin/python target=python2.7 mediator=python mediator-version=2.7
-            add link path=/usr/bin/python target=python2.6-unladen-swallow mediator=python mediator-version=2.6 mediator-implementation=unladen-swallow
             add file tmp/foopyus path=/usr/bin/python2.7-unladen-swallow owner=root group=bin mode=0555
+            add file tmp/foopy path=/usr/bin/python3.4 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python3.4 mediator=python mediator-version=3.4
             add link path=/usr/bin/python target=python2.7-unladen-swallow mediator=python mediator-version=2.7 mediator-implementation=unladen-swallow
+            add file tmp/foopyus path=/usr/bin/python3.4-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python3.4-unladen-swallow mediator=python mediator-version=3.4 mediator-implementation=unladen-swallow
             close
             """
 
@@ -405,11 +405,11 @@ mta\tlocal\t1.0\tsystem\t\t
                 self.__assert_available_mediation_matches("""\
 perl\tsystem\t5.10.0\tsystem\t\t
 perl\tsystem\t5.8.4\tsystem\t\t
-python\tsystem\t2.8\tsystem\tunladen-swallow@2.8\t
+python\tsystem\t3.5\tsystem\tunladen-swallow@3.5\t
+python\tsystem\t3.4\tsystem\t\t
+python\tsystem\t3.4\tsystem\tunladen-swallow\t
 python\tsystem\t2.7\tsystem\t\t
 python\tsystem\t2.7\tsystem\tunladen-swallow\t
-python\tsystem\t2.6\tsystem\t\t
-python\tsystem\t2.6\tsystem\tunladen-swallow\t
 vi\tsite\t\tsite\tvim\t
 vi\tvendor\t\tvendor\tnvi\t
 vi\tsystem\t\tsystem\tsvr4\t
@@ -848,18 +848,18 @@ perl\tsystem\t5.10.0\tsystem\t\t
 
                 # Install python and python-unladen-swallow at the same time,
                 # verify that unladen-swallow is NOT selected.
-                self.pkg("install python-26 python-unladen-swallow-26")
+                self.pkg("install python-27 python-unladen-swallow-27")
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.6\tsystem\t\t
+python\tsystem\t2.7\tsystem\t\t
 """)
                 check_not_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
 
                 # Set only mediation version and verify unladen swallow is NOT
                 # selected.
-                self.pkg("set-mediator -vvv -V 2.6 python")
+                self.pkg("set-mediator -vvv -V 2.7 python")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tsystem\t\t
+python\tlocal\t2.7\tsystem\t\t
 """)
                 check_not_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
@@ -868,7 +868,7 @@ python\tlocal\t2.6\tsystem\t\t
                 # was selected.
                 self.pkg("set-mediator -vvv -I unladen-swallow python")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tlocal\tunladen-swallow\t
+python\tlocal\t2.7\tlocal\tunladen-swallow\t
 """)
                 check_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
@@ -877,54 +877,54 @@ python\tlocal\t2.6\tlocal\tunladen-swallow\t
                 # still selected.
                 self.pkg("unset-mediator -V python")
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.6\tlocal\tunladen-swallow\t
+python\tsystem\t2.7\tlocal\tunladen-swallow\t
 """)
                 check_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
 
-                # Install python-27 and verify unladen swallow is still
+                # Install python-34 and verify unladen swallow is still
                 # selected.
-                self.pkg("install python-27")
-                self.__assert_mediation_matches("""\
-python\tsystem\t2.6\tlocal\tunladen-swallow\t
-""")
-                check_target(gen_python_links(), "unladen-swallow")
-                self.pkg("verify")
-
-                # Install python-unladen-swallow-27 and verify that version
-                # is selected.
-                self.pkg("install python-unladen-swallow-27")
+                self.pkg("install python-34")
                 self.__assert_mediation_matches("""\
 python\tsystem\t2.7\tlocal\tunladen-swallow\t
 """)
-                check_target(gen_python_links(), "python2.7-unladen-swallow")
+                check_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
 
-                # Set mediation version to 2.6 and verify that version of
-                # unladen swallow is selected.
-                self.pkg("set-mediator -vvv -V 2.6 python")
+                # Install python-unladen-swallow-34 and verify that version
+                # is selected.
+                self.pkg("install python-unladen-swallow-34")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tlocal\tunladen-swallow\t
+python\tsystem\t3.4\tlocal\tunladen-swallow\t
 """)
-                check_target(gen_python_links(), "python2.6-unladen-swallow")
+                check_target(gen_python_links(), "python3.4-unladen-swallow")
+                self.pkg("verify")
+
+                # Set mediation version to 2.7 and verify that version of
+                # unladen swallow is selected.
+                self.pkg("set-mediator -vvv -V 2.7 python")
+                self.__assert_mediation_matches("""\
+python\tlocal\t2.7\tlocal\tunladen-swallow\t
+""")
+                check_target(gen_python_links(), "python2.7-unladen-swallow")
                 self.pkg("verify")
 
                 # Unset implementation mediation and verify unladen swallow
                 # is NOT selected.
                 self.pkg("unset-mediator -vvv -I python")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tsystem\t\t
+python\tlocal\t2.7\tsystem\t\t
 """)
                 check_not_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
 
-                # Remove python-26 and python-27 and then verify unladen swallow
+                # Remove python-27 and python-34 and then verify unladen swallow
                 # is selected.
-                self.pkg("uninstall -vvv python-26 python-27")
+                self.pkg("uninstall -vvv python-27 python-34")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tsystem\tunladen-swallow\t
+python\tlocal\t2.7\tsystem\tunladen-swallow\t
 """)
-                check_target(gen_python_links(), "python2.6-unladen-swallow")
+                check_target(gen_python_links(), "python2.7-unladen-swallow")
                 self.pkg("verify")
 
                 # Set mediation implementation to None explicitly and verify
@@ -932,40 +932,40 @@ python\tlocal\t2.6\tsystem\tunladen-swallow\t
                 # since no package satisfied mediation.
                 self.pkg("set-mediator -vvv -I None python")
                 self.__assert_mediation_matches("""\
-python\tlocal\t2.6\tlocal\t\t
+python\tlocal\t2.7\tlocal\t\t
 """)
                 check_not_exists(gen_python_links())
                 self.pkg("verify")
 
-                # Install unladen-swallow@2.8, then set mediation implementation
-                # to unladen-swallow@2.8 and verify the 2.8 implementation is
+                # Install unladen-swallow@3.5, then set mediation implementation
+                # to unladen-swallow@3.5 and verify the 3.5 implementation is
                 # selected.
-                self.pkg("install -vvv python-unladen-swallow-28")
+                self.pkg("install -vvv python-unladen-swallow-35")
                 check_not_exists(gen_python_links())
                 self.pkg("verify")
                 self.pkg("set-mediator -vvv "
-                    "-V '' -I unladen-swallow@2.8 python")
-                check_target(gen_python_links(), "python2.8-unladen-swallow")
+                    "-V '' -I unladen-swallow@3.5 python")
+                check_target(gen_python_links(), "python3.5-unladen-swallow")
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.8\tlocal\tunladen-swallow@2.8\t
+python\tsystem\t3.5\tlocal\tunladen-swallow@3.5\t
 """)
                 self.pkg("verify")
 
                 # Set mediation to unladen-swallow and verify
-                # unladen-swallow@2.8 remains selected.
+                # unladen-swallow@3.5 remains selected.
                 self.pkg("set-mediator -vvv -I unladen-swallow python")
-                check_target(gen_python_links(), "python2.8-unladen-swallow")
+                check_target(gen_python_links(), "python3.5-unladen-swallow")
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.8\tlocal\tunladen-swallow\t2.8
+python\tsystem\t3.5\tlocal\tunladen-swallow\t3.5
 """)
                 self.pkg("verify")
 
                 # Remove installed links and ensure verify fails, then fix and
                 # ensure verify passes.
                 remove_links(gen_python_links())
-                self.pkg("verify -v python-unladen-swallow-26 "
-                    "python-unladen-swallow-27")
-                self.pkg("verify -v python-unladen-swallow-28", exit=1)
+                self.pkg("verify -v python-unladen-swallow-27 "
+                    "python-unladen-swallow-34")
+                self.pkg("verify -v python-unladen-swallow-35", exit=1)
                 self.pkg("fix")
                 self.pkg("verify -v")
 
@@ -973,25 +973,25 @@ python\tsystem\t2.8\tlocal\tunladen-swallow\t2.8
                 # explicitly requested in parentheses.
                 self.__assert_human_mediation_matches("""\
 MEDIATOR VER. SRC. VERSION IMPL. SRC. IMPLEMENTATION
-python   system    2.8     local      unladen-swallow(@2.8)
+python   system    3.5     local      unladen-swallow(@3.5)
 """)
 
                 # Set mediation to unladen-swallow@ and verify unladen-swallow
-                # 2.7 is selected.
+                # 3.4 is selected.
                 self.pkg("set-mediator -vvv -I unladen-swallow@ python")
-                check_target(gen_python_links(), "python2.7-unladen-swallow")
+                check_target(gen_python_links(), "python3.4-unladen-swallow")
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.7\tlocal\tunladen-swallow@\t
+python\tsystem\t3.4\tlocal\tunladen-swallow@\t
 """)
                 self.pkg("verify")
 
                 # Remove links and ensure verify fails for for unladen-swallow
-                # 2.7, but passes for 2.6 and 2.8, and that fix will allow
+                # 3.4, but passes for 2.7 and 3.5, and that fix will allow
                 # verify to pass again.
                 remove_links(gen_python_links())
-                self.pkg("verify -v python-unladen-swallow-26 "
-                    "python-unladen-swallow-28")
-                self.pkg("verify -v python-unladen-swallow-27", exit=1)
+                self.pkg("verify -v python-unladen-swallow-27 "
+                    "python-unladen-swallow-35")
+                self.pkg("verify -v python-unladen-swallow-34", exit=1)
                 self.pkg("fix")
                 self.pkg("verify -v")
 
@@ -1031,7 +1031,7 @@ php\tlocal\t5.2\tsystem\t\t
 
                 # Install multi-impl-python; verify that unladen swallow is NOT
                 # selected.
-                self.pkg("install -vvv multi-impl-python-26")
+                self.pkg("install -vvv multi-impl-python-27")
                 self.__assert_mediation_matches("""\
 python\tsystem\t\tsystem\tcpython\t
 """)
@@ -1060,21 +1060,21 @@ python\tsystem\t\tlocal\tunladen-swallow\t
                 self.pkg("unset-mediator -I python")
                 self.pkg("install -vvv multi-impl-ver-python")
 
-                # Verify that the default implementation of Python 2.7 was
-                # selected even though the package offers Python 2.6 and an
+                # Verify that the default implementation of Python 3.4 was
+                # selected even though the package offers Python 2.7 and an
                 # unladen swallow implemenation of each version of Python.
                 self.__assert_mediation_matches("""\
-python\tsystem\t2.7\tsystem\t\t
+python\tsystem\t3.4\tsystem\t\t
 """)
                 check_not_target(gen_python_links(), "unladen-swallow")
                 self.pkg("verify")
 
                 # Test available mediations.
                 self.__assert_available_mediation_matches("""\
+python\tsystem\t3.4\tsystem\t\t
+python\tsystem\t3.4\tsystem\tunladen-swallow\t
 python\tsystem\t2.7\tsystem\t\t
 python\tsystem\t2.7\tsystem\tunladen-swallow\t
-python\tsystem\t2.6\tsystem\t\t
-python\tsystem\t2.6\tsystem\tunladen-swallow\t
 """)
 
         def test_02_hardlink_mediation(self):

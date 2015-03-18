@@ -158,8 +158,8 @@ file path=opt/secret_file sysattr=HT</programlisting>
 <varlistentry><term><literal>timestamp</literal></term>
 <listitem><para>此属性用于设置文件的访问权限和修改时间。必须以 ISO-8601 格式使用 UTC 表示 <literal>timestamp</literal> 属性值，省略冒号和连字符。</para>
 <para>为 Python 打包 <filename> .pyc</filename> 或 <filename>.pyo</filename> 文件时需要 <literal>timestamp</literal> 属性。<filename>.pyc</filename> 或 <filename>.pyo</filename> 文件的相关 <filename> .py</filename> 文件必须使用这些文件内嵌入的时间戳进行标记，如以下示例中所示：</para>
-<programlisting>file path=usr/lib/python2.6/vendor-packages/pkg/__init__.pyc ...
-file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
+<programlisting>file path=usr/lib/python2.7/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
      timestamp=20130311T221521Z ...</programlisting>
 </listitem>
 </varlistentry>
@@ -212,7 +212,7 @@ file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-version</literal></term>
-<listitem><para>指定 <literal>mediator</literal> 属性描述的接口的版本（表示为非负整数的点分序列）。如果指定了 <literal>mediator</literal> 而未指定 <literal>mediator-implementation</literal>，则此属性是必需的。本地系统管理员可以显式设置要使用的版本。指定的值通常应与提供链接的软件包版本相匹配（例如，<literal>runtime/python-26</literal> 应使用 <literal>mediator-version=2.6</literal>），尽管这不是必需的。</para>
+<listitem><para>指定 <literal>mediator</literal> 属性描述的接口的版本（表示为非负整数的点分序列）。如果指定了 <literal>mediator</literal> 而未指定 <literal>mediator-implementation</literal>，则此属性是必需的。本地系统管理员可以显式设置要使用的版本。指定的值通常应与提供链接的软件包版本相匹配（例如，<literal>runtime/python-27</literal> 应使用 <literal>mediator-version=2.7</literal>），尽管这不是必需的。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>

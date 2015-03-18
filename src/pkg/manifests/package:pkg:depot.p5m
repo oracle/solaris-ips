@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/depot@$(PKGVERS)
@@ -67,4 +67,4 @@ license cr_Oracle license=cr_Oracle
 #
 depend type=require fmri=web/server/apache-22
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-22/module/apache-wsgi-26
+depend type=require fmri=web/server/apache-22/module/apache-wsgi-27
