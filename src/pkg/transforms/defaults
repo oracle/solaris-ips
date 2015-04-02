@@ -106,13 +106,12 @@
 set name=org.opensolaris.consolidation value=ips
 set name=variant.opensolaris.zone value=global value=nonglobal
 
-# XXX Uncomment it when we need to deliver python 3.4 version of modules.
-# Generate a python 3.4 dir/file action for each python 2.7 dir/file action
+# Generate a python 2.6 dir/file action for each python 2.7 dir/file action
 # it ran across.
-# <transform file dir link hardlink path=(.*)python2.7(.*) -> emit %(action.name) path=%<1>python3.4%<2>>
+<transform file dir link hardlink path=(.*)python2.7(.*) -> emit %(action.name) path=%<1>python2.6%<2>>
 # Do the version substitution on the .egg-info file.
-# <transform file path=.*python3.4.*py2.7.egg-info -> edit path py2.7 py3.4>
-# Avoid generating dependencies against any 3.4 file.
-# <transform file path=.*python3.4 -> default pkg.depend.bypass-generate .*>
+<transform file path=.*python2.6.*py2.7.egg-info -> edit path py2.7 py2.6>
+# Avoid generating dependencies against any 2.6 file.
+<transform file path=.*python2.6 -> default pkg.depend.bypass-generate .*>
 
 # vim: ft=pkg5manifest

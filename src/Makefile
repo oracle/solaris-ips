@@ -23,6 +23,7 @@
 # Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+PYTHON26 = /usr/bin/python2.6
 PYTHON27 = /usr/bin/python2.7
 PYTHON34 = /usr/bin/python3.4
 
@@ -50,6 +51,7 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 SUBDIRS=zoneproxy tsol
 
 all: $(SUBDIRS)
+	$(PYTHON26) setup.py build
 	$(PYTHON27) setup.py build
 
 clean: $(SUBDIRS)
@@ -65,6 +67,7 @@ clobber: $(SUBDIRS)
 # it's the best way to ensure things stay pylint clean.
 #
 install: $(SUBDIRS)
+	$(PYTHON26) setup.py install
 	$(PYTHON27) setup.py install
 
 lint:
@@ -76,6 +79,7 @@ clint:
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON26) setup.py pylint
 	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint
 
 #

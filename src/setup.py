@@ -103,7 +103,7 @@ extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 
 # Extract Python minor version.
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('2.7', '3.4')
+assert py_version in ('2.6', '2.7')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 scripts_dir = 'usr/bin'
@@ -705,11 +705,9 @@ class install_func(_install):
                                 else:
                                         file_util.copy_file(src, dest, update=1)
 
-                # XXX Uncomment it when we need to deliver python 3.4 version
-                # of modules.
-                # Don't install the scripts for python 3.4. Uncomment it when
-                # if py_version == '3.4':
-                #        return
+                # Don't install the scripts for python 2.6.
+                if py_version == '2.6':
+                        return
                 for d, files in scripts[osname].iteritems():
                         for (srcname, dstname) in files:
                                 dst_dir = util.change_root(self.root_dir, d)

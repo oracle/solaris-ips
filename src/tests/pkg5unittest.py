@@ -4579,10 +4579,14 @@ class HttpDepotController(ApacheController):
                         # Ping the versions URL, rather than the default /
                         # so that we don't initialize the BUI code yet.
                         repourl = urlparse.urljoin(self.url, "versions/0")
-                        # Disable SSL peer verification, we just want to check
-                        # if the depot is running.
-                        urllib2.urlopen(repourl,
-                            context=ssl._create_unverified_context())
+                        py_version = '.'.join(platform.python_version_tuple()[:2])
+                        if py_version >= '2.7':
+                                # Disable SSL peer verification, we just want
+                                # to check if the depot is running.
+                                urllib2.urlopen(repourl,
+                                    context=ssl._create_unverified_context())
+                        else:
+                                urllib2.urlopen(repourl)
                 except urllib2.HTTPError as e:
                         if e.code == httplib.FORBIDDEN:
                                 return True
