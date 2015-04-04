@@ -38,6 +38,7 @@ depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
 depend type=require fmri=pkg:/library/python/coverage-27
 depend type=require fmri=pkg:/library/python/jsonrpclib-27
+depend type=require fmri=pkg:/library/python/jsonschema-27
 depend type=require fmri=pkg:/library/python/locale-services
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-27

@@ -689,7 +689,7 @@ class BootEnvNull(object):
 
         """BootEnvNull is a class that gets used when libbe doesn't exist."""
 
-        def __init__(self, img):
+        def __init__(self, img, progress_tracker=None):
                 pass
 
         @staticmethod

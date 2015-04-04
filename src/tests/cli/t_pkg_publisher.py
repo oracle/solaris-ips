@@ -458,6 +458,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("publisher test")
                 self.assert_("Properties:" in self.output)
                 self.assert_("foo = bar" in self.output)
+                self.pkg("set-publisher --add-property-value foo=bar1 test",
+                    exit=1)
 
                 self.pkg("set-publisher --set-property "
                     "signature-policy=require-names --add-property-value "
@@ -1120,7 +1122,6 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -n | grep test2", exit=1) # unless -n
 
                 self.pkg("list -a bar", exit=1)
-                self.pkg("publisher -a | grep test2")
                 self.pkg("set-publisher -P test2")
                 self.pkg("publisher test2")
                 self.pkg("set-publisher -e test2")
@@ -1131,7 +1132,6 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher | grep test2")
                 self.pkg("publisher -n | grep test2", exit=1)
                 self.pkg("list -a bar", exit=1)
-                self.pkg("publisher -a | grep test2")
                 self.pkg("set-publisher --enable test2")
                 self.pkg("publisher -n | grep test2")
                 self.pkg("list -a bar")

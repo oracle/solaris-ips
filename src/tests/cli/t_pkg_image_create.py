@@ -547,7 +547,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly (because of the publisher preferred prefix).
-                self.pkg("publisher -a", su_wrap=True)
+                self.pkg("publisher", su_wrap=True)
                 self.pkg("info pkg://test1/quux corge", su_wrap=True)
                 self.pkg("info pkg://test2/corge quux", su_wrap=True)
                 self.pkg("update -nv --no-refresh", su_wrap=True, exit=4)
@@ -618,7 +618,7 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t{1}/\t-
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly.
-                self.pkg("--debug simulate_live_root={0} publisher -a".format(
+                self.pkg("--debug simulate_live_root={0} publisher".format(
                     self.get_img_path()), su_wrap=True)
                 self.pkg("--debug simulate_live_root={0} info "
                     "pkg://test1/quux corge".format(self.get_img_path()),
@@ -673,7 +673,7 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t{1}/\t-
                 self.pkg("verify")
 
                 # Verify updated image works as expected.
-                self.pkg("publisher -a", su_wrap=True)
+                self.pkg("publisher", su_wrap=True)
                 self.pkg("info pkg://test1/quux corge", su_wrap=True)
                 self.pkg("info pkg://test2/corge quux", su_wrap=True)
                 self.pkg("update -nv --no-refresh", su_wrap=True, exit=4)

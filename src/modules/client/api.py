@@ -665,6 +665,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if val is not None:
                                 self.check_be_name(val)
                                 if not self._img.is_liveroot():
+                                        self._cancel_cleanup_exception()
+                                        self._activity_lock.release()
+                                        self._img.unlock()
                                         raise apx.BENameGivenOnDeadBE(val)
 
         def __plan_common_finish(self):

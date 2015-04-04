@@ -706,6 +706,21 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
 class ProcFS(object):
         """This class is used as an interface to procfs."""
 
+        # Detect whether python is running in 32-bit or 64-bit
+        # environment based on pointer size.
+        _running_bit = struct.calcsize("P") * 8
+
+        actual_format = {32: {
+                              "long": "l",
+                              "uintptr_t": "I",
+                              "ulong": "L"
+                             },
+                         64: {
+                              "long": "q",
+                              "uintptr_t": "Q",
+                              "ulong": "Q"
+                             }}
+
         _ctype_formats = {
             # This dictionary maps basic c types into python format characters
             # that can be used with struct.unpack().  The format of this
@@ -717,26 +732,33 @@ class ProcFS(object):
             "char":        (1,  "c"),
             "char[]":      (1,  "s"),
             "int":         (1,  "i"),
-            "long":        (1,  "l"),
-            "uintptr_t":   (1,  "I"),
+            "long":        (1,  actual_format[_running_bit]["long"]),
+            "uintptr_t":   (1,  actual_format[_running_bit]["uintptr_t"]),
             "ushort_t":    (1,  "H"),
 
             # other simple types (repeat count should always be 1)
             "ctid_t":      (1,  "i"), # ctid_t -> id_t -> int
-            "dev_t":       (1,  "L"), # dev_t -> ulong_t
+
+            # dev_t -> ulong_t
+            "dev_t":       (1,  actual_format[_running_bit]["ulong"]),
             "gid_t":       (1,  "I"), # gid_t -> uid_t -> uint_t
             "pid_t":       (1,  "i"), # pid_t -> int
             "poolid_t":    (1,  "i"), # poolid_t -> id_t -> int
             "projid_t":    (1,  "i"), # projid_t -> id_t -> int
-            "size_t":      (1,  "L"), # size_t -> ulong_t
+
+            # size_t -> ulong_t
+            "size_t":      (1,  actual_format[_running_bit]["ulong"]),
             "taskid_t":    (1,  "i"), # taskid_t -> id_t -> int
-            "time_t":      (1,  "l"), # time_t -> long
+
+            # time_t -> long
+            "time_t":      (1,  actual_format[_running_bit]["long"]),
             "uid_t":       (1,  "I"), # uid_t -> uint_t
             "zoneid_t":    (1,  "i"), # zoneid_t -> id_t -> int
             "id_t":        (1,  "i"), # id_t -> int
 
             # structures must be represented as character arrays
-            "timestruc_t": (8,  "s"), # sizeof (timestruc_t) = 8
+            # sizeof (timestruc_t) = 8 in 32-bit process, and = 16 in 64-bit.
+            "timestruc_t": (_running_bit / 4,  "s"),
         }
 
         _timestruct_desc = [
@@ -786,6 +808,12 @@ class ProcFS(object):
             ("int",         1,  "pr_filler"),
         ]
 
+        # For 64 bit process, the alignment is off by 4 bytes from pr_pctmem
+        # field. So add an additional pad here.
+        if _running_bit == 64:
+                _psinfo_desc = _psinfo_desc[0:17] + [("int", 1, "dum_pad")] + \
+                    _psinfo_desc[17:]
+
         _struct_descriptions = {
             # this list contains all the known structure description lists
             # the entry format is: <structure name>: \
@@ -825,7 +853,6 @@ class ProcFS(object):
 
                 # unpack the data into a list
                 rv = list(struct.unpack(fmt, data))
-
                 # check for any nested data that needs unpacking
                 for index, v in enumerate(desc):
                         ctype = v[0]
@@ -840,13 +867,17 @@ class ProcFS(object):
         def psinfo():
                 """Read the psinfo file and return its contents."""
 
-                # This works only on Solaris, in 32-bit mode.  It may not work
-                # on older or newer versions than 5.11.  Ideally, we would use
-                # libproc, or check sbrk(0), but this is expedient.  In most
-                # cases (there's a small chance the file will decode, but
-                # incorrectly), failure will raise an exception, and we'll
+                # This works only on Solaris, in 32-bit or 64-bit mode.  It may
+                # not work on older or newer versions than 5.11.  Ideally, we
+                # would use libproc, or check sbrk(0), but this is expedient.
+                # In most cases (there's a small chance the file will decode,
+                # but incorrectly), failure will raise an exception, and we'll
                 # fail safe.
                 psinfo_size = 232
+
+                if ProcFS._running_bit == 64:
+                        psinfo_size = 288
+
                 try:
                         psinfo_data = file("/proc/self/psinfo").read(
                             psinfo_size)
@@ -860,7 +891,6 @@ class ProcFS(object):
                         return None
 
                 return ProcFS._struct_unpack(psinfo_data, "psinfo_t")
-
 
 def __getvmusage():
         """Return the amount of virtual memory in bytes currently in use."""
@@ -1306,7 +1336,8 @@ def recursive_chown_dir(d, uid, gid):
                         portable.chown(path, uid, gid)
 
 
-def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
+def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None,
+    use_cli_opts=True, **opts_kv):
         """Generic table-based options parsing function.  Returns a tuple
         consisting of a list of parsed options in the form (option, argument)
         and the remaining unparsed options. The parsed-option list may contain
@@ -1319,7 +1350,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
         'opts_table' is a list of options the operation supports.
         The format of the list entries should be a tuple containing the
         option and its default value:
-            (option, default_value)
+            (option, default_value, [valid values], [json schema])
         It is valid to have other entries in the list when they are required
         for additional option processing elsewhere. These are ignore here. If
         the list entry is a tuple it must conform to the format oulined above.
@@ -1346,15 +1377,25 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
         is the value of this option in the parsed option dictionary.
 
         'usage_cb' is a function pointer that should display usage information
-        and will be invoked if invalid arguments are detected."""
+        and will be invoked if invalid arguments are detected.
 
-        # list for getopt long options
-        opts_l_list = []
-        # getopt str for short options
-        opts_s_str = ""
+        'use_cli_opts' is to indicate the option type is a CLI option or
+        a key-value pair option.
 
-        # dict to map options returned by getopt to keys
-        opts_keys = dict()
+        'opts_kv' is the user provided opts that should be parsed. It is a
+        dictionary with key as option name and value as option argument.
+        """
+
+        if use_cli_opts:
+                # list for getopt long options
+                opts_l_list = []
+                # getopt str for short options
+                opts_s_str = ""
+
+                # dict to map options returned by getopt to keys
+                opts_keys = dict()
+        else:
+                opts_name_mapping = {}
 
         for entry in opts_table:
                 # option table contains functions for verification, ignore here
@@ -1364,28 +1405,43 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                         opt, default = entry
                 elif len(entry) == 3:
                         opt, default, dummy_valid_args = entry
-                assert opt in opts_mapping
-                sopt, lopt = opts_mapping[opt]
-                # make sure an option was specified
-                assert sopt or lopt
-                if lopt != "":
-                        if default is None or type(default) == list:
-                                opts_l_list.append("{0}=".format(lopt))
-                        else:
-                                opts_l_list.append("{0}".format(lopt))
-                        opts_keys["--{0}".format(lopt)] = opt
-                if sopt != "":
-                        if default is None or type(default) == list:
-                                opts_s_str += "{0}:".format(sopt)
-                        else:
-                                opts_s_str += "{0}".format(sopt)
-                        opts_keys["-{0}".format(sopt)] = opt
+                elif len(entry) == 4:
+                        opt, default, dummy_valid_args, dummy_schema = entry
+                if use_cli_opts:
+                        assert opt in opts_mapping
+                        sopt, lopt = opts_mapping[opt]
+                        # make sure an option was specified
+                        assert sopt or lopt
+                        if lopt != "":
+                                if default is None or type(default) == list:
+                                        opts_l_list.append("{0}=".format(lopt))
+                                else:
+                                        opts_l_list.append("{0}".format(lopt))
+                                opts_keys["--{0}".format(lopt)] = opt
+                        if sopt != "":
+                                if default is None or type(default) == list:
+                                        opts_s_str += "{0}:".format(sopt)
+                                else:
+                                        opts_s_str += "{0}".format(sopt)
+                                opts_keys["-{0}".format(sopt)] = opt
+                else:
+                        # Add itself as a mapping for validation.
+                        opts_name_mapping[opt] = opt
+                        if opt in opts_mapping:
+                                optn = opts_mapping[opt]
+                                if optn:
+                                        opts_name_mapping[optn] = opt
 
         # Parse options.
-        try:
-                opts, pargs = getopt.getopt(args, opts_s_str, opts_l_list)
-        except getopt.GetoptError as e:
-                usage_cb(_("illegal option -- {0}").format(e.opt), cmd=op)
+        if use_cli_opts:
+                try:
+                        opts, pargs = getopt.getopt(args, opts_s_str,
+                            opts_l_list)
+                except getopt.GetoptError as e:
+                        usage_cb(_("illegal option -- {0}").format(e.opt),
+                            cmd=op)
+        else:
+                opts = opts_kv
 
         def get_default(option):
                 """Find the default value for a given option from opts_table."""
@@ -1396,45 +1452,69 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                                 opt, default = x
                         elif len(x) == 3:
                                 opt, default, dummy_valid_args = x
+                        elif len(x) == 4:
+                                opt, default, dummy_valid_args, \
+                                    dummy_schema = x
                         if option == opt:
                                 return default
 
-        # Assemble the options dictionary by passing in the right data types and
-        # take care of duplicates.
-        opt_dict = {}
-        for x in opts:
-                cli_opt, arg = x
-                opt = opts_keys[cli_opt]
-
+        def process_opts(opt, arg, opt_dict):
+                """Process option values."""
                 # Determine required option type based on the default value.
                 default = get_default(opt)
 
-                # Handle duplicates for integer and list types.
-                if type(default) == int:
-                        if opt in opt_dict:
-                                opt_dict[opt] += 1
-                        else:
-                                opt_dict[opt] = 1
-                        continue
-                if type(default) == list:
-                        if opt in opt_dict:
-                                opt_dict[opt].append(arg)
-                        else:
-                                opt_dict[opt] = [arg]
-                        continue
+                if use_cli_opts:
+                        # Handle duplicates for integer and list types.
+                        if type(default) == int:
+                                if opt in opt_dict:
+                                        opt_dict[opt] += 1
+                                else:
+                                        opt_dict[opt] = 1
+                                return
+                        if type(default) == list:
+                                if opt in opt_dict:
+                                        opt_dict[opt].append(arg)
+                                else:
+                                        opt_dict[opt] = [arg]
+                                return
 
                 # Boolean and string types can't be repeated.
                 if opt in opt_dict:
                         raise api_errors.InvalidOptionError(
                             api_errors.InvalidOptionError.OPT_REPEAT, [opt])
 
-                # For boolean options we have to toggle the default value.
+                # For boolean options we have to toggle the default value
+                # when in CLI mode.
                 if type(default) == bool:
-                        opt_dict[opt] = not default
+                        if use_cli_opts:
+                                opt_dict[opt] = not default
+                        else:
+                                opt_dict[opt] = arg
                 else:
                         opt_dict[opt] = arg
 
-        return opt_dict, pargs
+        # Assemble the options dictionary by passing in the right data types
+        # and take care of duplicates.
+        opt_dict = {}
+        if use_cli_opts:
+                for x in opts:
+                        cli_opt, arg = x
+                        opt = opts_keys[cli_opt]
+                        process_opts(opt, arg, opt_dict)
+
+                return opt_dict, pargs
+
+        for k, v in opts.items():
+                cli_opt, arg = k, v
+                if cli_opt in opts_name_mapping:
+                        cli_opt = opts_name_mapping[cli_opt]
+                else:
+                        raise api_errors.InvalidOptionError(
+                            api_errors.InvalidOptionError.GENERIC,
+                            [cli_opt])
+                process_opts(cli_opt, arg, opt_dict)
+
+        return opt_dict
 
 def api_cmdpath():
         """Returns the path to the executable that is invoking the api client

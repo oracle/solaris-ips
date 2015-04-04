@@ -2526,6 +2526,12 @@ pkg unset-publisher {0}
                 # Add new values to properties.
                 for n in add_prop_values.keys():
                         self.properties.setdefault(n, [])
+                        if not isinstance(self.properties[n], list):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot add a value to a single valued "
+                                    "property, The property name is '{name}' "
+                                    "and the current value is '{value}'"
+                                    ).format(name=n, value=self.properties[n]))
                         self.properties[n].extend(add_prop_values[n])
                 # Remove values from properties.
                 for n in remove_prop_values.keys():

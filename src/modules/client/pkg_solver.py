@@ -841,7 +841,7 @@ class PkgSolver(object):
                 # Because we have introduced exact-install where
                 # self.__installed_fmris will be empty, in order to prevent
                 # downgrading, we need to look up the full installed dictionary
-                # stored in self.__installed_dict_tmp.
+                # stored in installed_dict_tmp.
                 if exact_install:
                         installed_fmris_tmp = frozenset(
                             installed_dict_tmp.values())

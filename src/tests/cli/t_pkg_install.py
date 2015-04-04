@@ -38,6 +38,7 @@ import shutil
 import socket
 import subprocess
 import stat
+import struct
 import tempfile
 import time
 import unittest
@@ -3911,7 +3912,10 @@ adm
                 sock.close()
                 # We also test block and character special files, but only if
                 # os.mknod() is available, which it isn't always.
-                if hasattr(os, "mknod"):
+                # Since mknod only supports 32-bit integer currently, we have
+                # to check if we are running in 32-bit.
+                run_bit = struct.calcsize("P") * 8
+                if hasattr(os, "mknod") and run_bit == 32:
                         st = os.stat("/dev/null")
                         os.mknod(os.path.join(self.img_path(), "salvage",
                             "node"), st.st_mode, st.st_dev)

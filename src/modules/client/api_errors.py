@@ -3152,19 +3152,22 @@ class InvalidOptionError(ApiException):
         """Used to indicate an issue with verifying options passed to a certain
         operation."""
 
-        GENERIC     = "generic"      # generic option violation
-        OPT_REPEAT  = "opt_repeat"   # option repetition is not allowed
-        ARG_REPEAT  = "arg_repeat"   # argument repetition is not allowed
-        ARG_INVALID = "arg_invalid"  # argument is invalid
-        INCOMPAT    = "incompat"     # option 'a' can not be specified with option 'b'
-        REQUIRED    = "required"     # option 'a' requires option 'b'
-        XOR         = "xor"          # either option 'a' or option 'b' must be specified
+        GENERIC      = "generic"      # generic option violation
+        OPT_REPEAT   = "opt_repeat"   # option repetition is not allowed
+        ARG_REPEAT   = "arg_repeat"   # argument repetition is not allowed
+        ARG_INVALID  = "arg_invalid"  # argument is invalid
+        INCOMPAT     = "incompat"     # option 'a' can not be specified with option 'b'
+        REQUIRED     = "required"     # option 'a' requires option 'b'
+        REQUIRED_ANY = "required_any" # option 'a' requires option 'b', 'c' or more
+        XOR          = "xor"          # either option 'a' or option 'b' must be specified
 
-        def __init__(self, err_type=GENERIC, options=[], msg=None):
+        def __init__(self, err_type=GENERIC, options=[], msg=None,
+            valid_args=[]):
 
                 self.err_type = err_type
                 self.options = options
                 self.msg = msg
+                self.valid_args = valid_args
 
         def __str__(self):
 
@@ -3187,9 +3190,13 @@ class InvalidOptionError(ApiException):
                             op2=self.options[1])
                 elif self.err_type == self.ARG_INVALID:
                         assert len(self.options) == 2
-                        return _("Argument '{op1}' for option '{op2}' is "
+                        s = _("Argument '{op1}' for option '{op2}' is "
                             "invalid.").format(op1=self.options[0],
                             op2=self.options[1])
+                        if self.valid_args:
+                                s += _("\nSupported: {0}").format(", ".join(
+                                    self.valid_args))
+                        return s
                 elif self.err_type == self.INCOMPAT:
                         assert len(self.options) == 2
                         return _("The '{op1}' and '{op2}' option may "
@@ -3200,6 +3207,12 @@ class InvalidOptionError(ApiException):
                         return _("'{op1}' may only be used with "
                             "'{op2}'.").format(op1=self.options[0],
                             op2=self.options[1])
+                elif self.err_type == self.REQUIRED_ANY:
+                        assert len(self.options) > 2
+                        return _("'{op1}' may only be used with "
+                            "'{op2}' or {op3}.").format(op1=self.options[0],
+                            op2=", ".join(self.options[1:-1]),
+                            op3=self.options[-1])
                 elif self.err_type == self.XOR:
                         assert len(self.options) == 2
                         return _("Either '{op1}' or '{op2}' must be "

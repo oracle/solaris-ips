@@ -87,7 +87,220 @@ VERBOSE               = "verbose"
 SYNC_ACT              = "sync_act"
 ACT_TIMEOUT           = "act_timeout"
 PUBLISHERS            = "publishers"
+SSL_KEY               = "ssl_key"
+SSL_CERT              = "ssl_cert"
+APPROVED_CA_CERTS     = "approved_ca_certs"
+REVOKED_CA_CERTS      = "revoked_ca_certs"
+UNSET_CA_CERTS        = "unset_ca_certs"
+ORIGIN_URI            = "origin_uri"
+RESET_UUID            = "reset_uuid"
+ADD_MIRRORS           = "add_mirrors"
+REMOVE_MIRRORS        = "remove_mirrors"
+ADD_ORIGINS           = "add_origins"
+REMOVE_ORIGINS        = "remove_origins"
+REFRESH_ALLOWED       = "refresh_allowed"
+PUB_ENABLE            = "enable"
+PUB_DISABLE           = "disable"
+PUB_STICKY            = "sticky"
+PUB_NON_STICKY        = "non_sticky"
+REPO_URI              = "repo_uri"
+PROXY_URI             = "proxy_uri"
+SEARCH_BEFORE         = "search_before"
+SEARCH_AFTER          = "search_after"
+SEARCH_FIRST          = "search_first"
+SET_PROPS             = "set_props"
+ADD_PROP_VALUES       = "add_prop_values"
+REMOVE_PROP_VALUES    = "remove_prop_values"
+UNSET_PROPS           = "unset_props"
+PREFERRED_ONLY        = "preferred_only"
+INC_DISABLED          = "inc_disabled"
+OUTPUT_FORMAT         = "output_format"
+DISPLAY_LICENSE       = "display_license"
+INFO_LOCAL            = "info_local"
+INFO_REMOTE           = "info_remote"
 
+def opts_table_cb_info(api_inst, opts, opts_new):
+        opts_new[ORIGINS] = set()
+        for e in opts[ORIGINS]:
+                opts_new[ORIGINS].add(misc.parse_uri(e,
+                    cwd=_orig_cwd))
+        if opts[ORIGINS]:
+                opts_new[INFO_REMOTE] = True
+        if opts[QUIET]:
+                global_settings.client_output_quiet = True
+        if not opts_new[INFO_LOCAL] and not opts_new[INFO_REMOTE]:
+                opts_new[INFO_LOCAL] = True
+        elif opts_new[INFO_LOCAL] and opts_new[INFO_REMOTE]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [INFO_LOCAL, INFO_REMOTE])
+
+def __parse_set_props(args):
+        """"Parse set property options that were specified on the command
+        line into a dictionary.  Make sure duplicate properties were not
+        specified."""
+
+        set_props = dict()
+        for pv in args:
+                try:
+                        p, v = pv.split("=", 1)
+                except ValueError:
+                        raise InvalidOptionError(msg=_("properties to be set "
+                            "must be of the form '<name>=<value>'. This is "
+                            "what was given: {0}").format(pv))
+
+                if p in set_props:
+                        raise InvalidOptionError(msg=_("a property may only "
+                            "be set once in a command. {0} was set twice"
+                            ).format(p))
+                set_props[p] = v
+
+        return set_props
+
+def __parse_prop_values(args, add=True):
+        """"Parse add or remove property values options that were specified
+        on the command line into a dictionary.  Make sure duplicate properties
+        were not specified."""
+
+        props_values = dict()
+        if add:
+                add_txt = "added"
+        else:
+                add_txt = "removed"
+
+        for pv in args:
+                try:
+                        p, v = pv.split("=", 1)
+                except ValueError:
+                        raise InvalidOptionError(msg=_("property values to be "
+                            "{add} must be of the form '<name>=<value>'. "
+                            "This is what was given: {key}").format(
+                            add=add_txt, key=pv))
+
+                props_values.setdefault(p, [])
+                props_values[p].append(v)
+
+        return props_values
+
+def opts_table_cb_pub_list(api_inst, opts, opts_new):
+        if opts[OUTPUT_FORMAT] == None:
+                opts_new[OUTPUT_FORMAT] = "default"
+
+def opts_table_cb_pub_props(api_inst, opts, opts_new):
+        opts_new[SET_PROPS] = __parse_set_props(opts[SET_PROPS])
+        opts_new[ADD_PROP_VALUES] = __parse_prop_values(opts[ADD_PROP_VALUES])
+        opts_new[REMOVE_PROP_VALUES] = __parse_prop_values(
+            opts[REMOVE_PROP_VALUES], add=False)
+        opts_new[UNSET_PROPS] = set(opts[UNSET_PROPS])
+
+def opts_table_cb_pub_search(api_inst, opts, opts_new):
+        if opts[SEARCH_BEFORE] and opts[SEARCH_AFTER]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [SEARCH_BEFORE, SEARCH_AFTER])
+
+        if opts[SEARCH_BEFORE] and opts[SEARCH_FIRST]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [SEARCH_BEFORE, SEARCH_FIRST])
+
+        if opts[SEARCH_AFTER] and opts[SEARCH_FIRST]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [SEARCH_AFTER, SEARCH_FIRST])
+
+def opts_table_cb_pub_opts(api_inst, opts, opts_new):
+        del opts_new[PUB_DISABLE]
+        del opts_new[PUB_ENABLE]
+        del opts_new[PUB_STICKY]
+        del opts_new[PUB_NON_STICKY]
+
+        if opts[PUB_DISABLE] and opts[PUB_ENABLE]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [PUB_DISABLE, PUB_ENABLE])
+
+        if opts[PUB_STICKY] and opts[PUB_NON_STICKY]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [PUB_STICKY, PUB_NON_STICKY])
+
+        opts_new[PUB_DISABLE] = None
+        if opts[PUB_DISABLE]:
+                opts_new[PUB_DISABLE] = True
+
+        if opts[PUB_ENABLE]:
+                opts_new[PUB_DISABLE] = False
+
+        opts_new[PUB_STICKY] = None
+        if opts[PUB_STICKY]:
+                opts_new[PUB_STICKY] = True
+
+        if opts[PUB_NON_STICKY]:
+                opts_new[PUB_STICKY] = False
+
+        if opts[ORIGIN_URI] and opts[ADD_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [ORIGIN_URI, ADD_ORIGINS])
+
+        if opts[ORIGIN_URI] and opts[REMOVE_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [ORIGIN_URI, REMOVE_ORIGINS])
+
+        if opts[REPO_URI] and opts[ADD_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, ADD_ORIGINS])
+        if opts[REPO_URI] and opts[ADD_MIRRORS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, ADD_MIRRORS])
+        if opts[REPO_URI] and opts[REMOVE_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, REMOVE_ORIGINS])
+        if opts[REPO_URI] and opts[REMOVE_MIRRORS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, REMOVE_MIRRORS])
+        if opts[REPO_URI] and opts[PUB_DISABLE]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, PUB_DISABLE])
+        if opts[REPO_URI] and opts[PUB_ENABLE]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, PUB_ENABLE])
+        if opts[REPO_URI] and not opts[REFRESH_ALLOWED]:
+                raise InvalidOptionError(InvalidOptionError.REQUIRED,
+                    [REPO_URI, REFRESH_ALLOWED])
+        if opts[REPO_URI] and opts[RESET_UUID]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [REPO_URI, RESET_UUID])
+
+        if opts[PROXY_URI] and not (opts[ADD_ORIGINS] or opts[ADD_MIRRORS]
+            or opts[REPO_URI] or opts[REMOVE_ORIGINS] or opts[REMOVE_MIRRORS]):
+                raise InvalidOptionError(InvalidOptionError.REQUIRED_ANY,
+                    [PROXY_URI, ADD_ORIGINS, ADD_MIRRORS, REMOVE_ORIGINS,
+                    REMOVE_MIRRORS, REPO_URI])
+
+        opts_new[ADD_ORIGINS] = set()
+        opts_new[REMOVE_ORIGINS] = set()
+        opts_new[ADD_MIRRORS] = set()
+        opts_new[REMOVE_MIRRORS] = set()
+        for e in opts[ADD_ORIGINS]:
+                opts_new[ADD_ORIGINS].add(misc.parse_uri(e, cwd=_orig_cwd))
+        for e in opts[REMOVE_ORIGINS]:
+                if e == "*":
+                        # Allow wildcard to support an easy, scriptable
+                        # way of removing all existing entries.
+                        opts_new[REMOVE_ORIGINS].add("*")
+                else:
+                        opts_new[REMOVE_ORIGINS].add(misc.parse_uri(e,
+                            cwd=_orig_cwd))
+
+        for e in opts[ADD_MIRRORS]:
+                opts_new[ADD_MIRRORS].add(misc.parse_uri(e, cwd=_orig_cwd))
+        for e in opts[REMOVE_MIRRORS]:
+                if e == "*":
+                        # Allow wildcard to support an easy, scriptable
+                        # way of removing all existing entries.
+                        opts_new[REMOVE_MIRRORS].add("*")
+                else:
+                        opts_new[REMOVE_MIRRORS].add(misc.parse_uri(e,
+                            cwd=_orig_cwd))
+
+        if opts[REPO_URI]:
+                opts_new[REPO_URI] = misc.parse_uri(opts[REPO_URI],
+                    cwd=_orig_cwd)
 
 def opts_table_cb_beopts(api_inst, opts, opts_new):
 
@@ -586,113 +799,206 @@ def opts_table_cb_actuators(api_inst, opts, opts_new):
 # options is a list which can contain:
 #
 # - Tuples formatted as:
-#       (k, v, [val])
+#       (k, v, [val], {})
 #   where the values are:
 #       k: the key value for the options dictionary
 #       v: the default value. valid values are: True/False, None, [], 0
 #       val: the valid argument list. It should be a list,
 #       and it is optional.
+#       {}: json schema.
 #
 
+opts_table_info = [
+    opts_table_cb_info,
+    (DISPLAY_LICENSE,    False, [], {"type": "boolean"}),
+    (INFO_LOCAL,         False, [], {"type": "boolean"}),
+    (INFO_REMOTE,        False, [], {"type": "boolean"}),
+    (ORIGINS,            [],    [], {"type": "array",
+                                     "items": {"type": "string"}
+                                    }),
+    (QUIET,              False, [], {"type": "boolean"})
+]
+
+opts_table_pub_list = [
+    opts_table_cb_pub_list,
+    (PREFERRED_ONLY,  False, [],                 {"type": "boolean"}),
+    (INC_DISABLED,    True,  [],                 {"type": "boolean"}),
+    (OUTPUT_FORMAT,   None,  ["default", "tsv"], {"type": ["null", "string"]}),
+    (OMIT_HEADERS,    False, [],                 {"type": "boolean"})
+]
+
+opts_table_pub_props = [
+    opts_table_cb_pub_props,
+    (SET_PROPS,           [], [], {"type": "array", "items": {"type": "string"}
+                                  }),
+    (ADD_PROP_VALUES,     [], [], {"type": "array",
+                                   "items": {"type": "string"}
+                                  }),
+    (REMOVE_PROP_VALUES,  [], [], {"type": "array",
+                                   "items": {"type": "string"}
+                                  }),
+    (UNSET_PROPS,         [], [], {"type": "array", "items": {"type": "string"}
+                                  })
+]
+
+opts_table_ssl = [
+    (SSL_KEY,            None, [],  {"type": ["null", "string"]}),
+    (SSL_CERT,           None, [],  {"type": ["null", "string"]}),
+    (APPROVED_CA_CERTS,  [],   [],  {"type": "array",
+                                     "items": {"type": "string"}
+                                    }),
+    (REVOKED_CA_CERTS,   [],   [],  {"type": "array",
+                                     "items": {"type": "string"}
+                                    }),
+    (UNSET_CA_CERTS,     [],   [],  {"type": "array",
+                                     "items": {"type": "string"}
+                                    }),
+]
+
+opts_table_pub_search = [
+    opts_table_cb_pub_search,
+    (SEARCH_BEFORE,   None,  [], {"type": ["null", "string"]}),
+    (SEARCH_AFTER,    None,  [], {"type": ["null", "string"]}),
+    (SEARCH_FIRST,    False, [], {"type": "boolean"}),
+]
+
+opts_table_pub_opts = [
+    opts_table_cb_pub_opts,
+    (ORIGIN_URI,      None,  [], {"type": ["null", "string"]}),
+    (RESET_UUID,      False, [], {"type": "boolean"}),
+    (ADD_MIRRORS,     [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (REMOVE_MIRRORS,  [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (ADD_ORIGINS,     [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (REMOVE_ORIGINS,  [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (REFRESH_ALLOWED, True,  [], {"type": "boolean"}),
+    (PUB_ENABLE,      False, [], {"type": "boolean"}),
+    (PUB_DISABLE,     False, [], {"type": "boolean"}),
+    (PUB_STICKY,      False, [], {"type": "boolean"}),
+    (PUB_NON_STICKY,  False, [], {"type": "boolean"}),
+    (REPO_URI,        None,  [], {"type": ["null", "string"]}),
+    (PROXY_URI,       None,  [], {"type": ["null", "string"]}),
+]
 
 opts_table_beopts = [
     opts_table_cb_beopts,
-    (BACKUP_BE_NAME,     None),
-    (BE_NAME,            None),
-    (DENY_NEW_BE,        False),
-    (NO_BACKUP_BE,       False),
-    (BE_ACTIVATE,        True),
-    (REQUIRE_BACKUP_BE,  False),
-    (REQUIRE_NEW_BE,     False),
+    (BACKUP_BE_NAME,     None,  [], {"type": ["null", "string"]}),
+    (BE_NAME,            None,  [], {"type": ["null", "string"]}),
+    (DENY_NEW_BE,        False, [], {"type": "boolean"}),
+    (NO_BACKUP_BE,       False, [], {"type": "boolean"}),
+    (BE_ACTIVATE,        True,  [], {"type": "boolean"}),
+    (REQUIRE_BACKUP_BE,  False, [], {"type": "boolean"}),
+    (REQUIRE_NEW_BE,     False, [], {"type": "boolean"}),
 ]
 
 opts_table_concurrency = [
     opts_table_cb_concurrency,
-    (CONCURRENCY,        None),
+    (CONCURRENCY,        None, [], {"type": ["null", "integer"],
+        "minimum": 0}),
 ]
 
 opts_table_force = [
-    (FORCE,                False),
+    (FORCE,                False, [], {"type": "boolean"}),
 ]
 
 opts_table_li_ignore = [
     opts_table_cb_li_ignore,
-    (LI_IGNORE_ALL,        False),
-    (LI_IGNORE_LIST,       []),
+    (LI_IGNORE_ALL,        False, [], {"type": "boolean"}),
+    (LI_IGNORE_LIST,       [],    [], {"type": "array",
+                                       "items": {"type": "string"}
+                                      }),
 ]
 
 opts_table_li_md_only = [
     opts_table_cb_md_only,
-    (LI_MD_ONLY,         False),
+    (LI_MD_ONLY,         False, [], {"type": "boolean"}),
 ]
 
 opts_table_li_no_pkg_updates = [
-    (LI_PKG_UPDATES,       True),
+    (LI_PKG_UPDATES,       True, [], {"type": "boolean"}),
 ]
 
 opts_table_li_no_psync = [
     opts_table_cb_li_no_psync,
-    (LI_PARENT_SYNC,       True),
+    (LI_PARENT_SYNC,       True, [], {"type": "boolean"}),
 ]
 
 opts_table_li_props = [
     opts_table_cb_li_props,
-    (LI_PROPS,             []),
+    (LI_PROPS,             [], [], {"type": "array",
+                                    "items": {"type": "string"}
+                                   }),
 ]
 
 opts_table_li_target = [
     opts_table_cb_li_target,
-    (LI_TARGET_ALL,        False),
-    (LI_TARGET_LIST,       []),
+    (LI_TARGET_ALL,        False, [], {"type": "boolean"}),
+    (LI_TARGET_LIST,       [],    [], {"type": "array",
+                                       "items": {"type": "string"}
+                                      }),
 ]
 
 opts_table_li_target1 = [
     opts_table_cb_li_target1,
-    (LI_NAME,              None),
+    (LI_NAME,              None, [], {"type": ["null", "string"]}),
 ]
 
 opts_table_li_recurse = [
     opts_table_cb_li_recurse,
-    (LI_ERECURSE_ALL,       False),
-    (LI_ERECURSE_INCL,      []),
-    (LI_ERECURSE_EXCL,      []),
+    (LI_ERECURSE_ALL,       False, [], {"type": "boolean"}),
+    (LI_ERECURSE_INCL,      [], [], {"type": "array",
+                                     "items": {"type": "string"}
+                                    }),
+    (LI_ERECURSE_EXCL,      [], [], {"type": "array",
+        "items": {"type": "string"}}),
 ]
 
 opts_table_licenses = [
-    (ACCEPT,               False),
-    (SHOW_LICENSES,        False),
+    (ACCEPT,               False, [], {"type": "boolean"}),
+    (SHOW_LICENSES,        False, [], {"type": "boolean"}),
 ]
 
 opts_table_no_headers = [
     opts_table_cb_no_headers_vs_quiet,
-    (OMIT_HEADERS,         False),
+    (OMIT_HEADERS,         False, [], {"type": "boolean"}),
 ]
 
 opts_table_no_index = [
-    (UPDATE_INDEX,         True),
+    (UPDATE_INDEX,         True, [], {"type": "boolean"}),
 ]
 
 opts_table_no_refresh = [
-    (REFRESH_CATALOGS,     True),
+    (REFRESH_CATALOGS,     True, [], {"type": "boolean"}),
 ]
 
 opts_table_reject = [
-    (REJECT_PATS,          []),
+    (REJECT_PATS,          [], [], {"type": "array",
+                                    "items": {"type": "string"}
+                                   }),
 ]
 
 opts_table_verbose = [
     opts_table_cb_v,
-    (VERBOSE,              0),
+    (VERBOSE,              0, [], {"type": "integer", "minimum": 0}),
 ]
 
 opts_table_quiet = [
     opts_table_cb_q,
-    (QUIET,                False),
+    (QUIET,                False, [], {"type": "boolean"}),
 ]
 
 opts_table_parsable = [
     opts_table_cb_parsable,
-    (PARSABLE_VERSION,     None),
+    (PARSABLE_VERSION,     None,  [], {"type": ["null", "integer"],
+                                       "minimum": 0, "maximum": 0
+                                      }),
 ]
 
 opts_table_nqv = \
@@ -700,32 +1006,37 @@ opts_table_nqv = \
     opts_table_verbose + \
     [
     opts_table_cb_nqv,
-    (NOEXECUTE,            False),
+    (NOEXECUTE,            False, [], {"type": "boolean"}),
 ]
 
 opts_table_origins = [
     opts_table_cb_origins,
-    (ORIGINS,              []),
+    (ORIGINS,              [], [], {"type": "array",
+                                    "items": {"type": "string"}
+                                   }),
 ]
 
 opts_table_stage = [
     opts_table_cb_stage,
-    (STAGE,                None),
+    (STAGE,                None, [], {"type": ["null", "string"]}),
 ]
 
 opts_table_missing = [
-    (IGNORE_MISSING,       False),
+    (IGNORE_MISSING,       False, [], {"type": "boolean"}),
 ]
 
 opts_table_actuators = [
     opts_table_cb_actuators,
-    (SYNC_ACT,             False),
-    (ACT_TIMEOUT,          None)
+    (SYNC_ACT,             False, [], {"type": "boolean"}),
+    (ACT_TIMEOUT,          None,  [], {"type": ["null", "integer"],
+        "minimum": 0})
 ]
 
 opts_table_publishers = [
     opts_table_cb_publishers,
-    (PUBLISHERS, []),
+    (PUBLISHERS, [], [], {"type": "array",
+                          "items": {"type": "string"}
+                         }),
 ]
 
 #
@@ -752,6 +1063,17 @@ opts_install = \
     opts_table_stage + \
     opts_table_li_recurse + \
     opts_table_actuators + \
+    []
+
+opts_set_publisher = \
+    opts_table_ssl + \
+    opts_table_pub_opts + \
+    opts_table_pub_props + \
+    opts_table_pub_search + \
+    []
+
+opts_info = \
+    opts_table_info + \
     []
 
 # "update" cmd inherits all main cmd options
@@ -861,11 +1183,11 @@ opts_list_inventory = \
     opts_table_verbose + \
     [
     opts_cb_list,
-    (LIST_INSTALLED_NEWEST, False),
-    (LIST_ALL,              False),
-    (LIST_NEWEST,           False),
-    (SUMMARY,               False),
-    (LIST_UPGRADABLE,       False),
+    (LIST_INSTALLED_NEWEST, False, [], {"type": "boolean"}),
+    (LIST_ALL,              False, [], {"type": "boolean"}),
+    (LIST_NEWEST,           False, [], {"type": "boolean"}),
+    (SUMMARY,               False, [], {"type": "boolean"}),
+    (LIST_UPGRADABLE,       False, [], {"type": "boolean"}),
 ]
 
 opts_dehydrate = \
@@ -890,6 +1212,10 @@ opts_verify = \
     opts_table_cb_nqv
 ]
 
+opts_publisher = \
+    opts_table_pub_list + \
+    []
+
 pkg_op_opts = {
 
     pkgdefs.PKG_OP_ATTACH         : opts_attach_linked,
@@ -900,17 +1226,21 @@ pkg_op_opts = {
     pkgdefs.PKG_OP_DETACH         : opts_detach_linked,
     pkgdefs.PKG_OP_EXACT_INSTALL  : opts_main,
     pkgdefs.PKG_OP_FIX            : opts_fix,
+    pkgdefs.PKG_OP_INFO           : opts_info,
     pkgdefs.PKG_OP_INSTALL        : opts_install,
     pkgdefs.PKG_OP_LIST           : opts_list_inventory,
     pkgdefs.PKG_OP_LIST_LINKED    : opts_list_linked,
     pkgdefs.PKG_OP_PROP_LINKED    : opts_list_property_linked,
     pkgdefs.PKG_OP_PUBCHECK       : [],
+    pkgdefs.PKG_OP_PUBLISHER_LIST : opts_publisher,
     pkgdefs.PKG_OP_REHYDRATE      : opts_dehydrate,
     pkgdefs.PKG_OP_REVERT         : opts_revert,
     pkgdefs.PKG_OP_SET_MEDIATOR   : opts_set_mediator,
+    pkgdefs.PKG_OP_SET_PUBLISHER  : opts_set_publisher,
     pkgdefs.PKG_OP_SET_PROP_LINKED: opts_set_property_linked,
     pkgdefs.PKG_OP_SYNC           : opts_sync_linked,
     pkgdefs.PKG_OP_UNINSTALL      : opts_uninstall,
+    pkgdefs.PKG_OP_UNSET_PUBLISHER: [],
     pkgdefs.PKG_OP_UPDATE         : opts_update,
     pkgdefs.PKG_OP_VERIFY         : opts_verify
 }
@@ -942,7 +1272,9 @@ def get_pkg_opts_defaults(op, opt, add_table=None):
                 if len(o) == 2:
                         opt_name, default = o
                 elif len(o) == 3:
-                        opt_name, default, valid_args = o
+                        opt_name, default, dummy_valid_args = o
+                elif len(o) == 4:
+                        opt_name, default, dummy_valid_args, dummy_schema = o
                 if opt_name == opt:
                         return default
 
@@ -986,6 +1318,8 @@ def opts_assemble(op, api_inst, opts, add_table=None, cwd=None):
                         avail_opt, default = o
                 elif len(o) == 3:
                         avail_opt, default, valid_args = o
+                elif len(o) == 4:
+                        avail_opt, default, valid_args, schema = o
                 # for options not given we substitue the default value
                 if avail_opt not in opts:
                         rv[avail_opt] = default
@@ -1012,7 +1346,8 @@ def opts_assemble(op, api_inst, opts, add_table=None, cwd=None):
                         if raise_error:
                                 raise InvalidOptionError(
                                     InvalidOptionError.ARG_INVALID,
-                                    [opts[avail_opt], avail_opt])
+                                    [opts[avail_opt], avail_opt],
+                                    valid_args=valid_args)
 
                 rv[avail_opt] = opts[avail_opt]
 

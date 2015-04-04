@@ -33,6 +33,7 @@ import inspect
 import itertools
 import math
 import sys
+import simplejson as json
 import time
 from functools import wraps
 
@@ -1874,7 +1875,8 @@ class CommandLineProgressTracker(ProgressTracker):
 
                 # The following string was originally expressed as
                 # "%*s: ". % \
-                #     (self.phase_max_width, self.phase_names[self.major_phase])
+                #     (self.phase_max_width, self.phase_names[self.major_phase]
+                #     )
                 # however xgettext incorrectly flags this as an improper use of
                 # non-parameterized messages, which gets detected as an error
                 # during our build.  So instead, we express the string using
@@ -2220,6 +2222,482 @@ class CommandLineProgressTracker(ProgressTracker):
                     revs=self.reversion_revs.pair(),
                     adjs=self.reversion_adjs.items))
 
+
+class RADProgressTracker(CommandLineProgressTracker):
+        """This progress tracker is a subclass of CommandLineProgressTracker
+        which is specific for RAD progress event.
+        """
+
+        # Default to printing periodic output every 5 seconds.
+        TERM_DELAY = 5.0
+
+        # Output constants.
+        O_PHASE = "phase"
+        O_MESSAGE = "message"
+        O_TIME = "time_taken"
+        O_TIME_U = "time_unit"
+        O_TYPE = "type"
+        O_PRO_ITEMS = "processed_items"
+        O_GOAL_ITEMS = "goal_items"
+        O_PCT_DONE = "percent_done"
+        O_ITEM_U = "item_unit"
+        O_SPEED = "speed"
+        O_RUNNING = "running"
+        O_GOAL_PRO_ITEMS = "goal_processed_items"
+        O_REV_ITEMS = "reversioned_items"
+        O_GOAL_REV_ITEMS = "goal_reversion_items"
+        O_ADJ_ITEMS = "adjusted_items"
+        O_LI_OUTPUT = "li_output"
+        O_LI_ERROR = "li_errors"
+
+        def __init__(self, term_delay=TERM_DELAY, prog_event_handler=None):
+                CommandLineProgressTracker.__init__(self,
+                    term_delay=term_delay)
+                self.__prog_event_handler = prog_event_handler
+
+        def _phase_prefix(self):
+                if self.major_phase == self.PHASE_UTILITY:
+                        return ""
+
+                return self.phase_names[self.major_phase]
+
+        #
+        # Helper routines
+        #
+        def __prep_prog_json_str(self, msg=None, phase=None, prog_json=None):
+                # prepare progress json formatted string.
+                phase_name = self._phase_prefix()
+                if phase:
+                        phase_name = phase
+                if prog_json:
+                        ret_json = prog_json
+                else:
+                        ret_json = {self.O_PHASE: phase_name,
+                                    self.O_MESSAGE: msg
+                                   }
+                return json.dumps(ret_json)
+
+        def __generic_start(self, msg):
+                # In the case of listing/up-to-date check operations, we
+                # don't want to output planning information, so skip.
+                if self.purpose != self.PURPOSE_NORMAL:
+                        return
+
+                prog_str = self.__prep_prog_json_str(msg)
+                # If event handler is set, report an event. Otherwise, print.
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+                # indicate that we just printed.
+                self._ptimer.reset_now()
+
+        def __generic_done(self, msg=None, phase=None, prog_json=None):
+                # See __generic_start above.
+                if self.purpose != self.PURPOSE_NORMAL:
+                        return
+                if msg is None:
+                        msg = _("Done")
+                prog_str = self.__prep_prog_json_str(msg, phase=phase,
+                        prog_json=prog_json)
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str, end='\n')
+                self._ptimer.reset()
+
+        def __generic_done_item(self, item, msg=None):
+                # See __generic_start above.
+                if self.purpose != self.PURPOSE_NORMAL:
+                        return
+                if msg is None:
+                        if global_settings.client_output_verbose > 0:
+                                msg = _("Done ({elapsed:>.3f}s)")
+                        else:
+                                msg = _("Done")
+                outmsg = msg.format(elapsed=item.elapsed())
+                prog_str = self.__prep_prog_json_str(outmsg)
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str, end='\n')
+                self._ptimer.reset()
+
+        def _change_purpose(self, op, np):
+                self._ptimer.reset()
+                if np == self.PURPOSE_PKG_UPDATE_CHK:
+                        prog_str = self.__prep_prog_json_str(
+                            _("Checking that pkg(5) is up to date ..."))
+                        if self.__prog_event_handler:
+                                self.__prog_event_handler(desc=prog_str+"\n")
+                        else:
+                                self._pe.cprint(prog_str)
+
+        def _cache_cats_output(self, outspec):
+                if outspec.first:
+                        self.__generic_start(_("Caching catalogs ..."))
+                if outspec.last:
+                        self.__generic_done()
+
+        def _load_cat_cache_output(self, outspec):
+                if outspec.first:
+                        self.__generic_start(_("Loading catalog cache ..."))
+                if outspec.last:
+                        self.__generic_done()
+
+        def _refresh_output_progress(self, outspec):
+                # See __generic_start above.
+                if self.purpose != self.PURPOSE_NORMAL:
+                        return
+                if "startpublisher" in outspec.changed:
+                        p = self.pub_refresh.curinfo.prefix
+                        if self.refresh_target_catalog:
+                                m = _("Retrieving target catalog '{0}' "
+                                    "...").format(p)
+                        elif self.refresh_full_refresh:
+                                m = _("Retrieving catalog '{0}' ...").format(p)
+                        else:
+                                m = _("Refreshing catalog '{0}' ...").format(p)
+                        self.__generic_start(m)
+                elif "endpublisher" in outspec.changed:
+                        self.__generic_done()
+
+        def _plan_output(self, outspec, planitem):
+                if outspec.first:
+                        self.__generic_start(_("{0} ...").format(planitem.name))
+                if outspec.last:
+                        self.__generic_done_item(planitem)
+
+        def _plan_output_all_done(self):
+                prog_json = {self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Planning completed"),
+                    self.O_TIME: self.plan_generic.elapsed(),
+                    self.O_TIME_U: _("second")}
+                self.__generic_done(prog_json=prog_json)
+
+        def _mfst_fetch(self, outspec):
+                if not self._ptimer.time_to_print() and \
+                    not outspec.first and not outspec.last:
+                        return
+                if self.purpose != self.PURPOSE_NORMAL:
+                        return
+
+                # Reset timer; this prevents double printing for
+                # outspec.first and then again for the timer expiration
+                if outspec.first:
+                        self._ptimer.reset_now()
+
+                #
+                # There are a couple of reasons we might fetch manifests--
+                # pkgrecv, pkglint, etc. can all do this.  _phase_prefix()
+                # adjusts the output based on the major phase.
+                #
+                goalitems = self.mfst_fetch.goalitems
+                if goalitems == None:
+                        goalitems = 0
+                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Fetching manifests"),
+                    self.O_PRO_ITEMS: self.mfst_fetch.items,
+                    self.O_GOAL_ITEMS: goalitems,
+                    self.O_PCT_DONE: int(self.mfst_fetch.pctdone()),
+                    self.O_ITEM_U: _("manifest")
+                    })
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def _dl_output(self, outspec):
+                if not self._ptimer.time_to_print() and not outspec.first and \
+                    not outspec.last:
+                        return
+
+                # Reset timer; this prevents double printing for
+                # outspec.first and then again for the timer expiration
+                if outspec.first:
+                        self._ptimer.reset_now()
+
+                if not outspec.last:
+                        speed = self.dl_estimator.get_speed_estimate()
+                else:
+                        speed = self.dl_estimator.get_final_speed()
+                speedstr = "" if speed is None else \
+                    "({0})".format(self.dl_estimator.format_speed(speed))
+
+                if not outspec.last:
+                        # 'first' or time to print
+                        prog_str = json.dumps({
+                            self.O_PHASE: self._phase_prefix(),
+                            self.O_MESSAGE: _("Downloading"),
+                            self.O_PRO_ITEMS: self.dl_bytes.items,
+                            self.O_GOAL_ITEMS: self.dl_bytes.goalitems,
+                            self.O_PCT_DONE: int(self.dl_bytes.pctdone()),
+                            self.O_SPEED: speedstr,
+                            self.O_ITEM_U: _("byte")
+                            })
+                        if self.__prog_event_handler:
+                                self.__prog_event_handler(desc=prog_str+"\n")
+                        else:
+                                self._pe.cprint(prog_str)
+                else:
+                        # 'last'
+                        prog_json = {self.O_PHASE: self._phase_prefix(),
+                            self.O_MESSAGE: _("Download completed"),
+                            self.O_PRO_ITEMS: self.dl_bytes.goalitems,
+                            self.O_SPEED: speedstr,
+                            self.O_ITEM_U: _("byte"),
+                            self.O_TIME: self.dl_estimator.elapsed(),
+                            self.O_TIME_U: _("second")
+                            }
+                        self.__generic_done(prog_json=prog_json)
+
+        def _republish_output(self, outspec):
+                if "startpkg" in outspec.changed:
+                        pkgfmri = self.repub_pkgs.curinfo
+                        self.__generic_start(_("Republish: {0} ... ").format(
+                            pkgfmri.get_fmri(anarchy=True)))
+                if "endpkg" in outspec.changed:
+                        self.__generic_done()
+
+        def _archive_output(self, outspec):
+                if not self._ptimer.time_to_print() and not outspec:
+                        return
+                if outspec.first:
+                        # tell ptimer that we just printed.
+                        self._ptimer.reset_now()
+
+                if outspec.last:
+                        prog_json = {self.O_PHASE: self._phase_prefix(),
+                            self.O_MESSAGE: _("Archiving completed"),
+                            self.O_PRO_ITEMS: self.archive_bytes.goalitems,
+                            self.O_ITEM_U: _("byte"),
+                            self.O_TIME: self.archive_items.elapsed(),
+                            self.O_TIME_U: _("second")
+                            }
+                        self.__generic_done(prog_json=prog_json)
+                        return
+
+                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Archiving"),
+                    self.O_PRO_ITEMS: self.archive_bytes.items,
+                    self.O_GOAL_ITEMS: self.archive_bytes.goalitems,
+                    self.O_PCT_DONE: int(self.archive_bytes.pctdone()),
+                    self.O_ITEM_U: _("byte")
+                    })
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        #
+        # The progress tracking infrastructure wants to tell us about each
+        # kind of action activity (install, remove, update).  For this
+        # progress tracker, we don't really care to expose that to the user,
+        # so we work in terms of total actions instead.
+        #
+        def _act_output(self, outspec, actionitem):
+                if not self._ptimer.time_to_print() and not outspec.first:
+                        return
+                # reset timer, since we're definitely printing now...
+                self._ptimer.reset_now()
+                total_actions = \
+                    sum(x.items for x in self._actionitems.values())
+                total_goal = \
+                    sum(x.goalitems for x in self._actionitems.values())
+                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Action activity"),
+                    self.O_PRO_ITEMS: total_actions,
+                    self.O_GOAL_ITEMS: total_goal,
+                    self.O_TYPE: actionitem.name,
+                    self.O_ITEM_U: _("action")
+                    })
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def _act_output_all_done(self):
+                total_goal = \
+                    sum(x.goalitems for x in self._actionitems.values())
+                total_time = \
+                    sum(x.elapsed() for x in self._actionitems.values())
+                if total_goal == 0:
+                        return
+
+                prog_json = {self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Completed actions activities"),
+                    self.O_PRO_ITEMS: total_goal,
+                    self.O_ITEM_U: _("action"),
+                    self.O_TIME: total_time,
+                    self.O_TIME_U: _("second")
+                    }
+                prog_str = self.__prep_prog_json_str(prog_json=prog_json)
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def _job_output(self, outspec, jobitem):
+                if outspec.first:
+                        self.__generic_start("{0} ... ".format(jobitem.name))
+                if outspec.last:
+                        self.__generic_done_item(jobitem)
+
+        def _lint_output(self, outspec):
+                if outspec.first:
+                        if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
+                                msg = "{0} ... ".format(
+                                    self.lintitems.name)
+                                prog_str = json.dumps({
+                                    self.O_PHASE: _("Setup"),
+                                    self.O_MESSAGE: msg
+                                    })
+                                if self.__prog_event_handler:
+                                        self.__prog_event_handler(
+                                            desc=prog_str+"\n")
+                                else:
+                                        self._pe.cprint(prog_str)
+                        elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
+                                msg = "# --- {0} ---".format(
+                                    self.lintitems.name)
+                                prog_str = json.dumps({
+                                    self.O_PHASE: _("Execute"),
+                                    self.O_MESSAGE: msg
+                                    })
+                                if self.__prog_event_handler:
+                                        self.__prog_event_handler(
+                                            desc=prog_str+"\n")
+                                else:
+                                        self._pe.cprint(prog_str)
+                if outspec.last:
+                        if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
+                                self.__generic_done(phase=_("Setup"))
+                        elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
+                                pass
+
+        def _li_recurse_start_output(self):
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        self.__generic_start(
+                            _("Linked image publisher check ..."))
+                        return
+
+        def _li_recurse_end_output(self):
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        self.__generic_done()
+                        return
+                prog_str = self.__prep_prog_json_str(
+                    _("Finished processing linked images."))
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(
+                            desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def __li_dump_output(self, output):
+                if not output:
+                        return []
+                lines = output.splitlines()
+                return lines
+
+        def _li_recurse_output_output(self, lin, stdout, stderr):
+                if not stdout and not stderr:
+                        return
+                prog_json = {self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Linked image '{0}' output:").format(lin)}
+                prog_json[self.O_LI_OUTPUT] = self.__li_dump_output(stdout)
+                prog_json[self.O_LI_ERROR] = self.__li_dump_output(stderr)
+                prog_str = self.__prep_prog_json_str(prog_json=prog_json)
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(
+                            desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def _li_recurse_status_output(self, done):
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        return
+
+                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                    self.O_MESSAGE: _("Linked images status"),
+                    self.O_PRO_ITEMS: done,
+                    self.O_GOAL_ITEMS: self.linked_total,
+                    self.O_ITEM_U: _("linked image"),
+                    self.O_RUNNING: [str(i) for i in self.linked_running]
+                    })
+
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(
+                            desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        def _li_recurse_progress_output(self, lin):
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        return
+
+        def _reversion(self, pfmri, outspec):
+                if not self._ptimer.time_to_print() and not outspec:
+                        return
+
+                if outspec.first:
+                        # tell ptimer that we just printed.
+                        self._ptimer.reset_now()
+
+                if outspec.last:
+                        prog_json = {self.O_PHASE: _("Reversion"),
+                            self.O_MESSAGE: _("Done"),
+                            self.O_PRO_ITEMS: self.reversion_pkgs.items,
+                            self.O_REV_ITEMS: self.reversion_revs.items,
+                            self.O_ADJ_ITEMS: self.reversion_adjs.items,
+                            self.O_ITEM_U: _("package")
+                            }
+                        self.__generic_done(prog_json=prog_json)
+                        return
+
+                prog_str = json.dumps({self.O_PHASE: _("Reversion"),
+                    self.O_MESSAGE: "Reversioning",
+                    self.O_PRO_ITEMS: self.reversion_pkgs.items,
+                    self.O_GOAL_PRO_ITEMS: self.reversion_pkgs.goalitems,
+                    self.O_REV_ITEMS: self.reversion_revs.items,
+                    self.O_GOAL_REV_ITEMS: self.reversion_revs.goalitems,
+                    self.O_ADJ_ITEMS: self.reversion_adjs.items,
+                    self.O_ITEM_U: _("package")
+                    })
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(
+                            desc=prog_str+"\n")
+                else:
+                        self._pe.cprint(prog_str)
+
+        @classmethod
+        def get_json_schema(cls):
+                """Construct json schema."""
+
+                json_schema = {"$schema":
+                    "http://json-schema.org/draft-04/schema#",
+                    "title": "progress schema",
+                    "type": "object",
+                    "properties": {cls.O_PHASE:  {"type": "string"},
+                        cls.O_MESSAGE: {"type": "string"},
+                        cls.O_TIME: {"type": "number"},
+                        cls.O_TIME_U: {"type": "string"},
+                        cls.O_TYPE: {"type": "string"},
+                        cls.O_PRO_ITEMS: {"type": "number"},
+                        cls.O_GOAL_ITEMS: {"type": "number"},
+                        cls.O_PCT_DONE: {"type": "number"},
+                        cls.O_ITEM_U: {"type": "string"},
+                        cls.O_SPEED: {"type": "string"},
+                        cls.O_RUNNING: {"type": "array"},
+                        cls.O_GOAL_PRO_ITEMS: {"type": "number"},
+                        cls.O_REV_ITEMS : {"type": "number"},
+                        cls.O_GOAL_REV_ITEMS: {"type": "number"}, 
+                        cls.O_ADJ_ITEMS: {"type": "number"},
+                        cls.O_LI_OUTPUT : {"type": "array"},
+                        cls.O_LI_ERROR : {"type": "array"},
+                        },
+                    "required":  [cls.O_PHASE, cls.O_MESSAGE]
+                }
+                return json_schema
 
 class LinkedChildProgressTracker(CommandLineProgressTracker):
         """This tracker is used for recursion with linked children.

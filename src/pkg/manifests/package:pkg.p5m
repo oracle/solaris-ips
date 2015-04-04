@@ -34,8 +34,13 @@ dir  path=$(PYDIRVP)/pkg
 file path=$(PYDIRVP)/pkg-0.1-py2.7.egg-info
 dir  path=$(PYDIRVP)/pkg/64
 file path=$(PYDIRVP)/pkg/64/_varcet.so
+file path=$(PYDIRVP)/pkg/64/arch.so
+file path=$(PYDIRVP)/pkg/64/elf.so
+file path=$(PYDIRVP)/pkg/64/pspawn.so
 file path=$(PYDIRVP)/pkg/64/sha512_t.so
+file path=$(PYDIRVP)/pkg/64/solver.so
 file path=$(PYDIRVP)/pkg/64/sysattr.so
+file path=$(PYDIRVP)/pkg/64/syscallat.so
 file path=$(PYDIRVP)/pkg/__init__.py
 file path=$(PYDIRVP)/pkg/_varcet.so
 dir  path=$(PYDIRVP)/pkg/actions
@@ -86,6 +91,7 @@ file path=$(PYDIRVP)/pkg/client/api_errors.py
 # it can't import libbe_py, and is graceful in the face of its absence.
 #
 file path=$(PYDIRVP)/pkg/client/bootenv.py pkg.depend.bypass-generate=.*libbe.*
+file path=$(PYDIRVP)/pkg/client/client_api.py
 file path=$(PYDIRVP)/pkg/client/debugvalues.py
 file path=$(PYDIRVP)/pkg/client/firmware.py
 file path=$(PYDIRVP)/pkg/client/history.py
@@ -109,6 +115,7 @@ file path=$(PYDIRVP)/pkg/client/printengine.py
 file path=$(PYDIRVP)/pkg/client/progress.py
 file path=$(PYDIRVP)/pkg/client/publisher.py
 file path=$(PYDIRVP)/pkg/client/query_parser.py
+file path=$(PYDIRVP)/pkg/client/rad_pkg.py
 file path=$(PYDIRVP)/pkg/client/sigpolicy.py
 dir  path=$(PYDIRVP)/pkg/client/transport
 file path=$(PYDIRVP)/pkg/client/transport/__init__.py
@@ -247,6 +254,7 @@ dir  path=usr/share/lib
 dir  path=usr/share/lib/pkg
 file path=usr/share/lib/pkg/opensolaris.org.sections
 file path=usr/share/lib/pkg/pkglintrc
+file path=usr/share/lib/pkg/rad-invoke mode=0755
 dir  path=usr/share/lib/pkg/web
 dir  path=usr/share/lib/pkg/web/_themes
 dir  path=usr/share/lib/pkg/web/_themes/default

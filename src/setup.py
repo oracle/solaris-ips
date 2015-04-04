@@ -122,6 +122,7 @@ man1m_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man1m'
 man5_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man5'
 
 resource_dir = 'usr/share/lib/pkg'
+rad_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
 ignored_deps_dir = 'usr/share/pkg/ignored_deps'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
@@ -176,6 +177,9 @@ scripts_sunos = {
         svc_share_dir: [
                 ['svc/pkg5_include.sh', 'pkg5_include.sh'],
                 ],
+        rad_dir: [
+                ["rad-invoke.py", "rad-invoke"],
+                ],
         }
 
 scripts_windows = {
@@ -210,6 +214,9 @@ scripts_other_unix = {
         lib_dir: [
                 ['depot.py', 'depot.py'],
                 ['scripts/pkg.depotd.sh', 'pkg.depotd'],
+                ],
+        rad_dir: [
+                ["rad-invoke.py", "rad-invoke"],
                 ],
         }
 
@@ -1502,9 +1509,7 @@ if osname == "sunos":
         link_args = [ "-zstrip-class=nonalloc" ]
 else:
         link_args = []
-# We don't support 64-bit yet, but 64-bit _actions.so, _common.so, and
-# _varcet.so are needed for a system repository mod_wsgi application,
-# sysrepo_p5p.py.
+
 ext_modules = [
         Extension(
                 'actions._actions',
@@ -1536,7 +1541,8 @@ ext_modules = [
                 include_dirs = include_dirs + ["."],
                 extra_compile_args = compile_args,
                 extra_link_args = link_args + solver_link_args,
-                define_macros = [('_FILE_OFFSET_BITS', '64')]
+                define_macros = [('_FILE_OFFSET_BITS', '64')],
+                build_64 = True
                 ),
         ]
 elf_libraries = None
@@ -1624,6 +1630,7 @@ if osname == 'sunos' or osname == "linux":
                         libraries = elf_libraries,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args,
+                        build_64 = True
                         ),
                 ]
 
@@ -1640,7 +1647,8 @@ if osname == 'sunos' or osname == "linux":
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,
-                            define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            define_macros = [('_FILE_OFFSET_BITS', '64')],
+                            build_64 = True
                             ),
                     Extension(
                             'pspawn',
@@ -1648,7 +1656,8 @@ if osname == 'sunos' or osname == "linux":
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,
-                            define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            define_macros = [('_FILE_OFFSET_BITS', '64')],
+                            build_64 = True
                             ),
                     Extension(
                             'syscallat',
@@ -1656,7 +1665,8 @@ if osname == 'sunos' or osname == "linux":
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,
-                            define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            define_macros = [('_FILE_OFFSET_BITS', '64')],
+                            build_64 = True
                             ),
                     Extension(
                             'sysattr',

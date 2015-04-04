@@ -68,6 +68,7 @@ try:
         import pkg.client.api as api
         import pkg.client.api_errors as api_errors
         import pkg.client.bootenv as bootenv
+        import pkg.client.client_api as client_api
         import pkg.client.progress as progress
         import pkg.client.linkedimage as li
         import pkg.client.publisher as publisher
@@ -446,21 +447,6 @@ def list_inventory(op, api_inst, pargs,
     verbose):
         """List packages."""
 
-        api_inst.progresstracker.set_purpose(
-            api_inst.progresstracker.PURPOSE_LISTING)
-
-        variants = False
-        pkg_list = api.ImageInterface.LIST_INSTALLED
-        if list_all:
-                variants = True
-                pkg_list = api.ImageInterface.LIST_ALL
-        elif list_installed_newest:
-                pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST
-        elif list_newest:
-                pkg_list = api.ImageInterface.LIST_NEWEST
-        elif list_upgradable:
-                pkg_list = api.ImageInterface.LIST_UPGRADABLE
-
         if verbose:
                 fmt_str = "{0:76} {1}"
         elif summary:
@@ -468,63 +454,33 @@ def list_inventory(op, api_inst, pargs,
         else:
                 fmt_str = "{0:49} {1:26} {2}"
 
-        # Each pattern in pats can be a partial or full FMRI, so
-        # extract the individual components.  These patterns are
-        # transformed here so that partial failure can be detected
-        # when more than one pattern is provided.
-        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
-        if not rval:
-                return EXIT_OOPS
-
-        api_inst.log_operation_start(op)
-        if pkg_list != api_inst.LIST_INSTALLED and refresh_catalogs:
-                # If the user requested packages other than those
-                # installed, ensure that a refresh is performed if
-                # needed since the catalog may be out of date or
-                # invalid as a result of publisher information
-                # changing (such as an origin uri, etc.).
-                try:
-                        api_inst.refresh()
-                except api_errors.PermissionsException:
-                        # Ignore permission exceptions with the
-                        # assumption that an unprivileged user is
-                        # executing this command and that the
-                        # refresh doesn't matter.
-                        pass
-                except api_errors.CatalogRefreshException as e:
-                        succeeded = display_catalog_failures(e,
-                            ignore_perms_failure=True)
-                        if succeeded != e.total:
-                                # If total number of publishers does
-                                # not match 'successful' number
-                                # refreshed, abort.
-                                return EXIT_OOPS
-
-                except:
-                        # Ignore the above error and just use what
-                        # already exists.
-                        pass
-
         state_map = [
-            [(api.PackageInfo.INSTALLED, "i")],
-            [(api.PackageInfo.FROZEN, "f")],
+            [("installed", "i")],
+            [("frozen", "f")],
             [
-                (api.PackageInfo.OBSOLETE, "o"),
-                (api.PackageInfo.RENAMED, "r")
+                ("obsolete", "o"),
+                ("renamed", "r")
             ],
         ]
 
-        # Now get the matching list of packages and display it.
-        found = False
         ppub = api_inst.get_highest_ranked_publisher()
         if ppub:
                 ppub = ppub.prefix
-        try:
-                res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
-                    raise_unmatched=True, repos=origins, variants=variants)
-                for pt, summ, cats, states, attrs in res:
-                        found = True
 
+        # getting json output.
+        out_json = client_api._list_inventory(op, api_inst, pargs,
+            li_parent_sync, list_all, list_installed_newest, list_newest,
+            list_upgradable, origins, quiet, refresh_catalogs)
+
+        errors = None
+        if "errors" in out_json:
+                errors = out_json["errors"]
+                errors = _generate_error_messages(out_json["status"], errors,
+                    selected_type=["catalog_refresh", "catalog_refresh_failed"])
+
+        if "data" in out_json:
+                data = out_json["data"]
+                for entry in data:
                         if quiet:
                                 continue
 
@@ -545,14 +501,15 @@ def list_inventory(op, api_inst, pargs,
                         status = ""
                         for sentry in state_map:
                                 for s, v in sentry:
-                                        if s in states:
+                                        if s in entry["states"]:
                                                 st = v
                                                 break
                                         else:
                                                 st = "-"
                                 status += st
 
-                        pub, stem, ver = pt
+                        pub, stem, ver = entry["pub"], entry["pkg"], \
+                            entry["version"]
                         if pub == ppub:
                                 spub = ""
                         else:
@@ -571,6 +528,7 @@ def list_inventory(op, api_inst, pargs,
                                 continue
 
                         # Display short FMRI + summary.
+                        summ = entry["summary"]
                         pf = stem + spub
                         if summary:
                                 if summ is None:
@@ -581,113 +539,11 @@ def list_inventory(op, api_inst, pargs,
                         # Default case; display short FMRI and version info.
                         sver = version.Version.split(ver)[-1]
                         msg(fmt_str.format(pf, sver, status))
+        # Print errors left.
+        if errors:
+                _generate_error_messages(out_json["status"], errors)
 
-                if not found and not pargs:
-                        if pkg_list == api_inst.LIST_INSTALLED:
-                                if not quiet:
-                                        error(_("no packages installed"))
-                                api_inst.log_operation_end(
-                                    result=RESULT_NOTHING_TO_DO)
-                                return EXIT_OOPS
-                        elif pkg_list == api_inst.LIST_INSTALLED_NEWEST:
-                                if not quiet:
-                                        error(_("no packages installed or available "
-                                            "for installation"))
-                                api_inst.log_operation_end(
-                                    result=RESULT_NOTHING_TO_DO)
-                                return EXIT_OOPS
-                        elif pkg_list == api_inst.LIST_UPGRADABLE:
-                                if not quiet:
-                                        img = api_inst._img
-                                        cat = img.get_catalog(
-                                            img.IMG_CATALOG_INSTALLED)
-                                        if cat.package_count > 0:
-                                                error(_("no packages have "
-                                                    "newer versions available"))
-                                        else:
-                                                error(_("no packages are "
-                                                    "installed"))
-                                api_inst.log_operation_end(
-                                    result=RESULT_NOTHING_TO_DO)
-                                return EXIT_OOPS
-                        else:
-                                api_inst.log_operation_end(
-                                    result=RESULT_NOTHING_TO_DO)
-                                return EXIT_OOPS
-
-                api_inst.log_operation_end()
-                return EXIT_OK
-        except (api_errors.InvalidPackageErrors,
-            api_errors.ActionExecutionError,
-            api_errors.PermissionsException) as e:
-                error(e, cmd=op)
-                return EXIT_OOPS
-        except api_errors.CatalogRefreshException as e:
-                display_catalog_failures(e)
-                return EXIT_OOPS
-        except api_errors.InventoryException as e:
-                if e.illegal:
-                        for i in e.illegal:
-                                error(i)
-                        api_inst.log_operation_end(
-                            result=RESULT_FAILED_BAD_REQUEST)
-                        return EXIT_OOPS
-
-                if found and not quiet:
-                        # Ensure a blank line is inserted after list for
-                        # partial failure case.
-                        logger.error(" ")
-
-                if quiet:
-                        # Print nothing.
-                        pass
-                elif pkg_list == api.ImageInterface.LIST_ALL or \
-                    pkg_list == api.ImageInterface.LIST_NEWEST:
-                        error(_("no known packages matching:\n  {0}").format(
-                            "\n  ".join(e.notfound)), cmd=op)
-                elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
-                        error(_("no packages matching the following patterns "
-                            "are allowed by installed incorporations, or image "
-                            "variants that are known or installed\n  "
-                            "{0}").format("\n  ".join(e.notfound)), cmd=op)
-                        logger.error("Use -af to allow all versions.")
-                elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
-                        # Creating a list of packages that are uptodate
-                        # and that are not installed on the system.
-                        no_updates = []
-                        not_installed = []
-                        try:
-                                for entry in api_inst.get_pkg_list(
-                                    api.ImageInterface.LIST_INSTALLED,
-                                    patterns=e.notfound, raise_unmatched=True):
-                                        pub, stem, ver = entry[0]
-                                        no_updates.append(stem)
-                        except api_errors.InventoryException as exc:
-                                not_installed = exc.notfound
-
-                        err_str = ""
-                        if not_installed:
-                                err_str = _("no packages matching the following"
-                                    " patterns are installed:\n  {0}").format(
-                                    "\n  ".join(not_installed))
-
-                        if no_updates:
-                                err_str = err_str + _("no updates are available"
-                                    " for the following packages:\n  "
-                                    "{0}").format("\n  ".join(no_updates))
-                        if err_str:
-                                error(err_str, cmd=op)
-                else:
-                        error(_("no packages matching the following patterns "
-                            "are installed:\n  {0}").format(
-                            "\n  ".join(e.notfound)), cmd=op)
-
-                if found and e.notfound:
-                        # Only some patterns matched.
-                        api_inst.log_operation_end()
-                        return EXIT_PARTIAL
-                api_inst.log_operation_end(result=RESULT_NOTHING_TO_DO)
-                return EXIT_OOPS
+        return out_json["status"]
 
 def get_tracker():
         if global_settings.client_output_parsable_version is not None:
@@ -1232,6 +1088,7 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
 
 def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
     parsable_version, quiet, quiet_plan, show_licenses, stage, verbose):
+        """Display plan function."""
 
         plan = api_inst.describe()
         if not plan:
@@ -1300,7 +1157,87 @@ def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
 
                         msg(msg_text)
 
+def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
+    omit_headers=False, op=None, parsable_version=None, quiet=False,
+    quiet_plan=False, show_licenses=False, stage=None, verbose=None,
+    get_parsable_plan_cb=None, plan_only=False):
+        """Callback function for displaying plan."""
+
+        if plan_only:
+                __display_plan(api_inst, verbose, noexecute)
+                return
+
+        plan = api_inst.describe()
+        if not plan:
+                return
+
+        if stage not in [API_STAGE_DEFAULT, API_STAGE_PLAN] and not quiet_plan:
+                # we should have displayed licenses earlier so mark all
+                # licenses as having been displayed.
+                display_plan_licenses(api_inst, show_req=False)
+                return
+
+        if not quiet and parsable_version is None and \
+            api_inst.planned_nothingtodo(li_ignore_all=True):
+                if not quiet_plan:
+                        # nothing todo
+                        if op == PKG_OP_UPDATE:
+                                s = _("No updates available for this image.")
+                        else:
+                                s = _("No updates necessary for this image.")
+                        if api_inst.ischild():
+                                s += " ({0})".format(api_inst.get_linked_name())
+                        msg(s)
+
+                if op != PKG_OP_FIX or not verbose:
+                        # Even nothingtodo, but need to continue to display INFO
+                        # message if verbose is True.
+                        return
+
+        if parsable_version is None and not quiet_plan:
+                display_plan_licenses(api_inst, show_all=show_licenses)
+
+        if not quiet and not quiet_plan:
+                __display_plan(api_inst, verbose, noexecute, op=op)
+
+        if parsable_version is not None and get_parsable_plan_cb:
+                parsable_plan = get_parsable_plan_cb(api_inst,
+                    parsable_version, child_image_plans)
+                logger.info(json.dumps(parsable_plan))
+        elif not quiet:
+                if not quiet_plan:
+                        # Ensure a blank line is inserted before the message
+                        # output.
+                        msg()
+
+                last_item_id = None
+                for item_id, msg_time, msg_type, msg_text in \
+                    plan.gen_item_messages(ordered=True):
+
+                        if last_item_id is None or last_item_id != item_id:
+                                last_item_id = item_id
+                                if not noexecute and op == PKG_OP_FIX and \
+                                    msg_type == MSG_ERROR:
+                                        msg(_("Repairing: {0:50}").format(
+                                            item_id))
+
+                        if op == PKG_OP_FIX and not verbose and \
+                            msg_type == MSG_INFO:
+                                # If verbose is False, don't display any INFO
+                                # messages.
+                                continue
+
+                        if not omit_headers:
+                                omit_headers = True
+                                msg(_("{pkg_name:70} {result:>7}").format(
+                                    pkg_name=_("PACKAGE"),
+                                    result=_("STATUS")))
+
+                        msg(msg_text)
+
 def __api_prepare_plan(operation, api_inst):
+        """Prepare plan."""
+
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
@@ -1348,6 +1285,8 @@ def __api_prepare_plan(operation, api_inst):
         return EXIT_OK
 
 def __api_execute_plan(operation, api_inst):
+        """Execute plan."""
+
         rval = None
         try:
                 api_inst.execute_plan()
@@ -1446,6 +1385,7 @@ def __api_execute_plan(operation, api_inst):
         return rval
 
 def __api_alloc(imgdir, exact_match, pkg_image_used):
+        """Allocate API instance."""
 
         progresstracker = get_tracker()
         try:
@@ -1471,6 +1411,8 @@ def __api_alloc(imgdir, exact_match, pkg_image_used):
                 return
 
 def __api_plan_exception(op, noexecute, verbose, api_inst):
+        """Handle plan exception."""
+
         e_type, e, e_traceback = sys.exc_info()
 
         if e_type == api_errors.ImageNotFoundException:
@@ -1564,6 +1506,7 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
     _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
     _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+        """API plan invocation entry."""
 
         # All the api interface functions that we invoke have some
         # common arguments.  Set those up now.
@@ -1833,7 +1776,7 @@ class RemoteDispatch(object):
                         _api_inst.reset()
 
                 if "pargs" not in pwargs:
-                       pwargs["pargs"] = []
+                        pwargs["pargs"] = []
 
                 op_func = cmds[op][0]
 
@@ -1982,35 +1925,116 @@ def change_facet(op, api_inst, pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
-def install(op, api_inst, pargs,
-    accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
-    li_ignore, li_erecurse, li_parent_sync, new_be, noexecute, origins,
-    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
-    stage, update_index, verbose):
-        """Attempt to take package specified to INSTALLED state.  The operands
-        are interpreted as glob patterns."""
+def __handle_client_json_api_output(out_json, op):
+        """This is the main client_json_api output handling function used for
+        install, update and uninstall and so on."""
 
-        if not pargs:
-                usage(_("at least one package name required"), cmd=op)
+        if "errors" in out_json:
+                _generate_error_messages(out_json["status"],
+                    out_json["errors"], cmd=op)
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
-        if not rval:
-                return EXIT_OOPS
+        if "data" in out_json and "release_notes_url" in out_json["data"]:
+                msg("\n" + "-" * 75)
+                msg(_("NOTE: Please review release notes posted at:\n" ))
+                msg(out_json["data"]["release_notes_url"])
+                msg("-" * 75 + "\n")
+        return out_json["status"]
 
-        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
-        if not xrval:
-                return EXIT_OOPS
+def _emit_error_general_cb(status, err, cmd=None, selected_type=[],
+    add_info=misc.EmptyDict):
+        """Callback for emitting general errors."""
 
-        return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins,
-            _parsable_version=parsable_version, _quiet=quiet,
-            _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
-            act_timeout=act_timeout, backup_be=backup_be,
-            backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, li_erecurse=li_erecurse,
-            li_parent_sync=li_parent_sync, new_be=new_be, pkgs_inst=pargs,
-            refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index)
+        if status == EXIT_BADOPT:
+                # Usage errors are not in any specific type, print it only
+                # there is no selected type.
+                if not selected_type:
+                        usage(err["reason"], cmd=cmd)
+                else:
+                        return False
+        elif "errtype" in err:
+                if err["errtype"] == "format_update":
+                        # if the selected_type is specified and err not in selected type,
+                        # Don't print and return False.
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+                        emsg("\n")
+                        emsg(err["reason"])
+                        emsg(_("To continue, execute 'pkg update-format' as a "
+                            "privileged user and then try again.  Please note "
+                            "that updating the format of the image will render "
+                            "it unusable with older versions of the pkg(5) "
+                            "system."))
+                elif err["errtype"] == "catalog_refresh":
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        if "reason" in err:
+                                emsg(err["reason"])
+                        elif "info" in err:
+                                msg(err["info"])
+                elif err["errtype"] == "catalog_refresh_failed":
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        if "reason" in err:
+                                emsg(" ")
+                                emsg(err["reason"])
+                elif err["errtype"] == "publisher_set":
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        emsg(err["reason"])
+                elif err["errtype"] == "plan_license":
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        emsg(err["reason"])
+                        emsg(_("To indicate that you "
+                            "agree to and accept the terms of the licenses of "
+                            "the packages listed above, use the --accept "
+                            "option. To display all of the related licenses, "
+                            "use the --licenses option."))
+                elif err["errtype"] in ["inventory", "inventory_extra"]:
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        emsg(" ")
+                        emsg(err["reason"])
+                        if err["errtype"] == "inventory_extra":
+                                emsg("Use -af to allow all versions.")
+                elif err["errtype"] == "unsupported_repo_op":
+                        if selected_type and err["errtype"] not in selected_type:
+                                return False
+
+                        emsg(_("""
+To add a publisher using this repository, execute the following command as a
+privileged user:
+
+pkg set-publisher -g {0} <publisher>
+""").format(add_info["repo_uri"]))
+                elif "info" in err:
+                        msg(err["info"])
+                elif "reason" in err:
+                        emsg(err["reason"])
+        else:
+                if selected_type:
+                        return False
+
+                if "reason" in err:
+                        emsg(err["reason"])
+                elif "info" in err:
+                        msg(err["info"])
+        return True
+
+def _generate_error_messages(status, err_list,
+    msg_cb=_emit_error_general_cb, selected_type=[], cmd=None,
+    add_info=misc.EmptyDict):
+        """Generate error messages."""
+
+        errs_left = [err for err in err_list if not msg_cb(status, err,
+            selected_type=selected_type, cmd=cmd, add_info=add_info)]
+        # Return errors not being printed.
+        return errs_left
 
 def exact_install(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
@@ -2019,51 +2043,30 @@ def exact_install(op, api_inst, pargs,
         """Attempt to take package specified to INSTALLED state.
         The operands are interpreted as glob patterns."""
 
-        if not pargs:
-                usage(_("at least one package name required"), cmd=op)
+        out_json = client_api._exact_install(op, api_inst, pargs, accept,
+            backup_be, backup_be_name, be_activate, be_name, li_ignore,
+            li_parent_sync, new_be, noexecute, origins, parsable_version,
+            quiet, refresh_catalogs, reject_pats, show_licenses, update_index,
+            verbose, display_plan_cb=display_plan_cb, logger=logger)
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
-        if not rval:
-                return EXIT_OOPS
+        return  __handle_client_json_api_output(out_json, op)
 
-        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
-        if not xrval:
-                return EXIT_OOPS
+def install(op, api_inst, pargs,
+    accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    li_ignore, li_erecurse, li_parent_sync, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
+        """Attempt to take package specified to INSTALLED state.  The operands
+        are interpreted as glob patterns."""
 
-        return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins, _quiet=quiet,
-            _show_licenses=show_licenses, _verbose=verbose,
-            backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name,
-            li_parent_sync=li_parent_sync, new_be=new_be,
-            _parsable_version=parsable_version, pkgs_inst=pargs,
-            refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index)
+        out_json = client_api._install(op, api_inst, pargs,
+            accept, act_timeout, backup_be, backup_be_name, be_activate,
+            be_name, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
+            origins, parsable_version, quiet, refresh_catalogs, reject_pats,
+            show_licenses, stage, update_index, verbose,
+            display_plan_cb=display_plan_cb, logger=logger)
 
-def uninstall(op, api_inst, pargs,
-    act_timeout, backup_be, backup_be_name, be_activate, be_name,
-    ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
-    parsable_version, quiet, stage, update_index, verbose):
-        """Attempt to take package specified to DELETED state."""
-
-        if not pargs:
-                usage(_("at least one package name required"), cmd=op)
-
-        if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd=op)
-
-        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
-        if not rval:
-                return EXIT_OOPS
-
-        return __api_op(op, api_inst, _li_ignore=li_ignore,
-            _noexecute=noexecute, _parsable_version=parsable_version,
-            _quiet=quiet, _stage=stage, _verbose=verbose,
-            act_timeout=act_timeout, backup_be=backup_be,
-            backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, ignore_missing=ignore_missing,
-            li_erecurse=li_erecurse, li_parent_sync=li_parent_sync,
-            new_be=new_be, pkgs_to_uninstall=pargs, update_index=update_index)
+        return  __handle_client_json_api_output(out_json, op)
 
 def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
     be_activate, be_name, force, ignore_missing, li_ignore, li_erecurse,
@@ -2072,39 +2075,28 @@ def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
         """Attempt to take all installed packages specified to latest
         version."""
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
-        if not rval:
-                return EXIT_OOPS
+        out_json = client_api._update(op, api_inst, pargs, accept, act_timeout,
+            backup_be, backup_be_name, be_activate, be_name, force,
+            ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be,
+            noexecute, origins, parsable_version, quiet, refresh_catalogs,
+            reject_pats, show_licenses, stage, update_index, verbose,
+            display_plan_cb=display_plan_cb, logger=logger)
 
-        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
-        if not xrval:
-                return EXIT_OOPS
+        return __handle_client_json_api_output(out_json, op)
 
-        if res:
-                # If there are specific installed packages to update,
-                # then take only those packages to the latest version
-                # allowed by the patterns specified.  (The versions
-                # specified can be older than what is installed.)
-                pkgs_update = pargs
-                review_release_notes = False
-        else:
-                # If no packages were specified, attempt to update all installed
-                # packages.
-                pkgs_update = None
-                review_release_notes = True
+def uninstall(op, api_inst, pargs,
+    act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
+    parsable_version, quiet, stage, update_index, verbose):
+        """Attempt to take package specified to DELETED state."""
 
-        return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins,
-            _parsable_version=parsable_version, _quiet=quiet,
-            _review_release_notes=review_release_notes,
-            _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
-            act_timeout=act_timeout, backup_be=backup_be,
-            backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, force=force, ignore_missing=ignore_missing,
-            li_erecurse=li_erecurse, li_parent_sync=li_parent_sync,
-            new_be=new_be, pkgs_update=pkgs_update,
-            refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index)
+        out_json = client_api._uninstall(op, api_inst, pargs,
+            act_timeout, backup_be, backup_be_name, be_activate, be_name,
+            ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be,
+            noexecute, parsable_version, quiet, stage, update_index, verbose,
+            display_plan_cb=display_plan_cb, logger=logger)
+
+        return __handle_client_json_api_output(out_json, op)
 
 def revert(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, new_be, noexecute,
@@ -2888,248 +2880,57 @@ def search(api_inst, args):
                 retcode = EXIT_OK
         return retcode
 
-def info(api_inst, args):
+def info(op, api_inst, pargs, display_license, info_local, info_remote,
+    origins, quiet):
         """Display information about a package or packages.
         """
 
-        display_license = False
-        info_local = False
-        info_remote = False
-        origins = set()
-        quiet = False
+        ret_json = client_api._info(op, api_inst, pargs, display_license,
+            info_local, info_remote, origins, quiet)
 
-        opts, pargs = getopt.getopt(args, "g:lqr", ["license"])
-        for opt, arg in opts:
-                if opt == "-g":
-                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
-                        info_remote = True
-                elif opt == "-l":
-                        info_local = True
-                elif opt == "-q":
-                        quiet = True
-                        global_settings.client_output_quiet = True
-                elif opt == "-r":
-                        info_remote = True
-                elif opt == "--license":
-                        display_license = True
+        if "data" in ret_json:
+                # display_license is true.
+                if "licenses" in ret_json["data"]:
+                        data_type = "licenses"
+                elif "package_attrs" in ret_json["data"]:
+                        data_type = "package_attrs"
 
-        if not info_local and not info_remote:
-                info_local = True
-        elif info_local and info_remote:
-                usage(_("-l and -r may not be combined"), cmd="info")
+                for i, pis in enumerate(ret_json["data"][data_type]):
+                        if not quiet and i > 0:
+                                msg("")
 
-        if info_remote and not pargs:
-                usage(_("must request remote info for specific packages"),
+                        if display_license and not quiet:
+                                for lic in pis:
+                                        msg(lic)
+                                continue
+
+                        try:
+                                max_width = max(
+                                    len(attr[0])
+                                    for attr in pis
+                                )
+                        except ValueError:
+                                # Only display header if there are
+                                # other attributes to show.
+                                continue
+                        for attr_l in pis:
+                                attr, kval = tuple(attr_l)
+                                label = "{0}: ".format(attr.rjust(max_width))
+                                res = "\n".join(item for item in kval)
+                                if res:
+                                        wrapper = textwrap.TextWrapper(
+                                            initial_indent=label,
+                                            break_on_hyphens=False,
+                                            break_long_words=False,
+                                            subsequent_indent=(max_width + 2) \
+                                            * " ", width=80)
+                                        msg(wrapper.fill(res))
+
+        if "errors" in ret_json:
+                _generate_error_messages(ret_json["status"], ret_json["errors"],
                     cmd="info")
 
-        err = 0
-
-        # Reset the progress tracker here, because we may have to switch to a
-        # different tracker due to the options parse.
-        _api_inst.progresstracker = get_tracker()
-
-        api_inst.progresstracker.set_purpose(
-            api_inst.progresstracker.PURPOSE_LISTING)
-
-        info_needed = api.PackageInfo.ALL_OPTIONS
-        if not display_license:
-                info_needed = api.PackageInfo.ALL_OPTIONS - \
-                    frozenset([api.PackageInfo.LICENSES])
-        info_needed -= api.PackageInfo.ACTION_OPTIONS
-        info_needed |= frozenset([api.PackageInfo.DEPENDENCIES])
-
-        try:
-                ret = api_inst.info(pargs, info_local, info_needed,
-                    ranked=info_remote, repos=origins)
-        except api_errors.ImageFormatUpdateNeeded as e:
-                format_update_error(e)
-                return EXIT_OOPS
-        except api_errors.NoPackagesInstalledException:
-                error(_("no packages installed"))
-                return EXIT_OOPS
-        except api_errors.ApiException as e:
-                error(e)
-                return EXIT_OOPS
-
-        pis = ret[api.ImageInterface.INFO_FOUND]
-        notfound = ret[api.ImageInterface.INFO_MISSING]
-        illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-
-        if illegals:
-                # No other results will be returned if illegal patterns were
-                # specified.
-                for i in illegals:
-                        logger.error(str(i))
-                return EXIT_OOPS
-
-        no_licenses = []
-        for i, pi in enumerate(pis):
-                if not quiet and i > 0:
-                        msg("")
-
-                if display_license:
-                        if not pi.licenses:
-                                no_licenses.append(pi.fmri)
-                        elif not quiet:
-                                for lic in pi.licenses:
-                                        msg(lic)
-                        continue
-
-                if quiet:
-                        continue
-
-                state = ""
-                if api.PackageInfo.INSTALLED in pi.states:
-                        state = _("Installed")
-                elif api.PackageInfo.UNSUPPORTED in pi.states:
-                        state = _("Unsupported")
-                else:
-                        state = _("Not installed")
-
-                lparen = False
-                if api.PackageInfo.OBSOLETE in pi.states:
-                        state += " ({0}".format(_("Obsolete"))
-                        lparen = True
-                elif api.PackageInfo.RENAMED in pi.states:
-                        state += " ({0}".format(_("Renamed"))
-                        lparen = True
-                if api.PackageInfo.FROZEN in pi.states:
-                        if lparen:
-                                state += ", {0})".format(_("Frozen"))
-                        else:
-                                state += " ({0})".format(_("Frozen"))
-                elif lparen:
-                        state += ")"
-
-                # XXX-Consider using Python's 2.7 collections.OrderedDict
-                attr_list = []
-                seen = {}
-
-                def __append_attr_tuples(label, values):
-                        """Given arguments label and values, either extend
-                        the existing tuple value or add new one to
-                        attr_list"""
-
-                        if not isinstance(values, list):
-                                values = [values]
-                        if label in seen:
-                                seen[label].extend(values)
-                        else:
-                                attr_list.append((label, values))
-                                seen[label] = values
-
-                __append_attr_tuples(_("Name"), pi.pkg_stem)
-                __append_attr_tuples(_("Summary"), pi.summary)
-                if pi.description:
-                        __append_attr_tuples(_("Description"), pi.description)
-                if pi.category_info_list:
-                        category_info = []
-                        verbose = len(pi.category_info_list) > 1
-                        category_info.append \
-                            (pi.category_info_list[0].__str__(verbose))
-                        if len(pi.category_info_list) > 1:
-                                for ci in pi.category_info_list[1:]:
-                                        category_info.append \
-                                            (ci.__str__(verbose))
-                        __append_attr_tuples(_("Category"), category_info)
-
-                __append_attr_tuples(_("State"), state)
-
-                # Renamed packages have dependencies, but the dependencies
-                # may not apply to this image's variants so won't be
-                # returned.
-                if api.PackageInfo.RENAMED in pi.states:
-                        __append_attr_tuples(_("Renamed to"), pi.dependencies)
-
-                # XXX even more info on the publisher would be nice?
-                __append_attr_tuples(_("Publisher"), pi.publisher)
-                hum_ver = pi.get_attr_values("pkg.human-version")
-                if hum_ver and hum_ver[0] != str(pi.version):
-                        __append_attr_tuples(_("Version"), "{0} ({1})".format(
-                            pi.version, hum_ver[0]))
-                else:
-                        __append_attr_tuples(_("Version"), str(pi.version))
-
-                __append_attr_tuples(_("Branch"), str(pi.branch))
-                __append_attr_tuples(_("Packaging Date"), pi.packaging_date)
-                __append_attr_tuples(_("Size"), misc.bytes_to_str(pi.size))
-                __append_attr_tuples(_("FMRI"),
-                    pi.fmri.get_fmri(include_build=False))
-                # XXX add license/copyright info here?
-
-                addl_attr_list = {
-                    "info.keyword": _("Additional Keywords"),
-                    "info.upstream": _("Project Contact"),
-                    "info.maintainer": _("Project Maintainer"),
-                    "info.maintainer-url": _("Project Maintainer URL"),
-                    "pkg.detailed-url": _("Project URL"),
-                    "info.upstream-url": _("Project URL"),
-                    "info.repository-changeset": _("Repository Changeset"),
-                    "info.repository-url": _("Source URL"),
-                    "info.source-url": _("Source URL")
-                }
-
-                for item in sorted(pi.attrs, key=addl_attr_list.get):
-                        if item in addl_attr_list:
-                                __append_attr_tuples(addl_attr_list[item],
-                                    pi.get_attr_values(item))
-
-                try:
-                        max_width = max(
-                            len(attr[0])
-                            for attr in attr_list
-                        )
-                except ValueError:
-                        # Only display header if there are other attributes to
-                        # show
-                        continue
-
-                for attr, kval in attr_list:
-                        label = "{0}: ".format(attr.rjust(max_width))
-                        res = "\n".join(item for item in kval)
-                        if res:
-                                wrapper = textwrap.TextWrapper(
-                                    initial_indent=label,
-                                    break_on_hyphens=False,
-                                    break_long_words=False,
-                                    subsequent_indent=(max_width + 2) * " ",
-                                    width=80)
-                                msg(wrapper.fill(res))
-
-        if notfound:
-                if pis:
-                        err = EXIT_PARTIAL
-                        if not quiet:
-                                logger.error("")
-                else:
-                        err = EXIT_OOPS
-
-                if not quiet:
-                        if info_local:
-                                logger.error(_("""\
-pkg: info: no packages matching the following patterns you specified are
-installed on the system.  Try specifying -r to query remotely:"""))
-                        elif info_remote:
-                                logger.error(_("""\
-pkg: info: no packages matching the following patterns you specified were
-found in the catalog.  Try relaxing the patterns, refreshing, and/or
-examining the catalogs:"""))
-                        logger.error("")
-                        for p in notfound:
-                                logger.error("        {0}".format(p))
-
-        if no_licenses:
-                if len(no_licenses) == len(pis):
-                        err = EXIT_OOPS
-                else:
-                        err = EXIT_PARTIAL
-
-                if not quiet:
-                        error(_("no license information could be found for the "
-                            "following packages:"))
-                        for pfmri in no_licenses:
-                                logger.error("\t{0}".format(pfmri))
-        return err
+        return ret_json["status"]
 
 def calc_widths(lines, attrs, widths=None):
         """Given a set of lines and a set of attributes, calculate the minimum
@@ -3671,7 +3472,12 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                 # be printed on the same line as the spinner.
                 return EXIT_OOPS, ("\n" + str(e))
 
-def publisher_set(api_inst, args):
+def publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
+    reset_uuid, add_mirrors, remove_mirrors, add_origins, remove_origins,
+    refresh_allowed, disable, sticky, search_before, search_after,
+    search_first, approved_ca_certs, revoked_ca_certs, unset_ca_certs,
+    set_props, add_prop_values, remove_prop_values, unset_props, repo_uri,
+    proxy_uri):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-g|--add-origin origin to add] [-G|--remove-origin origin to
             remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
@@ -3688,944 +3494,141 @@ def publisher_set(api_inst, args):
             [--proxy proxy to use]
             [publisher] """
 
-        cmd_name = "set-publisher"
+        out_json = client_api._publisher_set(op, api_inst, pargs, ssl_key,
+            ssl_cert, origin_uri, reset_uuid, add_mirrors, remove_mirrors,
+            add_origins, remove_origins, refresh_allowed, disable, sticky,
+            search_before, search_after, search_first, approved_ca_certs,
+            revoked_ca_certs, unset_ca_certs, set_props, add_prop_values,
+            remove_prop_values, unset_props, repo_uri, proxy_uri)
 
-        ssl_key = None
-        ssl_cert = None
-        origin_uri = None
-        reset_uuid = False
-        add_mirrors = set()
-        remove_mirrors = set()
-        add_origins = set()
-        remove_origins = set()
-        refresh_allowed = True
-        disable = None
-        sticky = None
-        search_before = None
-        search_after = None
-        search_first = False
-        repo_uri = None
-        proxy_uri = None
+        errors = None
+        if "errors" in out_json:
+                errors = out_json["errors"]
+                errors = _generate_error_messages(out_json["status"], errors,
+                    selected_type=["publisher_set"])
 
-        approved_ca_certs = []
-        revoked_ca_certs = []
-        unset_ca_certs = []
-        set_props = {}
-        add_prop_values = {}
-        remove_prop_values = {}
-        unset_props = set()
-
-        opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
-            ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
-            "no-refresh", "reset-uuid", "enable", "disable", "sticky",
-            "non-sticky", "search-after=", "search-before=", "search-first",
-            "approve-ca-cert=", "revoke-ca-cert=", "unset-ca-cert=",
-            "set-property=", "add-property-value=", "remove-property-value=",
-            "unset-property=", "proxy="])
-
-        for opt, arg in opts:
-                if opt == "-c":
-                        ssl_cert = arg
-                elif opt == "-d" or opt == "--disable":
-                        disable = True
-                elif opt == "-e" or opt == "--enable":
-                        disable = False
-                elif opt == "-g" or opt == "--add-origin":
-                        add_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
-                elif opt == "-G" or opt == "--remove-origin":
-                        if arg == "*":
-                                # Allow wildcard to support an easy, scriptable
-                                # way of removing all existing entries.
-                                remove_origins.add("*")
-                        else:
-                                remove_origins.add(misc.parse_uri(arg,
-                                    cwd=orig_cwd))
-                elif opt == "-k":
-                        ssl_key = arg
-                elif opt == "-O":
-                        origin_uri = arg
-                elif opt == "-m" or opt == "--add-mirror":
-                        add_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
-                elif opt == "-M" or opt == "--remove-mirror":
-                        if arg == "*":
-                                # Allow wildcard to support an easy, scriptable
-                                # way of removing all existing entries.
-                                remove_mirrors.add("*")
-                        else:
-                                remove_mirrors.add(misc.parse_uri(arg,
-                                    cwd=orig_cwd))
-                elif opt == "-p":
-                        if repo_uri:
-                                usage(_("The -p option can be specified only "
-                                    "once."), cmd=cmd_name)
-                        repo_uri = misc.parse_uri(arg, cwd=orig_cwd)
-                elif opt in ("-P", "--search-first"):
-                        search_first = True
-                elif opt == "--reset-uuid":
-                        reset_uuid = True
-                elif opt == "--no-refresh":
-                        refresh_allowed = False
-                elif opt == "--sticky":
-                        sticky = True
-                elif opt == "--non-sticky":
-                        sticky = False
-                elif opt == "--search-before":
-                        search_before = arg
-                elif opt == "--search-after":
-                        search_after = arg
-                elif opt == "--approve-ca-cert":
-                        approved_ca_certs.append(arg)
-                elif opt == "--revoke-ca-cert":
-                        revoked_ca_certs.append(arg)
-                elif opt == "--unset-ca-cert":
-                        unset_ca_certs.append(arg)
-                elif opt == "--set-property":
-                        t = arg.split("=", 1)
-                        if len(t) < 2:
-                                usage(_("properties to be set must be of the "
-                                    "form '<name>=<value>'. This is what was "
-                                    "given: {0}").format(arg), cmd=cmd_name)
-                        if t[0] in set_props:
-                                usage(_("a property may only be set once in a "
-                                    "command. {0} was set twice").format(t[0]),
-                                    cmd=cmd_name)
-                        set_props[t[0]] = t[1]
-                elif opt == "--add-property-value":
-                        t = arg.split("=", 1)
-                        if len(t) < 2:
-                                usage(_("property values to be added must be "
-                                    "of the form '<name>=<value>'. This is "
-                                    "what was given: {0}").format(arg),
-                                    cmd=cmd_name)
-                        add_prop_values.setdefault(t[0], [])
-                        add_prop_values[t[0]].append(t[1])
-                elif opt == "--remove-property-value":
-                        t = arg.split("=", 1)
-                        if len(t) < 2:
-                                usage(_("property values to be removed must be "
-                                    "of the form '<name>=<value>'. This is "
-                                    "what was given: {0}").format(arg),
-                                    cmd=cmd_name)
-                        remove_prop_values.setdefault(t[0], [])
-                        remove_prop_values[t[0]].append(t[1])
-                elif opt == "--unset-property":
-                        unset_props.add(arg)
-                elif opt == "--proxy":
-                        proxy_uri = arg
-
-        name = None
-        if len(pargs) == 0 and not repo_uri:
-                usage(_("requires a publisher name"), cmd="set-publisher")
-        elif len(pargs) > 1:
-                usage(_("only one publisher name may be specified"),
-                    cmd="set-publisher")
-        elif pargs:
-                name = pargs[0]
-
-        if origin_uri and (add_origins or remove_origins):
-                usage(_("the -O and -g, --add-origin, -G, or --remove-origin "
-                    "options may not be combined"), cmd="set-publisher")
-
-        if (search_before and search_after) or \
-            (search_before and search_first) or (search_after and search_first):
-                usage(_("search-before, search-after, and search-first (-P) "
-                    "may not be combined"), cmd="set-publisher")
-
-        if repo_uri and (add_origins or add_mirrors or remove_origins or
-            remove_mirrors or disable != None or not refresh_allowed or
-            reset_uuid):
-                usage(_("the -p option may not be combined with the -g, "
-                    "--add-origin, -G, --remove-origin, -m, --add-mirror, "
-                    "-M, --remove-mirror, --enable, --disable, --no-refresh, "
-                    "or --reset-uuid options"), cmd="set-publisher")
-
-        if proxy_uri and not (add_origins or add_mirrors or repo_uri or
-            remove_origins or remove_mirrors):
-                usage(_("the --proxy argument may only be combined with the -g,"
-                    " --add-origin,  -m, --add-mirror, or -p options"),
-                    cmd="set-publisher")
-
-        # Get sanitized SSL Cert/Key input values.
-        ssl_cert, ssl_key = _get_ssl_cert_key(api_inst.root, api_inst.is_zone,
-            ssl_cert, ssl_key)
-
-        if not repo_uri:
-                # Normal case.
-                ret = _set_pub_error_wrap(_add_update_pub, name, [],
-                    api_inst, name, disable=disable, sticky=sticky,
-                    origin_uri=origin_uri, add_mirrors=add_mirrors,
-                    remove_mirrors=remove_mirrors, add_origins=add_origins,
-                    remove_origins=remove_origins, ssl_cert=ssl_cert,
-                    ssl_key=ssl_key, search_before=search_before,
-                    search_after=search_after, search_first=search_first,
-                    reset_uuid=reset_uuid, refresh_allowed=refresh_allowed,
-                    set_props=set_props, add_prop_values=add_prop_values,
-                    remove_prop_values=remove_prop_values,
-                    unset_props=unset_props, approved_cas=approved_ca_certs,
-                    revoked_cas=revoked_ca_certs, unset_cas=unset_ca_certs,
-                    proxy_uri=proxy_uri)
-
-                rval, rmsg = ret
-                if rmsg:
-                        error(rmsg, cmd="set-publisher")
-                return rval
-
-        pubs = None
-        # Automatic configuration via -p case.
-        def get_pubs():
-                if proxy_uri:
-                        proxies = [publisher.ProxyURI(proxy_uri)]
-                else:
-                        proxies = []
-                repo = publisher.RepositoryURI(repo_uri,
-                    ssl_cert=ssl_cert, ssl_key=ssl_key, proxies=proxies)
-                return EXIT_OK, api_inst.get_publisherdata(repo=repo)
-
-        ret = None
-        try:
-                ret = _set_pub_error_wrap(get_pubs, name,
-                    [api_errors.UnsupportedRepositoryOperation])
-        except api_errors.UnsupportedRepositoryOperation as e:
-                # Fail if the operation can't be done automatically.
-                error(str(e), cmd="set-publisher")
-                logger.error(_("""
-To add a publisher using this repository, execute the following command as a
-privileged user:
-
-  pkg set-publisher -g {0} <publisher>
-""").format(repo_uri))
-                return EXIT_OOPS
-        else:
-                rval, rmsg = ret
-                if rval != EXIT_OK:
-                        error(rmsg, cmd="set-publisher")
-                        return rval
-                pubs = rmsg
-
-        # For the automatic publisher configuration case, update or add
-        # publishers based on whether they exist and if they match any
-        # specified publisher prefix.
-        if not pubs:
-                error(_("""
-The specified repository did not contain any publisher configuration
-information.  This is likely the result of a repository configuration
-error.  Please contact the repository administrator for further
-assistance."""))
-                return EXIT_OOPS
-
-        if name and name not in pubs:
-                known = [p.prefix for p in pubs]
-                unknown = [name]
-                e = api_errors.UnknownRepositoryPublishers(known=known,
-                    unknown=unknown, location=repo_uri)
-                error(str(e))
-                return EXIT_OOPS
-
-        added = []
-        updated = []
-        failed = []
-
-        for src_pub in sorted(pubs):
-                prefix = src_pub.prefix
-                if name and prefix != name:
-                        # User didn't request this one.
-                        continue
-
-                src_repo = src_pub.repository
-                if not api_inst.has_publisher(prefix=prefix):
-                        add_origins = []
-                        if not src_repo or not src_repo.origins:
-                                # If the repository publisher configuration
-                                # didn't include configuration information
-                                # for the publisher's repositories, assume
-                                # that the origin for the new publisher
-                                # matches the URI provided.
-                                add_origins.append(repo_uri)
-
-                        # Any -p origins/mirrors returned from get_pubs() should
-                        # use the proxy we declared, if any.
-                        if proxy_uri and src_repo:
-                                proxies = [publisher.ProxyURI(proxy_uri)]
-                                for repo_uri in src_repo.origins:
-                                        repo_uri.proxies = proxies
-                                for repo_uri in src_repo.mirrors:
-                                        repo_uri.proxies = proxies
-
-                        rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
-                            [], api_inst, prefix, pub=src_pub,
-                            add_origins=add_origins, ssl_cert=ssl_cert,
-                            ssl_key=ssl_key, sticky=sticky,
-                            search_after=search_after,
-                            search_before=search_before,
-                            search_first=search_first,
-                            set_props=set_props,
-                            add_prop_values=add_prop_values,
-                            remove_prop_values=remove_prop_values,
-                            unset_props=unset_props, proxy_uri=proxy_uri)
-                        if rval == EXIT_OK:
-                                added.append(prefix)
-
-                        # When multiple publishers result from a single -p
-                        # operation, this ensures that the new publishers are
-                        # ordered correctly.
-                        search_first = False
-                        search_after = prefix
-                        search_before = None
-                else:
-                        add_origins = []
-                        add_mirrors = []
-                        dest_pub = api_inst.get_publisher(prefix=prefix,
-                            duplicate=True)
-                        dest_repo = dest_pub.repository
-                        if dest_repo.origins and \
-                            not dest_repo.has_origin(repo_uri):
-                                add_origins = [repo_uri]
-
-                        if not src_repo and not add_origins:
-                                # The repository doesn't have to provide origin
-                                # information for publishers.  If it doesn't,
-                                # the origin of every publisher returned is
-                                # assumed to match the URI that the user
-                                # provided.  Since this is an update case,
-                                # nothing special needs to be done.
-                                if not dest_repo.origins:
-                                        add_origins = [repo_uri]
-                        elif src_repo:
-                                # Avoid duplicates by adding only those mirrors
-                                # or origins not already known.
-                                add_mirrors = [
-                                    u.uri
-                                    for u in src_repo.mirrors
-                                    if u.uri not in dest_repo.mirrors
-                                ]
-                                add_origins = [
-                                    u.uri
-                                    for u in src_repo.origins
-                                    if u.uri not in dest_repo.origins
-                                ]
-
-                                # Special bits to update; for these, take the
-                                # new value as-is (don't attempt to merge).
-                                for prop in ("collection_type", "description",
-                                    "legal_uris", "name", "refresh_seconds",
-                                    "registration_uri", "related_uris"):
-                                        src_val = getattr(src_repo, prop)
-                                        if src_val is not None:
-                                                setattr(dest_repo, prop,
-                                                    src_val)
-
-                        # If an alias doesn't already exist, update it too.
-                        if src_pub.alias and not dest_pub.alias:
-                                dest_pub.alias = src_pub.alias
-
-                        rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
-                            [], api_inst, prefix, pub=dest_pub,
-                            add_mirrors=add_mirrors, add_origins=add_origins,
-                            set_props=set_props,
-                            add_prop_values=add_prop_values,
-                            remove_prop_values=remove_prop_values,
-                            unset_props=unset_props, proxy_uri=proxy_uri)
-
-                        if rval == EXIT_OK:
-                                updated.append(prefix)
-
-                if rval != EXIT_OK:
-                        failed.append((prefix, rmsg))
-                        continue
-
-        first = True
-        for pub, rmsg in failed:
-                if first:
-                        first = False
-                        error("failed to add or update one or more "
-                            "publishers", cmd="set-publisher")
-                logger.error("  {0}:".format(pub))
-                logger.error(rmsg)
-
-        if added or updated:
-                if first:
-                        logger.info("pkg set-publisher:")
-                if added:
+        if "data" in out_json:
+                if "header" in out_json["data"]:
+                        logger.info(out_json["data"]["header"])
+                if "added" in out_json["data"]:
                         logger.info(_("  Added publisher(s): {0}").format(
-                            ", ".join(added)))
-                if updated:
+                            ", ".join(out_json["data"]["added"])))
+                if "updated" in out_json["data"]:
                         logger.info(_("  Updated publisher(s): {0}").format(
-                            ", ".join(updated)))
+                            ", ".join(out_json["data"]["updated"])))
 
-        if failed:
-                if len(failed) != len(pubs):
-                        # Not all publishers retrieved could be added or
-                        # updated.
-                        return EXIT_PARTIAL
-                return EXIT_OOPS
+        if errors:
+                _generate_error_messages(out_json["status"], errors,
+                    cmd="set-publisher", add_info={"repo_uri": repo_uri})
 
-        # Now that the configuration was successful, attempt to refresh the
-        # catalog data for all of the configured publishers.  If the refresh
-        # had been allowed earlier while configuring each publisher, then this
-        # wouldn't be necessary and some possibly invalid configuration could
-        # have been eliminated sooner.  However, that would be much slower as
-        # each refresh requires a client image state rebuild.
-        return __refresh(api_inst, added + updated)
+        return out_json["status"]
 
-def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
-    origin_uri=None, add_mirrors=EmptyI, remove_mirrors=EmptyI,
-    add_origins=EmptyI, remove_origins=EmptyI, ssl_cert=None, ssl_key=None,
-    search_before=None, search_after=None, search_first=False,
-    reset_uuid=None, refresh_allowed=False,
-    set_props=EmptyI, add_prop_values=EmptyI,
-    remove_prop_values=EmptyI, unset_props=EmptyI, approved_cas=EmptyI,
-    revoked_cas=EmptyI, unset_cas=EmptyI, proxy_uri=None):
-
-        repo = None
-        new_pub = False
-        if not pub:
-                try:
-                        pub = api_inst.get_publisher(prefix=prefix,
-                            alias=prefix, duplicate=True)
-                        if reset_uuid:
-                                pub.reset_client_uuid()
-                        repo = pub.repository
-                except api_errors.UnknownPublisher as e:
-                        if not origin_uri and not add_origins and \
-                            (remove_origins or remove_mirrors or
-                            remove_prop_values or add_mirrors):
-                                return EXIT_OOPS, str(e)
-
-                        # No pre-existing, so create a new one.
-                        repo = publisher.Repository()
-                        pub = publisher.Publisher(prefix, repository=repo)
-                        new_pub = True
-        elif not api_inst.has_publisher(prefix=pub.prefix):
-                new_pub = True
-
-        if not repo:
-                repo = pub.repository
-                if not repo:
-                        # Could be a new publisher from auto-configuration
-                        # case where no origin was provided in repository
-                        # configuration.
-                        repo = publisher.Repository()
-                        pub.repository = repo
-
-        if disable is not None:
-                # Set disabled property only if provided.
-                pub.disabled = disable
-
-        if sticky is not None:
-                # Set stickiness only if provided
-                pub.sticky = sticky
-
-        if proxy_uri:
-                # we only support a single proxy for now.
-                proxies = [publisher.ProxyURI(proxy_uri)]
-        else:
-                proxies = []
-
-        if origin_uri:
-                # For compatibility with old -O behaviour, treat -O as a wipe
-                # of existing origins and add the new one.
-
-                # Only use existing cert information if the new URI uses
-                # https for transport.
-                if repo.origins and not (ssl_cert or ssl_key) and \
-                    any(origin_uri.startswith(scheme + ":")
-                        for scheme in publisher.SSL_SCHEMES):
-
-                        for uri in repo.origins:
-                                if ssl_cert is None:
-                                        ssl_cert = uri.ssl_cert
-                                if ssl_key is None:
-                                        ssl_key = uri.ssl_key
-                                break
-
-                repo.reset_origins()
-                o = publisher.RepositoryURI(origin_uri, proxies=proxies)
-                repo.add_origin(o)
-
-                # XXX once image configuration supports storing this
-                # information at the uri level, ssl info should be set
-                # here.
-
-        for entry in (("mirror", add_mirrors, remove_mirrors), ("origin",
-            add_origins, remove_origins)):
-                etype, add, remove = entry
-                # XXX once image configuration supports storing this
-                # information at the uri level, ssl info should be set
-                # here.
-                if "*" in remove:
-                        getattr(repo, "reset_{0}s".format(etype))()
-                else:
-                        for u in remove:
-                                getattr(repo, "remove_{0}".format(etype))(u)
-
-                for u in add:
-                        uri = publisher.RepositoryURI(u, proxies=proxies)
-                        getattr(repo, "add_{0}".format(etype))(uri)
-
-        # None is checked for here so that a client can unset a ssl_cert or
-        # ssl_key by using -k "" or -c "".
-        if ssl_cert is not None or ssl_key is not None:
-                # Assume the user wanted to update the ssl_cert or ssl_key
-                # information for *all* of the currently selected
-                # repository's origins and mirrors that use SSL schemes.
-                found_ssl = False
-                for uri in repo.origins:
-                        if uri.scheme not in publisher.SSL_SCHEMES:
-                                continue
-                        found_ssl = True
-                        if ssl_cert is not None:
-                                uri.ssl_cert = ssl_cert
-                        if ssl_key is not None:
-                                uri.ssl_key = ssl_key
-                for uri in repo.mirrors:
-                        if uri.scheme not in publisher.SSL_SCHEMES:
-                                continue
-                        found_ssl = True
-                        if ssl_cert is not None:
-                                uri.ssl_cert = ssl_cert
-                        if ssl_key is not None:
-                                uri.ssl_key = ssl_key
-
-                if (ssl_cert or ssl_key) and not found_ssl:
-                        # None of the origins or mirrors for the publisher
-                        # use SSL schemes so the cert and key information
-                        # won't be retained.
-                        usage(_("Publisher '{0}' does not have any SSL-based "
-                            "origins or mirrors.").format(prefix))
-
-        if set_props or add_prop_values or remove_prop_values or unset_props:
-                pub.update_props(set_props=set_props,
-                    add_prop_values=add_prop_values,
-                    remove_prop_values=remove_prop_values,
-                    unset_props=unset_props)
-
-        if new_pub:
-                api_inst.add_publisher(pub,
-                    refresh_allowed=refresh_allowed, approved_cas=approved_cas,
-                    revoked_cas=revoked_cas, unset_cas=unset_cas,
-                    search_after=search_after, search_before=search_before,
-                    search_first=search_first)
-        else:
-                for ca in approved_cas:
-                        try:
-                                ca = os.path.normpath(
-                                    os.path.join(orig_cwd, ca))
-                                with open(ca, "rb") as fh:
-                                        s = fh.read()
-                        except EnvironmentError as e:
-                                if e.errno == errno.ENOENT:
-                                        raise api_errors.MissingFileArgumentException(
-                                            ca)
-                                elif e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            ca)
-                                raise
-                        pub.approve_ca_cert(s)
-
-                for hsh in revoked_cas:
-                        pub.revoke_ca_cert(hsh)
-
-                for hsh in unset_cas:
-                        pub.unset_ca_cert(hsh)
-
-                api_inst.update_publisher(pub,
-                    refresh_allowed=refresh_allowed, search_after=search_after,
-                    search_before=search_before, search_first=search_first)
-
-        return EXIT_OK, None
-
-def publisher_unset(api_inst, args):
+def publisher_unset(api_inst, pargs):
         """pkg unset-publisher publisher ..."""
 
-        opts, pargs = getopt.getopt(args, "")
-        if not pargs:
-                usage(_("at least one publisher must be specified"),
-                    cmd="unset-publisher")
+        opts, pargs = getopt.getopt(pargs, "")
+        out_json = client_api._publisher_unset("unset-publisher", api_inst,
+            pargs)
 
-        errors = []
-        goal = len(args)
-        progtrack = api_inst.progresstracker
-        progtrack.job_start(progtrack.JOB_PKG_CACHE, goal=goal)
-        for name in args:
+        if "errors" in out_json:
+                _generate_error_messages(out_json["status"],
+                    out_json["errors"], cmd="unset-publisher")
 
-                try:
-                        api_inst.remove_publisher(prefix=name, alias=name)
-                except api_errors.ImageFormatUpdateNeeded as e:
-                        format_update_error(e)
-                        return EXIT_OOPS
-                except (api_errors.PermissionsException,
-                    api_errors.PublisherError,
-                    api_errors.ModifyingSyspubException) as e:
-                        errors.append((name, e))
-                finally:
-                        progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)
+        return out_json["status"]
 
-        progtrack.job_done(progtrack.JOB_PKG_CACHE)
-        retcode = EXIT_OK
-        if errors:
-                if len(errors) == len(args):
-                        # If the operation failed for every provided publisher
-                        # prefix or alias, complete failure occurred.
-                        retcode = EXIT_OOPS
-                else:
-                        # If the operation failed for only some of the provided
-                        # publisher prefixes or aliases, then partial failure
-                        # occurred.
-                        retcode = EXIT_PARTIAL
+def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
+    inc_disabled, output_format):
+        """pkg publishers."""
 
-                txt = ""
-                for name, err in errors:
-                        txt += "\n"
-                        txt += _("Removal failed for '{pub}': {msg}").format(
-                            pub=name, msg=err)
-                        txt += "\n"
-                error(txt, cmd="unset-publisher")
+        ret_json = client_api._publisher_list(op, api_inst, pargs, omit_headers,
+            preferred_only, inc_disabled, output_format)
+        retcode = ret_json["status"]
 
-        return retcode
-
-def publisher_list(api_inst, args):
-        """pkg publishers"""
-        omit_headers = False
-        preferred_only = False
-        inc_disabled = True
-        valid_formats = ( "tsv", )
-        output_format = "default"
-        field_data = {
-            "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
-            "attrs" : [("default"), "", ""],
-            "type" : [("default", "tsv"), _("TYPE"), ""],
-            "status" : [("default", "tsv"), _("STATUS"), ""],
-            "repo_loc" : [("default"), _("LOCATION"), ""],
-            "uri": [("tsv"), _("URI"), ""],
-            "sticky" : [("tsv"), _("STICKY"), ""],
-            "enabled" : [("tsv"), _("ENABLED"), ""],
-            "syspub" : [("tsv"), _("SYSPUB"), ""],
-            "proxy"  : [("tsv"), _("PROXY"), ""],
-            "proxied" : [("default"), _("P"), ""]
-        }
-
-        desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
-                               _("SYSPUB"), _("ENABLED"), _("TYPE"),
-                               _("STATUS"), _("P"), _("LOCATION"))
-
-        # Custom sort function for preserving field ordering
-        def sort_fields(one, two):
-                return desired_field_order.index(get_header(one)) - \
-                    desired_field_order.index(get_header(two))
-
-        # Functions for manipulating field_data records
-
-        def filter_default(record):
-                return "default" in record[0]
-
-        def filter_tsv(record):
-                return "tsv" in record[0]
-
-        def get_header(record):
-                return record[1]
-
-        def get_value(record):
-                return record[2]
-
-        def set_value(record, value):
-                record[2] = value
-
-        # 'a' is left over
-        opts, pargs = getopt.getopt(args, "F:HPan")
-        for opt, arg in opts:
-                if opt == "-H":
-                        omit_headers = True
-                if opt == "-P":
-                        preferred_only = True
-                if opt == "-n":
-                        inc_disabled = False
-                if opt == "-F":
-                        output_format = arg
-                        if output_format not in valid_formats:
-                                usage(_("Unrecognized format {format}."
-                                    " Supported formats: {valid}").format(
-                                    format=output_format,
-                                    valid=valid_formats), cmd="publisher")
-                                return EXIT_OOPS
-
-        api_inst.progresstracker.set_purpose(
-            api_inst.progresstracker.PURPOSE_LISTING)
-
-        cert_cache = {}
-        def get_cert_info(ssl_cert):
-                if not ssl_cert:
-                        return None
-                if ssl_cert not in cert_cache:
-                        c = cert_cache[ssl_cert] = {}
-                        errors = c["errors"] = []
-                        times = c["info"] = {
-                            "effective": "",
-                            "expiration": "",
-                        }
-
-                        try:
-                                cert = misc.validate_ssl_cert(ssl_cert)
-                        except (EnvironmentError,
-                            api_errors.CertificateError,
-                            api_errors.PermissionsException) as e:
-                                # If the cert information can't be retrieved,
-                                # add the errors to a list and continue on.
-                                errors.append(e)
-                                c["valid"] = False
-                        else:
-                                nb = cert.get_notBefore()
-                                t = time.strptime(nb, "%Y%m%d%H%M%SZ")
-                                nb = datetime.datetime.utcfromtimestamp(
-                                    calendar.timegm(t))
-                                times["effective"] = nb.strftime("%c")
-
-                                na = cert.get_notAfter()
-                                t = time.strptime(na, "%Y%m%d%H%M%SZ")
-                                na = datetime.datetime.utcfromtimestamp(
-                                    calendar.timegm(t))
-                                times["expiration"] = na.strftime("%c")
-                                c["valid"] = True
-
-                return cert_cache[ssl_cert]
-
-        retcode = EXIT_OK
         if len(pargs) == 0:
-                if preferred_only:
-                        pref_pub = api_inst.get_highest_ranked_publisher()
-                        if api_inst.has_publisher(pref_pub):
-                                pubs = [pref_pub]
-                        else:
-                                # Only publisher known is from an installed
-                                # package and is not configured in the image.
-                                pubs = []
-                else:
-                        pubs = [
-                            p for p in api_inst.get_publishers()
-                            if inc_disabled or not p.disabled
-                        ]
                 # Create a formatting string for the default output
-                # format
+                # format.
                 if output_format == "default":
                         fmt = "{0:14} {1:12} {2:8} {3:2} {4} {5}"
-                        filter_func = filter_default
 
                 # Create a formatting string for the tsv output
-                # format
+                # format.
                 if output_format == "tsv":
                         fmt = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}"
-                        filter_func = filter_tsv
-                        desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
-                               _("SYSPUB"), _("ENABLED"), _("TYPE"),
-                               _("STATUS"), _("URI"), _("PROXY"))
 
-                # Extract our list of headers from the field_data
-                # dictionary Make sure they are extracted in the
-                # desired order by using our custom sort function
-                hdrs = map(get_header, sorted(filter(filter_func,
-                           field_data.values()), sort_fields))
-
-                # Output an header if desired
+                # Output an header if desired.
                 if not omit_headers:
-                        msg(fmt.format(*hdrs))
+                        msg(fmt.format(*ret_json["data"]["headers"]))
 
-                for p in pubs:
-                        # Store all our publisher related data in
-                        # field_data ready for output
-
-                        set_value(field_data["publisher"], p.prefix)
-                        # Setup the synthetic attrs field if the
-                        # format is default.
-                        if output_format == "default":
-                                pstatus = ""
-
-                                if not p.sticky:
-                                        pstatus_list = [_("non-sticky")]
-                                else:
-                                        pstatus_list = []
-
-                                if p.disabled:
-                                        pstatus_list.append(_("disabled"))
-                                if p.sys_pub:
-                                        pstatus_list.append(_("syspub"))
-                                if pstatus_list:
-                                        pstatus = "({0})".format(
-                                            ", ".join(pstatus_list))
-                                set_value(field_data["attrs"], pstatus)
-
-                        if p.sticky:
-                                set_value(field_data["sticky"], _("true"))
-                        else:
-                                set_value(field_data["sticky"], _("false"))
-                        if not p.disabled:
-                                set_value(field_data["enabled"], _("true"))
-                        else:
-                                set_value(field_data["enabled"], _("false"))
-                        if p.sys_pub:
-                                set_value(field_data["syspub"], _("true"))
-                        else:
-                                set_value(field_data["syspub"], _("false"))
-
-                        # Only show the selected repository's information in
-                        # summary view.
-                        if p.repository:
-                                origins = p.repository.origins
-                                mirrors = p.repository.mirrors
-                        else:
-                                origins = mirrors = []
-
-                        set_value(field_data["repo_loc"], "")
-                        set_value(field_data["proxied"], "")
-                        # Update field_data for each origin and output
-                        # a publisher record in our desired format.
-                        for uri in sorted(origins):
-                                # XXX get the real origin status
-                                set_value(field_data["type"], _("origin"))
-                                set_value(field_data["status"], _("online"))
-                                set_value(field_data["proxy"], "-")
-                                set_value(field_data["proxied"], "F")
-
-                                set_value(field_data["uri"], uri)
-
-                                if uri.proxies:
-                                        set_value(field_data["proxied"], _("T"))
-                                        set_value(field_data["proxy"],
-                                            ", ".join(
-                                            [proxy.uri
-                                            for proxy in uri.proxies]))
-                                if uri.system:
-                                        set_value(field_data["repo_loc"],
-                                            SYSREPO_HIDDEN_URI)
-                                else:
-                                        set_value(field_data["repo_loc"], uri)
-
-                                values = map(get_value,
-                                    sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
-                                )
-                                msg(fmt.format(*values))
-                        # Update field_data for each mirror and output
-                        # a publisher record in our desired format.
-                        for uri in mirrors:
-                                # XXX get the real mirror status
-                                set_value(field_data["type"], _("mirror"))
-                                set_value(field_data["status"], _("online"))
-                                set_value(field_data["proxy"], "-")
-                                set_value(field_data["proxied"], _("F"))
-
-                                set_value(field_data["uri"], uri)
-
-                                if uri.proxies:
-                                        set_value(field_data["proxied"], _("T"))
-                                        set_value(field_data["proxy"],
-                                            ", ".join(
-                                            [p.uri for p in uri.proxies]))
-                                if uri.system:
-                                        set_value(field_data["repo_loc"],
-                                            SYSREPO_HIDDEN_URI)
-                                else:
-                                        set_value(field_data["repo_loc"], uri)
-
-                                values = map(get_value,
-                                    sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
-                                )
-                                msg(fmt.format(*values))
-
-                        if not origins and not mirrors:
-                                set_value(field_data["type"], "")
-                                set_value(field_data["status"], "")
-                                set_value(field_data["uri"], "")
-                                set_value(field_data["proxy"], "")
-                                values = map(get_value,
-                                    sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
-                                )
-                                msg(fmt.format(*values))
-
+                for p in ret_json["data"]["publishers"]:
+                        msg(fmt.format(*p))
         else:
-                def display_ssl_info(uri):
-                        retcode = EXIT_OK
-                        c = get_cert_info(uri.ssl_cert)
-                        msg(_("              SSL Key:"), uri.ssl_key)
-                        msg(_("             SSL Cert:"), uri.ssl_cert)
-
-                        if not c:
-                                return retcode
-
-                        if c["errors"]:
-                                retcode = EXIT_OOPS
-
-                        for e in c["errors"]:
-                                logger.error("\n" + str(e) + "\n")
-
-                        if c["valid"]:
-                                msg(_(" Cert. Effective Date:"),
-                                    c["info"]["effective"])
-                                msg(_("Cert. Expiration Date:"),
-                                    c["info"]["expiration"])
-                        return retcode
-
-                def display_repository(r):
-                        retcode = 0
-                        for uri in r.origins:
-                                msg(_("           Origin URI:"), uri)
-                                if uri.proxies:
-                                        msg(_("                Proxy:"),
-                                            ", ".join(
-                                            [p.uri for p in uri.proxies]))
-                                rval = display_ssl_info(uri)
-                                if rval == 1:
-                                        retcode = EXIT_PARTIAL
-
-                        for uri in r.mirrors:
-                                msg(_("           Mirror URI:"), uri)
-                                if uri.proxies:
-                                        msg(_("                Proxy:"),
-                                            ", ".join(
-                                            [p.uri for p in uri.proxies]))
-                                rval = display_ssl_info(uri)
-                                if rval == 1:
-                                        retcode = EXIT_PARTIAL
-                        return retcode
-
                 def display_signing_certs(p):
-                        if p.approved_ca_certs:
+                        if "Approved CAs" in p:
                                 msg(_("         Approved CAs:"),
-                                    p.approved_ca_certs[0])
-                                for h in p.approved_ca_certs[1:]:
+                                    p["Approved CAs"][0])
+                                for h in p["Approved CAs"][1:]:
                                         msg(_("                     :"), h)
-                        if p.revoked_ca_certs:
+                        if "Revoked CAs" in p:
                                 msg(_("          Revoked CAs:"),
-                                    p.revoked_ca_certs[0])
-                                for h in p.revoked_ca_certs[1:]:
+                                    p["Revoked CAs"][0])
+                                for h in p["Revoked CAs"][1:]:
                                         msg(_("                     :"), h)
 
-                for name in pargs:
-                        # detailed print
-                        pub = api_inst.get_publisher(prefix=name, alias=name)
-                        dt = api_inst.get_publisher_last_update_time(pub.prefix)
-                        if dt:
-                                dt = dt.strftime("%c")
+                def display_ssl_info(uri_data):
+                        msg(_("              SSL Key:"), uri_data["SSL Key"])
+                        msg(_("             SSL Cert:"), uri_data["SSL Cert"])
 
+                        if "errors" in ret_json:
+                                for e in ret_json["errors"]:
+                                        if "errtype" in e and \
+                                            e["errtype"] == "cert_info":
+                                                emsg(e["reason"])
+
+                        if "Cert. Effective Date" in uri_data:
+                                msg(_(" Cert. Effective Date:"),
+                                    uri_data["Cert. Effective Date"])
+                                msg(_("Cert. Expiration Date:"),
+                                    uri_data["Cert. Expiration Date"])
+
+                if "data" not in ret_json or "publisher_details" not in \
+                    ret_json["data"]:
+                        return retcode
+
+                for pub in ret_json["data"]["publisher_details"]:
                         msg("")
-                        msg(_("            Publisher:"), pub.prefix)
-                        msg(_("                Alias:"), pub.alias)
+                        msg(_("            Publisher:"), pub["Publisher"])
+                        msg(_("                Alias:"), pub["Alias"])
 
-                        rval = display_repository(pub.repository)
-                        if rval != 0:
-                                # There was an error in displaying some
-                                # of the information about a repository.
-                                # However, continue on.
-                                retcode = rval
+                        if "origins" in pub:
+                                for od in pub["origins"]:
+                                        msg(_("           Origin URI:"),
+                                            od["Origin URI"])
+                                        if "Proxy" in od:
+                                                msg(_("                Proxy:"),
+                                                    ", ".join(od["Proxy"]))
+                                        display_ssl_info(od)
 
-                        msg(_("          Client UUID:"), pub.client_uuid)
-                        msg(_("      Catalog Updated:"), dt)
+                        if "mirrors" in pub:
+                                for md in pub["mirrors"]:
+                                        msg(_("           Mirror URI:"),
+                                            md["Mirror URI"])
+                                        if "Proxy" in md:
+                                                msg(_("                Proxy:"),
+                                                    ", ".join(md["Proxy"]))
+                                        display_ssl_info(md)
+
+                        msg(_("          Client UUID:"),
+                            pub["Client UUID"])
+                        msg(_("      Catalog Updated:"),
+                            pub["Catalog Updated"])
                         display_signing_certs(pub)
-                        if pub.disabled:
-                                msg(_("              Enabled:"), _("No"))
-                        else:
-                                msg(_("              Enabled:"), _("Yes"))
-                        pub_items = sorted(pub.properties.iteritems())
+                        msg(_("              Enabled:"),
+                            _(pub["Enabled"]))
+
+                        if "Properties" not in pub:
+                                continue
+                        pub_items = sorted(
+                            pub["Properties"].iteritems())
                         property_padding = "                      "
                         properties_displayed = False
                         for k, v in pub_items:
@@ -5953,6 +4956,38 @@ opts_mapping = {
 
     "sync_act" :              ("",  "sync-actuators"),
     "act_timeout" :           ("",  "sync-actuators-timeout"),
+
+    "ssl_key":                ("k", ""),
+    "ssl_cert":               ("c", ""),
+    "approved_ca_certs":      ("", "approve-ca-cert"),
+    "revoked_ca_certs":       ("", "revoke-ca-cert"),
+    "unset_ca_certs":         ("", "unset-ca-cert"),
+    "origin_uri":             ("O", ""),
+    "reset_uuid":             ("", "reset-uuid"),
+    "add_mirrors":            ("m", "add-mirror"),
+    "remove_mirrors":         ("M", "remove-mirror"),
+    "add_origins":            ("g", "add-origin"),
+    "remove_origins":         ("G", "remove-origin"),
+    "refresh_allowed":        ("", "no-refresh"),
+    "enable":                 ("e", "enable"),
+    "disable":                ("d", "disable"),
+    "sticky":                 ("", "sticky"),
+    "non_sticky":             ("", "non-sticky"),
+    "repo_uri":               ("p", ""),
+    "proxy_uri":              ("", "proxy"),
+    "search_before":          ("", "search-before"),
+    "search_after":           ("", "search-after"),
+    "search_first":           ("P", "search-first"),
+    "set_props":              ("", "set-property"),
+    "add_prop_values":        ("", "add-property-value"),
+    "remove_prop_values":     ("", "remove-property-value"),
+    "unset_props":            ("", "unset-property"),
+    "preferred_only":         ("P", ""),
+    "inc_disabled":           ("n", ""),
+    "info_local":             ("l", ""),
+    "info_remote":            ("r", ""),
+    "display_license":        ("", "license"),
+    "publisher_a":            ("a", "")
 }
 
 #
@@ -6325,7 +5360,7 @@ def main_func():
                 # This new exception will have the CLI options, so can be passed
                 # directly to usage().
                 new_e = api_errors.InvalidOptionError(err_type=e.err_type,
-                    options=cli_opts, msg=e.msg)
+                    options=cli_opts, msg=e.msg, valid_args=e.valid_args)
 
                 usage(str(new_e), cmd=subcommand)
 

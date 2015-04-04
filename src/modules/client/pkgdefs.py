@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -54,17 +54,21 @@ PKG_OP_DEHYDRATE       = "dehydrate"
 PKG_OP_DETACH          = "detach-linked"
 PKG_OP_EXACT_INSTALL   = "exact-install"
 PKG_OP_FIX             = "fix"
+PKG_OP_INFO            = "info"
 PKG_OP_INSTALL         = "install"
 PKG_OP_LIST            = "list"
 PKG_OP_LIST_LINKED     = "list-linked"
 PKG_OP_PROP_LINKED     = "property-linked"
 PKG_OP_PUBCHECK        = "pubcheck-linked"
+PKG_OP_PUBLISHER_LIST  = "publisher"
 PKG_OP_REHYDRATE       = "rehydrate"
 PKG_OP_REVERT          = "revert"
 PKG_OP_SET_MEDIATOR    = "set-mediator"
+PKG_OP_SET_PUBLISHER   = "set-publisher"
 PKG_OP_SET_PROP_LINKED = "set-property-linked"
 PKG_OP_SYNC            = "sync-linked"
 PKG_OP_UNINSTALL       = "uninstall"
+PKG_OP_UNSET_PUBLISHER = "unset-publisher"
 PKG_OP_UPDATE          = "update"
 PKG_OP_VERIFY          = "verify"
 pkg_op_values          = frozenset([
@@ -76,17 +80,21 @@ pkg_op_values          = frozenset([
     PKG_OP_DETACH,
     PKG_OP_EXACT_INSTALL,
     PKG_OP_FIX,
+    PKG_OP_INFO,
     PKG_OP_INSTALL,
     PKG_OP_LIST,
     PKG_OP_LIST_LINKED,
     PKG_OP_PROP_LINKED,
     PKG_OP_PUBCHECK,
+    PKG_OP_PUBLISHER_LIST,
     PKG_OP_REVERT,
     PKG_OP_REHYDRATE,
     PKG_OP_SET_MEDIATOR,
+    PKG_OP_SET_PUBLISHER,
     PKG_OP_SET_PROP_LINKED,
     PKG_OP_SYNC,
     PKG_OP_UNINSTALL,
+    PKG_OP_UNSET_PUBLISHER,
     PKG_OP_UPDATE,
     PKG_OP_VERIFY
 ])
