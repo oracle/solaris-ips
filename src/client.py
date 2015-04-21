@@ -5507,6 +5507,12 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
         except api_errors.UnexpectedLinkError as __e:
                 error("\n" + str(__e))
                 __ret = EXIT_OOPS
+        except api_errors.UnrecognizedCatalogPart as __e:
+                error("\n" + str(__e))
+                __ret = EXIT_OOPS
+        except api_errors.InvalidConfigFile as __e:
+                error("\n" + str(__e))
+                __ret = EXIT_OOPS
         except:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)

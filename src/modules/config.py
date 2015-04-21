@@ -1491,7 +1491,12 @@ class FileConfig(Config):
                         else:
                                 raise
                 else:
-                        cp.readfp(efile)
+                        try:
+                                cp.readfp(efile)
+                        except (ConfigParser.ParsingError,
+                            ConfigParser.MissingSectionHeaderError) as e:
+                                raise api_errors.InvalidConfigFile(
+                                    self._target)
                         # Attempt to determine version from contents.
                         try:
                                 version = cp.getint("CONFIGURATION", "version")

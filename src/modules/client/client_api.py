@@ -3101,6 +3101,12 @@ def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
         except api_errors.UnexpectedLinkError as __e:
                 _error_json(str(__e), errors_json=errors_json)
                 ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
+        except api_errors.UnrecognizedCatalogPart as __e:
+                _error_json(str(__e), errors_json=errors_json)
+                ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
+        except api_errors.InvalidConfigFile as __e:
+                _error_json(str(__e), errors_json=errors_json)
+                ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
         except:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)

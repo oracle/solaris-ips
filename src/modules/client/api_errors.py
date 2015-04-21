@@ -3252,12 +3252,23 @@ class UnexpectedLinkError(ApiException):
                 self.errno = errno
 
         def __str__(self):
-                        return _("Cannot update file: '{file}' at path "
-                            "'{path}', contains a symlink. "
-                            "[Error '{errno:d}': '{error}']").format(
-                            error=os.strerror(self.errno),
-                            errno=self.errno,
-                            path=self.path,
-                            file=self.filename,
-                       )
+                return _("Cannot update file: '{file}' at path "
+                    "'{path}', contains a symlink. "
+                    "[Error '{errno:d}': '{error}']").format(
+                    error=os.strerror(self.errno),
+                    errno=self.errno,
+                    path=self.path,
+                    file=self.filename,
+               )
 
+
+class InvalidConfigFile(ApiException):
+        """Used to indicate that a configuration file is invalid
+        or broken"""
+
+        def __init__(self, path):
+                self.path = path
+
+        def __str__(self):
+                return _("Cannot parse configuration file "
+                    "{path}'.").format(path=self.path)
