@@ -33,6 +33,7 @@ import shutil
 import sys
 import tempfile
 import traceback
+from imp import reload
 
 import pkg
 import pkg.actions as actions

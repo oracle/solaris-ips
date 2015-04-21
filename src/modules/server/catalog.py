@@ -178,7 +178,7 @@ class ServerCatalog(object):
                                         bad_modes.append((fpath,
                                             "{0:o}".format(self.file_mode),
                                             "{0:o}".format(ae.mode)))
- 
+
                 if bad_modes:
                         raise CatalogPermissionsException(bad_modes)
 
@@ -187,8 +187,8 @@ class ServerCatalog(object):
                 Throws an exception if an identical package is already
                 present.  Throws an exception if package has no version."""
                 if pfmri.version == None:
-                        raise CatalogException, \
-                            "Unversioned FMRI not supported: {0}".format(pfmri)
+                        raise CatalogException(
+                            "Unversioned FMRI not supported: {0}".format(pfmri))
 
                 assert not self.read_only
 
@@ -256,7 +256,7 @@ class ServerCatalog(object):
                         for entry in pfile:
                                 if entry == pkgstr:
                                         raise CatalogException(
-                                            "Package {0} is already in " 
+                                            "Package {0} is already in "
                                             "the catalog".format(pkgstr))
                                 else:
                                         tfile.write(entry)
@@ -285,7 +285,7 @@ class ServerCatalog(object):
 
                 'd' is a dict that maps each package name to another dictionary,
                 itself mapping:
-                
+
                         * each version string, which maps to a tuple of:
                           -- the fmri object
                           -- a dict of publisher prefixes with each value

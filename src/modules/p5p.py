@@ -41,9 +41,12 @@ import pkg.misc
 import pkg.portable
 import pkg.p5i
 import shutil
+import sys
 import tempfile
 import urllib
 
+if sys.version > '3':
+        long = int
 
 class ArchiveErrors(apx.ApiException):
         """Base exception class for archive class errors."""

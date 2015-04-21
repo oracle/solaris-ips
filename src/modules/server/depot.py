@@ -24,6 +24,8 @@
 # Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
+
 import cherrypy
 from cherrypy._cptools import HandlerTool
 from cherrypy.lib.static import serve_file
@@ -1671,7 +1673,7 @@ class NastyDepotHTTP(DepotHTTP):
                         (math.pi / self.NASTY_CYCLE))
                 if self.nasty_cycle == 0:
                         cherrypy.log("NASTY nastiness at min")
-                if self.nasty_cycle == self.NASTY_CYCLE / 2:
+                if self.nasty_cycle == self.NASTY_CYCLE // 2:
                         cherrypy.log("NASTY nastiness at max")
 
                 self._lock.release()

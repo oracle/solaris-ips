@@ -97,12 +97,12 @@ def emit_search_report(summary_file, searchtype, label, results):
 
 
 def report_search_by_failure():
-        sfi = sorted(search_by_failure.items(), reverse=True, key=lambda(k,v): (v,k))
+        sfi = sorted(search_by_failure.items(), reverse=True, key=lambda k_v: (k_v[1],k_v[0]))
 	emit_search_report(summary_file, "failed", "Misses", sfi)
 
 
 def report_search_by_success():
-        ssi = sorted(search_by_success.items(), reverse=True, key=lambda(k,v): (v,k))
+        ssi = sorted(search_by_success.items(), reverse=True, key=lambda k_v1: (k_v1[1],k_v1[0]))
 	emit_search_report(summary_file, "successful", "Hits", ssi)
 
 

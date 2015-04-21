@@ -744,7 +744,7 @@ dependency resolution:
 
                 m1_path = self.make_manifest(self.hardlink1_manf_deps)
                 self.pkgdepend_resolve("-m {0}".format(m1_path), su_wrap=True, exit=1)
-                os.chmod(m1_path, 0444)
+                os.chmod(m1_path, 0o444)
                 pattern_path = os.path.join(self.test_root, "ex_pat")
                 os.chmod(pattern_path, 0000)
                 self.pkgdepend_resolve("-e {0} -o {1}".format(

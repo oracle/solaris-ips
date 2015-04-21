@@ -75,6 +75,8 @@ import sys
 import tempfile
 import urlparse
 
+from imp import reload
+
 try:
         import cherrypy
         version = cherrypy.__version__.split('.')
@@ -84,7 +86,7 @@ try:
                 raise ImportError
 except ImportError:
         print("""cherrypy 3.1.0 or greater (but less than """
-            """3.2.0) is required to use this program.""", file=sys.stderr) 
+            """3.2.0) is required to use this program.""", file=sys.stderr)
         sys.exit(2)
 
 import cherrypy.process.servers
@@ -293,13 +295,13 @@ if __name__ == "__main__":
                         elif opt == "-s":
                                 threads = int(arg)
                                 if threads < THREADS_MIN:
-                                        raise OptionError, \
+                                        raise OptionError(
                                             "minimum value is {0:d}".format(
-                                            THREADS_MIN)
+                                            THREADS_MIN))
                                 if threads > THREADS_MAX:
-                                        raise OptionError, \
+                                        raise OptionError(
                                             "maximum value is {0:d}".format(
-                                            THREADS_MAX)
+                                            THREADS_MAX))
                                 ivalues["pkg"]["threads"] = threads
                         elif opt == "-t":
                                 ivalues["pkg"]["socket_timeout"] = arg
@@ -334,8 +336,8 @@ if __name__ == "__main__":
 
                         elif opt == "--disable-ops":
                                 if arg is None or arg == "":
-                                        raise OptionError, \
-                                            "An argument must be specified."
+                                        raise OptionError(
+                                            "An argument must be specified.")
 
                                 disableops = arg.split(",")
                                 for s in disableops:
@@ -370,9 +372,9 @@ if __name__ == "__main__":
                                 # ValueError is caught by caller.
                                 nasty_value = int(arg)
                                 if (nasty_value > 100 or nasty_value < 1):
-                                        raise OptionError, "Invalid value " \
-                                            "for nasty option.\n Please " \
-                                            "choose a value between 1 and 100."
+                                        raise OptionError("Invalid value "
+                                            "for nasty option.\n Please "
+                                            "choose a value between 1 and 100.")
                                 nasty = True
                                 ivalues["nasty"]["nasty_level"] = nasty_value
                         elif opt == "--nasty-sleep":
@@ -389,16 +391,16 @@ if __name__ == "__main__":
                                     "http", allow_fragments=0)
 
                                 if not netloc:
-                                        raise OptionError, "Unable to " \
-                                            "determine the hostname from " \
-                                            "the provided URL; please use a " \
-                                            "fully qualified URL."
+                                        raise OptionError("Unable to "
+                                            "determine the hostname from "
+                                            "the provided URL; please use a "
+                                            "fully qualified URL.")
 
                                 scheme = scheme.lower()
                                 if scheme not in ("http", "https"):
-                                        raise OptionError, "Invalid URL; http " \
-                                            "and https are the only supported " \
-                                            "schemes."
+                                        raise OptionError("Invalid URL; http "
+                                            "and https are the only supported "
+                                            "schemes.")
 
                                 # Rebuild the url with the sanitized components.
                                 ivalues["pkg"]["proxy_base"] = \
@@ -436,15 +438,15 @@ if __name__ == "__main__":
                                         # the value.
                                         arg = ""
                                 elif not os.path.isabs(arg):
-                                        raise OptionError, "The path to " \
-                                           "the Certificate file must be " \
-                                           "absolute."
+                                        raise OptionError("The path to "
+                                           "the Certificate file must be "
+                                           "absolute.")
                                 elif not os.path.exists(arg):
-                                        raise OptionError, "The specified " \
-                                            "file does not exist."
+                                        raise OptionError("The specified "
+                                            "file does not exist.")
                                 elif not os.path.isfile(arg):
-                                        raise OptionError, "The specified " \
-                                            "pathname is not a file."
+                                        raise OptionError("The specified "
+                                            "pathname is not a file.")
                                 ivalues["pkg"]["ssl_cert_file"] = arg
                         elif opt == "--ssl-key-file":
                                 if arg == "none" or arg == "":
@@ -452,25 +454,25 @@ if __name__ == "__main__":
                                         # the value.
                                         arg = ""
                                 elif not os.path.isabs(arg):
-                                        raise OptionError, "The path to " \
-                                           "the Private Key file must be " \
-                                           "absolute."
+                                        raise OptionError("The path to "
+                                           "the Private Key file must be "
+                                           "absolute.")
                                 elif not os.path.exists(arg):
-                                        raise OptionError, "The specified " \
-                                            "file does not exist."
+                                        raise OptionError("The specified "
+                                            "file does not exist.")
                                 elif not os.path.isfile(arg):
-                                        raise OptionError, "The specified " \
-                                            "pathname is not a file."
+                                        raise OptionError("The specified "
+                                            "pathname is not a file.")
                                 ivalues["pkg"]["ssl_key_file"] = arg
                         elif opt == "--ssl-dialog":
                                 if arg != "builtin" and \
                                     arg != "smf" and not \
                                     arg.startswith("exec:/") and not \
                                     arg.startswith("svc:"):
-                                        raise OptionError, "Invalid value " \
-                                            "specified.  Expected: builtin, " \
-                                            "exec:/path/to/program, smf, or " \
-                                            "an SMF FMRI."
+                                        raise OptionError("Invalid value "
+                                            "specified.  Expected: builtin, "
+                                            "exec:/path/to/program, smf, or "
+                                            "an SMF FMRI.")
 
                                 if arg.startswith("exec:"):
                                         if os_util.get_canonical_os_type() != \
@@ -478,17 +480,17 @@ if __name__ == "__main__":
                                                 # Don't allow a somewhat
                                                 # insecure authentication method
                                                 # on some platforms.
-                                                raise OptionError, "exec is " \
-                                                    "not a supported dialog " \
-                                                    "type for this operating " \
-                                                    "system."
+                                                raise OptionError("exec is "
+                                                    "not a supported dialog "
+                                                    "type for this operating "
+                                                    "system.")
 
                                         f = os.path.abspath(arg.split(
                                             "exec:")[1])
                                         if not os.path.isfile(f):
-                                                raise OptionError, "Invalid " \
-                                                    "file path specified for " \
-                                                    "exec."
+                                                raise OptionError("Invalid "
+                                                    "file path specified for "
+                                                    "exec.")
                                 ivalues["pkg"]["ssl_dialog"] = arg
                         elif opt == "--sort-file-max-size":
                                 ivalues["pkg"]["sort_file_max_size"] = arg

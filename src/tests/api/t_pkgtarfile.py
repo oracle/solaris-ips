@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -61,7 +60,7 @@ class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
                 tarfp.add(create_path, "foo/bar/baz")
                 tarfp.close()
                 shutil.rmtree(cpath)
-                
+
         def testerrorlevelIsCorrect(self):
                 p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
 
@@ -74,11 +73,11 @@ class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
 
                 extractpath = os.path.join(self.tpath, "foo/bar")
                 os.makedirs(extractpath)
-                os.chmod(extractpath, 0555)
+                os.chmod(extractpath, 0o555)
                 self.assertRaises(IOError, p.extract, "foo/bar/baz",
                     self.tpath)
                 p.close()
-                os.chmod(extractpath, 777)
+                os.chmod(extractpath, 0o777)
 
 
 if __name__ == "__main__":

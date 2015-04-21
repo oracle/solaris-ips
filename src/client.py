@@ -79,6 +79,7 @@ try:
         import pkg.portable as portable
         import pkg.version as version
 
+        from imp import reload
         from pkg.client import global_settings
         from pkg.client.api import (IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL,
             IMG_TYPE_USER, RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
@@ -912,7 +913,7 @@ def __write_tmp_release_notes(plan):
                 try:
                         fd, path = tempfile.mkstemp(suffix=".txt", prefix="release-notes")
                         # make file world readable
-                        os.chmod(path, 0644)
+                        os.chmod(path, 0o644)
                         tmpfile = os.fdopen(fd, "w+b")
                         for a in plan.get_release_notes():
                                 if isinstance(a, unicode):
@@ -1628,7 +1629,7 @@ def __api_plan_save(api_inst):
         path = __api_plan_file(api_inst)
         oflags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
         try:
-                fd = os.open(path, oflags, 0644)
+                fd = os.open(path, oflags, 0o644)
                 with os.fdopen(fd, "wb") as fobj:
                         plan._save(fobj)
 

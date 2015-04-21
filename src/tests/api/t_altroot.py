@@ -146,7 +146,7 @@ class TestAltroot(pkg5unittest.CliTestCase):
                     (ar.ar_rename, (r, self.p_d_f1, self.p_d_f1_redir)),
                     (ar.ar_rename, (r, self.p_d_f1_redir, self.p_d_f2_redir)),
 
-                    (ar.ar_mkdir, (r, self.p_d_none_redir, 0777)),
+                    (ar.ar_mkdir, (r, self.p_d_none_redir, 0o777)),
 
                     (ar.ar_stat, (r, self.p_f1_redir)),
                     (ar.ar_stat, (r, self.p_d_f1_redir)),

@@ -1501,11 +1501,11 @@ new_property = {0}
                 self._verify_initial_state(conf, 0, exp_state=exp_state)
 
                 # Verify that user-specified permissions are retained.
-                os.chmod(scpath, 0777)
+                os.chmod(scpath, 0o777)
                 conf.set_property("first_section", "int_basic", 16384)
                 conf.write()
                 astat = os.stat(scpath)
-                self.assertEqual(stat.S_IMODE(astat.st_mode), 0777)
+                self.assertEqual(stat.S_IMODE(astat.st_mode), 0o777)
                 self.assertNotEqual(bstat.st_mtime, astat.st_mtime)
                 bstat = astat
 
@@ -1941,7 +1941,7 @@ class TestSMFConfig(_TestConfigBase):
 
                 doorname = tempfile.mktemp(prefix="repo-door-", dir="")
                 sc_repo_doorpath = self.make_misc_files({ doorname: "" })[0]
-                os.chmod(sc_repo_doorpath, 0600)
+                os.chmod(sc_repo_doorpath, 0o600)
 
                 hndl = self.cmdline_run("{SC_REPO_SERVER} "
                     "-d {sc_repo_doorpath} -r {sc_repo_filename}".format(

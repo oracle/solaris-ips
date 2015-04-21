@@ -92,7 +92,7 @@ def __call(args, zone=None):
                 buf = proc.stdout.readlines()
                 ret = proc.wait()
         except OSError as e:
-                raise RuntimeError, "cannot execute {0}: {1}".format(args, e)
+                raise RuntimeError("cannot execute {0}: {1}".format(args, e))
 
         if ret != 0:
                 raise NonzeroExitException(args, ret, buf)

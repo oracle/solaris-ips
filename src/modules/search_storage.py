@@ -439,7 +439,7 @@ class IndexStoreListDict(IndexStoreBase):
                 # speed up of a factor of 4. Because this is a very hot path,
                 # the tradeoff seemed appropriate.
 
-                if not self._dict.has_key(entity):
+                if entity not in self._dict:
                         assert (len(self._list) == self._next_id)
                         if self._list_of_empties:
                                 use_id = self._list_of_empties.pop(0)
@@ -463,7 +463,7 @@ class IndexStoreListDict(IndexStoreBase):
 
         def has_entity(self, entity):
                 """check if entity is in storage """
-                return self._dict.has_key(entity)
+                return entity in self._dict
 
         def has_empty(self):
                 """Check if the structure has any empty elements which
@@ -522,7 +522,7 @@ class IndexStoreDict(IndexStoreBase):
                 return self._dict[in_id]
 
         def has_entity(self, entity):
-                return self._dict.has_key(entity)
+                return entity in self._dict
 
         def read_dict_file(self):
                 """Reads in a dictionary stored in line number -> entity
@@ -552,7 +552,7 @@ class IndexStoreDictMutable(IndexStoreBase):
                 return self._dict
 
         def has_entity(self, entity):
-                return self._dict.has_key(entity)
+                return entity in self._dict
 
         def get_id(self, entity):
                 return self._dict[entity]

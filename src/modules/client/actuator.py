@@ -180,7 +180,7 @@ class Actuator(object):
                 def check_val(dfmri):
                         # For actuators which are a single, global function that
                         # needs to get executed, simply print true.
-                        if callable(dfmri) or isinstance(dfmri, list):
+                        if hasattr(dfmri, "__call__") or isinstance(dfmri, list):
                                 return [ "true" ]
                         else:
                                 return dfmri
@@ -334,15 +334,15 @@ class Actuator(object):
                 # handle callables first
 
                 for act in self.removal.itervalues():
-                        if callable(act):
+                        if hasattr(act, "__call__"):
                                 act()
 
                 for act in self.install.itervalues():
-                        if callable(act):
+                        if hasattr(act, "__call__"):
                                 act()
 
                 for act in self.update.itervalues():
-                        if callable(act):
+                        if hasattr(act, "__call__"):
                                 act()
 
 

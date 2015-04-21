@@ -536,7 +536,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.assertTrue(os.access(cache_dir, os.F_OK))
 
                 filemode = stat.S_IMODE(os.stat(cache_dir).st_mode)
-                self.assertEqualDiff(0755, filemode)
+                self.assertEqualDiff(0o755, filemode)
                 uid = os.stat(cache_dir)[4]
                 exp_uid = portable.get_user_by_name(SYSREPO_USER, None, False)
                 self.assertEqualDiff(exp_uid, uid)

@@ -292,7 +292,7 @@ stop/type astring method
                     close """]
 
                 self.make_misc_files(self.misc_files, prefix="testdata",
-                     mode=0755)
+                     mode=0o755)
 
         def test_actuators(self):
                 """test actuators"""
@@ -730,7 +730,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                         assert "output file not found" == 0
 
                 # make sure file is readable by everyone
-                assert(stat.S_IMODE(os.stat(field).st_mode) == 0644)
+                assert(stat.S_IMODE(os.stat(field).st_mode) == 0o644)
 
                 # read release note file and check to make sure
                 # entire contents are there verbatim

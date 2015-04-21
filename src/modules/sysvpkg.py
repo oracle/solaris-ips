@@ -137,7 +137,7 @@ class SolarisPackage(object):
                                         if g.readline().rstrip() == PKG_MAGIC:
                                                 fo = g
                                         else:
-                                                raise IOError, "not a package"
+                                                raise IOError("not a package")
                                 except IOError as e:
                                         if e.args[0] not in (
                                             "Not a gzipped file",
@@ -145,7 +145,7 @@ class SolarisPackage(object):
                                                 raise
                                         else:
                                                 g.close()
-                                                raise ValueError, "{0} is not a package".format(path)
+                                                raise ValueError("{0} is not a package".format(path))
 
                         pkgs = []
                         while True:

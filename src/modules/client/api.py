@@ -354,12 +354,12 @@ class ImageInterface(object):
                 if self.cmdpath and \
                     "PKG_NO_RUNPY_CMDPATH" in os.environ and \
                     self.cmdpath.endswith(os.sep + "run.py"):
-                        raise RuntimeError, """
+                        raise RuntimeError("""
 An ImageInterface object was allocated from within ipkg test suite and
 cmdpath was not explicitly overridden.  Please make sure to set
 explicitly set cmdpath when allocating an ImageInterface object, or
 override cmdpath when allocating an Image object by setting PKG_CMDPATH
-in the environment or by setting simulate_cmdpath in DebugValues."""
+in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 if isinstance(img_path, basestring):
                         # Store this for reset().
@@ -2162,7 +2162,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # An empty facets dictionary is allowed because that's how to
                 # unset all set facets.
                 if not variants and facets is None:
-                        raise ValueError, "Nothing to do"
+                        raise ValueError("Nothing to do")
 
                 if variants:
                         op = API_OP_CHANGE_VARIANT

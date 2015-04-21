@@ -146,9 +146,9 @@ class CfgFile(object):
         for field in self.column_names:
             if field not in template:
                 if self.default_values[field] is None:
-                    raise RuntimeError, \
-                        "Required attribute {0} is missing".format(field)
-                elif callable(self.default_values[field]):
+                    raise RuntimeError(
+                        "Required attribute {0} is missing".format(field))
+                elif hasattr(self.default_values[field], "__call__"):
                     template[field] = self.default_values[field]()
                 else:
                     template[field] = self.default_values[field]
@@ -276,7 +276,7 @@ class PasswordFile(CfgFile):
         for i in range(100):
             if str(i) not in uids:
                 return i
-        raise RuntimeError, "No free system uids"
+        raise RuntimeError("No free system uids")
 
     def getcolumnnames(self):
         names = self.password_file.column_names.copy()
@@ -330,7 +330,7 @@ class GroupFile(CfgFile):
         for i in range(100):
             if str(i) not in gids:
                 return i
-        raise RuntimeError, "No free system gids"
+        raise RuntimeError("No free system gids")
 
     def adduser(self, groupname, username):
         """"add named user to group; does not check if user exists"""
@@ -353,11 +353,11 @@ class GroupFile(CfgFile):
         """ remove named user from group """
         group = self.getvalue({"groupname": groupname})
         if not group:
-            raise RuntimeError, "subuser: No such group {0}".format(groupname)
+            raise RuntimeError("subuser: No such group {0}".format(groupname))
         users = set(group["user-list"].replace(","," ").split())
         if username not in users:
-            raise RuntimeError, "User {0} not in group {1}".format(
-                username, groupname)
+            raise RuntimeError("User {0} not in group {1}".format(
+                username, groupname))
         users.remove(username)
         group["user-list"] = ",".join(users)
         self.setvalue(group)
@@ -366,7 +366,7 @@ class GroupFile(CfgFile):
         """ return list of additional groups user belongs to """
         return sorted([
                 t[1]["groupname"]
-                for t in self.index.values()                
+                for t in self.index.values()
                 if t[1] is not None and username in t[1]["user-list"].split(",")
                 ])
 

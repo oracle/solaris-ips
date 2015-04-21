@@ -79,13 +79,13 @@ def report_catalog_by_arch():
 
 def report_catalog_by_raw_agent(summary_file = None):
         print("<pre>")
-        for i, n in (sorted(catalog_by_raw_agent.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(catalog_by_raw_agent.items(), key=lambda k_v: (k_v[1],k_v[0]))):
                 print(i, n)
         print("</pre>")
 
 def report_catalog_by_pkg_version():
         print("<pre>")
-        for i, n in (sorted(catalog_by_pkg_version.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(catalog_by_pkg_version.items(), key=lambda k_v: (k_v[1],k_v[0]))):
                 print(i, n)
         print("</pre>")
 
@@ -96,7 +96,7 @@ def report_catalog_by_lang():
         max = 0
 
         print("<pre>")
-        for i, n in (sorted(catalog_by_lang.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(catalog_by_lang.items(), key=lambda k_v: (k_v[1],k_v[0]))):
                 if labels == "":
                         labels = "{0}".format(i)
                 else:

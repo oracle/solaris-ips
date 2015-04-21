@@ -726,7 +726,7 @@ class PlanDescription(object):
                 if ordered:
                         # Sort all the item messages by msg_time
                         ordered_list = sorted(self._item_msgs.iteritems(),
-                            key=lambda(k,v): v[0][0])
+                            key=lambda k_v: k_v[1][0][0])
                         for item in ordered_list:
                                 item_id = item[0]
                                 for msg_time, msg_type, msg_text in \

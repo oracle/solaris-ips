@@ -1116,7 +1116,7 @@ packages known:
                         # operations to fail.
                         #
                         os.mkdir(os.path.join(self.img_path(), "etc/zones"),
-                            0755)
+                            0o755)
                         api_objs[0].reset()
                         assertRaises(
                             (apx_verify, {

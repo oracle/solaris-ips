@@ -276,7 +276,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # only thing missing are the sysattrs.
                 portable.remove(fpath)
                 portable.copyfile(os.path.join(self.test_root, "bobcat"), fpath)
-                os.chmod(fpath, 0555)
+                os.chmod(fpath, 0o555)
                 os.chown(fpath, -1, 2)
                 self.pkg("verify", exit=1)
                 for sattr in ('H','S'):

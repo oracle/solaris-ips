@@ -28,7 +28,7 @@ import fnmatch
 import re
 import urllib
 
-from version import Version, VersionError
+from pkg.version import Version, VersionError
 
 # In order to keep track of what publisher is presently the preferred publisher,
 # a prefix is included ahead of the name of the publisher.  If this prefix is

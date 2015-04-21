@@ -1093,7 +1093,7 @@ class PkgActionChecker(base.ActionChecker):
                         path = action.attrs["path"]
                         st = None
                         try:
-                                st = stat.S_IMODE(string.atoi(mode, 8))
+                                st = stat.S_IMODE(int(mode, 8))
                         except ValueError:
                                 pass
 

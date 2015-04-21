@@ -29,6 +29,7 @@ import simplejson as json
 import multiprocessing
 import os
 import sys
+from functools import reduce
 
 # We need cwd to be the same dir as our program.
 if os.path.dirname(__file__) != "" and \
@@ -89,7 +90,7 @@ if __name__ == "__main__":
         #
         if covdir:
                 import coverage
-                os.chmod(covdir, 01777)
+                os.chmod(covdir, 0o1777)
                 cov_file = "{0}/pkg5".format(covdir)
                 cov = coverage.coverage(data_file=cov_file, data_suffix=True)
                 cov.start()

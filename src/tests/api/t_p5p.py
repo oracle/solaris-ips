@@ -846,7 +846,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify we can't extract archive members using a corrupted
                 # index.
                 arc = pkg.p5p.Archive(arc_path, mode="r",
-                    archive_index={"cats": 1234L})
+                    archive_index={"cats": 1234})
                 self.assertRaisesStringify(pkg.p5p.ArchiveErrors,
                     arc.extract_catalog1, "catalog.attrs", ext_dir)
                 self.assertRaisesStringify(pkg.p5p.ArchiveErrors,

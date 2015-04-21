@@ -59,7 +59,7 @@ class Popen(subprocess.Popen):
                     errread, errwrite, to_close=None):
                         """Execute program using posix spawn"""
 
-                        if isinstance(args, types.StringTypes):
+                        if isinstance(args, (str, bytes)):
                                 args = [args]
 
                         if shell:
@@ -115,7 +115,7 @@ class Popen(subprocess.Popen):
                                 os.chdir(cwd)
 
                         if preexec_fn:
-                                apply(preexec_fn)
+                                preexec_fn()
 
                         # Close all other fds, if asked for - after
                         # preexec_fn(), which may open FDs.

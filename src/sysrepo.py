@@ -381,7 +381,7 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
         cache_dir = os.path.dirname(cache_path)
         try:
                 if not os.path.exists(cache_dir):
-                        os.makedirs(cache_dir, 0700)
+                        os.makedirs(cache_dir, 0o700)
                 try:
                         # if the cache exists, it must be a file
                         st_cache = os.lstat(cache_path)
@@ -393,7 +393,7 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
                 with open(cache_path, "wb") as cache_file:
                         simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
-                        os.chmod(cache_path, 0600)
+                        os.chmod(cache_path, 0o600)
         except IOError as e:
                 error(_("Unable to store config to {cache_path}: {e}").format(
                     **locals()))
@@ -559,7 +559,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
 
                 for dir in dirs:
                         try:
-                                os.makedirs(dir, 0755)
+                                os.makedirs(dir, 0o755)
                                 # set pkg5srv:bin as ownership for cache
                                 # directory.
                                 if dir == cache_dir:
@@ -651,7 +651,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
         try:
                 crypto_path = os.path.join(runtime_dir, SYSREPO_CRYPTO_FILENAME)
                 file(crypto_path, "w").close()
-                os.chmod(crypto_path, 0600)
+                os.chmod(crypto_path, 0o600)
                 written_crypto_content = False
 
                 for repo_list in uri_pub_map.values():
@@ -670,7 +670,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
                         crypto_file.write(
                             "# this space intentionally left blank\n")
                         crypto_file.close()
-                os.chmod(crypto_path, 0400)
+                os.chmod(crypto_path, 0o400)
         except OSError as err:
                 raise SysrepoException(
                     _("unable to write crypto.txt file: {0}").format(err))

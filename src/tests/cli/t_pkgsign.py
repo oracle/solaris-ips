@@ -540,10 +540,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that signing do not create empty chain"""
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10,
                     debug_hash="sha1+sha512")
-                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % {
+                sign_args = "-k {key} -c {cert} {pkg}".format(**{
                     "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
                     "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
-                    "pkg": plist[0]}
+                    "pkg": plist[0]})
 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)

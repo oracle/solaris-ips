@@ -24,6 +24,8 @@
 # Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
+
 import errno
 import httplib
 import os
@@ -310,7 +312,7 @@ class CurlTransportEngine(TransportEngine):
                                 errors_seen += 1
 
                         if ex and ex.retryable:
-                                failures.append(ex) 
+                                failures.append(ex)
                         elif ex and not ex_to_raise:
                                 ex_to_raise = ex
 
@@ -361,9 +363,9 @@ class CurlTransportEngine(TransportEngine):
                         # nbytes/sec exceeds our minimum threshold.  If it does
                         # not, and the total time is longer than our timeout,
                         # discard the time calculation as it is bogus.
-                        if (bytespersec < 
+                        if (bytespersec <
                             global_settings.pkg_client_lowspeed_limit) and (
-                            seconds > 
+                            seconds >
                             global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT):
                                 nbytes = 0
                                 seconds = 0
@@ -397,7 +399,7 @@ class CurlTransportEngine(TransportEngine):
                                 # If code >= 400, record this as an error.
                                 # Handlers above the engine get to decide
                                 # for 200/300 codes that aren't OK
-                                if respcode >= 400: 
+                                if respcode >= 400:
                                         repostats.record_error(
                                             decayable=ex.decayable)
                                         errors_seen += 1
@@ -408,11 +410,11 @@ class CurlTransportEngine(TransportEngine):
                                         repostats.record_error()
                                         errors_seen += 1
                                         reason = "Invalid HTTP status code " \
-                                            "from server" 
+                                            "from server"
                                         ex = tx.TransportProtoError(proto,
                                             url=url, reason=reason,
                                             repourl=urlstem, uuid=uuid)
-                                        ex.retryable = True 
+                                        ex.retryable = True
 
                                 # Stash retryable failures, arrange
                                 # to raise first fatal error after
@@ -717,9 +719,9 @@ class CurlTransportEngine(TransportEngine):
             sslkey=None, repourl=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True,
             progclass=None, progtrack=None, proxy=None, runtime_proxy=None):
-                """Invoke the engine to retrieve a single URL.  
+                """Invoke the engine to retrieve a single URL.
                 This routine sends the data in data, and returns the
-                server's response.  
+                server's response.
 
                 Callers wishing to obtain multiple URLs at once should use
                 addUrl() and run().
@@ -879,7 +881,7 @@ class CurlTransportEngine(TransportEngine):
                                 # or EROFS.
                                 raise tx.TransportOperationError(
                                     "Unable to open file: {0}".format(e))
-         
+
                         hdl.setopt(pycurl.WRITEDATA, hdl.fobj)
                         # Request filetime, if endpoint knows it.
                         hdl.setopt(pycurl.OPT_FILETIME, True)

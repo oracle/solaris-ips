@@ -24,6 +24,8 @@
 # Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
+
 import os
 import datetime
 import random
@@ -414,7 +416,7 @@ class RepoStats(object):
 
                         if tx < Nused:
                                 return Cused * (Nused - tx)**2
-       
+
                         return 0
 
                 #
@@ -430,7 +432,7 @@ class RepoStats(object):
                 #
                 # Q = Unused_bonus() + Cspeed * ((bytes/.001+seconds) /
                 # origin_speed)^2 + random_bonus(Crand_max) - Cconn_speed *
-                # (connect_speed / origin_connect_speed)^2 - 
+                # (connect_speed / origin_connect_speed)^2 -
                 # Ccontent_error * (content_errors)^2 - Cerror *
                 # (non_decayable_errors + value_of_decayed_errors)^2
                 #

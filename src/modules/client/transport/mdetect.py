@@ -93,7 +93,7 @@ class MirrorDetector(object):
                             regtype=self.__service, callBack=browse_cb)
                 except pybonjour.BonjourError as e:
                         errstr = "mDNS Service Browse Failed: {0}\n".format(
-                            e[0][1])
+                            e.args[0][1])
                         raise tx.mDNSException(errstr)
 
                 try:
@@ -106,11 +106,11 @@ class MirrorDetector(object):
                                 else:
                                         timedout = True
                 except select.error as e:
-                        errstr = "Select failed: {0}\n".format(e[1])
+                        errstr = "Select failed: {0}\n".format(e.args[1])
                         raise tx.mDNSException(errstr)
                 except pybonjour.BonjourError as e:
                         errstr = "mDNS Process Result failed: {0}\n".format(
-                            e[0][1])
+                            e.args[0][1])
                         raise tx.mDNSException(errstr)
                 finally:
                         sd_hdl.close()
@@ -141,7 +141,7 @@ class MirrorDetector(object):
                             service_name, regtype, reply_domain, resolve_cb)
                 except pybonjour.BonjourError as e:
                         errstr = "mDNS Service Resolve Failed: {0}\n".format(
-                            e[0][1])
+                            e.args[0][1])
                         raise tx.mDNSException(errstr)
 
                 try:
@@ -154,11 +154,11 @@ class MirrorDetector(object):
                                 else:
                                         timedout = True
                 except select.error as e:
-                        errstr = "Select failed; {0}\n".format(e[1])
+                        errstr = "Select failed; {0}\n".format(e.args[1])
                         raise tx.mDNSException(errstr)
                 except pybonjour.BonjourError as e:
                         errstr = "mDNS Process Result Failed: {0}\n".format(
-                            e[0][1])
+                            e.args[0][1])
                         raise tx.mDNSException(errstr)
                 finally:
                         sd_hdl.close()

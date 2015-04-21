@@ -137,14 +137,14 @@ class BootEnv(object):
                         else:
                                 logger.error(_("pkg: unable to create an auto "
                                     "snapshot. pkg recovery is disabled."))
-                                raise RuntimeError, "recoveryDisabled"
+                                raise RuntimeError("recoveryDisabled")
                         self.is_valid = True
                         break
 
                 else:
                         # We will get here if we don't find find any BE's. e.g
                         # if were are on UFS.
-                        raise RuntimeError, "recoveryDisabled"
+                        raise RuntimeError("recoveryDisabled")
 
         def __get_new_be_name(self, suffix=None):
                 """Create a new boot environment name."""
@@ -306,7 +306,7 @@ class BootEnv(object):
                         if raise_error:
                                 # Happens e.g. in zones (for now) or live CD
                                 # environment.
-                                raise RuntimeError, "nobootenvironments"
+                                raise RuntimeError("nobootenvironments")
                         beList = []
 
                 return beList

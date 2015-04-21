@@ -394,7 +394,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 portable.remove(fpath)
                 portable.copyfile(os.path.join(self.test_root, "amber1"),
                     fpath)
-                os.chmod(fpath, 0555)
+                os.chmod(fpath, 0o555)
                 os.chown(fpath, -1, 2)
                 self.pkg("verify", exit=1)
                 # Make the repository offline.

@@ -175,7 +175,7 @@ def list_checks(checkers, exclude, verbose=False):
         width = 28
 
         def get_method_desc(method, verbose):
-                if "pkglint_desc" in method.func_dict and not verbose:
+                if "pkglint_desc" in method.__dict__ and not verbose:
                         return method.pkglint_desc
                 else:
                         return "{0}.{1}.{2}".format(method.im_class.__module__,

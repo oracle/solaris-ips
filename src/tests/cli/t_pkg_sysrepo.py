@@ -491,10 +491,10 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 shutil.copytree(base_dir, self.htdocs_dir)
                 crypto_path = os.path.join(self.common_config_dir, "crypto.txt")
                 if os.path.exists(crypto_path):
-                        os.chmod(crypto_path, 0600)
+                        os.chmod(crypto_path, 0o600)
                 shutil.copy(os.path.join(self.test_root, "apache-conf", name,
                     "crypto.txt"), self.common_config_dir)
-                os.chmod(crypto_path, 0400)
+                os.chmod(crypto_path, 0o400)
                 st = os.stat(base_dir)
                 uid = st.st_uid
                 gid = st.st_gid

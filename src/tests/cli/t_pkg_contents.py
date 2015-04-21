@@ -24,13 +24,15 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import unittest
 import os
 
 import pkg.fmri as pfmri
+
+from functools import reduce
 
 class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

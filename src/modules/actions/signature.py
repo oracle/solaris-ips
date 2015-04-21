@@ -158,7 +158,7 @@ class SignatureAction(generic.Action):
                         for attr in list(cattrs.keys()):
                                 if not cattrs[attr]:
                                         cattrs.pop(attr, None)
- 
+
                 if chain_hshes:
                         # These attributes are stored as a single value with
                         # spaces in it rather than multiple values to ensure
@@ -229,7 +229,7 @@ class SignatureAction(generic.Action):
                 # The signature action can't sign the value of the value
                 # attribute, but it can sign that attribute's name.
                 tmp_a.attrs["value"] = ""
-                if callable(self.data):
+                if hasattr(self.data, "__call__"):
                         size = int(self.attrs.get("pkg.size", 0))
                         tmp_dir = tempfile.mkdtemp()
                         with self.data() as fh:

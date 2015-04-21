@@ -26,7 +26,9 @@
 Misc utility functions used by the packaging system.
 """
 
+from __future__ import division
 from __future__ import print_function
+
 import OpenSSL.crypto as osc
 import cStringIO
 import calendar
@@ -224,11 +226,11 @@ def move(src, dst):
                                 os.utime(dst, (s.st_atime, s.st_mtime))
                                 os.unlink(src)
                 elif e.errno == errno.EINVAL and S_ISDIR(s.st_mode):
-                        raise shutil.Error, "Cannot move a directory '{0}' " \
-                            "into itself '{1}'.".format(src, dst)
+                        raise shutil.Error("Cannot move a directory '{0}' "
+                            "into itself '{1}'.".format(src, dst))
                 elif e.errno == errno.ENOTDIR and S_ISDIR(s.st_mode):
-                        raise shutil.Error, "Destination path '{0}' already " \
-                            "exists".format(dst)
+                        raise shutil.Error("Destination path '{0}' already "
+                            "exists".format(dst))
                 else:
                         raise
 
@@ -360,10 +362,10 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
         # Read the header
         magic = gz.read(2)
         if magic != "\037\213":
-                raise zlib.error, "Not a gzipped file"
+                raise zlib.error("Not a gzipped file")
         method = ord(gz.read(1))
         if method != 8:
-                raise zlib.error, "Unknown compression method"
+                raise zlib.error("Unknown compression method")
         flag = ord(gz.read(1))
         gz.read(6) # Discard modtime, extraflag, os
 
@@ -447,7 +449,7 @@ def msg(*text):
                 print(' '.join([str(l) for l in text]))
         except IOError as e:
                 if e.errno == errno.EPIPE:
-                        raise PipeError, e
+                        raise PipeError(e)
                 raise
 
 def emsg(*text):
@@ -457,7 +459,7 @@ def emsg(*text):
                 print(' '.join([str(l) for l in text]), file=sys.stderr)
         except IOError as e:
                 if e.errno == errno.EPIPE:
-                        raise PipeError, e
+                        raise PipeError(e)
                 raise
 
 def setlocale(category, loc=None, printer=None):
@@ -666,7 +668,7 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                 opath = os.path.join(compress_dir, fname)
                 ofile = PkgGzipFile(opath, "wb")
 
-                nbuf = size / bufsz
+                nbuf = size // bufsz
 
                 for n in range(0, nbuf):
                         l = n * bufsz
@@ -758,7 +760,7 @@ class ProcFS(object):
 
             # structures must be represented as character arrays
             # sizeof (timestruc_t) = 8 in 32-bit process, and = 16 in 64-bit.
-            "timestruc_t": (_running_bit / 4,  "s"),
+            "timestruc_t": (_running_bit // 4,  "s"),
         }
 
         _timestruct_desc = [
@@ -977,7 +979,7 @@ class ImmutableDict(dict):
 
         @staticmethod
         def __oops():
-                raise TypeError, "Item assignment to ImmutableDict"
+                raise TypeError("Item assignment to ImmutableDict")
 
 # A way to have a dictionary be a property
 
@@ -1002,59 +1004,59 @@ class DictProperty(object):
 
                 def __getitem__(self, key):
                         if self.__fget is None:
-                                raise AttributeError, "unreadable attribute"
+                                raise AttributeError("unreadable attribute")
 
                         return self.__fget(self.__obj, key)
 
                 def __setitem__(self, key, value):
                         if self.__fset is None:
-                                raise AttributeError, "can't set attribute"
+                                raise AttributeError("can't set attribute")
                         self.__fset(self.__obj, key, value)
 
                 def __delitem__(self, key):
                         if self.__fdel is None:
-                                raise AttributeError, "can't delete attribute"
+                                raise AttributeError("can't delete attribute")
                         self.__fdel(self.__obj, key)
 
                 def iteritems(self):
                         if self.__iteritems is None:
-                                raise AttributeError, "can't iterate over items"
+                                raise AttributeError("can't iterate over items")
                         return self.__iteritems(self.__obj)
 
                 def keys(self):
                         if self.__keys is None:
-                                raise AttributeError, "can't iterate over keys"
+                                raise AttributeError("can't iterate over keys")
                         return self.__keys(self.__obj)
 
                 def values(self):
                         if self.__values is None:
-                                raise AttributeError, "can't iterate over " \
-                                    "values"
+                                raise AttributeError("can't iterate over "
+                                    "values")
                         return self.__values(self.__obj)
 
                 def get(self, key, default=None):
                         if self.__fgetdefault is None:
-                                raise AttributeError, "can't use get"
+                                raise AttributeError("can't use get")
                         return self.__fgetdefault(self.__obj, key, default)
 
                 def setdefault(self, key, default=None):
                         if self.__fsetdefault is None:
-                                raise AttributeError, "can't use setdefault"
+                                raise AttributeError("can't use setdefault")
                         return self.__fsetdefault(self.__obj, key, default)
 
                 def update(self, d):
                         if self.__update is None:
-                                raise AttributeError, "can't use update"
+                                raise AttributeError("can't use update")
                         return self.__update(self.__obj, d)
 
                 def pop(self, d, default):
                         if self.__pop is None:
-                                raise AttributeError, "can't use pop"
+                                raise AttributeError("can't use pop")
                         return self.__pop(self.__obj, d, default)
 
                 def __iter__(self):
                         if self.__iter is None:
-                                raise AttributeError, "can't iterate"
+                                raise AttributeError("can't iterate")
                         return self.__iter(self.__obj)
 
         def __init__(self, fget=None, fset=None, fdel=None, iteritems=None,
@@ -1161,7 +1163,7 @@ def binary_to_hex(s):
         for p in s:
                 p = ord(p)
                 a = char_list[p % 16]
-                p = p/16
+                p = p // 16
                 b = char_list[p % 16]
                 res += b + a
         return res
@@ -1803,7 +1805,10 @@ def flush_output():
                 raise api_errors._convert_error(e)
 
 # valid json types
-json_types_immediates = (bool, float, int, long, basestring, type(None))
+if sys.version > '3':
+        json_types_immediates = (bool, float, int, str, type(None))
+else:
+        json_types_immediates = (bool, float, int, long, basestring, type(None))
 json_types_collections = (dict, list)
 json_types = tuple(json_types_immediates + json_types_collections)
 json_debug = False

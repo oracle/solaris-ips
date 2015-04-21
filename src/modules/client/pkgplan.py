@@ -38,6 +38,8 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc
 
+from functools import reduce
+
 from pkg.client import global_settings
 from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 

@@ -24,6 +24,7 @@
 #
 
 from __future__ import print_function
+
 try:
         import calendar
         import collections
@@ -48,6 +49,7 @@ try:
         import pkg.misc as misc
         import pkg.publish.transaction as trans
 
+        from functools import reduce
         from pkg.misc import PipeError, emsg, msg
 except KeyboardInterrupt:
         import sys

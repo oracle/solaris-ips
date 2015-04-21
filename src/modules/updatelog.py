@@ -170,9 +170,9 @@ class UpdateLog(object):
                                 pfile.close()
                                 tfile.close()
                                 portable.remove(tmpfile)
-                                raise UpdateLogException, \
+                                raise UpdateLogException(
                                     "Package {0} is already in the catalog".format(
-                                        c)
+                                        c))
                         tfile.write(c)
 
                 # Write the new entries to the catalog

@@ -189,7 +189,7 @@ class POSIXPrintEngine(PrintEngine):
                                 self.__needs_nl = False
                 except IOError as e:
                         if e.errno == errno.EPIPE:
-                                raise PipeError, e
+                                raise PipeError(e)
                         raise
 
         def flush(self):

@@ -100,7 +100,7 @@ class Variants(_Variants):
                 variant name."""
 
                 if not item.startswith("variant."):
-                        raise KeyError, "key must start w/ variant."
+                        raise KeyError("key must start w/ variant.")
 
                 if item in self:
                         return item, dict.__getitem__(self, item)
@@ -108,7 +108,7 @@ class Variants(_Variants):
                 # The trailing '.' is to encourage namespace usage.
                 if item.startswith("variant.debug."):
                         return None, "false" # 'false' by default
-                raise KeyError, "unknown variant {0}".format(item)
+                raise KeyError("unknown variant {0}".format(item))
 
         def __getitem__(self, item):
                 return self.__getitem_internal(item)[1]

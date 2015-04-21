@@ -77,12 +77,12 @@ class FileAction(generic.Action):
                                 return
                         path = orig.get_installed_path(pkgplan.image.get_root())
                         if os.path.isfile(path) and self.in_use(path):
-                                raise api_errors.FileInUseException, path
+                                raise api_errors.FileInUseException(path)
 
                 def preremove(self, pkgplan):
                         path = self.get_installed_path(pkgplan.image.get_root())
                         if os.path.isfile(path) and self.in_use(path):
-                                raise api_errors.FileInUseException, path
+                                raise api_errors.FileInUseException(path)
 
                 def in_use(self, path):
                         """Determine if a file is in use (locked) by trying

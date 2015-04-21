@@ -148,12 +148,12 @@ class Image(object):
                 if self.cmdpath and \
                     "PKG_NO_RUNPY_CMDPATH" in os.environ and \
                     self.cmdpath.endswith(os.sep + "run.py"):
-                        raise RuntimeError, """
+                        raise RuntimeError("""
 An Image object was allocated from within ipkg test suite and
 cmdpath was not explicitly overridden.  Please make sure to
 explicitly set cmdpath when allocating an Image object, or
 override cmdpath when allocating an Image object by setting PKG_CMDPATH
-in the environment or by setting simulate_cmdpath in DebugValues."""
+in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 self.linked = None
 
@@ -247,7 +247,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
                 # locked down umask.
-                os.umask(0022)
+                os.umask(0o022)
 
                 self.augment_ta_from_parent_image = augment_ta_from_parent_image
 
@@ -735,10 +735,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not self.__allow_liveroot() and root == misc.liveroot():
                         if startd == None:
                                 startd = root
-                        raise RuntimeError, \
-                           "Live root image access is disabled but was \
-                           attempted.\nliveroot: {0}\nimage path: {1}".format(
-                           misc.liveroot(), startd)
+                        raise RuntimeError(
+                            "Live root image access is disabled but was \
+                            attempted.\nliveroot: {0}\nimage path: {1}".format(
+                            misc.liveroot(), startd))
 
                 self.__root = root
                 self.type = imgtype

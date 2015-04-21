@@ -2131,7 +2131,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 present in the provided pkg_attrs dictionary. Errors are
                 reported in an assertion message that includes manifest_name."""
 
-                self.assert_(pkg_attrs.has_key("org.opensolaris.smf.fmri"),
+                self.assert_("org.opensolaris.smf.fmri" in pkg_attrs,
                     "Missing org.opensolaris.smf.fmri key for {0}".format(
                     manifest_name))
 

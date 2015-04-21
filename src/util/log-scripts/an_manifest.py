@@ -60,13 +60,13 @@ def report_manifest_by_arch():
 
 def report_manifest_by_pkg():
         print("<pre>")
-        for i, n in (sorted(manifest_by_pkg.items(), key=lambda(k,v): (v,k))): 
+        for i, n in (sorted(manifest_by_pkg.items(), key=lambda k_v: (k_v[1],k_v[0]))):
                 print(i, n)
         print("</pre>")
 
 def report_manifest_by_ver_pkg():
         print("<pre>")
-        for i, n in (sorted(manifest_by_ver_pkg.items(), key=lambda(k,v): (v,k))): 
+        for i, n in (sorted(manifest_by_ver_pkg.items(), key=lambda k_v: (k_v[1],k_v[0]))):
                 print(i, n)
         print("</pre>")
 
@@ -134,7 +134,7 @@ for l in fileinput.input(args):
                 continue
 
         mg = m.groupdict()
-        
+
         d = None
 
         if lastdatetime and mg["date"] == lastdate:
@@ -155,7 +155,7 @@ for l in fileinput.input(args):
         count_manifest(mg, d)
 
 host_cache_save()
-manifest_by_country = ip_to_country(manifest_by_ip) 
+manifest_by_country = ip_to_country(manifest_by_ip)
 
 report_section_begin("Manifest", summary_file = summary_file)
 report_cols_begin(summary_file = summary_file)

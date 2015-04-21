@@ -317,7 +317,7 @@ SSLRandomSeed connect builtin
                     "usr/bin/svcs": self._svcs_template.format(_svcs_conf),
                     "usr/bin/svcprop": self._svcprop_template.format(_svcprop_conf)
                 }
-                self.make_misc_files(self.smf_cmds, "smf_cmds", mode=0755)
+                self.make_misc_files(self.smf_cmds, "smf_cmds", mode=0o755)
 
         def start_depot(self, build_indexes=True):
                 hc = pkg5unittest.HttpDepotController(

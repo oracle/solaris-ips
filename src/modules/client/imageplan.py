@@ -40,6 +40,8 @@ import time
 import traceback
 import weakref
 
+from functools import reduce
+
 from pkg.client import global_settings
 logger = global_settings.logger
 
@@ -2911,7 +2913,7 @@ class ImagePlan(object):
                 elif phase == "update":
                         d = self.pd._actuators.update
 
-                if callable(value):
+                if hasattr(value, "__call__"):
                         d[name] = value
                 else:
                         d.setdefault(name, []).append(value)
@@ -3316,7 +3318,7 @@ class ImagePlan(object):
                                         note = note.encode("utf-8")
                                 print(note, file=tmpfile)
                         # make file world readable
-                        os.chmod(path, 0644)
+                        os.chmod(path, 0o644)
                         tmpfile.close()
                         self.pd.release_notes_name = os.path.basename(path)
 

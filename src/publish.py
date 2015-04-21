@@ -34,6 +34,7 @@ import sys
 import traceback
 import warnings
 import errno
+from imp import reload
 
 import pkg.actions
 import pkg.bundle

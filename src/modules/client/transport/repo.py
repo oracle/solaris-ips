@@ -2440,7 +2440,7 @@ class RepoCache(object):
                 if url:
                         repouri = TransportRepoURI(url)
                 else:
-                        raise ValueError, "Must supply either a repo or a uri."
+                        raise ValueError("Must supply either a repo or a uri.")
 
                 if repouri.key() in self.__cache:
                         del self.__cache[repouri.key()]

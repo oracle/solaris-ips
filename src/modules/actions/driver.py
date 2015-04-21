@@ -454,7 +454,8 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 print("{0} ({1}) upgrade (classes modification) "
                                     "failed {2} etc/driver_classes with error: "
                                     "{3} ({4})".format(self.name,
-                                    self.attrs["name"], e[1], e[0], e[2]))
+                                    self.attrs["name"], e.args[1],
+                                    e.args[0], e.args[2]))
                                 print("tried to add {0} and remove {1}".format(
                                     add_class, rem_class))
 
@@ -511,7 +512,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 raise
 
                         if missing_entries:
-                                raise RuntimeError, missing_entries
+                                raise RuntimeError(missing_entries)
 
                 if "devlink" in orig.attrs or "devlink" in self.attrs:
                         try:
@@ -520,7 +521,8 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 print("{0} ({1}) upgrade (devlinks modification) "
                                     "failed {2} etc/devlink.tab with error: "
                                     "{3} ({4})".format(self.name,
-                                    self.attrs["name"], e[1], e[0], e[2]))
+                                    self.attrs["name"], e.args[1],
+                                    e.args[0], e.args[2]))
                         except RuntimeError as e:
                                 print("{0} ({1}) upgrade (devlinks modification) "
                                     "failed modifying\netc/devlink.tab.  The "
@@ -683,9 +685,9 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
 
                 if found_major > 1:
                         try:
-                                raise RuntimeError, \
-                                    "More than one entry for driver '{0}' in " \
-                                    "/etc/name_to_major".format(name)
+                                raise RuntimeError(
+                                    "More than one entry for driver '{0}' in "
+                                    "/etc/name_to_major".format(name))
                         except RuntimeError as e:
                                 if collect_errs:
                                         errors.append(e)
@@ -944,7 +946,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 print("{0} ({1}) removal (devlinks modification) "
                                     "failed reading etc/devlink.tab with error: "
                                     "{2} ({3})".format(self.name,
-                                    self.attrs["name"], e[0], e[1]))
+                                    self.attrs["name"], e.args[0], e.args[1]))
                                 return
 
                         devlinks = self.attrlist("devlink")
@@ -979,7 +981,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                                 print("{0} ({1}) removal (devlinks modification) "
                                     "failed writing etc/devlink.tab with error: "
                                     "{2} ({3})".format(self.name,
-                                        self.attrs["name"], e[0], e[1]))
+                                    self.attrs["name"], e.args[0], e.args[1]))
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

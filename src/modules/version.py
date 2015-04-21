@@ -72,9 +72,9 @@ class DotSequence(list):
                 # chars, this will throw.
                 x = int(elem)
                 if elem[0] == "-":
-                        raise ValueError, "Negative number"
+                        raise ValueError("Negative number")
                 if x > 0 and elem[0] == "0":
-                        raise ValueError, "Zero padded number"
+                        raise ValueError("Zero padded number")
                 return x
 
         def __new__(cls, dotstring):
@@ -254,7 +254,7 @@ class Version(object):
                 # XXX If illegally formatted, raise exception.
 
                 if not version_string:
-                        raise IllegalVersion, "Version cannot be empty"
+                        raise IllegalVersion("Version cannot be empty")
 
                 #
                 # Locate and extract the time, branch, and build strings,
@@ -289,8 +289,7 @@ class Version(object):
                         build = None
 
                 if buildidx == 0:
-                        raise IllegalVersion, \
-                            "Versions must have a release value"
+                        raise IllegalVersion("Versions must have a release value")
 
                 #
                 # Error checking and conversion from strings to objects
@@ -323,20 +322,18 @@ class Version(object):
                 if timestr is not None:
                         if len(timestr) != 16 or timestr[8] != "T" \
                             or timestr[15] != "Z":
-                                raise IllegalVersion, \
-                                    "Time must be ISO8601 format."
+                                raise IllegalVersion("Time must be ISO8601 format.")
                         try:
                                 dateint = int(timestr[0:8])
                                 timeint = int(timestr[9:15])
-                                datetime.datetime(dateint / 10000,
-                                    (dateint / 100) % 100,
+                                datetime.datetime(dateint // 10000,
+                                    (dateint // 100) % 100,
                                     dateint % 100,
-                                    timeint / 10000,
-                                    (timeint / 100) % 100,
+                                    timeint // 10000,
+                                    (timeint // 100) % 100,
                                     timeint % 100)
                         except ValueError:
-                                raise IllegalVersion, \
-                                    "Time must be ISO8601 format."
+                                raise IllegalVersion("Time must be ISO8601 format.")
 
                         self.timestr = timestr
                 else:
@@ -568,7 +565,7 @@ class Version(object):
                 if constraint == CONSTRAINT_BRANCH_MINOR:
                         return other.branch.is_same_minor(self.branch)
 
-                raise ValueError, "constraint has unknown value"
+                raise ValueError("constraint has unknown value")
 
         @classmethod
         def split(self, ver):
@@ -622,7 +619,7 @@ class MatchingVersion(Version):
 
         def __init__(self, version_string, build_string=None):
                 if version_string is None or not len(version_string):
-                        raise IllegalVersion, "Version cannot be empty"
+                        raise IllegalVersion("Version cannot be empty")
 
                 if version_string == "latest":
                         # Treat special "latest" syntax as equivalent to '*' for

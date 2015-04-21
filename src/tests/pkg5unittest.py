@@ -76,6 +76,7 @@ import pkg.portable as portable
 import pkg.server.repository as sr
 import M2Crypto as m2
 
+from imp import reload
 from pkg.client.debugvalues import DebugValues
 from socket import error as socketerror
 
@@ -306,8 +307,8 @@ if __name__ == "__main__":
 
                 if re.search(regexp, text):
                         return
-                raise self.failureException, \
-                    "\"{0}\" does not match \"{1}\"".format(regexp, text)
+                raise self.failureException(
+                    "\"{0}\" does not match \"{1}\"".format(regexp, text))
 
         def assertRaisesRegexp(self, excClass, regexp,
             callableObj, *args, **kwargs):
@@ -323,11 +324,10 @@ if __name__ == "__main__":
                 except excClass as e:
                         if re.search(regexp, str(e)):
                                 return
-                        raise self.failureException, \
-                            "\"{0}\" does not match \"{1}\"".format(regexp, str(e))
+                        raise self.failureException(
+                            "\"{0}\" does not match \"{1}\"".format(regexp, str(e)))
 
-                raise self.failureException, \
-                    "{0} not raised".format(excClass)
+                raise self.failureException("{0} not raised".format(excClass))
 
         def assertRaisesStringify(self, excClass, callableObj, *args, **kwargs):
                 """Perform the same logic as assertRaises, but then verify that
@@ -339,7 +339,7 @@ if __name__ == "__main__":
                         str(e)
                         return
                 else:
-                        raise self.failureException, "{0} not raised".format(excClass)
+                        raise self.failureException("{0} not raised".format(excClass))
 
         #
         # Uses property() to implements test_root as a read-only attribute.
@@ -377,7 +377,7 @@ if __name__ == "__main__":
                                         break
 
                 # This is the arg handling protocol from Popen
-                if isinstance(args, types.StringTypes):
+                if isinstance(args, (str, bytes)):
                         args = [args]
                 else:
                         args = list(args)
@@ -598,7 +598,7 @@ if __name__ == "__main__":
                     "ips.test.{0:d}".format(self.__pid), "{0:d}".format(self.ident))
                 self.__didtearDown = False
                 try:
-                        os.makedirs(self.__test_root, 0755)
+                        os.makedirs(self.__test_root, 0o755)
                 except OSError as e:
                         if e.errno != errno.EEXIST:
                                 raise e
@@ -640,7 +640,7 @@ if __name__ == "__main__":
                 self.depot_template_dir = os.path.join(g_pkg_path,
                     "etc/pkg/depot")
                 self.make_misc_files(self.smf_cmds, prefix="smf_cmds",
-                    mode=0755)
+                    mode=0o755)
                 DebugValues["smf_cmds_dir"] = \
                     os.path.join(self.test_root, "smf_cmds")
 
@@ -848,9 +848,9 @@ if __name__ == "__main__":
                             "Tried: {0}.  Try setting $CC to a valid"
                             "compiler.".format(compilers))
 
-        def make_file(self, path, content, mode=0644):
+        def make_file(self, path, content, mode=0o644):
                 if not os.path.exists(os.path.dirname(path)):
-                        os.makedirs(os.path.dirname(path), 0777)
+                        os.makedirs(os.path.dirname(path), 0o777)
                 self.debugfilecreate(content, path)
                 fh = open(path, 'wb')
                 if isinstance(content, unicode):
@@ -859,7 +859,7 @@ if __name__ == "__main__":
                 fh.close()
                 os.chmod(path, mode)
 
-        def make_misc_files(self, files, prefix=None, mode=0644):
+        def make_misc_files(self, files, prefix=None, mode=0o644):
                 """ Make miscellaneous text files.  Files can be a
                 single relative pathname, a list of relative pathnames,
                 or a hash mapping relative pathnames to specific contents.
@@ -1212,12 +1212,12 @@ class _Pkg5TestResult(unittest._TextTestResult):
         def do_archive(self, test, info):
                 assert self.archive_dir
                 if not os.path.exists(self.archive_dir):
-                        os.makedirs(self.archive_dir, mode=0755)
+                        os.makedirs(self.archive_dir, mode=0o755)
 
                 archive_path = os.path.join(self.archive_dir,
                     "{0:d}".format(os.getpid()))
                 if not os.path.exists(archive_path):
-                        os.makedirs(archive_path, mode=0755)
+                        os.makedirs(archive_path, mode=0o755)
                 archive_path = os.path.join(archive_path, test.id())
                 if test.debug_output:
                         self.stream.write("# Archiving to {0}\n".format(archive_path))
@@ -1231,7 +1231,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         # If the test has failed without creating its directory,
                         # make it manually, so that we have a place to write out
                         # ERROR_INFO.
-                        os.makedirs(archive_path, mode=0755)
+                        os.makedirs(archive_path, mode=0o755)
 
                 f = open(os.path.join(archive_path, "ERROR_INFO"), "w")
                 f.write("------------------DEBUG LOG---------------\n")
@@ -2918,7 +2918,7 @@ class CliTestCase(Pkg5TestCase):
                         with open(dest_cfg, "rb") as f:
                                 dest_cfg_data = f.read()
                 shutil.rmtree(dest, True)
-                os.makedirs(dest, mode=0755)
+                os.makedirs(dest, mode=0o755)
 
                 # Ensure config is written back out.
                 if dest_cfg_data:
@@ -2940,7 +2940,7 @@ class CliTestCase(Pkg5TestCase):
                                         # exists.
                                         if not os.path.isdir(dest_pkg_path):
                                                 os.makedirs(dest_pkg_path,
-                                                    mode=0755)
+                                                    mode=0o755)
 
                                         msrc = open(os.path.join(src_pkg_path,
                                             mname), "rb")
@@ -3043,8 +3043,8 @@ class CliTestCase(Pkg5TestCase):
                 shutil.rmtree(mcdir, True)
                 self.assert_(not os.path.exists(mdir))
                 self.assert_(not os.path.exists(mcdir))
-                os.makedirs(mdir, mode=0755)
-                os.makedirs(mcdir, mode=0755)
+                os.makedirs(mdir, mode=0o755)
+                os.makedirs(mcdir, mode=0o755)
 
                 # Finally, write the new manifest.
                 with open(mpath, "wb") as f:
@@ -3477,7 +3477,7 @@ class ManyDepotTestCase(CliTestCase):
                         testdir = os.path.join(self.test_root)
 
                         try:
-                                os.makedirs(testdir, 0755)
+                                os.makedirs(testdir, 0o755)
                         except OSError as e:
                                 if e.errno != errno.EEXIST:
                                         raise e

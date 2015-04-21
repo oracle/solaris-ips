@@ -1057,12 +1057,12 @@ class installfile(Command):
 
         def finalize_options(self):
                 if self.mode is None:
-                        self.mode = 0644
+                        self.mode = 0o644
                 elif isinstance(self.mode, basestring):
                         try:
                                 self.mode = int(self.mode, 8)
                         except ValueError:
-                                self.mode = 0644
+                                self.mode = 0o644
 
         def run(self):
                 dest_file = os.path.join(self.dest, os.path.basename(self.file))
@@ -1139,7 +1139,7 @@ class MyUnixCCompiler(UnixCCompiler):
                 output_filename = os.path.basename(output_filename)
                 nargs = args[:2] + (output_filename,) + args[3:]
                 if not os.path.exists(output_dir):
-                        os.mkdir(output_dir, 0755)
+                        os.mkdir(output_dir, 0o755)
                 os.chdir(output_dir)
 
                 UnixCCompiler.link(self, *nargs, **kwargs)

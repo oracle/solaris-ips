@@ -1370,7 +1370,7 @@ def __api_plan_save(api_inst, logger=None):
         path = __api_plan_file(api_inst)
         oflags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
         try:
-                fd = os.open(path, oflags, 0644)
+                fd = os.open(path, oflags, 0o644)
                 with os.fdopen(fd, "wb") as fobj:
                         plan._save(fobj)
 

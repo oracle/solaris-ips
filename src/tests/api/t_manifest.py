@@ -211,10 +211,10 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 # added
                 #
                 for d in diffs:
-                        if type(d[0]) == types.NoneType:
+                        if type(d[0]) == type(None):
                                 self.assertEqual(type(d[1]),
                                     pkg.actions.file.FileAction)
-                        if type(d[1]) == types.NoneType:
+                        if type(d[1]) == type(None):
                                 self.assertEqual(type(d[0]),
                                     pkg.actions.directory.DirectoryAction)
 
@@ -282,15 +282,15 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 #
                 self.assertEqual(len(diffs), 9)
                 for d in diffs:
-                        self.assertEqual(type(d[1]), types.NoneType)
+                        self.assertEqual(type(d[1]), type(None))
 
                 #
                 # Expect to see None -> something differences
                 #
                 self.assertEqual(len(diffs2), 9)
                 for d in diffs2:
-                        self.assertEqual(type(d[0]), types.NoneType)
-                        self.assertNotEqual(type(d[1]), types.NoneType)
+                        self.assertEqual(type(d[0]), type(None))
+                        self.assertNotEqual(type(d[1]), type(None))
 
         def test_diffs10(self):
                 """ ASSERT: changes in target are detected """

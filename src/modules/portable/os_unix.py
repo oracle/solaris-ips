@@ -61,7 +61,7 @@ def already_called():
                 return False
 
 def get_isainfo():
-        return platform.uname()[5]	
+        return platform.uname()[5]
 
 def get_release():
         return os_util.get_os_release()
@@ -101,7 +101,7 @@ def get_group_by_name(name, dirpath, use_file):
 
         if not use_file:
                 return grp.getgrnam(name).gr_gid
-        try: 
+        try:
                 load_groups(dirpath)
                 return groups[dirpath][name].gr_gid
         except OSError as e:
@@ -111,7 +111,7 @@ def get_group_by_name(name, dirpath, use_file):
                 # ourselves from the current environment.
                 return grp.getgrnam(name).gr_gid
         except KeyError:
-                raise KeyError, "group name not found: {0}".format(name)
+                raise KeyError("group name not found: {0}".format(name))
 
 def get_user_by_name(name, dirpath, use_file):
         if not already_called():
@@ -119,7 +119,7 @@ def get_user_by_name(name, dirpath, use_file):
 
         if not use_file:
                 return pwd.getpwnam(name).pw_uid
-        try: 
+        try:
                 load_passwd(dirpath)
                 return users[dirpath][name].pw_uid
         except OSError as e:
@@ -129,7 +129,7 @@ def get_user_by_name(name, dirpath, use_file):
                 # ourselves from the current environment.
                 return pwd.getpwnam(name).pw_uid
         except KeyError:
-                raise KeyError, "user name not found: {0}".format(name)
+                raise KeyError("user name not found: {0}".format(name))
 
 def get_name_by_gid(gid, dirpath, use_file):
         if not already_called():
@@ -137,7 +137,7 @@ def get_name_by_gid(gid, dirpath, use_file):
 
         if not use_file:
                 return grp.getgrgid(gid).gr_name
-        try: 
+        try:
                 load_groups(dirpath)
                 return gids[dirpath][gid].gr_name
         except OSError as e:
@@ -147,7 +147,7 @@ def get_name_by_gid(gid, dirpath, use_file):
                 # ourselves from the current environment.
                 return grp.getgrgid(gid).gr_name
         except KeyError:
-                raise KeyError, "group ID not found: {0}".format(gid)
+                raise KeyError("group ID not found: {0}".format(gid))
 
 def get_name_by_uid(uid, dirpath, use_file):
         if not already_called():
@@ -155,7 +155,7 @@ def get_name_by_uid(uid, dirpath, use_file):
 
         if not use_file:
                 return pwd.getpwuid(uid).pw_name
-        try: 
+        try:
                 load_passwd(dirpath)
                 return uids[dirpath][uid].pw_name
         except OSError as e:
@@ -165,7 +165,7 @@ def get_name_by_uid(uid, dirpath, use_file):
                 # ourselves from the current environment.
                 return pwd.getpwuid(uid).pw_name
         except KeyError:
-                raise KeyError, "user ID not found: {0:d}".format(uid)
+                raise KeyError("user ID not found: {0:d}".format(uid))
 
 def load_passwd(dirpath):
         # check if we need to reload cache
@@ -264,7 +264,7 @@ def remove(path):
 
 def link(src, dst):
         os.link(src, dst)
-        
+
 def split_path(path):
         return path.split('/')
 

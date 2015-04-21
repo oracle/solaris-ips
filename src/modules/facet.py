@@ -250,10 +250,10 @@ class Facets(dict):
 
         def __setitem_internal(self, item, value, inherited=False):
                 if not item.startswith("facet."):
-                        raise KeyError, 'key must start with "facet".'
+                        raise KeyError('key must start with "facet".')
 
                 if not (value == True or value == False):
-                        raise ValueError, "value must be boolean"
+                        raise ValueError("value must be boolean")
 
                 keylist_sort = False
                 if (inherited and item not in self.__inherited) or \
@@ -293,7 +293,7 @@ class Facets(dict):
                 that matched the caller specific facet name."""
 
                 if not item.startswith("facet."):
-                        raise KeyError, "key must start w/ facet."
+                        raise KeyError("key must start w/ facet.")
 
                 if item in self:
                         return item, dict.__getitem__(self, item)
@@ -314,11 +314,11 @@ class Facets(dict):
 
                 # check for an attempt to delete an invalid facet
                 if not dict.__contains__(self, item):
-                        raise KeyError, item
+                        raise KeyError(item)
 
                 # check for an attempt to delete an invalid local facet
                 if not inherited and item not in self.__local:
-                        raise KeyError, item
+                        raise KeyError(item)
 
                 # we should never try to delete an invalid inherited facet
                 assert not inherited or item in self.inherited
@@ -405,8 +405,8 @@ class Facets(dict):
                         elif "default" in kwargs:
                                 return kwargs["default"]
                         if len(self) == 0:
-                                raise KeyError, 'pop(): dictionary is empty'
-                        raise KeyError, item
+                                raise KeyError('pop(): dictionary is empty')
+                        raise KeyError(item)
 
                 return self.__delitem_internal(item, inherited=False)
 
@@ -418,7 +418,7 @@ class Facets(dict):
                         break
 
                 if item is None:
-                        raise KeyError, 'popitem(): dictionary is empty'
+                        raise KeyError('popitem(): dictionary is empty')
 
                 self.__delitem_internal(item)
                 return (item, value)

@@ -241,7 +241,7 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 # check 17264951
                 # break something so pkg fix will do some work
                 dpath = self.get_img_file_path("etc/breakable")
-                os.chmod(dpath, 0700)
+                os.chmod(dpath, 0o700)
                 self.pkg("fix F")
                 self.pkg("avoid")
                 assert "A" in self.output

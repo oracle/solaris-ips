@@ -143,7 +143,7 @@ class TestPkgNasty(pkg5unittest.SingleDepotTestCase):
                         log = open(lp)
                         lines = log.readlines()
                         self.debug("".join(lines[-50:]))
-                except StandardError:
+                except Exception:
                         self.debug("Failed to print log entries")
 
         def _trythis(self, label, kallable, ntries=10):

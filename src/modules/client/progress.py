@@ -28,7 +28,9 @@
 # Missing docstring; pylint: disable=C0111
 #
 
+from __future__ import division
 from __future__ import print_function
+
 import inspect
 import itertools
 import math
@@ -1638,9 +1640,9 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.reversion_adjs.reset()
                 self.reversion_revs.reset()
                 self.reversion_pkgs.reset()
-                self.reversion_revs.goalitems = goal_revs 
+                self.reversion_revs.goalitems = goal_revs
                 self.reversion_pkgs.goalitems = goal_pkgs
-                self.reversion_adjs.goalitems = -1 
+                self.reversion_adjs.goalitems = -1
 
         def reversion_add_progress(self, pfmri, pkgs=0, reversioned=0,
             adjusted=0):
@@ -1648,7 +1650,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 if not self.reversion_pkgs.printed:
                         self.reversion_pkgs.printed = True
                         outspec.first = True
-                
+
                 self.reversion_revs.items += reversioned
                 self.reversion_adjs.items += adjusted
                 self.reversion_pkgs.items += pkgs
@@ -2173,7 +2175,7 @@ class CommandLineProgressTracker(ProgressTracker):
                                 if lines[linenum].strip() != "":
                                         self._pe.cprint("| " + line)
                                 self._pe.cprint("`")
-                        
+
         def _li_recurse_output_output(self, lin, stdout, stderr):
                 if not stdout and not stderr:
                         return
@@ -2690,7 +2692,7 @@ class RADProgressTracker(CommandLineProgressTracker):
                         cls.O_RUNNING: {"type": "array"},
                         cls.O_GOAL_PRO_ITEMS: {"type": "number"},
                         cls.O_REV_ITEMS : {"type": "number"},
-                        cls.O_GOAL_REV_ITEMS: {"type": "number"}, 
+                        cls.O_GOAL_REV_ITEMS: {"type": "number"},
                         cls.O_ADJ_ITEMS: {"type": "number"},
                         cls.O_LI_OUTPUT : {"type": "array"},
                         cls.O_LI_ERROR : {"type": "array"},
@@ -3169,7 +3171,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if not stdout and not stderr:
                         self._pe.cprint("", erase=True, end='')
                         return
-                
+
                 self._pe.cprint(_("Linked image '{0}' output:").format(lin),
                     erase=True)
                 self.__li_dump_output(stdout)

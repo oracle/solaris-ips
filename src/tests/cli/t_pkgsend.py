@@ -472,7 +472,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         # File at top level in source directory.
                         top_file = os.path.join(src_dir, "file-{0}".format(name))
                         self.make_misc_files(os.path.relpath(top_file, src_dir),
-                            prefix=name, mode=0644)
+                            prefix=name, mode=0o644)
 
                         # Link at top level in source directory.
                         os.chdir(src_dir)
@@ -485,13 +485,13 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                         # Directory at top level in source directory.
                         top_dir = os.path.join(src_dir, "dir-{0}".format(name))
-                        os.mkdir(top_dir, 0755)
+                        os.mkdir(top_dir, 0o755)
 
                         # File in top_dir.
                         top_dir_file = os.path.join(top_dir,
                             "subfile-{0}".format(name))
                         self.make_misc_files(os.path.relpath(top_dir_file,
-                            src_dir), prefix=name, mode=0444)
+                            src_dir), prefix=name, mode=0o444)
 
                         # Link in top_dir to file in parent dir.
                         os.chdir(top_dir)
@@ -515,13 +515,13 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                         # Directory in top_dir.
                         sub_dir = os.path.join(top_dir, "subdir-{0}".format(name))
-                        os.mkdir(sub_dir, 0750)
+                        os.mkdir(sub_dir, 0o750)
 
                         # File in sub_dir.
                         sub_dir_file = os.path.join(sub_dir,
                             "subdirfile-{0}".format(name))
                         self.make_misc_files(os.path.relpath(sub_dir_file,
-                            src_dir), prefix=name, mode=0400)
+                            src_dir), prefix=name, mode=0o400)
 
                 # Pre-generated result used for package validation.
                 expected = """\
@@ -595,11 +595,11 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
         # path name to
         # [ type, mode, user, group, digest ] initially setting the digest to None
         sysv_contents = {
-            "foobar": [ "d", 0715, "nobody", "nobody", None ],
-            "foobar/bar": [ "f", 0614, "root", "sys", None ],
-            "foobar/baz": [ "f", 0644, "daemon", "adm", None ],
+            "foobar": [ "d", 0o715, "nobody", "nobody", None ],
+            "foobar/bar": [ "f", 0o614, "root", "sys", None ],
+            "foobar/baz": [ "f", 0o644, "daemon", "adm", None ],
             "foobar/symlink": [ "s", None, "daemon", "adm", None ],
-            "foobar/hardlink": [ "l", 0644, "daemon", "adm", None ],
+            "foobar/hardlink": [ "l", 0o644, "daemon", "adm", None ],
             "copyright": [ "i", None, None, None, None ],
             # check that pkgsend doesn't generate an Action for "i" files
             "pkginfo": [ "i", None, None, None, None ],
@@ -612,10 +612,10 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
 
         # Same, but for the non-relocatable package
         sysv_nonreloc_contents = {
-            "etc": [ "d", 0755, "root", "sys", None ],
-            "etc/foo.conf": [ "f", 0644, "root", "sys", None ],
-            "SUNWfoo/bin": [ "d", 0755, "root", "bin", None ],
-            "SUNWfoo/bin/foo": [ "f", 0755, "root", "bin", None ],
+            "etc": [ "d", 0o755, "root", "sys", None ],
+            "etc/foo.conf": [ "f", 0o644, "root", "sys", None ],
+            "SUNWfoo/bin": [ "d", 0o755, "root", "bin", None ],
+            "SUNWfoo/bin/foo": [ "f", 0o755, "root", "bin", None ],
             "copyright": [ "i", None, None, None, None ],
             # check that pkgsend doesn't generate an Action for "i" files
             "pkginfo": [ "i", None, None, None, None ],
@@ -1359,26 +1359,26 @@ file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
                 # File at top level in source directory.
                 top_file = os.path.join(src_dir, "file-{0}".format(name))
                 self.make_misc_files(os.path.relpath(top_file, src_dir),
-                    prefix=name, mode=0644)
+                    prefix=name, mode=0o644)
 
                 top_dir = os.path.join(src_dir, "dir-{0}".format(name))
-                os.mkdir(top_dir, 0755)
+                os.mkdir(top_dir, 0o755)
 
                 # File in top_dir.
                 top_dir_file = os.path.join(top_dir,
                     "subfile-{0}".format(name))
                 self.make_misc_files(os.path.relpath(top_dir_file,
-                    src_dir), prefix=name, mode=0444)
+                    src_dir), prefix=name, mode=0o444)
 
                 # Directory in top_dir.
                 sub_dir = os.path.join(top_dir, "subdir-{0}".format(name))
-                os.mkdir(sub_dir, 0750)
+                os.mkdir(sub_dir, 0o750)
 
                 # File in sub_dir.
                 sub_dir_file = os.path.join(sub_dir,
                     "subdirfile-{0}".format(name))
                 self.make_misc_files(os.path.relpath(sub_dir_file,
-                    src_dir), prefix=name, mode=0400)
+                    src_dir), prefix=name, mode=0o400)
 
                 # Change ownership.
                 owner_id, group_id =  pkg5unittest.get_su_wrap_user(uid_gid = True)

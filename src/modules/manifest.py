@@ -25,6 +25,8 @@
 #
 
 from collections import namedtuple, defaultdict
+from functools import reduce
+
 import errno
 import fnmatch
 import hashlib
@@ -1236,7 +1238,7 @@ class Manifest(object):
                                 else:
                                         if not excludes or \
                                             action.include_this(excludes):
-                                                if action.attrs.has_key("path"):
+                                                if "path" in action.attrs:
                                                         np = action.attrs["path"].lstrip(os.path.sep)
                                                         action.attrs["path"] = \
                                                             np
@@ -1458,7 +1460,7 @@ class Manifest(object):
                                     forv=v.split(".", 1)[0], v=v))
 
                 return (variants, facets)
-                
+
         def __getitem__(self, key):
                 """Return the value for the package attribute 'key'."""
                 return self.attributes[key]
@@ -1526,7 +1528,7 @@ class FactoredManifest(Manifest):
                 # Do we have a cached copy?
                 if not os.path.exists(self.pathname):
                         if contents is None:
-                                raise KeyError, fmri
+                                raise KeyError(fmri)
                         # we have no cached copy; save one
                         # don't specify excludes so on-disk copy has
                         # all variants

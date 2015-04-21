@@ -66,6 +66,9 @@ import pkg.misc as misc
 import pkg.pkgsubprocess
 import pkg.version
 
+# Redefining built-in; pylint: disable=W0622
+from functools import reduce
+
 from pkg.client import global_settings
 
 logger = global_settings.logger
@@ -3551,7 +3554,7 @@ def save_data(path, data, root="/", catch_exception=True):
 
                 # write the output to a temporary file
                 fd = ar.ar_open(root, pathtmp, os.O_WRONLY,
-                    mode=0644, create=True, truncate=True)
+                    mode=0o644, create=True, truncate=True)
                 fobj = os.fdopen(fd, "w")
                 json.dump(data, fobj, encoding="utf-8",
                     cls=pkg.client.linkedimage.PkgEncoder)

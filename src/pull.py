@@ -1075,8 +1075,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 try:
                         ret = subprocess.call(args)
                 except OSError as e:
-                        raise RuntimeError, "cannot execute {0}: {1}".format(
-                            args, e)
+                        raise RuntimeError("cannot execute {0}: {1}".format(
+                            args, e))
 
         # Cleanup. If verification was ok, remove backup copy of old catalog.
         # If not, move old catalog back into place and remove messed up catalog.

@@ -98,12 +98,6 @@ class SMFManifestDependency(base.PublishingDependency):
                 SMFManifestDependency.instance_mf = {}
                 SMFManifestDependency.instance_deps = {}
 
-                def find(manifests, dirname, fnames):
-                         for file in fnames:
-                                 path = os.path.join(dirname, file)
-                                 if os.path.isfile(path):
-                                        manifests.append(path)
-
                 manifest_paths = []
 
                 # we want our proto_dirs to be the authoritative source
@@ -118,11 +112,12 @@ class SMFManifestDependency(base.PublishingDependency):
                                     location))
 
                 for location in manifest_paths:
-                        manifests = []
-                        os.path.walk(location, find, manifests)
-                        for manifest_file in manifests:
-                                SMFManifestDependency.__populate_smf_dics(
-                                    manifest_file)
+                        for dirpath, dirnames, filenames in os.walk(location):
+                                for f in filenames:
+                                        manifest_file = os.path.join(
+                                            dirpath, f)
+                                        SMFManifestDependency.__populate_smf_dics(
+                                            manifest_file)
         @staticmethod
         def __populate_smf_dics(manifest_file):
                 """Add a information information about the SMF instances and

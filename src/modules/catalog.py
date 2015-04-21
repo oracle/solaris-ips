@@ -1229,7 +1229,7 @@ class CatalogAttrs(CatalogPartBase):
                 struct = CatalogPartBase.load(self)
                 # Check to see that struct is as we expect: it must be a dict
                 # and have all of the elements in self.__DEFAULT_ELEMS.
-                if type(struct) != types.DictType or \
+                if type(struct) != dict or \
                     not (set(self.__DEFAULT_ELEMS.keys()) <= \
                     set(struct.keys())):
                         raise api_errors.InvalidCatalogFile(location)
@@ -1250,7 +1250,7 @@ class CatalogAttrs(CatalogPartBase):
                                 continue
 
                         if key in ("parts", "updates"):
-                                if type(val) != types.DictType:
+                                if type(val) != dict:
                                         raise api_errors.InvalidCatalogFile(
                                             location)
 

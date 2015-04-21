@@ -1139,7 +1139,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                 sc_cache = os.path.join(self.test_root, "sysrepo_cache")
 
                 # ensure pkg5srv can write cache content
-                os.chmod(sc_cache, 0777)
+                os.chmod(sc_cache, 0o777)
 
                 sysrepo_port = self.next_free_port
                 self.next_free_port += 1
@@ -1327,7 +1327,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                 sc_cache = os.path.join(self.test_root, "sysrepo_cache")
 
                 # ensure pkg5srv can write cache content
-                os.chmod(sc_cache, 0777)
+                os.chmod(sc_cache, 0o777)
 
                 sysrepo_port = self.next_free_port
                 self.next_free_port += 1
@@ -1569,8 +1569,8 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 # proposed dict
                 self.pkg("uninstall -v evil@1", exit=1)
                 # try workaround
-                self.cmdline_run("pkg -R %s -D ignore-pkg-actuators=true " \
-                    "uninstall -v evil@1" % self.get_img_path())
+                self.cmdline_run("pkg -R {0} -D ignore-pkg-actuators=true "
+                    "uninstall -v evil@1".format(self.get_img_path()))
                 self.pkg("list evil", exit=1)
 
                 # Test overlapping user and actuator pkg requests.
@@ -3564,7 +3564,7 @@ adm
                 self.pkg("verify rennew", exit=1)
 
                 # Ensure that after fixing mode, verify passes.
-                self.file_chmod("testme", 0640)
+                self.file_chmod("testme", 0o640)
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
                 self.file_remove("testme.new")
@@ -9995,7 +9995,7 @@ adm
                 owner = portable.get_user_by_name("root", self.img_path(), True)
                 group = portable.get_group_by_name("bin", self.img_path(), True)
                 os.chown("{0}/usr/bin/something".format(self.img_path()), owner, group)
-                os.chmod("{0}/usr/bin/something".format(self.img_path()), 0755)
+                os.chmod("{0}/usr/bin/something".format(self.img_path()), 0o755)
                 self.pkg("verify")
 
                 # Removing one of more than two offending actions can't do much
@@ -10275,9 +10275,9 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("{0} dupfilesv1 dupfilesv3".format(install_cmd))
                 if platform.processor() == "sparc":
-                        self.dir_exists("dir/pathname", mode=0777)
+                        self.dir_exists("dir/pathname", mode=0o777)
                 else:
-                        self.dir_exists("dir/pathname", mode=0755)
+                        self.dir_exists("dir/pathname", mode=0o755)
 
                 # Two packages delivering a file at the same path where one is
                 # tagged only for non-global zones should install successfully

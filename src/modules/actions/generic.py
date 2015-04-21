@@ -217,7 +217,7 @@ class Action(object):
                                             e, path=data)
                         return
 
-                if callable(data):
+                if hasattr(data, "__call__"):
                         # Data is not None, and is callable.
                         self.data = data
                         return

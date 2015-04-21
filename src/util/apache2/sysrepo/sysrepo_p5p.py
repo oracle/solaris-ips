@@ -198,7 +198,7 @@ class SysrepoP5p(object):
                         p5p_update_lock.acquire()
                         try:
                                 if not os.path.exists(cat_dir):
-                                        os.makedirs(cat_dir, 0755)
+                                        os.makedirs(cat_dir, 0o755)
                                 self.p5p.extract_catalog1(cat_part, cat_dir,
                                     pub=pub)
                                 return open(cat_path, "rb")

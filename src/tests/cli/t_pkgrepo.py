@@ -2228,7 +2228,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 shutil.rmtree(repo_path)
                 os.mkdir(repo_path)
-                os.chmod(repo_path, 0777)
+                os.chmod(repo_path, 0o777)
                 self.pkgrepo("create {0}".format(repo_path), su_wrap=True)
                 self.pkgrepo("set -s {0} publisher/prefix=test".format(repo_path),
                     su_wrap=True)
@@ -2339,13 +2339,13 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 repo_path = self.dc.get_repodir()
                 fmris = self.pkgsend_bulk(repo_path, (self.tree10))
-                os.chmod(self.test_root, 0700)
+                os.chmod(self.test_root, 0o700)
                 self.pkgrepo("-s {0} verify".format(repo_path), exit=0)
                 self.assert_("WARNING: " in self.output)
                 self.assert_("svc:/application/pkg/system-repository" \
                     in self.output)
                 self.assert_("ERROR: " not in self.output)
-                os.chmod(self.test_root, 0755)
+                os.chmod(self.test_root, 0o755)
                 self.pkgrepo("-s {0} verify".format(repo_path), exit=0)
                 self.assert_("WARNING: " not in self.output)
 
@@ -3218,7 +3218,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 shutil.rmtree(repo_path)
                 os.mkdir(repo_path)
-                os.chmod(repo_path, 0777)
+                os.chmod(repo_path, 0o777)
                 self.pkgrepo("create {0}".format(repo_path), su_wrap=True)
                 self.pkgrepo("set -s {0} publisher/prefix=test".format(repo_path),
                     su_wrap=True)

@@ -127,8 +127,8 @@ class LogFormatter(object):
                 if isinstance(value, str):
                         if value.upper() not in LEVELS:
                                 raise ValueError(
-                                    _("{0} is not a valid level").format(
-                                    value))
+                                    _("{value} is not a valid level").format(
+                                    **value))
                         self._level = LEVELS[value]
                 else:
                         self._level = value

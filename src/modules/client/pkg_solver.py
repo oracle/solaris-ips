@@ -41,6 +41,8 @@ import pkg.solver
 import pkg.version           as version
 
 from collections import defaultdict
+# Redefining built-in; pylint: disable=W0622
+from functools import reduce
 from itertools import chain
 from pkg.client.debugvalues import DebugValues
 from pkg.client.firmware import Firmware
@@ -709,10 +711,11 @@ class PkgSolver(object):
                 the pkg change, 'exec_op' is the operation which is supposed to
                 be executed."""
 
-                assert trigger_op in self.__triggered_ops, "%s is " \
-                    "not a valid trigger op for pkg actuators" % trigger_op
-                assert exec_op in self.__triggered_ops[trigger_op], "%s is " \
-                    "not a valid execution op for pkg actuators" % exec_op
+                assert trigger_op in self.__triggered_ops, "{0} is " \
+                    "not a valid trigger op for pkg actuators".format(
+                    trigger_op)
+                assert exec_op in self.__triggered_ops[trigger_op], "{0} is " \
+                    "not a valid execution op for pkg actuators".format(exec_op)
                 assert isinstance(fmris, set)
 
                 self.__triggered_ops[trigger_op][exec_op] |= fmris
