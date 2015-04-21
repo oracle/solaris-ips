@@ -93,7 +93,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 81
+CLIENT_API_VERSION = 82
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0

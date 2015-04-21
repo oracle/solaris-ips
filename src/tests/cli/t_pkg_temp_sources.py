@@ -29,7 +29,9 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import json
 import os
+import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.misc as misc
@@ -556,18 +558,27 @@ Packaging Date: {signed10_pkg_date}
                 # output.
                 self.pkg("install -g {0} foo@1.0".format(self.foo_arc))
                 self.pkg("info")
+
+                os.environ["LC_ALL"] = "C"
+                path = os.path.join(self.img_path(),
+                    "var/pkg/state/installed/catalog.base.C")
+                entry = json.load(open(path))["test"]["foo"][0]["metadata"]
+                pkg_install = catalog.basic_ts_to_datetime(
+                    entry["last-install"]).strftime("%c")
+
                 expected = """\
-          Name: foo
-       Summary: Example package foo.
-         State: Installed
-     Publisher: test
-       Version: 1.0
-        Branch: None
-Packaging Date: {pkg_date}
-          Size: 41.00 B
-          FMRI: {pkg_fmri}
+             Name: foo
+          Summary: Example package foo.
+            State: Installed
+        Publisher: test
+          Version: 1.0
+           Branch: None
+   Packaging Date: {pkg_date}
+Last Install Time: {pkg_install}
+             Size: 41.00 B
+             FMRI: {pkg_fmri}
 """.format(pkg_date=pd(self.foo10), pkg_fmri=self.foo10.get_fmri(
-    include_build=False))
+    include_build=False), pkg_install=pkg_install)
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify that when showing package info from archive that

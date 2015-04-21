@@ -135,7 +135,7 @@ class PackageInfo(object):
             version=None, build_release=None, branch=None, packaging_date=None,
             size=None, csize=None, licenses=None, links=None, hardlinks=None,
             files=None, dirs=None, dependencies=None, description=None,
-            attrs=None):
+            attrs=None, last_update=None, last_install=None):
                 self.pkg_stem = pkg_stem
 
                 self.summary = summary
@@ -159,6 +159,8 @@ class PackageInfo(object):
                 self.dependencies = dependencies
                 self.description = description
                 self.attrs = attrs or {}
+                self.last_update = last_update
+                self.last_install = last_install
 
         def __str__(self):
                 return str(self.fmri)

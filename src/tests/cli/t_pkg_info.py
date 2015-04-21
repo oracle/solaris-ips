@@ -27,10 +27,12 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import json
 import os
 import shutil
 import unittest
 
+import pkg.catalog as catalog
 import pkg.actions as actions
 import pkg.fmri as fmri
 
@@ -744,6 +746,34 @@ Packaging Date: {pkg_date}
                 self.assertEqual("tmp/copyright1\n", self.output)
                 self.pkg("info -r --license bronze@0.5")
                 self.assertEqual("tmp/copyright0\n", self.output)
+
+        def test_info_update_install(self):
+                """Test that pkg info will show last update and install time"""
+
+                os.environ["LC_ALL"] = "C"
+                self.image_create(self.rurl)
+                self.pkg("install bronze@0.5")
+                path = os.path.join(self.img_path(),
+                    "var/pkg/state/installed/catalog.base.C")
+                entry = json.load(open(path))["test"]["bronze"][0]["metadata"]
+                last_install = catalog.basic_ts_to_datetime(
+                    entry["last-install"]).strftime("%c")
+                self.pkg(("info bronze | grep 'Last Install Time: "
+                    "{0}'").format(last_install))
+
+                # Now update the version.
+                self.pkg("install bronze@1.0")
+                entry = json.load(open(path))["test"]["bronze"][0]["metadata"]
+                last_install = catalog.basic_ts_to_datetime(
+                    entry["last-install"]).strftime("%c")
+                self.pkg(("info bronze | grep 'Last Install Time: "
+                    "{0}'").format(last_install))
+
+                # Last update should be existed this time.
+                last_update = catalog.basic_ts_to_datetime(
+                    entry["last-update"]).strftime("%c")
+                self.pkg(("info bronze | grep 'Last Update Time: "
+                    "{0}'").format(last_update))
 
 
 class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):

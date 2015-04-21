@@ -1,5 +1,12 @@
+Version 82:
+Compatible with clients using versions 72-81.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * added a new field 'last_install' to record the package last install time
+        * added a new field 'last_update' to record the package last update time
+
 Version 81:
-Incompatible with clients using versions 72-80.
+Compatible with clients using versions 72-80.
 
     pkg.client.api.ImageInterface has changed as follows:
         * Introduced new non-linked image interfaces:

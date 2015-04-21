@@ -2465,6 +2465,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 added = set()
                 removed = set()
+                updated = {}
                 for add_pkg, rem_pkg in pkg_pairs:
                         if add_pkg == rem_pkg:
                                 continue
@@ -2472,6 +2473,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 added.add(add_pkg)
                         if rem_pkg:
                                 removed.add(rem_pkg)
+                        if add_pkg and rem_pkg:
+                                updated[add_pkg] = \
+                                    dict(kcat.get_entry(rem_pkg).get(
+                                    "metadata", {}))
 
                 combo = added.union(removed)
 
@@ -2485,9 +2490,25 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if pfmri in removed:
                                 icat.remove_package(pfmri)
                                 states.discard(pkgdefs.PKG_STATE_INSTALLED)
+                                mdata.pop("last-install", None)
+                                mdata.pop("last-update", None)
 
                         if pfmri in added:
                                 states.add(pkgdefs.PKG_STATE_INSTALLED)
+                                cur_time = pkg.catalog.now_to_basic_ts()
+                                if pfmri in updated:
+                                        last_install = updated[pfmri].get(
+                                            "last-install")
+                                        if last_install:
+                                                mdata["last-install"] = \
+                                                    last_install
+                                                mdata["last-update"] = \
+                                                    cur_time
+                                        else:
+                                                mdata["last-install"] = \
+                                                    cur_time
+                                else:
+                                        mdata["last-install"] = cur_time
                                 if pkgdefs.PKG_STATE_ALT_SOURCE in states:
                                         states.discard(
                                             pkgdefs.PKG_STATE_UPGRADABLE)

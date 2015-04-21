@@ -69,6 +69,7 @@ import threading
 import time
 import urllib
 
+import pkg.catalog as catalog
 import pkg.client.api_errors as apx
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
@@ -103,8 +104,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 81
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79, 80,
+CURRENT_API_VERSION = 82
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
     CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
@@ -3297,6 +3298,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 img_inst_cat = self._img.get_catalog(
                     self._img.IMG_CATALOG_INSTALLED)
+                img_inst_base = img_inst_cat.get_part("catalog.base.C",
+                    must_exist=True)
                 op_time = datetime.datetime.utcnow()
                 pubs = self.__get_temp_repo_pubs(repos)
                 progtrack = self.__progresstracker
@@ -3461,7 +3464,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # Only the base catalog part stores
                                         # package state information and/or
                                         # other metadata.
-                                        mdata = entry["metadata"] = {}
+                                        mdata = {}
+                                        if installed:
+                                                mdata = dict(
+                                                    img_inst_base.get_entry(
+                                                    pub=pub, stem=stem,
+                                                    ver=ver)["metadata"])
+
+                                        entry["metadata"] = mdata
+
                                         states = [pkgdefs.PKG_STATE_KNOWN,
                                             pkgdefs.PKG_STATE_ALT_SOURCE]
                                         if cat_ver == 0:
@@ -3693,7 +3704,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def __get_pkg_list(self, pkg_list, cats=None, collect_attrs=False,
             inst_cat=None, known_cat=None, patterns=misc.EmptyI,
             pubs=misc.EmptyI, raise_unmatched=False, ranked=False, repos=None,
-            return_fmris=False, variants=False):
+            return_fmris=False, return_metadata=False, variants=False):
                 """This is the implementation of get_pkg_list.  The other
                 function is a wrapper that uses locking.  The separation was
                 necessary because of API functions that already perform locking
@@ -4046,7 +4057,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         targets = set()
 
                         omit_var = False
-                        states = entry["metadata"]["states"]
+                        mdata = entry["metadata"]
+                        states = mdata["states"]
                         pkgi = pkgdefs.PKG_STATE_INSTALLED in states
                         ddm = lambda: collections.defaultdict(list)
                         attrs = collections.defaultdict(ddm)
@@ -4192,9 +4204,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if return_fmris:
                                 pfmri = fmri.PkgFmri(name=stem, publisher=pub,
                                         version=ver)
-                                yield (pfmri, summ, pcats, states, attrs)
+                                if return_metadata:
+                                        yield (pfmri, summ, pcats, states,
+                                            attrs, mdata)
+                                else:
+                                        yield (pfmri, summ, pcats, states,
+                                            attrs)
                         else:
-                                yield (t, summ, pcats, states, attrs)
+                                if return_metadata:
+                                        yield (t, summ, pcats, states,
+                                            attrs, mdata)
+                                else:
+                                        yield (t, summ, pcats, states,
+                                            attrs)
 
                 if raise_unmatched:
                         # Caller has requested that non-matching patterns or
@@ -4283,11 +4305,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 }
 
                 try:
-                        for pfmri, summary, cats, states, attrs in self.__get_pkg_list(
+                        for pfmri, summary, cats, states, attrs, mdata in \
+                            self.__get_pkg_list(
                             ilist, collect_attrs=collect_attrs,
                             inst_cat=inst_cat, known_cat=known_cat,
                             patterns=fmri_strings, raise_unmatched=True,
-                            ranked=ranked, return_fmris=True, variants=True):
+                            ranked=ranked, return_fmris=True,
+                            return_metadata=True, variants=True):
                                 release = build_release = branch = \
                                     packaging_date = None
 
@@ -4383,6 +4407,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         size = csize = 0
 
                                 # Trim response set.
+                                last_install = None
+                                last_update = None
                                 if PackageInfo.STATE in info_needed:
                                         if unsupported is True and \
                                             PackageInfo.UNSUPPORTED not in states:
@@ -4393,6 +4419,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 states = set(states)
                                                 states.add(
                                                     PackageInfo.UNSUPPORTED)
+
+                                        if "last-update" in mdata:
+                                                last_update = catalog.basic_ts_to_datetime(
+                                                    mdata["last-update"]).strftime("%c")
+                                        if "last-install" in mdata:
+                                                last_install = catalog.basic_ts_to_datetime(
+                                                    mdata["last-install"]).strftime("%c")
                                 else:
                                         states = misc.EmptyI
 
@@ -4412,7 +4445,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     csize=csize, pfmri=pfmri, licenses=licenses,
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
-                                    description=description, attrs=attrs))
+                                    description=description, attrs=attrs,
+                                    last_update=last_update,
+                                    last_install=last_install))
                 except apx.InventoryException as e:
                         if e.illegal:
                                 self.log_operation_end(

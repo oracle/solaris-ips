@@ -68,7 +68,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 81
+CLIENT_API_VERSION = 82
 PKG_CLIENT_NAME = "pkg"
 pkg_timer = pkg.misc.Timer("pkg client")
 SYSREPO_HIDDEN_URI = "<system-repository>"
@@ -2415,6 +2415,12 @@ def _info(op, api_inst, pargs, display_license, info_local, info_remote,
 
                 __append_attr_lists(_("Branch"), str(pi.branch))
                 __append_attr_lists(_("Packaging Date"), pi.packaging_date)
+                if pi.last_install:
+                        __append_attr_lists(_("Last Install Time"),
+                            pi.last_install)
+                if pi.last_update:
+                        __append_attr_lists(_("Last Update Time"),
+                            pi.last_update)
                 __append_attr_lists(_("Size"), misc.bytes_to_str(pi.size))
                 __append_attr_lists(_("FMRI"),
                     pi.fmri.get_fmri(include_build=False))
