@@ -900,6 +900,20 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrepo("-s {0} list -H -p test2".format(self.dpath2))
                 self.assertEqualDiff("", self.output)
 
+                # Test that clone works fine with mulitple publishers
+                amber = self.amber10.replace("open ", "open pkg://test2/")
+                self.pkgsend_bulk(self.durl1, amber)
+
+                path = os.path.join(self.dpath2, "publisher/test1")
+                shutil.rmtree(path)
+                path = os.path.join(self.dpath2, "publisher/test2")
+                shutil.rmtree(path)
+                self.pkgrecv(self.durl1, "--clone -d {0} -p test2 -p test1".format(
+                    self.dpath2))
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x",
+                    "index", "-x", "trans", self.dpath1, self.dpath2])
+                self.assertTrue(ret==0)
+
                 # Test that clone fails if --raw is specified.
                 self.pkgrecv(self.durl1, "--raw --clone -d {0} -p test2".format(
                     self.dpath2), exit=2)

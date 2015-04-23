@@ -783,7 +783,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
         total_processed = 0
         modified_pubs = set()
         deleted_pkgs = False
-        old_c_root = None
+        old_c_root = {}
         del_search_index = set()
 
         # Turn target into a valid URI.
@@ -952,8 +952,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 if len(to_add) == 0:
                         msg(_("No packages to add."))
                         if deleted_pkgs:
-                                old_c_root = copy_catalog(src_cat_root,
-                                    src_pub.prefix)
+                                old_c_root[src_pub.prefix] = copy_catalog(
+                                    src_cat_root, src_pub.prefix)
                         continue
 
                 get_bytes = 0
@@ -1057,7 +1057,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 tracker.reset()
 
                 modified_pubs.add(src_pub.prefix)
-                old_c_root = copy_catalog(src_cat_root, src_pub.prefix)
+                old_c_root[src_pub.prefix] = copy_catalog(src_cat_root,
+                    src_pub.prefix)
 
         if invalid_manifests:
                 error(_("The following packages could not be retrieved:\n{0}").format(
@@ -1085,9 +1086,9 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 try:
                         if ret:
                                 shutil.rmtree(c_root)
-                                shutil.move(old_c_root, c_root)
+                                shutil.move(old_c_root[pub], c_root)
                         else:
-                                shutil.rmtree(old_c_root)
+                                shutil.rmtree(old_c_root[pub])
                 except Exception as e:
                         error(_("Unable to remove catalog files: {0}").format(e))
                         # We don't abort here to make sure we can
