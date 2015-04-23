@@ -10526,5 +10526,275 @@ adm
                 self.pkg("{0} vpath".format(install_cmd))
 
 
+class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
+        """Test pkg.depend.explicit-install action behaviors."""
+        persistent_setup = True
+
+        pkgs = (
+                """
+                    open group@1.0,5.11-0
+                    add depend type=group fmri=pkg:/A
+                    close """,
+                """
+                    open incorp@1.0,5.11-0
+                    add depend type=incorporate fmri=pkg:/A@1.0,5.11-0.1
+                    close """,
+                """
+                    open A@1.0,5.11-0.1
+                    close """,
+                """
+                    open A@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=pkg:/idr@1.0,5.11-0.1.1.0
+                    close """,
+                """
+                    open idr@1.0,5.11-0.1.1.0
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=incorporate fmri=pkg:/A@1.0,5.11-0.1.1.0
+                    close """,
+        )
+
+        pkgs2 = (
+                 """
+                    open A@1.0,5.11-0.1.1.1
+                    add depend type=require fmri=pkg:/idr@1.0,5.11-0.1.1.1
+                    close """,
+                """
+                    open idr@1.0,5.11-0.1.1.1
+                    add set name=pkg.depend.explicit-install value=false
+                    add depend type=incorporate fmri=pkg:/A@1.0,5.11-0.1.1.1
+                    close """,
+        )
+
+        pkgs3 = (
+                """
+                    open A@1.0,5.11-0.1.1.2
+                    add depend type=require fmri=pkg:/idr@1.0,5.11-0.1.1.2
+                    close """,
+                """
+                    open idr@1.0,5.11-0.1.1.2
+                    add depend type=incorporate fmri=pkg:/A@1.0,5.11-0.1.1.2
+                    close """,
+        )
+
+        pkgs4 = (
+                """
+                    open C1@1.0
+                    add depend type=require-any fmri=pkg:/C2@1.0 fmri=pkg:/C2@2.0
+                    close """,
+                """
+                    open C2@1.0
+                    add depend type=require fmri=pkg:/C3@1.0,5.11-0.1
+                    close """,
+                """
+                    open C2@2.0
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=require fmri=pkg:/C3@1.0,5.11-0.1
+                    close """,
+                """
+                    open C3@1.0,5.11-0.1
+                    close """,
+        )
+
+        pkgs5 = (
+                """
+                    open Hiera1@1.0
+                    add depend type=require fmri=pkg:/Hiera2@1.0
+                    close """,
+                """
+                    open Hiera2@1.0
+                    add depend type=require fmri=pkg:/Hiera3@1.0
+                    close """,
+                """
+                    open Hiera3@1.0
+                    add set name=pkg.depend.explicit-install value=true
+                    close """,
+        )
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.pkgsend_bulk(self.rurl, self.pkgs)
+
+        def test_01_install(self):
+                self.image_create(self.rurl, prefix="")
+                # Test install works as expected.
+                # This will fail because idr@1.0-0.1.1.0 has
+                # pkg.depend.explicit-install set to true.
+                self.pkg("install -v group incorp A@1.0-0.1.1.0", exit=1)
+                self.pkg("install -v group incorp")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "incorp    1.0-0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+                self.pkg("uninstall -v group incorp A")
+                self.pkg("list -H", exit=1)
+
+                # Test exact-install works as expected.
+                # This will fail because idr@1.0-0.1.1.0 has
+                # pkg.depend.explicit-install set to true.
+                self.pkg("exact-install -v group incorp A@1.0-0.1.1.0", exit=1)
+                self.pkg("exact-install -v group incorp")
+                self.pkg("verify")
+                self.pkg("list -H")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # Test exact-install idr.
+                self.pkg("exact-install -v idr")
+                self.pkg("list -H")
+                expected = \
+                    "idr    1.0-0.1.1.0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("install -v group")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.0    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "idr    1.0-0.1.1.0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("uninstall -v group idr A")
+                self.pkg("list -H", exit=1)
+
+                self.pkg("install -v idr")
+                self.pkg("list -H")
+                expected = \
+                    "idr    1.0-0.1.1.0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("install -v group")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.0    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "idr    1.0-0.1.1.0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+                self.pkg("uninstall '*'")
+                self.pkg("list -H", exit=1)
+
+                self.pkgsend_bulk(self.rurl, self.pkgs2)
+                self.pkg("install -v group incorp")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.1    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "idr    1.0-0.1.1.1    i--\n" \
+                    "incorp    1.0-0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkgsend_bulk(self.rurl, self.pkgs3)
+                # test updating all packages.
+                self.pkg("update")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.2    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "idr    1.0-0.1.1.2    i--\n" \
+                    "incorp    1.0-0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+                self.pkg("uninstall '*'")
+
+                self.pkgsend_bulk(self.rurl, self.pkgs4)
+                # test require-any with pkg.depend.explicit-install tag.
+                self.pkg("install C1")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "C1    1.0    i--\n" \
+                    "C2    1.0    i--\n" \
+                    "C3    1.0-0.1    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+                self.pkg("uninstall '*'")
+
+                self.pkg("install C1 C2")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "C1    1.0    i--\n" \
+                    "C2    2.0    i--\n" \
+                    "C3    1.0-0.1    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # Test hierarchic dependencies.
+                self.pkgsend_bulk(self.rurl, self.pkgs5)
+                self.pkg("install -v Hiera1@1.0", exit=1)
+
+        def test_02_updateReject(self):
+                self.image_create(self.rurl, prefix="")
+                self.pkgsend_bulk(self.rurl, self.pkgs2)
+                self.pkgsend_bulk(self.rurl, self.pkgs3)
+                self.pkg("install -v --reject idr group incorp")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1    i--\n" \
+                    "group    1.0-0    i--\n" \
+                    "incorp    1.0-0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("exact-install -v --reject idr group")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1    i--\n" \
+                    "group    1.0-0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # This will fail, because idr@1.0-0.1.1.0 is filtered.
+                self.pkg("update -v --reject group A@1.0-0.1.1.0", exit=1)
+                # Explicitly install idr@1.0-0.1.1.0.
+                self.pkg("install idr@1.0-0.1.1.0")
+                # Update again.
+                self.pkg("update -v --reject group A@1.0-0.1.1.0")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.0    i--\n" \
+                    "idr    1.0-0.1.1.0    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # This will fail.
+                self.pkg("update -v --reject idr", exit=1)
+                self.pkg("update")
+                self.pkg("verify")
+                self.pkg("list -H")
+                expected = \
+                    "A    1.0-0.1.1.2    i--\n" \
+                    "idr    1.0-0.1.1.2    i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
 if __name__ == "__main__":
         unittest.main()

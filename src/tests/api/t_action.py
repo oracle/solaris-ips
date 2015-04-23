@@ -593,7 +593,7 @@ Incorrect attribute list.
                 # Verify multiple values are not allowed for set actions such as
                 # pkg.description, pkg.obsolete, pkg.renamed, and pkg.summary.
                 for attr in ("pkg.description", "pkg.obsolete", "pkg.renamed",
-                    "pkg.summary"):
+                    "pkg.summary", "pkg.depend.explicit-install"):
                         nact = "set name={0} value=true value=false".format(attr)
                         assert_invalid_attrs(nact)
 

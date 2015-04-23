@@ -155,7 +155,7 @@ class AttributeAction(generic.Action):
 
                 name = self.attrs["name"]
                 if name in ("pkg.summary", "pkg.obsolete", "pkg.renamed",
-                    "pkg.description"):
+                    "pkg.description", "pkg.depend.explicit-install"):
                         # If set action is for any of the above, only a single
                         # value is permitted.
                         generic.Action._validate(self, fmri=fmri,
