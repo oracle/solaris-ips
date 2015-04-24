@@ -7,11 +7,11 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">12 Nov 2014</refmiscinfo>
+<refmiscinfo class="date">22 Apr 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System retrieval client</refpurpose>
@@ -152,7 +152,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <synopsis>/usr/bin/pkg rebuild-index</synopsis>
 <synopsis>/usr/bin/pkg update-format</synopsis>
 <synopsis>/usr/bin/pkg version</synopsis>
-<synopsis>/usr/bin/pkg help</synopsis>
+<synopsis>/usr/bin/pkg help [-v]</synopsis>
 <synopsis>/usr/bin/pkg image-create [-FPUfz] [--force]
     [--full | --partial | --user] [--zone]
     [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>]
@@ -1650,9 +1650,13 @@ of the <literal>pkg</literal>(5) system.</para>
 This string is not guaranteed to be comparable in any fashion between versions.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg help</command></term>
-<listitem><para>Display a usage message.</para>
+<varlistentry><term><command>pkg help</command> [<option>v</option>]</term>
+<listitem><para>Display a full list of subcommands.</para>
 </listitem>
+<listitem><varlistentry><term><option>v</option></term>
+<listitem><para>Display a verbose usage message of subcommands.</para>
+</listitem>
+</varlistentry></listitem>
 </varlistentry>
 <varlistentry><term><command>pkg image-create</command> [<option>FPUfz</option>] [<option>-force</option>] [<option>-full</option> | <option>-partial</option> | <option>-user</option>] [<option>-zone</option>] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable> ssl_key</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable> | <option>-origin</option> <replaceable>path_or_uri</replaceable>]... [<option>m</option> <replaceable>uri</replaceable> | <option>-mirror</option> <replaceable>uri</replaceable>]... [<option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>)]... [<option>-no-refresh</option>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]... [(<option>p</option> | <option>-publisher</option>) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></term>
 <listitem><para>At the location given by <replaceable>dir</replaceable>, create an image suitable for package operations. Images created by using the <command>image-create</command> subcommand are not bootable. Most users should use the <option>-be-name</option> or <option>-require-new-be</option> options with <command>pkg</command> commands, or use the <command>beadm</command> or <command>zoneadm</command> commands to create images. The <command>pkg image-create</command> command is used for tasks such as maintaining packages and operating system distributions.</para>

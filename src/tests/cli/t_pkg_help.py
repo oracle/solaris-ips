@@ -54,8 +54,15 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                                         self.assert_(False, "{0} in {1}".format(
                                             str, msg))
 
-                # Full usage text, ensuring we exit 0
+                # Full list of subcommands, ensuring we exit 0
                 for option in ["-\?", "--help", "help"]:
+                        ret, out, err = self.pkg(option, out=True, stderr=True)
+                        verify_help(err,
+                            ["pkg [options] command [cmd_options] [operands]",
+                            "For more info, run: pkg help <command>"])
+
+                # Full usage text, ensuring we exit 0
+                for option in ["help -v"]:
                         ret, out, err = self.pkg(option, out=True, stderr=True)
                         verify_help(err,
                             ["pkg [options] command [cmd_options] [operands]",
@@ -68,16 +75,16 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                         ret, out, err = self.pkg("-\? bobcat", exit=2, out=True,
                             stderr=True)
                         verify_help(err,
-                            ["pkg [options] command [cmd_options] [operands]",
-                            "pkg: unknown subcommand",
-                            "PKG_IMAGE", "Usage:"])
+                            ["pkg: unknown subcommand",
+                            "For a full list of subcommands, run: pkg help"])
 
                 # Unrequested usage
                 ret, out, err = self.pkg("", exit=2, out=True, stderr=True)
                 verify_help(err,
                     ["pkg: no subcommand specified",
-                    "Try `pkg --help or -?' for more information."],
-                    unexpected = ["PKG_IMAGE", "Usage:"])
+                    "pkg [options] command [cmd_options] [operands]",
+                    "For more info, run: pkg help <command>"],
+                    unexpected = ["PKG_IMAGE"])
 
                 # help for a subcommand should only print that subcommand usage
                 for option in ["property --help", "--help property",
@@ -113,7 +120,7 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 f = codecs.open(eucJP_encode_file, encoding="eucJP")
 
                 locale_env = { "LC_ALL": "ja_JP.eucJP" }
-                ret, out, err = self.pkg("--help", env_arg=locale_env,
+                ret, out, err = self.pkg("help -v", env_arg=locale_env,
                     out=True, stderr=True)
                 cmd_out = unicode(err, encoding="eucJP")
                 # Take only 4 lines from "pkg --help" command output.

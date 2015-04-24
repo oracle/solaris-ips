@@ -143,7 +143,8 @@ def error(text, cmd=None):
         # program name on all platforms.
         logger.error(ws + pkg_cmd + text_nows)
 
-def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
+def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
+    verbose=False, unknown_cmd=None):
         """Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
@@ -397,27 +398,57 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
                 sys.exit(retcode)
 
         elif not full:
-                # The full usage message isn't desired.
-                logger.error(_("Try `pkg --help or -?' for more information."))
+                # The full list of subcommands isn't desired.
+                known_words = ["help"]
+                known_words.extend(basic_cmds)
+                known_words.extend(w for w in advanced_cmds if w)
+                candidates = misc.suggest_known_words(unknown_cmd, known_words)
+                if candidates:
+                        # Suggest correct subcommands if we can.
+                        words = ", ". join(candidates)
+                        logger.error(_("Did you mean:\n    {0}\n").format(words))
+                logger.error(_("For a full list of subcommands, run: pkg help"))
                 sys.exit(retcode)
 
-        logger.error(_("""\
+        if verbose:
+                # Display a verbose usage message of subcommands.
+                logger.error(_("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
 """))
-        logger.error(_("Basic subcommands:"))
-        print_cmds(basic_cmds, basic_usage)
+                logger.error(_("Basic subcommands:"))
+                print_cmds(basic_cmds, basic_usage)
 
-        logger.error(_("\nAdvanced subcommands:"))
-        print_cmds(advanced_cmds, adv_usage)
+                logger.error(_("\nAdvanced subcommands:"))
+                print_cmds(advanced_cmds, adv_usage)
 
-        logger.error(_("""
+                logger.error(_("""
 Options:
         -R dir
         --help or -?
 
 Environment:
         PKG_IMAGE"""))
+        else:
+                # Display the full list of subcommands.
+                logger.error(_("""\
+Usage:    pkg [options] command [cmd_options] [operands]"""))
+                logger.error(_("The following commands are supported:"))
+                logger.error(_("""
+Package Information  : list           search         info      contents
+Package Transitions  : update         install        uninstall
+                       history        exact-install
+Package Maintenance  : verify         fix            revert
+Publishers           : publisher      set-publisher  unset-publisher
+Package Configuration: mediator       set-mediator   unset-mediator
+                       facet          change-facet
+                       variant        change-variant
+Image Constraints    : avoid          unavoid        freeze    unfreeze
+Image Configuration  : refresh        rebuild-index  purge-history
+                       property       set-property   add-property-value
+                       unset-property remove-property-value
+Miscellaneous        : image-create   dehydrate      rehydrate
+For more info, run: pkg help <command>"""))
         sys.exit(retcode)
 
 def get_fmri_args(api_inst, pargs, cmd=None):
@@ -5196,9 +5227,14 @@ def main_func():
                                 if sub in cmds and \
                                     sub not in ["help", "-?", "--help"]:
                                         usage(retcode=0, full=False, cmd=sub)
+                                elif sub == "-v":
+                                        # Only display the long usage message
+                                        # in the verbose mode.
+                                        usage(retcode=0, full=True,
+                                            verbose=True)
                                 elif sub not in ["help", "-?", "--help"]:
                                         usage(_("unknown subcommand "
-                                            "'{0}'").format(sub), full=True)
+                                            "'{0}'").format(sub), unknown_cmd=sub)
                                 else:
                                         usage(retcode=0, full=True)
                         else:
@@ -5209,11 +5245,11 @@ def main_func():
                 usage(retcode=0, cmd=subcommand, full=False)
         if subcommand and subcommand not in cmds:
                 usage(_("unknown subcommand '{0}'").format(subcommand),
-                    full=True)
+                    unknown_cmd=subcommand)
         if show_usage:
                 usage(retcode=0, full=True)
         if not subcommand:
-                usage(_("no subcommand specified"))
+                usage(_("no subcommand specified"), full=True)
         if runid is not None:
                 try:
                         runid = int(runid)

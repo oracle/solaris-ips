@@ -57,6 +57,7 @@ import urlparse
 import zlib
 
 from collections import defaultdict
+from operator import itemgetter
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
     S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
@@ -2763,4 +2764,71 @@ def list_actions_by_attrs(actionlist, attrs, show_all=False,
                     last_line != line):
                         last_line = line
                         yield line
+
+def _min_edit_distance(word1, word2):
+        """Calculate the minimal edit distance for converting word1 to word2,
+        based on Wagner-Fischer algorithm."""
+
+        m = len(word1)
+        n = len(word2)
+
+        # dp[i][j] stands for the edit distance between two strings with
+        # length i and j, i.e., word1[0,...,i-1] and word2[0,...,j-1]
+        dp = [[0 for i in range(n+1)] for j in range(m+1)]
+
+        ins_cost = 1.0
+        del_cost = 1.0
+        rep_cost = 1.0
+        for i in range(m+1):
+                dp[i][0] = del_cost * i
+        for i in range(n+1):
+                dp[0][i] = ins_cost * i
+
+        for i in range(1, m+1):
+                for j in range(1, n+1):
+                        if word1[i-1] == word2[j-1]:
+                                dp[i][j] = dp[i-1][j-1]
+                        else:
+                                dp[i][j] = min(
+                                    dp[i-1][j-1] + rep_cost,
+                                    dp[i][j-1] + ins_cost,
+                                    dp[i-1][j] + del_cost)
+
+        return dp[m][n]
+
+def suggest_known_words(text, known_words):
+        """Given a text, a list of known_words, suggest some correct
+        candidates from known_words."""
+
+        candidates = []
+        if not text:
+                return candidates
+
+        # We are confident to suggest if the text is part of the known words.
+        for known in known_words:
+                if len(text) < 4:
+                        # If the text's length is short, treat it as a prefix.
+                        if known.startswith(text):
+                                candidates.append(known)
+                elif text in known or known in text:
+                        # Otherwise check if the text is part of the known
+                        # words or vice verse.
+                        candidates.append(known)
+
+        if candidates:
+                if len(candidates) < 4:
+                        return candidates
+                else:
+                        # Give up suggestions if there are too many candidates.
+                        return
+
+        # If there are no candidates from the "contains" check, use the edit
+        # distance algorithm to seek further.
+        for known in known_words:
+                distance = _min_edit_distance(text, known)
+                if distance <= len(known) / 2.0:
+                        candidates.append((known, distance))
+
+        # Sort the candidates by their distance, and return the words only.
+        return [c[0] for c in sorted(candidates, key=itemgetter(1))]
 
