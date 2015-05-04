@@ -519,6 +519,12 @@ import pkg.search_storage as ss
 from pkg.misc import EmptyI
 """
 
+        python3_so_text = """\
+#!/usr/bin/python3.4
+
+import zlib
+"""
+
         python_amd_text = """\
 #!/usr/bin/amd64/python{0}
 
@@ -632,6 +638,9 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                 necessary to make the results depend on the sys.path that's
                 discovered.
                 """
+
+                v3 = ver.startswith("3.") and "34m"
+
                 vp = self.get_ver_paths(ver, proto_area)
                 self.debug("ver_paths is {0}".format(vp))
                 pkg_path = self.__make_paths("pkg", vp, reason)
@@ -639,9 +648,17 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "{pfx}.file=indexer.py "
                     "{pfx}.file=indexer.pyc "
                     "{pfx}.file=indexer.pyo "
+                    "{pfx}.file=64/indexer.so "
                     "{pfx}.file=indexer.so "
-                    "{pfx}.file=indexer/__init__.py "
-                    "{pfx}.file=indexermodule.so " +
+                    "{pfx}.file=indexer/__init__.py " +
+                    (v3 and
+                        "{pfx}.file=indexer.abi3.so "
+                        "{pfx}.file=indexer.cpython-{v3}.so "
+                        "{pfx}.file=64/indexer.abi3.so "
+                        "{pfx}.file=64/indexer.cpython-{v3}.so "
+                        or
+                        "{pfx}.file=indexermodule.so "
+                        "{pfx}.file=64/indexermodule.so ") +
                     pkg_path +
                     " {pfx}.reason={reason} "
                     "{pfx}.type=python type=require\n"
@@ -651,8 +668,16 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "{pfx}.file=misc.pyc "
                     "{pfx}.file=misc.pyo "
                     "{pfx}.file=misc.so "
-                    "{pfx}.file=misc/__init__.py "
-                    "{pfx}.file=miscmodule.so " +
+                    "{pfx}.file=64/misc.so "
+                    "{pfx}.file=misc/__init__.py " +
+                    (v3 and
+                        "{pfx}.file=misc.abi3.so "
+                        "{pfx}.file=misc.cpython-{v3}.so "
+                        "{pfx}.file=64/misc.abi3.so "
+                        "{pfx}.file=64/misc.cpython-{v3}.so "
+                        or
+                        "{pfx}.file=64/miscmodule.so "
+                        "{pfx}.file=miscmodule.so ") +
                     pkg_path +
                     " {pfx}.reason={reason} "
                     "{pfx}.type=python type=require\n"
@@ -667,9 +692,17 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "{pfx}.file=search_storage.py "
                     "{pfx}.file=search_storage.pyc "
                     "{pfx}.file=search_storage.pyo "
+                    "{pfx}.file=64/search_storage.so "
                     "{pfx}.file=search_storage.so "
-                    "{pfx}.file=search_storage/__init__.py "
-                    "{pfx}.file=search_storagemodule.so " +
+                    "{pfx}.file=search_storage/__init__.py " +
+                    (v3 and
+                        "{pfx}.file=search_storage.abi3.so "
+                        "{pfx}.file=search_storage.cpython-{v3}.so "
+                        "{pfx}.file=64/search_storage.abi3.so "
+                        "{pfx}.file=64/search_storage.cpython-{v3}.so "
+                        or
+                        "{pfx}.file=64/search_storagemodule.so "
+                        "{pfx}.file=search_storagemodule.so ") +
                     pkg_path +
                     " {pfx}.reason={reason} "
                     "{pfx}.type=python type=require\n")
@@ -681,16 +714,24 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                             "{pfx}.file=os.pyc "
                             "{pfx}.file=os.pyo "
                             "{pfx}.file=os.so "
-                            "{pfx}.file=os/__init__.py "
-                            "{pfx}.file=osmodule.so " +
+                            "{pfx}.file=64/os.so "
+                            "{pfx}.file=os/__init__.py " +
+                            (v3 and
+                                "{pfx}.file=os.abi3.so "
+                                "{pfx}.file=os.cpython-{v3}.so "
+                                "{pfx}.file=64/os.abi3.so "
+                                "{pfx}.file=64/os.cpython-{v3}.so "
+                                or
+                                "{pfx}.file=64/osmodule.so "
+                                "{pfx}.file=osmodule.so ") +
                             self.__make_paths("", vp, reason) +
                             " {pfx}.reason={reason} "
                             "{pfx}.type=python type=require\n")
                 return res.format(
                     pfx=base.Dependency.DEPEND_DEBUG_PREFIX,
                     dummy_fmri=base.Dependency.DUMMY_FMRI,
-                    reason=reason
-               )
+                    reason=reason, v3=v3
+                )
 
         pyver_other_script_full_manf_1 = """\
 file NOHASH group=bin mode=0755 owner=root path={reason} {run_path}
@@ -709,7 +750,7 @@ depend fmri={dummy_fmri} {pfx}.file=python{bin_ver} {pfx}.path=usr/bin {pfx}.rea
                 if ver == py_ver_other:
                         tmp = self.pyver_other_script_full_manf_1
                 else:
-                        raise RuntimeError("Unexcepted version for "
+                        raise RuntimeError("Unexpected version for "
                             "pyver_res_full_manf_1 {0}".format(ver))
                 return tmp + self.make_pyver_python_res(ver, proto, reason,
                     include_os=include_os)
@@ -726,8 +767,20 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                 """Generate the expected results when resolving a manifest which
                 contains a file with a non-default version of python."""
 
-                suffixes = (".py", ".pyc", ".pyo", ".so", "/__init__.py",
-                    "module.so")
+                v3 = py_ver_other.startswith("3.") and "34m"
+                patterns = (
+                    "{0}.py", "{0}.pyc", "{0}.pyo",
+                    "{0}.so", "64/{0}.so",
+                    "{0}/__init__.py"
+                )
+                if v3:
+                        patterns += (
+                            "{0}.abi3.so", "{0}.cpython-{v3}.so",
+                            "64/{0}.abi3.so", "64/{0}.cpython-{v3}.so",
+                        )
+                else:
+                        patterns += ("{0}module.so", "64/{0}module.so")
+
                 files = ["indexer", "misc", "search_storage"]
 
                 # These are the paths to the files which the package depends on.
@@ -757,9 +810,9 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                 return "depend fmri=pkg:/{res_manf} " + \
                     " ".join(["{pfx}.file=" + rp for rp in rel_paths]) + \
                     " " + " ".join(["{pfx}.path-id=" + ":".join(sorted([
-                        proto_str + f + s
+                        proto_str + pat.format(f, v3=v3)
                         for proto_str in vps
-                        for s in suffixes
+                        for pat in patterns
                         ]))
                         for f in files
                     ]) + " {pfx}.path-id=" + ":".join(sorted(
@@ -768,7 +821,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                     "{pfx}.reason=usr/lib/python{py_ver}/" + \
                     "vendor-packages/pkg/client/indexer.py " + \
                     "{pfx}.type=script {pfx}.type=python type=require"
-        
+
         pyver_mismatch_results = """\
 depend fmri={dummy_fmri} {pfx}.file=python{default} {pfx}.path=usr/bin {pfx}.reason=usr/lib/python{other}/vendor-packages/pkg/client/indexer.py {pfx}.type=script type=require
 """.format(default=py_ver_default, other=py_ver_other, pfx=base.Dependency.DEPEND_DEBUG_PREFIX, dummy_fmri=base.Dependency.DUMMY_FMRI)
@@ -1701,7 +1754,7 @@ SYMBOL_SCOPE {
                 # Test that resolve handles multiline actions correctly when
                 # echoing the manifest.  Bug 18740
                 self.pkgfmt(m1_path)
-                
+
                 self.pkgdepend_resolve(" -vm {0}".format(" ".join([m1_path, m2_path,
                         m3_path, m4_path, m5_path, m6_path, m7_path, m8_path])))
                 fh = open(m1_path + ".res")
@@ -2944,6 +2997,41 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                     self.output)
                 self.check_res("", self.errout)
 
+        def test_PEP_3149(self):
+                """Test that Python 3 modules importing native modules can find
+                them in the right place, following PEP 3149.
+
+                On Solaris, this means 64-bit only, and with the "m" (pymalloc)
+                flag turned on.
+                """
+
+                # Create a python 3.x file that imports a native module.
+                tp = self.make_manifest(
+                    self.pyver_test_manf_1.format(py_ver="3.4"))
+                fp = "usr/lib/python{0}/vendor-packages/pkg/" \
+                    "client/indexer.py".format("3.4")
+                self.make_proto_text_file(fp, self.python3_so_text)
+
+                # Run generate
+                self.pkgdepend_generate("-m -d {0} {1}".format(
+                    self.test_proto_dir, tp))
+
+                # Take the output, split it into actions, and find exactly one
+                # action which generated a correct dependency on zlib based on
+                # indexer.py.
+                pfx = base.Dependency.DEPEND_DEBUG_PREFIX
+                acts = [
+                    a
+                    for a in (
+                        actions.fromstr(l)
+                        for l in self.output.strip().splitlines()
+                    )
+                    if a.attrs.get(pfx + ".reason") == fp and
+                        "64/zlib.cpython-34m.so" in a.attrs[pfx + ".file"]
+                ]
+                self.assert_(len(acts) == 1)
+
+                self.check_res("", self.errout)
 
 if __name__ == "__main__":
         unittest.main()

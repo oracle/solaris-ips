@@ -140,7 +140,9 @@ file path=$(PYDIRVP)/pkg/file_layout/layout.py
 dir  path=$(PYDIRVP)/pkg/flavor
 file path=$(PYDIRVP)/pkg/flavor/__init__.py
 file path=$(PYDIRVP)/pkg/flavor/base.py
-file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf.py
+# importlib is specific to Python 3 and part of its standard library.
+file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf.py \
+    pkg.depend.bypass-generate=.*importlib.*
 file path=$(PYDIRVP)/pkg/flavor/elf.py
 file path=$(PYDIRVP)/pkg/flavor/hardlink.py
 file path=$(PYDIRVP)/pkg/flavor/python.py

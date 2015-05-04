@@ -27,6 +27,8 @@ if __name__ != "__main__":
 import modulefinder
 import os
 import sys
+if sys.version_info[0] == 3:
+        from importlib.machinery import EXTENSION_SUFFIXES
 
 # A string used as a component of the pkg.depend.runpath value as a special
 # token to determine where to insert the runpath that pkgdepend generates itself
@@ -52,17 +54,24 @@ class ModuleInfo(object):
 
                 self.name = name
                 self.builtin = builtin
-                self.suffixes = [".py", ".pyc", ".pyo", "/__init__.py", ".so",
-                    "module.so"]
+                self.patterns = [ "{0}.py", "{0}.pyc", "{0}.pyo", "{0}/__init__.py" ]
+                if sys.version_info[0] == 2:
+                        self.patterns += [
+                            "{0}.so", "{0}module.so", "64/{0}.so", "64/{0}module.so"
+                        ]
+                else:
+                        self.patterns += \
+                            ["{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES] + \
+                            ["64/{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES]
                 self.dirs = sorted(dirs)
 
         def make_package(self):
                 """Declare that this module is a package."""
 
                 if self.dirs:
-                        self.suffixes = ["/__init__.py"]
+                        self.patterns = ["{0}/__init__.py"]
                 else:
-                        self.suffixes = []
+                        self.patterns = []
 
         def get_package_dirs(self):
                 """Get the directories where this package might be defined."""
@@ -73,11 +82,11 @@ class ModuleInfo(object):
                 """Return all the file names under which this module might be
                 found."""
 
-                return ["{0}{1}".format(self.name, suf) for suf in self.suffixes]
+                return [ pat.format(self.name) for pat in self.patterns ]
 
         def __str__(self):
                 return "name:{0} suffixes:{1} dirs:{2}".format(self.name,
-                    " ".join(self.suffixes), len(self.dirs))
+                    " ".join(self.patterns), len(self.dirs))
 
 
 if __name__ == "__main__":

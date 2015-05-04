@@ -1375,15 +1375,18 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 def _check_all_res(res):
                         ds, es, ms, pkg_attrs = res
-                        mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo",
-                            ".so", "module.so"]
+                        mod_pats = [
+                            "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
+                            "{0}.so", "{0}module.so",
+                            "64/{0}.so", "64/{0}module.so"
+                        ]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage", "minidom"]
                         pkg_names = ["indexer_test", "pkg", "pkg_test", "xml",
                             "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "{0}{1}".format(n,s) for s in mod_suffs
+                                pat.format(n) for pat in mod_pats
                             ]))
                             for n in mod_names] +
                             [("{0}/__init__.py".format(n),) for n in pkg_names])
@@ -1426,15 +1429,18 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 def _check_all_res(res):
                         ds, es, ms, pkg_attrs = res
-                        mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo",
-                            ".so", "module.so"]
+                        mod_pats = [
+                            "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
+                            "{0}.so", "{0}module.so",
+                            "64/{0}.so", "64/{0}module.so"
+                        ]
                         mod_names = ["foobar", "os", "search_storage",
                             "minidom"]
                         pkg_names = ["indexer_test", "pkg", "pkg_test", "xml",
                             "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "{0}{1}".format(n,s) for s in mod_suffs
+                                pat.format(n) for pat in mod_pats
                             ]))
                             for n in mod_names] +
                             [("{0}/__init__.py".format(n),) for n in pkg_names])
@@ -1481,8 +1487,11 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 def _check_all_res(res):
                         ds, es, ms, pkg_attrs = res
-                        mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo",
-                            ".so", "module.so"]
+                        mod_pats = [
+                            "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
+                            "{0}.so", "{0}module.so",
+                            "64/{0}.so", "64/{0}module.so"
+                        ]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage", "minidom"]
                         pkg_names = ["indexer_test", "pkg", "pkg_test",
@@ -1495,7 +1504,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "{0}{1}".format(n,s) for s in mod_suffs
+                                pat.format(n) for pat in mod_pats
                             ]))
                             for n in mod_names] +
                             [("{0}/__init__.py".format(n),) for n in pkg_names])
@@ -1581,9 +1590,11 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 pddp = "pkg.debug.depend.path"
                 pddf = "pkg.debug.depend.file"
 
-                mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo", ".so",
-                    "module.so"]
-                expected_deps = set(["bar{0}".format(s) for s in mod_suffs])
+                mod_pats = [
+                    "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
+                    "{0}.so", "{0}module.so", "64/{0}.so", "64/{0}module.so"
+                ]
+                expected_deps = set([pat.format("bar") for pat in mod_pats])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -2027,15 +2038,18 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 def _py_check_all_res(res):
                         ds, es, ms, pkg_attrs = res
-                        mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo",
-                            ".so", "module.so"]
+                        mod_pats = [
+                            "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
+                            "{0}.so", "{0}module.so",
+                            "64/{0}.so", "64/{0}module.so"
+                        ]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage", "minidom"]
                         pkg_names = ["indexer_test", "pkg", "pkg_test",
                             "xml", "dom"]
                         expected_deps = set([("python",)] +
                             [tuple(sorted([
-                                "{0}{1}".format(n,s) for s in mod_suffs
+                                pat.format(n) for pat in mod_pats
                             ]))
                             for n in mod_names] +
                             [("{0}/__init__.py".format(n),) for n in pkg_names])
