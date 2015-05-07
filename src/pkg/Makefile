@@ -43,7 +43,7 @@ PWD:sh            = pwd
 PKGDEST           = $(PWD)/../../packages/$(ARCH)
 PKGROOT           = $(PWD)/../../proto/root_$(ARCH)
 
-PKGPUBLISHER      = pkg5-nightly
+PKGPUBLISHER      = nightly
 PKGPUBLISHER_LOCALIZABLE      = pkg5-localizable
 
 POUND_SIGN:sh     = echo \\043
