@@ -74,7 +74,6 @@ import errno
 import fcntl
 import httplib
 import os
-import platform
 import socket
 import stat
 import struct
@@ -383,25 +382,6 @@ class PipedHTTPConnection(httplib.HTTPConnection):
                 return self.sock.fileno()
 
 
-class PipedHTTP(httplib.HTTP):
-        """Create httplib.HTTP like object that can be used with
-        a pipe as a transport.  We override the minimum number of parent
-        routines necessary.
-
-        xmlrpclib uses the legacy httplib.HTTP class interfaces (instead of
-        the newer class httplib.HTTPConnection interfaces), so we need to
-        provide a "Piped" compatibility class that wraps the httplib.HTTP
-        compatibility class."""
-
-        _connection_class = PipedHTTPConnection
-
-        @property
-        def sock(self):
-                """Return the "socket" associated with this HTTP pipe
-                connection."""
-                return self._conn.sock
-
-
 class _PipedTransport(rpc.Transport):
         """Create a Transport object which can create new PipedHTTP
         connections via an existing pipe."""
@@ -437,15 +417,10 @@ class _PipedTransport(rpc.Transport):
                 self.__pipe_file.sendfd(server_pipefd)
                 os.close(server_pipefd)
 
-                py_version = '.'.join(
-                    platform.python_version_tuple()[:2])
                 if self.__http_enc:
                         # we're using http encapsulation so return a
                         # PipedHTTPConnection object
-                        if py_version >= '2.7':
-                                return PipedHTTPConnection(client_pipefd)
-                        else:
-                                return PipedHTTP(client_pipefd)
+                        return PipedHTTPConnection(client_pipefd)
 
                 # we're not using http encapsulation so return a
                 # PipeSocket object

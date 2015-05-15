@@ -27,7 +27,6 @@ import httplib
 import os
 import pkg.pkgsubprocess as subprocess
 import pkg.server.repository as sr
-import platform
 import ssl
 import sys
 import signal
@@ -282,15 +281,10 @@ class DepotController(object):
                 try:
                         repourl = urlparse.urljoin(self.get_depot_url(),
                             "versions/0")
-                        py_version = '.'.join(
-                            platform.python_version_tuple()[:2])
-                        if py_version >= '2.7':
-                                # Disable SSL peer verification for Python 2.7,
-                                # we just want to check if the depot is running.
-                                url = urllib2.urlopen(repourl,
-                                    context=ssl._create_unverified_context())
-                        else:
-                                url = urllib2.urlopen(repourl)
+                        # Disable SSL peer verification, we just want to check
+                        # if the depot is running.
+                        url = urllib2.urlopen(repourl,
+                            context=ssl._create_unverified_context())
                         url.close()
                 except urllib2.HTTPError as e:
                         # Server returns NOT_MODIFIED if catalog is up
