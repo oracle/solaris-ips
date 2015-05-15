@@ -60,6 +60,7 @@ import datetime
 import errno
 import fnmatch
 import glob
+import itertools
 import os
 import shutil
 import simplejson as json
@@ -5763,8 +5764,16 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                 except apx.ExpiringCertificate as e:
                                         logger.warning(e)
 
-                        repo = publisher.RepositoryURI(repo_uri,
-                            ssl_cert=ssl_cert, ssl_key=ssl_key)
+                        repo = publisher.RepositoryURI(repo_uri)
+                        # Check if repo_uri has a https scheme or no other
+                        # origins and mirrors has https scheme.
+                        if ssl_cert or ssl_key:
+                                if (repo.scheme in publisher.SSL_SCHEMES or
+                                    not any(o.scheme in publisher.SSL_SCHEMES
+                                    for o in itertools.chain(origins,
+                                    mirrors))):
+                                        repo.ssl_cert = ssl_cert
+                                        repo.ssl_key = ssl_key
 
                         pubs = None
                         try:
@@ -5864,6 +5873,17 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                         continue
                                 m.ssl_cert = ssl_cert
                                 m.ssl_key = ssl_key
+
+                # If we don't have repo_uri, we will raise the exception
+                # here if there are no https url but we try to set ssl_key
+                # and ssl_cert.
+                if ((ssl_cert or ssl_key) and
+                    not repo_uri and
+                    not any(o.scheme in publisher.SSL_SCHEMES
+                    for o in itertools.chain(repo.origins,
+                    repo.mirrors))):
+                        repo.origins[0].ssl_cert = ssl_cert
+                        repo.origins[0].ssl_key = ssl_key
 
                 img.create(pubs, facets=facets, is_zone=is_zone,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,

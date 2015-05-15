@@ -29,6 +29,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import hashlib
 import os
 import pkg.portable
 import pkg.catalog
@@ -42,6 +43,8 @@ import unittest
 class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depots once (instead of for every test)
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         def setUp(self):
                 # Extra instances of test1 are created so that a valid
@@ -744,6 +747,48 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t{1}/\t-
 
                 self.pkg("image-create -p test1={0} {1}/image".format(
                     self.rurl1, p), su_wrap=True, exit=1)
+
+        def test_11_ssl_key_cert_set(self):
+                """Verify that pkg image create will still pass if 
+                repo_uri doesn't have ssl_scheme but one of the origins or 
+                mirrors have schemes"""
+
+                self.image_create(self.rurl1)
+
+                # Set the first publisher to a https URL
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
+
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
+
+                img_path = os.path.join(self.test_root, "img")
+                # Test image create will fail if repo_uri
+                # does not have https
+                self.pkg(("image-create --no-refresh -p foo=http://{0}"
+                    " -k {1} -c {2} {3}").format(self.bogus_url, key_path,
+                    cert_path, img_path), exit=1)
+
+                # Test image create will fail if there are no https url
+                self.pkg(("image-create --no-refresh -p foo=http://{0}"
+                        " -k {1} -c {2} -g http://{0} {3}").format(
+                    self.bogus_url, key_path, cert_path, img_path), exit=1)
+
+                # Test image create will succeed if one origin as https
+                self.pkg(("image-create --no-refresh -p foo=http://{0}"
+                    " -k {1} -c {2} -g https://{0} {3}").format(
+                    self.bogus_url, key_path, cert_path, img_path), exit=0)
+                shutil.rmtree(img_path)
+
+                # Test image create will succeed if one mirror has https
+                self.pkg(("image-create --no-refresh -p foo=http://{0}"
+                    " -k {1} -c {2} -m https://{0} {3}").format(
+                    self.bogus_url, key_path, cert_path, img_path), exit=0)
+                shutil.rmtree(img_path)
 
 
 class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
