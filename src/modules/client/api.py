@@ -5880,10 +5880,10 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 if ((ssl_cert or ssl_key) and
                     not repo_uri and
                     not any(o.scheme in publisher.SSL_SCHEMES
-                    for o in itertools.chain(repo.origins,
-                    repo.mirrors))):
-                        repo.origins[0].ssl_cert = ssl_cert
-                        repo.origins[0].ssl_key = ssl_key
+                    for o in itertools.chain(repo.origins,  # pylint: disable=E1103
+                    repo.mirrors))):                        # pylint: disable=E1103
+                        repo.origins[0].ssl_cert = ssl_cert # pylint: disable=E1103
+                        repo.origins[0].ssl_key = ssl_key   # pylint: disable=E1103
 
                 img.create(pubs, facets=facets, is_zone=is_zone,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
