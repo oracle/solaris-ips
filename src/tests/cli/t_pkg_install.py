@@ -1092,6 +1092,167 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 shutil.rmtree(self.img_path())
                 self.set_img_path(old_img_path)
 
+        def test_install_outside_boot_environment(self):
+                """Test that we can not install packages outside our current
+                boot environment"""
+
+                # create a fake mnttab
+                self.image_create(self.rurl)
+                etc_path = os.path.join(self.img_path(), "etc")
+                os.mkdir(etc_path)
+                # need to change mod to write files
+                os.chmod(etc_path, 0o755)
+                mnttab_path = os.path.join(etc_path, "mnttab")
+                mnttab = open(os.path.join(mnttab_path), "w")
+                content = """rpool/dataset	{root}	zfs	dev=0	0
+rpool/fail	{root}/fail	zfs	dev=0	0
+rpool/dataset/succ	{root}/success	dev	dev=0	0
+rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
+a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
+                .format(root=self.img_path())
+                mnttab.write(content)
+                mnttab.flush()
+
+                # This path is installed under dev not in zfs
+                # should be successful
+                success1 = """
+                    open success1@1
+                    add dir mode=0755 owner=root group=bin path=test
+		    close """
+
+                # Install a directory startswith fail
+                fail1 = """
+                    open fail1@1
+                    add dir mode=0755 owner=root group=bin path=fail
+                    close """
+
+                # Install a directory which is a zfs mountpoint
+                success2 = """
+                    open success2@1
+                    add dir mode=0755 owner=root group=bin path=success
+                    close """
+
+                # Install a directory under fail
+                fail2 = """
+                    open fail2@1
+                    add dir mode=0755 owner=root group=bin path=fail2
+                    close """
+
+                # Install a file under fail
+                fail3 = """
+                    open fail3@1
+                    add file mode=0755 owner=root group=bin path=fail/foo
+                    close """
+
+                nfs_fail = """
+                    open fail4@1
+                    add file mode=0755 owner=root group=bin path=success/bla/foo
+                    close """
+
+                # Create dirs for testing
+                os.mkdir(os.path.join(self.get_img_path(), "test"))
+                os.mkdir(os.path.join(self.get_img_path(), "success"))
+                os.mkdir(os.path.join(self.get_img_path(), "fail"))
+                os.mkdir(os.path.join(self.get_img_path(), "fail2"))
+                os.mkdir(os.path.join(self.get_img_path(), "success/bla"))
+                misc_files = [ "fail/foo", "success/bla/foo"]
+                self.make_misc_files(misc_files)
+                plist = self.pkgsend_bulk(self.rurl, [success1,
+                    success2, fail1, fail2])
+                self.pkg("--debug simulate_mnttab={0} install success1".format(
+                    mnttab_path), exit=0)
+                self.pkg("--debug simulate_mnttab={0} install success2".format(
+                    mnttab_path), exit=0)
+                self.pkg("--debug simulate_mnttab={0} install fail1".format(
+                    mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} install fail2".format(
+                     mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} install fail3".format(
+                     mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} install nfs_fail".format(
+                     mnttab_path), exit=1)
+
+        def test_update_outside_boot_environment(self):
+                """Test that we can not install packages outside our current
+                boot environment"""
+
+                # create a fake mnttab
+                self.image_create(self.rurl)
+                etc_path = os.path.join(self.img_path(), "etc")
+                os.mkdir(etc_path)
+                # need to change mod to write files
+                os.chmod(etc_path, 0o755)
+                mnttab_path = os.path.join(etc_path, "mnttab")
+                mnttab = open(os.path.join(mnttab_path), "w")
+                content = """rpool/dataset	{root}	zfs	dev=0	0
+rpool/fail	{root}/fail	zfs	dev=0	0
+rpool/dataset/succ	{root}/success	dev	dev=0	0
+rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
+"a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
+                .format(root=self.img_path())
+                mnttab.write(content)
+                mnttab.flush()
+
+                # This path is installed under dev not in zfs
+                # should be successful
+                success1 = """
+                    open success1@1
+                    add dir mode=0755 owner=root group=bin path=test
+		    close """
+
+                # Install a directory startswith fail
+                fail1 = """
+                    open success1@2
+                    add dir mode=0755 owner=root group=bin path=fail
+                    close """
+
+                # Install a directory which is a zfs mountpoint
+                success2 = """
+                    open success2@1
+                    add dir mode=0755 owner=root group=bin path=success
+                    close """
+
+                # Install a directory under fail
+                fail2 = """
+                    open success2@2
+                    add dir mode=0755 owner=root group=bin path=fail2
+                    close """
+
+                # Install a file under fail
+                fail3 = """
+                    open success2@3
+                    add file mode=0755 owner=root group=bin path=fail/foo
+                    close """
+
+                nfs_fail = """
+                    open success@4
+                    add file mode=0755 owner=root group=bin path=success/bla/foo
+                    close """
+
+                # Create and dirs for testing
+                os.mkdir(os.path.join(self.get_img_path(), "test"))
+                os.mkdir(os.path.join(self.get_img_path(), "success"))
+                os.mkdir(os.path.join(self.get_img_path(), "fail"))
+                os.mkdir(os.path.join(self.get_img_path(), "fail2"))
+                os.mkdir(os.path.join(self.get_img_path(), "success/bla"))
+                misc_files = [ "fail/foo", "success/bla/foo"]
+                self.make_misc_files(misc_files)
+                plist = self.pkgsend_bulk(self.rurl, [success1,
+                    success2, fail1, fail2])
+                self.pkg("--debug simulate_mnttab={0} install success1@1".format(
+                    mnttab_path), exit=0)
+                self.pkg("--debug simulate_mnttab={0} update success1".format(
+                    mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} install success2@1".format(
+                    mnttab_path), exit=0)
+                self.pkg("--debug simulate_mnttab={0} update success2@2".format(
+                     mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} update success2@3".format(
+                     mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} update success2@4".format(
+                     mnttab_path), exit=1)
+
+
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
 

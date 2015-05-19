@@ -856,6 +856,130 @@ class InconsistentActionAttributeError(ConflictingActionError):
 
                 return s
 
+
+class ImageBoundaryError(ApiException):
+        """Used to indicate that a file is delivered to image dir"""
+
+        GENERIC    = "generic"     # generic image boundary violation
+        OUTSIDE_BE = "outside_be"  # deliver items outside boot environment
+        RESERVED   = "reserved"    # deliver items to reserved dirs
+
+        def __init__(self, fmri, actions=None):
+                """fmri is the package fmri
+                actions should be a dictionary of which key is the
+                error type and value is a list of actions"""
+
+                ApiException.__init__(self)
+                self.fmri = fmri
+                generic = _("The following items are outside the boundaries "
+                    "of the target image:\n\n")
+                outside_be = _("The following items are delivered outside "
+                    "the target boot environment:\n\n")
+                reserved = _("The following items are delivered to "
+                    "reserved directories:\n\n")
+
+                self.message = {
+                    self.GENERIC: generic,
+                    self.OUTSIDE_BE: outside_be,
+                    self.RESERVED: reserved
+                }
+
+                if actions:
+                        self.actions = actions
+                else:
+                        self.actions = {}
+
+        def append_error(self, action, err_type=GENERIC):
+                """This function is used to append errors in the error
+                dictionary"""
+
+                if action:
+                        self.actions.setdefault(err_type, []).append(action)
+
+        def isEmpty(self):
+                """Return whether error dictionary is empty"""
+
+                return len(self.actions) == 0
+
+        def __str__(self):
+                error_list = [self.GENERIC, self.OUTSIDE_BE, self.RESERVED]
+                s = _("The package {0} delivers items outside the boundaries of"
+                    " the target image and can not be "
+                    "installed.\n\n").format(self.fmri)
+                for err_type in error_list:
+                        if not err_type in self.actions:
+                                continue
+                        if self.actions[err_type]:
+                                s += self.message[err_type]
+                        for action in self.actions[err_type]:
+                                s += ("      {0} {1}\n").format(
+                                    action.name, action.attrs["path"])
+                return s
+
+
+class ImageBoundaryErrors(ApiException):
+        """A container for multiple ImageBoundaryError exception objects
+        that can be raised as a single exception."""
+
+        def __init__(self, errors):
+                ApiException.__init__(self)
+                self.__errors = errors
+
+                generic = _("The following packages deliver items outside "
+                    "the boundaries of the target image and can not be "
+                    "installed:\n\n")
+                outside_be = _("The following packages deliver items outside "
+                    "the target boot environment and can not be "
+                    "installed:\n\n")
+                reserved = _("The following packages deliver items to reserved "
+                    "directories and can not be installed:\n\n")
+
+                self.message = {
+                    ImageBoundaryError.GENERIC: generic,
+                    ImageBoundaryError.OUTSIDE_BE: outside_be,
+                    ImageBoundaryError.RESERVED: reserved
+                }
+
+        def __str__(self):
+                if len(self.__errors) <= 1:
+                        return "\n".join([str(err) for err in self.__errors])
+
+                s = ""
+                for err_type in self.message:
+                        cur_errs = []
+                        for err in self.__errors:
+                                # If err does not contain this error type
+                                # we just ignore this.
+                                if not err_type in err.actions or \
+                                    not err.actions[err_type]:
+                                            continue
+                                cur_errs.append(err)
+
+                        if not cur_errs:
+                                continue
+
+                        if len(cur_errs) == 1:
+                                fmri = cur_errs[0].fmri
+                                s += _("The package {0} delivers items outside "
+                                    "the boundaries of the target image and can "
+                                    "not be installed.\n\n").format(fmri)
+                                s += cur_errs[0].message[err_type]
+                                for action in cur_errs[0].actions[err_type]:
+                                        s += ("      {0} {1}\n").format(
+                                            action.name, action.attrs["path"])
+                                s += "\n"
+                                continue
+
+                        s += self.message[err_type]
+                        for err in cur_errs:
+                                s += ("    {0}\n").format(err.fmri)
+                                for action in err.actions[err_type]:
+                                        s += ("      {0} {1}\n").format(
+                                            action.name, action.attrs["path"])
+                                s += "\n"
+                return s
+
+
 def list_to_lang(l):
         """Takes a list of items and puts them into a string, with commas in
         between items, and an "and" between the last two items.  Special cases
