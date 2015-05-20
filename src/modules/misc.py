@@ -920,7 +920,7 @@ def out_of_memory():
         try:
                 vmusage = __getvmusage()
                 if vmusage is not None:
-                        vsz = bytes_to_str(vmusage, fmt="{num}.0f{unit}")
+                        vsz = bytes_to_str(vmusage, fmt="{num:.0f}{unit}")
         except (MemoryError, EnvironmentError) as __e:
                 if isinstance(__e, EnvironmentError) and \
                     __e.errno != errno.ENOMEM:
