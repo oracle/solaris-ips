@@ -3777,21 +3777,52 @@ class ImagePlan(object):
                 self.pd._new_mediators = prop_mediators
                 # Link mediation is complete.
 
+        def __check_reserved(self, action):
+                """Check whether files are delivered to var/pkg or
+                .org.opensolaris.pkg"""
+
+                if not "path" in action.attrs:
+                        return True
+
+                dirs = ["cache", "gui_cache", "history", "license",
+                    "linked", "lost+found", "publisher", "ssl", "state"
+                ]
+                files = ["pkg5.image", "lock"]
+                path = action.get_installed_path(self.image.root)
+
+                for d in dirs:
+                        dir_p = os.path.join(self.image.imgdir, d) + "/"
+                        dir_path = path + "/"
+                        if dir_path.startswith(dir_p):
+                                return False
+
+                for f in files:
+                        fname = os.path.join(self.image.imgdir, f)
+                        if path == fname:
+                                return False
+                return True
+
         def __check_be_boundary(self, action, excluded_list, cur_dirs):
                 """Check whether the package is installed within its
                 own boot environment"""
-
-                # If there is no excluded list or action is not
-                # dir action.
-                if not excluded_list or action.name != "dir":
+	
+                # We only consider dir action.
+                if not action.name == "dir":
                         return True
 
                 path = action.get_installed_path(self.image.root)
+                # Check whether the dir is already installed.
                 if path in cur_dirs:
                         return True
 
                 # Extend the path in format /path1/path2/
                 path = path + "/"
+
+                # If the path is already outside current boot
+                # environment.
+                if not path.startswith(self.image.root):
+                        return False
+
                 for excluded_path in excluded_list:
                         if path.startswith(excluded_path):
                                 return False
@@ -3839,7 +3870,14 @@ class ImagePlan(object):
                                 # /path1/path2/
                                 dataset_path = os.path.normpath(special) + "/"
                                 path += "/"
-                                excluded_list.append((dataset_path, path))
+                                # Only paths from a dataset inside the
+                                # image root need to be excluded as all
+                                # actions are installed as an absolute
+                                # path. we turn all relative paths into an
+                                # absolute path, and we explicitly check that
+                                # paths are inside the image.
+                                if path.startswith(self.image.root):
+                                        excluded_list.append((dataset_path, path))
                 except:
                         pass
 
@@ -3995,7 +4033,10 @@ class ImagePlan(object):
                 excluded_list = self.__parse_mnttab()
                 cur_dirs = self.__get_cur_directories()
                 for p in self.pd.pkg_plans:
-                        err_actions = None
+                        pfmri = None
+                        if p.destination_fmri:
+                                pfmri = p.destination_fmri.get_fmri()
+                        err_actions = api_errors.ImageBoundaryError(pfmri)
                         pt.plan_add_progress(pt.PLAN_ACTION_MERGE)
                         for src, dest in p.gen_install_actions():
                                 if dest.name == "user":
@@ -4008,17 +4049,18 @@ class ImagePlan(object):
                                 # boot environment.
                                 if not self.__check_be_boundary(dest,
                                     excluded_list, cur_dirs):
-                                        if not err_actions:
-                                                err_actions = \
-                                                    api_errors.ImageBoundaryError(
-                                                    p.destination_fmri.get_fmri())
                                         err_actions.append_error(
                                             action=dest,
                                             err_type=api_errors.ImageBoundaryError.\
                                             OUTSIDE_BE)
+                                elif not self.__check_reserved(dest):
+                                        err_actions.append_error(
+                                            action=dest,
+                                            err_type=api_errors.ImageBoundaryError.\
+                                            RESERVED)
                                 self.pd.install_actions.append(
                                     _ActionPlan(p, src, dest))
-                        if err_actions:
+                        if not err_actions.isEmpty():
                                 errs.append(err_actions)
 
                 if errs:

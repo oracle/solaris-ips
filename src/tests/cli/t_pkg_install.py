@@ -1105,6 +1105,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 mnttab_path = os.path.join(etc_path, "mnttab")
                 mnttab = open(os.path.join(mnttab_path), "w")
                 content = """rpool/dataset	{root}	zfs	dev=0	0
+rpool/outside	/tmp	zfs	0	0
 rpool/fail	{root}/fail	zfs	dev=0	0
 rpool/dataset/succ	{root}/success	dev	dev=0	0
 rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
@@ -1113,7 +1114,7 @@ a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
                 mnttab.write(content)
                 mnttab.flush()
 
-                # This path is installed under dev not in zfs
+    		# This path is installed under dev not in zfs
                 # should be successful
                 success1 = """
                     open success1@1
@@ -1138,27 +1139,27 @@ a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
                     add dir mode=0755 owner=root group=bin path=fail2
                     close """
 
-                # Install a file under fail
-                fail3 = """
-                    open fail3@1
-                    add file mode=0755 owner=root group=bin path=fail/foo
-                    close """
-
                 nfs_fail = """
-                    open fail4@1
-                    add file mode=0755 owner=root group=bin path=success/bla/foo
+                    open nfs_fail@1
+                    add dir mode=0755 owner=root group=bin path=success/bla
                     close """
 
+                user_image = """
+                    open user_image_fail@1
+                    add dir mode=0755 owner=root group=bin path=../../test
+                    close
+                    """
                 # Create dirs for testing
                 os.mkdir(os.path.join(self.get_img_path(), "test"))
                 os.mkdir(os.path.join(self.get_img_path(), "success"))
                 os.mkdir(os.path.join(self.get_img_path(), "fail"))
                 os.mkdir(os.path.join(self.get_img_path(), "fail2"))
                 os.mkdir(os.path.join(self.get_img_path(), "success/bla"))
-                misc_files = [ "fail/foo", "success/bla/foo"]
-                self.make_misc_files(misc_files)
+
+                path = "/".join(self.get_img_path().split("/")[:3])
+                os.mkdir(os.path.join(path, "test"))
                 plist = self.pkgsend_bulk(self.rurl, [success1,
-                    success2, fail1, fail2])
+                    success2, fail1, fail2, nfs_fail, user_image])
                 self.pkg("--debug simulate_mnttab={0} install success1".format(
                     mnttab_path), exit=0)
                 self.pkg("--debug simulate_mnttab={0} install success2".format(
@@ -1167,10 +1168,11 @@ a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
                     mnttab_path), exit=1)
                 self.pkg("--debug simulate_mnttab={0} install fail2".format(
                      mnttab_path), exit=1)
-                self.pkg("--debug simulate_mnttab={0} install fail3".format(
-                     mnttab_path), exit=1)
                 self.pkg("--debug simulate_mnttab={0} install nfs_fail".format(
                      mnttab_path), exit=1)
+                self.pkg("--debug simulate_mnttab={0} install user_image_fail".format(
+                     mnttab_path), exit=1)
+                shutil.rmtree(os.path.join(path, "test"))
 
         def test_update_outside_boot_environment(self):
                 """Test that we can not install packages outside our current
@@ -1185,6 +1187,7 @@ a.b.com:/bla	{root}/success/bla	nfs	0	0"""\
                 mnttab_path = os.path.join(etc_path, "mnttab")
                 mnttab = open(os.path.join(mnttab_path), "w")
                 content = """rpool/dataset	{root}	zfs	dev=0	0
+rpool/outside	/tmp	zfs	0	0
 rpool/fail	{root}/fail	zfs	dev=0	0
 rpool/dataset/succ	{root}/success	dev	dev=0	0
 rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
@@ -1218,16 +1221,16 @@ rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
                     add dir mode=0755 owner=root group=bin path=fail2
                     close """
 
-                # Install a file under fail
-                fail3 = """
+                nfs_fail = """
                     open success2@3
-                    add file mode=0755 owner=root group=bin path=fail/foo
+                    add dir mode=0755 owner=root group=bin path=success/bla
                     close """
 
-                nfs_fail = """
-                    open success@4
-                    add file mode=0755 owner=root group=bin path=success/bla/foo
-                    close """
+                user_image = """
+                    open success2@4
+                    add dir mode=0755 owner=root group=bin path=../../test
+                    close
+                    """
 
                 # Create and dirs for testing
                 os.mkdir(os.path.join(self.get_img_path(), "test"))
@@ -1235,10 +1238,10 @@ rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
                 os.mkdir(os.path.join(self.get_img_path(), "fail"))
                 os.mkdir(os.path.join(self.get_img_path(), "fail2"))
                 os.mkdir(os.path.join(self.get_img_path(), "success/bla"))
-                misc_files = [ "fail/foo", "success/bla/foo"]
-                self.make_misc_files(misc_files)
+                path = "/".join(self.get_img_path().split("/")[:3])
+                os.mkdir(os.path.join(path, "test"))
                 plist = self.pkgsend_bulk(self.rurl, [success1,
-                    success2, fail1, fail2])
+                    success2, fail1, fail2, nfs_fail, user_image])
                 self.pkg("--debug simulate_mnttab={0} install success1@1".format(
                     mnttab_path), exit=0)
                 self.pkg("--debug simulate_mnttab={0} update success1".format(
@@ -1251,7 +1254,63 @@ rpool/fail/fail2	{root}/fail2	zfs	dev=0	0
                      mnttab_path), exit=1)
                 self.pkg("--debug simulate_mnttab={0} update success2@4".format(
                      mnttab_path), exit=1)
+                shutil.rmtree(os.path.join(path, "test"))
 
+        def test_install_to_reserved_directories(self):
+                """Ensure installation of new actions will fail when the delivered
+                files target reserved filesystem locations."""
+
+                b1 = """
+                    open b1@1.0-0
+                    add dir mode=0755 owner=root group=bin path=var/pkg/cache
+                    close
+                    """
+                b2 = """
+                    open b2@1.0-0
+                    add link path=var/pkg/pkg5.image target=tmp/cat
+                    close
+                    """
+                b3 = """
+                    open b3@1.0-0
+                    add dir mode=0755 owner=root group=bin path=var/pkg/config
+                    close
+                    """
+
+                self.image_create(self.rurl)
+                self.pkgsend_bulk(self.rurl, [b1, b2, b3])
+
+                self.pkg("install b1", exit=1)
+                self.pkg("install b2", exit=1)
+                # this should pass because var/pkg/config is not reserved
+                self.pkg("install b3", exit=0)
+
+        def test_update_to_reserved_directories(self):
+                """Ensure installation of new actions will fail when the delivered
+                files target reserved filesystem locations."""
+
+                b1 = """
+                    open b1@1.0-0
+                    add file tmp/cat mode=0755 owner=root group=bin path=var/pkg/foo
+                    close
+                    """
+                b2 = """
+                    open b1@2.0-0
+                    add dir mode=0755 owner=root group=bin path=var/pkg/cache
+                    close
+                    """
+                b3 = """
+                    open b1@3.0-0
+                    add dir mode=0755 owner=root group=bin path=var/pkg/config
+                    close
+                    """
+
+                self.image_create(self.rurl)
+                self.pkgsend_bulk(self.rurl, [b1, b2, b3])
+
+                self.pkg("install b1@1.0-0", exit=0)
+                self.pkg("update b1@2.0-0", exit=1)
+                # this should pass because var/pkg/config is not reserved
+                self.pkg("update b1@3.0-0", exit=0)
 
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
