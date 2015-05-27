@@ -17,6 +17,7 @@
     pkg:/library/python/m2crypto-27
     pkg:/library/python/mako-27
     pkg:/library/python/ply-27
+    pkg:/library/python/prettytable-27
     pkg:/library/python/pybonjour-27
     pkg:/library/python/pycurl-27
     pkg:/library/python/pyopenssl-27

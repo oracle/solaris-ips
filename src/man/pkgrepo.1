@@ -7,11 +7,11 @@
 
 <refentry id="pkgrepo-1">
 <refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">4 Nov 2014</refmiscinfo>
+<refmiscinfo class="date">26 May 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System repository management utility</refpurpose></refnamediv>
@@ -49,6 +49,9 @@
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
 <synopsis>/usr/bin/pkgrepo fix [-v] [-p <replaceable>publisher</replaceable>]...
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo diff [-vq] [--strict] [--parsable] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>first_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    -s <replaceable>second_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
 <synopsis>/usr/bin/pkgrepo help</synopsis>
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
@@ -585,6 +588,58 @@ system path.</para>
 </variablelist>
 </listitem>
 </varlistentry>
+<varlistentry><term><command>pkgrepo diff</command> [<option>vq</option>] [<option>-strict</option>] [<option>-parsable</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>first_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... <option>s</option> <replaceable>second_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>Compare two repositories and show the differences.</para>
+<para><literal>-</literal> symbol in the beginning of an output
+line indicates the item found only in the first repository, while
+<literal>+</literal> symbol indicates the item found only in the second
+repository. No symbol in the beginning means it is a common item.
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>Include output detailing the comparison including per-fmri
+output.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>Perform quiet comparison; no output will be generated.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-strict</option></term>
+<listitem><para>Compare catalog last modified time stamp. This is useful to
+determine whether one repository is the exact clone of the other one.</para>
+</listitem>
+<varlistentry><term><option>-parsable</option></term>
+<listitem><para>Generate parsable output in JSON format.</para>
+</listitem>
+</varlistentry>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the specified publisher. If
+no publisher is specified, or if the special value <literal>all</literal> is
+specified, the operation is performed for all publishers. This option can
+be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>Use the <option>-key</option> option to specify a client SSL
+key file to use for package retrieval from an HTTPS repository. Use the <option>-cert
+</option> option to specify a client SSL certificate file to use for package
+retrieval from an HTTPS repository. This option pair can be specified multiple
+times. The pair specified after the first <option>s</option> but before the
+second <option>s</option> will be applied to the first repository. The pair
+specified after the second <option>s</option> will be applied to the second
+repository.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
 <varlistentry><term><command>pkgrepo help</command></term>
 <listitem><para>Display a usage message.</para>
 </listitem>
@@ -663,7 +718,8 @@ solaris   repository related-uris     ()</screen>
 <para>The following exit values are returned:</para>
 <variablelist>
 <varlistentry><term><returnvalue>0</returnvalue></term>
-<listitem><para>Command succeeded.</para>
+<listitem><para>Command succeeded (or no differences encountered
+for pkgrepo diff).</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
@@ -681,6 +737,10 @@ succeeded.</para>
 </varlistentry>
 <varlistentry><term><returnvalue>4</returnvalue></term>
 <listitem><para>No changes were made, nothing to do.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>Differences found for pkgrepo diff.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>99</returnvalue></term>

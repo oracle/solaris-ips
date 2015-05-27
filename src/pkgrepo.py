@@ -31,9 +31,16 @@ EXIT_OK      = 0
 EXIT_OOPS    = 1
 EXIT_BADOPT  = 2
 EXIT_PARTIAL = 3
+EXIT_DIFF = 10
 
 # listing constants
 LISTING_FORMATS = ("default", "json", "json-formatted", "tsv")
+
+# diff type
+MINUS = -1
+PLUS = 1
+COMMON = 0
+diff_type_f = {MINUS: "- ", PLUS: "+ ", COMMON: ""}
 
 # globals
 tmpdirs = []
@@ -47,6 +54,7 @@ import gettext
 import locale
 import logging
 import os
+import operator
 import shlex
 import shutil
 import sys
@@ -59,6 +67,7 @@ import itertools
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.misc import msg, PipeError
+from prettytable import PrettyTable
 import pkg
 import pkg.catalog
 import pkg.client.api_errors as apx
@@ -66,8 +75,10 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.client.progress
 import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
+import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repository as sr
+import simplejson as json
 
 logger = global_settings.logger
 
@@ -169,6 +180,10 @@ Subcommands:
          [--disable verification ...] -s repo_uri_or_path
 
      pkgrepo fix [-v] [-p publisher ...] -s repo_uri_or_path
+
+     pkgrepo diff [-vq] [--strict] [--parsable] [-p publisher ...]
+         -s first_repo_uri_or_path [--key ssl_key ... --cert ssl_cert ...]
+         -s second_repo_uri_or_path [--key ssl_key ... --cert ssl_cert ...]
 
      pkgrepo help
      pkgrepo version
@@ -279,9 +294,8 @@ def get_repo(conf, allow_invalid=False, read_only=True, subcommand=None):
             root=path)
 
 
-def setup_transport(conf, subcommand=None, prefix=None, verbose=False,
+def setup_transport(repo_uri, subcommand=None, prefix=None, verbose=False,
     remote_prefix=True, ssl_key=None, ssl_cert=None):
-        repo_uri = conf.get("repo_uri", None)
         if not repo_uri:
                 usage(_("No repository location specified."), cmd=subcommand)
 
@@ -314,7 +328,6 @@ def setup_transport(conf, subcommand=None, prefix=None, verbose=False,
             ssl_cert=ssl_cert)
 
         return xport, src_pub, tmp_dir
-
 
 def subcmd_add_publisher(conf, args):
         """Add publisher(s) to the specified repository."""
@@ -529,8 +542,8 @@ def subcmd_get(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
 
         # Get properties.
         if pubs:
@@ -612,7 +625,7 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
 
 
 def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default",
-    use_transport=False):
+    use_transport=False, repo_uri=None):
 
         # Retrieve publisher information.
         pub_data = xport.get_publisherdata(xpub)
@@ -637,8 +650,11 @@ def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default",
         elif pubs and not found:
                 if out_format == "default":
                         # Don't pollute other output formats.
-                        error(_("no matching publishers found"),
-                            cmd=subcommand)
+                        err_msg = _("no matching publishers found")
+                        if repo_uri:
+                                err_msg = _("no matching publishers found in "
+                                    "repository: {0}").format(repo_uri)
+                        error(err_msg, cmd=subcommand)
                 return EXIT_OOPS, None, None
         return rval, found, pub_data
 
@@ -799,8 +815,8 @@ def subcmd_info(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
 
         # Retrieve repository status information.
         stat_idx = xport.get_status(xpub)
@@ -902,8 +918,8 @@ def subcmd_list(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
 
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub, out_format=out_format, use_transport=True)
@@ -1073,8 +1089,8 @@ def subcmd_contents(conf, args):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
 
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub, use_transport=True)
@@ -1202,8 +1218,8 @@ def __rebuild_remote(subcommand, conf, pubs, key, cert, build_catalog,
                 elif build_index:
                         xport.publish_rebuild_indexes(xpub)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
         if rval == EXIT_OOPS:
@@ -1315,8 +1331,8 @@ def subcmd_refresh(conf, args):
                 elif refresh_index:
                         xport.publish_refresh_indexes(xpub)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
+        xport, xpub, tmp_dir = setup_transport(conf.get("repo_uri"),
+            subcommand=subcommand, ssl_key=key, ssl_cert=cert)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
         if rval == EXIT_OOPS:
@@ -1674,7 +1690,7 @@ def subcmd_verify(conf, args):
                 usage(_("-d or -i option cannot be used when dependency "
                     "verification is disabled."), cmd=subcommand)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(repo_uri, subcommand=subcommand)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
 
@@ -1698,7 +1714,7 @@ def subcmd_verify(conf, args):
 
         found_pubs = []
         for pfx in found:
-                xport, xpub, tmp_dir = setup_transport(conf, prefix=pfx,
+                xport, xpub, tmp_dir = setup_transport(repo_uri, prefix=pfx,
                     remote_prefix=False,
                     subcommand=subcommand)
                 xpub.transport = xport
@@ -1752,14 +1768,13 @@ def subcmd_fix(conf, args):
                 usage(_("Network repositories are not currently supported "
                     "for this operation."), cmd=subcommand)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(repo_uri, subcommand=subcommand)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
         if rval == EXIT_OOPS:
                 return rval
 
         logger.info("Initiating repository fix.")
-        progtrack = get_tracker()
 
         def verify_cb(tracker, verify_tuple):
                 """A method passed to sr.Repository.fix(..) to emit verify
@@ -1778,7 +1793,7 @@ def subcmd_fix(conf, args):
 
         found_pubs = []
         for pfx in found:
-                xport, xpub, tmp_dir = setup_transport(conf, prefix=pfx,
+                xport, xpub, tmp_dir = setup_transport(repo_uri, prefix=pfx,
                     remote_prefix=False,
                     subcommand=subcommand)
                 xpub.transport = xport
@@ -1828,6 +1843,410 @@ def subcmd_fix(conf, args):
         if failed_fix_paths or bad_deps:
                 return EXIT_OOPS
         return EXIT_OK
+
+def __get_pub_fmris(pub, xport, tmp_dir):
+        if not pub.meta_root:
+                # Create a temporary directory for catalog.
+                cat_dir = tempfile.mkdtemp(prefix="pkgrepo-diff.", dir=tmp_dir)
+                pub.meta_root = cat_dir
+                pub.transport = xport
+                pub.refresh(full_refresh=True, immediate=True)
+
+        pkgs, fmris, unmatched = pub.catalog.get_matching_fmris("*")
+        fmris = [f for f in fmris]
+        return fmris, pkgs
+
+def __format_diff(diff_type, subject):
+        """formatting diff output.
+        diff_type: can be MINUS, PLUS or COMMON.
+
+        subject: can be a publisher or a package.
+        """
+
+        format_pub = "{0}{1}"
+        format_fmri = "        {0}{1}"
+        format_str = "        {0}{1}"
+        text = ""
+        if isinstance(subject, publisher.Publisher):
+                text = format_pub.format(diff_type_f[diff_type],
+                    subject.prefix)
+        elif isinstance(subject, fmri.PkgFmri):
+                text = format_fmri.format(diff_type_f[diff_type],
+                    str(subject))
+        else:
+                text = format_str.format(diff_type_f[diff_type],
+                    subject)
+        return text
+
+def __sorted(subject, stype=None):
+        if stype == "pub":
+                skey = operator.attrgetter("prefix")
+                return sorted(subject, key=skey)
+        return sorted(subject)
+
+def __emit_msg(diff_type, subject):
+        text = __format_diff(diff_type, subject)
+        msg(text)
+
+def __repo_diff(conf, pubs, xport, rpubs, rxport, tmp_dir, verbose, quiet,
+    compare_ts, compare_cat, parsable):
+        """Determine the differences between two repositories."""
+
+        same_repo = True
+        if conf["repo_uri"].scheme == "file":
+                conf["repo_uri"] = conf["repo_uri"].get_pathname()
+        if conf["com_repo_uri"].scheme == "file":
+                conf["com_repo_uri"] = conf["com_repo_uri"].get_pathname()
+
+        foundpfx = set([pub.prefix for pub in pubs])
+        rfoundpfx = set([pub.prefix for pub in rpubs])
+
+        minus_pfx = __sorted(foundpfx - rfoundpfx)
+        minus_pubs = __sorted([pub for pub in pubs if pub.prefix in minus_pfx],
+            stype="pub")
+        plus_pfx = __sorted(rfoundpfx - foundpfx)
+        plus_pubs = __sorted([pub for pub in rpubs if pub.prefix in plus_pfx],
+            stype="pub")
+
+        if minus_pubs or plus_pubs:
+                same_repo = False
+                if quiet:
+                        return EXIT_DIFF
+
+        pcommon_set = foundpfx & rfoundpfx
+        common_pubs = __sorted([p for p in pubs if p.prefix in pcommon_set],
+            stype="pub")
+        common_rpubs = __sorted([p for p in rpubs if p.prefix in pcommon_set],
+            stype="pub")
+
+        res_dict = {"table_legend": [["Repo1", str(conf["repo_uri"])],
+                ["Repo2", str(conf["com_repo_uri"])]],
+            "table_header": [_("Publisher"),
+                # This is a table column header which tells that this
+                # row shows number of packages found in specific
+                # repository only.
+                # Use terse translation to avoid too-wide header.
+                _("{repo} only").format(repo="Repo1"),
+                _("{repo} only").format(repo="Repo2"),
+                # This is a table column header which tells that this
+                # row shows number of packages found in both
+                # repositories being compared together.
+                # Use terse translation to avoid too-wide header.
+                _("In both"), _("Total")],
+            # Row based table contents.
+            "table_data": []
+            }
+
+        verbose_res_dict = {"plus_pubs": [], "minus_pubs": [],
+            "common_pubs": []}
+
+        def __diff_pub_helper(pub, symbol):
+                fmris, pkgs = __get_pub_fmris(pub, xport, tmp_dir)
+                # Summary level.
+                if not verbose:
+                        td_row = [pub.prefix,
+                            {"packages": len(pkgs), "versions": len(fmris)},
+                            None, {"packages": 0, "versions": 0},
+                            {"packages": len(pkgs), "versions": len(fmris)}]
+                        if symbol == PLUS:
+                                td_row[1], td_row[2] = td_row[2], td_row[1]
+                        res_dict["table_data"].append(td_row)
+                        return
+
+                if parsable:
+                        key_name = "minus_pubs"
+                        if symbol == PLUS:
+                                key_name = "plus_pubs"
+                        verbose_res_dict[key_name].append(
+                            {"publisher": pub.prefix, "packages": len(pkgs),
+                            "versions": len(fmris)})
+                        return
+
+                __emit_msg(symbol, pub)
+                __emit_msg(symbol, _("({0:d} package(s) with "
+                    "{1:d} different version(s))").format(len(pkgs),
+                    len(fmris)))
+
+        for pub in minus_pubs:
+                __diff_pub_helper(pub, MINUS)
+
+        for pub in plus_pubs:
+                __diff_pub_helper(pub, PLUS)
+
+        for pub, rpub in zip(common_pubs, common_rpubs):
+                # Indicates whether those two pubs have same pkgs.
+                same_pkgs = True
+                same_cat = True
+                fmris, pkgs = __get_pub_fmris(pub, xport, tmp_dir)
+                rfmris, rpkgs = __get_pub_fmris(rpub, rxport, tmp_dir)
+                fmris_str = set([str(f) for f in fmris])
+                rfmris_str = set([str(f) for f in rfmris])
+                del fmris, rfmris
+
+                minus_fmris = __sorted(fmris_str - rfmris_str)
+                plus_fmris = __sorted(rfmris_str - fmris_str)
+                if minus_fmris or plus_fmris:
+                        same_repo = False
+                        same_pkgs = False
+                        if quiet:
+                                return EXIT_DIFF
+
+                cat_lm_pub = None
+                cat_lm_rpub = None
+                if compare_cat:
+                        cat_lm_pub = pub.catalog.last_modified.isoformat()
+                        cat_lm_rpub = rpub.catalog.last_modified.isoformat()
+                        same_cat = same_repo = cat_lm_pub == cat_lm_rpub
+                        if not same_cat and quiet:
+                                return EXIT_DIFF
+
+                common_fmris = fmris_str & rfmris_str
+                pkg_set = set(pkgs.keys())
+                rpkg_set = set(rpkgs.keys())
+                del pkgs, rpkgs
+                common_pkgs = pkg_set & rpkg_set
+
+                # Print summary.
+                if not verbose:
+                        if not same_cat:
+                                # Common publishers with different catalog
+                                # modification time.
+                                res_dict.setdefault("nonstrict_pubs", []
+                                    ).append(pub.prefix)
+
+                        # Add to the table only if there are differences
+                        # for this publisher.
+                        if not same_pkgs:
+                                minus_pkgs = pkg_set - rpkg_set
+                                minus_pkg_vers = {"packages": len(minus_pkgs),
+                                    "versions": len(minus_fmris)}
+                                del minus_pkgs, minus_fmris
+
+                                plus_pkgs = rpkg_set - pkg_set
+                                plus_pkg_vers = {"packages": len(plus_pkgs),
+                                    "versions": len(plus_fmris)}
+                                del plus_pkgs, plus_fmris
+
+                                total_pkgs = pkg_set | rpkg_set
+                                total_fmris = fmris_str | rfmris_str
+                                total_pkg_vers = {"packages": len(total_pkgs),
+                                    "versions": len(total_fmris)}
+                                del total_pkgs, total_fmris
+
+                                com_pkg_vers = {"packages": len(common_pkgs),
+                                    "versions": len(common_fmris)}
+
+                                res_dict["table_data"].append([pub.prefix,
+                                    minus_pkg_vers, plus_pkg_vers,
+                                    com_pkg_vers,
+                                    total_pkg_vers])
+                        del common_pkgs, common_fmris, pkg_set, rpkg_set
+                        continue
+
+                com_pub_info = {}
+                # Emit publisher name if there are differences.
+                if not same_pkgs or not same_cat:
+                        if parsable:
+                                com_pub_info["publisher"] = pub.prefix
+                                com_pub_info["+"] = []
+                                com_pub_info["-"] = []
+                        else:
+                                __emit_msg(COMMON, pub)
+
+                # Emit catalog differences.
+                if not same_cat:
+                        omsg = _("catalog last modified: {0}")
+                        minus_cat = omsg.format(cat_lm_pub)
+                        plus_cat = omsg.format(cat_lm_rpub)
+                        if parsable:
+                                com_pub_info["catalog"] = {"-": minus_cat,
+                                    "+": plus_cat}
+                        else:
+                                __emit_msg(MINUS, minus_cat)
+                                __emit_msg(PLUS, plus_cat)
+
+                for f in minus_fmris:
+                        if parsable:
+                                com_pub_info["-"].append(str(f))
+                        else:
+                                __emit_msg(MINUS, f)
+                del minus_fmris
+
+                for f in plus_fmris:
+                        if parsable:
+                                com_pub_info["+"].append(str(f))
+                        else:
+                                __emit_msg(PLUS, f)
+                del plus_fmris
+
+                if not same_pkgs:
+                        if parsable:
+                                com_pub_info["common"] = {
+                                    "packages": len(common_pkgs),
+                                    "versions": len(common_fmris)}
+                        else:
+                                msg(_("        ({0:d} pkg(s) with {1:d} "
+                                    "version(s) are in both repositories.)"
+                                    ).format(len(common_pkgs),
+                                    len(common_fmris)))
+                del common_pkgs, common_fmris, pkg_set, rpkg_set
+
+                if com_pub_info:
+                        verbose_res_dict["common_pubs"].append(com_pub_info)
+
+        if same_repo:
+                # Same repo. Will use EXIT_OK to represent.
+                return EXIT_OK
+
+        if verbose:
+                if parsable:
+                        msg(json.dumps(verbose_res_dict))
+                return EXIT_DIFF
+
+        if not parsable:
+                ftemp = "{0:d} [{1:{2}d}]"
+                if "nonstrict_pubs" in res_dict and res_dict["nonstrict_pubs"]:
+                        msg("")
+                        msg(_("The catalog for the following publisher(s) "
+                            "in repository {0} is not an exact copy of the "
+                            "one for the same publisher in repository {1}:"
+                            "\n    {2}").format(conf["repo_uri"],
+                            conf["com_repo_uri"],
+                            ", ".join(res_dict["nonstrict_pubs"])))
+                if res_dict["table_data"]:
+                        info_table = PrettyTable(res_dict["table_header"],
+                            encoding=locale.getpreferredencoding())
+                        info_table.align = "r"
+                        info_table.align[unicode(_("Publisher"),
+                            locale.getpreferredencoding())] = "l"
+                        # Calculate column wise maximum number for formatting.
+                        col_maxs = 4 * [0]
+                        for td in res_dict["table_data"]:
+                                for idx, cell in enumerate(td):
+                                        if idx > 0 and isinstance(cell, dict):
+                                                col_maxs[idx-1] = max(
+                                                    col_maxs[idx-1],
+                                                    cell["versions"])
+
+                        for td in res_dict["table_data"]:
+                                t_row = []
+                                for idx, cell in enumerate(td):
+                                        if not cell:
+                                                t_row.append("-")
+                                        elif isinstance(cell, basestring):
+                                                t_row.append(cell)
+                                        elif isinstance(cell, dict):
+                                                t_row.append(ftemp.format(
+                                                    cell["packages"],
+                                                    cell["versions"], len(str(
+                                                    col_maxs[idx-1]))))
+                                info_table.add_row(t_row)
+
+                        # This message explains that each cell of the table
+                        # shows two numbers in a format e.g. "4870 [10227]".
+                        # Here "number of packages" and "total distinct
+                        # versions" are shown outside and inside of square
+                        # brackets respectively.
+                        msg(_("""
+The table below shows the number of packages [total distinct versions]
+by publisher in the specified repositories.
+"""))
+                        for leg in res_dict["table_legend"]:
+                                msg("* " + leg[0] + ": " + leg[1])
+                        msg("")
+                        msg(info_table)
+        else:
+                msg(json.dumps(res_dict))
+
+        return EXIT_DIFF
+
+
+def subcmd_diff(conf, args):
+        """Compare two repositories."""
+
+        opts, pargs = getopt.getopt(args, "vqp:s:", ["strict", "parsable",
+            "key=", "cert="])
+        subcommand = "diff"
+        pubs = set()
+        verbose = 0
+        quiet = False
+        compare_ts = True
+        compare_cat = False
+        parsable = False
+
+        def key_cert_conf_helper(conf_type, arg):
+                """Helper function for collecting key and cert."""
+
+                if conf.get("repo_uri") and not conf.get("com_repo_uri"):
+                        conf["repo_" + conf_type] = arg
+                elif conf.get("com_repo_uri"):
+                        conf["com_repo_" + conf_type] = arg
+                else:
+                        usage(_("--{0} must be specified following a "
+                            "-s").format(conf_type), cmd=subcommand)
+
+        for opt, arg in opts:
+                if opt == "-s":
+                        if "repo_uri" not in conf:
+                                conf["repo_uri"] = parse_uri(arg)
+                        elif "com_repo_uri" not in conf:
+                                conf["com_repo_uri"] = parse_uri(arg)
+                        else:
+                                usage(_("only two repositories can be "
+                                    "specified"), cmd=subcommand)
+                if opt == "-v":
+                        verbose += 1
+                elif opt == "-q":
+                        quiet = True
+                elif opt == "--strict":
+                        compare_cat = True
+                elif opt == "--parsable":
+                        parsable = True
+                elif opt == "-p":
+                        if not misc.valid_pub_prefix(arg):
+                                error(_("Invalid publisher prefix '{0}'").format(
+                                    arg), cmd=subcommand)
+                                return EXIT_OOPS
+                        pubs.add(arg)
+                elif opt == "--key":
+                        key_cert_conf_helper("key", arg)
+                elif opt == "--cert":
+                        key_cert_conf_helper("cert", arg)
+
+        if len(pargs) > 0:
+                usage(_("command does not take any operands"), cmd=subcommand)
+
+        if quiet and verbose:
+                usage(_("-q and -v can not be combined"), cmd=subcommand)
+
+        repo_uri = conf.get("repo_uri")
+        if not repo_uri:
+                usage(_("Two package repository locations must be provided "
+                    "using -s."), cmd=subcommand)
+
+        com_repo_uri = conf.get("com_repo_uri")
+        if not com_repo_uri:
+                usage(_("A second package repository location must also be "
+                    "provided using -s."), cmd=subcommand)
+
+        xport, xpub, tmp_dir = setup_transport(repo_uri, subcommand=subcommand,
+            ssl_key=conf.get("repo_key"), ssl_cert=conf.get("repo_cert"))
+        cxport, cxpub, c_tmp_dir = setup_transport(com_repo_uri,
+            subcommand=subcommand, prefix="com",
+            ssl_key=conf.get("com_repo_key"),
+            ssl_cert=conf.get("com_repo_cert"))
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub, use_transport=True, repo_uri=repo_uri)
+        if rval == EXIT_OOPS:
+                return rval
+
+        rval, cfound, cpub_data = _get_matching_pubs(subcommand, pubs, cxport,
+            cxpub, use_transport=True, repo_uri=com_repo_uri)
+        if rval == EXIT_OOPS:
+                return rval
+
+        return  __repo_diff(conf, pub_data, xport, cpub_data, cxport, tmp_dir,
+            verbose, quiet, compare_ts, compare_cat, parsable)
 
 
 def main_func():
