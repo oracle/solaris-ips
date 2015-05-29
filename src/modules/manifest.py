@@ -290,10 +290,19 @@ class Manifest(object):
                                 # on the action.
                                 try:
                                         key = set(a.attrlist(a.key_attr))
+                                        if (a.name == "link" or
+                                           a.name == "hardlink") and \
+                                           a.attrs.get("mediator"):
+                                                for v in ("mediator-version",
+                                                    "mediator-implementation"):
+                                                        key.update([
+                                                            "{0}={1}".format(v,
+                                                            a.attrs.get(v))])
                                         key.update(
                                             "{0}={1}".format(v, a.attrs[v])
                                             for v in a.get_varcet_keys()[0]
                                         )
+
                                         key = tuple(key)
                                 except KeyError:
                                         # If there is no key attribute for the
@@ -1984,5 +1993,3 @@ class ManifestError(Exception):
                         ret.append("{0}\n{1}\n\n".format(*d))
 
                 return "\n".join(ret)
-
-

@@ -195,13 +195,39 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
            close
         """
 
+        mediatorPPC = """
+            open mediator@1.0,5.11-0
+            add link path=wombat target=blue mediator=color mediator-implementation=blue pkg.merge.blend=arch
+            add link path=wombat target=red mediator=color mediator-implementation=red pkg.merge.blend=arch
+            add link path=wombat target=green mediator=color mediator-implementation=green pkg.merge.blend=arch
+            add link path=wombat target=orange mediator=color mediator-implementation=orange pkg.merge.blend=arch
+            add link path=aardvark target=1 mediator=version mediator-version=1 pkg.merge.blend=arch
+            add link path=aardvark target=2 mediator=version mediator-version=2 pkg.merge.blend=arch
+            add link path=aardvark target=3 mediator=version mediator-version=3 pkg.merge.blend=arch
+            add link path=aardvark target=4 mediator=version mediator-version=4 pkg.merge.blend=arch
+            close
+        """
+
+        mediatorARM = """
+            open mediator@1.0,5.11-0
+            add link path=wombat target=teal mediator=color mediator-implementation=teal pkg.merge.blend=arch
+            add link path=wombat target=pink mediator=color mediator-implementation=pink pkg.merge.blend=arch
+            add link path=wombat target=mauve mediator=color mediator-implementation=mauve pkg.merge.blend=arch
+            add link path=wombat target=taupe mediator=color mediator-implementation=taupe pkg.merge.blend=arch
+            add link path=aardvark target=5 mediator=version mediator-version=5 pkg.merge.blend=arch
+            add link path=aardvark target=6 mediator=version mediator-version=6 pkg.merge.blend=arch
+            add link path=aardvark target=7 mediator=version mediator-version=7 pkg.merge.blend=arch
+            add link path=aardvark target=8 mediator=version mediator-version=8 pkg.merge.blend=arch
+            close
+        """
+
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
             "tmp/sh", "tmp/scheme", "tmp/sparc-only", "tmp/sparc1", "tmp/sparc2",
             "tmp/sparc3", "tmp/sparc4", "tmp/i3861", "tmp/i3862", "tmp/i3863"]
 
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, 16 * ["os.org"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, 18 * ["os.org"])
                 self.make_misc_files(self.misc_files)
 
                 self.rurl1 = self.dcs[1].get_repo_url()
@@ -225,6 +251,10 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 # repositories which will contain several publishers
                 self.rurl14 = self.dcs[14].get_repo_url()
                 self.rurl15 = self.dcs[15].get_repo_url()
+
+                # mediator testing
+                self.rurl16 = self.dcs[16].get_repo_url()
+                self.rurl17 = self.dcs[17].get_repo_url()
 
                 # Publish a set of packages to one repository.
                 self.published = self.pkgsend_bulk(self.rurl1, (self.amber10,
@@ -325,6 +355,12 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 time.sleep(1)
                 self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
                     (self.multiB.replace("open ", "open pkg://last/")))
+
+                # publish to our mediator repos
+                self.published_16 = self.pkgsend_bulk(self.rurl16,
+                    (self.mediatorPPC))
+                self.published_17 = self.pkgsend_bulk(self.rurl17,
+                    (self.mediatorARM))
 
         def test_0_options(self):
                 """Verify that pkgmerge gracefully fails when given bad option
@@ -1236,6 +1272,51 @@ set name=variant.debug value=false\
 
                 check_repo(repodir, ["altpub_bronze", "altpub_amber"],
                     repo15_fmris, expected)
+
+        def test_8_mediators(self):
+                """test to make sure mediator-mediated links are not detected as collisions
+                in the same package or the merged package"""
+                # Create the target repository.
+                repodir = os.path.join(self.test_root, "8mediator_repo")
+                self.create_repo(repodir)
+
+                # Merge the two packages.
+                self.pkgmerge(" ".join([
+                        "-s arch=PPC,{0}".format(self.rurl16),
+                        "-s arch=ARM,{0}".format(self.rurl17),
+                    "-d {0} mediator".format(repodir)
+                ]))
+
+                # get target repo
+                repo = self.get_repo(repodir)
+                cat = repo.get_catalog(pub="os.org")
+                expected = """\
+link mediator=color mediator-implementation=blue path=wombat target=blue
+link mediator=color mediator-implementation=green path=wombat target=green
+link mediator=color mediator-implementation=mauve path=wombat target=mauve
+link mediator=color mediator-implementation=orange path=wombat target=orange
+link mediator=color mediator-implementation=pink path=wombat target=pink
+link mediator=color mediator-implementation=red path=wombat target=red
+link mediator=color mediator-implementation=taupe path=wombat target=taupe
+link mediator=color mediator-implementation=teal path=wombat target=teal
+link mediator=version mediator-version=1 path=aardvark target=1
+link mediator=version mediator-version=2 path=aardvark target=2
+link mediator=version mediator-version=3 path=aardvark target=3
+link mediator=version mediator-version=4 path=aardvark target=4
+link mediator=version mediator-version=5 path=aardvark target=5
+link mediator=version mediator-version=6 path=aardvark target=6
+link mediator=version mediator-version=7 path=aardvark target=7
+link mediator=version mediator-version=8 path=aardvark target=8
+set name=pkg.fmri value={0}
+set name=variant.arch value=PPC value=ARM\
+""".format(self.published_17[0])
+
+                for f in cat.fmris():
+                        with open(repo.manifest(f), "rb") as m:
+                                actual = "".join(sorted(l for l in m)).strip()
+                self.assertEqualDiff(expected, actual)
+                shutil.rmtree(repodir)
+
 
         def get_manifest(self, repodir, pubs=["os.org"]):
                 repository = self.get_repo(repodir)
