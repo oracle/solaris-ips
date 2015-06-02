@@ -2464,6 +2464,49 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify -v")
 
 
+class TestPkgInstallUpdateSolverOutput(pkg5unittest.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_setup = True
+
+        octo10 = """
+            open octo@1.0,5.11-0
+            close
+        """
+
+        octo20 = """
+            open octo@2.0,5.11-0
+            close
+        """
+
+        incorp = """
+            open incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/octo@2.0
+            close
+        """
+
+        def test_output_two_issues(self):
+                """ ^^^ hard to find a good name for this, it tests for bug
+                21130996.
+                In case one pkg triggers two or more issues, one of which is not
+                considered print-worthy, we wouldn't print anything at all."""
+
+                self.pkgsend_bulk(self.rurl,
+                    (self.incorp, self.octo10, self.octo20))
+                self.image_create(self.rurl)
+
+                self.pkg("install incorp octo@2")
+                self.pkg("install -v octo@1", exit=1)
+
+                # Check that the root cause for the issue is shown;
+                # the incorporation does not allow the older version.
+                self.assertTrue("incorp@1.0" in self.errout,
+                    "Excluding incorporation not shown in solver error.")
+                # Check that the notice about a newer version already installed
+                # is ommited (it's not relevant).
+                self.assertFalse("octo@2.0" in self.errout,
+                    "Newer version should not be shown in solver error.")
+
+
 class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True

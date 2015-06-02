@@ -2180,12 +2180,12 @@ class PkgSolver(object):
                                                 "'{0}' dependency on {1} are "
                                                 "obsolete"), (dtype, fstr)))
                                 else:
-                                        sfmris = [
+                                        sfmris = frozenset([
                                             fmri.get_fmri(anarchy=True,
                                                 include_build=False,
                                                 include_scheme=False)
                                             for f in fmris
-                                        ]
+                                        ])
                                         raise DependencyException(
                                             _TRIM_DEP_OBSOLETE,
                                             (N_("All acceptable versions of "
@@ -2393,7 +2393,7 @@ class PkgSolver(object):
                 already_seen.add(fmri)
 
                 if not verbose:
-                        # By default, omit packages from errors that were
+                        # By default, omit packages from errors that were only
                         # rejected due to a newer version being installed, or
                         # because they didn't match user-specified input.  It's
                         # tempting to omit _TRIM_REJECT here as well, but that
@@ -2402,14 +2402,22 @@ class PkgSolver(object):
                         # is because a required dependency was rejected.
                         for reason_id, reason_t, fmris in \
                             self.__trim_dict[fmri]:
-                                if reason_id in (_TRIM_INSTALLED_NEWER,
+                                if reason_id not in (_TRIM_INSTALLED_NEWER,
                                     _TRIM_PROPOSED_PUB, _TRIM_PROPOSED_VER):
-                                        omit.add(fmri)
-                                        return
+                                        break
+                        else:
+                                omit.add(fmri)
+                                return
 
                 ms = []
                 for reason_id, reason_t, fmris in sorted(
                     self.__trim_dict[fmri]):
+
+                        if not verbose:
+                                if reason_id in (_TRIM_INSTALLED_NEWER,
+                                    _TRIM_PROPOSED_PUB, _TRIM_PROPOSED_VER):
+                                        continue
+
                         if isinstance(reason_t, tuple):
                                 reason = _(reason_t[0]).format(*reason_t[1])
                         else:
