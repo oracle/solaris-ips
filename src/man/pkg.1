@@ -903,12 +903,12 @@ in the current image.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
-<listitem><para>Include informational messages regarding packages, also see its
-description in the install command above.</para>
+<listitem><para>Include informational messages regarding packages. See also the
+description of the <option>v</option> option for the install command above.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para>For all other options, see the \fBinstall\fR command above.</para>
+<para>For all other options, see the <command>install</command> command above.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg fix</command> [<option>Hnvq</option>]
@@ -931,8 +931,8 @@ the specified packages installed in the current image.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
-<listitem><para>Include informational messages regarding packages, also see its
-description in the install command above.</para>
+<listitem><para>Include informational messages regarding packages. See also the
+description of the <option>v</option> option for the install command above.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-accept</option></term>
@@ -1652,12 +1652,15 @@ This string is not guaranteed to be comparable in any fashion between versions.<
 </varlistentry>
 <varlistentry><term><command>pkg help</command> [<option>v</option>]</term>
 <listitem><para>Display a full list of subcommands.</para>
-</listitem>
-<listitem><varlistentry><term><option>v</option></term>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
 <listitem><para>Display a verbose usage message of subcommands.</para>
 </listitem>
-</varlistentry></listitem>
 </varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+
 <varlistentry><term><command>pkg image-create</command> [<option>FPUfz</option>] [<option>-force</option>] [<option>-full</option> | <option>-partial</option> | <option>-user</option>] [<option>-zone</option>] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable> ssl_key</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable> | <option>-origin</option> <replaceable>path_or_uri</replaceable>]... [<option>m</option> <replaceable>uri</replaceable> | <option>-mirror</option> <replaceable>uri</replaceable>]... [<option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>)]... [<option>-no-refresh</option>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]... [(<option>p</option> | <option>-publisher</option>) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></term>
 <listitem><para>At the location given by <replaceable>dir</replaceable>, create an image suitable for package operations. Images created by using the <command>image-create</command> subcommand are not bootable. Most users should use the <option>-be-name</option> or <option>-require-new-be</option> options with <command>pkg</command> commands, or use the <command>beadm</command> or <command>zoneadm</command> commands to create images. The <command>pkg image-create</command> command is used for tasks such as maintaining packages and operating system distributions.</para>
 <para>The default image type is user, which can be specified by using the <option>U</option> or <option>-user</option> option. Alternatively, the image type can be set to a full image (<option>-F</option> or <option>-full</option>) or to a partial image (<option>P</option> or <option>-partial</option>) linked to the full image enclosing the given <replaceable>dir</replaceable> path.</para>
@@ -1707,14 +1710,14 @@ about variants.</para>
 <varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> dehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
 <listitem><para>Remove all non-editable packaged files and packaged hardlinks from the image specified by the <option>R</option> option to create a fully dehydrated image. A non-editable packaged file is a file delivered by the currently installed version of a package that has no <literal>preserve</literal> or <literal>overlay</literal> attribute, or has a <literal>dehydrated</literal> value of <literal>False</literal>. A packaged hardlink is a hardlink delivered by the currently installed version of a package. </para>
 <para>The <command>pkg dehydrate</command> command only operates on an alternate root. Use the <option>R</option> option to specify the alternate root. If the alternate root belongs to a boot environment, dehydration will render it unbootable.</para>
-<para>If the <command>pkg dehydrate</command> command succeeds, a property named <command>dehydrated</command> with the value of all publishers with a configured package repository is set on the image specified by the <option>R</option> option.</para>
-<para>All other packaging operations for a dehydrated publisher will be automatically dehydrated.</para>
+<para>If the <command>pkg dehydrate</command> command succeeds, a property named <command>dehydrated</command> is set on the <replaceable>dir</replaceable> image specified by the <option>R</option> option. The value of the <command>dehydrated</command> property is a list of all publishers set in the <replaceable>dir</replaceable> image that have a configured package repository.</para>
+<para>Package installation operations on packages from a dehydrated publisher are automatically dehydrated. If you install a package in a dehydrated image, the package content is installed and then dehydrated. Package installation operations can include operations such as <command>update</command> and <command>change-facet</command> as well as <command>install</command>.</para>
 <variablelist termlength="wholeline">
 <varlistentry>
 <term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>Remove only non-editable files and hardlinks delivered by the specified publishers to create a partially dehydrated image. If all configured publishers of the image are specified, a fully dehydrated image is created as described above.</para>
 <para>If one or more publishers is specified, and if any of the publishers is not configured in the image, then nothing is removed from the image.</para>
-<para>If the <command>pkg dehydrate</command> command succeeds, a property named <command>dehydrated</command> with the names of the publishers as the value is set on the image.</para>
+<para>If the <command>pkg dehydrate</command> command succeeds, a property named <command>dehydrated</command> is set on the <replaceable>dir</replaceable> image specified by the <option>R</option> option. The value of the <command>dehydrated</command> property is a list of all publishers specified by <option>p</option> options.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1725,13 +1728,13 @@ about variants.</para>
 <varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> rehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
 <listitem><para>Reinstall all files and hardlinks removed by the <command>pkg dehydrate</command> command.</para>
 <para>The <command>pkg rehydrate</command> command only operates on an alternate root. Use the <option>R</option> option to specify the alternate root.</para>
-<para>If the <command>pkg rehydrate</command> command succeeds, the value of the <command>dehydrated</command> property of the image is removed.</para>
+<para>If the <command>pkg rehydrate</command> command succeeds, the value of the <command>dehydrated</command> property of the image is empty.</para>
 <variablelist termlength="wholeline">
 <varlistentry>
 <term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>Reinstall all files and hardlinks removed by the <command>pkg dehydrate</command> command for the specified publishers.</para>
 <para>If one or more publishers is specified, and if any of the publishers is not configured in the image, then nothing is installed.</para>
-<para>If the <command>pkg rehydrate</command> command succeeds, the specified publisher names are removed from the value of the <command>dehydrated</command> property set on the image.</para>
+<para>If the <command>pkg rehydrate</command> command succeeds, the specified publisher names are removed from the value of the <command>dehydrated</command> property set on the image. Publishers not specified in the <command>rehydrate</command> command remain listed in the <command>dehydrated</command> property, and content installed from those publishers will still be dehydrated.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -2073,9 +2076,7 @@ org.opensolaris.smf.fmri set    svc:/network/http:tomcat6    pkg:/web/java-servl
 <screen>$ <userinput>pkg search -l depend::package/pkg</userinput>
 INDEX       ACTION VALUE                                    PACKAGE
 incorporate depend package/pkg@0.5.11-0.175.0.0.0.2.1      pkg:/consolidation/ips/ips-incorporation@0.5.11-0.175.0.0.0.2.1
-require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/package-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/install@0.5.11-0.175.0.0.0.2.1
-require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/update-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/boot-management@0.5.11-0.175.0.0.0.2.1
 require     depend package/pkg                             pkg:/system/zones/brand/brand-solaris@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/install/distribution-constructor@0.5.11-0.175.0.0.0.2.1
@@ -2202,13 +2203,13 @@ origin.</para>
 </example>
 <example><title>Dehydrating and Rehydrating an Image</title>
 <para>In these examples, <literal>/tmp/test_image</literal> is the image that you want to dehydrate and rehydrate.</para>
-<para>Because no publisher is specified, the following command operates on all publishers with a configured package repository in the <literal>/tmp/test_image</literal> image to fully dehydrate the <literal>/tmp/test_image</literal> image.</para>
+<para>Because no publisher is specified, the following command fully dehydrates the <literal>/tmp/test_image</literal> image by operating on all publishers that are enabled in the <literal>/tmp/test_image</literal> image.</para>
 <screen>$ <userinput>pkg -R /tmp/test_image dehydrate</userinput></screen>
 <para>Because no publisher is specified, the following command operates on all publishers configured in the <literal>/tmp/test_image</literal> image to fully restore the <literal>/tmp/test_image</literal> image.</para>
 <screen>$ <userinput>pkg -R /tmp/test_image rehydrate</userinput></screen>
 </example>
 <example><title>Dehydrating and Rehydrating an Image Specifying Publishers</title>
-<para>In these examples, <literal>/tmp/test_image</literal> is the image that you want to dehydrate and rehydrate, and the <literal>test1</literal> and <literal>test2</literal> publishers are configured with a package repository in the <literal>/tmp/test_image</literal> image.</para>
+<para>In these examples, <literal>/tmp/test_image</literal> is the image that you want to dehydrate and rehydrate, and the <literal>test1</literal> and <literal>test2</literal> publishers are enabled in the <literal>/tmp/test_image</literal> image and their origins provide the necessary content.</para>
 <para>The following command operates only on files and hardlinks delivered by the <literal>test1</literal> publisher.</para>
 <screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
 <para>The following command rehydrates only files and hardlinks delivered by the <literal>test1</literal> publisher.</para>

@@ -7,7 +7,7 @@
 
 <refentry id="pkg-5">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum>
-<refmiscinfo class="date">28 Jan 2015</refmiscinfo>
+<refmiscinfo class="date">10 Mar 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man5;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -1125,8 +1125,9 @@ the facets and variants set on the image, use the <command>pkg change-facet</com
 pkg change-variant</command> commands.</para>
 <para>Facets are treated as boolean values by package clients: Facets can
 be set only to <literal>true</literal> (enabled) or <literal>false</literal> (disabled)
-in the image. By default, all facets are considered to be set to <literal>true</literal> in
-the image.</para>
+in the image. By default, all facets starting with 'facet.debug.' or 'facet.optional.' are considered
+to be set to <literal>false</literal> in the image; all others are considered to be set to <literal>true</literal>
+in the image.</para>
 <para>Facets can be either set locally within an image using the <command>pkg change-facet</command> command or inherited from a parent image. For
 example, a non-global zone can inherit a facet from the global zone. Inherited facets are evaluated
 before, and take priority over, any locally set facets. If the same facet is both inherited and
@@ -1189,7 +1190,8 @@ conditions exist in the image:</para>
 <itemizedlist>
 <listitem><para>All facet tags on the action that have a value of
 <literal>all</literal> are <literal>true</literal> in the image
-(<literal>true</literal> is the default).</para>
+(<literal>false</literal> is the default for all facets starting with 'facet.debug.'
+or 'facet.optional.'; <literal>true</literal> is the default for all others).</para>
 </listitem>
 <listitem><para>If any facet tags on the action have a value of
 <literal>true</literal>, at least one of those facets is <literal>true</literal>
