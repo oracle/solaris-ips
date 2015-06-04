@@ -60,7 +60,6 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.mediator as med
-import pkg.portable as portable
 import pkg.search_errors as se
 import pkg.version
 
@@ -103,10 +102,9 @@ class ImagePlan(object):
                 self.__target_update_count  = 0
                 self.__target_removal_count = 0
 
-                self.__directories = None     # implement ref counting
-                self.__cur_directories = None # for image boundary check
-                self.__symlinks = None        # for dirs and links and
-                self.__hardlinks = None       # hardlinks
+                self.__directories = None # implement ref counting
+                self.__symlinks = None    # for dirs and links and
+                self.__hardlinks = None   # hardlinks
                 self.__licenses = None
                 self.__legacy = None
                 self.__cached_actions = {}
@@ -1776,12 +1774,6 @@ class ImagePlan(object):
                                 assert p.origin_manifest
                                 yield p.origin_fmri, p.origin_manifest
 
-        def gen_cur_installed_actions_bytype(self, atype, implicit_dirs=False):
-                """Generates actions of type 'atype' from the packages in the
-                current image."""
-                return self.__gen_star_actions_bytype(atype,
-                    self.image.gen_installed_pkgs, implicit_dirs=implicit_dirs)
-
         def gen_new_installed_actions_bytype(self, atype, implicit_dirs=False):
                 """Generates actions of type 'atype' from the packages in the
                 future image."""
@@ -1870,18 +1862,6 @@ class ImagePlan(object):
                                         if d not in dirs:
                                                 yield da(path=d,
                                                     implicit="true"), pfmri
-
-        def __get_cur_directories(self):
-                """ return set of all directories in current image """
-
-                if self.__cur_directories == None:
-                        dirs = set((
-                            os.path.normpath(d[0].attrs["path"])
-                            for d in self.gen_cur_installed_actions_bytype("dir",
-                                implicit_dirs=True)
-                        ))
-                        self.__cur_directories = dirs
-                return self.__cur_directories
 
         def __get_directories(self):
                 """ return set of all directories in target image """
@@ -3802,123 +3782,6 @@ class ImagePlan(object):
                                 return False
                 return True
 
-        def __check_be_boundary(self, action, excluded_list, cur_dirs):
-                """Check whether the package is installed within its
-                own boot environment"""
-	
-                # We only consider dir action.
-                if not action.name == "dir":
-                        return True
-
-                path = action.get_installed_path(self.image.root)
-                # Check whether the dir is already installed.
-                if path in cur_dirs:
-                        return True
-
-                # Extend the path in format /path1/path2/
-                path = path + "/"
-
-                # If the path is already outside current boot
-                # environment.
-                if not path.startswith(self.image.root):
-                        return False
-
-                for excluded_path in excluded_list:
-                        if path.startswith(excluded_path):
-                                return False
-                return True
-
-        def __parse_mnttab(self):
-                """Parse the mnttab in /etc/mnttab and return
-                a sorted exclude list """
-
-                # we can't do this on os other than solaris
-                if portable.osname != "sunos":
-                        return
-
-                excluded_list = []
-
-                # We assume the mnttab should exist
-                # Otherwise, we should pass this check.
-                try:
-                        mnttab_path = "/etc/mnttab"
-                        if DebugValues["simulate_mnttab"]:
-                                mnttab_path = DebugValues["simulate_mnttab"]
-
-                        with open(mnttab_path) as mnttab:
-                                lines = mnttab.readlines()
-
-                        boot_dataset = ""
-                        for line in lines:
-                                # Line has format:
-                                # path mntpoint fs_format device size
-                                special, mount_point, fstype, options, time = \
-                                    line.split("\t") 
-
-                                path = os.path.normpath(mount_point)
-                                if not path:
-                                        continue
-                                if path.startswith("//"):
-                                        path = path[1:]
-
-                                if path == self.image.root:
-                                        boot_dataset = \
-                                            os.path.normpath(special) + "/"
-                                        continue
-
-                                # Extend the path in format
-                                # /path1/path2/
-                                dataset_path = os.path.normpath(special) + "/"
-                                path += "/"
-                                # Only paths from a dataset inside the
-                                # image root need to be excluded as all
-                                # actions are installed as an absolute
-                                # path. we turn all relative paths into an
-                                # absolute path, and we explicitly check that
-                                # paths are inside the image.
-                                if path.startswith(self.image.root):
-                                        excluded_list.append((dataset_path, path))
-                except:
-                        pass
-
-                excluded = []
-                # Remove subdirectories of boot dataset
-                for entry in excluded_list:
-                        # If it is our current boot environment
-                        if not entry[0].startswith(boot_dataset):
-                                excluded.append(entry[1])
-
-                if not excluded:
-                        return excluded
-
-                # Sort the list of paths lexically so we can eliminate all but
-                # the top level of each excluded directory tree.  As an example,
-                # opt/excluded
-                # opt/excluded/foo
-                # opt/excluded/foo/bar
-                # opt/excluded/barz
-                # .......
-                # becomes this
-                # opt/excluded
-                # This significantly reduces the number of paths that need to be
-                # checked against when determining whether an item is delivered
-                # within the boundaries of the image and boot environment.
-                excluded.sort()
-                new_list = []
-                # Compress the exclude list
-                pre_path = excluded[0]
-                new_list.append(pre_path)
-                for excluded_path in excluded:
-                        # Remove duplicate
-                        if excluded_path == pre_path:
-                                continue
-                        # If the the path is under pre_path
-                        if excluded_path.startswith(pre_path):
-                                continue
-                        pre_path = excluded_path
-                        new_list.append(pre_path)
-                return new_list
-
         def __merge_actions(self):
                 """Given a set of fmri changes and their associated pkg plan,
                 merge all the resultant actions for the packages being
@@ -4030,8 +3893,6 @@ class ImagePlan(object):
 
                 self.pd.install_actions = []
                 errs = []
-                excluded_list = self.__parse_mnttab()
-                cur_dirs = self.__get_cur_directories()
                 for p in self.pd.pkg_plans:
                         pfmri = None
                         if p.destination_fmri:
@@ -4045,19 +3906,13 @@ class ImagePlan(object):
                                 elif dest.name == "group":
                                         self.pd.added_groups[dest.attrs[
                                             "groupname"]] = p.destination_fmri
-                                # Check whether files are delivered outside
-                                # boot environment.
-                                if not self.__check_be_boundary(dest,
-                                    excluded_list, cur_dirs):
+                                # Check whether files are delivered in reserved
+                                # locations.
+                                if not self.__check_reserved(dest):
                                         err_actions.append_error(
                                             action=dest,
-                                            err_type=api_errors.ImageBoundaryError.\
-                                            OUTSIDE_BE)
-                                elif not self.__check_reserved(dest):
-                                        err_actions.append_error(
-                                            action=dest,
-                                            err_type=api_errors.ImageBoundaryError.\
-                                            RESERVED)
+                                            err_type=api_errors.\
+                                            ImageBoundaryError.RESERVED)
                                 self.pd.install_actions.append(
                                     _ActionPlan(p, src, dest))
                         if not err_actions.isEmpty():
@@ -4197,7 +4052,6 @@ class ImagePlan(object):
 
                 # reduce memory consumption
                 self.__directories = None
-                self.__cur_directories = None
                 self.__symlinks = None
                 self.__hardlinks = None
                 self.__licenses = None
