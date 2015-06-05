@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015 Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -46,29 +46,29 @@ LD_LIBRARY_PATH=${APACHE_HOME}/lib/64:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
 getprop() {
-    PROPVAL=""
-    svcprop -q -p $1 ${SMF_FMRI}
-    if [ $? -eq 0 ] ; then
-        PROPVAL=`svcprop -p $1 ${SMF_FMRI}`
-        if [ "${PROPVAL}" = "\"\"" ] ; then
-            PROPVAL=""
-        fi
-        return
-    fi
-    return
+	PROPVAL=""
+	svcprop -q -p $1 ${SMF_FMRI}
+	if [ $? -eq 0 ] ; then
+		PROPVAL=$(svcprop -p $1 ${SMF_FMRI})
+		if [ "${PROPVAL}" = "\"\"" ] ; then
+			PROPVAL=""
+		fi
+		return
+	fi
+	return
 }
 
 check_failure() {
-    RESULT=$1
-    MESSAGE=$2
-    NON_FATAL=$3
-    if [ $RESULT -ne 0 ]; then
-        echo $MESSAGE
-	if [ -n "$NON_FATAL" ]; then
-		return
+	RESULT=$1
+	MESSAGE=$2
+	NON_FATAL=$3
+	if [ $RESULT -ne 0 ]; then
+		echo $MESSAGE
+		if [ -n "$NON_FATAL" ]; then
+			return
+		fi
+		exit $SMF_EXIT_ERR_FATAL
 	fi
-	exit $SMF_EXIT_ERR_FATAL
-    fi
 }
 
 run_sysrepo() {
@@ -79,83 +79,57 @@ run_sysrepo() {
 		SYSREPO_HTTPS_PROXY="-W ${https_proxy}"
 	fi
 
-        /usr/lib/pkg.sysrepo \
-               -R / \
-               -c ${SYSREPO_CACHE_DIR} \
-               -h ${SYSREPO_HOST} \
-               -l ${SYSREPO_LOG_DIR} \
-               -p ${SYSREPO_PORT} \
-               -r ${SYSREPO_RUNTIME_DIR} \
-               -s ${SYSREPO_CACHE_MAX} \
-               -t ${SYSREPO_TEMPLATE_DIR} \
-	       ${SYSREPO_HTTP_PROXY} \
-	       ${SYSREPO_HTTPS_PROXY}
-        check_failure $? "pkg.sysrepo: failed to create Apache configuration"
-}
-
-run_htcacheclean() {
-	# if we dropped to maintenance and are in the process of clearing
-	# that state,  we may have a htcacheclean processes hanging around.
-	kill_htcacheclean
-	if [ "${SYSREPO_CACHE_DIR}" != "None" ] && \
-	    [ "${SYSREPO_CACHE_DIR}" != "memory" ]; then
-               # Start a cache cleaning daemon, scanning every 2 weeks,
-               # being intelligent about only running if the cache has changed,
-               # limiting the cache to ${SYSREPO_CACHE_MAX} megabytes, being
-               # nice about scheduling and removing empty directories if
-               # necessary.
-	       interval=$((60 * 24 * 14))
-               /usr/apache2/2.2/bin/htcacheclean \
-                       -d${interval} -i -l ${SYSREPO_CACHE_MAX}M -n \
-                       -p ${SYSREPO_CACHE_DIR} \
-                       -P ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid \
-                       -t
-               check_failure $? "htcacheclean failed to run cleanly"
-       fi
-}
-
-kill_htcacheclean() {
-	if [ -f ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid ]; then
-                PID=$(< ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid)
-                /usr/bin/kill -TERM $PID
-                check_failure $? "failed to kill htcacheclean process $PID" \
-		    "not_fatal"
-        fi
+	# Despite using a scheduled service for the htcacheclean
+	# process, pkg.sysrepo is still used to check the
+	# $SYSREPO_CACHE_* variables for valid values.
+	# See svc:/application/pkg/system-repository-cache-maintenance
+	/usr/lib/pkg.sysrepo \
+	    -R / \
+	    -c ${SYSREPO_CACHE_DIR} \
+	    -h ${SYSREPO_HOST} \
+	    -l ${SYSREPO_LOG_DIR} \
+	    -p ${SYSREPO_PORT} \
+	    -r ${SYSREPO_RUNTIME_DIR} \
+	    -s ${SYSREPO_CACHE_MAX} \
+	    -t ${SYSREPO_TEMPLATE_DIR} \
+	    ${SYSREPO_HTTP_PROXY} \
+	    ${SYSREPO_HTTPS_PROXY}
+	check_failure $? "pkg.sysrepo: failed to create Apache configuration"
 }
 
 getprop config/host
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_HOST=${PROPVAL}
+	SYSREPO_HOST=${PROPVAL}
 fi
 
 getprop config/port
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_PORT=${PROPVAL}
+	SYSREPO_PORT=${PROPVAL}
 fi
 
 getprop config/log_dir
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_LOG_DIR=${PROPVAL}
+	SYSREPO_LOG_DIR=${PROPVAL}
 fi
 
 getprop config/template_dir
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_TEMPLATE_DIR=${PROPVAL}
+	SYSREPO_TEMPLATE_DIR=${PROPVAL}
 fi
 
 getprop config/runtime_dir
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_RUNTIME_DIR=${PROPVAL}
+	SYSREPO_RUNTIME_DIR=${PROPVAL}
 fi
 
 getprop config/cache_dir
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_CACHE_DIR=${PROPVAL}
+	SYSREPO_CACHE_DIR=${PROPVAL}
 fi
 
 getprop config/cache_max
 if [ "${PROPVAL}" != "" ] ; then
-        SYSREPO_CACHE_MAX=${PROPVAL}
+	SYSREPO_CACHE_MAX=${PROPVAL}
 fi
 
 getprop config/http_proxy
@@ -174,9 +148,8 @@ case "$1" in
 	run_sysrepo
 	# drop privileges now that we've written our configuration
 	/usr/bin/ppriv -s E=basic,net_privaddr $$
-	run_htcacheclean
 	${HTTPD} -f ${SYSREPO_RUNTIME_DIR}/sysrepo_httpd.conf \
-            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+	    ${STARTUP_OPTIONS} -k ${cmd} 2>&1
  	check_failure $? "Server failed to start. Check the SMF service log or the error log at ${SYSREPO_LOG_DIR}/error_log for more information, if any."
 	;;
 "refresh")
@@ -185,17 +158,14 @@ case "$1" in
 	# drop privileges now that we've written our configuration
 	/usr/bin/ppriv -s E=basic,net_privaddr $$
 	/usr/bin/pkill -USR1 -ox zoneproxyd
-	kill_htcacheclean
-	run_htcacheclean
 	${HTTPD} -f ${SYSREPO_RUNTIME_DIR}/sysrepo_httpd.conf \
-            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+	    ${STARTUP_OPTIONS} -k ${cmd} 2>&1
 	check_failure $? "Server failed to refresh. Check the SMF service log or the error log at ${SYSREPO_LOG_DIR}/error_log for more information, if any."
 	;;
 "stop")
 	cmd="stop"
-	kill_htcacheclean
 	${HTTPD} -f ${SYSREPO_RUNTIME_DIR}/sysrepo_httpd.conf \
-            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+	    ${STARTUP_OPTIONS} -k ${cmd} 2>&1
 	check_failure $? "Server failed to stop. Check the SMF service log  or the error log at ${SYSREPO_LOG_DIR}/error_log for more information, if any."
 	;;
 *)

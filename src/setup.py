@@ -173,6 +173,8 @@ scripts_sunos = {
                     'svc-pkg-repositories-setup'],
                 ['svc/svc-pkg-server', 'svc-pkg-server'],
                 ['svc/svc-pkg-sysrepo', 'svc-pkg-sysrepo'],
+                ['svc/svc-pkg-sysrepo-cache',
+                    'svc-pkg-sysrepo-cache'],
                 ],
         svc_share_dir: [
                 ['svc/pkg5_include.sh', 'pkg5_include.sh'],
@@ -381,6 +383,7 @@ smf_app_files = [
         'svc/pkg-repositories-setup.xml',
         'svc/pkg-server.xml',
         'svc/pkg-system-repository.xml',
+        'svc/pkg-sysrepo-cache.xml',
         'svc/zoneproxy-client.xml',
         'svc/zoneproxyd.xml'
         ]

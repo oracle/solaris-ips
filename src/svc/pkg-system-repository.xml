@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2011, 2013 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2011, 2015 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -107,63 +107,71 @@
 			exec='/lib/svc/method/svc-pkg-sysrepo refresh'
 			timeout_seconds='60' >
 			<method_context>
-             			<method_credential user='pkg5srv'
+				<method_credential user='pkg5srv'
 				group='pkg5srv' privileges='all' />
-		        </method_context>
+			</method_context>
 		</exec_method>
 
 
-                <property_group name='config' type='application'>
-                        <stability value='Evolving' />
-                        <!-- The port we listen on -->
-                        <propval name='port' type='count' value='1008' />
-                        <!-- The host we're running on -->
-                        <propval name='host' type='astring' value='127.0.0.1' />
-                        <!-- Where we store apache logs -->
-                        <propval name='log_dir' type='astring'
-                                value='/var/log/pkg/sysrepo' />
-                        <!-- Where we store runtime versions of our
+		<property_group name='config' type='application'>
+			<stability value='Evolving' />
+			<!-- The port we listen on -->
+			<propval name='port' type='count' value='1008' />
+			<!-- The host we're running on -->
+			<propval name='host' type='astring' value='127.0.0.1' />
+			<!-- Where we store apache logs -->
+			<propval name='log_dir' type='astring'
+				value='/var/log/pkg/sysrepo' />
+			<!-- Where we store runtime versions of our
 			 configuration -->
-                        <propval name='runtime_dir' type='astring'
+			<propval name='runtime_dir' type='astring'
 				value='/system/volatile/pkg/sysrepo' />
-                        <!-- Where we store our Mako templates for generating
+			<!-- Where we store our Mako templates for generating
 			 runtime configuration -->
-                        <propval name='template_dir' type='astring'
-                                value='/etc/pkg/sysrepo' />
-                        <!-- Where we store our sysrepo apache cache
-                        If cache_dir is set to the special value "None" then we
-                        do not perform caching.  If cache_dir is set to the
-                        special value "memory" we use an in-memory cache.
-                        -->
-                        <propval name='cache_dir' type='astring'
-                                value='/var/cache/pkg/sysrepo' />
-                        <!-- Our maximum cache size, expressed in MB -->
-                        <propval name='cache_max' type='count' value='2048' />
-                        <propval name='value_authorization' type='astring'
-                                value='solaris.smf.value.pkg-sysrepo' />
+			<propval name='template_dir' type='astring'
+				value='/etc/pkg/sysrepo' />
+			<!-- Where we store our sysrepo apache cache
+			If cache_dir is set to the special value "None" then we
+			do not perform caching.  If cache_dir is set to the
+			special value "memory" we use an in-memory cache.
+
+			Note that this property is consumed by
+			svc:/application/pkg/sysrepo-cache-compact
+			-->
+			<propval name='cache_dir' type='astring'
+				value='/var/cache/pkg/sysrepo' />
+			<!-- Our maximum cache size, expressed in MB
+
+			Note that this property is consumed by
+			svc:/application/pkg/sysrepo-cache-compact
+			-->
+			<propval name='cache_max' type='count' value='2048' />
+			<propval name='value_authorization' type='astring'
+				value='solaris.smf.value.pkg-sysrepo' />
 
 			<!-- If the system-repository itself should use web
 			proxies to gain access to pkg(5) repositories,
-                        specify those here in, the form http://<host>:[port] -->
+			specify those here in, the form http://<host>:[port]
+			-->
 			<propval name='http_proxy' type='astring' value='' />
 			<propval name='https_proxy' type='astring' value='' />
 
-                </property_group>
+		</property_group>
 
 		<property_group name='general' type='framework'>
 			<propval name='action_authorization'
-                            type='astring'
-                            value='solaris.smf.manage.pkg-sysrepo' />
+				type='astring'
+				value='solaris.smf.manage.pkg-sysrepo' />
 			<propval name='value_authorization'
-                            type='astring'
-                            value='solaris.smf.value.pkg-sysrepo' />
+				type='astring'
+				value='solaris.smf.value.pkg-sysrepo' />
 		</property_group>
 
 		<template>
 			<common_name>
-			    <loctext xml:lang='C'>
-                                IPS System Repository
-                            </loctext>
+				<loctext xml:lang='C'>
+				IPS System Repository
+				</loctext>
 			</common_name>
 			<documentation>
 				<manpage title='pkg.sysrepo' section='1M' />
