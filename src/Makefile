@@ -47,7 +47,7 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 	/usr/bin/grep Version | \
 	/usr/bin/awk -F: '{print $$2}' | /usr/bin/sed -e 's/ //g'
 
-SUBDIRS=zoneproxy tsol
+SUBDIRS=zoneproxy
 
 all: $(SUBDIRS)
 	$(PYTHON27) setup.py build
