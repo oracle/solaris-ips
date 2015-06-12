@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -1069,7 +1069,7 @@ contract_open(ctid_t ctid, const char *type, const char *file, int oflag)
 	if (type == NULL)
 		type = "all";
 
-	n = snprintf(path, PATH_MAX, CTFS_ROOT "/%s/%ld/%s", type, ctid, file);
+	n = snprintf(path, PATH_MAX, CTFS_ROOT "/%s/%d/%s", type, ctid, file);
 	if (n >= sizeof (path)) {
 		errno = ENAMETOOLONG;
 		return (-1);
@@ -1164,7 +1164,7 @@ __zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 	if (pid < 0) {
 		(void) ct_tmpl_clear(tmpl_fd);
 		(void) fprintf(stderr,
-		    "Can't fork to add zoneproxy door to zoneid %ld\n", zid);
+		    "Can't fork to add zoneproxy door to zoneid %d\n", zid);
 		drop_privs();
 		return;
 	}
@@ -1198,7 +1198,7 @@ __zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 		return;
 	}
 
-	(void) fprintf(stderr, "Unable to attach door to zoneid: %ld\n", zid);
+	(void) fprintf(stderr, "Unable to attach door to zoneid: %d\n", zid);
 
 	if (WEXITSTATUS(stat) == 1)
 		(void) fprintf(stderr, "Cannot enter zone\n");
@@ -1208,7 +1208,7 @@ __zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 	else if (WEXITSTATUS(stat) == 3)
 		(void) fprintf(stderr, "Unable to fattach file: %s\n", path);
 
-	(void) fprintf(stderr, "Internal error entering zone: %ld\n", zid);
+	(void) fprintf(stderr, "Internal error entering zone: %d\n", zid);
 	drop_privs();
 }
 

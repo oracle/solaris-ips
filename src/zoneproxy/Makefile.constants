@@ -30,9 +30,9 @@ ZONES_LIBDIR =	$(PROTO_AREA)/usr/lib/zones
 ZONES_PROG =	$(PROG:%=$(ZONES_LIBDIR)/%)
 
 LINTFLAGS =	-asxm -u -errwarn=%all -errtags=yes -s -errsecurity=core \
-		-Xc99=%none
+		-m64 -Xc99=%none
 CPPFLAGS =	-D_REENTRANT -D_POSIX_PTHREAD_SEMANTICS -I../zoneproxyd
-CFLAGS =	-errtags=yes -errwarn=%all -features=conststrings -xO4 \
+CFLAGS =	-errtags=yes -errwarn=%all -features=conststrings -m64 -xO4 \
 		-W0,-xglobalstatic -Xa -xc99=%none -xildoff -xspace
 LDFLAGS =	-Bdirect -zfatal-warnings -zguidance -zstrip-class=nonalloc 
 LDLIBS =
