@@ -597,7 +597,7 @@ class Action(object):
                         try:
                                 os.mkdir(p, fs.st_mode)
                         except OSError as e:
-                                if e.ernno != errno.ENOTDIR:
+                                if e.errno != errno.ENOTDIR:
                                         raise
                                 err_txt = _("Unable to create {path}; a "
                                     "parent directory {p} has been replaced "
