@@ -2812,7 +2812,15 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 # Can be retrieved from any source.
                                 return
 
-                pub = self.get_publisher(prefix=pfmri.publisher)
+                try:
+                        pub = self.get_publisher(prefix=pfmri.publisher)
+                except apx.UnknownPublisher:
+                        # The source where the package was last found was
+                        # recorded, but the publisher is no longer configured;
+                        # return so that caller can fallback to default
+                        # behaviour.
+                        return
+
                 repo = copy.copy(pub.repository)
                 norigins = [
                     o for o in repo.origins

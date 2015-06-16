@@ -366,10 +366,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix drv")
                 self.pkg("verify")
 
-        def test_06_download(self):
-                """Test that pkg fix won't try to download all data for
-                files that fail verification when the data is not going
-                to be used."""
+        def __test_offline_fix(self, configure_cb, offline_cb, online_cb):
+                """Private helper function for ensuring that offline operation
+                is supported for 'pkg fix' when no package data retrieval is
+                required."""
 
                 # If only attributes are wrong and no local modification
                 # is on the file content, fix doesn't need to download the
@@ -382,6 +382,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.set_img_path(tempfile.mkdtemp(prefix="test-suite",
                     dir="/var/tmp"))
                 self.image_create(self.durl)
+                configure_cb()
                 self.pkg("install sysattr")
                 self.pkg("verify")
                 fpath = os.path.join(self.img_path(), "amber1")
@@ -398,25 +399,26 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 os.chown(fpath, -1, 2)
                 self.pkg("verify", exit=1)
                 # Make the repository offline.
-                self.dc.stop()
+                offline_cb()
                 # If only attributes on a file are wrong, pkg fix still
                 # succeeds even if the repository is offline.
                 self.pkg("fix sysattr")
                 self.pkg("verify")
-                self.dc.start()
-                shutil.rmtree(self.img_path())
+                online_cb()
+                self.image_destroy()
 
                 # Test other attributes: mode, owner, group and timestamp.
                 self.image_create(self.durl)
+                configure_cb()
                 for p in ("file@1.0-0","preserve@1.0-0", "preserve@1.1-0",
                         "preserve@1.2-0", "amber@1.0-0", "sysattr@1.0-0"):
                         pfmri = self.plist[p]
                         self.pkg("install {0}".format(pfmri))
-                        self.dc.stop()
+                        offline_cb()
                         self.__do_alter_verify(pfmri, parsable=True)
                         self.pkg("verify --parsable=0 {0}".format(pfmri))
                         self.pkg("uninstall {0}".format(pfmri))
-                        self.dc.start()
+                        online_cb()
 
                 # If modify the file content locally and its attributes, for the
                 # editable file delivered with preserve=true, fix doesn't need to
@@ -424,10 +426,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 pfmri = self.plist["preserve@1.0-0"]
                 self.pkg("install {0}".format(pfmri))
                 self.file_append("amber1", "junk")
-                self.dc.stop()
+                offline_cb()
                 self.__do_alter_verify(pfmri, verbose=True)
                 self.pkg("uninstall {0}".format(pfmri))
-                self.dc.start()
+                online_cb()
 
                 # For editable files delivered with preserve=renamenew or
                 # preserve=renameold, and non-editable files, fix needs to
@@ -436,10 +438,57 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         pfmri = self.plist[p]
                         self.pkg("install {0}".format(pfmri))
                         self.file_append("amber1", "junk")
-                        self.dc.stop()
+                        offline_cb()
                         self.__do_alter_verify(pfmri, verbose=True, exit=1)
                         self.pkg("uninstall {0}".format(pfmri))
-                        self.dc.start()
+                        online_cb()
+
+                # Prepare for next test iteration.
+                self.image_destroy()
+
+        def test_06_download(self):
+                """Test that pkg fix won't try to download all data for
+                files that fail verification when the data is not going
+                to be used."""
+
+                # For one of the tests we need a repository with at least one
+                # package with the same publisher as the package we're testing
+                # with.  This is to trigger the package composition code in
+                # pkg(5) which will cause it to record the source each package
+                # is available from.
+                repodir = os.path.join(self.test_root,
+                    "repo_contents_test_06_download")
+                self.create_repo(repodir, properties={ "publisher": {
+                    "prefix": "test" } })
+                self.pkgsend_bulk(repodir, self.amber10)
+
+                # First, test for the simple offline / online case where the
+                # publisher repositories are simply unreachable.
+                def nop():
+                        pass
+
+                self.__test_offline_fix(nop, self.dc.stop, self.dc.start)
+
+                # Next, test for the case where the publisher configuration has
+                # been removed entirely (historically, this generated "Unknown
+                # Publisher 'foo'" errors).
+                def rem_test_pub():
+                        self.pkg("unset-publisher test")
+                def add_test_pub():
+                        self.pkg("set-publisher -p {0}".format(self.durl))
+
+                self.__test_offline_fix(nop, rem_test_pub, add_test_pub)
+
+                # Next, test case for where some packages are from a repository
+                # that is no longer configured.
+                def configure_cb():
+                        self.pkg("set-publisher -p {0}".format(repodir))
+                def add_multi_test_pub():
+                        add_test_pub()
+                        configure_cb()
+
+                self.__test_offline_fix(configure_cb, rem_test_pub,
+                    add_multi_test_pub)
 
         def test_fix_changed_manifest(self):
                 """Test that running package fix won't change the manifest of an

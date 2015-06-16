@@ -2998,6 +2998,10 @@ class CliTestCase(Pkg5TestCase):
                             p.prefix
                             for p in img.gen_publishers(inc_disabled=True)
                         ]
+                        if not pubs:
+                                # Include prefixes of publishers of installed
+                                # packages that are no longer configured.
+                                pubs.extend(p for p in img.get_installed_pubs())
                         assert len(pubs) == 1
                         pfmri.publisher = pubs[0]
                 return img.get_manifest_dir(pfmri)
@@ -3015,6 +3019,10 @@ class CliTestCase(Pkg5TestCase):
                             p.prefix
                             for p in img.gen_publishers(inc_disabled=True)
                         ]
+                        if not pubs:
+                                # Include prefixes of publishers of installed
+                                # packages that are no longer configured.
+                                pubs.extend(p for p in img.get_installed_pubs())
                         assert len(pubs) == 1
                         pfmri.publisher = pubs[0]
                 return img.get_manifest_path(pfmri)
