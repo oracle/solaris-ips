@@ -4690,17 +4690,16 @@ def history_list(api_inst, args):
                             output["finish"])
 
                 output["time"] = dt_end - dt_start
-                # This should never happen.  We can't use timedelta's str()
-                # method, since it prints eg. "4 days, 3:12:54" breaking our
-                # field separation, so we need to do this by hand.
-                if output["time"].days > 0:
-                        total_time = output["time"]
-                        secs = total_time.seconds
-                        add_hrs = total_time.days * 24
-                        mins, secs = divmod(secs, 60)
-                        hrs, mins = divmod(mins, 60)
-                        output["time"] = "{0}:{1}:{2}".format(
-                            add_hrs + hrs, mins, secs)
+                # We can't use timedelta's str() method, since when
+                # output["time"].days > 0, it prints eg. "4 days, 3:12:54"
+                # breaking our field separation, so we need to do this by hand.
+                total_time = output["time"]
+                secs = total_time.seconds
+                add_hrs = total_time.days * 24
+                mins, secs = divmod(secs, 60)
+                hrs, mins = divmod(mins, 60)
+                output["time"] = "{0}:{1:02d}:{2:02d}".format(
+                    add_hrs + hrs, mins, secs)
 
                 output["command"] = " ".join(he.client_args)
 

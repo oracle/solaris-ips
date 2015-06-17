@@ -566,7 +566,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 outfile.close()
 
                 self.pkg("history -n 1 -o time")
-                self.assert_("369576:0:0" in self.output)
+                self.assert_("369576:00:00" in self.output)
 
         def test_14_history_unicode_locale(self):
                 """Verify we can get history when unicode locale is set"""

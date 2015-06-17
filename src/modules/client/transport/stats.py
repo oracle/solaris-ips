@@ -62,6 +62,8 @@ class RepoChooser(object):
                 # we don't allow the proxy used for the system publisher to be
                 # overridden
                 if ds.system:
+                        if not ds.proxy:
+                                return "-"
                         return ds.proxy
 
                 proxy = misc.get_runtime_proxy(ds.proxy, ds.url)

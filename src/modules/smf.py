@@ -69,8 +69,8 @@ class NonzeroExitException(Exception):
                 return str(self)
 
         def __str__(self):
-                return "Cmd {0} exited with status {1:d}, and output '{2}'" %\
-                    (self.cmd, self.return_code, self.output)
+                return "Cmd {0} exited with status {1:d}, and output '{2}'".format(
+                    self.cmd, self.return_code, self.output)
 
 
 def __call(args, zone=None):
