@@ -26,15 +26,13 @@
 
 import copy
 import os
+import simplejson as json
+from six.moves.urllib.parse import urlparse, urlunparse
+
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
 import pkg.digest as digest
 import pkg.fmri as fmri
-import simplejson as json
-import urllib
-import urllib2
-import urlparse
-
 from pkg.client.imageconfig import DEF_TOKEN
 
 CURRENT_VERSION = 0
@@ -59,9 +57,9 @@ def parse(proxy_host, data):
                         if val.startswith("http://{0}".format(
                             publisher.SYSREPO_PROXY)):
                                 scheme, netloc, path, params, query, fragment =\
-                                    urlparse.urlparse(val)
+                                    urlparse(val)
                                 r = publisher.RepositoryURI(
-                                        urlparse.urlunparse((scheme, proxy_host,
+                                        urlunparse((scheme, proxy_host,
                                         path, params, query, fragment)))
                         else:
                                 # This URI needs to be proxied through the

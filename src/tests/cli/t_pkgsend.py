@@ -36,8 +36,9 @@ import shutil
 import stat
 import tempfile
 import unittest
-import urllib
-import urllib2
+from six.moves import range
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.request import urlopen, Request, pathname2url
 
 from pkg import misc
 from pkg.actions import fromstr
@@ -302,9 +303,9 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 try:
                         url = "{0}/{1}/0/{2}".format(dhurl, "add", "/".join((trx_id,
                             "set")))
-                        req = urllib2.Request(url=url, headers=headers)
-                        urllib2.urlopen(req)
-                except urllib2.HTTPError as e:
+                        req = Request(url=url, headers=headers)
+                        urlopen(req)
+                except HTTPError as e:
                         err_txt = e.read()
                         self.assert_("The specified Action attribute "
                             "value" in err_txt)
@@ -421,8 +422,8 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 dir_2 = os.path.join(rootdir, "dir_2")
                 os.mkdir(dir_1)
                 os.mkdir(dir_2)
-                file(os.path.join(dir_1, "A"), "wb").close()
-                file(os.path.join(dir_2, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "wb").close()
+                open(os.path.join(dir_2, "B"), "wb").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
                 with open(mfpath, "wb") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
@@ -695,7 +696,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                         if err.errno != os.errno.EEXIST:
                                                 raise
                                 fpath = os.path.join(pkgroot, entry)
-                                f = file(fpath, "wb")
+                                f = open(fpath, "wb")
                                 f.write("test" + entry)
                                 f.close()
                                 # compute a digest of the file we just created,
@@ -712,12 +713,12 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                                 raise
 
                 pkginfopath = os.path.join(pkgroot, "pkginfo")
-                pkginfo = file(pkginfopath, "w")
+                pkginfo = open(pkginfopath, "w")
                 pkginfo.write(pkginfo_contents)
                 pkginfo.close()
 
                 prototypepath = os.path.join(pkgroot, "prototype")
-                prototype = file(prototypepath, "w")
+                prototype = open(prototypepath, "w")
                 prototype.write(prototype_contents)
                 prototype.close()
 
@@ -878,7 +879,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """Verify that "pkgsend refresh-index" triggers indexing."""
 
                 dhurl = self.dc.get_depot_url()
-                dfurl = "file://{0}".format(urllib.pathname2url(self.dc.get_repodir()))
+                dfurl = "file://{0}".format(pathname2url(self.dc.get_repodir()))
 
                 fd, fpath = tempfile.mkstemp(dir=self.test_root)
 
@@ -1032,7 +1033,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.dc.stop()
                 rpath = self.dc.get_repodir()
                 fpath = os.path.join(self.test_root, "manifest")
-                f = file(fpath, "w")
+                f = open(fpath, "w")
                 f.write(pkg_manifest)
                 f.close()
                 self.pkgsend("file://{0}".format(rpath),
@@ -1218,8 +1219,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 dir_2 = os.path.join(rootdir, "dir_2")
                 os.mkdir(dir_1)
                 os.mkdir(dir_2)
-                file(os.path.join(dir_1, "A"), "wb").close()
-                file(os.path.join(dir_2, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "wb").close()
+                open(os.path.join(dir_2, "B"), "wb").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
                 with open(mfpath, "wb") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
@@ -1255,7 +1256,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 os.mkdir(dir_1)
-                file(os.path.join(dir_1, "A"), "wb").close()
+                open(os.path.join(dir_1, "A"), "wb").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
                 with open(mfpath, "wb") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
@@ -1449,7 +1450,7 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                 def do_test(*pathnames):
                         self.debug("=" * 70)
                         self.debug("Testing: {0}".format(pathnames,))
-                        for i in xrange(len(pathnames)):
+                        for i in range(len(pathnames)):
                                 l = list(pathnames)
                                 p = l.pop(i)
                                 do_test_one(p, l)
@@ -1556,8 +1557,8 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 os.mkdir(dir_1)
-                file(os.path.join(dir_1, "A"), "wb").close()
-                file(os.path.join(dir_1, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "wb").close()
+                open(os.path.join(dir_1, "B"), "wb").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
                 with open(mfpath, "wb") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
@@ -1583,12 +1584,12 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 # Add the trust anchor needed to verify the server's identity.
                 self.seed_ta_dir("ta7")
 
-                # Try to publish a simple package to SSL-secured repo  
+                # Try to publish a simple package to SSL-secured repo
                 self.pkgsend(self.url, "publish --key {key} --cert {cert} "
                     "-d {dir} {mani}".format(**arg_dict))
 
                 # Try to publish a simple package to SSL-secured repo without
-                # prvoviding certs (should fail).  
+                # prvoviding certs (should fail).
                 self.pkgsend(self.url, "publish -d {dir} {mani}".format(**arg_dict),
                     exit=1)
 
@@ -1617,12 +1618,12 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 self.pkgsend(self.url, "publish --key {empty} "
                     "--cert {cert} -d {dir} {mani}".format(**arg_dict), exit=1)
 
-                # No permissions to read certificate 
+                # No permissions to read certificate
                 self.pkgsend(self.url, "publish --key {key} "
                     "--cert {verboten} -d {dir} {mani}".format(**arg_dict),
                     su_wrap=True, exit=1)
 
-                # No permissions to read key 
+                # No permissions to read key
                 self.pkgsend(self.url, "publish --key {verboten} "
                     "--cert {cert} -d {dir} {mani}".format(**arg_dict),
                     su_wrap=True, exit=1)

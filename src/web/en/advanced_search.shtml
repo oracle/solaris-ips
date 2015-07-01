@@ -23,7 +23,7 @@
 ##
 <%!
         import pkg.query_parser as qp
-        import urllib
+        from six.moves.urllib.parse import unquote, quote
 %>\
 <%inherit file="search.shtml"/>\
 <%page args="g_vars"/>\
@@ -45,7 +45,7 @@
                 versions.insert(0, ("", "", "All"))
 
         # The string value representing the user's selection.
-        selected_val = urllib.unquote(request.params.get("v", ""))
+        selected_val = unquote(request.params.get("v", ""))
 
         # The version object matching the string value of the user's selection.
         selected_ver = None
@@ -182,7 +182,7 @@ tip</span>
                                 attrs = 'selected="selected" '
 
                         context.write("""<option {0}value="{1}">{2}</option>""".format(
-                            attrs, urllib.quote(val, ""), label))
+                            attrs, quote(val, ""), label))
 %>\
                                 </select>
                         </td>

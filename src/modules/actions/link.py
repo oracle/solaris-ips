@@ -31,6 +31,7 @@ packaging object."""
 
 import errno
 import os
+import six
 import stat
 
 import generic
@@ -116,7 +117,7 @@ class LinkAction(generic.Action):
                 if "mediator" in self.attrs:
                         rval.extend(
                             (self.name, k, v, None)
-                            for k, v in self.attrs.iteritems()
+                            for k, v in six.iteritems(self.attrs)
                             if k.startswith("mediator")
                         )
                 return rval

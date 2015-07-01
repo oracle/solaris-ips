@@ -29,7 +29,7 @@ import datetime
 import time
 import weakref
 
-from itertools import izip
+from six.moves import zip
 
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
@@ -91,8 +91,8 @@ class DotSequence(list):
 
                 try:
                         list.__init__(self,
-                            map(DotSequence.dotsequence_val,
-                                dotstring.split(".")))
+                            list(map(DotSequence.dotsequence_val,
+                                dotstring.split("."))))
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
@@ -113,7 +113,7 @@ class DotSequence(list):
                 if len(self) > len(other):
                         return False
 
-                for a, b in izip(self, other):
+                for a, b in zip(self, other):
                         if a != b:
                                 return False
                 return True
@@ -160,8 +160,8 @@ class MatchingDotSequence(DotSequence):
         def __init__(self, dotstring):
                 try:
                         list.__init__(self,
-                            map(self.dotsequence_val,
-                                dotstring.split(".")))
+                            list(map(self.dotsequence_val,
+                                dotstring.split("."))))
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
@@ -219,7 +219,7 @@ class MatchingDotSequence(DotSequence):
                 if len(self) > len(other):
                         return False
 
-                for a, b in izip(self, other):
+                for a, b in zip(self, other):
                         if a != b:
                                 return False
                 return True

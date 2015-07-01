@@ -31,19 +31,21 @@
    a given time period."""
 
 import cherrypy
-from cherrypy.lib.static import serve_file
 import copy
 import datetime
-import httplib
 import os
 import shutil
+import six
 import time
-import urllib
-import urlparse
 import xml.dom.minidom as xmini
+
+from cherrypy.lib.static import serve_file
+from six.moves import http_client
+from six.moves.urllib.parse import quote, unquote, urlparse
 
 import pkg.catalog as catalog
 import pkg.misc as misc
+
 
 MIME_TYPE = "application/atom+xml"
 CACHE_FILENAME = "feed.xml"
@@ -67,7 +69,7 @@ def fmri_to_taguri(f):
         """
         return "tag:{0},{1}:{2}".format(f.publisher,
             f.get_timestamp().strftime("%Y-%m-%d"),
-            urllib.unquote(f.get_url_path()))
+            unquote(f.get_url_path()))
 
 def init(depot):
         """This function performs general initialization work that is needed
@@ -99,10 +101,10 @@ def set_title(depot, doc, feed, update_ts):
         # identifier.
         i = doc.createElement("id")
         it = xmini.Text()
-        netloc, path = urlparse.urlparse(cherrypy.url())[1:3]
+        netloc, path = urlparse(cherrypy.url())[1:3]
         netloc = netloc.split(":", 1)[0]
         tag = "tag:{0},{1}:{2}".format(netloc, update_ts.strftime("%Y-%m-%d"),
-            path) 
+            path)
         it.replaceWholeText(tag)
         i.appendChild(it)
         feed.appendChild(i)
@@ -142,7 +144,7 @@ def add_transaction(request, doc, feed, entry, first):
         e = doc.createElement("entry")
 
         pfmri, op_type, op_time, metadata = entry
- 
+
         # Generate a 'tag' uri, to uniquely identify the entry, using the fmri.
         i = xmini.Text()
         i.replaceWholeText(fmri_to_taguri(pfmri))
@@ -186,7 +188,7 @@ def add_transaction(request, doc, feed, entry, first):
 
         # Link to the info output for the given package FMRI.
         e_uri = misc.get_rel_path(request,
-            "info/0/{0}".format(urllib.quote(str(pfmri))))
+            "info/0/{0}".format(quote(str(pfmri))))
 
         l = doc.createElement("link")
         l.setAttribute("rel", "alternate")
@@ -216,7 +218,7 @@ def get_updates_needed(repo, ts, pub):
                 return []
 
         updates = set()
-        for name, mdata in c.updates.iteritems():
+        for name, mdata in six.iteritems(c.updates):
 
                 # The last component of the update name is the locale.
                 locale = name.split(".", 2)[2]
@@ -233,7 +235,7 @@ def get_updates_needed(repo, ts, pub):
                         continue
                 updates.add(name)
 
-        if not updates: 
+        if not updates:
                 # No updates needed.
                 return []
 
@@ -316,7 +318,7 @@ def __clear_cache(depot, pub):
                         os.remove(pathname)
         except IOError:
                 raise cherrypy.HTTPError(
-                    httplib.INTERNAL_SERVER_ERROR,
+                    http_client.INTERNAL_SERVER_ERROR,
                     "Unable to clear feed cache.")
 
 def __cache_needs_update(depot, pub):
@@ -390,7 +392,7 @@ def handle(depot, request, response, pub):
 
                 # Generate and cache the feed.
                 misc.makedirs(os.path.dirname(cfpath))
-                cf = file(cfpath, "w")
+                cf = open(cfpath, "w")
                 update(request, depot, last, cf, pub)
                 cf.close()
 

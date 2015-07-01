@@ -574,7 +574,7 @@ dir group=sys mode=0755 owner=root path=etc
                         cache = tempfile.mkdtemp("pkglint-cache", "",
                             self.test_root)
                         path = os.path.join(cache, name)
-                        f = file(path, "w")
+                        f = open(path, "w")
                         f.close()
                         self.pkglint("-c {0} -r {1} -l {2}".format(
                             cache, self.ref_uri, self.lint_uri), exit=2)

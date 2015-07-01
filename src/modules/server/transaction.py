@@ -31,8 +31,9 @@ import errno
 import os
 import re
 import shutil
+import six
 import time
-import urllib
+from six.moves.urllib.parse import quote, unquote
 
 import pkg.actions as actions
 import pkg.digest as digest
@@ -56,12 +57,6 @@ class TransactionError(Exception):
                         self.data = args[0]
                 else:
                         self.data = None
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return str(self.data)
@@ -159,7 +154,7 @@ class Transaction(object):
                 # XXX should the timestamp be in ISO format?
                 return "{0:d}_{1}".format(
                     calendar.timegm(self.open_time.utctimetuple()),
-                    urllib.quote(str(self.fmri), ""))
+                    quote(str(self.fmri), ""))
 
         def open(self, rstore, client_release, pfmri):
                 # Store a reference to the repository storage object.
@@ -171,12 +166,12 @@ class Transaction(object):
                 if pfmri is None:
                         raise TransactionOperationError(pfmri=None)
 
-                if not isinstance(pfmri, basestring):
+                if not isinstance(pfmri, six.string_types):
                         pfmri = str(pfmri)
 
                 self.client_release = client_release
                 self.pkg_name = pfmri
-                self.esc_pkg_name = urllib.quote(pfmri, "")
+                self.esc_pkg_name = quote(pfmri, "")
 
                 # attempt to construct an FMRI object
                 try:
@@ -207,7 +202,7 @@ class Transaction(object):
                         else:
                                 pkg_name = pkg_name.replace("pkg:/", pub_string)
                         self.pkg_name = pkg_name
-                        self.esc_pkg_name = urllib.quote(pkg_name, "")
+                        self.esc_pkg_name = quote(pkg_name, "")
 
                 # record transaction metadata: opening_time, package, user
                 # XXX publishing with a custom timestamp may require
@@ -217,7 +212,7 @@ class Transaction(object):
                         # Strip the timestamp information for consistency with
                         # the case where it was not specified.
                         self.pkg_name = ":".join(pfmri.split(":")[:-1])
-                        self.esc_pkg_name = urllib.quote(self.pkg_name, "")
+                        self.esc_pkg_name = quote(self.pkg_name, "")
                 else:
                         # A timestamp was not provided; try to generate a
                         # unique one.
@@ -251,7 +246,7 @@ class Transaction(object):
                 # always create a minimal manifest
                 #
                 tfpath = os.path.join(self.dir, "manifest")
-                tfile = file(tfpath, "ab+")
+                tfile = open(tfpath, "ab+")
 
                 # Build a set action containing the fully qualified FMRI and add
                 # it to the manifest.  While it may seem inefficient to create
@@ -285,12 +280,12 @@ class Transaction(object):
                 if pfmri is None:
                         raise TransactionOperationError(pfmri=None)
 
-                if not isinstance(pfmri, basestring):
+                if not isinstance(pfmri, six.string_types):
                         pfmri = str(pfmri)
 
                 self.client_release = client_release
                 self.pkg_name = pfmri
-                self.esc_pkg_name = urllib.quote(pfmri, "")
+                self.esc_pkg_name = quote(pfmri, "")
 
                 # attempt to construct an FMRI object
                 try:
@@ -321,7 +316,7 @@ class Transaction(object):
                         else:
                                 pkg_name = pkg_name.replace("pkg:/", pub_string)
                         self.pkg_name = pkg_name
-                        self.esc_pkg_name = urllib.quote(pkg_name, "")
+                        self.esc_pkg_name = quote(pkg_name, "")
 
                 # record transaction metadata: opening_time, package, user
                 self.open_time = self.fmri.get_timestamp()
@@ -329,7 +324,7 @@ class Transaction(object):
                 # Strip the timestamp information for consistency with
                 # the case where it was not specified.
                 self.pkg_name = ":".join(pfmri.split(":")[:-1])
-                self.esc_pkg_name = urllib.quote(self.pkg_name, "")
+                self.esc_pkg_name = quote(self.pkg_name, "")
 
                 if not rstore.valid_append_fmri(self.fmri):
                         raise TransactionOperationError(missing_fmri=True,
@@ -369,7 +364,7 @@ class Transaction(object):
 
                 self.open_time = \
                     datetime.datetime.utcfromtimestamp(int(open_time_str))
-                self.pkg_name = urllib.unquote(self.esc_pkg_name)
+                self.pkg_name = unquote(self.esc_pkg_name)
 
                 # This conversion should always work, because we encoded the
                 # client release on the initial open of the transaction.
@@ -390,7 +385,7 @@ class Transaction(object):
                 # Find out if the package is renamed or obsolete.
                 try:
                         tfpath = os.path.join(self.dir, "manifest")
-                        tfile = file(tfpath, tmode)
+                        tfile = open(tfpath, tmode)
                 except IOError as e:
                         if e.errno == errno.ENOENT:
                                 return
@@ -416,7 +411,7 @@ class Transaction(object):
                 """
                 def split_trans_id(tid):
                         m = re.match("(\d+)_(.*)", tid)
-                        return m.group(1), urllib.unquote(m.group(2))
+                        return m.group(1), unquote(m.group(2))
 
                 trans_id = self.get_basename()
                 pkg_fmri = split_trans_id(trans_id)[1]
@@ -607,7 +602,7 @@ class Transaction(object):
                 # Now that the action is known to be sane, we can add it to the
                 # manifest.
                 tfpath = os.path.join(self.dir, "manifest")
-                tfile = file(tfpath, "ab+")
+                tfile = open(tfpath, "ab+")
                 print(action, file=tfile)
                 tfile.close()
 

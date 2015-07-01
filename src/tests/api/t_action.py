@@ -29,6 +29,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import six
 import unittest
 import pkg.actions as action
 import pkg.actions.generic as generic
@@ -299,7 +300,7 @@ Incorrect attribute list.
                 }
 
                 astr = "file {0} path=usr/bin/foo mode=0755 owner=root group=bin"
-                for k, v  in d.iteritems():
+                for k, v  in six.iteritems(d):
                         a = action.fromstr(astr.format(k))
                         self.assert_(action.fromstr(str(a)) == a)
                         self.assert_(a.hash == v)
@@ -543,7 +544,7 @@ Incorrect attribute list.
                             "mediator-implementation": "svr4",
                             "mediator-priority": "site",
                         }
-                        for prop, val in props.iteritems():
+                        for prop, val in six.iteritems(props):
                                 nact = "{0} path=usr/bin/vi " \
                                     "target=../sunos/bin/edit {1}={2}".format(aname,
                                     prop, val)
@@ -551,7 +552,7 @@ Incorrect attribute list.
 
                         # Action with multiple values for any property is
                         # invalid.
-                        for prop, val in props.iteritems():
+                        for prop, val in six.iteritems(props):
                                 nact = "{0} path=usr/bin/vi " \
                                     "target=../sunos/bin/edit mediator=vi " \
                                     "{1}={2} {3}={4} ".format(aname, prop, val, prop,

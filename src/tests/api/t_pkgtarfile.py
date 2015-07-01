@@ -49,7 +49,7 @@ class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
                 filename = "baz"
                 create_path = os.path.join(filepath, filename)
                 os.makedirs(filepath)
-                wfp = file(create_path, "wb")
+                wfp = open(create_path, "wb")
                 buf = os.urandom(8192)
                 wfp.write(buf)
                 wfp.close()

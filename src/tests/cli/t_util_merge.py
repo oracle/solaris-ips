@@ -36,11 +36,11 @@ import pkg.misc as misc
 import pkg.server.repository as repo
 import tempfile
 import time
-import urllib
-import urlparse
 import unittest
 import zlib
 
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import url2pathname
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
@@ -48,24 +48,24 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
-            close 
+            close
         """
 
         tree10 = """
             open tree@1.0,5.11-0
-            close 
+            close
         """
 
         amber10 = """
             open amber@1.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         amber20 = """
             open amber@2.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         bronze10 = """
@@ -96,7 +96,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             add license tmp/copyright3 license=copyright
             add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
-            close 
+            close
         """
 
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2",
@@ -137,8 +137,8 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
 
         @staticmethod
         def get_repo(uri):
-                parts = urlparse.urlparse(uri, "file", allow_fragments=0)
-                path = urllib.url2pathname(parts[2])
+                parts = urlparse(uri, "file", allow_fragments=0)
+                path = url2pathname(parts[2])
 
                 try:
                         return repo.Repository(root=path)
@@ -177,7 +177,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                         exp_lines = ["set name=pkg.fmri value={0}".format(f)]
                         for dc in self.dcs.values():
                                 repo = dc.get_repo()
-                                mpath = repo.manifest(f) 
+                                mpath = repo.manifest(f)
                                 if not os.path.exists(mpath):
                                         # Not in this repository, check next.
                                         continue

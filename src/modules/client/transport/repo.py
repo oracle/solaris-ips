@@ -26,13 +26,19 @@
 
 import cStringIO
 import errno
-import httplib
 import itertools
 import os
+import shutil
 import simplejson as json
+import six
 import sys
-import urlparse
-import urllib
+import tempfile
+
+from email.utils import formatdate
+from six.moves import http_client
+from six.moves.urllib.parse import quote, urlencode, urlsplit, urlparse, \
+    urlunparse, urljoin
+from six.moves.urllib.request import url2pathname, pathname2url
 
 import pkg
 import pkg.p5i as p5i
@@ -44,10 +50,7 @@ import pkg.p5p
 import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
-from email.utils import formatdate
 from pkg.misc import N_
-import tempfile
-import shutil
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -233,7 +236,7 @@ class TransportRepo(object):
 
                         if not mapping:
                                 # Request is basename of path portion of URI.
-                                e.request = os.path.basename(urlparse.urlsplit(
+                                e.request = os.path.basename(urlsplit(
                                     e.url)[2])
                                 continue
 
@@ -289,7 +292,7 @@ class TransportRepo(object):
                 for u in urllist:
 
                         if not mapping:
-                                utup = urlparse.urlsplit(u)
+                                utup = urlsplit(u)
                                 req = utup[2]
                                 req = os.path.basename(req)
                                 reqlist.append(req)
@@ -421,7 +424,7 @@ class HTTPRepo(TransportRepo):
                         fobj.free_buffer = False
                         fobj.read()
                 except tx.TransportProtoError as e:
-                        if e.code == httplib.BAD_REQUEST:
+                        if e.code == http_client.BAD_REQUEST:
                                 exc_type, exc_value, exc_tb = sys.exc_info()
                                 try:
                                         e.details = self._parse_html_error(
@@ -429,7 +432,7 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        raise exc_value, None, exc_tb
+                                        six.reraise(exc_value, None, exc_tb)
                         raise
                 finally:
                         fobj.close()
@@ -459,18 +462,18 @@ class HTTPRepo(TransportRepo):
                     not base.endswith("/{0}/".format(pub_prefix)) and \
                     self.supports_version("publisher", [1]) > -1:
                         # Append the publisher prefix to the repository URL.
-                        base = urlparse.urljoin(base, pub_prefix) + "/"
+                        base = urljoin(base, pub_prefix) + "/"
 
-                uri = urlparse.urljoin(base, methodstr)
+                uri = urljoin(base, methodstr)
                 if not query:
                         return uri
 
                 # If a set of query data was provided, then decompose the URI
                 # into its component parts and replace the query portion with
                 # the encoded version of the new query data.
-                components = list(urlparse.urlparse(uri))
-                components[4] = urllib.urlencode(query)
-                return urlparse.urlunparse(components)
+                components = list(urlparse(uri))
+                components[4] = urlencode(query)
+                return urlunparse(components)
 
         def do_search(self, data, header=None, ccancel=None, pub=None):
                 """Perform a remote search against origin repos."""
@@ -478,13 +481,13 @@ class HTTPRepo(TransportRepo):
                 requesturl = self.__get_request_url("search/1/", pub=pub)
                 if len(data) > 1:
                         # Post and retrieve.
-                        request_data = urllib.urlencode(
+                        request_data = urlencode(
                             [(i, str(q)) for i, q in enumerate(data)])
                         return self._post_url(requesturl, request_data,
                             header, ccancel=ccancel)
 
                 # Retrieval only.
-                requesturl = urlparse.urljoin(requesturl, urllib.quote(
+                requesturl = urljoin(requesturl, quote(
                     str(data[0]), safe=''))
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
@@ -541,7 +544,7 @@ class HTTPRepo(TransportRepo):
                         progclass = CatalogProgress
 
                 for f in filelist:
-                        url = urlparse.urljoin(baseurl, f)
+                        url = urljoin(baseurl, f)
                         urllist.append(url)
                         fn = os.path.join(destloc, f)
                         self._add_file_url(url, filepath=fn, header=headers,
@@ -588,7 +591,7 @@ class HTTPRepo(TransportRepo):
 
                 baseurl = self.__get_request_url("file/{0}/".format(version),
                     pub=pub)
-                requesturl = urlparse.urljoin(baseurl, fhash)
+                requesturl = urljoin(baseurl, fhash)
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def get_publisherinfo(self, header=None, ccancel=None):
@@ -623,7 +626,7 @@ class HTTPRepo(TransportRepo):
 
                 mfst = fmri.get_url_path()
                 baseurl = self.__get_request_url("manifest/0/", pub=pub)
-                requesturl = urlparse.urljoin(baseurl, mfst)
+                requesturl = urljoin(baseurl, mfst)
 
                 return self._fetch_url(requesturl, header, compress=True,
                     ccancel=ccancel)
@@ -643,7 +646,7 @@ class HTTPRepo(TransportRepo):
 
                 for fmri, h in mfstlist:
                         f = fmri.get_url_path()
-                        url = urlparse.urljoin(baseurl, f)
+                        url = urljoin(baseurl, f)
                         urlmapping[url] = fmri
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn, header=h,
@@ -700,7 +703,7 @@ class HTTPRepo(TransportRepo):
                         progclass = FileProgress
 
                 for f in filelist:
-                        url = urlparse.urljoin(baseurl, f)
+                        url = urljoin(baseurl, f)
                         urllist.append(url)
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn,
@@ -764,7 +767,7 @@ class HTTPRepo(TransportRepo):
                         # use .read() since this will empty the data buffer.
                         fobj.getheader("octopus", None)
                 except tx.TransportProtoError as e:
-                        if e.code == httplib.UNAUTHORIZED:
+                        if e.code == http_client.UNAUTHORIZED:
                                 exc_type, exc_value, exc_tb = sys.exc_info()
                                 try:
                                         e.details = self._analyze_server_error(
@@ -773,7 +776,7 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If analysis fails, raise original
                                         # exception.
-                                        raise exc_value, None, exc_tb
+                                        six.reraise(exc_value, None, exc_tb)
                         raise
 
                 return fobj
@@ -800,7 +803,7 @@ class HTTPRepo(TransportRepo):
 
                 baseurl = self.__get_request_url("add/0/")
                 request_str = "{0}/{1}".format(trans_id, action.name)
-                requesturl = urlparse.urljoin(baseurl, request_str)
+                requesturl = urljoin(baseurl, request_str)
 
                 if action.data:
                         data_fobj = action.data()
@@ -829,7 +832,7 @@ class HTTPRepo(TransportRepo):
 
                 attrs = {}
                 baseurl = self.__get_request_url("file/1/")
-                requesturl = urlparse.urljoin(baseurl, trans_id)
+                requesturl = urljoin(baseurl, trans_id)
 
                 headers = dict(
                     ("X-IPkg-SetAttr{0}".format(i), "{0}={1}".format(k, attrs[k]))
@@ -849,7 +852,7 @@ class HTTPRepo(TransportRepo):
                 a (publish-state, fmri) tuple."""
 
                 baseurl = self.__get_request_url("abandon/0/")
-                requesturl = urlparse.urljoin(baseurl, trans_id)
+                requesturl = urljoin(baseurl, trans_id)
                 fobj = self._fetch_url(requesturl, header=header,
                     failonerror=False)
 
@@ -859,7 +862,7 @@ class HTTPRepo(TransportRepo):
                         state = fobj.getheader("State", None)
                         pkgfmri = fobj.getheader("Package-FMRI", None)
                 except tx.TransportProtoError as e:
-                        if e.code == httplib.BAD_REQUEST:
+                        if e.code == http_client.BAD_REQUEST:
                                 exc_type, exc_value, exc_tb = sys.exc_info()
                                 try:
                                         e.details = self._parse_html_error(
@@ -867,7 +870,7 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        raise exc_value, None, exc_tb
+                                        six.reraise(exc_value, None, exc_tb)
                         raise
                 finally:
                         fobj.close()
@@ -888,7 +891,7 @@ class HTTPRepo(TransportRepo):
                         headers.update(header)
 
                 baseurl = self.__get_request_url("close/0/")
-                requesturl = urlparse.urljoin(baseurl, trans_id)
+                requesturl = urljoin(baseurl, trans_id)
 
                 fobj = self._fetch_url(requesturl, header=headers,
                     failonerror=False)
@@ -899,7 +902,7 @@ class HTTPRepo(TransportRepo):
                         state = fobj.getheader("State", None)
                         pkgfmri = fobj.getheader("Package-FMRI", None)
                 except tx.TransportProtoError as e:
-                        if e.code == httplib.BAD_REQUEST:
+                        if e.code == http_client.BAD_REQUEST:
                                 exc_type, exc_value, exc_tb = sys.exc_info()
                                 try:
                                         e.details = self._parse_html_error(
@@ -907,7 +910,7 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        raise exc_value, None, exc_tb
+                                        six.reraise(exc_value, None, exc_tb)
 
                         raise
                 finally:
@@ -928,8 +931,8 @@ class HTTPRepo(TransportRepo):
         def __start_trans(self, baseurl, header, client_release, pkg_name):
                 """Start a publication transaction."""
 
-                request_str = urllib.quote(pkg_name, "")
-                requesturl = urlparse.urljoin(baseurl, request_str)
+                request_str = quote(pkg_name, "")
+                requesturl = urljoin(baseurl, request_str)
 
                 headers = {"Client-Release": client_release}
                 if header:
@@ -943,7 +946,7 @@ class HTTPRepo(TransportRepo):
                         fobj.read()
                         trans_id = fobj.getheader("Transaction-ID", None)
                 except tx.TransportProtoError as e:
-                        if e.code == httplib.BAD_REQUEST:
+                        if e.code == http_client.BAD_REQUEST:
                                 exc_type, exc_value, exc_tb = sys.exc_info()
                                 try:
                                         e.details = self._parse_html_error(
@@ -951,7 +954,7 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        raise exc_value, None, exc_tb
+                                        six.reraise(exc_value, None, exc_tb)
                         raise
                 finally:
                         fobj.close()
@@ -1050,7 +1053,7 @@ class HTTPRepo(TransportRepo):
                 """Invoke HTTP HEAD to send manifest intent data."""
 
                 baseurl = self.__get_request_url("manifest/0/", pub=pub)
-                requesturl = urlparse.urljoin(baseurl, mfst)
+                requesturl = urljoin(baseurl, mfst)
 
                 resp = self._fetch_url_header(requesturl, header,
                     ccancel=ccancel)
@@ -1161,9 +1164,9 @@ class _FilesystemRepo(TransportRepo):
 
                 try:
                         scheme, netloc, path, params, query, fragment = \
-                            urlparse.urlparse(self._repouri.uri, "file",
+                            urlparse(self._repouri.uri, "file",
                             allow_fragments=0)
-                        path = urllib.url2pathname(path)
+                        path = url2pathname(path)
                         self._frepo = svr_repo.Repository(read_only=True,
                             root=path)
                 except cfg.ConfigError as e:
@@ -1254,7 +1257,7 @@ class _FilesystemRepo(TransportRepo):
                 # to the user.
                 if len(res_list) == 1:
                         try:
-                                tmp = res_list[0].next()
+                                tmp = next(res_list[0])
                                 res_list = [itertools.chain([tmp], res_list[0])]
                         except StopIteration:
                                 self.__stats.record_tx()
@@ -1271,7 +1274,7 @@ class _FilesystemRepo(TransportRepo):
                                                 fmri_str, fv, line = vals
                                                 yield "{0} {1} {2} {3} {4}\n".format(
                                                     i, return_type, fmri_str,
-                                                    urllib.quote(fv),
+                                                    quote(fv),
                                                     line.rstrip())
                                         elif return_type == \
                                             sqp.Query.RETURN_PACKAGES:
@@ -1302,8 +1305,8 @@ class _FilesystemRepo(TransportRepo):
                 # create URL for requests
                 for f in filelist:
                         try:
-                                url = urlparse.urlunparse(("file", None,
-                                    urllib.pathname2url(self._frepo.catalog_1(f,
+                                url = urlunparse(("file", None,
+                                    pathname2url(self._frepo.catalog_1(f,
                                     pub=pub_prefix)), None, None, None))
                         except svr_repo.RepositoryError as e:
                                 ex = tx.TransportProtoError("file",
@@ -1353,8 +1356,8 @@ class _FilesystemRepo(TransportRepo):
 
                 pub_prefix = getattr(pub, "prefix", None)
                 try:
-                        requesturl = urlparse.urlunparse(("file", None,
-                            urllib.pathname2url(self._frepo.file(fhash,
+                        requesturl = urlunparse(("file", None,
+                            pathname2url(self._frepo.file(fhash,
                             pub=pub_prefix)), None, None, None))
                 except svr_repo.RepositoryFileNotFoundError as e:
                         ex = tx.TransportProtoError("file", errno.ENOENT,
@@ -1409,8 +1412,8 @@ class _FilesystemRepo(TransportRepo):
 
                 pub_prefix = getattr(pub, "prefix", None)
                 try:
-                        requesturl = urlparse.urlunparse(("file", None,
-                            urllib.pathname2url(self._frepo.manifest(fmri,
+                        requesturl = urlunparse(("file", None,
+                            pathname2url(self._frepo.manifest(fmri,
                             pub=pub_prefix)), None, None, None))
                 except svr_repo.RepositoryError as e:
                         ex = tx.TransportProtoError("file", errno.EPROTO,
@@ -1439,8 +1442,8 @@ class _FilesystemRepo(TransportRepo):
                 pre_exec_errors = []
                 for fmri, h in mfstlist:
                         try:
-                                url = urlparse.urlunparse(("file", None,
-                                    urllib.pathname2url(self._frepo.manifest(
+                                url = urlunparse(("file", None,
+                                    pathname2url(self._frepo.manifest(
                                     fmri, pub=pub_prefix)), None, None, None))
                         except svr_repo.RepositoryError as e:
                                 ex = tx.TransportProtoError("file",
@@ -1509,8 +1512,8 @@ class _FilesystemRepo(TransportRepo):
                 pre_exec_errors = []
                 for f in filelist:
                         try:
-                                url = urlparse.urlunparse(("file", None,
-                                    urllib.pathname2url(self._frepo.file(f,
+                                url = urlunparse(("file", None,
+                                    pathname2url(self._frepo.file(f,
                                     pub=pub_prefix)), None, None, None))
                         except svr_repo.RepositoryFileNotFoundError as e:
                                 ex = tx.TransportProtoError("file",
@@ -1599,7 +1602,7 @@ class _FilesystemRepo(TransportRepo):
                 buf.write("pkg-server {0}\n".format(pkg.VERSION))
                 buf.write("\n".join(
                     "{0} {1}".format(op, " ".join(vers))
-                    for op, vers in vops.iteritems()
+                    for op, vers in six.iteritems(vops)
                 ) + "\n")
                 buf.seek(0)
                 self.__stats.record_tx()
@@ -1837,11 +1840,11 @@ class _ArchiveRepo(TransportRepo):
 
                 try:
                         scheme, netloc, path, params, query, fragment = \
-                            urlparse.urlparse(self._repouri.uri, "file",
+                            urlparse(self._repouri.uri, "file",
                             allow_fragments=0)
                         # Path must be rstripped of separators to be used as
                         # a file.
-                        path = urllib.url2pathname(path.rstrip(os.path.sep))
+                        path = url2pathname(path.rstrip(os.path.sep))
                         self._arc = pkg.p5p.Archive(path, mode="r")
                 except pkg.p5p.InvalidArchive as e:
                         ex = tx.TransportProtoError("file", errno.EINVAL,
@@ -2105,7 +2108,7 @@ class _ArchiveRepo(TransportRepo):
                 buf.write("pkg-server {0}\n".format(pkg.VERSION))
                 buf.write("\n".join(
                     "{0} {1}".format(op, " ".join(vers))
-                    for op, vers in vops.iteritems()
+                    for op, vers in six.iteritems(vops)
                 ) + "\n")
                 buf.seek(0)
                 self.__stats.record_tx()
@@ -2155,7 +2158,7 @@ class FileRepo(object):
                 'repostats' is a RepoStats object.
 
                 'repouri' is a TransportRepoURI object.
-                
+
                 'engine' is a transport engine object.
 
                 'frepo' is an optional Repository object to use instead
@@ -2166,9 +2169,9 @@ class FileRepo(object):
 
                 try:
                         scheme, netloc, path, params, query, fragment = \
-                            urlparse.urlparse(repouri.uri, "file",
+                            urlparse(repouri.uri, "file",
                             allow_fragments=0)
-                        path = urllib.url2pathname(path)
+                        path = url2pathname(path)
                 except Exception as e:
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=str(e), repourl=repostats.url)

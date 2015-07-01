@@ -27,12 +27,13 @@
 import cStringIO
 import copy
 import errno
-import httplib
 import os
 import simplejson as json
+import six
 import statvfs
 import tempfile
 import zlib
+from six.moves import http_client, range
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -163,7 +164,7 @@ class TransportCfg(object):
 
                 if isinstance(pub, publisher.Publisher):
                         pub = pub.prefix
-                elif not pub or not isinstance(pub, basestring):
+                elif not pub or not isinstance(pub, six.string_types):
                         pub = None
 
                 caches = [
@@ -677,12 +678,12 @@ class Transport(object):
                                 failures.extend(ex.failures)
 
                         except tx.TransportProtoError as e:
-                                if e.code in (httplib.NOT_FOUND, errno.ENOENT):
+                                if e.code in (http_client.NOT_FOUND, errno.ENOENT):
                                         raise apx.UnsupportedSearchError(e.url,
                                             "search/1")
-                                elif e.code == httplib.NO_CONTENT:
+                                elif e.code == http_client.NO_CONTENT:
                                         no_result_url = e.url
-                                elif e.code in (httplib.BAD_REQUEST,
+                                elif e.code in (http_client.BAD_REQUEST,
                                     errno.EINVAL):
                                         raise apx.MalformedSearchRequest(e.url)
                                 elif e.retryable:
@@ -774,7 +775,7 @@ class Transport(object):
                                 # failures that it contains
                                 failures.extend(ex.failures)
                         except tx.TransportProtoError as e:
-                                if e.code == httplib.NOT_MODIFIED:
+                                if e.code == http_client.NOT_MODIFIED:
                                         return
                                 elif e.retryable:
                                         failures.append(e)
@@ -979,7 +980,7 @@ class Transport(object):
                                 try:
                                         self._verify_catalog(s, download_dir)
                                 except tx.InvalidContentException as e:
-                                        repostats.record_error(content=True)                                        
+                                        repostats.record_error(content=True)
                                         failedreqs.append(e.request)
                                         failures.append(e)
                                         if not flist:
@@ -1218,7 +1219,7 @@ class Transport(object):
                                 failures.extend(e.failures)
 
                         except (TypeError, ValueError) as e:
-                                
+
                                 exc = tx.TransferContentException(
                                     repouri_key[0],
                                     "Invalid stats response: {0}".format(e),
@@ -1586,7 +1587,7 @@ class Transport(object):
                                         continue
 
                                 try:
-                                        mf = file(dl_path)
+                                        mf = open(dl_path)
                                         mcontent = mf.read()
                                         mf.close()
                                         manifest.FactoredManifest(fmri,
@@ -1676,7 +1677,7 @@ class Transport(object):
                         return False
 
                 if mfstpath:
-                        mf = file(mfstpath)
+                        mf = open(mfstpath)
                         mcontent = mf.read()
                         mf.close()
                 elif content is not None:
@@ -1842,7 +1843,7 @@ class Transport(object):
                                             dl_path)
                                 except tx.InvalidContentException as e:
                                         mfile.subtract_progress(e.size)
-                                        e.request = s                                        
+                                        e.request = s
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
                                         failures.append(e)
@@ -2142,7 +2143,7 @@ class Transport(object):
 
                 fail = None
                 iteration = 0
-                for i in xrange(count):
+                for i in range(count):
                         iteration += 1
                         rslist = self.stats.get_repostats(repolist, origins)
                         if prefer_remote:
@@ -3027,8 +3028,14 @@ class MultiXfr(object):
         def __len__(self):
                 return len(self._hash)
 
-        def __nonzero__(self):
+        # Defining "boolness" of a class, Python 2 uses the special method
+        # called __nonzero__() while Python 3 uses __bool__(). For Python
+        # 2 and 3 compatibility, define __bool__() only, and let
+        # __nonzero__ = __bool__
+        def __bool__(self):
                 return bool(self._hash)
+
+        __nonzero__ = __bool__
 
         def add_hash(self, hashval, item):
                 """Add 'item' to list of values that exist for
@@ -3068,7 +3075,7 @@ class MultiXfr(object):
         def keys(self):
                 """Return a list of the keys in the hash."""
 
-                return self._hash.keys()
+                return list(self._hash.keys())
 
 
 class MultiFile(MultiXfr):
@@ -3315,7 +3322,7 @@ class MultiFileNI(MultiFile):
                                     e.filename)
                         raise
 
-                src = file(current_path, "rb")
+                src = open(current_path, "rb")
                 outfile = os.fdopen(fd, "wb")
                 if self._decompress:
                         misc.gunzip_from_stream(src, outfile, ignore_hash=True)
@@ -3343,7 +3350,7 @@ class MultiFileNI(MultiFile):
 # need to configure a transport and or publishers.
 
 def setup_publisher(repo_uri, prefix, xport, xport_cfg,
-    remote_prefix=False, remote_publishers=False, ssl_key=None, 
+    remote_prefix=False, remote_publishers=False, ssl_key=None,
     ssl_cert=None):
         """Given transport 'xport' and publisher configuration 'xport_cfg'
         take the string that identifies a repository by uri in 'repo_uri'

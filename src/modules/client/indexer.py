@@ -19,8 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 
 # This Indexer class handles the client-side specific code for hashing the

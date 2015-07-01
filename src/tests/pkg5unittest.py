@@ -34,13 +34,11 @@
 
 from __future__ import print_function
 import baseline
-import ConfigParser
 import copy
 import difflib
 import errno
 import gettext
 import hashlib
-import httplib
 import logging
 import multiprocessing
 import os
@@ -48,6 +46,7 @@ import pprint
 import shutil
 import signal
 import simplejson as json
+import six
 import stat
 import subprocess
 import sys
@@ -55,8 +54,6 @@ import tempfile
 import time
 import traceback
 import unittest
-import urllib2
-import urlparse
 import operator
 import platform
 import pty
@@ -69,6 +66,13 @@ import threading
 import traceback
 import types
 
+from imp import reload
+from six.moves import configparser, http_client
+from six.moves.urllib.error import HTTPError, URLError
+from six.moves.urllib.parse import urljoin
+from six.moves.urllib.request import urlopen
+from socket import error as socketerror
+
 import pkg.client.api_errors as apx
 import pkg.misc as misc
 import pkg.client.publisher as publisher
@@ -76,9 +80,7 @@ import pkg.portable as portable
 import pkg.server.repository as sr
 import M2Crypto as m2
 
-from imp import reload
 from pkg.client.debugvalues import DebugValues
-from socket import error as socketerror
 
 EmptyI = tuple()
 EmptyDict = dict()
@@ -520,7 +522,7 @@ if __name__ == "__main__":
                         ins = " [+{0:d} lines...]".format(len(lines) - 1)
                 else:
                         ins = ""
-                if isinstance(lines[0], unicode):
+                if isinstance(lines[0], six.text_type):
                         lines[0] = lines[0].encode("utf-8")
                 self.debugcmd(
                     "echo '{0}{1}' > {2}".format(lines[0], ins, path))
@@ -853,7 +855,7 @@ if __name__ == "__main__":
                         os.makedirs(os.path.dirname(path), 0o777)
                 self.debugfilecreate(content, path)
                 fh = open(path, 'wb')
-                if isinstance(content, unicode):
+                if isinstance(content, six.text_type):
                         content = content.encode("utf-8")
                 fh.write(content)
                 fh.close()
@@ -872,7 +874,7 @@ if __name__ == "__main__":
                 # a list, simply turn it into a dict where each file's
                 # contents is its own name, so that we get some uniqueness.
                 #
-                if isinstance(files, basestring):
+                if isinstance(files, six.string_types):
                         files = [files]
 
                 if isinstance(files, list):
@@ -942,9 +944,9 @@ if __name__ == "__main__":
             msg=""):
                 """Compare two strings."""
 
-                if not isinstance(expected, basestring):
+                if not isinstance(expected, six.string_types):
                         expected = pprint.pformat(expected)
-                if not isinstance(actual, basestring):
+                if not isinstance(actual, six.string_types):
                         actual = pprint.pformat(actual)
 
                 expected_lines = expected.splitlines()
@@ -987,7 +989,7 @@ if __name__ == "__main__":
                 """Check that the parsable output in 'output' is what is
                 expected."""
 
-                if isinstance(output, basestring):
+                if isinstance(output, six.string_types):
                         try:
                                 outd = json.loads(output)
                         except Exception as e:
@@ -1052,10 +1054,10 @@ if __name__ == "__main__":
                 to /.
                 """
 
-                new_rcfile = file("{0}/{1}{2}".format(test_root, os.path.basename(rcfile),
+                new_rcfile = open("{0}/{1}{2}".format(test_root, os.path.basename(rcfile),
                     suffix), "w")
 
-                conf = ConfigParser.RawConfigParser()
+                conf = configparser.RawConfigParser()
                 conf.readfp(open(rcfile))
 
                 for key in config:
@@ -1560,7 +1562,7 @@ def q_run(inq, outq, i, o, baseline_filepath, bail_on_fail,
                         # Pull in the information stored in places other than
                         # the _Pkg5TestResult that we need to send back to the
                         # master process.
-                        otw.timing = test_suite.timing.items()
+                        otw.timing = list(test_suite.timing.items())
                         otw.text = buf.getvalue()
                         otw.baseline_failures = b.getfailures()
                         if g_debug_output:
@@ -3163,7 +3165,7 @@ class CliTestCase(Pkg5TestCase):
                 dc.set_port(port)
 
                 for section in properties:
-                        for prop, val in properties[section].iteritems():
+                        for prop, val in six.iteritems(properties[section]):
                                 dc.set_property(section, prop, val)
                 if refresh_index:
                         dc.set_refresh_index()
@@ -3395,7 +3397,7 @@ class CliTestCase(Pkg5TestCase):
 
                 file_path = os.path.join(self.get_img_path(), path)
                 try:
-                        f = file(file_path)
+                        f = open(file_path)
                 except:
                         self.assert_(False,
                             "File {0} does not exist or contain {1}".format(
@@ -3417,7 +3419,7 @@ class CliTestCase(Pkg5TestCase):
                 image."""
 
                 file_path = os.path.join(self.get_img_path(), path)
-                f = file(file_path)
+                f = open(file_path)
                 for line in f:
                         if string in line:
                                 f.close()
@@ -3434,7 +3436,7 @@ class CliTestCase(Pkg5TestCase):
                         f.write("\n{0}\n".format(string))
 
         def seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
+                if isinstance(certs, six.string_types):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
@@ -3618,7 +3620,7 @@ class ApacheDepotTestCase(ManyDepotTestCase):
                 """If we only use a single ApacheController, self.ac will
                 return that controller, otherwise we return None."""
                 if self.acs and len(self.acs) == 1:
-                        return self.acs[self.acs.keys()[0]]
+                        return self.acs[list(self.acs.keys())[0]]
                 else:
                         return None
 
@@ -3688,7 +3690,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
                     *args, **kwargs)
 
         def seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
+                if isinstance(certs, six.string_types):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
@@ -4385,12 +4387,12 @@ class ApacheController(object):
 
         def _network_ping(self):
                 try:
-                        urllib2.urlopen(self.__url)
-                except urllib2.HTTPError as e:
-                        if e.code == httplib.FORBIDDEN:
+                        urlopen(self.__url)
+                except HTTPError as e:
+                        if e.code == http_client.FORBIDDEN:
                                 return True
                         return False
-                except urllib2.URLError as e:
+                except URLError as e:
                         if isinstance(e.reason, ssl.SSLError):
                                 return True
                         return False
@@ -4565,12 +4567,12 @@ class SysrepoController(ApacheController):
 
         def _network_ping(self):
                 try:
-                        urllib2.urlopen(urlparse.urljoin(self.url, "syspub/0"))
-                except urllib2.HTTPError as e:
-                        if e.code == httplib.FORBIDDEN:
+                        urlopen(urljoin(self.url, "syspub/0"))
+                except HTTPError as e:
+                        if e.code == http_client.FORBIDDEN:
                                 return True
                         return False
-                except urllib2.URLError:
+                except URLError:
                         return False
                 return True
 
@@ -4586,16 +4588,16 @@ class HttpDepotController(ApacheController):
                 try:
                         # Ping the versions URL, rather than the default /
                         # so that we don't initialize the BUI code yet.
-                        repourl = urlparse.urljoin(self.url, "versions/0")
+                        repourl = urljoin(self.url, "versions/0")
                         # Disable SSL peer verification, we just want to check
                         # if the depot is running.
-                        urllib2.urlopen(repourl,
+                        urlopen(repourl,
                             context=ssl._create_unverified_context())
-                except urllib2.HTTPError as e:
-                        if e.code == httplib.FORBIDDEN:
+                except HTTPError as e:
+                        if e.code == http_client.FORBIDDEN:
                                 return True
                         return False
-                except urllib2.URLError:
+                except URLError:
                         return False
                 return True
 

@@ -71,6 +71,7 @@ import gettext
 import locale
 import os
 import shutil
+import six
 import sys
 import tempfile
 import traceback
@@ -238,7 +239,7 @@ def get_matching_pkgs(cat, patterns):
                 msg += "\n\t".join(unmatched)
                 abort(msg)
 
-        return matching.keys()
+        return list(matching.keys())
 
 def get_manifest(repo, pub, pfmri):
         """ Retrieve a manifest with FMRI 'pfmri' of publisher 'pub' from
@@ -388,7 +389,7 @@ def use_ref(a, deps, ignores):
         if a.name == "depend":
                 # TODO: support dependency lists
                 # For now, treat as content change.
-                if not isinstance(a.attrs["fmri"], basestring):
+                if not isinstance(a.attrs["fmri"], six.string_types):
                         return False
                 dpfmri = fmri.PkgFmri(a.attrs["fmri"])
                 deps.add(dpfmri.get_pkg_stem())

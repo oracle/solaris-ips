@@ -391,7 +391,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # and then get the list of updates files it has created.
                 repo = dc.get_repo()
                 v1_cat = repo.get_catalog("test1")
-                update = v1_cat.updates.keys()[-1]
+                update = list(v1_cat.updates.keys())[-1]
 
                 # All of the entries from the previous operations, and then
                 # entries for the catalog attrs file, and one catalog update
@@ -464,7 +464,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Refresh to get an incremental update, and verify it worked.
                 self.pkg("refresh")
-                update = v1_cat.updates.keys()[-1]
+                update = list(v1_cat.updates.keys())[-1]
                 expected += [
                     "/catalog/1/catalog.attrs",
                     "/catalog/1/{0}".format(update)
@@ -508,7 +508,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Refresh to get an incremental update, and verify it worked.
                 self.pkg("refresh")
-                update = v1_cat.updates.keys()[-1]
+                update = list(v1_cat.updates.keys())[-1]
                 expected += [
                     "/catalog/1/catalog.attrs",
                     "/catalog/1/{0}".format(update)
@@ -529,7 +529,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.foo12)
                 repo = dc.get_repo()
                 v1_cat = repo.get_catalog("test1")
-                update = v1_cat.updates.keys()[-1]
+                update = list(v1_cat.updates.keys())[-1]
 
                 # Now verify that a refresh induces a full retrieval.  The
                 # catalog.attrs file will be retrieved twice due to the

@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
         assert not fname == None
 
-        lg = file(fname)
+        lg = open(fname)
 
         for l in lg.readlines():
                 process(l)

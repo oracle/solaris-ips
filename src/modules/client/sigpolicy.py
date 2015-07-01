@@ -24,6 +24,7 @@
 # Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+import six
 import pkg.client.api_errors as apx
 
 class Policy(object):
@@ -157,7 +158,7 @@ class RequireNames(Policy):
                 assert req_names, "RequireNames requires at least one name " \
                     "to be passed to the constructor."
                 Policy.__init__(self, *args, **kwargs)
-                if isinstance(req_names, basestring):
+                if isinstance(req_names, six.string_types):
                         req_names = [req_names]
                 self.required_names = frozenset(req_names)
 

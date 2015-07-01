@@ -27,8 +27,9 @@
 import errno
 import operator
 import os
+import six
 import xml.parsers.expat as expat
-import urlparse
+from six.moves.urllib.parse import urlsplit
 
 # pkg classes
 import pkg.client.pkgdefs as pkgdefs
@@ -41,12 +42,6 @@ class ApiException(Exception):
         def __init__(self, *args):
                 Exception.__init__(self)
                 self.__verbose_info = []
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return unicode(str(self))
 
         def add_verbose_info(self, info):
                 self.__verbose_info.extend(info)
@@ -595,7 +590,7 @@ for the current image's architecture, zone type, and/or other variant:""")
                 if self.invalid_mediations:
                         s = _("The following mediations are not syntactically "
                             "valid:")
-                        for m, entries in self.invalid_mediations.iteritems():
+                        for m, entries in six.iteritems(self.invalid_mediations):
                                 for value, error in entries.values():
                                         res.append(error)
 
@@ -777,7 +772,7 @@ class InconsistentActionTypeError(ConflictingActionError):
                 if len(pfmris) > 1:
                         s = _("The following packages deliver conflicting "
                             "action types to {0}:\n").format(kv)
-                        for name, pl in ad.iteritems():
+                        for name, pl in six.iteritems(ad):
                                 s += "\n  {0}:".format(name)
                                 s += "".join("\n    {0}".format(p) for p in pl)
                         s += _("\n\nThese packages may not be installed together. "
@@ -785,7 +780,7 @@ class InconsistentActionTypeError(ConflictingActionError):
                             "must be corrected before they can be installed.")
                 else:
                         pfmri = pfmris.pop()
-                        types = list_to_lang(ad.keys())
+                        types = list_to_lang(list(ad.keys()))
                         s = _("The package {pfmri} delivers conflicting "
                             "action types ({types}) to {kv}").format(**locals())
                         s += _("\nThis package must be corrected before it "
@@ -808,7 +803,7 @@ class InconsistentActionAttributeError(ConflictingActionError):
                 def ou(action):
                         ua = dict(
                             (k, v)
-                            for k, v in action.attrs.iteritems()
+                            for k, v in six.iteritems(action.attrs)
                             if ((k in action.unique_attrs and
                                 not (k == "preserve" and "overlay" in action.attrs)) or
                                 ((action.name == "link" or action.name == "hardlink") and
@@ -823,7 +818,7 @@ class InconsistentActionAttributeError(ConflictingActionError):
                                 d.setdefault(str(ou(a[0])), set()).add(a[1])
                 l = sorted([
                     (len(pkglist), action, pkglist)
-                    for action, pkglist in d.iteritems()
+                    for action, pkglist in six.iteritems(d)
                 ])
 
                 s = _("The requested change to the system attempts to install "
@@ -2096,7 +2091,7 @@ class UnsupportedRepositoryURI(PublisherError):
         unsupported scheme."""
 
         def __init__(self, uris=[]):
-                if isinstance(uris, basestring):
+                if isinstance(uris, six.string_types):
                         uris = [uris]
 
                 assert isinstance(uris, (list, tuple, set))
@@ -2107,8 +2102,8 @@ class UnsupportedRepositoryURI(PublisherError):
                 illegals = []
 
                 for u in self.uris:
-                        assert isinstance(u, basestring)
-                        scheme = urlparse.urlsplit(u,
+                        assert isinstance(u, six.string_types)
+                        scheme = urlsplit(u,
                             allow_fragments=0)[0]
                         illegals.append((u, scheme))
 
@@ -2145,7 +2140,7 @@ class UnsupportedProxyURI(PublisherError):
 
         def __str__(self):
                 if self.data:
-                        scheme = urlparse.urlsplit(self.data,
+                        scheme = urlsplit(self.data,
                             allow_fragments=0)[0]
                         return _("The proxy URI '{uri}' uses the unsupported "
                             "scheme '{scheme}'.  Supported schemes are "

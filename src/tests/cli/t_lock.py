@@ -29,7 +29,6 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import cStringIO
 import os
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress

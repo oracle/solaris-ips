@@ -31,13 +31,15 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import copy
-import httplib
 import os
 import time
 import unittest
-import urllib2
 import certgenerator
 import shutil
+from six.moves import http_client
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlopen
 
 from pkg.client.debugvalues import DebugValues
 import pkg.fmri
@@ -327,7 +329,7 @@ SSLRandomSeed connect builtin
                 self.ac.start()
                 if build_indexes:
                         # we won't return until indexes are built
-                        u = urllib2.urlopen(
+                        u = urlopen(
                             "{0}/depot/depot-wait-refresh".format(hc.url)).close()
 
 
@@ -529,12 +531,12 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 def get_url(url_path):
                         try:
-                                url_obj = urllib2.urlopen(url_path, timeout=10)
+                                url_obj = urlopen(url_path, timeout=10)
                                 self.assert_(url_obj.code == 200,
                                     "Failed to open {0}: {1}".format(url_path,
                                     url_obj.code))
                                 url_obj.close()
-                        except urllib2.HTTPError as e:
+                        except HTTPError as e:
                                 self.debug("Failed to open {0}: {1}".format(
                                     url_path, e))
                                 raise
@@ -565,9 +567,9 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 bad_url = "{0}/usr/test2/en/catalog.shtml".format(self.ac.url)
                 raised_404 = False
                 try:
-                        url_obj = urllib2.urlopen(bad_url, timeout=10)
+                        url_obj = urlopen(bad_url, timeout=10)
                         url_obj.close()
-                except urllib2.HTTPError as e:
+                except HTTPError as e:
                         if e.code == 404:
                                 raised_404 = True
                 self.assert_(raised_404, "Didn't get a 404 opening {0}".format(
@@ -652,8 +654,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 # gather the FMRIs we published and the URL-quoted version
                 first_fmri = pkg.fmri.PkgFmri(first[0])
                 second_fmri = pkg.fmri.PkgFmri(second[0])
-                first_ver = urllib2.quote(str(first_fmri.version))
-                second_ver = urllib2.quote(str(second_fmri.version))
+                first_ver = quote(str(first_fmri.version))
+                second_ver = quote(str(second_fmri.version))
 
                 self.depotconfig("")
                 self.image_create()
@@ -832,7 +834,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                         expected value 'value'."""
                         ret = False
                         try:
-                                u = urllib2.urlopen(url)
+                                u = urlopen(url)
                                 h = u.headers.get(header, "")
                                 if value in h:
                                         return True
@@ -890,8 +892,8 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
 
                 # verify the instance is definitely the one using our custom
                 # httpd.conf
-                u = urllib2.urlopen("{0}/pkg5test-server-status".format(self.ac.url))
-                self.assert_(u.code == httplib.OK,
+                u = urlopen("{0}/pkg5test-server-status".format(self.ac.url))
+                self.assert_(u.code == http_client.OK,
                     "Error getting pkg5-server-status")
 
                 self.image_create()

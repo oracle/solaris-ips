@@ -37,8 +37,6 @@ import pkg.server.repository as repo
 import shutil
 import tempfile
 import time
-import urllib
-import urlparse
 import unittest
 import zlib
 

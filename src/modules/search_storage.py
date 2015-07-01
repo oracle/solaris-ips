@@ -28,7 +28,7 @@ import os
 import errno
 import time
 import hashlib
-import urllib
+from six.moves.urllib.parse import quote, unquote
 
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors
@@ -154,7 +154,7 @@ class IndexStoreBase(object):
                 else:
                         self._file_handle = f_handle
                         self._file_path = f_path
-                        if self._mtime is None: 
+                        if self._mtime is None:
                                 stat_info = os.stat(self._file_path)
                                 self._mtime = stat_info.st_mtime
                                 self._size = stat_info.st_size
@@ -263,7 +263,7 @@ class IndexStoreMainDict(IndexStoreBase):
                 split_chars = IndexStoreMainDict.sep_chars
                 line = line.rstrip('\n')
                 tmp = line.split(split_chars[0])
-                tok = urllib.unquote(tmp[0])
+                tok = unquote(tmp[0])
                 atl = tmp[1:]
                 res = []
                 for ati in atl:
@@ -278,7 +278,7 @@ class IndexStoreMainDict(IndexStoreBase):
                                 st_res = []
                                 for fvi in fvl:
                                         tmp = fvi.split(split_chars[3])
-                                        full_value = urllib.unquote(tmp[0])
+                                        full_value = unquote(tmp[0])
                                         pfl = tmp[1:]
                                         fv_res = []
                                         for pfi in pfl:
@@ -303,7 +303,7 @@ class IndexStoreMainDict(IndexStoreBase):
 
                 line = line.rstrip("\n")
                 lst = line.split(" ", 1)
-                return urllib.unquote(lst[0])
+                return unquote(lst[0])
 
         @staticmethod
         def transform_main_dict_line(token, entries):
@@ -322,7 +322,7 @@ class IndexStoreMainDict(IndexStoreBase):
                 in _write_main_dict_line in indexer.py.
                 """
                 sep_chars = IndexStoreMainDict.sep_chars
-                res = "{0}".format(urllib.quote(str(token)))
+                res = "{0}".format(quote(str(token)))
                 for ati, atl in enumerate(entries):
                         action_type, atl = atl
                         res += "{0}{1}".format(sep_chars[0], action_type)
@@ -332,7 +332,7 @@ class IndexStoreMainDict(IndexStoreBase):
                                 for fvi, fvl in enumerate(stl):
                                         full_value, fvl = fvl
                                         res += "{0}{1}".format(sep_chars[2],
-                                            urllib.quote(str(full_value)))
+                                            quote(str(full_value)))
                                         for pfi, pfl in enumerate(fvl):
                                                 pfmri_index, pfl = pfl
                                                 res += "{0}{1}".format(sep_chars[3],
@@ -431,7 +431,7 @@ class IndexStoreListDict(IndexStoreBase):
 
         def get_id_and_add(self, entity):
                 """Adds entity if it's not previously stored and returns the
-                id for entity. 
+                id for entity.
                 """
                 # This code purposefully reimplements add_entity
                 # code. Replacing the function calls to has_entity, add_entity,
@@ -558,12 +558,12 @@ class IndexStoreDictMutable(IndexStoreBase):
                 return self._dict[entity]
 
         def get_keys(self):
-                return self._dict.keys()
+                return list(self._dict.keys())
 
         @staticmethod
         def __quote(str):
                 if " " in str:
-                        return "1" + urllib.quote(str)
+                        return "1" + quote(str)
                 else:
                         return "0" + str
 
@@ -575,7 +575,7 @@ class IndexStoreDictMutable(IndexStoreBase):
                 for line in self._file_handle:
                         token, offset = line.split(" ")
                         if token[0] == "1":
-                                token = urllib.unquote(token[1:])
+                                token = unquote(token[1:])
                         else:
                                 token = token[1:]
                         offset = int(offset)
@@ -663,7 +663,7 @@ class IndexStoreSetHash(IndexStoreBase):
                 """Returns the number of entries removed during a second phase
                 of indexing."""
                 return 0
-        
+
 class IndexStoreSet(IndexStoreBase):
         """Used when only set membership is desired.
         This is currently designed for exclusive use
@@ -738,7 +738,7 @@ class InvertedDict(IndexStoreBase):
                 p_id_trans is an object which has a get entity method which,
                 when given a package id number returns the PkgFmri object
                 for that id number."""
-                
+
                 IndexStoreBase.__init__(self, file_name)
                 self._p_id_trans = p_id_trans
                 self._dict = {}
@@ -755,7 +755,7 @@ class InvertedDict(IndexStoreBase):
                         self._fmri_offsets[p_id].append(offset)
                 except KeyError:
                         self._fmri_offsets[p_id] = [offset]
-                
+
         def invert_id_to_offsets_dict(self):
                 """Does delta encoding of offsets to reduce space by only
                 storing the difference between the current offset and the
@@ -790,7 +790,7 @@ class InvertedDict(IndexStoreBase):
                         include_scheme=False)
                     for p_id in p_ids
                     ]) + "!" + offset_str
-                        
+
         def write_dict_file(self, path, version_num):
                 """Write the mapping of package fmris to offset sets out
                 to the file."""
@@ -824,7 +824,7 @@ class InvertedDict(IndexStoreBase):
                         ret.append(o)
                         old_o = o
                 return ret
-                        
+
         def get_offsets(self, match_func):
                 """For a given function which returns true if it matches the
                 desired fmri, return the offsets which are associated with the

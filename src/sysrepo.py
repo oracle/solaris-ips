@@ -33,14 +33,17 @@ import logging
 import os
 import shutil
 import simplejson
+import six
 import socket
 import stat
 import sys
 import traceback
-import urllib2
 import warnings
 
 from mako.template import Template
+from six.moves.urllib.error import URLError
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import build_opener, HTTPRedirectHandler
 
 from pkg.client import global_settings
 from pkg.misc import msg, PipeError
@@ -120,11 +123,7 @@ SYSREPO_USER = "pkg5srv"
 SYSREPO_GROUP = "pkg5srv"
 
 class SysrepoException(Exception):
-        def __unicode__(self):
-        # To workaround python issues 6108 and 2517, this provides a
-        # a standard wrapper for this class' exceptions so that they
-        # have a chance of being stringified correctly.
-                return str(self)
+        pass
 
 @atexit.register
 def cleanup():
@@ -208,7 +207,7 @@ def _follow_redirects(uri_list, http_timeout):
         ret_uris = set(uri_list)
         timed_out = False
 
-        class SysrepoRedirectHandler(urllib2.HTTPRedirectHandler):
+        class SysrepoRedirectHandler(HTTPRedirectHandler):
                 """ A HTTPRedirectHandler that saves URIs we've been
                 redirected to along the path to our eventual destination."""
                 def __init__(self):
@@ -216,12 +215,12 @@ def _follow_redirects(uri_list, http_timeout):
 
                 def redirect_request(self, req, fp, code, msg, hdrs, newurl):
                         self.redirects.add(newurl)
-                        return urllib2.HTTPRedirectHandler.redirect_request(
+                        return HTTPRedirectHandler.redirect_request(
                             self, req, fp, code, msg, hdrs, newurl)
 
         for uri in uri_list:
                 handler = SysrepoRedirectHandler()
-                opener = urllib2.build_opener(handler)
+                opener = build_opener(handler)
                 if not uri.startswith("http:"):
                         ret_uris.update([uri])
                         continue
@@ -233,7 +232,7 @@ def _follow_redirects(uri_list, http_timeout):
                         ret_uris.update(set(
                             [item.replace("/versions/0", "").rstrip("/")
                             for item in handler.redirects]))
-                except urllib2.URLError as err:
+                except URLError as err:
                         # We need to log this, and carry on - the url
                         # could become available at a later date.
                         msg(_("WARNING: unable to access {uri} when checking "
@@ -259,7 +258,7 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
         if not isinstance(pub_info, dict):
                 raise SysrepoException("{0} is not a dict".format(pub_info))
         for uri in pub_info:
-                if not isinstance(uri, basestring):
+                if not isinstance(uri, six.string_types):
                         raise SysrepoException("{0} is not a basestring".format(
                             uri))
                 uri_info = pub_info[uri]
@@ -271,13 +270,13 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
                                 raise SysrepoException("{0} does not have 6 "
                                     "items".format(props))
                         # props [0] and [3] must be strings
-                        if not isinstance(props[0], basestring) or \
-                            not isinstance(props[3], basestring):
+                        if not isinstance(props[0], six.string_types) or \
+                            not isinstance(props[3], six.string_types):
                                 raise SysrepoException("indices 0 and 3 of {0} "
                                     "are not basestrings".format(props))
                         # prop[5] must be a string, either "file" or "dir"
                         # and prop[0] must start with file://
-                        if not isinstance(props[5], basestring) or \
+                        if not isinstance(props[5], six.string_types) or \
                             (props[5] not in ["file", "dir"] and
                             props[0].startswith("file://")):
                                 raise SysrepoException("index 5 of {0} is not a "
@@ -287,7 +286,7 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
         if not isinstance(no_uri_pubs, list):
                 raise SysrepoException("{0} is not a list".format(no_uri_pubs))
         for item in no_uri_pubs:
-                if not isinstance(item, basestring):
+                if not isinstance(item, six.string_types):
                         raise SysrepoException(
                             "{0} is not a basestring".format(item))
 
@@ -403,7 +402,7 @@ def _valid_proxy(proxy):
         any authentication details since these are not supported by ProxyRemote.
         """
 
-        u = urllib2.urlparse.urlparse(proxy)
+        u = urlparse(proxy)
         netloc_parts = u.netloc.split("@")
         # If we don't have any authentication details, return.
         if len(netloc_parts) == 1:
@@ -479,7 +478,7 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                         if uri.startswith("file:"):
                                 # we only support p5p files and directory-based
                                 # repositories of >= version 4.
-                                urlresult = urllib2.urlparse.urlparse(uri)
+                                urlresult = urlparse(uri)
                                 utype = "dir"
                                 if not os.path.exists(urlresult.path):
                                         raise SysrepoException(
@@ -595,7 +594,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                         if not val:
                                 continue
                         try:
-                                result = urllib2.urlparse.urlparse(val)
+                                result = urlparse(val)
                                 if result.scheme != "http":
                                         raise Exception(
                                             _("scheme must be http"))
@@ -633,7 +632,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                     https_proxy=https_proxy)
                 httpd_conf_path = os.path.join(runtime_dir,
                     SYSREPO_HTTP_FILENAME)
-                httpd_conf_file = file(httpd_conf_path, "wb")
+                httpd_conf_file = open(httpd_conf_path, "wb")
                 httpd_conf_file.write(httpd_conf_text)
                 httpd_conf_file.close()
         except socket.gaierror as err:
@@ -650,7 +649,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
 
         try:
                 crypto_path = os.path.join(runtime_dir, SYSREPO_CRYPTO_FILENAME)
-                file(crypto_path, "w").close()
+                open(crypto_path, "w").close()
                 os.chmod(crypto_path, 0o600)
                 written_crypto_content = False
 
@@ -658,15 +657,15 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
                         for (pub, cert_path, key_path, hash, proxy, utype) in \
                             repo_list:
                                 if cert_path and key_path:
-                                       crypto_file = file(crypto_path, "a")
-                                       crypto_file.writelines(file(cert_path))
-                                       crypto_file.writelines(file(key_path))
+                                       crypto_file = open(crypto_path, "a")
+                                       crypto_file.writelines(open(cert_path))
+                                       crypto_file.writelines(open(key_path))
                                        crypto_file.close()
                                        written_crypto_content = True
 
                 # Apache needs us to have some content in this file
                 if not written_crypto_content:
-                        crypto_file = file(crypto_path, "w")
+                        crypto_file = open(crypto_path, "w")
                         crypto_file.write(
                             "# this space intentionally left blank\n")
                         crypto_file.close()
@@ -707,7 +706,7 @@ def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
                                             [htdocs_path, pub, hash] +
                                             SYSREPO_PUB_DIRNAME)
                                         os.makedirs(publisher_path)
-                                        publisher_file = file(
+                                        publisher_file = open(
                                             os.path.sep.join([publisher_path,
                                             SYSREPO_PUB_FILENAME]), "w")
                                         publisher_file.write(publisher_text)
@@ -724,7 +723,7 @@ def _write_versions_response(htdocs_path):
                     os.path.sep.join(SYSREPO_VERSIONS_DIRNAME))
                 os.makedirs(versions_path)
 
-                versions_file = file(os.path.join(versions_path, "index.html"),
+                versions_file = open(os.path.join(versions_path, "index.html"),
                     "w")
                 versions_file.write(SYSREPO_VERSIONS_STR)
                 versions_file.close()

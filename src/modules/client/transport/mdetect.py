@@ -25,6 +25,7 @@
 #
 
 import random
+from six.moves import range
 
 import pkg.misc as misc
 import pkg.client.publisher as pub
@@ -58,7 +59,7 @@ class MirrorDetector(object):
                 five mirrors from the list of available mirrors."""
 
                 listlen = len(self._mirrors)
-                iterlst = random.sample(xrange(listlen), min(listlen, 5))
+                iterlst = random.sample(range(listlen), min(listlen, 5))
 
                 for v in iterlst:
                         yield self._mirrors[v]

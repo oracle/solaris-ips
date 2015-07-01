@@ -38,13 +38,15 @@ import os.path
 import pkg.p5p
 import shutil
 import unittest
-import urllib2
 import shutil
 import simplejson
 import stat
 import sys
 import time
 import StringIO
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.parse import urlparse, unquote
+from six.moves.urllib.request import urlopen
 
 import pkg.misc as misc
 import pkg.portable as portable
@@ -414,7 +416,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # create a version of this url with a symlink, to ensure we
                 # can follow links in urls
-                urlresult = urllib2.urlparse.urlparse(self.rurl1)
+                urlresult = urlparse(self.rurl1)
                 symlink_path = os.path.join(self.test_root, "repo_symlink")
                 os.symlink(urlresult.path, symlink_path)
                 symlinked_url = "file://{0}".format(symlink_path)
@@ -650,8 +652,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         url = "http://localhost:{0}/{1}".format(
                             self.sysrepo_port, part)
                         try:
-                                resp =  urllib2.urlopen(url, None, None)
-                        except urllib2.HTTPError as e:
+                                resp =  urlopen(url, None, None)
+                        except HTTPError as e:
                                 if e.code != code:
                                         self.assert_(False,
                                             "url {0} returned: {1}".format(url, e))
@@ -693,7 +695,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                             "file/1/f5da841b7c3601be5629bb8aef928437de7d534e"]:
                                 url = "http://localhost:{0}/test1/{1}/{2}".format(
                                     self.sysrepo_port, p5p_hash, path)
-                                resp = urllib2.urlopen(url, None, None)
+                                resp = urlopen(url, None, None)
                                 self.debug(resp.readlines())
 
                         self.sc.stop()
@@ -752,7 +754,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # treat it as corrupt, and clobber the old cache
                 rubbish = {"food preference": "I like noodles."}
                 other = ["nonsense here"]
-                with file(full_cache_path, "wb") as cache_file:
+                with open(full_cache_path, "wb") as cache_file:
                         simplejson.dump((rubbish, other), cache_file)
                 self.sysrepo("", stderr=True)
                 self.assert_("Invalid config cache at" in self.errout)
@@ -781,10 +783,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # it - despite being well-formed, the cache doesn't contain the
                 # same configuration as the image, simulating an older version
                 # of pkg(1) having changed publisher configuration.
-                with file(full_cache_path, "rb") as cache_file:
+                with open(full_cache_path, "rb") as cache_file:
                         uri_pub_map, no_uri_pubs = simplejson.load(cache_file)
 
-                with file(full_cache_path, "wb") as cache_file:
+                with open(full_cache_path, "wb") as cache_file:
                         del uri_pub_map[self.durl1]
                         simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
@@ -997,7 +999,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                 # lives outside our normal search path
                 mod_name = "sysrepo_p5p"
                 src_name = "{0}.py".format(mod_name)
-                sysrepo_p5p_file = file(os.path.join(self.sysrepo_template_dir,
+                sysrepo_p5p_file = open(os.path.join(self.sysrepo_template_dir,
                     src_name))
                 self.sysrepo_p5p = imp.load_module(mod_name, sysrepo_p5p_file,
                     src_name, ("py", "r", imp.PY_SOURCE))
@@ -1035,7 +1037,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
 
                         for query in queries:
                                 seen_content = False
-                                environ["QUERY_STRING"] = urllib2.unquote(query)
+                                environ["QUERY_STRING"] = unquote(query)
                                 self.http_status = ""
 
                                 try:

@@ -33,8 +33,9 @@ import os
 import re
 import socket
 import sys
-import urllib2
 import config
+
+from six.moves.urllib.request import urlopen
 
 # Apache combined log pattern
 comb_log_pat = re.compile("(?P<ip>[\d\.]*) - - \[(?P<date>[^:]*):(?P<time>\S*) (?P<tz>[^\]]*)\] \"(?P<op>GET|POST|HEAD|\S*) (?P<uri>\S*) HTTP/(?P<httpver>[^\"]*)\" (?P<response>\d*) (?P<subcode>\d*|-) \"(?P<refer>[^\"]*)\" \"(?P<agent>[^\"]*)\" \"(?P<uuid>[^\"]*)\" \"(?P<intent>[^\"]*)\"")
@@ -62,7 +63,7 @@ def host_cache_load():
                 host_cache = {}
         host_props["outstanding"] = 0
 
-def host_cache_save():        
+def host_cache_save():
         pklfile = open(host_props["file_name"], 'wb')
         pickle.dump(host_cache, pklfile)
         pklfile.close()
@@ -111,7 +112,7 @@ def ip_to_country(ips):
 def retrieve_chart(url, fileprefix):
         f = open("{0}.png".format(fileprefix), "w")
         try:
-                u = urllib2.urlopen(url)
+                u = urlopen(url)
                 f.write(u.read())
         except:
                 print("an_catalog: couldn't retrieve chart '{0}'".format(url),
@@ -146,7 +147,7 @@ def report_end():
 </body>
 </html>""")
 
-	
+
 def report_section_begin(cap_title, summary_file = None):
         msg = """\
 <br clear="all" />
@@ -211,7 +212,7 @@ def report_by_date(data, title, summary_file = None):
                 days += 1
                 total += data[i]
 
-                print(i, data[i], file=rf) 
+                print(i, data[i], file=rf)
                 if chart_data == "":
                         chart_data = "{0:d}".format(data[i])
                 else:
@@ -239,7 +240,7 @@ Average {5} requests per day: {6:.1f}</p>""".format(title, total, start_day, end
 <img src=\"{1}\" alt=\"{2}\" /><br />""".format(url, fname, title)
 
         rf.close()
-        
+
         print(msg)
         if summary_file:
                 print(msg, file=summary_file)
@@ -313,7 +314,7 @@ def report_by_country(data, title, summary_file = None):
                 sel = ""
 
         msg += """\
-  </ul>            
+  </ul>
   <div class="yui-content">"""
 
         for r in map_regions:
@@ -327,7 +328,7 @@ def report_by_country(data, title, summary_file = None):
   </div>
 </div>
 <small>Color intensity linear in log of requests.</small>"""
-       
+
 
         print(msg)
         if summary_file:

@@ -30,6 +30,7 @@ import pkg5unittest
 import codecs
 import os
 import re
+import six
 import unittest
 
 class TestPkgHelp(pkg5unittest.CliTestCase):
@@ -122,7 +123,7 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 locale_env = { "LC_ALL": "ja_JP.eucJP" }
                 ret, out, err = self.pkg("help -v", env_arg=locale_env,
                     out=True, stderr=True)
-                cmd_out = unicode(err, encoding="eucJP")
+                cmd_out = six.text_type(err, encoding="eucJP")
                 # Take only 4 lines from "pkg --help" command output.
                 u_out = cmd_out.splitlines()[:4]
 

@@ -28,6 +28,7 @@
 should be installed, updated, or removed to perform a requested operation."""
 
 import operator
+import six
 import time
 
 import pkg.actions
@@ -469,7 +470,7 @@ class PkgSolver(object):
                                 break
 
                 # Remove trimmed items from possible_set.
-                possible.difference_update(self.__trim_dict.iterkeys())
+                possible.difference_update(six.iterkeys(self.__trim_dict))
 
         def __enforce_unique_packages(self, excludes):
                 """Constrain the solver solution so that only one version of
@@ -973,7 +974,7 @@ class PkgSolver(object):
 
                 self.__start_subphase(10)
                 # remove all trimmed fmris from consideration
-                possible_set.difference_update(self.__trim_dict.iterkeys())
+                possible_set.difference_update(six.iterkeys(self.__trim_dict))
                 # remove any versions from proposed_dict that are in trim_dict
                 # as trim dict has been updated w/ missing dependencies
                 try:
@@ -1120,7 +1121,7 @@ class PkgSolver(object):
                 self.__start_subphase(4)
 
                 # remove all trimmed fmris from consideration
-                possible_set.difference_update(self.__trim_dict.iterkeys())
+                possible_set.difference_update(six.iterkeys(self.__trim_dict))
 
                 #
                 # Generate ids, possible_dict for clause generation.  Prepare
@@ -1404,7 +1405,7 @@ class PkgSolver(object):
 
                 # assign clause numbers (ids) to possible pkgs
                 pkgid = 1
-                for name in sorted(self.__possible_dict.iterkeys()):
+                for name in sorted(six.iterkeys(self.__possible_dict)):
                         for fmri in reversed(self.__possible_dict[name]):
                                 self.__id2fmri[pkgid] = fmri
                                 self.__fmri2id[fmri] = pkgid
@@ -2267,7 +2268,7 @@ class PkgSolver(object):
                 assert self.__state != SOLVER_INIT
                 assert DebugValues["plan"]
 
-                return self.__fmri_list_errors(self.__trim_dict.iterkeys(),
+                return self.__fmri_list_errors(six.iterkeys(self.__trim_dict),
                     already_seen=set(), verbose=True)
 
         def __check_installed(self):
@@ -2751,7 +2752,7 @@ class PkgSolver(object):
                 # values that start w/ the relaxed ones...
                 relaxed_holds |= set([
                     hold
-                    for hold in install_holds.itervalues()
+                    for hold in six.itervalues(install_holds)
                     if [ r for r in relaxed_holds if hold.startswith(r + ".") ]
                 ])
 
@@ -2775,7 +2776,7 @@ class PkgSolver(object):
                 # those holds were relaxed.
                 versioned_dependents -= set([
                     pkg_name
-                    for pkg_name, hold_value in install_holds.iteritems()
+                    for pkg_name, hold_value in six.iteritems(install_holds)
                     if hold_value not in relaxed_holds
                 ])
                 # Build the list of fmris that 1) contain incorp. dependencies

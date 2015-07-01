@@ -37,6 +37,7 @@ import pkg.client.image as image
 import pkg.config as cfg
 import pkg.misc as misc
 import shutil
+import six
 import unittest
 
 
@@ -110,11 +111,11 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         return "{0}/pkg/{1}/installed".format(imgdir,
                             fmri.get_dir_path())
 
-                f = file(install_file(fmri), "w")
+                f = open(install_file(fmri), "w")
                 f.writelines(["VERSION_1\n_PRE_", fmri.publisher])
                 f.close()
 
-                fi = file("{0}/state/installed/{1}".format(imgdir,
+                fi = open("{0}/state/installed/{1}".format(imgdir,
                     fmri.get_link_path()), "w")
                 fi.close()
 
@@ -193,7 +194,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                     user_provided_dir=True, cmdpath=cmdpath)
                 pub = img.get_publisher(prefix=prefix)
                 for section in pub_cfg:
-                        for prop, val in pub_cfg[section].iteritems():
+                        for prop, val in six.iteritems(pub_cfg[section]):
                                 if section == "publisher":
                                         pub_val = getattr(pub, prop)
                                 else:

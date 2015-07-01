@@ -33,6 +33,7 @@ possible types are: XXX."""
 import generic
 import pkg.fmri
 import pkg.actions
+import six
 
 class AttributeAction(generic.Action):
         """Class representing a package attribute."""
@@ -84,7 +85,7 @@ class AttributeAction(generic.Action):
                 if isinstance(self.attrs["value"], list):
                         tmp = []
                         for v in self.attrs["value"]:
-                                assert isinstance(v, basestring)
+                                assert isinstance(v, six.string_types)
                                 if " " in v:
                                         words = v.split()
                                         for w in words:

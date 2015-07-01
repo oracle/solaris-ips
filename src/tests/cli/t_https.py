@@ -32,6 +32,7 @@ import pkg5unittest
 import hashlib
 import os
 import shutil
+import six
 import stat
 import tempfile
 import certgenerator
@@ -316,7 +317,7 @@ echo "12345"
                     *args, **kwargs)
 
         def seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
+                if isinstance(certs, six.string_types):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir

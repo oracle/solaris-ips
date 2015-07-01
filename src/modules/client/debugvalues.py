@@ -20,8 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+#
+
+import six
 
 class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.
@@ -39,10 +42,9 @@ class Singleton(type):
                 return self.instance
 
 
-class DebugValues(dict):
+class DebugValues(six.with_metaclass(Singleton, dict)):
         """Singleton dict that returns None if unknown value
         is referenced"""
-        __metaclass__ = Singleton
 
         def __getitem__(self, item):
                 """ returns None if not set """

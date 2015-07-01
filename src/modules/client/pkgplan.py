@@ -29,6 +29,7 @@ import grp
 import itertools
 import os
 import pwd
+import six
 import stat
 
 import pkg.actions
@@ -102,7 +103,7 @@ class PkgPlan(object):
         __state__desc = {
             "_autofix_pkgs": [ pkg.fmri.PkgFmri ],
             "_license_status": {
-                basestring: {
+                six.string_types[0]: {
                     "src": pkg.actions.generic.NSG,
                     "dest": pkg.actions.generic.NSG,
                 },
@@ -426,7 +427,7 @@ class PkgPlan(object):
                 entry).  Where 'entry' is a dict containing the license status
                 information."""
 
-                for lic, entry in self._license_status.iteritems():
+                for lic, entry in six.iteritems(self._license_status):
                         yield lic, entry
 
         def set_license_status(self, plicense, accepted=None, displayed=None):

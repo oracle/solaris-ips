@@ -24,6 +24,7 @@
 #
 
 from __future__ import print_function
+import six
 
 # Prefixes should be ordered alphabetically with most specific first.
 DRIVER_ALIAS_PREFIXES = (
@@ -446,7 +447,7 @@ def write_line(line, fileobj):
                 rem_count = total_count
 
                 # Now build the action output string an attribute at a time.
-                for k, v in sorted(sattrs.iteritems(), cmp=cmpkv):
+                for k, v in sorted(six.iteritems(sattrs), cmp=cmpkv):
                         # Newline breaks are only forced when there is more than
                         # one value for an attribute.
                         if not (isinstance(v, list) or isinstance(v, set)):

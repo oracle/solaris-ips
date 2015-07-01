@@ -33,6 +33,7 @@ import pkg5unittest
 import copy
 import os
 import shutil
+import six
 
 import pkg.client.api_errors as apx
 import pkg.client.transport.exception as tx
@@ -382,7 +383,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 if not port:
                         port = self.sysrepo_port
                 self.__configured_names = []
-                if isinstance(names, basestring):
+                if isinstance(names, six.string_types):
                         names = [names]
                 for name in names:
                         props, pcs = self.configs[name]

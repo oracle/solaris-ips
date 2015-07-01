@@ -26,11 +26,14 @@
 
 # Some pkg(5) specific lint manifest checks
 
-from pkg.lint.engine import lint_fmri_successor
+import os.path
+import six
+from six.moves import configparser
+
 import pkg.fmri as fmri
 import pkg.lint.base as base
-import os.path
-import ConfigParser
+from pkg.lint.engine import lint_fmri_successor
+
 
 class PkgManifestChecker(base.ManifestChecker):
         """A class to check manifests."""
@@ -74,7 +77,7 @@ class PkgManifestChecker(base.ManifestChecker):
                                         continue
                                 dep = action.attrs["fmri"]
                                 try:
-                                        if isinstance(dep, basestring):
+                                        if isinstance(dep, six.string_types):
                                                 f = fmri.PkgFmri(dep)
                                                 dic.setdefault(
                                                     f.get_name(), []
@@ -416,7 +419,7 @@ class PkgManifestChecker(base.ManifestChecker):
                                     continue
 
                         deps = action.attrs["fmri"]
-                        if isinstance(deps, basestring):
+                        if isinstance(deps, six.string_types):
                                 deps = [deps]
 
                         for dep in deps:
@@ -559,7 +562,7 @@ class PkgManifestChecker(base.ManifestChecker):
                             "category").split(",")
                         if category not in ref_categories:
                                 valid_value = False
-                except ConfigParser.NoSectionError:
+                except configparser.NoSectionError:
                         sections = self.classification_data.sections()
                         engine.error(_("info.classification value {value} "
                             "does not contain one of the valid sections "
@@ -569,7 +572,7 @@ class PkgManifestChecker(base.ManifestChecker):
                             fmri=fmri),
                             msgid="{0}.4".format(msgid))
                         return
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         engine.error(_("Invalid info.classification value for "
                             "{fmri}: data file {file} does not have a "
                             "'category' key for section {section}.").format(

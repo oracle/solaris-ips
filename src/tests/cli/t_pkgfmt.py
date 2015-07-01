@@ -1292,11 +1292,11 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
 
-                with file(os.path.join(self.test_root, "source_file"),
+                with open(os.path.join(self.test_root, "source_file"),
                     "wb") as f:
                         f.write(self.pkgcontents)
 
-                with file(os.path.join(self.test_root, "needs_fmt_file"),
+                with open(os.path.join(self.test_root, "needs_fmt_file"),
                     "wb") as f:
                         f.write(self.needs_formatting)
 

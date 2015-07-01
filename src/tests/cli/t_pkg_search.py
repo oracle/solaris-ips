@@ -36,7 +36,8 @@ import os
 import shutil
 import sys
 import unittest
-import urllib2
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.request import urlopen
 
 import pkg.catalog as catalog
 import pkg.client.pkgdefs as pkgdefs
@@ -486,7 +487,7 @@ adm:NP:6445::::::
                 self.assert_(self.errout == "" )
 
                 self.pkg("search -a -r {0}".format(self.large_query), exit=1)
-                self.assert_(self.errout != "") 
+                self.assert_(self.errout != "")
 
         def _run_local_tests(self):
                 outfile = os.path.join(self.test_root, "res")
@@ -563,7 +564,7 @@ adm:NP:6445::::::
                 self._search_op(False, "pkg:/example_path", self.res_local_path)
 
                 self.pkg("search -a -l {0}".format(self.large_query), exit=1)
-                self.assert_(self.errout != "") 
+                self.assert_(self.errout != "")
 
         def _run_local_empty_tests(self):
                 self.pkg("search -a -l example_pkg", exit=1)
@@ -817,16 +818,16 @@ adm:NP:6445::::::
                 self.pkg("search -r 'Intel(R)'", exit=1)
                 self.pkg("search -r 'foo AND <bar>'", exit=1)
 
-                urllib2.urlopen("{0}/en/search.shtml?token=foo+AND+<bar>&"
+                urlopen("{0}/en/search.shtml?token=foo+AND+<bar>&"
                     "action=Search".format(durl))
-                urllib2.urlopen("{0}/en/search.shtml?token=Intel(R)&"
+                urlopen("{0}/en/search.shtml?token=Intel(R)&"
                     "action=Search".format(durl))
 
-                pkg5unittest.eval_assert_raises(urllib2.HTTPError,
-                    lambda x: x.code == 400, urllib2.urlopen,
+                pkg5unittest.eval_assert_raises(HTTPError,
+                    lambda x: x.code == 400, urlopen,
                     "{0}/search/1/False_2_None_None_Intel%28R%29".format(durl))
-                pkg5unittest.eval_assert_raises(urllib2.HTTPError,
-                    lambda x: x.code == 400, urllib2.urlopen,
+                pkg5unittest.eval_assert_raises(HTTPError,
+                    lambda x: x.code == 400, urlopen,
                     "{0}/search/1/False_2_None_None_foo%20%3Cbar%3E".format(durl))
 
         def test_bug_10515(self):
@@ -894,12 +895,12 @@ adm:NP:6445::::::
                 # together.  If this changes in the future, because of parallel
                 # indexing or parallel searching for example, it's possible
                 # this test will need to be removed or reexamined.
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.dup_lines_pkg10)
 
                 self.image_create(durl)
-                
+
                 self.pkg("search -a 'dup_lines:set:pkg.fmri:'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
@@ -1033,7 +1034,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path12
             close """
-        
+
         incorp_pkg11 = """
             open pkg://test1/incorp_pkg@1.2,5.11-0
             add depend fmri=pkg://test1/example_pkg@1.2,5.11-0 type=incorporate
@@ -1044,7 +1045,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path12
             close """
-        
+
         incorp_pkg12 = """
             open pkg://test2/incorp_pkg@1.3,5.11-0
             add depend fmri=pkg://test2/example_pkg@1.2,5.11-0 type=incorporate
@@ -1087,7 +1088,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
         def test_16190165(self):
                 """ Check that pkg search works fine with structured queries
                     and the scheme name "pkg://" in the query """
-		
+
                 self.pkgsend_bulk(self.durl1, self.example_pkg11, refresh_index=True)
                 self.pkgsend_bulk(self.durl2, self.example_pkg12, refresh_index=True)
                 self.pkgsend_bulk(self.durl1, self.incorp_pkg11, refresh_index=True)

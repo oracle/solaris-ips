@@ -33,9 +33,9 @@ import os
 import re
 import sys
 import time
-import urllib
 
 from an_report import *
+from six.moves.urllib.parse import unquote
 
 after = None
 before = None
@@ -121,7 +121,7 @@ def count_search(mg, d):
         if pm != None:
                 pg = pm.groupdict()
 
-                kw = urllib.unquote(pg["keywords"])
+                kw = unquote(pg["keywords"])
 
                 if mg["response"] == "200":
                         if mg["subcode"] == "-":
@@ -146,7 +146,7 @@ def count_search(mg, d):
                                 search_by_failure[kw] = 1
 
                 # XXX should measure downtime via 503, other failure responses
-                        
+
 
         agent = pkg_agent_pat.search(mg["agent"])
         if agent == None:
@@ -189,7 +189,7 @@ for l in fileinput.input(args):
                 continue
 
         mg = m.groupdict()
-        
+
         d = None
 
         if lastdatetime and mg["date"] == lastdate:
@@ -217,7 +217,7 @@ report_col_begin("r", summary_file = summary_file)
 report_by_country(search_by_country, "search", summary_file = summary_file)
 report_col_end("r", summary_file = summary_file)
 report_cols_end(summary_file = summary_file)
-                
+
 report_cols_begin(summary_file = summary_file)
 report_col_begin("l", summary_file = summary_file)
 report_search_by_failure()

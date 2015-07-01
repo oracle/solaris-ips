@@ -29,7 +29,6 @@
 </%doc>
 <%
         import os.path
-        import urllib
         context.write("""
 #
 # This is an automatically generated file for IPS repositories, and

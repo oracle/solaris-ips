@@ -29,8 +29,9 @@ from __future__ import division
 import os
 import datetime
 import random
-import urlparse
+from six.moves.urllib.parse import urlsplit
 import pkg.misc as misc
+
 
 class RepoChooser(object):
         """An object that contains repo statistics.  It applies algorithms
@@ -202,7 +203,7 @@ class RepoStats(object):
                 repository URI."""
 
                 self.__url = repouri.uri.rstrip("/")
-                self.__scheme = urlparse.urlsplit(self.__url)[0]
+                self.__scheme = urlsplit(self.__url)[0]
                 self.__priority = repouri.priority
 
                 self.__proxy = repouri.proxy

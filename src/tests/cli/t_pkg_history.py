@@ -34,6 +34,7 @@ import os
 import random
 import re
 import shutil
+import six
 import subprocess
 import time
 import unittest
@@ -321,7 +322,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # Make sure we have a nice number of entries with which to
                 # experiment.
                 #
-                for i in xrange(5):
+                for i in range(5):
                         self.pkg("install pkg{0:d}".format(i), exit=1)
                 self.pkg("history -Hn 3")
                 self.assertEqual(len(self.output.splitlines()), 3)
@@ -339,7 +340,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 self.assertEqual(len(self.output.splitlines()), count)
 
         def test_10_history_columns(self):
-                """Verify the -o option """                
+                """Verify the -o option """
 
                 self.pkg("history -H -n 1")
                 # START OPERATION CLIENT OUTCOME
@@ -384,7 +385,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                                 events[timestamp] = [operation]
 
                 # verify we can retrieve each event
-                for timestamp in events:                        
+                for timestamp in events:
                         operations = set(events[timestamp])
                         self.pkg("history -H -t {0} -o operation".format(timestamp))
                         arr = self.output.splitlines()
@@ -394,7 +395,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         self.assert_(found == operations,
                                     "{0} does not equal {1} for {2}".format(
                                     found, operations, timestamp))
-                
+
                 # record timestamp and expected result for 3 random,
                 # unique timestamps.  Since each timestamp can result in
                 # multiple  events, we need to calculate how many events to
@@ -416,7 +417,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 self.assert_(len(output) == expected_count,
                     "Expected {0} events, got {1}".format(expected_count,
                     len(output)))
-                
+
                 for line in output:
                         fields = line.split()
                         timestamp = fields[0].strip()
@@ -475,7 +476,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                     "{0} does not equal {1}".format(single_entry_output, self.output))
 
                 # verify a random range taken from the history is correct
-                timestamps = entries.keys()
+                timestamps = list(entries.keys())
                 timestamps.sort()
 
                 # get two random indices from our list of timestamps
@@ -507,7 +508,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 for line in range_lines:
                         ts = line.strip().split()[0]
                         self.assert_(line in entries[ts],
-                            "{0} does not appear in {1}".format(line, entries[ts]))                        
+                            "{0} does not appear in {1}".format(line, entries[ts]))
                         range_timestamps.append(ts)
 
                 # determine the reverse. That is, for each entry in the
@@ -561,7 +562,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 operation.attrib["end_time"] = "20120229T000000Z"
 
                 new_file = re.sub(".xml", "99.xml", latest)
-                outfile = file(os.path.join(history_dir, new_file), "w")
+                outfile = open(os.path.join(history_dir, new_file), "w")
                 outfile.write(xml.etree.ElementTree.tostring(root))
                 outfile.close()
 

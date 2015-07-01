@@ -107,7 +107,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 file_path = os.path.join(self.get_img_path(), str(path))
 
                 try:
-                        f = file(file_path)
+                        f = open(file_path)
                 except IOError as e:
                         if e.errno == errno.ENOENT and negate:
                                 return
@@ -157,7 +157,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 )
 
                 # notice that a file should not exist according to its facet
-                file(os.path.join(self.get_img_path(), "3"), "w")
+                open(os.path.join(self.get_img_path(), "3"), "w")
                 self.pkg("verify", exit=1)
                 os.remove(os.path.join(self.get_img_path(), "3"))
 
@@ -308,7 +308,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 # First, install faceted package.
                 self.pkg("install pkg_A")
-                for i in xrange(9):
+                for i in range(9):
                         self.assert_file_is_there(i)
 
                 # Next, set general locale.*=False, but locale.fr=True.

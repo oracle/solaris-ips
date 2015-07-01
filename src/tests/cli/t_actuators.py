@@ -27,6 +27,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import os
+import six
 import pkg5unittest
 import unittest
 import stat
@@ -667,26 +668,26 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         def test_release_note_5(self):
                 # test unicode character in release notes
                 self.pkg("install -n hovercraft@1.0")
-                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("install -v hovercraft@1.0")
-                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("uninstall '*'")
 
         def test_release_note_6(self):
                 # test parsable unicode
                 self.pkg("install --parsable 0 hovercraft@1.0")
                 self.pkg("history -n 1 -N")
-                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("uninstall '*'")
 
         def test_release_note_7(self):
                 # check that multiple release notes are composited properly
                 self.pkg("install bar@1.0")
                 self.pkg("install -v hovercraft@1.0 baz@1.0")
-                uni_out = unicode(self.output, "utf-8")
+                uni_out = six.text_type(self.output, "utf-8")
                 # we indent the release notes for readability, so a strict
                 # index or compare won't work unless we remove indenting
                 # this works for our test cases since they have no leading
@@ -698,11 +699,11 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 uni_out.index(self.multi_unicode)
                 uni_out.index(self.multi_ascii)
 
-		# repeat test using history to make sure everything is there.
-		# do as unpriv. user
+                # repeat test using history to make sure everything is there.
+                # do as unpriv. user
 
-		self.pkg("history -n 1 -HN", su_wrap=True)
-                uni_out = unicode(self.output, "utf-8")
+                self.pkg("history -n 1 -HN", su_wrap=True)
+                uni_out = six.text_type(self.output, "utf-8")
                 # we indent the release notes for readability, so a strict
                 # index or compare won't work unless we remove indenting
                 # this works for our test cases since they have no leading
@@ -720,7 +721,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # verify that temporary file is correctly written with /n characters
                 self.pkg("-D GenerateNotesFile=1 install hovercraft@1.0")
                 # find name of file containing release notes in output.
-                for field in unicode(self.output, "utf-8").split(u" "):
+                for field in six.text_type(self.output, "utf-8").split(u" "):
                         try:
                                 if field.index(u"release-note"):
                                         break
@@ -734,7 +735,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
 
                 # read release note file and check to make sure
                 # entire contents are there verbatim
-                release_note = unicode(file(field).read(), "utf-8")
+                release_note = six.text_type(open(field).read(), "utf-8")
                 assert self.multi_unicode == release_note
                 self.pkg("uninstall '*'")
 

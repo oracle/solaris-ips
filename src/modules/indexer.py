@@ -28,7 +28,7 @@ import errno
 import os
 import platform
 import shutil
-import urllib
+from six.moves.urllib.parse import unquote
 
 import pkg.fmri as fmri
 import pkg.lockfile as lockfile
@@ -181,7 +181,7 @@ class Indexer(object):
         def _build_version(vers):
                 """ Private method for building versions from a string. """
 
-                return pkg.version.Version(urllib.unquote(vers), None)
+                return pkg.version.Version(unquote(vers), None)
 
         def _read_input_indexes(self, directory):
                 """ Opens all index files using consistent_open and reads all
@@ -226,7 +226,7 @@ class Indexer(object):
                 self._sort_file_bytes = 0
                 tmp_file_name = os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(self._sort_file_num - 1))
-                tmp_fh = file(tmp_file_name, "rb", buffering=PKG_FILE_BUFSIZ)
+                tmp_fh = open(tmp_file_name, "rb", buffering=PKG_FILE_BUFSIZ)
                 l = [
                     (ss.IndexStoreMainDict.parse_main_dict_line_for_token(line),
                     line)
@@ -234,7 +234,7 @@ class Indexer(object):
                 ]
                 tmp_fh.close()
                 l.sort()
-                tmp_fh = file(tmp_file_name, "wb", buffering=PKG_FILE_BUFSIZ)
+                tmp_fh = open(tmp_file_name, "wb", buffering=PKG_FILE_BUFSIZ)
                 tmp_fh.writelines((line for tok, line in l))
                 tmp_fh.close()
 
@@ -302,7 +302,7 @@ class Indexer(object):
                 #
                 # First pass determines whether a fast update makes sense and
                 # updates the list of fmris that will be in the index.
-                # 
+                #
                 filters, pkgplan_list = filters_pkgplan_list
                 for p in pkgplan_list:
                         d_fmri, o_fmri = p
@@ -413,13 +413,13 @@ class Indexer(object):
                         self._progtrack.job_add_progress(
                             self._progtrack.JOB_REBUILD_SEARCH, nitems=0)
                         if at not in self.at_fh:
-                                self.at_fh[at] = file(os.path.join(out_dir,
+                                self.at_fh[at] = open(os.path.join(out_dir,
                                     "__at_" + at), "wb")
                         self.at_fh[at].write(cur_location + "\n")
                         for st, fv_list in st_list:
                                 if st not in self.st_fh:
                                         self.st_fh[st] = \
-                                            file(os.path.join(out_dir,
+                                            open(os.path.join(out_dir,
                                             "__st_" + st), "wb")
                                 self.st_fh[st].write(cur_location + "\n")
                                 for fv, p_list in fv_list:
@@ -467,7 +467,7 @@ class Indexer(object):
                         try:
                                 return \
                                         ss.IndexStoreMainDict.parse_main_dict_line(
-                                        fh.next())
+                                        next(fh))
                         except StopIteration:
                                 return None
 
@@ -526,7 +526,7 @@ class Indexer(object):
                                                         self.__splice(res,
                                                             new_info)
                                                 new_tok, new_info = \
-                                                    ss.IndexStoreMainDict.parse_main_dict_line(fh_dict[i].next())
+                                                    ss.IndexStoreMainDict.parse_main_dict_line(next(fh_dict[i]))
                                         cur_toks[i] = new_tok, new_info
                                 except StopIteration:
                                         # When a StopIteration happens, the
@@ -586,7 +586,7 @@ class Indexer(object):
                 new_toks_available = True
                 new_toks_it = self._gen_new_toks_from_files()
                 try:
-                        tmp = new_toks_it.next()
+                        tmp = next(new_toks_it)
                         next_new_tok, new_tok_info = tmp
                 except StopIteration:
                         new_toks_available = False
@@ -629,7 +629,7 @@ class Indexer(object):
                                             new_tok_info, out_dir)
                                         try:
                                                 next_new_tok, new_tok_info = \
-                                                    new_toks_it.next()
+                                                    next(new_toks_it)
                                         except StopIteration:
                                                 new_toks_available = False
                                                 del next_new_tok
@@ -643,7 +643,7 @@ class Indexer(object):
                                             new_tok_info)
                                         try:
                                                 next_new_tok, new_tok_info = \
-                                                    new_toks_it.next()
+                                                    next(new_toks_it)
                                         except StopIteration:
                                                 new_toks_available = False
                                                 del next_new_tok
@@ -666,7 +666,7 @@ class Indexer(object):
                                     new_tok_info, out_dir)
                                 try:
                                         next_new_tok, new_tok_info = \
-                                            new_toks_it.next()
+                                            next(new_toks_it)
                                 except StopIteration:
                                         new_toks_available = False
                 finally:
@@ -767,7 +767,7 @@ class Indexer(object):
 
                         elif input_type == IDX_INPUT_TYPE_FMRI:
                                 assert not self._sort_fh
-                                self._sort_fh = file(os.path.join(self._tmp_dir,
+                                self._sort_fh = open(os.path.join(self._tmp_dir,
                                     SORT_FILE_PREFIX +
                                     str(self._sort_file_num)), "wb")
                                 self._sort_file_num += 1

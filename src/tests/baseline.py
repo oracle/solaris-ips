@@ -98,7 +98,7 @@ class BaseLine(object):
                 if not self.__generating:
                         return
                 try:
-                        f = file(self.__filename, "w")
+                        f = open(self.__filename, "w")
                 except IOError as xxx_todo_changeme:
                         (err, msg) = xxx_todo_changeme.args
                         print("ERROR: storing baseline:", file=sys.stderr)
@@ -107,7 +107,7 @@ class BaseLine(object):
                         return 
 
                 # Sort the results to make baseline diffs easier
-                results_sorted = self.__results.keys()
+                results_sorted = list(self.__results.keys())
                 results_sorted.sort()
                 print("# Writing baseline to {0}.".format(self.__filename),
                     file=sys.stderr)
@@ -124,7 +124,7 @@ class BaseLine(object):
                         return
 
                 try:
-                        f = file(self.__filename, "r")
+                        f = open(self.__filename, "r")
                 except IOError as xxx_todo_changeme1:
                         (err, msg) = xxx_todo_changeme1.args
                         print("ERROR: loading baseline:", file=sys.stderr)

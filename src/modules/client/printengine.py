@@ -33,10 +33,11 @@ import errno
 import logging
 import os
 import re
+import six
+import StringIO
 import termios
 import time
 from abc import ABCMeta, abstractmethod
-import StringIO
 
 from pkg.misc import PipeError
 
@@ -46,9 +47,8 @@ class PrintEngineException(Exception):
         def __str__(self):
                 return "PrintEngineException: {0}".format(" ".join(self.args))
 
-class PrintEngine(object):
+class PrintEngine(six.with_metaclass(ABCMeta, object)):
         """Abstract class defining what a PrintEngine must know how to do."""
-        __metaclass__ = ABCMeta
 
         def __init__(self):
                 pass
@@ -315,13 +315,13 @@ def test_posix_printengine(output_file, ttymode):
         pe.cprint("left to right it should be inverse.")
         # Unused variable 'y'; pylint: disable=W0612
         for y in range(0, 2):
-                for x in xrange(0, 30, 1):
+                for x in range(0, 30, 1):
                         pe.cprint(" " * x, erase=True, end='')
                         pe.putp(standout)
                         pe.cprint("X", end='')
                         pe.putp(sgr0)
                         time.sleep(0.050)
-                for x in xrange(30, -1, -1):
+                for x in range(30, -1, -1):
                         pe.cprint(" " * x + "X", erase=True, end='')
                         time.sleep(0.050)
         pe.cprint("", erase=True)

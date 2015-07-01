@@ -43,11 +43,16 @@ are also defined here:
 # standard python classes
 import collections
 import copy
-import itertools
 import operator
 import os
 import select
 import simplejson as json
+import six
+
+# Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
+# import-error: six.moves; pylint: disable=F0401
+from functools import reduce
+from six.moves import zip
 
 # pkg classes
 import pkg.actions
@@ -65,9 +70,6 @@ import pkg.fmri
 import pkg.misc as misc
 import pkg.pkgsubprocess
 import pkg.version
-
-# Redefining built-in; pylint: disable=W0622
-from functools import reduce
 
 from pkg.client import global_settings
 
@@ -164,7 +166,7 @@ def _li_rvdict_check(rvdict):
         entries."""
 
         assert(type(rvdict) == dict)
-        for k, v in rvdict.iteritems():
+        for k, v in six.iteritems(rvdict):
                 assert type(k) == LinkedImageName, \
                     ("Unexpected rvdict key: ", k)
                 _li_rvtuple_check(v)
@@ -515,12 +517,12 @@ class LinkedImage(object):
 
                 # Tell linked image plugins about the updated paths
                 # Unused variable 'plugin'; pylint: disable=W0612
-                for plugin, lip in self.__plugins.iteritems():
+                for plugin, lip in six.iteritems(self.__plugins):
                 # pylint: enable=W0612
                         lip.init_root(root)
 
                 # Tell linked image children about the updated paths
-                for lic in self.__lic_dict.itervalues():
+                for lic in six.itervalues(self.__lic_dict):
                         lic.child_init_root()
 
         def __update_props(self, props=None):
@@ -657,7 +659,7 @@ class LinkedImage(object):
 
                 # ask each plugin if we're operating in an alternate root
                 p_transforms = []
-                for plugin, lip in self.__plugins.iteritems():
+                for plugin, lip in six.iteritems(self.__plugins):
                         p_transform = lip.guess_path_transform(
                             ignore_errors=ignore_errors)
                         if p_transform is not PATH_TRANSFORM_NONE:
@@ -755,7 +757,7 @@ class LinkedImage(object):
                         return None
 
                 rv = pkg.facet.Facets()
-                for k, v in pfacets.iteritems():
+                for k, v in six.iteritems(pfacets):
                         # W0212 Access to a protected member
                         # pylint: disable=W0212
                         rv._set_inherited(k, v)
@@ -894,7 +896,7 @@ class LinkedImage(object):
                 errs = []
 
                 # check each property the user specified.
-                for k, v in props.iteritems():
+                for k, v in six.iteritems(props):
 
                         # did the user specify an allowable property?
                         if k not in validate_props:
@@ -1429,7 +1431,7 @@ class LinkedImage(object):
                 self.set_path_transform(props, path_transform,
                     current_path=self.__root)
 
-                for k, v in lip.attach_props_def.iteritems():
+                for k, v in six.iteritems(lip.attach_props_def):
                         if k not in self.__pull_child_props:
                                 # this prop doesn't apply to pull images
                                 continue
@@ -1570,14 +1572,14 @@ class LinkedImage(object):
 
                 p_dicts = [
                     rvtuple.rvt_p_dict
-                    for rvtuple in rvdict.itervalues()
+                    for rvtuple in six.itervalues(rvdict)
                     if rvtuple.rvt_p_dict is not None
                 ]
 
                 rv_mapped = set()
                 rv_seen = set([
                     rvtuple.rvt_rv
-                    for rvtuple in rvdict.itervalues()
+                    for rvtuple in six.itervalues(rvdict)
                 ])
                 for (rv_map_set, rv_map_rv) in rv_map:
                         if (rv_seen == rv_map_set):
@@ -1591,7 +1593,7 @@ class LinkedImage(object):
                 # if we had errors for unmapped return values, bundle them up
                 errs = [
                         rvtuple.rvt_e
-                        for rvtuple in rvdict.itervalues()
+                        for rvtuple in six.itervalues(rvdict)
                         if rvtuple.rvt_e and rvtuple.rvt_rv not in rv_mapped
                 ]
                 if len(errs) == 1:
@@ -1755,7 +1757,7 @@ class LinkedImage(object):
                 dir_common = os.sep
                 pdirs = ppath.split(os.sep)[1:-1]
                 cdirs = cpath.split(os.sep)[1:-1]
-                for pdir, cdir in itertools.izip(pdirs, cdirs):
+                for pdir, cdir in zip(pdirs, cdirs):
                         if pdir != cdir:
                                 break
                         dir_common = os.path.join(dir_common, pdir)
@@ -1846,7 +1848,7 @@ class LinkedImage(object):
                     self.get_path_transform(), current_path=path)
 
                 # fill in any missing defaults options
-                for k, v in lip.attach_props_def.iteritems():
+                for k, v in six.iteritems(lip.attach_props_def):
                         if k not in child_props:
                                 child_props[k] = v
 
@@ -1915,7 +1917,7 @@ class LinkedImage(object):
 
                 list(self.__children_op(
                     _pkg_op=pkgdefs.PKG_OP_AUDIT_LINKED,
-                    _lic_list=lic_dict.values(),
+                    _lic_list=list(lic_dict.values()),
                     _rvdict=rvdict,
                     _progtrack=progress.QuietProgressTracker(),
                     _failfast=False))
@@ -1942,7 +1944,7 @@ class LinkedImage(object):
                 rvdict = {}
                 list(self.__children_op(
                     _pkg_op=pkgdefs.PKG_OP_SYNC,
-                    _lic_list=lic_dict.values(),
+                    _lic_list=list(lic_dict.values()),
                     _rvdict=rvdict,
                     _progtrack=progtrack,
                     _failfast=False,
@@ -1988,7 +1990,7 @@ class LinkedImage(object):
                 # do the detach
                 list(self.__children_op(
                     _pkg_op=pkgdefs.PKG_OP_DETACH,
-                    _lic_list=lic_dict.values(),
+                    _lic_list=list(lic_dict.values()),
                     _rvdict=rvdict,
                     _progtrack=progress.NullProgressTracker(),
                     _failfast=False,
@@ -1998,7 +2000,7 @@ class LinkedImage(object):
 
                 # if any of the children successfully detached, then we want
                 # to discard our metadata for that child.
-                for lin, rvtuple in rvdict.iteritems():
+                for lin, rvtuple in six.iteritems(rvdict):
 
                         # if the detach failed leave metadata in parent
                         if rvtuple.rvt_e and not force:
@@ -2355,7 +2357,7 @@ class LinkedImage(object):
                 """Do a recursive publisher check"""
 
                 # get a list of of children to recurse into.
-                lic_list = self.__lic_dict.values()
+                lic_list = list(self.__lic_dict.values())
 
                 # do a publisher check on all of them
                 rvdict = {}
@@ -2379,7 +2381,7 @@ class LinkedImage(object):
                 pd = self.__img.imageplan.pd
 
                 # get a list of of children to recurse into.
-                lic_list = self.__lic_dict.values()
+                lic_list = list(self.__lic_dict.values())
 
                 # sanity check stage
                 assert stage in [pkgdefs.API_STAGE_PLAN,
@@ -2591,7 +2593,7 @@ class LinkedImage(object):
                 pd.child_op_vectors = []
 
                 # Get LinkedImageNames of all children
-                lin_list = self.__lic_dict.keys()
+                lin_list = list(self.__lic_dict.keys())
 
                 pkg_op_irecurse, pkg_op_erecurse, ignore_syncmd_nop = \
                     self.__recursion_ops(api_op)
@@ -2680,7 +2682,7 @@ class LinkedImage(object):
                 """Return True if there is no planned work to do on child
                 image."""
 
-                for lic in self.__lic_dict.itervalues():
+                for lic in six.itervalues(self.__lic_dict):
                         if lic.child_name not in \
                             self.__img.imageplan.pd.children_nop:
                                 return False
@@ -3622,12 +3624,12 @@ def PkgDecoder(dct):
         """Utility class used when json decoding linked image metadata."""
         # Replace unicode keys/values with strings
         rvdct = {}
-        for k, v in dct.iteritems():
+        for k, v in six.iteritems(dct):
 
                 # unicode must die
-                if type(k) == unicode:
+                if type(k) == six.text_type:
                         k = k.encode("utf-8")
-                if type(v) == unicode:
+                if type(v) == six.text_type:
                         v = v.encode("utf-8")
 
                 # convert boolean strings values back into booleans
@@ -3644,7 +3646,7 @@ def rm_dict_ent(d, keys):
         """Remove a set of keys from a dictionary."""
         return dict([
                 (k, v)
-                for k, v in d.iteritems()
+                for k, v in six.iteritems(d)
                 if k not in keys
         ])
 

@@ -19,13 +19,14 @@
 #
 # CDDL HEADER END
 #
-    
+
 #
 # Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
 import logging
+import six
 import sys
 import gettext
 import locale
@@ -62,7 +63,7 @@ def main_func():
             codeset=locale.getpreferredencoding())
 
         global logger
-        
+
         usage = \
             _("\n"
             "        %prog [-b build_no] [-c cache_dir] [-f file]\n"
@@ -178,15 +179,21 @@ def list_checks(checkers, exclude, verbose=False):
                 if "pkglint_desc" in method.__dict__ and not verbose:
                         return method.pkglint_desc
                 else:
-                        return "{0}.{1}.{2}".format(method.im_class.__module__,
-                            method.im_class.__name__,
-                            method.im_func.func_name)
+                        if six.PY3:
+                                return "{0}.{1}.{2}".format(method.__self__.__class__.__module__,
+                                    method.__self__.__class__.__name__,
+                                    method.__func__.__name__)
+                        else:
+                                return "{0}.{1}.{2}".format(method.im_class.__module__,
+                                    method.im_class.__name__,
+                                    method.im_func.func_name)
+
 
         def emit(name, value):
                 msg("{0} {1}".format(name.ljust(width), value))
 
         def print_list(items):
-                k = items.keys()
+                k = list(items.keys())
                 k.sort()
                 for lint_id in k:
                         emit(lint_id, items[lint_id])

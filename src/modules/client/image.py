@@ -36,15 +36,14 @@ import os
 import platform
 import shutil
 import simplejson as json
+import six
 import stat
 import sys
 import tempfile
 import time
-import urllib
 
 from contextlib import contextmanager
-from pkg.client import global_settings
-logger = global_settings.logger
+from six.moves.urllib.parse import quote, unquote
 
 import pkg.actions
 import pkg.catalog
@@ -74,6 +73,9 @@ import pkg.portable                     as portable
 import pkg.server.catalog
 import pkg.smf                          as smf
 import pkg.version
+
+from pkg.client import global_settings
+logger = global_settings.logger
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
@@ -1089,7 +1091,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         """Find the pkg's installed file named by filepath.
                         Return the publisher that installed this package."""
 
-                        f = file(filepath)
+                        f = open(filepath)
                         try:
                                 flines = f.readlines()
                                 version, pub = flines
@@ -1132,7 +1134,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         installed[f.pkg_name] = f
 
                 for pl in os.listdir(installed_state_dir):
-                        fmristr = "{0}".format(urllib.unquote(pl))
+                        fmristr = "{0}".format(unquote(pl))
                         f = pkg.fmri.PkgFmri(fmristr)
                         add_installed_entry(f)
 
@@ -1394,7 +1396,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 # format stores licenses.
                                 dest = os.path.join(tmp_root, "license",
                                     pfmri.get_dir_path(stemonly=True),
-                                    urllib.quote(entry, ""))
+                                    quote(entry, ""))
                                 misc.makedirs(os.path.dirname(dest))
                                 try:
                                         os.link(src, dest)
@@ -1599,7 +1601,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if not os.path.isfile(f):
                         return []
 
-                return [ addslash(l.strip()) for l in file(f) ] + [p]
+                return [ addslash(l.strip()) for l in open(f) ] + [p]
 
         def get_cachedirs(self):
                 """Returns a list of tuples of the form (dir, readonly, pub,
@@ -2059,7 +2061,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         def properties(self):
                 if not self.cfg:
                         raise apx.ImageCfgEmptyError(self.root)
-                return self.cfg.get_index()["property"].keys()
+                return list(self.cfg.get_index()["property"].keys())
 
         def add_publisher(self, pub, refresh_allowed=True, progtrack=None,
             approved_cas=EmptyI, revoked_cas=EmptyI, search_after=None,
@@ -3078,7 +3080,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                                 # copy() is too slow here and catalog entries
                                 # are shallow so this should be sufficient.
-                                entry = dict(sentry.iteritems())
+                                entry = dict(six.iteritems(sentry))
                                 if not base:
                                         # Nothing else to do except add the
                                         # entry for non-base catalog parts.
@@ -3667,7 +3669,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         os.unlink(conflicting_keys_path)
                                 except:
                                         pass
-                                raise exc_info[0], exc_info[1], exc_info[2]
+                                six.reraise(exc_info[0], exc_info[1], exc_info[2])
 
                 progtrack.job_add_progress(progtrack.JOB_FAST_LOOKUP)
                 progtrack.job_done(progtrack.JOB_FAST_LOOKUP)
@@ -3760,7 +3762,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 """Open the actions file described in _create_fast_lookups() and
                 return the corresponding file object."""
 
-                sf = file(os.path.join(self.__action_cache_dir,
+                sf = open(os.path.join(self.__action_cache_dir,
                     "actions.stripped"), "rb")
                 sversion = sf.readline().rstrip()
                 stimestamp = sf.readline().rstrip()
@@ -4160,9 +4162,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         stems_and_pats = imageplan.ImagePlan.freeze_pkgs_match(
                             self, pat_list)
                         return dict([(s, __make_publisherless_fmri(p))
-                            for s, p in stems_and_pats.iteritems()])
+                            for s, p in six.iteritems(stems_and_pats)])
                 if dry_run:
-                        return __calc_frozen().values()
+                        return list(__calc_frozen().values())
                 with self.locked_op("freeze"):
                         stems_and_pats = __calc_frozen()
                         # Get existing dictionary of frozen packages.
@@ -4171,9 +4173,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # comment.
                         timestamp = calendar.timegm(time.gmtime())
                         d.update([(s, (str(p), comment, timestamp))
-                            for s, p in stems_and_pats.iteritems()])
+                            for s, p in six.iteritems(stems_and_pats)])
                         self._freeze_dict_save(d)
-                        return stems_and_pats.values()
+                        return list(stems_and_pats.values())
 
         def unfreeze_pkgs(self, pat_list, progtrack, check_cancel, dry_run):
                 """Unfreeze the specified packages... use pattern matching on
@@ -4339,8 +4341,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 progtrack.plan_all_start()
                 # compute dict of changing variants
                 if variants:
-                        new = set(variants.iteritems())
-                        cur = set(self.cfg.variants.iteritems())
+                        new = set(six.iteritems(variants))
+                        cur = set(six.iteritems(self.cfg.variants))
                         variants = dict(new - cur)
                 elif facets:
                         new_facets = self.get_facets()
@@ -4641,7 +4643,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__avoid_set = set()
                 self.__group_obsolete = set()
                 if os.path.isfile(state_file):
-                        version, d = json.load(file(state_file))
+                        version, d = json.load(open(state_file))
                         assert version == self.__AVOID_SET_VERSION
                         for stem in d:
                                 if d[stem] == "avoid":
@@ -4672,7 +4674,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 state_file = os.path.join(self._statedir, "avoid_set")
                 tmp_file   = os.path.join(self._statedir, "avoid_set.new")
-                tf = file(tmp_file, "w")
+                tf = open(tmp_file, "w")
 
                 d = dict((a, "avoid") for a in self.__avoid_set)
                 d.update((a, "obsolete") for a in self.__group_obsolete)
@@ -4713,7 +4715,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 state_file = os.path.join(self._statedir, "frozen_dict")
                 if os.path.isfile(state_file):
                         try:
-                                version, d = json.load(file(state_file))
+                                version, d = json.load(open(state_file))
                         except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         except ValueError as e:

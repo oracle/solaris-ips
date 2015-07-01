@@ -42,6 +42,7 @@ import pkg.p5p
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import shutil
+import six
 import sys
 import tarfile as tf
 import tempfile
@@ -90,7 +91,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
             "tmp/LICENSE", "tmp/quux"]
 
         def seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
+                if isinstance(certs, six.string_types):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
@@ -449,7 +450,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 sm = pkg.manifest.Manifest(pfmri=pfmri)
                 sm.set_content(pathname=repo.manifest(pfmri), signatures=True)
 
-                if isinstance(content, basestring):
+                if isinstance(content, six.string_types):
                         dm = pkg.manifest.Manifest()
                         dm.set_content(content=content, signatures=True)
                 else:

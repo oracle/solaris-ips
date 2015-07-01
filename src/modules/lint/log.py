@@ -25,8 +25,9 @@
 #
 
 import logging
-import sys
 import os
+import six
+import sys
 
 from pkg.lint.base import DuplicateLintedAttrException, linted
 
@@ -56,9 +57,6 @@ class LintMessage(object):
                 self.level = level
                 self.producer = producer
                 self.msgid = msgid
-
-        def __unicode__(self):
-                return str(self.msg)
 
         def __str__(self):
                 return str(self.msg)

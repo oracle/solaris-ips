@@ -22,15 +22,19 @@
 ## Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
-        import cgi
+        import six
+        if six.PY3:
+                import html as cgi
+        else:
+                # cgi.escape is deprecated since python 3.2
+                import cgi
         import itertools
         import pkg.actions as actions
         import pkg.query_parser as qp
         import pkg.server.api_errors as api_errors
         import pkg.version as version
         import re
-        import urllib
-        import urlparse
+        from six.moves.urllib.parse import urlencode, quote, urlparse, urlunparse
 %>\
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -119,7 +123,7 @@
                 query_error = str(e)
         except Exception as e:
                 results = None
-                query_error = urllib.quote(str(e))
+                query_error = quote(str(e))
 
         # Before showing the results, the type of results being shown has to be
         # determined since the user might have overridden the return_type
@@ -177,7 +181,7 @@
         # starting range of the previous page of search results set.
 
         uri = request.url(qs=request.query_string, relative=True)
-        scheme, netloc, path, params, query, fragment = urlparse.urlparse(uri)
+        scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
         for name, val in request.params.iteritems():
@@ -191,8 +195,8 @@
                 start = 0
         nparams.append(("start", start))
 
-        qs = urllib.urlencode(nparams)
-        uri = urlparse.urlunparse((scheme, netloc, path, params, qs, fragment))
+        qs = urlencode(nparams)
+        uri = urlunparse((scheme, netloc, path, params, qs, fragment))
 
         return uri
 %></%def>\
@@ -201,7 +205,7 @@
         # starting range of the next page of search results set.
 
         uri = request.url(qs=request.query_string, relative=True)
-        scheme, netloc, path, params, query, fragment = urlparse.urlparse(uri)
+        scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
         for name, val in request.params.iteritems():
@@ -212,8 +216,8 @@
         start = criteria["start"]
         nparams.append(("start", (start + result_count - 1)))
 
-        qs = urllib.urlencode(nparams)
-        uri = urlparse.urlunparse((scheme, netloc, path, params, qs, fragment))
+        qs = urlencode(nparams)
+        uri = urlunparse((scheme, netloc, path, params, qs, fragment))
 
         return uri
 %></%def>\
@@ -307,7 +311,7 @@ Next</a>
                                 uri = "/depot/{0}/{1}/{2}".format(http_depot,
                                     lang, uri)
                         scheme, netloc, path, params, query, \
-                            fragment = urlparse.urlparse(uri)
+                            fragment = urlparse(uri)
 
                         nparams = []
                         for name, val in request.params.iteritems():
@@ -319,8 +323,8 @@ Next</a>
                         if query_error:
                                 nparams.append(("qe", query_error))
 
-                        qs = urllib.urlencode(nparams)
-                        uri = urlparse.urlunparse((scheme, netloc, path, params,
+                        qs = urlencode(nparams)
+                        uri = urlunparse((scheme, netloc, path, params,
                             qs, fragment))
 
                         raise api_errors.RedirectException(uri)
@@ -374,11 +378,11 @@ matching characters use '[' and ']':<br/>
                         pfmri_uri = pfmri.get_fmri(anarchy=True,
                             include_scheme=False)
                         phref = self.shared.rpath(g_vars, "info/0/{0}".format(
-                            urllib.quote(pfmri_uri, "")))
+                            quote(pfmri_uri, "")))
                         # XXX the .p5i extension is a bogus hack because
                         # packagemanager requires it and shouldn't.
                         p5ihref = self.shared.rpath(g_vars,
-                            "p5i/0/{0}.p5i".format(urllib.quote(stem, "")))
+                            "p5i/0/{0}.p5i".format(quote(stem, "")))
                         mhref = self.shared.rpath(g_vars,
                             "manifest/0/{0}".format(pfmri.get_url_path()))
 %>\
@@ -435,7 +439,7 @@ ${display_pagination(criteria, result_count, colspan=2)}
                         pfmri_str = pfmri.get_fmri(anarchy=True, 
                             include_scheme=False)
                         phref = self.shared.rpath(g_vars, "info/0/{0}".format(
-                            urllib.quote(pfmri_str, "")))
+                            quote(pfmri_str, "")))
 %>\
                         <tr${rclass}>
                                 <td>${index | h}</td>

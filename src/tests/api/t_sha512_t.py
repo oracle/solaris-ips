@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import unittest
+from six.moves import range
 
 try:
         import pkg.sha512_t as sha512_t
@@ -125,7 +126,7 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
 
                 # Test scalability
                 a = sha512_t.SHA512_t()
-                for i in xrange(1000000):
+                for i in range(1000000):
                         a.update("abc")
                 a.hexdigest()
 

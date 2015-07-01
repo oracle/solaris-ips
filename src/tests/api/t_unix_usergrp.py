@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -45,7 +46,7 @@ class TestUserGroup(pkg5unittest.Pkg5TestCase):
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
+                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 gk::0:
@@ -89,7 +90,7 @@ tty::7:root,adm""")
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
+                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 blorg
@@ -127,7 +128,7 @@ gk::0:
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
+                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 gk::0:
@@ -156,7 +157,7 @@ tty::7:root,adm
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
+                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash
@@ -204,7 +205,7 @@ moop:x:999:999:moop:/usr/moop:""")
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
+                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
@@ -242,7 +243,7 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
+                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash

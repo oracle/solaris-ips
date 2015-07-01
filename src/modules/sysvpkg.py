@@ -200,7 +200,7 @@ class SolarisPackage(object):
                         return []
 
                 try:
-                        fp = file(self.pkgpath + "/install/depend")
+                        fp = open(self.pkgpath + "/install/depend")
                 except IOError as xxx_todo_changeme:
                         # Missing depend file is just fine
                         (err, msg) = xxx_todo_changeme.args
@@ -232,7 +232,7 @@ class SolarisPackage(object):
                 if self.datastream:
                         fp = self._pkginfo
                 else:
-                        fp = file(self.pkgpath + "/pkginfo")
+                        fp = open(self.pkgpath + "/pkginfo")
 
                 for line in fp:
                         line = line.lstrip().rstrip('\n')
@@ -267,7 +267,7 @@ class SolarisPackage(object):
                 if self.datastream:
                         fp = self._pkgmap
                 else:
-                        fp = file(self.pkgpath + "/pkgmap")
+                        fp = open(self.pkgpath + "/pkgmap")
 
                 for line in fp:
                         line = line.rstrip('\n')

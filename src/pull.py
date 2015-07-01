@@ -34,7 +34,6 @@ import shutil
 import sys
 import tempfile
 import traceback
-import urllib
 import warnings
 
 import pkg.catalog as catalog
@@ -55,6 +54,7 @@ import pkg.version as version
 from pkg.client import global_settings
 from pkg.misc import emsg, get_pkg_otw_size, msg, PipeError
 from pkg.client.debugvalues import DebugValues
+from six.moves.urllib.parse import quote
 
 # Globals
 archive = False
@@ -1226,7 +1226,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         open_time = pfmri.get_timestamp()
                         return "{0:d}_{1}".format(
                             calendar.timegm(open_time.utctimetuple()),
-                            urllib.quote(str(pfmri), ""))
+                            quote(str(pfmri), ""))
 
                 # First, retrieve the manifests and calculate package transfer
                 # sizes.

@@ -34,6 +34,7 @@ import pkg.lint.base as base
 from pkg.actions import ActionError
 from pkg.actions.file import FileAction
 import re
+import six
 import stat
 import string
 
@@ -132,7 +133,7 @@ class PkgDupActionChecker(base.ActionChecker):
                                 variants = action.get_variant_template()
                                 variants.merge_unknown(pkg_vars)
                                 # Action attributes must be lists or strings.
-                                for k, v in variants.iteritems():
+                                for k, v in six.iteritems(variants):
                                         if isinstance(v, set):
                                                 action.attrs[k] = list(v)
                                         else:
@@ -1387,7 +1388,7 @@ class PkgActionChecker(base.ActionChecker):
                 if "fmri" not in action.attrs:
                         return
                 fmris = action.attrs["fmri"]
-                if isinstance(fmris, basestring):
+                if isinstance(fmris, six.string_types):
                         fmris = [fmris]
 
                 for fmri in fmris:

@@ -33,6 +33,7 @@ relationship between the package containing the action and another package.
 
 import generic
 import re
+import six
 
 import pkg.actions
 import pkg.client.pkgdefs as pkgdefs
@@ -318,10 +319,10 @@ class DependencyAction(generic.Action):
                 # it creating a dummy timestamp.  So we have to split it apart
                 # manually.
                 #
-                if isinstance(pfmris, basestring):
+                if isinstance(pfmris, six.string_types):
                         pfmris = [pfmris]
                 inds = []
-                pat = re.compile(r"pkg:///|pkg://[^/]*/|pkg:/") 
+                pat = re.compile(r"pkg:///|pkg://[^/]*/|pkg:/")
                 for p in pfmris:
                         # Strip pkg:/ or pkg:/// from the fmri.
                         # If fmri has pkg:// then strip the prefix
@@ -418,7 +419,7 @@ class DependencyAction(generic.Action):
 
                         # Now build the action output string an attribute at a
                         # time.
-                        for k, v in sorted(act.attrs.iteritems(), cmp=cmpkv):
+                        for k, v in sorted(six.iteritems(act.attrs), cmp=cmpkv):
                                 # Newline breaks are only forced when there is
                                 # more than one value for an attribute.
                                 if not (isinstance(v, list) or

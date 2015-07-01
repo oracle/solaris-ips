@@ -239,7 +239,7 @@ providing a version at which to freeze them.
                 self.pkg("freeze", su_wrap=True)
 
                 # Test that we don't stack trace if the version is unexpected.
-                version, d = json.load(file(pth))
+                version, d = json.load(open(pth))
                 with open(pth, "wb") as fh:
                         json.dump((-1, d), fh)
                 self.pkg("freeze", exit=1)

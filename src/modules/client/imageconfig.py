@@ -28,10 +28,9 @@ import errno
 import os.path
 import platform
 import re
-import urllib
+import six
 
-from pkg.client import global_settings
-logger = global_settings.logger
+from six.moves.urllib.parse import quote, unquote
 
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
@@ -44,6 +43,9 @@ import pkg.pkgsubprocess as subprocess
 import pkg.portable as portable
 import pkg.smf as smf
 import pkg.variant as variant
+
+from pkg.client import global_settings
+logger = global_settings.logger
 
 from pkg.misc import DictProperty, SIGNATURE_POLICY
 from pkg.client.debugvalues import DebugValues
@@ -346,15 +348,15 @@ class ImageConfig(cfg.FileConfig):
 
         def __publisher_iteritems(self):
                 """Support iteritems on publishers"""
-                return self.__publishers.iteritems()
+                return six.iteritems(self.__publishers)
 
         def __publisher_keys(self):
                 """Support keys() on publishers"""
-                return self.__publishers.keys()
+                return list(self.__publishers.keys())
 
         def __publisher_values(self):
                 """Support values() on publishers"""
-                return self.__publishers.values()
+                return list(self.__publishers.values())
 
         def get_policy(self, policy):
                 """Return a boolean value for the named policy.  Returns
@@ -422,12 +424,12 @@ class ImageConfig(cfg.FileConfig):
                 idx = self.get_index()
                 self.variants.update(idx.get("variant", {}))
                 # facets are encoded so they can contain '/' characters.
-                for k, v in idx.get("facet", {}).iteritems():
+                for k, v in six.iteritems(idx.get("facet", {})):
                         # convert facet name from unicode to a string
-                        self.facets[str(urllib.unquote(k))] = v
-                for k, v in idx.get("inherited_facet", {}).iteritems():
+                        self.facets[str(unquote(k))] = v
+                for k, v in six.iteritems(idx.get("inherited_facet", {})):
                         # convert facet name from unicode to a string
-                        self.facets._set_inherited(str(urllib.unquote(k)), v)
+                        self.facets._set_inherited(str(unquote(k)), v)
 
                 # Ensure architecture and zone variants are defined.
                 if "variant.arch" not in self.variants:
@@ -436,7 +438,7 @@ class ImageConfig(cfg.FileConfig):
                         self.variants["variant.opensolaris.zone"] = "global"
 
                 # load linked image child properties
-                for s, v in idx.iteritems():
+                for s, v in six.iteritems(idx):
                         if not re.match("linked_.*", s):
                                 continue
                         linked_props = self.read_linked(s, v)
@@ -459,14 +461,14 @@ class ImageConfig(cfg.FileConfig):
                         # Get updated configuration index.
                         idx = self.get_index()
 
-                for s, v in idx.iteritems():
+                for s, v in six.iteritems(idx):
                         if re.match("authority_.*", s):
                                 k, a = self.read_publisher(s, v)
                                 self.publishers[k] = a
 
                 # Move any properties found in policy section (from older
                 # images) to the property section.
-                for k, v in idx.get("policy", {}).iteritems():
+                for k, v in six.iteritems(idx.get("policy", {})):
                         self.set_property("property", k, v)
                         self.remove_property("policy", k)
 
@@ -491,7 +493,7 @@ class ImageConfig(cfg.FileConfig):
                 self.set_property("property", "publisher-search-order", pso)
 
                 # Load mediator data.
-                for entry, value in idx.get("mediators", {}).iteritems():
+                for entry, value in six.iteritems(idx.get("mediators", {})):
                         mname, mtype = entry.rsplit(".", 1)
                         # convert mediator name+type from unicode to a string
                         mname = str(mname)
@@ -568,7 +570,7 @@ class ImageConfig(cfg.FileConfig):
                 # save local facets
                 for f in self.facets.local:
                         self.set_property("facet",
-                            urllib.quote(f, ""), self.facets.local[f])
+                            quote(f, ""), self.facets.local[f])
 
                 try:
                         self.remove_section("inherited_facet")
@@ -577,14 +579,14 @@ class ImageConfig(cfg.FileConfig):
                 # save inherited facets
                 for f in self.facets.inherited:
                         self.set_property("inherited_facet",
-                            urllib.quote(f, ""), self.facets.inherited[f])
+                            quote(f, ""), self.facets.inherited[f])
 
                 try:
                         self.remove_section("mediators")
                 except cfg.UnknownSectionError:
                         pass
-                for mname, mvalues in self.mediators.iteritems():
-                        for mtype, mvalue in mvalues.iteritems():
+                for mname, mvalues in six.iteritems(self.mediators):
+                        for mtype, mvalue in six.iteritems(mvalues):
                                 # name.implementation[-(source|version)]
                                 # name.version[-source]
                                 pname = mname + "." + mtype
@@ -592,7 +594,7 @@ class ImageConfig(cfg.FileConfig):
 
                 # remove all linked image child configuration
                 idx = self.get_index()
-                for s, v in idx.iteritems():
+                for s, v in six.iteritems(idx):
                         if not re.match("linked_.*", s):
                                 continue
                         self.remove_section(s)
@@ -721,7 +723,7 @@ class ImageConfig(cfg.FileConfig):
                                         # the existing configuration.
                                         secobj.remove_property(pname)
 
-                        for key, val in pub.properties.iteritems():
+                        for key, val in six.iteritems(pub.properties):
                                 if val == DEF_TOKEN:
                                         continue
                                 self.set_property(section,
@@ -872,7 +874,7 @@ class ImageConfig(cfg.FileConfig):
                                     {"uri": uri, "proxy": proxy})
 
                 props = {}
-                for k, v in sec_idx.iteritems():
+                for k, v in six.iteritems(sec_idx):
                         if not k.startswith("property."):
                                 continue
                         prop_name = k[len("property."):]
@@ -886,7 +888,7 @@ class ImageConfig(cfg.FileConfig):
 
                 # Load repository data.
                 repo_data = {}
-                for key, val in sec_idx.iteritems():
+                for key, val in six.iteritems(sec_idx):
                         if key.startswith("repo."):
                                 pname = key[len("repo."):]
                                 repo_data[pname] = val
@@ -1038,7 +1040,7 @@ class NullSystemPublisher(object):
         def set_properties(self, properties):
                 """Set multiple properties at one time."""
 
-                if properties.keys() != ["property"]:
+                if list(properties.keys()) != ["property"]:
                         raise NotImplementedError
                 props = properties["property"]
                 if not all(k in self.__supported_props for k in props):
@@ -1273,8 +1275,8 @@ class BlendedConfig(object):
                     set(sys_cfg.publishers):
                         pold = old_sysconfig.publishers[prefix]
                         pnew = sys_cfg.publishers[prefix]
-                        if map(str, pold.repository.origins) != \
-                            map(str, pnew.repository.origins):
+                        if list(map(str, pold.repository.origins)) != \
+                            list(map(str, pnew.repository.origins)):
                                 modified_pubs |= set([prefix])
 
                 if proxy_url:
@@ -1569,15 +1571,15 @@ class BlendedConfig(object):
 
         def __publisher_iteritems(self):
                 """Support iteritems on publishers"""
-                return self.__publishers.iteritems()
+                return six.iteritems(self.__publishers)
 
         def __publisher_keys(self):
                 """Support keys() on publishers"""
-                return self.__publishers.keys()
+                return list(self.__publishers.keys())
 
         def __publisher_values(self):
                 """Support values() on publishers"""
-                return self.__publishers.values()
+                return list(self.__publishers.values())
 
         # properties so we can enforce rules and manage two potentially
         # overlapping sets of publishers

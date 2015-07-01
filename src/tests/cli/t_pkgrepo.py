@@ -46,8 +46,6 @@ import simplejson as json
 import subprocess
 import tempfile
 import time
-import urllib
-import urlparse
 import unittest
 
 try:

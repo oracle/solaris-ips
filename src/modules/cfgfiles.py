@@ -32,6 +32,7 @@ import datetime
 import errno
 import os
 import re
+import six
 import stat
 import sys
 import tempfile
@@ -98,7 +99,7 @@ class CfgFile(object):
 
                 while self.continuation_lines and line[-2:] == "\\\n":
                     linecnt += 1
-                    line += file.next()
+                    line += next(file)
 
                 line = line.rstrip("\n")
                 if self.iscommentline(line):
@@ -270,7 +271,7 @@ class PasswordFile(CfgFile):
     def getnextuid(self):
         """returns next free system (<=99) uid"""
         uids=[]
-        for t in self.password_file.index.itervalues():
+        for t in six.itervalues(self.password_file.index):
             if t[1]:
                 uids.append(t[1]["uid"])
         for i in range(100):
@@ -324,7 +325,7 @@ class GroupFile(CfgFile):
     def getnextgid(self):
         """returns next free system (<=99) gid"""
         gids=[]
-        for t in self.index.itervalues():
+        for t in six.itervalues(self.index):
             if t[1]:
                 gids.append(t[1]["gid"])
         for i in range(100):

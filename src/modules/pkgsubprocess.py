@@ -27,6 +27,7 @@
 import os
 import platform
 import types
+import six
 import subprocess
 import pkg.portable
 try:
@@ -156,7 +157,7 @@ class Popen(subprocess.Popen):
                                 # the explicit conversion to a list.
                                 env = [
                                     "{0}={1}".format(k, v)
-                                    for k, v in env.iteritems()
+                                    for k, v in six.iteritems(env)
                                 ]
 
                         self.pid = posix_spawnp(executable, args, sfa, env)

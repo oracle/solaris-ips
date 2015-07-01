@@ -29,13 +29,16 @@ server"""
 from __future__ import print_function
 import cherrypy
 import cherrypy.lib.static
-import httplib
 import os
+import sys
+
+from six.moves import http_client
+from six.moves.urllib.parse import unquote
+
 import pkg.server.api as api
 import pkg.server.api_errors as sae
 import pkg.server.feed
-import sys
-import urllib
+
 try:
         import mako.exceptions
         import mako.lookup
@@ -55,10 +58,10 @@ def init(depot):
 
 def feed(depot, request, response, pub):
         if depot.repo.mirror:
-                raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                raise cherrypy.HTTPError(http_client.NOT_FOUND,
                     "Operation not supported in current server mode.")
         if not depot.repo.get_catalog(pub).updates:
-                raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                raise cherrypy.HTTPError(http_client.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
         return pkg.server.feed.handle(depot, request, response, pub)
 
@@ -72,7 +75,7 @@ def __handle_error(path, error):
         # All errors are treated as a 404 since reverse proxies such as Apache
         # don't handle 500 errors in a desirable way.  For any error but a 404,
         # an error is logged.
-        if error != httplib.NOT_FOUND:
+        if error != http_client.NOT_FOUND:
                 cherrypy.log("Error encountered while processing "
                     "template: {0}\n".format(path), traceback=True)
 
@@ -110,12 +113,12 @@ def respond(depot, request, response, pub, http_depot=None):
                 return feed(depot, request, response, pub)
 
         if not path.endswith(".shtml"):
-                spath = urllib.unquote(path)
+                spath = unquote(path)
                 fname = os.path.join(depot.web_root, spath)
                 if not os.path.normpath(fname).startswith(
                     os.path.normpath(depot.web_root)):
                         # Ignore requests for files outside of the web root.
-                        return __handle_error(path, httplib.NOT_FOUND)
+                        return __handle_error(path, http_client.NOT_FOUND)
                 else:
                         return cherrypy.lib.static.serve_file(os.path.join(
                             depot.web_root, spath))
@@ -133,15 +136,15 @@ def respond(depot, request, response, pub, http_depot=None):
                     error=str(e)))
                 cherrypy.log("Ensure that the correct --content-root has been "
                     "provided to pkg.depotd.")
-                return __handle_error(request.path_info, httplib.NOT_FOUND)
+                return __handle_error(request.path_info, http_client.NOT_FOUND)
         except IOError as e:
-                return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)
+                return __handle_error(path, http_client.INTERNAL_SERVER_ERROR)
         except mako.exceptions.TemplateLookupException as e:
                 # The above exception indicates that mako could not locate the
                 # template (in most cases, Mako doesn't seem to always clearly
                 # differentiate).
-                return __handle_error(path, httplib.NOT_FOUND)
+                return __handle_error(path, http_client.NOT_FOUND)
         except sae.RedirectException as e:
                 raise cherrypy.HTTPRedirect(e.data)
         except:
-                return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)
+                return __handle_error(path, http_client.INTERNAL_SERVER_ERROR)

@@ -22,8 +22,8 @@
 ## Copyright 2008, 2010 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
-        import urlparse
         import re
+        from six.moves.urllib.parse import urlparse
 %>\
 <%page args="g_vars"/>\
 ## Please note that the opensolaris.org and sun.com themes can not be used
@@ -44,7 +44,7 @@
                 # If a theme was not specified, attempt to determine which theme
                 # to use based on an absolute URL to the current server.
                 scheme, netloc, path, params, query, fragment = \
-                    urlparse.urlparse(request.url(), allow_fragments=0)
+                    urlparse(request.url(), allow_fragments=0)
 
                 match = re.match("(?:.*[.])?(opensolaris.(?:com|org)|sun.com|oracle.com)", netloc)
                 if match:

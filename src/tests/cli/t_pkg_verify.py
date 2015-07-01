@@ -139,7 +139,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.assert_("Unexpected Exception" not in self.output)
                 self.assert_("PACKAGE" in self.output and "STATUS" in self.output)
 
-                # Test that "-H" works as expected. 
+                # Test that "-H" works as expected.
                 self.pkg_verify("foo -H", exit=1)
                 self.assert_("PACKAGE" not in self.output and
                     "STATUS" not in self.output)
@@ -222,7 +222,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # check that verify is silent on about modified editable files
                 self.image_create(self.rurl)
                 self.pkg("install foo")
-                fd = file(os.path.join(self.get_img_path(), "etc", "preserved"), "w+")
+                fd = open(os.path.join(self.get_img_path(), "etc", "preserved"), "w+")
                 fd.write("Bobcats are here")
                 fd.close()
                 self.pkg_verify("foo")

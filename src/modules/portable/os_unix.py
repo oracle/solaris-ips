@@ -175,7 +175,7 @@ def load_passwd(dirpath):
                 return
         users[dirpath] = user = {}
         uids[dirpath] = uid = {}
-        f = file(passwd_file)
+        f = open(passwd_file)
         for line in f:
                 arr = line.rstrip().split(":")
                 if len(arr) != 7:
@@ -206,7 +206,7 @@ def load_groups(dirpath):
                 return
         groups[dirpath] = group = {}
         gids[dirpath] = gid = {}
-        f = file(group_file)
+        f = open(group_file)
         for line in f:
                 arr = line.rstrip().split(":")
                 if len(arr) != 4:

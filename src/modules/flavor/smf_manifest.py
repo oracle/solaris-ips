@@ -25,6 +25,7 @@
 #
 
 import os.path
+import six
 import xml.dom.minidom as minidom
 import xml.parsers
 import xml.parsers.expat
@@ -51,7 +52,7 @@ class SMFManifestDependency(base.PublishingDependency):
                 """
                 self.manifest = path
                 full_paths = None
-                if isinstance(path, basestring):
+                if isinstance(path, six.string_types):
                         base_names = [os.path.basename(path)]
                         paths = [os.path.dirname(path)]
 
@@ -328,7 +329,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                 deps.append(SMFManifestDependency(action, manifest, pkg_vars,
                     action.attrs[PD_PROTO_DIR]))
         pkg_attrs = {
-            "org.opensolaris.smf.fmri": instance_mf.keys()
+            "org.opensolaris.smf.fmri": list(instance_mf.keys())
         }
         return deps, elist, pkg_attrs
 

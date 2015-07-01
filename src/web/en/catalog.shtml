@@ -23,7 +23,7 @@
 ##
 <%!
         import pkg.fmri
-        import urllib
+        from six.moves.urllib.parse import quote
 %>\
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -231,11 +231,11 @@
 
                 # Start FMRI entry
                 phref = self.shared.rpath(g_vars, "info/0/{0}".format(
-                    urllib.quote(str(pfmri), "")))
+                    quote(str(pfmri), "")))
                 # XXX the .p5i extension is a bogus hack because
                 # packagemanager requires it and shouldn't.
                 p5ihref = self.shared.rpath(g_vars, "p5i/0/{0}.p5i".format(
-                    urllib.quote(pfmri.pkg_name, ""))) 
+                    quote(pfmri.pkg_name, ""))) 
                 mhref = self.shared.rpath(g_vars,
                     "manifest/0/{0}".format(pfmri.get_url_path()))
 %>

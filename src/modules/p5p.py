@@ -28,9 +28,13 @@ import atexit
 import collections
 import errno
 import tarfile as tf
-import pkg.pkggzip
-import pkg.pkgtarfile as ptf
 import os
+import shutil
+import six
+import sys
+import tempfile
+from six.moves.urllib.parse import unquote
+
 import pkg
 import pkg.client.api_errors as apx
 import pkg.client.publisher
@@ -40,10 +44,8 @@ import pkg.manifest
 import pkg.misc
 import pkg.portable
 import pkg.p5i
-import shutil
-import sys
-import tempfile
-import urllib
+import pkg.pkggzip
+import pkg.pkgtarfile as ptf
 
 if sys.version > '3':
         long = int
@@ -723,7 +725,7 @@ class Archive(object):
                 """
 
                 assert pfmri and mpath and fpath
-                if isinstance(pfmri, basestring):
+                if isinstance(pfmri, six.string_types):
                         pfmri = pkg.fmri.PkgFmri(pfmri)
                 assert pfmri.publisher
                 self.__add_package(pfmri, mpath, fpath=fpath)
@@ -743,7 +745,7 @@ class Archive(object):
                 """
 
                 assert pfmri and repo
-                if isinstance(pfmri, basestring):
+                if isinstance(pfmri, six.string_types):
                         pfmri = pkg.fmri.PkgFmri(pfmri)
                 assert pfmri.publisher
                 self.__add_package(pfmri, repo.manifest(pfmri), repo=repo)
@@ -825,8 +827,8 @@ class Archive(object):
                 for name in self.__extract_offsets:
                         if name.startswith(manpath) and name.count("/") == 4:
                                 ignored, stem, ver = name.rsplit("/", 2)
-                                stem = urllib.unquote(stem)
-                                ver = urllib.unquote(ver)
+                                stem = unquote(stem)
+                                ver = unquote(ver)
                                 pfmri = pkg.fmri.PkgFmri(name=stem,
                                     publisher=pub, version=ver)
 
@@ -930,7 +932,7 @@ class Archive(object):
 
                 assert not self.__closed and "r" in self.__mode
                 assert pfmri and path
-                if isinstance(pfmri, basestring):
+                if isinstance(pfmri, six.string_types):
                         pfmri = pkg.fmri.PkgFmri(pfmri)
                 assert pfmri.publisher
 
@@ -1124,7 +1126,7 @@ class Archive(object):
 
                 assert not self.__closed and "r" in self.__mode
                 assert pfmri
-                if isinstance(pfmri, basestring):
+                if isinstance(pfmri, six.string_types):
                         pfmri = pkg.fmri.PkgFmri(pfmri)
                 assert pfmri.publisher
 
@@ -1148,7 +1150,7 @@ class Archive(object):
                 in the archive."""
 
                 if self.__pubs:
-                        return self.__pubs.values()
+                        return list(self.__pubs.values())
 
                 # If the extraction index doesn't exist, scan the complete
                 # archive and build one.
@@ -1180,7 +1182,7 @@ class Archive(object):
 
                                 self.__pubs[pfx] = pub
 
-                return self.__pubs.values()
+                return list(self.__pubs.values())
 
         def __cleanup(self):
                 """Private helper method to cleanup temporary files."""

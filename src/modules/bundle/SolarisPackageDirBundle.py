@@ -25,14 +25,16 @@
 #
 
 import os
+import six
+
 import pkg.bundle
 import pkg.misc as misc
 
-from pkg.sysvpkg import SolarisPackage
-from pkg.cpiofile import CpioFile
 from pkg.actions import *
 from pkg.actions.attribute import AttributeAction
 from pkg.actions.legacy import LegacyAction
+from pkg.cpiofile import CpioFile
+from pkg.sysvpkg import SolarisPackage
 
 
 class SolarisPackageDirBundle(pkg.bundle.Bundle):
@@ -183,7 +185,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                                 act.attrs["preserve"] = preserve
 
                         if act.hash == "NOHASH" and \
-                            isinstance(data, basestring) and \
+                            isinstance(data, six.string_types) and \
                             data.startswith(self.filename):
                                 act.hash = data[len(self.filename) + 1:]
                 elif mapline.type in "dx":
@@ -200,7 +202,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                         act = license.LicenseAction(data,
                             license="{0}.copyright".format(self.pkgname))
                         if act.hash == "NOHASH" and \
-                            isinstance(data, basestring) and \
+                            isinstance(data, six.string_types) and \
                             data.startswith(self.filename):
                                 act.hash = data[len(self.filename) + 1:]
                 elif mapline.type == "i":

@@ -31,6 +31,7 @@ packaging object.  This contains the attributes necessary to create
 a new user."""
 
 import generic
+import six
 try:
         from pkg.cfgfiles import *
         have_cfgfiles = True
@@ -129,7 +130,7 @@ class GroupAction(generic.Action):
                 # Get the default values if they're non-empty
                 grdefval = dict((
                     (k, v)
-                    for k, v in gr.getdefaultvalues().iteritems()
+                    for k, v in six.iteritems(gr.getdefaultvalues())
                     if v != ""
                 ))
 

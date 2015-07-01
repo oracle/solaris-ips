@@ -32,6 +32,7 @@ import logging
 import os
 import re
 import shutil
+import six
 import simplejson as json
 import socket
 import sys
@@ -102,11 +103,7 @@ DEPOT_USER = "pkg5srv"
 DEPOT_GROUP = "pkg5srv"
 
 class DepotException(Exception):
-        def __unicode__(self):
-        # To workaround python issues 6108 and 2517, this provides a
-        # a standard wrapper for this class' exceptions so that they
-        # have a chance of being stringified correctly.
-                return str(self)
+        pass
 
 
 def error(text, cmd=None):
@@ -318,7 +315,7 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                     ssl_cert_chain_file=ssl_cert_chain_file
                 )
 
-                with file(conf_path, "wb") as conf_file:
+                with open(conf_path, "wb") as conf_file:
                         conf_file.write(conf_text)
 
         except socket.gaierror as err:
@@ -338,7 +335,7 @@ def _write_versions_response(htdocs_path, fragment=False):
                     *DEPOT_VERSIONS_DIRNAME)
                 misc.makedirs(versions_path)
 
-                with file(os.path.join(versions_path, "index.html"), "w") as \
+                with open(os.path.join(versions_path, "index.html"), "w") as \
                     versions_file:
                         versions_file.write(
                             fragment and DEPOT_FRAGMENT_VERSIONS_STR or
@@ -361,7 +358,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
                             os.path.sep.join(
                                [repo_prefix, pub.prefix] + DEPOT_PUB_DIRNAME))
                         misc.makedirs(pub_path)
-                        with file(os.path.join(pub_path, "index.html"), "w") as\
+                        with open(os.path.join(pub_path, "index.html"), "w") as\
                             pub_file:
                                 p5i.write(pub_file, [pub])
 
@@ -369,7 +366,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
                 pub_path = os.path.join(htdocs_path,
                     os.path.sep.join([repo_prefix] + DEPOT_PUB_DIRNAME))
                 os.makedirs(pub_path)
-                with file(os.path.join(pub_path, "index.html"), "w") as \
+                with open(os.path.join(pub_path, "index.html"), "w") as \
                     pub_file:
                         p5i.write(pub_file, pub_objs)
 
@@ -383,7 +380,7 @@ def _write_status_response(status, htdocs_path, repo_prefix):
                 status_path = os.path.join(htdocs_path, repo_prefix,
                     os.path.sep.join(DEPOT_STATUS_DIRNAME), "index.html")
                 misc.makedirs(os.path.dirname(status_path))
-                with file(status_path, "w") as status_file:
+                with open(status_path, "w") as status_file:
                         status_file.write(json.dumps(status, ensure_ascii=False,
                             indent=2, sort_keys=True))
         except OSError as err:

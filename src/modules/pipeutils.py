@@ -69,10 +69,8 @@ A RPC client can be implemented as follows:
 """
 
 from __future__ import print_function
-import SocketServer
 import errno
 import fcntl
-import httplib
 import os
 import socket
 import stat
@@ -96,7 +94,11 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCDispatcher as \
 #
 # Unused import; pylint: disable=W0611
 from jsonrpclib import ProtocolError as ProtocolError1
-from xmlrpclib import ProtocolError as ProtocolError2
+
+# import-error; pylint: disable=F0401
+# no-name-in-module; pylint: disable=E0611
+from six.moves import socketserver, http_client
+from six.moves.xmlrpc_client import ProtocolError as ProtocolError2
 # Unused import; pylint: enable=W0611
 
 # debugging
@@ -332,8 +334,11 @@ class PipeSocket(PipeFile):
                 """set socket opt."""
                 pass
 
-
-class PipedHTTPResponse(httplib.HTTPResponse):
+# pylint seems to be panic about these.
+# PipedHTTP: Class has no __init__ method; pylint: disable=W0232
+# PipedHTTPResponse.begin: Attribute 'will_close' defined outside __init__;
+# pylint: disable=W0201
+class PipedHTTPResponse(http_client.HTTPResponse):
         """Create a httplib.HTTPResponse like object that can be used with
         a pipe as a transport.  We override the minimum number of parent
         routines necessary."""
@@ -342,12 +347,12 @@ class PipedHTTPResponse(httplib.HTTPResponse):
                 """Our connection will never be automatically closed, so set
                 will_close to False."""
 
-                httplib.HTTPResponse.begin(self)
+                http_client.HTTPResponse.begin(self)
                 self.will_close = False
                 return
 
 
-class PipedHTTPConnection(httplib.HTTPConnection):
+class PipedHTTPConnection(http_client.HTTPConnection):
         """Create a httplib.HTTPConnection like object that can be used with
         a pipe as a transport.  We override the minimum number of parent
         routines necessary."""
@@ -359,7 +364,7 @@ class PipedHTTPConnection(httplib.HTTPConnection):
                 assert port is None
 
                 # invoke parent constructor
-                httplib.HTTPConnection.__init__(self, "localhost",
+                http_client.HTTPConnection.__init__(self, "localhost",
                     strict=strict)
 
                 # self.sock was initialized by httplib.HTTPConnection
@@ -440,14 +445,14 @@ class _PipedTransport(rpc.Transport):
                 return self.parse_response(c.makefile())
 
 
-class _PipedServer(SocketServer.BaseServer):
+class _PipedServer(socketserver.BaseServer):
         """Modeled after SocketServer.TCPServer."""
 
         def __init__(self, fd, RequestHandlerClass):
                 self.__pipe_file = PipeFile(fd, "server-transport")
                 self.__shutdown_initiated = False
 
-                SocketServer.BaseServer.__init__(self,
+                socketserver.BaseServer.__init__(self,
                     server_address="localhost",
                     RequestHandlerClass=RequestHandlerClass)
 

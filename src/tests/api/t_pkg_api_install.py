@@ -42,10 +42,10 @@ import pkg.misc as misc
 import pkg.portable as portable
 import stat
 import shutil
-import urllib
-import urlparse
 
 from pkg.client.debugvalues import DebugValues
+from six.moves.urllib.parse import urlunparse
+from six.moves.urllib.request import pathname2url
 
 PKG_CLIENT_NAME = "pkg"
 
@@ -664,8 +664,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # Next, create a repository with an older version of pkg,
                 # and a newer version of foo.
                 new_repo_dir = os.path.join(self.test_root, "test2")
-                new_repo_uri = urlparse.urlunparse(("file", "",
-                    urllib.pathname2url(new_repo_dir), "", "", ""))
+                new_repo_uri = urlunparse(("file", "",
+                    pathname2url(new_repo_dir), "", "", ""))
 
                 self.create_repo(new_repo_dir,
                     properties={ "publisher": { "prefix": "test2" } })

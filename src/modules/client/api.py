@@ -64,11 +64,18 @@ import itertools
 import os
 import shutil
 import simplejson as json
+import six
 import sys
 import tempfile
 import threading
 import time
-import urllib
+
+# Pylint seems to be panic about six even if it is installed. Instead of using
+# 'disable' here, a better way is to use ignore-modules in pylintrc, but
+# it has an issue that is not fixed until recently. See pylint/issues/#223.
+# import-error; pylint: disable=F0401
+# no-name-in-module; pylint: disable=E0611
+from six.moves.urllib.parse import unquote
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -362,7 +369,7 @@ explicitly set cmdpath when allocating an ImageInterface object, or
 override cmdpath when allocating an Image object by setting PKG_CMDPATH
 in the environment or by setting simulate_cmdpath in DebugValues.""")
 
-                if isinstance(img_path, basestring):
+                if isinstance(img_path, six.string_types):
                         # Store this for reset().
                         self._img_path = img_path
                         self._img = image.Image(img_path,
@@ -551,7 +558,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                  """
 
                 ret = {}
-                for m, mvalues in self._img.cfg.mediators.iteritems():
+                for m, mvalues in six.iteritems(self._img.cfg.mediators):
                         ret[m] = copy.copy(mvalues)
                         if "version" in ret[m]:
                                 # Don't expose internal Version object to
@@ -836,7 +843,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         def get_avoid_list(self):
                 """Return list of tuples of (pkg stem, pkgs w/ group
                 dependencies on this) """
-                return [a for a in self._img.get_avoid_dict().iteritems()]
+                return [a for a in six.iteritems(self._img.get_avoid_dict())]
 
         def gen_facets(self, facet_list, implicit=False, patterns=misc.EmptyI):
                 """A generator function that produces tuples of the form:
@@ -1143,7 +1150,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # re-raise the original exception. (we have to explicitly
                 # restate the original exception since we may have cleared the
                 # current exception scope above.)
-                raise exc_type, exc_value, exc_traceback
+                six.reraise(exc_type, exc_value, exc_traceback)
 
         def solaris_image(self):
                 """Returns True if the current image is a solaris image, or an
@@ -1217,9 +1224,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     # arg name              type                   nullable
                     "_act_timeout":         (int,                  False),
                     "_be_activate":         (bool,                 False),
-                    "_be_name":             (basestring,           True),
+                    "_be_name":             (six.string_types,     True),
                     "_backup_be":           (bool,                 True),
-                    "_backup_be_name":      (basestring,           True),
+                    "_backup_be_name":      (six.string_types,     True),
                     "_ignore_missing":      (bool,                 False),
                     "_ipkg_require_latest": (bool,                 False),
                     "_li_erecurse":         (iter,                 True),
@@ -3242,7 +3249,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 ret_pubs = []
                 for repo_uri in repos:
-                        if isinstance(repo_uri, basestring):
+                        if isinstance(repo_uri, six.string_types):
                                 repo = publisher.RepositoryURI(repo_uri)
                         else:
                                 # Already a RepositoryURI.
@@ -3446,7 +3453,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         # copy() is too slow here and catalog
                                         # entries are shallow so this should be
                                         # sufficient.
-                                        entry = dict(sentry.iteritems())
+                                        entry = dict(six.iteritems(sentry))
                                         if not base:
                                                 # Nothing else to do except add
                                                 # the entry for non-base catalog
@@ -4081,7 +4088,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                 # structure sanely somewhere.
                                                 mods = tuple(
                                                     (k, tuple(sorted(a.attrlist(k))))
-                                                    for k in sorted(a.attrs.iterkeys())
+                                                    for k in sorted(six.iterkeys(a.attrs))
                                                     if k not in ("name", "value")
                                                 )
                                                 attrs[atname][mods].extend(atvlist)
@@ -4128,7 +4135,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         # image, elide packages that are not for
                                         # a matching variant value.
                                         is_list = type(atvalue) == list
-                                        for vn, vv in img_variants.iteritems():
+                                        for vn, vv in six.iteritems(img_variants):
                                                 if vn == atname and \
                                                     ((is_list and
                                                     vv not in atvalue) or \
@@ -4718,7 +4725,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         subfields = fields[2].split(None, 2)
                         pfmri = fmri.PkgFmri(subfields[0])
                         return pfmri, (query_num, pub, (v, return_type,
-                            (pfmri, urllib.unquote(subfields[1]),
+                            (pfmri, unquote(subfields[1]),
                             subfields[2])))
                 elif return_type == Query.RETURN_PACKAGES:
                         pfmri = fmri.PkgFmri(fields[2])
@@ -4985,7 +4992,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 search is really communicating with a search-enabled server."""
 
                 try:
-                        s = res.next()
+                        s = next(res)
                         return s == Query.VALIDATION_STRING[v]
                 except StopIteration:
                         return False
@@ -5196,7 +5203,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # First, attempt to match the updated publisher object to an
                 # existing one using the object id that was stored during
                 # copy().
-                for key, old in publishers.iteritems():
+                for key, old in six.iteritems(publishers):
                         if pub._source_object_id == id(old):
                                 # Store the new publisher's id and the old
                                 # publisher object so it can be restored if the
@@ -5212,7 +5219,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # Next, be certain that the publisher's prefix and alias
                 # are not already in use by another publisher.
-                for key, old in publishers.iteritems():
+                for key, old in six.iteritems(publishers):
                         if pub._source_object_id == id(old):
                                 # Don't check the object we're replacing.
                                 continue
@@ -5225,7 +5232,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # Next, determine what needs updating and add the updated
                 # publisher.
-                for key, old in publishers.iteritems():
+                for key, old in six.iteritems(publishers):
                         if pub._source_object_id == id(old):
                                 old = orig_pub[-1]
                                 if need_refresh(old, pub):
@@ -5250,7 +5257,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 def cleanup():
                         new_id, old_pub = orig_pub
-                        for new_pfx, new_pub in publishers.iteritems():
+                        for new_pfx, new_pub in six.iteritems(publishers):
                                 if id(new_pub) == new_id:
                                         publishers[old_pub.prefix] = old_pub
                                         break

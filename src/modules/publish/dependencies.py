@@ -29,9 +29,10 @@ import itertools
 import operator
 import os
 import re
-import urllib
+import six
 
 from collections import namedtuple
+from six.moves.urllib.parse import unquote
 
 import pkg.actions as actions
 import pkg.client.api as api
@@ -153,7 +154,7 @@ class ExtraVariantedDependency(DependencyError):
 
         def __str__(self):
                 s = ""
-                for r, diff in sorted(self.rvs.iteritems()):
+                for r, diff in sorted(six.iteritems(self.rvs)):
                         for kind in diff.type_diffs:
                                 s += _("\t{r:15} Variant '{kind}' is not "
                                     "declared.\n").format(
@@ -196,7 +197,7 @@ pkgdepend has inferred conditional dependencies with different targets but
 which share a predicate.  pkg(5) can not represent these dependencies.  This
 issue can be resolved by changing the packaging of the links which generated the
 conditional dependencies so that they have different predicates or share the
-same FMRI.  Each pair of problematic conditional dependencies follows: 
+same FMRI.  Each pair of problematic conditional dependencies follows:
 """)
                 for i, (d1, d2, v) in enumerate(self.conditionals):
                         i += 1
@@ -650,7 +651,7 @@ def choose_name(fp, mfst):
         'mfst' is the Manifest object."""
 
         if mfst is None:
-                return urllib.unquote(os.path.basename(fp)), None
+                return unquote(os.path.basename(fp)), None
         name = mfst.get("pkg.fmri", mfst.get("fmri", None))
         if name is not None:
                 try:
@@ -658,7 +659,7 @@ def choose_name(fp, mfst):
                 except fmri.IllegalFmri:
                         pfmri = None
                 return name, pfmri
-        return urllib.unquote(os.path.basename(fp)), None
+        return unquote(os.path.basename(fp)), None
 
 def make_paths(file_dep):
         """Find all the possible paths which could satisfy the dependency
@@ -669,9 +670,9 @@ def make_paths(file_dep):
 
         rps = file_dep.attrs.get(paths_prefix, [""])
         files = file_dep.attrs[files_prefix]
-        if isinstance(files, basestring):
+        if isinstance(files, six.string_types):
                 files = [files]
-        if isinstance(rps, basestring):
+        if isinstance(rps, six.string_types):
                 rps = [rps]
         return [os.path.join(rp, f) for rp in rps for f in files]
 
@@ -1052,7 +1053,7 @@ def merge_deps(dest, src):
                 elif v != dest.attrs[k]:
                         # For now, just merge the values. Duplicate values
                         # will be removed in a later step.
-                        if isinstance(v, basestring):
+                        if isinstance(v, six.string_types):
                                 v = [v]
                         if isinstance(dest.attrs[k], list):
                                 dest.attrs[k].extend(v)
@@ -1515,7 +1516,7 @@ def prune_debug_attrs(action):
         """Given a dependency action with pkg.debug.depend attributes
         return a matching action with those attributes removed"""
 
-        attrs = dict((k, v) for k, v in action.attrs.iteritems()
+        attrs = dict((k, v) for k, v in six.iteritems(action.attrs)
                      if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
         return actions.depend.DependencyAction(**attrs)
 
@@ -1675,7 +1676,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                 for pkg_vct in package_vars.values():
                         pkg_vct.merge_unknown(distro_vars)
                 # Populate the installed files dictionary.
-                for pth, l in tmp_files.iteritems():
+                for pth, l in six.iteritems(tmp_files):
                         new_val = [
                             (p, __merge_actvct_with_pkgvct(tmpl,
                                 package_vars[p.pkg_name]))
@@ -1685,7 +1686,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                 del tmp_files
                 # Populate the link dictionary using the installed packages'
                 # information.
-                for pth, l in tmp_links.iteritems():
+                for pth, l in six.iteritems(tmp_links):
                         new_val = [
                             (p, __merge_actvct_with_pkgvct(tmpl,
                                 package_vars[p.pkg_name]), target)

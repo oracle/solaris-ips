@@ -89,12 +89,6 @@ del f, modname, module, nvlist, classes, c, cls
 class ActionError(Exception):
         """Base exception class for Action errors."""
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
         def __str__(self):
                 raise NotImplementedError()
 

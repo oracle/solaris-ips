@@ -27,11 +27,13 @@
 # This module provides a basic interface to smf.
 
 import os
+import six
 
 import pkg.pkgsubprocess as subprocess
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
+from six.moves.urllib.parse import urlparse
 
 logger = global_settings.logger
 
@@ -61,12 +63,6 @@ class NonzeroExitException(Exception):
                 self.cmd = cmd
                 self.return_code = return_code
                 self.output = output
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return "Cmd {0} exited with status {1:d}, and output '{2}'".format(
@@ -129,7 +125,7 @@ def check_fmris(attr, fmris, zone=None):
         from the set that is returned and an error message is logged.
         """
 
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = set([fmris])
         chars = "*?[!^"
         for fmri in fmris.copy():
@@ -191,7 +187,7 @@ def get_prop(fmri, prop, zone=None):
 def enable(fmris, temporary=False, sync_timeout=0, zone=None):
         if not fmris:
                 return
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
 
         args = [svcadm_path, "enable"]
@@ -207,7 +203,7 @@ def enable(fmris, temporary=False, sync_timeout=0, zone=None):
 def disable(fmris, temporary=False, sync_timeout=0, zone=None):
         if not fmris:
                 return
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
         args = [svcadm_path, "disable", "-s"]
         if sync_timeout > 0:
@@ -220,7 +216,7 @@ def disable(fmris, temporary=False, sync_timeout=0, zone=None):
 def mark(state, fmris, zone=None):
         if not fmris:
                 return
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
         args = [svcadm_path, "mark", state]
         # fmris could be a list so explicit cast is necessary
@@ -229,7 +225,7 @@ def mark(state, fmris, zone=None):
 def refresh(fmris, sync_timeout=0, zone=None):
         if not fmris:
                 return
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
         args = [svcadm_path, "refresh"]
         if sync_timeout:
@@ -242,7 +238,7 @@ def refresh(fmris, sync_timeout=0, zone=None):
 def restart(fmris, sync_timeout=0, zone=None):
         if not fmris:
                 return
-        if isinstance(fmris, basestring):
+        if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
         args = [svcadm_path, "restart"]
         if sync_timeout:

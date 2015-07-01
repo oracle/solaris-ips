@@ -32,6 +32,7 @@ import pkg.misc
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
+import six
 
 
 class Actuator(object):
@@ -144,11 +145,15 @@ class Actuator(object):
         def timed_out(self):
                 return self.act_timed_out
 
+        # Defining "boolness" of a class, Python 2 uses the special method
+        # called __nonzero__() while Python 3 uses __bool__(). For Python
+        # 2 and 3 compatibility, define __bool__() only, and let
+        # __nonzero__ = __bool__
         def __bool__(self):
-                return self.install or self.removal or self.update
+                return bool(self.install) or bool(self.removal) or \
+                    bool(self.update)
 
-        def __nonzero__(self):
-                return bool(self.install or self.removal or self.update)
+        __nonzero__ = __bool__
 
         # scan_* functions take ActionPlan arguments (see imageplan.py)
         def scan_install(self, ap):
@@ -333,15 +338,15 @@ class Actuator(object):
 
                 # handle callables first
 
-                for act in self.removal.itervalues():
+                for act in six.itervalues(self.removal):
                         if hasattr(act, "__call__"):
                                 act()
 
-                for act in self.install.itervalues():
+                for act in six.itervalues(self.install):
                         if hasattr(act, "__call__"):
                                 act()
 
-                for act in self.update.itervalues():
+                for act in six.itervalues(self.update):
                         if hasattr(act, "__call__"):
                                 act()
 

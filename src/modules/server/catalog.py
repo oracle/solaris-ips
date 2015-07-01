@@ -38,12 +38,6 @@ class CatalogException(Exception):
         def __init__(self, args=None):
                 self._args = args
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
 
 class CatalogPermissionsException(CatalogException):
         """Used to indicate the server catalog files do not have the expected
@@ -236,12 +230,12 @@ class ServerCatalog(object):
                 # Try to open catalog file.  If it doesn't exist,
                 # create an empty catalog file, and then open it read only.
                 try:
-                        pfile = file(self.catalog_file, "rb")
+                        pfile = open(self.catalog_file, "rb")
                 except IOError as e:
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
-                                file(self.catalog_file, "wb").close()
-                                pfile = file(self.catalog_file, "rb")
+                                open(self.catalog_file, "wb").close()
+                                pfile = open(self.catalog_file, "rb")
                         else:
                                 portable.remove(tmpfile)
                                 raise
@@ -357,7 +351,7 @@ class ServerCatalog(object):
                 the catalog as a list of strings."""
 
                 try:
-                        cfile = file(self.catalog_file, "r")
+                        cfile = open(self.catalog_file, "r")
                 except EnvironmentError as e:
                         # Missing catalog is fine; other errors need to
                         # be reported.
@@ -423,7 +417,7 @@ class ServerCatalog(object):
                 iterates over the contents of the catalog."""
 
                 try:
-                        pfile = file(os.path.normpath(
+                        pfile = open(os.path.normpath(
                             os.path.join(self.catalog_root, "catalog")), "r")
                 except IOError as e:
                         if e.errno == errno.ENOENT:
@@ -461,7 +455,7 @@ class ServerCatalog(object):
                 if not os.path.exists(apath):
                         return
 
-                afile = file(apath, "r")
+                afile = open(apath, "r")
                 attrre = re.compile('^S ([^:]*): (.*)')
 
                 for entry in afile:
@@ -626,7 +620,7 @@ class ServerCatalog(object):
                                 yield line
 
                         try:
-                                cfile = file(os.path.normpath(
+                                cfile = open(os.path.normpath(
                                     os.path.join(self.catalog_root, "catalog")),
                                     "r")
                         except IOError as e:
@@ -722,7 +716,7 @@ class ServerCatalog(object):
                 """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
-                catf = file(os.path.join(path, "catalog"))
+                catf = open(os.path.join(path, "catalog"))
                 for line in catf:
                         if not line.startswith("V pkg") and \
                             not line.startswith("C pkg"):

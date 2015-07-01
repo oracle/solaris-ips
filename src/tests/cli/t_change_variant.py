@@ -160,7 +160,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 file_path = os.path.join(self.get_img_path(), path)
 
                 try:
-                        f = file(file_path)
+                        f = open(file_path)
                 except IOError as e:
                         if e.errno == errno.ENOENT and negate:
                                 return

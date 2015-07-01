@@ -32,6 +32,7 @@ a new user."""
 
 import errno
 import generic
+import six
 try:
         from pkg.cfgfiles import *
         have_cfgfiles = True
@@ -242,7 +243,7 @@ class UserAction(generic.Action):
                 # Get the default values if they're non-empty
                 pwdefval = dict((
                     (k, v)
-                    for k, v in pw.getdefaultvalues().iteritems()
+                    for k, v in six.iteritems(pw.getdefaultvalues())
                     if v != ""
                 ))
 

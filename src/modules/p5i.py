@@ -25,13 +25,15 @@
 #
 
 import os
+import simplejson as json
+
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.parse import urlunparse
+from six.moves.urllib.request import urlopen, pathname2url
+
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
-import simplejson as json
-import urllib
-import urllib2
-import urlparse
 
 CURRENT_VERSION = 1
 MIME_TYPE = "application/vnd.pkg5.info"
@@ -65,13 +67,13 @@ def parse(data=None, fileobj=None, location=None):
                     not location.startswith("file:/"):
                         # Convert the file path to a URI.
                         location = os.path.abspath(location)
-                        location = urlparse.urlunparse(("file", "",
-                            urllib.pathname2url(location), "", "", ""))
+                        location = urlunparse(("file", "",
+                            pathname2url(location), "", "", ""))
 
                 try:
-                        fileobj = urllib2.urlopen(location)
+                        fileobj = urlopen(location)
                 except (EnvironmentError, ValueError,
-                    urllib2.HTTPError) as e:
+                    HTTPError) as e:
                         raise api_errors.RetrievalError(e,
                             location=location)
 
@@ -80,7 +82,7 @@ def parse(data=None, fileobj=None, location=None):
                         dump_struct = json.loads(data)
                 else:
                         dump_struct = json.load(fileobj)
-        except (EnvironmentError, urllib2.HTTPError) as e:
+        except (EnvironmentError, HTTPError) as e:
                 raise api_errors.RetrievalError(e)
         except ValueError as e:
                 # Not a valid JSON file.
@@ -103,7 +105,7 @@ def parse(data=None, fileobj=None, location=None):
                 for p in plist:
                         alias = p.get("alias", None)
                         prefix = p.get("name", None)
-                        
+
                         if not prefix:
                                 prefix = "Unknown"
 

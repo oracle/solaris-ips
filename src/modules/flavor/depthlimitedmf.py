@@ -92,13 +92,6 @@ class ModuleInfo(object):
 if __name__ == "__main__":
         class MultipleDefaultRunPaths(Exception):
 
-                def __unicode__(self):
-                        # To workaround python issues 6108 and 2517, this
-                        # provides a a standard wrapper for this class'
-                        # exceptions so that they have a chance of being
-                        # stringified correctly.
-                        return str(self)
-
                 def __str__(self):
                         return _(
                             "More than one $PKGDEPEND_RUNPATH token was set on "

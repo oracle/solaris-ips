@@ -33,7 +33,6 @@ import os
 import re
 import sys
 import time
-import urllib
 
 from an_report import *
 

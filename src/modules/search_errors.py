@@ -35,12 +35,6 @@ class IndexingException(Exception):
         def __init__(self, cause):
                 self.cause = cause
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
 
 class InconsistentIndexException(IndexingException):
         """This is used when the existing index is found to have inconsistent
@@ -88,12 +82,6 @@ class NoIndexException(Exception):
         def __init__(self, index_dir):
                 self.index_dir = index_dir
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
         def __str__(self):
                 return "Could not find index to search, looked in: " \
                     "{0}".format(self.index_dir)
@@ -106,12 +94,6 @@ class IncorrectIndexFileHash(Exception):
                 Exception.__init__(self)
                 self.ev = existing_val
                 self.iv = incoming_val
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return "existing_val was:{0}\nincoming_val was:{1}".format(

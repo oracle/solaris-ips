@@ -25,7 +25,7 @@
 #
 
 from __future__ import print_function
-import cPickle as pickle
+import six.moves.cPickle as pickle
 import datetime
 import time
 
@@ -83,7 +83,7 @@ Period: {0} - {1} ({2:d} days)<br />
 merge_entries_by_date = {}
 
 for fn in sys.argv[1:]:
-        f = file(fn, "rb")
+        f = open(fn, "rb")
         ebd = pickle.load(f)
         f.close()
 

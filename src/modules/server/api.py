@@ -27,6 +27,9 @@ import cherrypy
 import itertools
 import os
 import StringIO
+import six
+
+from operator import itemgetter
 
 import pkg.catalog
 import pkg.client.pkgdefs as pkgdefs
@@ -40,7 +43,6 @@ import pkg.version as version
 
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
-from operator import itemgetter
 
 CURRENT_API_VERSION = 12
 
@@ -139,7 +141,7 @@ class CatalogInterface(_Interface):
                 # incorporations above.
                 cat_info = frozenset([cat.DEPENDENCY])
                 remaining = set(cat.names(pubs=pubs)) - \
-                    set(allowed.iterkeys())
+                    set(six.iterkeys(allowed))
                 for pkg_name in remaining:
                         for ver, flist in cat.fmris_by_version(pkg_name,
                             pubs=pubs):
@@ -506,7 +508,7 @@ class CatalogInterface(_Interface):
 
                 def filtered_search(results, mver):
                         try:
-                                result = results.next()
+                                result = next(results)
                         except StopIteration:
                                 return
 
@@ -574,7 +576,7 @@ class CatalogInterface(_Interface):
                 for lic in mfst.gen_actions_by_type("license"):
                         s = StringIO.StringIO()
                         lpath = self._depot.repo.file(lic.hash, pub=self._pub)
-                        lfile = file(lpath, "rb")
+                        lfile = open(lpath, "rb")
                         misc.gunzip_from_stream(lfile, s, ignore_hash=True)
                         text = s.getvalue()
                         s.close()
@@ -679,7 +681,7 @@ class ConfigInterface(_Interface):
                 See pkg.depotd(1M) for the list of properties.
                 """
                 rval = {}
-                for sname, props in self._depot.cfg.get_index().iteritems():
+                for sname, props in six.iteritems(self._depot.cfg.get_index()):
                         rval[sname] = [p for p in props]
                 return rval
 
@@ -708,7 +710,7 @@ class ConfigInterface(_Interface):
                                                 format.
                 """
                 rval = {}
-                for sname, props in self._depot.repo.cfg.get_index().iteritems():
+                for sname, props in six.iteritems(self._depot.repo.cfg.get_index()):
                         rval[sname] = [p for p in props]
                 return rval
 

@@ -46,7 +46,6 @@ property sections or property objects can be used as well if advanced access or
 manipulation of configuration data is needed.
 """
 
-import ConfigParser
 import ast
 import codecs
 import commands
@@ -55,9 +54,12 @@ import errno
 import os
 import re
 import shlex
+import six
 import stat
 import tempfile
 import uuid
+from six import python_2_unicode_compatible
+from six.moves import configparser
 
 from pkg import misc, portable
 import pkg.version
@@ -209,6 +211,7 @@ class UnknownSectionError(PropertyConfigError):
                     self.section)
 
 
+@python_2_unicode_compatible
 class Property(object):
         """Base class for properties."""
 
@@ -219,7 +222,7 @@ class Property(object):
         _value_map = misc.EmptyDict
 
         def __init__(self, name, default="", value_map=misc.EmptyDict):
-                if not isinstance(name, basestring) or \
+                if not isinstance(name, six.string_types) or \
                     not self.__name_re.match(name):
                         raise InvalidPropertyNameError(prop=name)
                 try:
@@ -256,22 +259,17 @@ class Property(object):
                 return self.__class__(self.name, default=self.value,
                     value_map=self._value_map)
 
-        def __unicode__(self):
-                if isinstance(self.value, unicode):
+        def __str__(self):
+                if isinstance(self.value, six.text_type):
                         return self.value
                 # Assume that value can be represented in utf-8.
-                return unicode(self.__str__(), "utf-8")
-
-        def __str__(self):
-                if isinstance(self.value, unicode):
-                        return self.value.encode("utf-8")
-                return str(self.value)
+                return six.text_type(str(self.value), "utf-8")
 
         def _is_allowed(self, value):
                 """Raises an InvalidPropertyValueError if 'value' is not allowed
                 for this property.
                 """
-                if not isinstance(value, basestring):
+                if not isinstance(value, six.string_types):
                         # Only string values are allowed.
                         raise InvalidPropertyValueError(prop=self.name,
                             value=value)
@@ -305,7 +303,7 @@ class Property(object):
         @value.setter
         def value(self, value):
                 """Sets the property's value."""
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None:
                         value = ""
@@ -327,7 +325,7 @@ class PropertyTemplate(object):
         def __init__(self, name_pattern, allowed=None, default=None,
             prop_type=Property, value_map=None):
                 assert prop_type
-                if not isinstance(name_pattern, basestring) or not name_pattern:
+                if not isinstance(name_pattern, six.string_types) or not name_pattern:
                         raise InvalidPropertyTemplateNameError(
                             prop=name_pattern)
                 self.__name = name_pattern
@@ -386,12 +384,12 @@ class PropBool(Property):
 
         @Property.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         self._value = False
                         return
-                elif isinstance(value, basestring):
+                elif isinstance(value, six.string_types):
                         if value.lower() == "true":
                                 self._value = True
                                 return
@@ -434,7 +432,7 @@ class PropInt(Property):
 
         @Property.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = 0
@@ -459,13 +457,13 @@ class PropPublisher(Property):
 
         @Property.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         self._value = ""
                         return
 
-                if not isinstance(value, basestring) or \
+                if not isinstance(value, six.string_types) or \
                     not misc.valid_pub_prefix(value):
                         # Only string values are allowed.
                         raise InvalidPropertyValueError(prop=self.name,
@@ -547,11 +545,11 @@ class PropList(PropDefined):
 
         @PropDefined.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = []
-                elif isinstance(value, basestring):
+                elif isinstance(value, six.string_types):
                         value = self._parse_str(value)
                         if not isinstance(value, list):
                                 # Only accept lists for literal string form.
@@ -570,7 +568,7 @@ class PropList(PropDefined):
                                 v = ""
                         elif isinstance(v, (bool, int)):
                                 v = str(v)
-                        elif not isinstance(v, basestring):
+                        elif not isinstance(v, six.string_types):
                                 # Only string values are allowed.
                                 raise InvalidPropertyValueError(prop=self.name,
                                     value=value)
@@ -592,11 +590,11 @@ class PropDictionaryList(PropList):
 
         @PropDefined.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = []
-                elif isinstance(value, basestring):
+                elif isinstance(value, six.string_types):
                         value = self._parse_str(value)
                         if not isinstance(value, list):
                                 # Only accept lists for literal string form.
@@ -660,7 +658,7 @@ class PropDictionaryList(PropList):
                                         continue
                                 Property._is_allowed(self, val)
 
-
+@python_2_unicode_compatible
 class PropSimpleList(PropList):
         """Class representing a property with a list of string values that are
         simple in nature.  Output is in a comma-separated format that may not
@@ -698,7 +696,7 @@ class PropSimpleList(PropList):
                         try:
                                 v = v.encode("ascii")
                         except ValueError:
-                                if not isinstance(v, unicode):
+                                if not isinstance(v, six.text_type):
                                         try:
                                                 v = v.decode("utf-8")
                                         except ValueError:
@@ -710,17 +708,12 @@ class PropSimpleList(PropList):
                         result.append(v)
                 return result
 
-        def __unicode__(self):
+        def __str__(self):
                 if self.value and len(self.value):
                         # Performing the join using a unicode string results in
                         # a single unicode string object.
                         return u",".join(self.value)
                 return u""
-
-        def __str__(self):
-                if self.value and len(self.value):
-                        return ",".join([v.encode("utf-8") for v in self.value])
-                return ""
 
 
 class PropPubURI(Property):
@@ -843,7 +836,7 @@ class PropVersion(Property):
 
         @Property.value.setter
         def value(self, value):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = "0"
@@ -860,6 +853,7 @@ class PropVersion(Property):
                 self._value = nvalue
 
 
+@python_2_unicode_compatible
 class PropertySection(object):
         """A class representing a section of the configuration that also
         provides an interface for adding and managing properties and sections
@@ -872,7 +866,7 @@ class PropertySection(object):
         __name_re = re.compile(r"\A[^\t\n\r\f\v\\/]+\Z")
 
         def __init__(self, name, properties=misc.EmptyI):
-                if not isinstance(name, basestring) or \
+                if not isinstance(name, six.string_types) or \
                     not self.__name_re.match(name) or \
                     name == "CONFIGURATION":
                         raise InvalidSectionNameError(name)
@@ -897,11 +891,8 @@ class PropertySection(object):
                         propsec.add_property(copy.copy(p))
                 return propsec
 
-        def __unicode__(self):
-                return unicode(self.name)
-
         def __str__(self):
-                return self.name
+                return six.text_type(self.name)
 
         def add_property(self, prop):
                 """Adds the specified property object to the section.  The
@@ -915,7 +906,7 @@ class PropertySection(object):
                 name."""
                 return dict(
                     (pname, p.value)
-                    for pname, p in self.__properties.iteritems()
+                    for pname, p in six.iteritems(self.__properties)
                 )
 
         def get_property(self, name):
@@ -930,7 +921,7 @@ class PropertySection(object):
         def get_properties(self):
                 """Returns a generator that yields the list of property objects.
                 """
-                return self.__properties.itervalues()
+                return six.itervalues(self.__properties)
 
         def remove_property(self, name):
                 """Removes any matching property object from the section."""
@@ -954,7 +945,7 @@ class PropertySectionTemplate(object):
         """
 
         def __init__(self, name_pattern, properties=misc.EmptyI):
-                if not isinstance(name_pattern, basestring) or not name_pattern:
+                if not isinstance(name_pattern, six.string_types) or not name_pattern:
                         raise InvalidSectionTemplateNameError(
                             section=name_pattern)
                 self.__name = name_pattern
@@ -997,6 +988,7 @@ class PropertySectionTemplate(object):
                 return self.__name
 
 
+@python_2_unicode_compatible
 class Config(object):
         """The Config class provides basic in-memory management of configuration
         data."""
@@ -1034,35 +1026,23 @@ class Config(object):
                 self._version = version
                 self.reset(overrides=overrides)
 
-        def __unicode__(self):
+        def __str__(self):
                 """Returns a unicode object representation of the configuration
                 object.
                 """
                 out = u""
                 for sec, props in self.get_properties():
-                        out += "[{0}]\n".format(sec.name)
+                        out += u"[{0}]\n".format(sec.name)
                         for p in props:
-                                out += u"{0} = {1}\n".format(p.name, unicode(p))
-                        out += "\n"
-                return out
-
-        def __str__(self):
-                """Returns a string representation of the configuration
-                object.
-                """
-                out = ""
-                for sec, props in self.get_properties():
-                        out += "[{0}]\n".format(sec.name)
-                        for p in props:
-                                out += "{0} = {1}\n".format(p.name, str(p))
-                        out += "\n"
+                                out += u"{0} = {1}\n".format(p.name, six.text_type(p))
+                        out += u"\n"
                 return out
 
         def _get_matching_property(self, section, name, default_type=Property):
                 """Returns the Property object matching the given name for
                 the given PropertySection object, or adds a new one (if it
                 does not already exist) based on class definitions.
-                
+
                 'default_type' is an optional parameter specifying the type of
                 property to create if a class definition does not exist for the
                 given property.
@@ -1179,8 +1159,8 @@ class Config(object):
                         map(secobj.remove_property, elide)
                         self.add_section(secobj)
 
-                for sname, props in overrides.iteritems():
-                        for pname, val in props.iteritems():
+                for sname, props in six.iteritems(overrides):
+                        for pname, val in six.iteritems(props):
                                 self.set_property(sname, pname, val)
 
         def add_property_value(self, section, name, value):
@@ -1273,7 +1253,7 @@ class Config(object):
         def get_sections(self):
                 """Returns a generator that yields the list of property section
                 objects."""
-                return self.__sections.itervalues()
+                return six.itervalues(self.__sections)
 
         def remove_property(self, section, name):
                 """Remove the property object matching the given section and
@@ -1389,8 +1369,8 @@ class Config(object):
                     }
                 """
 
-                for section, props in properties.iteritems():
-                        for pname, pval in props.iteritems():
+                for section, props in six.iteritems(properties):
+                        for pname, pval in six.iteritems(props):
                                 self.set_property(section, pname, pval)
 
         @property
@@ -1473,7 +1453,7 @@ class FileConfig(Config):
                 """
 
                 # First, attempt to read the target.
-                cp = ConfigParser.RawConfigParser()
+                cp = configparser.RawConfigParser()
                 # Disabled ConfigParser's inane option transformation to ensure
                 # option case is preserved.
                 cp.optionxform = lambda x: x
@@ -1501,8 +1481,8 @@ class FileConfig(Config):
                         try:
                                 version = cp.getint("CONFIGURATION", "version")
                                 self._version = version
-                        except (ConfigParser.NoSectionError,
-                            ConfigParser.NoOptionError, ValueError):
+                        except (configparser.NoSectionError,
+                            configparser.NoOptionError, ValueError):
                                 # Assume current version.
                                 pass
 
@@ -1572,7 +1552,7 @@ class FileConfig(Config):
                 if os.path.exists(self._target) and not self._dirty:
                         return
 
-                cp = ConfigParser.RawConfigParser()
+                cp = configparser.RawConfigParser()
                 # Disabled ConfigParser's inane option transformation to ensure
                 # option case is preserved.
                 cp.optionxform = lambda x: x
@@ -1807,11 +1787,11 @@ class SMFConfig(Config):
 
                 # shlex.split() automatically does escaping for a list of values
                 # so no need to do it here.
-                for section, props in cfgdata.iteritems():
+                for section, props in six.iteritems(cfgdata):
                         if section == "CONFIGURATION":
                                 # Reserved for configuration file management.
                                 continue
-                        for prop, value in props.iteritems():
+                        for prop, value in six.iteritems(props):
                                 if section in overrides and \
                                     prop in overrides[section]:
                                         continue

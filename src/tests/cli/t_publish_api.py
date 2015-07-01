@@ -30,12 +30,13 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+from six.moves.urllib.parse import urlunparse
+from six.moves.urllib.request import pathname2url
+
 import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.publish.transaction as trans
-import urlparse
-import urllib
 
 class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
         """Various publication tests."""
@@ -75,8 +76,8 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
 
                 location = self.dc.get_repodir()
                 location = os.path.abspath(location)
-                location = urlparse.urlunparse(("file", "",
-                    urllib.pathname2url(location), "", "", ""))
+                location = urlunparse(("file", "",
+                    pathname2url(location), "", "", ""))
 
                 repouriobj = publisher.RepositoryURI(location)
                 repo = publisher.Repository(origins=[repouriobj])

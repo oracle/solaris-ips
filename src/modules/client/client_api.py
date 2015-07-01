@@ -34,6 +34,7 @@ import itertools
 import simplejson as json
 import os
 import re
+import six
 import socket
 import sys
 import tempfile
@@ -41,6 +42,8 @@ import textwrap
 import time
 import traceback
 import jsonschema
+
+from six.moves import filter, map, range
 
 import pkg
 import pkg.actions as actions
@@ -81,10 +84,10 @@ def _byteify(input):
 
         if isinstance(input, dict):
                 return dict([(_byteify(key), _byteify(value)) for key, value in
-                    input.iteritems()])
+                    six.iteritems(input)])
         elif isinstance(input, list):
                 return [_byteify(element) for element in input]
-        elif isinstance(input, unicode):
+        elif isinstance(input, six.text_type):
                 return input.encode('utf-8')
         else:
                 return input
@@ -380,7 +383,7 @@ def _format_update_error(e, errors_json=None):
 def _error_json(text, cmd=None, errors_json=None, errorType=None):
         """Prepare an error message for json output. """
 
-        if not isinstance(text, basestring):
+        if not isinstance(text, six.string_types):
                 # Assume it's an object that can be stringified.
                 text = str(text)
 
@@ -1124,7 +1127,7 @@ def __api_execute_plan(operation, api_inst):
                                 raise
 
                 if exc_value or exc_tb:
-                        raise exc_value, None, exc_tb
+                        six.reraise(exc_value, None, exc_tb)
 
         return rval
 
@@ -2037,8 +2040,8 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                 # Extract our list of headers from the field_data
                 # dictionary Make sure they are extracted in the
                 # desired order by using our custom sort function.
-                hdrs = map(get_header, sorted(filter(filter_func,
-                           field_data.values()), sort_fields))
+                hdrs = list(map(get_header, sorted(filter(filter_func,
+                    list(field_data.values())), sort_fields)))
 
                 if not omit_headers:
                         data["headers"] = hdrs
@@ -2119,7 +2122,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 )
                                 entry = []
                                 for e in values:
-                                        if isinstance(e, basestring):
+                                        if isinstance(e, six.string_types):
                                                 entry.append(e)
                                         else:
                                                 entry.append(str(e))
@@ -2153,7 +2156,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 )
                                 entry = []
                                 for e in values:
-                                        if isinstance(e, basestring):
+                                        if isinstance(e, six.string_types):
                                                 entry.append(e)
                                         else:
                                                 entry.append(str(e))
@@ -2170,7 +2173,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 )
                                 entry = []
                                 for e in values:
-                                        if isinstance(e, basestring):
+                                        if isinstance(e, six.string_types):
                                                 entry.append(e)
                                         else:
                                                 entry.append(str(e))
@@ -2263,7 +2266,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 pub_data["Enabled"] = "Yes"
                         if pub.properties:
                                 pub_data["Properties"] = {}
-                                for k, v in pub.properties.iteritems():
+                                for k, v in six.iteritems(pub.properties):
                                         pub_data["Properties"][k] = v
                         if "publisher_details" not in data:
                                 data["publisher_details"] = [pub_data]
@@ -2797,18 +2800,18 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
                 else:
                         pargs = json.loads(pargs_json)
                 if not isinstance(pargs, list):
-                        if not isinstance(pargs, basestring):
+                        if not isinstance(pargs, six.string_types):
                                 err = {"reason": "{0} is invalid.".format(
                                     arg_name)}
                                 errors_json.append(err)
                                 return None, __prepare_json(EXIT_OOPS,
                                     errors=errors_json)
-                        if isinstance(pargs, unicode):
+                        if isinstance(pargs, six.text_type):
                                 pargs = pargs.encode("utf-8")
                         pargs = [pargs]
                 else:
                         for idx in range(len(pargs)):
-                                if isinstance(pargs[idx], unicode):
+                                if isinstance(pargs[idx], six.text_type):
                                         pargs[idx] = pargs[idx].encode("utf-8")
         except Exception as e:
                 err = {"reason": "{0} is invalid.".format(

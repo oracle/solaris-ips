@@ -20,16 +20,17 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+#
 
 import os
-import ConfigParser
+from six.moves import configparser
 
 CFGFILE="site-config"
 
 def get(option, default=None):
-        cfg = ConfigParser.ConfigParser()
+        cfg = configparser.ConfigParser()
         cfg.read(CFGFILE)
         value = cfg.get("default", option)
         if not value:

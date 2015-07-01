@@ -30,6 +30,7 @@ import locale
 import os
 import re
 import shlex
+import six
 import sys
 import traceback
 import warnings
@@ -239,7 +240,7 @@ def add_transform(transform, filename, lineno):
                         # It's now appropriate to compile the regexp, if there
                         # are substitutions to be made.  So do the substitution
                         # and compile the result.
-                        if isinstance(regexp, basestring):
+                        if isinstance(regexp, six.string_types):
                                 rx = re.compile(substitute_values(regexp,
                                     action, matches, pkg_attrs, filename, lineno))
                         else:
@@ -433,7 +434,7 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                 if not d["quote"]:
                         q = lambda x: x
 
-                if isinstance(attr, basestring):
+                if isinstance(attr, six.string_types):
                         newmsg += msg[prevend:i.start()] + \
                             d.get("prefix", "") + q(attr) + d.get("suffix", "")
                 else:
@@ -518,7 +519,7 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                 s = transform[11:transform.index("->")]
                 # Map each pattern to its position in the original match string.
                 matchorder = {}
-                for attr, match in attrdict.iteritems():
+                for attr, match in six.iteritems(attrdict):
                         # Attributes might be quoted even if they don't need it,
                         # and lead to a mis-match.  These three patterns are all
                         # safe to try.  If we fail to find the match expression,
@@ -551,18 +552,18 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                         action = action[1]
                 if verbose:
                         if not action or \
-                            not isinstance(action, basestring) and \
+                            not isinstance(action, six.string_types) and \
                             orig_attrs != action.attrs:
                                 comments.append("# Applied: {0} (file {1} line {2})".format(
                                     transform, filename, lineno))
                                 comments.append("#  Result: {0}".format(action))
-                if not action or isinstance(action, basestring):
+                if not action or isinstance(action, six.string_types):
                         break
 
         # Any newly-created actions need to have the transforms applied, too.
         newnewactions = []
         for act in newactions:
-                if not isinstance(act, basestring):
+                if not isinstance(act, six.string_types):
                         c, al = apply_transforms(act, pkg_attrs, verbose,
                             act_filename, act_lineno)
                         if c:
@@ -586,7 +587,7 @@ def searching_open(filename, try_cwd=False):
         if filename.startswith("/") or try_cwd == True and \
             os.path.exists(filename):
                 try:
-                        return filename, file(filename)
+                        return filename, open(filename)
                 except IOError as e:
                         raise RuntimeError(_("Cannot open file: {0}").format(e))
 
@@ -594,7 +595,7 @@ def searching_open(filename, try_cwd=False):
                 f = os.path.join(i, filename)
                 if os.path.exists(f):
                         try:
-                                return f, file(f)
+                                return f, open(f)
                         except IOError as e:
                                 raise RuntimeError(_("Cannot open file: {0}").format(e))
 
@@ -764,7 +765,7 @@ def main_func():
                         if act.name == "set":
                                 name = act.attrs["name"]
                                 value = act.attrs["value"]
-                                if isinstance(value, basestring):
+                                if isinstance(value, six.string_types):
                                         pkg_attrs.setdefault(name, []).append(value)
                                 else:
                                         pkg_attrs.setdefault(name, []).extend(value)
@@ -778,7 +779,7 @@ def main_func():
                 if printfilename == None:
                         printfile = sys.stdout
                 else:
-                        printfile = file(printfilename, "w")
+                        printfile = open(printfilename, "w")
 
                 for p in printinfo:
                         print("{0}".format(p), file=printfile)
@@ -790,7 +791,7 @@ def main_func():
                 if outfilename == None:
                         outfile = sys.stdout
                 else:
-                        outfile = file(outfilename, "w")
+                        outfile = open(outfilename, "w")
 
                 emitted = set()
                 for comment, actionlist, prepended_macro in output:

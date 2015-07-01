@@ -27,7 +27,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import ConfigParser
 import os.path
 import shutil
 import unittest
@@ -3495,7 +3494,7 @@ def read_manifests(names, lint_logger):
                 linecnts = []   # tuples of starting line no., ending line no
                 linecounter = 0 # running total
                 try:
-                        data = file(filename).read()
+                        data = open(filename).read()
                 except IOError as e:
                         lint_logger.error("Unable to read manifest file {0}".format(
                             filename, msgid="lint.manifest001"))

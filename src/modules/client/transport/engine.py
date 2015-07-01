@@ -27,11 +27,13 @@
 from __future__ import division
 
 import errno
-import httplib
 import os
 import pycurl
+import six
 import time
-import urlparse
+
+from six.moves import http_client
+from six.moves.urllib.parse import urlsplit
 
 # Need to ignore SIGPIPE if using pycurl in NOSIGNAL mode.
 try:
@@ -235,7 +237,7 @@ class CurlTransportEngine(TransportEngine):
                         url = h.url
                         uuid = h.uuid
                         urlstem = h.repourl
-                        proto = urlparse.urlsplit(url)[0]
+                        proto = urlsplit(url)[0]
 
                         # When using pipelined operations, libcurl tracks the
                         # amount of time taken for the entire pipelined request
@@ -332,7 +334,7 @@ class CurlTransportEngine(TransportEngine):
                         url = h.url
                         uuid = h.uuid
                         urlstem = h.repourl
-                        proto = urlparse.urlsplit(url)[0]
+                        proto = urlsplit(url)[0]
 
                         # When using pipelined operations, libcurl tracks the
                         # amount of time taken for the entire pipelined request
@@ -380,7 +382,7 @@ class CurlTransportEngine(TransportEngine):
                         respcode = h.getinfo(pycurl.RESPONSE_CODE)
 
                         if proto not in response_protocols or \
-                            respcode == httplib.OK:
+                            respcode == http_client.OK:
                                 h.success = True
                                 repostats.clear_consecutive_errors()
                                 success.append(url)
@@ -845,13 +847,13 @@ class CurlTransportEngine(TransportEngine):
                         headerlist = []
 
                         # Headers common to all requests
-                        for k, v in self.__common_header.iteritems():
+                        for k, v in six.iteritems(self.__common_header):
                                 headerstr = "{0}: {1}".format(k, v)
                                 headerlist.append(headerstr)
 
                         # Headers specific to this request
                         if treq.header:
-                                for k, v in treq.header.iteritems():
+                                for k, v in six.iteritems(treq.header):
                                         headerstr = "{0}: {1}".format(k, v)
                                         headerlist.append(headerstr)
 
@@ -908,7 +910,7 @@ class CurlTransportEngine(TransportEngine):
                         hdl.setopt(pycurl.NOPROGRESS, 0)
                         hdl.setopt(pycurl.PROGRESSFUNCTION, treq.progfunc)
 
-                proto = urlparse.urlsplit(treq.url)[0]
+                proto = urlsplit(treq.url)[0]
                 if not proto in ("http", "https"):
                         return
 

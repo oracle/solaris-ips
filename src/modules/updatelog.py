@@ -146,17 +146,17 @@ class UpdateLog(object):
 
                 # Verify that they aren't already in the catalog
                 catpath = os.path.normpath(os.path.join(path, "catalog"))
-                
+
                 tmp_num, tmpfile = tempfile.mkstemp(dir=path)
                 tfile = os.fdopen(tmp_num, 'w')
 
                 try:
-                        pfile = file(catpath, "rb")
+                        pfile = open(catpath, "rb")
                 except IOError as e:
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
-                                file(catpath, "wb").close()
-                                pfile = file(catpath, "rb")
+                                open(catpath, "wb").close()
+                                pfile = open(catpath, "rb")
                         else:
                                 tfile.close()
                                 portable.remove(tmpfile)
@@ -187,7 +187,7 @@ class UpdateLog(object):
                 portable.rename(tmpfile, catpath)
 
                 # Now re-write npkgs and Last-Modified in attributes file
-                afile = file(os.path.normpath(os.path.join(path, "attrs")),
+                afile = open(os.path.normpath(os.path.join(path, "attrs")),
                     "r")
                 attrre = re.compile('^S ([^:]*): (.*)')
 

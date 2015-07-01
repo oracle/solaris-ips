@@ -44,7 +44,11 @@ file path=lib/svc/manifest/application/pkg/pkg-system-repository.xml
 file path=lib/svc/method/svc-pkg-sysrepo
 file path=lib/svc/method/svc-pkg-sysrepo-cache
 dir  path=usr
-file path=usr/lib/pkg.sysrepo mode=0755
+#
+# Don't worry about the "from x.y.z" six imports since pkgdepend has some issues
+# with the python importer. Instead, we force a dependency on the six package.
+#
+file path=usr/lib/pkg.sysrepo mode=0755 pkg.depend.bypass-generate=.*six.*
 dir  path=usr/share/man/ja_JP.UTF-8/man1m
 file path=usr/share/man/ja_JP.UTF-8/man1m/pkg.sysrepo.1m
 dir  path=usr/share/man/man1m
@@ -63,6 +67,8 @@ file path=var/log/pkg/sysrepo/access_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
+# force a dependency on the six package because we bypass dependency check for it
+depend type=require fmri=library/python/six-27
 #
 # The manual dependency on apache results from our calling apachectl from
 # our method script, and can't be detected by pkgdepend.

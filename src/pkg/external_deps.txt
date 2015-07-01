@@ -22,6 +22,7 @@
     pkg:/library/python/pycurl-27
     pkg:/library/python/pyopenssl-27
     pkg:/library/python/simplejson-27
+    pkg:/library/python/six-27
     pkg:/package/svr4
     pkg:/runtime/python-27
     pkg:/runtime/python-34

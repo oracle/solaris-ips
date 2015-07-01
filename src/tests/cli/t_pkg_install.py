@@ -42,7 +42,9 @@ import struct
 import tempfile
 import time
 import unittest
-import urllib2
+from six.moves import range
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlopen, build_opener, ProxyHandler, Request
 
 import pkg.actions
 import pkg.digest as digest
@@ -1247,27 +1249,27 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                     # format pkg(1) uses - two logically identical urls that
                     # differ only by the way they're quoted are treated by
                     # Apache as separate cacheable resources.
-                    "{0}/test1/manifest/0/foo@{1}".format(self.durl1, urllib2.quote(
+                    "{0}/test1/manifest/0/foo@{1}".format(self.durl1, quote(
                     foo_version)),
                     "{0}/test1/file/1/8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8".format(
                     self.durl1),
                 ]
 
-                proxy_handler = urllib2.ProxyHandler({"http": sysrepo_url})
-                proxy_opener = urllib2.build_opener(proxy_handler)
+                proxy_handler = ProxyHandler({"http": sysrepo_url})
+                proxy_opener = build_opener(proxy_handler)
 
                 # validate that our cache is returning corrupt urls.
                 for url in urls:
                         self.debug("url:{0}".format(url))
                         # we should get clean content when we don't use the
                         # cache
-                        u = urllib2.urlopen(url)
+                        u = urlopen(url)
                         content = u.readlines()
                         self.assert_(content != ["noodles\n"],
                             "Unexpected content from depot")
 
                         # get the corrupted version, and verify it is broken
-                        req = urllib2.Request(url)
+                        req = Request(url)
                         u = proxy_opener.open(req)
                         content = u.readlines()
 
@@ -1284,7 +1286,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                 # since the cache has been refreshed, we should see valid
                 # contents when going through the proxy now.
                 for url in urls:
-                        req = urllib2.Request(url)
+                        req = Request(url)
                         u = proxy_opener.open(req)
                         content = u.readlines()
                         self.assert_(content != ["noodles\n"],
@@ -1307,7 +1309,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                     "{0}/file/85/8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8".format(
                     prefix))
                 mfpath = os.path.join(repodir, "{0}/pkg/foo/{1}".format(prefix,
-                    urllib2.quote(foo_version)))
+                    quote(foo_version)))
                 catpath = os.path.join(repodir, "{0}/catalog/catalog.base.C".format(
                     prefix))
 
@@ -3149,7 +3151,7 @@ adm
                 # make local changes to the user
                 pwdpath = os.path.join(self.get_img_path(), "etc/passwd")
 
-                pwdfile = file(pwdpath, "r+")
+                pwdfile = open(pwdpath, "r+")
                 lines = pwdfile.readlines()
                 for i, l in enumerate(lines):
                         if l.startswith("Kermit"):
@@ -3250,7 +3252,7 @@ adm
                 self.pkg("{0} dricon@1".format(install_cmd))
                 # This one should comment out the wigit entry in driver_aliases
                 self.pkg("{0} dricon@2".format(install_cmd))
-                da_contents = file(os.path.join(self.get_img_path(),
+                da_contents = open(os.path.join(self.get_img_path(),
                     "etc/driver_aliases")).readlines()
                 self.assert_("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
                 self.assert_("wigit \"pci8086,1234\"\n" not in da_contents)
@@ -3280,7 +3282,7 @@ adm
 
                 # Check that there is a policy entry for this
                 # device in /etc/security/device_policy
-                dp_contents = file(os.path.join(self.get_img_path(),
+                dp_contents = open(os.path.join(self.get_img_path(),
                     "etc/security/device_policy")).readlines()
                 self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" in dp_contents)
 
@@ -3289,7 +3291,7 @@ adm
 
                 # Check that there is no longer a policy entry for this
                 # device in /etc/security/device_policy
-                dp_contents = file(os.path.join(self.get_img_path(),
+                dp_contents = open(os.path.join(self.get_img_path(),
                     "etc/security/device_policy")).readlines()
                 self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" not in dp_contents)
 
@@ -4671,46 +4673,46 @@ adm:NP:6445::::::
                 # the file, and that the user verifies.
                 self.pkg("install notftpuser")
                 fpath = self.get_img_path() + "/etc/ftpd/ftpusers"
-                self.assert_("animal\n" in file(fpath).readlines())
+                self.assert_("animal\n" in open(fpath).readlines())
                 self.pkg("verify notftpuser")
 
                 # Add a user with an explicit ftpuser=true.  Make sure the user
                 # is not added to the file, and that the user verifies.
                 self.pkg("install ftpuserexp")
-                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.assert_("fozzie\n" not in open(fpath).readlines())
                 self.pkg("verify ftpuserexp")
 
                 # Add a user with an implicit ftpuser=true.  Make sure the user
                 # is not added to the file, and that the user verifies.
                 self.pkg("install ftpuserimp")
-                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.assert_("gonzo\n" not in open(fpath).readlines())
                 self.pkg("verify ftpuserimp")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with ftpuser=false.  Make sure the user remains in the
                 # file, and that the user verifies.
                 self.pkg("uninstall notftpuser")
-                file(fpath, "a").write("animal\n")
+                open(fpath, "a").write("animal\n")
                 self.pkg("install notftpuser")
-                self.assert_("animal\n" in file(fpath).readlines())
+                self.assert_("animal\n" in open(fpath).readlines())
                 self.pkg("verify notftpuser")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with an explicit ftpuser=true.  Make sure the user is
                 # stripped from the file, and that the user verifies.
                 self.pkg("uninstall ftpuserexp")
-                file(fpath, "a").write("fozzie\n")
+                open(fpath, "a").write("fozzie\n")
                 self.pkg("install ftpuserexp")
-                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.assert_("fozzie\n" not in open(fpath).readlines())
                 self.pkg("verify ftpuserexp")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with an implicit ftpuser=true.  Make sure the user is
                 # stripped from the file, and that the user verifies.
                 self.pkg("uninstall ftpuserimp")
-                file(fpath, "a").write("gonzo\n")
+                open(fpath, "a").write("gonzo\n")
                 self.pkg("install ftpuserimp")
-                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.assert_("gonzo\n" not in open(fpath).readlines())
                 self.pkg("verify ftpuserimp")
 
         def test_groupverify_install(self):
@@ -4734,20 +4736,20 @@ adm:NP:6445::::::
 
                 # add additional members to group & verify
                 gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
+                gdata = open(gpath).readlines()
                 gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
-                file(gpath, "w").writelines(gdata)
+                open(gpath, "w").writelines(gdata)
                 self.pkg("verify simplegroup")
                 self.pkg("uninstall simplegroup")
 
                 # verify that groups appear in gid order.
                 self.pkg("install simplegroup simplegroup2")
                 self.pkg("verify")
-                gdata = file(gpath).readlines()
+                gdata = open(gpath).readlines()
                 self.assert_(gdata[-1].find("muppets2") == 0)
                 self.pkg("uninstall simple*")
                 self.pkg("install simplegroup2 simplegroup")
-                gdata = file(gpath).readlines()
+                gdata = open(gpath).readlines()
                 self.assert_(gdata[-1].find("muppets2") == 0)
 
         def test_preexisting_group_install(self):
@@ -4766,14 +4768,14 @@ adm:NP:6445::::::
 
                 self.pkg("install basics")
                 gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
+                gdata = open(gpath).readlines()
                 gdata = ["muppets::1010:\n"] + gdata
-                file(gpath, "w").writelines(gdata)
+                open(gpath, "w").writelines(gdata)
                 self.pkg("verify")
                 self.pkg("install simplegroup@1")
                 self.pkg("verify simplegroup")
                 # check # lines beginning w/ 'muppets' in group file
-                gdata = file(gpath).readlines()
+                gdata = open(gpath).readlines()
                 self.assert_(
                     len([a for a in gdata if a.find("muppets") == 0]) == 1)
 
@@ -4820,8 +4822,8 @@ adm:NP:6445::::::
                 self.pkg("verify")
                 # edit group file to remove muppets group
                 gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
-                file(gpath, "w").writelines(gdata[0:-1])
+                gdata = open(gpath).readlines()
+                open(gpath, "w").writelines(gdata[0:-1])
 
                 # verify that we catch missing group
                 # in both group and user actions
@@ -4832,7 +4834,7 @@ adm:NP:6445::::::
                 self.pkg("uninstall missing*")
                 # try installing w/ broken group
 
-                file(gpath, "w").writelines(gdata[0:-1])
+                open(gpath, "w").writelines(gdata[0:-1])
                 self.pkg("install missing_group@1", 1)
                 self.pkg("fix muppetsgroup")
                 self.pkg("install missing_group@1")
@@ -4863,16 +4865,16 @@ adm:NP:6445::::::
                 self.pkg("verify simpleuser")
 
                 ppath = self.get_img_path() + "/etc/passwd"
-                pdata = file(ppath).readlines()
+                pdata = open(ppath).readlines()
                 spath = self.get_img_path() + "/etc/shadow"
-                sdata = file(spath).readlines()
+                sdata = open(spath).readlines()
 
                 def finderr(err):
                         self.assert_("\t\tERROR: " + err in self.output)
 
                 # change a provided, empty-default field to something else
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
                 self.pkg("fix simpleuser")
@@ -4880,7 +4882,7 @@ adm:NP:6445::::::
 
                 # change a provided, non-empty-default field to the default
                 pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '& User' should be '& loves Kermie'")
                 self.pkg("fix simpleuser")
@@ -4889,7 +4891,7 @@ adm:NP:6445::::::
                 # change a non-provided, non-empty-default field to something
                 # other than the default
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/misspiggy:/bin/sh"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '/misspiggy' should be '/'")
                 self.pkg("fix simpleuser")
@@ -4898,10 +4900,10 @@ adm:NP:6445::::::
                 # add a non-provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
                 sdata[-1] = "misspiggy:*LK*:14579:7:::::"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 os.chmod(spath,
                     stat.S_IMODE(os.stat(spath).st_mode)|stat.S_IWUSR)
-                file(spath, "w").writelines(sdata)
+                open(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("min: '7' should be '<empty>'")
                 # fails fix since we don't repair shadow entries on purpose
@@ -4912,8 +4914,8 @@ adm:NP:6445::::::
                 # remove a non-provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
                 sdata[-1] = "misspiggy:*LK*:14579::::::"
-                file(ppath, "w").writelines(pdata)
-                file(spath, "w").writelines(sdata)
+                open(ppath, "w").writelines(pdata)
+                open(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '' should be '/'")
                 self.pkg("fix simpleuser")
@@ -4921,7 +4923,7 @@ adm:NP:6445::::::
 
                 # remove a provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '' should be '& loves Kermie'")
                 self.pkg("fix simpleuser")
@@ -4929,7 +4931,7 @@ adm:NP:6445::::::
 
                 # remove a provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '' should be '/bin/sh'")
                 self.pkg("fix simpleuser")
@@ -4937,7 +4939,7 @@ adm:NP:6445::::::
 
                 # remove the user from /etc/passwd
                 pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
-                file(ppath, "w").writelines(pdata)
+                open(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '<missing>' should be '/bin/sh'")
                 finderr("gcos-field: '<missing>' should be '& loves Kermie'")
@@ -4948,8 +4950,8 @@ adm:NP:6445::::::
                 # remove the user completely
                 pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
                 sdata[-1] = "misswiggy:*LK*:14579::::::"
-                file(ppath, "w").writelines(pdata)
-                file(spath, "w").writelines(sdata)
+                open(ppath, "w").writelines(pdata)
+                open(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("username: '<missing>' should be 'misspiggy'")
                 self.pkg("fix simpleuser")
@@ -4958,7 +4960,7 @@ adm:NP:6445::::::
                 # change the password and show an error
                 self.pkg("verify simpleuser")
                 sdata[-1] = "misspiggy:NP:14579::::::"
-                file(spath, "w").writelines(sdata)
+                open(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("password: 'NP' should be '*LK*'")
                 self.pkg("fix simpleuser")
@@ -4969,10 +4971,10 @@ adm:NP:6445::::::
                 # do not cause verify errors if changed.
                 self.pkg("install --reject simpleuser simpleuser2@1")
                 self.pkg("verify simpleuser2")
-                pdata = file(ppath).readlines()
-                sdata = file(spath).readlines()
+                pdata = open(ppath).readlines()
+                sdata = open(spath).readlines()
                 sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
-                file(spath, "w").writelines(sdata)
+                open(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser2")
 
                 # verify that upgrading package to version that implicitly
@@ -4980,7 +4982,7 @@ adm:NP:6445::::::
                 # verifies correctly
                 self.pkg("update simpleuser2@2")
                 self.pkg("verify simpleuser2")
-                sdata = file(spath).readlines()
+                sdata = open(spath).readlines()
                 sdata[-1].index("*LK*")
 
                 # ascertain that users are added in uid order when
@@ -4988,13 +4990,13 @@ adm:NP:6445::::::
                 self.pkg("uninstall simpleuser2")
                 self.pkg("install simpleuser simpleuser2")
 
-                pdata = file(ppath).readlines()
+                pdata = open(ppath).readlines()
                 pdata[-1].index("kermit")
 
                 self.pkg("uninstall simpleuser simpleuser2")
                 self.pkg("install simpleuser2 simpleuser")
 
-                pdata = file(ppath).readlines()
+                pdata = open(ppath).readlines()
                 pdata[-1].index("kermit")
 
         def test_minugid(self):
@@ -5014,13 +5016,13 @@ adm:NP:6445::::::
                         self.pkg("install ugidtest")
                 else:
                         self.pkg("exact-install basics ugidtest")
-                passwd_file = file(os.path.join(self.get_img_path(),
+                passwd_file = open(os.path.join(self.get_img_path(),
                     "/etc/passwd"))
                 for line in passwd_file:
                         if line.startswith("dummy"):
                                 self.assert_(line.startswith("dummy:x:5:"))
                 passwd_file.close()
-                group_file = file(os.path.join(self.get_img_path(),
+                group_file = open(os.path.join(self.get_img_path(),
                     "/etc/group"))
                 for line in group_file:
                         if line.startswith("dummy"):
@@ -5065,7 +5067,7 @@ adm:NP:6445::::::
                     (3, ":::::::::"), (100, "")):
                         garbage += "\n"
                         self.pkg("install basics")
-                        with file(pwd_path, "r+") as pwd_file:
+                        with open(pwd_path, "r+") as pwd_file:
                                 lines = pwd_file.readlines()
                                 lines[lineno:lineno] = garbage
                                 pwd_file.truncate(0)
@@ -5075,11 +5077,11 @@ adm:NP:6445::::::
                                 self.pkg("{0} singleuser".format(install_cmd))
                         else:
                                 self.pkg("{0} basics singleuser".format(install_cmd))
-                        with file(pwd_path) as pwd_file:
+                        with open(pwd_path) as pwd_file:
                                 lines = pwd_file.readlines()
                                 self.assert_(garbage in lines)
                         self.pkg("uninstall singleuser")
-                        with file(pwd_path) as pwd_file:
+                        with open(pwd_path) as pwd_file:
                                 lines = pwd_file.readlines()
                                 self.assert_(garbage in lines)
 
@@ -5097,7 +5099,7 @@ adm:NP:6445::::::
                 self.image_create(self.rurl)
                 self.pkg("install basics@1.0")
                 group_path = os.path.join(self.get_img_path(), "etc/group")
-                with file(group_path, "r+") as group_file:
+                with open(group_path, "r+") as group_file:
                         lines = group_file.readlines()
                         lines[0] = lines[0][:-1] + "Kermit" + "\n"
                         group_file.truncate(0)
@@ -5162,14 +5164,14 @@ adm:NP:6445::::::
                 self.image_create(self.rurl)
 
                 def readfile():
-                        dlf = file(os.path.join(self.get_img_path(),
+                        dlf = open(os.path.join(self.get_img_path(),
                             "etc/devlink.tab"))
                         dllines = dlf.readlines()
                         dlf.close()
                         return dllines
 
                 def writefile(dllines):
-                        dlf = file(os.path.join(self.get_img_path(),
+                        dlf = open(os.path.join(self.get_img_path(),
                             "etc/devlink.tab"), "w")
                         dlf.writelines(dllines)
                         dlf.close()
@@ -9467,7 +9469,7 @@ adm
                         if objname.startswith("pkg_") and type(obj) == str:
                                 pkgs.append(obj)
 
-                for i in xrange(20):
+                for i in range(20):
                         s = """
                                 open massivedupdir{0:d}@0,5.11-0
                                 add dir path=usr owner=root group={{0}} mode={{1}} zig={{2}}
@@ -10337,7 +10339,7 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("install dupdirp1 dupdirp2@1 dupdirp3 dupdirp4", exit=1)
 
-                pkgs = " ".join("massivedupdir{0:d}".format(x) for x in xrange(20))
+                pkgs = " ".join("massivedupdir{0:d}".format(x) for x in range(20))
                 self.pkg("install {0}".format(pkgs), exit=1)
 
                 # Trigger bug 17943: we install packages with conflicts in two

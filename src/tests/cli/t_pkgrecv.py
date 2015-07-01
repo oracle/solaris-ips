@@ -43,12 +43,12 @@ import shutil
 import subprocess
 import tempfile
 import time
-import urllib
-import urlparse
 import unittest
 import zlib
 
 from pkg.digest import DEFAULT_HASH_FUNC
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import url2pathname
 
 try:
         import pkg.sha512_t
@@ -169,8 +169,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         @staticmethod
         def get_repo(uri):
-                parts = urlparse.urlparse(uri, "file", allow_fragments=0)
-                path = urllib.url2pathname(parts[2])
+                parts = urlparse(uri, "file", allow_fragments=0)
+                path = url2pathname(parts[2])
 
                 try:
                         return repo.Repository(root=path)
@@ -205,7 +205,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Test list newest.
                 self.pkgrecv(self.durl1, "--newest")
                 output = self.reduceSpaces(self.output)
-                
+
                 def  _nobuild_fmri(pfmri):
                         return fmri.PkgFmri(pfmri).get_fmri(
                             include_build=False)
@@ -241,13 +241,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Verify that the files aren't compressed since -k wasn't used.
                 # This is also the format pkgsend will expect for correct
                 # republishing.
-                ofile = file(os.devnull, "rb")
+                ofile = open(os.devnull, "rb")
                 for atype in ("file", "license"):
                         for a in m.gen_actions_by_type(atype):
                                 if not hasattr(a, "hash"):
                                         continue
 
-                                ifile = file(os.path.join(basedir, a.hash),
+                                ifile = open(os.path.join(basedir, a.hash),
                                     "rb")
 
                                 # Since the file shouldn't be compressed, this
@@ -553,13 +553,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # This is also the format pkgsend will expect for correct
                 # republishing.
-                ofile = file(os.devnull, "rb")
+                ofile = open(os.devnull, "rb")
                 for atype in ("file", "license"):
                         for a in m.gen_actions_by_type(atype):
                                 if not hasattr(a, "hash"):
                                         continue
 
-                                ifile = file(os.path.join(basedir, a.hash),
+                                ifile = open(os.path.join(basedir, a.hash),
                                     "rb")
 
                                 # Since the file shouldn't be compressed, this
@@ -870,14 +870,14 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # publisher to repo which contains same publisher
                 self.pkgrecv(self.durl1, "--clone -d {0}".format(self.dpath2))
 
-                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x",
                     "index", "-x", "trans", self.dpath1, self.dpath2])
                 self.assertTrue(ret==0)
 
                 # Test that packages in dst which are not in src get removed.
                 self.pkgsend_bulk(self.durl2, (self.amber30))
                 self.pkgrecv(self.durl1, "--clone -d {0}".format(self.dpath2))
-                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x",
                     "index", "-x", "trans", self.dpath1, self.dpath2])
                 self.assertTrue(ret==0)
 
@@ -890,7 +890,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 amber = self.amber10.replace("open ", "open pkg://test2/")
                 self.pkgsend_bulk(self.durl1, amber)
                 self.pkgrecv(self.durl1, "--clone -d {0} -p test2".format(self.dpath2))
-                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x",
                     "index", "-x", "trans", self.dpath1,
                     self.dpath2])
                 self.assertTrue(ret==0)
@@ -1061,7 +1061,7 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
                 #set permissions of tmp/verboten to make it non-readable
                 self.verboten = os.path.join(self.test_root, "tmp/verboten")
                 os.system("chmod 600 {0}".format(self.verboten))
-                
+
 
         def test_01_basics(self):
                 """Test that transfering a package from an https repo to
@@ -1160,23 +1160,23 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
                 self.pkgrecv(self.surl, "--key {key} --cert {cert} "
                     "-d {dst} --dkey {empty} --dcert {dcert} "
                     "{pkg}".format(**arg_dict), exit=1)
-                
-                # No permissions to read src certificate 
+
+                # No permissions to read src certificate
                 self.pkgrecv(self.surl, "--key {key} --cert {verboten} "
                     "-d {dst} --dkey {dkey} --dcert {dcert} "
                     "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
-                # No permissions to read dst certificate 
+                # No permissions to read dst certificate
                 self.pkgrecv(self.surl, "--key {key} --cert {cert} "
                     "-d {dst} --dkey {dkey} --dcert {verboten} "
                     "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
-                # No permissions to read src key 
+                # No permissions to read src key
                 self.pkgrecv(self.surl, "--key {verboten} --cert {cert} "
                     "-d {dst} --dkey {dkey} --dcert {dcert} "
                     "{pkg}".format(**arg_dict), su_wrap=True, exit=1)
 
-                # No permissions to read dst key 
+                # No permissions to read dst key
                 self.pkgrecv(self.surl, "--key {key} --cert {cert} "
                     "-d {dst} --dkey {verboten} --dcert {dcert} "
                     "{pkg}".format(**arg_dict), su_wrap=True, exit=1)

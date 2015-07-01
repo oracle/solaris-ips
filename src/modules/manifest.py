@@ -32,9 +32,11 @@ import fnmatch
 import hashlib
 import os
 import re
+import six
 import tempfile
-from itertools import groupby, chain, product, repeat, izip
+from itertools import groupby, chain, product, repeat
 from operator import itemgetter
+from six.moves import zip
 
 import pkg.actions as actions
 import pkg.client.api_errors as apx
@@ -58,7 +60,7 @@ def _compile_fnpats(fn_pats):
                 re.compile(fnmatch.translate(pat), re.IGNORECASE).match
                 for pat in pats
             ])
-            for (key, pats) in fn_pats.iteritems()
+            for (key, pats) in six.iteritems(fn_pats)
         )
 
 
@@ -71,7 +73,7 @@ def _attr_matches(action, attr_match):
         if not attr_match:
                 return True
 
-        for (attr, matches) in attr_match.iteritems():
+        for (attr, matches) in six.iteritems(attr_match):
                 if attr in action.attrs:
                         for match in matches:
                                 for attrval in action.attrlist(attr):
@@ -242,8 +244,8 @@ class Manifest(object):
                 sdict = dict(dictify(self, self_exclude))
                 odict = dict(dictify(origin, origin_exclude))
 
-                sset = set(sdict.iterkeys())
-                oset = set(odict.iterkeys())
+                sset = set(six.iterkeys(sdict))
+                oset = set(six.iterkeys(odict))
 
                 added = [(None, sdict[i]) for i in sset - oset]
                 removed = [(odict[i], None) for i in oset - sset]
@@ -397,7 +399,7 @@ class Manifest(object):
                                    a.attrs.get("mediator-implementation"))
 
                 mediators = self._actions_to_dict(gen_references)
-                for mediation, mvariants in mediators.iteritems():
+                for mediation, mvariants in six.iteritems(mediators):
                         values = {
                             "mediator-priority": mediation[1],
                             "mediator-version": mediation[2],
@@ -408,12 +410,12 @@ class Manifest(object):
                                     "value={0} {1} {2}\n".format(mediation[0],
                                      " ".join((
                                          "=".join(t)
-                                          for t in values.iteritems()
+                                          for t in six.iteritems(values)
                                           if t[1]
                                      )),
                                      " ".join((
                                          "=".join(t)
-                                         for t in mvariant.iteritems()
+                                         for t in six.iteritems(mvariant)
                                      ))
                                 )
                                 yield a
@@ -458,7 +460,7 @@ class Manifest(object):
 
                         afacets = []
                         avariants = []
-                        for attr, val in attrs.iteritems():
+                        for attr, val in six.iteritems(attrs):
                                 if attr[:8] == "variant.":
                                         variants[attr].add(val)
                                         avariants.append((attr, val))
@@ -564,7 +566,7 @@ class Manifest(object):
                                 # used by a single variant (think i386-only or
                                 # sparc-only content) would be seen unvarianted
                                 # (that's bad).
-                                vfacets = facets.values()
+                                vfacets = list(facets.values())
                                 vcfacets = vfacets[0].intersection(*vfacets[1:])
 
                                 if vcfacets:
@@ -605,7 +607,7 @@ class Manifest(object):
                         # Now emit a pkg.facet action for each variant
                         # combination containing the list of facets unique to
                         # that combination.
-                        for varkey, fnames in facets.iteritems():
+                        for varkey, fnames in six.iteritems(facets):
                                 # A unique key for each combination is needed,
                                 # and using a hash obfuscates that interface
                                 # while giving us a reliable way to generate
@@ -974,7 +976,7 @@ class Manifest(object):
                 lineno = 0
                 errors = []
 
-                if isinstance(content, basestring):
+                if isinstance(content, six.string_types):
                         # Get an iterable for the string.
                         content = content.splitlines()
 
@@ -1046,7 +1048,7 @@ class Manifest(object):
                                         content = mfile.read()
                         except EnvironmentError as e:
                                 raise apx._convert_error(e)
-                if isinstance(content, basestring):
+                if isinstance(content, six.string_types):
                         if signatures:
                                 # Generate manifest signature based upon
                                 # input content, but only if signatures
@@ -1191,7 +1193,7 @@ class Manifest(object):
                         log = lambda x: None
 
                 try:
-                        file_handle = file(file_path, "rb")
+                        file_handle = open(file_path, "rb")
                 except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
@@ -1283,7 +1285,7 @@ class Manifest(object):
                 # This must be an SHA-1 hash in order to interoperate with
                 # older clients.
                 sha_1 = hashlib.sha1()
-                if isinstance(mfstcontent, unicode):
+                if isinstance(mfstcontent, six.text_type):
                         # Byte stream expected, so pass encoded.
                         sha_1.update(mfstcontent.encode("utf-8"))
                 else:
@@ -1449,7 +1451,7 @@ class Manifest(object):
                                 continue
 
                         try:
-                                for v, d in izip(v_list, repeat(variants)):
+                                for v, d in zip(v_list, repeat(variants)):
                                         d[v].add(attrs[v])
 
                                 if not excludes or action.include_this(
@@ -1460,7 +1462,7 @@ class Manifest(object):
                                         # from the current action should only be
                                         # included if the action is not
                                         # excluded.
-                                        for v, d in izip(f_list, repeat(facets)):
+                                        for v, d in zip(f_list, repeat(facets)):
                                                 d[v].add(attrs[v])
                         except TypeError:
                                 # Lists can't be set elements.
@@ -1615,7 +1617,7 @@ class FactoredManifest(Manifest):
                 # so that empty cache files are created if no action of that
                 # type exists for the package (avoids full manifest loads
                 # later).
-                for n, acts in self.actions_bytype.iteritems():
+                for n, acts in six.iteritems(self.actions_bytype):
                         t_prefix = "manifest.{0}.".format(n)
 
                         try:

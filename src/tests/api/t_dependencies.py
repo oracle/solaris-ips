@@ -1134,7 +1134,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 pdir = "usr/lib/python{0}/vendor-packages".format(py_version)
                 self.make_proto_text_file("{0}/cProfile.py".format(pdir),
                     "#!/usr/bin/python\n\\1" + self.python_module_text)
-                
+
 	def make_smf_test_files(self):
                 for manifest in self.smf_paths.keys():
                         self.make_proto_text_file(self.paths[manifest],
@@ -1229,7 +1229,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         def test_ext_script(self):
                 """Check that a file that starts with #! and references a file
                 outside its package is reported as a dependency."""
-                
+
                 def _check_res(res):
                         ds, es, ms, pkg_attrs = res
                         if es != []:
@@ -1296,7 +1296,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                         else:
                                 raise RuntimeError("Unexpected "
                                     "dependency path:{0}".format(d))
-                                
+
         def test_ext_elf(self):
                 """Check that an elf file that requires a library outside its
                 package is reported as a dependency."""
@@ -1987,7 +1987,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 if len(ms) != 1:
                         raise RuntimeError("Didn't get expected types of "
                             "missing files:\n{0}".format(ms))
-                self.assertEqual(ms.keys()[0], "empty file")
+                self.assertEqual(list(ms.keys())[0], "empty file")
                 self.assert_(len(d_map) == 0)
 
                 # This should find the binary file first and thus produce

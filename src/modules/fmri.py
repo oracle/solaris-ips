@@ -26,7 +26,7 @@
 
 import fnmatch
 import re
-import urllib
+from six.moves.urllib.parse import quote
 
 from pkg.version import Version, VersionError
 
@@ -52,12 +52,6 @@ class FmriError(Exception):
         def __init__(self, fmri):
                 Exception.__init__(self)
                 self.fmri = fmri
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
 
 class IllegalFmri(FmriError):
@@ -444,25 +438,25 @@ class PkgFmri(object):
                 FMRI."""
 
                 if stemonly:
-                        return "{0}".format(urllib.quote(self.pkg_name, ""))
+                        return "{0}".format(quote(self.pkg_name, ""))
 
                 if self.version is None:
                         raise MissingVersionError(self)
 
-                return "{0}@{1}".format(urllib.quote(self.pkg_name, ""),
-                    urllib.quote(str(self.version), ""))
+                return "{0}@{1}".format(quote(self.pkg_name, ""),
+                    quote(str(self.version), ""))
 
         def get_dir_path(self, stemonly = False):
                 """Return the escaped directory path fragment for this FMRI."""
 
                 if stemonly:
-                        return "{0}".format(urllib.quote(self.pkg_name, ""))
+                        return "{0}".format(quote(self.pkg_name, ""))
 
                 if self.version is None:
                         raise MissingVersionError(self)
 
-                return "{0}/{1}".format(urllib.quote(self.pkg_name, ""),
-                    urllib.quote(self.version.__str__(), ""))
+                return "{0}/{1}".format(quote(self.pkg_name, ""),
+                    quote(self.version.__str__(), ""))
 
         def get_url_path(self):
                 """Return the escaped URL path fragment for this FMRI.
@@ -471,8 +465,8 @@ class PkgFmri(object):
                 if self.version is None:
                         raise MissingVersionError(self)
 
-                return "{0}@{1}".format(urllib.quote(self.pkg_name, ""),
-                    urllib.quote(self.version.__str__(), ""))
+                return "{0}@{1}".format(quote(self.pkg_name, ""),
+                    quote(self.version.__str__(), ""))
 
         def is_same_pkg(self, other):
                 """Return true if these packages are the same (although

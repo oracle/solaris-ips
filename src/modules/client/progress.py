@@ -36,8 +36,12 @@ import itertools
 import math
 import sys
 import simplejson as json
+import six
 import time
 from functools import wraps
+# Redefining built-in 'range'; pylint: disable=W0622
+# import-error: six.moves; pylint: disable=F0401
+from six.moves import range
 
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.publisher as publisher
@@ -340,10 +344,14 @@ class OutSpec(object):
                 s += ">"
                 return s
 
-        def __nonzero__(self):
-                return (bool(self.first) or bool(self.last) or
-                    bool(self.changed))
+        # Defining "boolness" of a class, Python 2 uses the special method
+        # called __nonzero__() while Python 3 uses __bool__(). For Python
+        # 2 and 3 compatibility, define __bool__() only, and let
+        # __nonzero__ = __bool__
+        def __bool__(self):
+                return bool(self.first) or bool(self.last) or bool(self.changed)
 
+        __nonzero__ = __bool__
 
 class TrackerItem(object):
         """This class describes an item of interest in tracking progress
@@ -1698,7 +1706,8 @@ class MultiProgressTracker(ProgressTrackerFrontend):
                 # Look in the ProgressTrackerFrontend for a list of frontend
                 # methods to multiplex.
                 #
-                for methname, m in ProgressTrackerFrontend.__dict__.iteritems():
+                for methname, m in six.iteritems(
+                    ProgressTrackerFrontend.__dict__):
                         if methname == "__init__":
                                 continue
                         if not inspect.isfunction(m):
@@ -3317,8 +3326,8 @@ def test_progress_tracker(t, gofast=False):
         hunkmax = 8192
         approx_time = 5.0 * fast   # how long we want the dl to take
         # invent a list of random download chunks.
-        for pkgname, filelist in dlscript.iteritems():
-                for f in xrange(0, perpkgfiles):
+        for pkgname, filelist in six.iteritems(dlscript):
+                for f in range(0, perpkgfiles):
                         filesize = random.randint(0, filesizemax)
                         hunks = []
                         while filesize > 0:
@@ -3334,7 +3343,7 @@ def test_progress_tracker(t, gofast=False):
         try:
                 t.download_set_goal(len(dlscript), pkggoalfiles, pkggoalbytes)
                 n = 0
-                for pkgname, pkgfiles in dlscript.iteritems():
+                for pkgname, pkgfiles in six.iteritems(dlscript):
                         fmri = pkg.fmri.PkgFmri(pkgname)
                         t.download_start_pkg(fmri)
                         for pkgfile in pkgfiles:
@@ -3351,7 +3360,7 @@ def test_progress_tracker(t, gofast=False):
                 t.reset_download()
                 t.republish_set_goal(len(dlscript), pkggoalbytes, pkggoalbytes)
                 n = 0
-                for pkgname, pkgfiles in dlscript.iteritems():
+                for pkgname, pkgfiles in six.iteritems(dlscript):
                         fmri = pkg.fmri.PkgFmri(pkgname)
                         t.republish_start_pkg(fmri)
                         for pkgfile in pkgfiles:
@@ -3369,7 +3378,7 @@ def test_progress_tracker(t, gofast=False):
                 t.reset_download()
                 t.archive_set_goal("testarchive", pkggoalfiles, pkggoalbytes)
                 n = 0
-                for pkgname, pkgfiles in dlscript.iteritems():
+                for pkgname, pkgfiles in six.iteritems(dlscript):
                         for pkgfile in pkgfiles:
                                 for hunk in pkgfile:
                                         t.archive_add_progress(0, hunk)

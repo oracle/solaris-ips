@@ -41,6 +41,7 @@ import collections
 import itertools
 import operator
 import simplejson as json
+import six
 
 import pkg.actions
 import pkg.client.actuator
@@ -510,7 +511,7 @@ class PlanDescription(object):
 
                 vs = []
                 if self._new_variants:
-                        vs = self._new_variants.items()
+                        vs = list(self._new_variants.items())
 
                 # sort results by variant name
                 vs.sort(key=lambda x: x[0])
@@ -725,7 +726,7 @@ class PlanDescription(object):
 
                 if ordered:
                         # Sort all the item messages by msg_time
-                        ordered_list = sorted(self._item_msgs.iteritems(),
+                        ordered_list = sorted(six.iteritems(self._item_msgs),
                             key=lambda k_v: k_v[1][0][0])
                         for item in ordered_list:
                                 item_id = item[0]

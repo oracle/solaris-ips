@@ -28,12 +28,12 @@ from __future__ import print_function
 import os
 import fnmatch
 import re
+import six
 import sys
 import threading
 import copy
 import itertools
 import errno
-import cgi
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -146,7 +146,7 @@ class QueryLexer(object):
                         t.type = "FTERM"
                         t.value = (pkg_name, action_type, key, token)
                 return t
-                
+
         def t_TERM(self, t):
                 # This rule handles the general search terms as well as
                 # checking for any reserved words such as AND or OR.
@@ -166,7 +166,7 @@ class QueryLexer(object):
 
         def set_input(self, input):
                 self.lexer.input(input)
-                
+
         def token(self):
                 return self.lexer.token()
 
@@ -175,7 +175,7 @@ class QueryLexer(object):
 
         def get_string(self):
                 return self.lexer.lexdata
-                
+
         def test(self, data):
                 """This is a function useful for testing and debugging as it
                 shows the user exactly which tokens are produced from the input
@@ -249,7 +249,7 @@ class QueryParser(object):
                 # performing the search.
                 'term : TERM'
                 p[0] = self.query_objs["TermQuery"](p[1])
-                
+
         def p_fterm(self, p):
                 # fterms are the parser's representation of the lexer's FTERMS
                 # (which are field/structured query terms).  In the query
@@ -366,14 +366,8 @@ class QueryParser(object):
                 self.lexer.set_input(input)
                 return self.parser.parse(lexer=self.lexer)
 
-
 class QueryException(Exception):
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
+      pass
 
 
 class QueryLengthExceeded(QueryException):
@@ -419,7 +413,7 @@ class IncompleteQuery(QueryException):
                     "and the text of the query.  The query provided lacked at "
                     "least one of those fields:\n{0}").format(self.query)
 
-        
+
 class ParseError(QueryException):
         def __init__(self, parse_object, string_position, input_string):
                 QueryException.__init__(self)
@@ -589,7 +583,7 @@ class BooleanQuery(object):
 
                 self.lc.set_info(**kwargs)
                 self.rc.set_info(**kwargs)
-                
+
         def search(self, *args):
                 """Distributes the search to the two children and returns a
                 tuple of the results."""
@@ -657,14 +651,14 @@ class AndQuery(BooleanQuery):
                         # also removed from the results.
                         lc_set, rc_set = BooleanQuery.search(self, *args)
                         return self.sorted(lc_set & rc_set)
-                
+
 
         def __str__(self):
                 return "({0!s} AND {1!s})".format(self.lc, self.rc)
 
         def __repr__(self):
                 return "({0!r} AND {1!r})".format(self.lc, self.rc)
-        
+
 class OrQuery(BooleanQuery):
         """Class representing OR queries in the AST."""
 
@@ -719,7 +713,7 @@ class OrQuery(BooleanQuery):
 class PkgConversion(object):
         """Class representing a change from returning actions to returning
         packages in the AST."""
-        
+
         def __init__(self, query):
                 self.query = query
                 self.return_type = Query.RETURN_PACKAGES
@@ -753,7 +747,7 @@ class PkgConversion(object):
                             (pfmri for at, st, pfmri, fv, l in it)))
                 else:
                         assert 0
-                
+
         def search(self, restriction, *args):
                 """Takes the results of its child's search and converts the
                 results to be a sorted list of packages.
@@ -846,7 +840,7 @@ class PhraseQuery(object):
                         return fv
                 else:
                         return fs
-                
+
         def search(self, restriction, *args):
                 """Perform a search for the given phrase.  The child is used to
                 find instances of the first word of the phrase.  Those results
@@ -875,7 +869,7 @@ class PhraseQuery(object):
                 itself. It then returns the new node to its parent for
                 insertion into the tree."""
                 return PkgConversion(self)
-                
+
 class FieldQuery(object):
         """Class representing a structured query in the AST."""
 
@@ -955,7 +949,7 @@ class TopQuery(object):
                 return x >= self.start_point and \
                     (self.num_to_return is None or
                     x < self.num_to_return + self.start_point)
-        
+
         def finalize_results(self, it):
                 """Converts the internal result representation to the format
                 which is expected by the callers of search.  It also handles
@@ -991,8 +985,8 @@ class TopQuery(object):
                 self.num_to_return = num_to_return
                 self.query.set_info(start_point=start_point,
                     num_to_return=num_to_return, **kwargs)
-                
-                        
+
+
         def search(self, *args):
                 """Perform search by taking the result of the child's search
                 and transforming and subselecting the results.  None is passed
@@ -1005,7 +999,7 @@ class TopQuery(object):
                 """Returns whether the query supports a query of version v."""
 
                 return self.query.allow_version(v)
-        
+
         def propagate_pkg_return(self):
                 """Makes the child return packages instead of actions.
 
@@ -1033,7 +1027,7 @@ class TermQuery(object):
         has_non_wildcard_character = re.compile('.*[^\*\?].*')
 
         fmris = None
-        
+
         def __init__(self, term):
                 """term is a the string for the token to be searched for."""
 
@@ -1164,21 +1158,21 @@ class TermQuery(object):
         @staticmethod
         def __is_wildcard(s):
                 return s == '*' or s == ''
-                
+
         def add_trailing_wildcard(self):
                 """Ensures that the search is a prefix match.  Primarily used
                 by the PhraseQuery class."""
 
                 if not self._term.endswith('*'):
                         self._term += "*"
-        
+
         def set_info(self, index_dir, get_manifest_path,
             case_sensitive, **kwargs):
                 """Sets the information needed to search which is specific to
                 the particular index used to back the search.
 
                 'index_dir' is a path to the base directory of the index.
-                
+
                 'get_manifest_path' is a function which when given a
                 fully specified fmri returns the path to the manifest file
                 for that fmri.
@@ -1206,7 +1200,7 @@ class TermQuery(object):
                                     ss.FMRI_OFFSETS_FILE, None)
                         # Create a temporary list of dictionaries we need to
                         # open consistently.
-                        tmp = tq_gdd.values()
+                        tmp = list(tq_gdd.values())
                         tmp.append(self._data_main_dict)
                         try:
                                 # Try to open the index files assuming they
@@ -1219,7 +1213,7 @@ class TermQuery(object):
                                 # back to the index prior to the conversion
                                 # to using the fmri_offsets.v1 file.
                                 del tq_gdd["fmri_offsets"]
-                                tmp = tq_gdd.values()
+                                tmp = list(tq_gdd.values())
                                 tmp.append(self._data_main_dict)
                                 ret = ss.consistent_open(tmp, self._dir_path,
                                     self._file_timeout_secs)
@@ -1251,7 +1245,7 @@ class TermQuery(object):
                                                 for k, d
                                                 in tq_gdd.items()
                                             ])
-                                        tmp = tq_gdd.values()
+                                        tmp = list(tq_gdd.values())
                                         tmp.append(self._data_main_dict)
                                         ret = ss.consistent_open(tmp,
                                             self._dir_path,
@@ -1285,7 +1279,7 @@ class TermQuery(object):
         def allow_version(self, v):
                 """Returns whether the query supports a query of version v."""
                 return True
-                
+
         def _close_dicts(self):
                 """Closes the main dictionary file handle, which is handled
                 separately from the other dictionaries since it's not read
@@ -1306,7 +1300,7 @@ class TermQuery(object):
                         else:
                                 res.append(l)
                 return res
-                
+
         def _restricted_search_internal(self, restriction):
                 """Searches for the given term within a restricted domain of
                 search results.  restriction is a generator function that
@@ -1480,13 +1474,13 @@ class TermQuery(object):
                 elif glob and \
                     not TermQuery.has_non_wildcard_character.match(term):
                         line_iter = self._data_main_dict.get_file_handle()
-                        
+
                 for line in line_iter:
                         assert not line == '\n'
                         tok, at_lst = \
                             self._data_main_dict.parse_main_dict_line(line)
                         # Check that the token was what was expected.
-                        assert ((term == tok) or 
+                        assert ((term == tok) or
                             (not case_sensitive and
                             term.lower() == tok.lower()) or
                             (glob and fnmatch.fnmatch(tok, term)) or

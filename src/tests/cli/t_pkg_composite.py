@@ -36,6 +36,7 @@ import pkg.portable as portable
 import pkg.misc as misc
 import pkg.p5p
 import shutil
+import six
 import stat
 import tempfile
 import unittest
@@ -105,7 +106,7 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
             "tmp/foo.1", "tmp/README", "tmp/LICENSE", "tmp/quux"]
 
         def __seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
+                if isinstance(certs, six.string_types):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir

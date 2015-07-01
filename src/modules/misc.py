@@ -37,7 +37,6 @@ import datetime
 import errno
 import fnmatch
 import getopt
-import itertools
 import locale
 import os
 import platform
@@ -46,6 +45,7 @@ import resource
 import shutil
 import signal
 import simplejson as json
+import six
 import socket
 import struct
 import sys
@@ -53,11 +53,20 @@ import threading
 import time
 import traceback
 import urllib
-import urlparse
 import zlib
 
 from collections import defaultdict
 from operator import itemgetter
+# Pylint seems to be panic about six even if it is installed. Instead of using
+# 'disable' here, a better way is to use ignore-modules in pylintrc, but
+# it has an issue that is not fixed until recently. See pylint/issues/#223.
+# import-error; pylint: disable=F0401
+# no-name-in-module; pylint: disable=E0611
+# Redefining built-in 'range'; pylint: disable=W0622
+# Module 'urllib' has no 'parse' member; pylint: disable=E1101
+from six.moves import range, zip_longest
+from six.moves.urllib.parse import urlsplit, urlparse, urlunparse
+from six.moves.urllib.request import pathname2url, url2pathname
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
     S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
@@ -201,7 +210,7 @@ def copytree(src, dst):
         os.chown(dst, src_stat.st_uid, src_stat.st_gid)
         os.utime(dst, (src_stat.st_atime, src_stat.st_mtime))
         if problem:
-                raise problem[0], problem[1], problem[2]
+                six.reraise(problem[0], problem[1], problem[2])
 
 def move(src, dst):
         """Rewrite of shutil.move() that uses our copy of copytree()."""
@@ -303,21 +312,24 @@ def valid_pub_url(url, proxy=False):
                 return False
 
         # First split the URL and check if the scheme is one we support
-        o = urlparse.urlsplit(url)
+        o = urlsplit(url)
 
         if not o[0] in _valid_proto:
                 return False
 
         if o[0] == "file":
-                path = urlparse.urlparse(url, "file", allow_fragments=0)[2]
-                path = urllib.url2pathname(path)
+                path = urlparse(url, "file", allow_fragments=0)[2]
+                path = url2pathname(path)
                 if not os.path.abspath(path):
                         return False
                 # No further validation to be done.
                 return True
 
         # Next verify that the network location is valid
-        host = urllib.splitport(o[1])[0]
+        if six.PY3:
+                host = urllib.parse.splitport(o[1])[0]
+        else:
+                host = urllib.splitport(o[1])[0]
 
         if proxy:
                 # We may have authentication details in the proxy URI, which
@@ -581,8 +593,8 @@ def get_data_digest(data, length=None, return_content=False,
 
         bufsz = 128 * 1024
         closefobj = False
-        if isinstance(data, basestring):
-                f = file(data, "rb", bufsz)
+        if isinstance(data, six.string_types):
+                f = open(data, "rb", bufsz)
                 closefobj = True
         else:
                 f = data
@@ -831,7 +843,7 @@ class ProcFS(object):
         }
 
         # fill in <format string> and <namedtuple> in _struct_descriptions
-        for struct_name, v in _struct_descriptions.iteritems():
+        for struct_name, v in six.iteritems(_struct_descriptions):
                 desc = v[0]
 
                 # update _struct_descriptions with a format string
@@ -882,7 +894,7 @@ class ProcFS(object):
                         psinfo_size = 288
 
                 try:
-                        psinfo_data = file("/proc/self/psinfo").read(
+                        psinfo_data = open("/proc/self/psinfo").read(
                             psinfo_size)
                 # Catch "Exception"; pylint: disable=W0703
                 except Exception:
@@ -1098,7 +1110,7 @@ def build_cert(path, uri=None, pub=None):
         related publisher."""
 
         try:
-                cf = file(path, "rb")
+                cf = open(path, "rb")
                 certdata = cf.read()
                 cf.close()
         except EnvironmentError as e:
@@ -1226,11 +1238,11 @@ def parse_uri(uri, cwd=None):
                 elif not os.path.isabs(uri):
                         uri = os.path.normpath(os.path.join(cwd, uri))
 
-                uri = urlparse.urlunparse(("file", "",
-                    urllib.pathname2url(uri), "", "", ""))
+                uri = urlunparse(("file", "",
+                    pathname2url(uri), "", "", ""))
 
         scheme, netloc, path, params, query, fragment = \
-            urlparse.urlparse(uri, "file", allow_fragments=0)
+            urlparse(uri, "file", allow_fragments=0)
         scheme = scheme.lower()
 
         if scheme == "file":
@@ -1240,7 +1252,7 @@ def parse_uri(uri, cwd=None):
                         path = "/" + path.lstrip("/")
 
         # Rebuild the URI with the sanitized components.
-        return urlparse.urlunparse((scheme, netloc, path, params,
+        return urlunparse((scheme, netloc, path, params,
             query, fragment))
 
 
@@ -1558,7 +1570,7 @@ def api_pkgcmd():
         pkg_cmd = [pkg_bin]
 
         # propagate debug options
-        for k, v in DebugValues.iteritems():
+        for k, v in six.iteritems(DebugValues):
                 pkg_cmd.append("-D")
                 pkg_cmd.append("{0}={1}".format(k, v))
 
@@ -1716,7 +1728,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                     1 for k in field_data
                     if filter_tsv(field_data[k])
                 )
-                fmt = "\t".join('{{{0}}}'.format(x) for x in xrange(num_fields))
+                fmt = "\t".join('{{{0}}}'.format(x) for x in range(num_fields))
                 filter_func = filter_tsv
         elif out_format == "json" or out_format == "json-formatted":
                 args = { "sort_keys": True }
@@ -1727,12 +1739,12 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                 # any explicitly named fields are only included if 'json'
                 # is explicitly listed.
                 def fmt_val(v):
-                        if isinstance(v, basestring):
+                        if isinstance(v, six.string_types):
                                 return v
                         if isinstance(v, (list, tuple, set, frozenset)):
                                 return [fmt_val(e) for e in v]
                         if isinstance(v, dict):
-                                for k, e in v.iteritems():
+                                for k, e in six.iteritems(v):
                                         v[k] = fmt_val(e)
                                 return v
                         return str(v)
@@ -1754,8 +1766,8 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         # Extract the list of headers from the field_data dictionary.  Ensure
         # they are extracted in the desired order by using the custom sort
         # function.
-        hdrs = map(get_header, sorted(filter(filter_func, field_data.values()),
-            sort_fields))
+        hdrs = map(get_header, sorted(filter(filter_func,
+            field_data.values()), sort_fields))
 
         # Output a header if desired.
         output = ""
@@ -1766,7 +1778,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         for entry in field_values:
                 map(set_value, (
                     (field_data[f], v)
-                    for f, v in entry.iteritems()
+                    for f, v in six.iteritems(entry)
                     if f in field_data
                 ))
                 values = map(get_value, sorted(filter(filter_func,
@@ -1806,10 +1818,8 @@ def flush_output():
                 raise api_errors._convert_error(e)
 
 # valid json types
-if sys.version > '3':
-        json_types_immediates = (bool, float, int, str, type(None))
-else:
-        json_types_immediates = (bool, float, int, long, basestring, type(None))
+json_types_immediates = (bool, float, six.integer_types, six.string_types,
+    type(None))
 json_types_collections = (dict, list)
 json_types = tuple(json_types_immediates + json_types_collections)
 json_debug = False
@@ -1913,7 +1923,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                 # strings (that way we're encoder/decoder independent).
                 obj_cache = je_state[1]
                 obj_cache2 = {}
-                for obj_id, obj_state in obj_cache.itervalues():
+                for obj_id, obj_state in six.itervalues(obj_cache):
                         obj_cache2[str(obj_id)] = obj_state
 
                 data = { "json_state": data, "json_objects": obj_cache2 }
@@ -1949,7 +1959,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
         # necessary since we use the PkgDecoder hook function during json_decode
         # to convert unicode objects back into escaped str objects, which would
         # otherwise do that conversion unintentionally.
-        assert not isinstance(data_type, unicode), \
+        assert not isinstance(data_type, six.text_type), \
             "unexpected unicode string: {0}".format(data)
 
         # we don't need to do anything for basic types
@@ -1970,7 +1980,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
                 # lookup the first descriptor to see if we have
                 # generic type description.
-                desc_k, desc_v = desc.items()[0]
+                desc_k, desc_v = list(desc.items())[0]
 
                 # if the key in the first type pair is a type then we
                 # have a generic type description that applies to all
@@ -1981,7 +1991,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                         assert len(desc) == 1
 
                         # encode all key / value pairs
-                        for k, v in data.iteritems():
+                        for k, v in six.iteritems(data):
                                 # encode the key
                                 name2 = "{0}[{1}].key()".format(name, desc_k)
                                 k2 = json_encode(name2, k, desc_k,
@@ -1999,7 +2009,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                 # we have element specific value type descriptions.
                 # encode the specific values.
                 rv.update(data)
-                for desc_k, desc_v in desc.iteritems():
+                for desc_k, desc_v in six.iteritems(desc):
                         # check for the specific key
                         if desc_k not in rv:
                                 continue
@@ -2017,7 +2027,8 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                 # we always return a new list
                 rv = []
 
-                # check for an empty list since we use izip_longest
+                # check for an empty list since we use izip_longest(zip_longest
+                # in python 3)
                 if len(data) == 0:
                         return je_return(name, rv, finish, je_state)
 
@@ -2026,12 +2037,13 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                         rv.extend(data)
                         return je_return(name, rv, finish, je_state)
 
-                # don't accidentally generate data via izip_longest
+                # don't accidentally generate data via izip_longest(zip_longest
+                # in python 3)
                 assert len(data) >= len(desc), \
                     "{0:d} >= {1:d}".format(len(data), len(desc))
 
                 i = 0
-                for data2, desc2 in itertools.izip_longest(data, desc,
+                for data2, desc2 in zip_longest(data, desc,
                     fillvalue=list(desc)[0]):
                         name2 = "{0}[{1:d}]".format(name, i)
                         i += 1
@@ -2194,7 +2206,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
                 # lookup the first descriptor to see if we have
                 # generic type description.
-                desc_k, desc_v = desc.items()[0]
+                desc_k, desc_v = list(desc.items())[0]
 
                 # if the key in the descriptor is a type then we have
                 # a generic type description that applies to all keys
@@ -2205,7 +2217,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                         assert len(desc) == 1
 
                         # decode all key / value pairs
-                        for k, v in data.iteritems():
+                        for k, v in six.iteritems(data):
                                 # decode the key
                                 name2 = "{0}[{1}].key()".format(name, desc_k)
                                 k2 = json_decode(name2, k, desc_k,
@@ -2223,7 +2235,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                 # we have element specific value type descriptions.
                 # copy all data and then decode the specific values
                 rv.update(data)
-                for desc_k, desc_v in desc.iteritems():
+                for desc_k, desc_v in six.iteritems(desc):
                         # check for the specific key
                         if desc_k not in rv:
                                 continue
@@ -2240,7 +2252,8 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                 # get the return type
                 rvtype = type(desc)
 
-                # check for an empty list since we use izip_longest
+                # check for an empty list since we use izip_longest(zip_longest
+                # in python 3)
                 if len(data) == 0:
                         rv = rvtype([])
                         return jd_return(name, rv, desc, finish, jd_state)
@@ -2250,13 +2263,14 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                         rv = rvtype(data)
                         return jd_return(name, rv, desc, finish, jd_state)
 
-                # don't accidentally generate data via izip_longest
+                # don't accidentally generate data via izip_longest(zip_longest
+                # in python 3)
                 assert len(data) >= len(desc), \
                     "{0:d} >= {1:d}".format(len(data), len(desc))
 
                 rv = []
                 i = 0
-                for data2, desc2 in itertools.izip_longest(data, desc,
+                for data2, desc2 in zip_longest(data, desc,
                     fillvalue=list(desc)[0]):
                         name2 = "{0}[{1:d}]".format(name, i)
                         i += 1
@@ -2374,10 +2388,10 @@ def json_hook(dct):
         are converted to string objects."""
 
         rvdct = {}
-        for k, v in dct.iteritems():
-                if type(k) == unicode:
+        for k, v in six.iteritems(dct):
+                if type(k) == six.text_type:
                         k = k.encode("utf-8")
-                if type(v) == unicode:
+                if type(v) == six.text_type:
                         v = v.encode("utf-8")
 
                 rvdct[k] = v
@@ -2625,7 +2639,7 @@ def get_runtime_proxy(proxy, uri):
 
         if no_proxy or no_proxy_upper:
                 # SplitResult has a netloc member; pylint: disable=E1103
-                netloc = urlparse.urlsplit(uri, allow_fragments=0).netloc
+                netloc = urlsplit(uri, allow_fragments=0).netloc
                 host = netloc.split(":")[0]
                 if host in no_proxy or no_proxy == ["*"]:
                         return "-"

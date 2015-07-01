@@ -33,6 +33,7 @@ information is stored within a parent image.
 
 # standard python classes
 import os
+import six
 import tempfile
 
 # pkg classes
@@ -261,7 +262,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 zlist = []
                 # state is unused
                 # pylint: disable=W0612
-                for zone, (path, state) in zdict.iteritems():
+                for zone, (path, state) in six.iteritems(zdict):
                         lin = li.LinkedImageName("{0}:{1}".format(self.__pname,
                             zone))
                         zlist.append([lin, path])
@@ -330,7 +331,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 assert li.PROP_PATH in props
 
                 props[li.PROP_MODEL] = li.PV_MODEL_PUSH
-                for k, v in self.attach_props_def.iteritems():
+                for k, v in six.iteritems(self.attach_props_def):
                         if k not in props:
                                 props[k] = v
 
@@ -520,7 +521,7 @@ def list_running_zones():
 
         zdict = _list_zones("/", li.PATH_TRANSFORM_NONE)
         rzdict = {}
-        for z_name, (z_path, z_state) in zdict.iteritems():
+        for z_name, (z_path, z_state) in six.iteritems(zdict):
                 if z_state == ZONE_STATE_STR_RUNNING:
                         rzdict[z_name] = z_path
 

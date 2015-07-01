@@ -34,12 +34,13 @@ import pkg.fmri
 from pkg.client.api_errors import ApiException
 from pkg.version import DotSequence, Version
 
-import ConfigParser
 import logging
 import os
 import shutil
+import six
 import sys
-import urllib2
+from six.moves import configparser
+from six.moves.urllib.parse import urlparse, quote
 
 PKG_CLIENT_NAME = "pkglint"
 CLIENT_API_VERSION = 82
@@ -48,21 +49,13 @@ pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 class LintEngineException(Exception):
         """An exception thrown when something fatal goes wrong with the engine,
         such that linting can no longer continue."""
+        pass
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
 class LintEngineSetupException(LintEngineException):
         """An exception thrown when the engine failed to complete its setup."""
+        pass
 
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
 class LintEngineCache():
         """This class provides two caches for the LintEngine.  A cache of the
@@ -420,13 +413,13 @@ class LintEngine(object):
                                 excl = ""
                         else:
                                 excl = excl.split()
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         pass
 
                 try:
                         self.version_pattern = conf.get("pkglint",
                             "version.pattern")
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         pass
 
                 for key, value in conf.items("pkglint"):
@@ -464,19 +457,19 @@ class LintEngine(object):
                 try:
                         self.do_pub_checks = conf.getboolean("pkglint",
                             "do_pub_checks")
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         pass
 
                 try:
                         self.use_tracker = conf.get("pkglint",
                             "use_progress_tracker").lower() == "true"
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         pass
 
                 try:
                         self.ignore_pubs = conf.get("pkglint",
                             "ignore_different_publishers").lower() == "true"
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         pass
 
                 return conf
@@ -876,9 +869,9 @@ class LintEngine(object):
                 # file:// URI, and get the absolute path.  Missing or invalid
                 # repositories will be caught by pkg.client.api.image_create.
                 for i, uri in enumerate(repo_uris):
-                        if not urllib2.urlparse.urlparse(uri).scheme:
+                        if not urlparse(uri).scheme:
                                 repo_uris[i] = "file://{0}".format(
-                                    urllib2.quote(os.path.abspath(uri)))
+                                    quote(os.path.abspath(uri)))
 
                 try:
                         api_inst = pkg.client.api.image_create(
@@ -1185,7 +1178,7 @@ class LintEngine(object):
                 if manifest and param_key in manifest:
                         val = manifest[param_key]
                 if val:
-                        if isinstance(val, basestring):
+                        if isinstance(val, six.string_types):
                                 return val
                         else:
                                 return " ".join(val)
@@ -1193,7 +1186,7 @@ class LintEngine(object):
                         val = self.conf.get("pkglint", key)
                         if val:
                                 return val.replace("\n", " ")
-                except ConfigParser.NoOptionError:
+                except configparser.NoOptionError:
                         return None
 
         def get_attr_action(self, attr, manifest):

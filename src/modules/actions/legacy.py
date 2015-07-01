@@ -112,7 +112,7 @@ class LegacyAction(generic.Action):
                 # need them) appear.
 
                 try:
-                        file(os.path.join(pkgplan.image.get_root(),
+                        open(os.path.join(pkgplan.image.get_root(),
                             "var/sadm/install/contents"), "a").close()
                 except IOError as e:
                         if e.errno != errno.ENOENT:

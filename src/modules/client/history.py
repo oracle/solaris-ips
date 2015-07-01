@@ -28,6 +28,7 @@ import copy
 import errno
 import os
 import shutil
+import six
 import sys
 import traceback
 import xml.dom.minidom as xmini
@@ -442,7 +443,7 @@ class History(object):
                         rpath = os.path.join(self.root_dir, 
                             "notes", 
                             self.operation_release_notes)
-                        for a in file(rpath, "r"):
+                        for a in open(rpath, "r"):
                                 yield a.rstrip()
 
                 except Exception as e:
@@ -806,7 +807,7 @@ class History(object):
                         except (AttributeError, KeyError):
                                 # Failing an exact match, determine if this
                                 # error is a subclass of an existing one.
-                                for entry, val in error_results.iteritems():
+                                for entry, val in six.iteritems(error_results):
                                         if isinstance(error, entry):
                                                 result = val
                                                 break
@@ -842,7 +843,7 @@ class History(object):
                                         output = traceback.format_exc()
                                         use_current_stack = False
 
-                        if isinstance(error, basestring):
+                        if isinstance(error, six.string_types):
                                 output = error
                         elif use_current_stack:
                                 # Assume the current stack is more useful if
@@ -898,7 +899,7 @@ class History(object):
                 if not self.__snapshot:
                         return
 
-                for name, val in self.__snapshot.iteritems():
+                for name, val in six.iteritems(self.__snapshot):
                         if not name.startswith("__"):
                                 object.__setattr__(self, name, val)
                 self.__operations = self.__snapshot["__operations"]

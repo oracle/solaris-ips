@@ -39,10 +39,10 @@ import generic
 import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
-import urllib
 import zlib
 
 from pkg.client.api_errors import ActionExecutionError
+from six.moves.urllib.parse import quote
 
 class LicenseAction(generic.Action):
         """Class representing a license packaging object."""
@@ -68,7 +68,7 @@ class LicenseAction(generic.Action):
                 # the path must be relative to the root of the image.
                 self.attrs["path"] = misc.relpath(os.path.join(
                     pkgplan.image.get_license_dir(pkgplan.destination_fmri),
-                    "license." + urllib.quote(self.attrs["license"], "")),
+                    "license." + quote(self.attrs["license"], "")),
                     pkgplan.image.get_root())
 
         def install(self, pkgplan, orig):
@@ -92,7 +92,7 @@ class LicenseAction(generic.Action):
                 elif os.path.exists(path):
                         os.chmod(path, misc.PKG_FILE_MODE)
 
-                lfile = file(path, "wb")
+                lfile = open(path, "wb")
                 try:
                         hash_attr, hash_val, hash_func = \
                             digest.get_preferred_hash(self)
@@ -138,7 +138,7 @@ class LicenseAction(generic.Action):
                 info = []
 
                 path = os.path.join(img.get_license_dir(pfmri),
-                    "license." + urllib.quote(self.attrs["license"], ""))
+                    "license." + quote(self.attrs["license"], ""))
 
                 hash_attr, hash_val, hash_func = \
                     digest.get_preferred_hash(self)
@@ -162,7 +162,7 @@ class LicenseAction(generic.Action):
         def remove(self, pkgplan):
                 path = os.path.join(
                     pkgplan.image.get_license_dir(pkgplan.origin_fmri),
-                    "license." + urllib.quote(self.attrs["license"], ""))
+                    "license." + quote(self.attrs["license"], ""))
 
                 try:
                         # Make file writable so it can be deleted
@@ -238,7 +238,7 @@ class LicenseAction(generic.Action):
                         # Newer images ensure licenses are stored with encoded
                         # name so that '/', spaces, etc. are properly handled.
                         path = os.path.join(img.get_license_dir(pfmri),
-                            "license." + urllib.quote(self.attrs["license"],
+                            "license." + quote(self.attrs["license"],
                             ""))
                 return path
 

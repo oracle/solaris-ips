@@ -23,17 +23,20 @@
 #
 
 from __future__ import print_function
-import httplib
 import os
-import pkg.pkgsubprocess as subprocess
-import pkg.server.repository as sr
+import signal
+import six
 import ssl
 import sys
-import signal
 import time
-import urllib
-import urllib2
-import urlparse
+
+from six.moves import http_client, range
+from six.moves.urllib.error import HTTPError, URLError
+from six.moves.urllib.request import pathname2url, urlopen
+from six.moves.urllib.parse import urlunparse, urljoin
+
+import pkg.pkgsubprocess as subprocess
+import pkg.server.repository as sr
 
 class DepotStateException(Exception):
 
@@ -160,7 +163,7 @@ class DepotController(object):
                     root=self.__dir, writable_root=self.__writable_root)
 
         def get_repo_url(self):
-                return urlparse.urlunparse(("file", "", urllib.pathname2url(
+                return urlunparse(("file", "", pathname2url(
                     self.__dir), "", "", ""))
 
         def set_readonly(self):
@@ -253,9 +256,9 @@ class DepotController(object):
                 running depots."""
                 self.__nasty = nastiness
                 if self.__depot_handle != None:
-                        nastyurl = urlparse.urljoin(self.get_depot_url(),
+                        nastyurl = urljoin(self.get_depot_url(),
                             "nasty/{0:d}".format(self.__nasty))
-                        url = urllib2.urlopen(nastyurl)
+                        url = urlopen(nastyurl)
                         url.close()
 
         def get_nasty(self):
@@ -279,21 +282,21 @@ class DepotController(object):
 
         def __network_ping(self):
                 try:
-                        repourl = urlparse.urljoin(self.get_depot_url(),
+                        repourl = urljoin(self.get_depot_url(),
                             "versions/0")
                         # Disable SSL peer verification, we just want to check
                         # if the depot is running.
-                        url = urllib2.urlopen(repourl,
+                        url = urlopen(repourl,
                             context=ssl._create_unverified_context())
                         url.close()
-                except urllib2.HTTPError as e:
+                except HTTPError as e:
                         # Server returns NOT_MODIFIED if catalog is up
                         # to date
-                        if e.code == httplib.NOT_MODIFIED:
+                        if e.code == http_client.NOT_MODIFIED:
                                 return True
                         else:
                                 return False
-                except urllib2.URLError:
+                except URLError:
                         return False
                 return True
 
@@ -374,7 +377,7 @@ class DepotController(object):
                 if self.__nasty_sleep:
                         args.append("--nasty-sleep {0:d}".format(self.__nasty_sleep))
                 for section in self.__props:
-                        for prop, val in self.__props[section].iteritems():
+                        for prop, val in six.iteritems(self.__props[section]):
                                 args.append("--set-property={0}.{1}='{2}'".format(
                                     section, prop, val))
                 if self.__writable_root:

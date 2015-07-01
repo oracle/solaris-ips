@@ -33,9 +33,9 @@ import os
 import re
 import sys
 import time
-import urllib
 
 from an_report import *
+from six.moves.urllib.parse import unquote
 
 after = None
 before = None
@@ -85,14 +85,14 @@ def count_manifest(mg, d):
                 pg = pm.groupdict()
 
                 try:
-                        manifest_by_pkg[urllib.unquote(pg["stem"])] += 1
+                        manifest_by_pkg[unquote(pg["stem"])] += 1
                 except KeyError:
-                        manifest_by_pkg[urllib.unquote(pg["stem"])] = 1
+                        manifest_by_pkg[unquote(pg["stem"])] = 1
 
                 try:
-                        manifest_by_ver_pkg[urllib.unquote(pg["stem"] + "@" + pg["version"])] += 1
+                        manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] += 1
                 except KeyError:
-                        manifest_by_ver_pkg[urllib.unquote(pg["stem"] + "@" + pg["version"])] = 1
+                        manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] = 1
 
         agent = pkg_agent_pat.search(mg["agent"])
         if agent == None:

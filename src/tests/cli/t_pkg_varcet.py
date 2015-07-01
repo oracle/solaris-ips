@@ -33,6 +33,7 @@ import pkg.portable as portable
 import pkg.misc as misc
 import pkg.p5p
 import shutil
+import six
 import stat
 import tempfile
 import unittest
@@ -93,7 +94,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
                     getattr(self, p)
                     for p in dir(self)
                     if p.startswith("pkg_") and isinstance(getattr(self, p),
-                        basestring)
+                        six.string_types)
                 ])
 
         def __assert_varcet_matches_default(self, cmd, expected, errout=None,

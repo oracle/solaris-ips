@@ -25,7 +25,6 @@
 # Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -36,6 +35,7 @@ import pwd
 import re
 import shutil
 import signal
+import six
 import stat
 import tempfile
 import time
@@ -102,14 +102,14 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                         # Verify that the stringified form of the property's
                         # value matches what is expected.
                         p1 = propcls(propname, default=val)
-                        self.assertEqual(unicode(p1), expstr)
+                        self.assertEqual(six.text_type(p1), expstr)
                         self.assertEqual(str(p1), expstr.encode("utf-8"))
 
                         # Verify that a property value's stringified form
                         # provides can be parsed into an exact equivalent
                         # in native form (e.g. list -> string -> list).
                         p2 = propcls(propname)
-                        p2.value = unicode(p1)
+                        p2.value = six.text_type(p1)
                         self.assertEqual(p1.value, p2.value)
                         self.assertEqualDiff(str(p1), str(p2))
 
@@ -120,7 +120,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
         def __verify_ex_stringify(self, ex):
                 encs = str(ex)
                 self.assertNotEqual(len(encs), 0)
-                unis = unicode(ex)
+                unis = six.text_type(ex)
                 self.assertNotEqual(len(unis), 0)
                 self.assertEqualDiff(encs, unis.encode("utf-8"))
 
@@ -838,7 +838,7 @@ class TestPropertySection(pkg5unittest.Pkg5TestCase):
 
         def __verify_stringify(self, cls, explist):
                 for val, expstr in explist:
-                        self.assertEqual(unicode(cls(val)), expstr)
+                        self.assertEqual(six.text_type(cls(val)), expstr)
                         self.assertEqual(str(cls(val)), expstr.encode("utf-8"))
 
         def test_base(self):
@@ -1252,8 +1252,8 @@ str_basic =
                 conf = cfg.Config(definitions=self._defs, overrides=overrides,
                     version=0)
                 exp_state = copy.deepcopy(self._initial_state[0])
-                for sname, props in overrides.iteritems():
-                        for pname, value in props.iteritems():
+                for sname, props in six.iteritems(overrides):
+                        for pname, value in six.iteritems(props):
                                 exp_state[sname][pname] = value
                 self._verify_initial_state(conf, 0, exp_state=exp_state)
 
@@ -1289,7 +1289,7 @@ bool_basic = False
 str_basic = 
 bool_basic = False
 
-""", unicode(conf))
+""", six.text_type(conf))
 
                 conf.set_property("first_section", "str_basic", TH_PACKAGE)
                 self.assertEqualDiff(u"""\
@@ -1297,7 +1297,7 @@ bool_basic = False
 str_basic = {0}
 bool_basic = False
 
-""".format(TH_PACKAGE), unicode(conf))
+""".format(TH_PACKAGE), six.text_type(conf))
         
                 # Verify target is None.
                 self.assertEqual(conf.target, None)
@@ -1424,7 +1424,7 @@ new_property = {0}
                 portable.remove(scpath)
 
                 # Verify read and write of sample files.
-                for ver, content in self._initial_files.iteritems():
+                for ver, content in six.iteritems(self._initial_files):
                         scpath = self.make_misc_files({
                             "cfg_cache": content })[0]
 
@@ -1681,7 +1681,7 @@ new_property = {0}
                     True)
 
                 conf = cfg.Config(definitions=self._templated_defs, version=1)
-                self.assertEqualDiff([], conf.get_index().keys())
+                self.assertEqualDiff([], list(conf.get_index().keys()))
 
                 conf.set_property("authority_example.com", "prefix",
                     "example.com")
@@ -1955,7 +1955,7 @@ class TestSMFConfig(_TestConfigBase):
         def __verify_ex_stringify(self, ex):
                 encs = str(ex)
                 self.assertNotEqual(len(encs), 0)
-                unis = unicode(ex)
+                unis = six.text_type(ex)
                 self.assertNotEqual(len(unis), 0)
                 self.assertEqualDiff(encs, unis.encode("utf-8"))
 
@@ -2095,7 +2095,7 @@ class TestSMFConfig(_TestConfigBase):
                         # attempted (not currently supported).
                         self.assertRaises(cfg.SMFWriteError, conf.write)
 
-                for ver, mfst_content in self._initial_files.iteritems():
+                for ver, mfst_content in six.iteritems(self._initial_files):
                         test_mfst(svc_fmri, ver, mfst_content, self._defs)
 
                 # Verify configuration data with unknown sections or properties

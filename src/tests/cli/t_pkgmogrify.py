@@ -32,6 +32,7 @@ import errno
 import os
 import re
 import shutil
+import six
 import stat
 import sys
 import tempfile
@@ -153,29 +154,29 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
 
-                f = file(os.path.join(self.test_root, "source_file"), "wb")
+                f = open(os.path.join(self.test_root, "source_file"), "wb")
                 f.write(self.pkgcontents)
                 f.close()
 
-                f = file(os.path.join(self.test_root, "source_file2"), "wb")
+                f = open(os.path.join(self.test_root, "source_file2"), "wb")
                 f.write(self.pkgcontents2)
                 f.close()
 
-                f = file(os.path.join(self.test_root, "source_file3"), "wb")
+                f = open(os.path.join(self.test_root, "source_file3"), "wb")
                 f.write(self.pkgcontents3)
                 f.close()
 
                 # Map the transform names to path names
                 xformpaths = dict((
                     (name, os.path.join(self.test_root, "transform_{0}".format(i)))
-                    for i, name in enumerate(self.transforms.iterkeys())
+                    for i, name in enumerate(six.iterkeys(self.transforms))
                 ))
 
                 # Now that we have path names, we can use the expandos in the
                 # transform contents to embed those pathnames, and write the
                 # transform files out.
-                for name, path in xformpaths.iteritems():
-                        f = file(path, "wb")
+                for name, path in six.iteritems(xformpaths):
+                        f = open(path, "wb")
                         self.transforms[name] = self.transforms[name].format(**xformpaths)
                         f.write(self.transforms[name])
                         f.close()
@@ -189,7 +190,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 defines = " ".join([
                     "-D {0}={1}".format(k, v)
-                    for k, v in defines.iteritems()
+                    for k, v in six.iteritems(defines)
                 ])
                 sources = " ".join(sources)
                 if output:
@@ -206,7 +207,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 specified, the contents of that file are searched."""
 
                 if path is not None:
-                        output = file(path).read()
+                        output = open(path).read()
                 else:
                         output = self.output + self.errout
 

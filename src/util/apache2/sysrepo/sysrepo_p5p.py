@@ -24,24 +24,25 @@
 from __future__ import print_function
 import pkg.p5p
 
-import httplib
 import os
 import shutil
 import simplejson
+import six
 import sys
 import threading
 import traceback
+from six.moves import http_client
 
 # redirecting stdout for proper WSGI portability
 sys.stdout = sys.stderr
 
-SERVER_OK_STATUS = "{0} {1}".format(httplib.OK, httplib.responses[httplib.OK])
-SERVER_ERROR_STATUS = "{0} {1}".format(httplib.INTERNAL_SERVER_ERROR,
-    httplib.responses[httplib.INTERNAL_SERVER_ERROR])
-SERVER_NOTFOUND_STATUS = "{0} {1}".format(httplib.NOT_FOUND,
-    httplib.responses[httplib.NOT_FOUND])
-SERVER_BADREQUEST_STATUS = "{0} {1}".format(httplib.BAD_REQUEST,
-    httplib.responses[httplib.BAD_REQUEST])
+SERVER_OK_STATUS = "{0} {1}".format(http_client.OK, http_client.responses[http_client.OK])
+SERVER_ERROR_STATUS = "{0} {1}".format(http_client.INTERNAL_SERVER_ERROR,
+    http_client.responses[http_client.INTERNAL_SERVER_ERROR])
+SERVER_NOTFOUND_STATUS = "{0} {1}".format(http_client.NOT_FOUND,
+    http_client.responses[http_client.NOT_FOUND])
+SERVER_BADREQUEST_STATUS = "{0} {1}".format(http_client.BAD_REQUEST,
+    http_client.responses[http_client.BAD_REQUEST])
 
 response_headers = [("content-type", "application/binary")]
 
@@ -417,7 +418,7 @@ application = AppWrapper(_application)
 
 if __name__ == "__main__":
         """A simple main function to allows us to test any given query/env"""
-        import urllib
+        from six.moves.urllib.parse import unquote
 
         def start_response(status, response_headers, exc_info=None):
                 """A dummy response function."""
@@ -439,14 +440,14 @@ if __name__ == "__main__":
 
         # unquote the url, so that we can easily copy/paste entries from
         # Apache logs when testing.
-        environ["QUERY_STRING"] = urllib.unquote(sys.argv[1])
+        environ["QUERY_STRING"] = unquote(sys.argv[1])
         environ["SYSREPO_RUNTIME_DIR"] = os.environ["PWD"]
         environ["PKG5_TEST_ENV"] = "True"
         hsh, path = sys.argv[2].split("=")
         environ[hsh] = path
 
         for response in application(environ, start_response):
-                if isinstance(response, basestring):
+                if isinstance(response, six.string_types):
                         print(response.rstrip())
                 elif response:
                         for line in response.readlines():

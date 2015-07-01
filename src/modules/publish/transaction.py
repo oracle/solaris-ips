@@ -29,8 +29,8 @@ repository.  Note that only the Transaction class should be used directly,
 though the other classes can be referred to for documentation purposes."""
 
 import os
-import urllib
-import urlparse
+import six
+from six.moves.urllib.parse import quote, unquote, urlparse, urlunparse
 
 from pkg.misc import EmptyDict
 import pkg.actions as actions
@@ -47,12 +47,6 @@ class TransactionError(Exception):
                 if args:
                         self.data = args[0]
                 self._args = kwargs
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return str(self.data)
@@ -179,7 +173,7 @@ class NullTransaction(object):
         def open(self):
                 """Starts an in-flight transaction. Returns a URL-encoded
                 transaction ID on success."""
-                return urllib.quote(self.pkg_name, "")
+                return quote(self.pkg_name, "")
 
         def append(self):
                 """Starts an in-flight transaction to append to an existing
@@ -201,13 +195,13 @@ class TransportTransaction(object):
             progtrack=None):
 
                 scheme, netloc, path, params, query, fragment = \
-                    urlparse.urlparse(origin_url, "http", allow_fragments=0)
+                    urlparse(origin_url, "http", allow_fragments=0)
 
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
                 self.scheme = scheme
                 if scheme == "file":
-                        path = urllib.unquote(path)
+                        path = unquote(path)
                 self.path = path
                 self.progtrack = progtrack
                 self.transport = xport
@@ -377,7 +371,7 @@ class TransportTransaction(object):
                             msg=_("Unknown failure; no transaction ID provided"
                             " in response."))
 
-                return self.trans_id        
+                return self.trans_id
 
         def refresh_index(self):
                 """Instructs the repository to refresh its search indices.
@@ -430,7 +424,7 @@ class Transaction(object):
             pub=None, progtrack=None):
 
                 scheme, netloc, path, params, query, fragment = \
-                    urlparse.urlparse(origin_url, "http", allow_fragments=0)
+                    urlparse(origin_url, "http", allow_fragments=0)
                 scheme = scheme.lower()
 
                 if noexecute:
@@ -459,7 +453,7 @@ class Transaction(object):
                                 raise TransactionRepositoryURLError(origin_url)
 
                 # Rebuild the url with the sanitized components.
-                origin_url = urlparse.urlunparse((scheme, netloc, path, params,
+                origin_url = urlunparse((scheme, netloc, path, params,
                     query, fragment))
 
                 return cls.__schemes[scheme](origin_url,

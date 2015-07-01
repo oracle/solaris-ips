@@ -33,6 +33,7 @@ import errno
 import os
 import shutil
 import simplejson
+import six
 import stat
 import unittest
 
@@ -105,7 +106,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
         def __gen_manifest(self, f):
                 m = manifest.Manifest()
-                lines = unicode(
+                lines = six.text_type(
                     "depend fmri=foo@1.0 type=require\n"
                     "set name=facet.devel value=true\n"
                     "set name=info.classification "
@@ -480,7 +481,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 c = catalog.Catalog(meta_root=cpath, log_updates=True)
 
                 # Verify that a newly created catalog has no signature data.
-                for sigs in c.signatures.itervalues():
+                for sigs in six.itervalues(c.signatures):
                         self.assertEqual(len(sigs), 0)
 
                 # Verify that a newly created catalog will validate since no
@@ -503,7 +504,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertTrue("catalog.base.C" in old_sigs)
 
                 updates = 0
-                for fname, sigs in old_sigs.iteritems():
+                for fname, sigs in six.iteritems(old_sigs):
                         self.assertTrue(len(sigs) >= 1)
 
                         if fname.startswith("update."):
@@ -847,7 +848,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         # Verify that the updates available to the original
                         # catalog are the same as the updated needed to update
                         # the duplicate.
-                        self.assertEqual(src.updates.keys(), updates)
+                        self.assertEqual(list(src.updates.keys()), updates)
 
                         # Apply original catalog's updates to the duplicate.
                         dest.apply_updates(src.meta_root)

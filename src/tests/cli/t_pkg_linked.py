@@ -38,6 +38,7 @@ import os
 import itertools
 import re
 import shutil
+import six
 import tempfile
 import unittest
 import sys
@@ -4133,7 +4134,7 @@ exit 0""".strip("\n")
                         self.i_path.insert(i, self.img_path(i))
 
         def __mk_bin(self, path, txt):
-                with file(path, "w+") as fobj:
+                with open(path, "w+") as fobj:
                         print(txt, file=fobj)
                 self.cmdline_run("chmod a+x {0}".format(path), coverage=False)
 
@@ -4304,7 +4305,7 @@ exit 0""".strip("\n")
                     ipath, liname, outfile1))
                 self.__ccmd("cat {0}".format(outfile1))
 
-                for p, v in props.iteritems():
+                for p, v in six.iteritems(props):
                         if v is None:
                                 # verify property is not present
                                 self.__ccmd(
