@@ -297,10 +297,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self._start_sysrepo()
 
                 # 1. grep for the Cache keyword in the httpd.conf
-                self.file_contains(self.default_sc_conf, "CacheEnable disk /")
+                self.file_contains(self.default_sc_conf, "CacheEnable disk")
                 self.file_doesnt_contain(self.default_sc_conf,
-                    "CacheEnable mem")
-                self.file_doesnt_contain(self.default_sc_conf, "MCacheSize")
+                    "CacheEnable socache")
+                self.file_doesnt_contain(self.default_sc_conf, "CacheSocache")
                 self.file_contains(self.default_sc_conf, "CacheRoot {0}".format(
                     cache_dir))
 
@@ -322,8 +322,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.sysrepo("-c {0} -p {1}".format(cache_dir, port))
                 self.file_doesnt_contain(self.default_sc_conf,
                     "CacheEnable disk")
-                self.file_contains(self.default_sc_conf, "CacheEnable mem")
-                self.file_contains(self.default_sc_conf, "MCacheSize")
+                self.file_contains(self.default_sc_conf, "CacheEnable socache")
+                self.file_contains(self.default_sc_conf, "CacheSocache")
 
         def test_4_logs_dir(self):
                 """Our logs_dir value is used"""

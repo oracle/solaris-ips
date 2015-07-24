@@ -129,9 +129,11 @@ execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 userattrd_dir = 'etc/user_attr.d'
 sysrepo_dir = 'etc/pkg/sysrepo'
+sysrepo_dir_22 = 'etc/pkg/sysrepo/apache22'
 sysrepo_logs_dir = 'var/log/pkg/sysrepo'
 sysrepo_cache_dir = 'var/cache/pkg/sysrepo'
 depot_dir = 'etc/pkg/depot'
+depot_dir_22 = 'etc/pkg/depot/apache22'
 depot_conf_dir = 'etc/pkg/depot/conf.d'
 depot_logs_dir = 'var/log/pkg/depot'
 depot_cache_dir = 'var/cache/pkg/depot'
@@ -401,6 +403,10 @@ sysrepo_files = [
         'util/apache2/sysrepo/sysrepo_httpd.conf.mako',
         'util/apache2/sysrepo/sysrepo_publisher_response.mako',
         ]
+sysrepo_files_22 = [
+        'util/apache22/sysrepo/sysrepo_httpd.conf.mako',
+        'util/apache22/sysrepo/sysrepo_publisher_response.mako',
+        ]
 sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
@@ -411,6 +417,11 @@ depot_files = [
         'util/apache2/depot/depot_httpd.conf.mako',
         'util/apache2/depot/depot_index.py',
         'util/apache2/depot/depot_httpd_ssl_protocol.conf',
+        ]
+depot_files_22 = [
+        'util/apache22/depot/depot.conf.mako',
+        'util/apache22/depot/depot_httpd.conf.mako',
+        'util/apache22/depot/depot_httpd_ssl_protocol.conf',
         ]
 depot_log_stubs = [
         'util/apache2/depot/logs/access_log',
@@ -1601,9 +1612,11 @@ if osname == 'sunos':
                 (authattrd_dir, authattrd_files),
                 (userattrd_dir, userattrd_files),
                 (sysrepo_dir, sysrepo_files),
+                (sysrepo_dir_22, sysrepo_files_22),
                 (sysrepo_logs_dir, sysrepo_log_stubs),
                 (sysrepo_cache_dir, {}),
                 (depot_dir, depot_files),
+                (depot_dir_22, depot_files_22),
                 (depot_conf_dir, {}),
                 (depot_logs_dir, depot_log_stubs),
                 (depot_cache_dir, {}),

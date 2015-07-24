@@ -7,11 +7,11 @@
 
 <refentry id="pkg.depot-config-1m">
 <refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>1M</manvolnum>
-<refmiscinfo class="date">31 Mar 2014</refmiscinfo>
+<refmiscinfo class="date">26 May 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1m;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depot-config</refname><refpurpose>Image Packaging System HTTP depot configuration generator</refpurpose></refnamediv>
@@ -198,16 +198,16 @@ automatically when the depot starts.</para>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>server_type</replaceable></term>
 <listitem><para>Specify the type of web server that <command>pkg.depot-config</command> should
-output configuration information for. In this release, the value <literal>apache2
-</literal> is both the default value and the only accepted value for <replaceable>
-server_type</replaceable>.</para>
+output configuration information for. In this release, for <replaceable>server_type</replaceable>,
+the default value is <literal>apache2</literal> (Apache 2.4), and the accepted values are
+<literal>apache2</literal> and <literal>apache22 (Apache 2.2)</literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option></term>
 <listitem><para>Produce a partial configuration that enables a web server
 to serve basic <literal>pkg</literal>(5) installation operations for clients
 using an existing web service. For an Apache web server running on the Oracle
-Solaris OS, the partial configuration file could be placed in <filename>/etc/apache2/2.2/conf.d
+Solaris OS, the partial configuration file could be placed in <filename>/etc/apache2/2.4/conf.d
 </filename>. For other operating systems, consult your OS documentation to
 determine how to use this partial configuration file. See also the <option>P</option> option.
 </para>
@@ -297,17 +297,17 @@ STATE    STIME    FMRI
 online   Feb_03   svc:/application/pkg/server:userland</screen>
 </example>
 <example id="GMWHD"><title>Showing Processes Associated With the Depot</title>
-<para>The following command shows <literal>httpd.worker</literal> processes
+<para>The following command shows <literal>httpd</literal> processes
 associated with the <literal>pkg/depot</literal> service.</para>
 <screen>$ <userinput>svcs -p pkg/depot</userinput>
 STATE    STIME    FMRI
-online   16:59:49 svc:/application/pkg/depot:default
-         16:59:48     6731 httpd.worker
-         16:59:48     6736 httpd.worker
-         16:59:48     6737 httpd.worker
-         16:59:48     6738 httpd.worker
-         17:00:05     6744 httpd.worker
-         17:05:59     6915 httpd.worker</screen>
+online   11:43:56 svc:/application/pkg/depot:default
+         11:43:55     16969 httpd
+         11:43:55     16974 httpd
+         11:43:55     16975 httpd
+         11:43:55     16976 httpd
+         11:49:01     16990 httpd
+         11:51:33     16995 httpd</screen>
 </example>
 </refsect1>
 <refsect1 role="exit-status"><title></title>

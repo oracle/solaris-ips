@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -60,7 +60,7 @@ run_htcacheclean() {
 		# Start a cache cleaning process, limiting the cache to
 		# ${SYSREPO_CACHE_MAX} megabytes, being nice about
 		# scheduling and removing empty directories if needed.
-		/usr/apache2/2.2/bin/htcacheclean \
+		/usr/apache2/2.4/bin/htcacheclean \
 		   -l ${SYSREPO_CACHE_MAX}M -n \
 		    -p ${SYSREPO_CACHE_DIR} \
 		   -P ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid \

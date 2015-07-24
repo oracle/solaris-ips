@@ -31,6 +31,10 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc
 dir  path=etc/pkg
 dir  path=etc/pkg/depot
+dir  path=etc/pkg/depot/apache22
+file path=etc/pkg/depot/apache22/depot.conf.mako
+file path=etc/pkg/depot/apache22/depot_httpd.conf.mako
+file path=etc/pkg/depot/apache22/depot_httpd_ssl_protocol.conf
 dir  path=etc/pkg/depot/conf.d
 file path=etc/pkg/depot/depot.conf.mako
 file path=etc/pkg/depot/depot_httpd.conf.mako
@@ -65,6 +69,6 @@ license cr_Oracle license=cr_Oracle
 # The manual dependency on apache results from our calling apachectl from
 # our method script, and can't be detected by pkgdepend.
 #
-depend type=require fmri=web/server/apache-22
+depend type=require fmri=web/server/apache-24
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-22/module/apache-wsgi-27
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-27

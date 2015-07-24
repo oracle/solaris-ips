@@ -42,6 +42,6 @@
     pkg:/text/gnu-grep
     pkg:/text/locale
     pkg:/text/tidy
-    pkg:/web/server/apache-22
-    pkg:/web/server/apache-22/module/apache-wsgi-27
+    pkg:/web/server/apache-24
+    pkg:/web/server/apache-24/module/apache-wsgi-27
     pkg:/web/wget

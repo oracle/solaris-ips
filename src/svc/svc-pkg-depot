@@ -20,30 +20,16 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
 
-APACHE_HOME=/usr/apache2/2.2
+APACHE_HOME=/usr/apache2/2.4
 APACHE_ETC_ROOT=/etc/pkg/depot
-APACHE_BIN=${APACHE_HOME}/bin/64
+APACHE_BIN=${APACHE_HOME}/bin
 
-#
-# Calling $APACHE_BIN/apachectl would source $APACHE_BIN/envvars, which
-# in turn would source /etc/apache2/2.2/envvars, if it exists.
-#
-# We want to keep the depot service completely separate from
-# the site system configuration used by svc:/network/http:apache22
-# avoiding /etc/apache2, which means we must avoid apachectl.
-#
-# In this method script, we call httpd directly instead, but as a
-# result, we also need to include the relevant contents of
-# $APACHE_BIN/envvars - setting $LD_LIBRARY_PATH as it does.
-#
-HTTPD=${APACHE_BIN}/httpd.worker
-LD_LIBRARY_PATH=${APACHE_HOME}/lib/64:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH
+HTTPD=${APACHE_BIN}/apachectl
 
 
 function check_prop {
@@ -173,7 +159,7 @@ function run_htcacheclean {
 		# megabytes, being nice about scheduling and removing
 		# empty directories if necessary.
 	       interval=$((60 * 24 * 14))
-               /usr/apache2/2.2/bin/htcacheclean \
+               /usr/apache2/2.4/bin/htcacheclean \
                        -d${interval} -i -l ${depot_cache_max}M -n \
                        -p ${depot_cache_dir} \
                        -P ${depot_cache_dir}/../depot_htcacheclean.pid \
@@ -194,8 +180,8 @@ function kill_htcacheclean {
 
 function kill_apache {
 	# We go to lengths to kill remaining httpd processes: if we kill
-	# just the pid, then child httpd.worker processes become
-	# zombies, hanging onto the server port, which causes problems
+	# just the pid, then child httpd processes become zombies,
+	# hanging onto the server port, which causes problems
 	# when trying to start a service that is transitioning from
 	# maintenance.
 	# This function should only be called when the service is

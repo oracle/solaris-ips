@@ -79,7 +79,7 @@ DEPOT_PUB_DIRNAME = ["publisher", "1"]
 
 DEPOT_CACHE_FILENAME = "depot.cache"
 
-KNOWN_SERVER_TYPES = ["apache2"]
+KNOWN_SERVER_TYPES = ["apache2", "apache22"]
 
 PKG_SERVER_SVC = "svc:/application/pkg/server"
 
@@ -711,6 +711,7 @@ def main_func():
         sroot = ""
         # the path where our Mako templates and wsgi scripts are stored
         template_dir = "/etc/pkg/depot"
+        option_T = False
         # a volatile directory used at runtime for storing state
         runtime_dir = None
         # where logs are written
@@ -746,6 +747,7 @@ def main_func():
                                 runtime_dir = arg
                         elif opt == "-T":
                                 template_dir = arg
+                                option_T = True
                         elif opt == "-t":
                                 server_type = arg
                         elif opt == "-d":
@@ -921,13 +923,16 @@ def main_func():
                 except DepotException as e:
                         error(e)
 
-        # In the future we may produce configuration for different
-        # HTTP servers. For now, we only support "apache2"
+        # We can produce configuration for different HTTP servers.
+        # For now, We support "apache2" and "apache22".
         if server_type not in KNOWN_SERVER_TYPES:
                 usage(_("unknown server type {type}. "
                     "Known types are: {known}").format(
                     type=server_type,
                     known=", ".join(KNOWN_SERVER_TYPES)))
+        # Generate Apache 2.2 configurations.
+        if server_type == "apache22" and not option_T:
+                template_dir = "/etc/pkg/depot/apache22"
 
         try:
                 _check_unique_repo_properties(repo_info)

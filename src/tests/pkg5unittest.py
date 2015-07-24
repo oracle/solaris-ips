@@ -3820,9 +3820,10 @@ class HTTPSTestClass(ApacheDepotTestCase):
 # Configuration and logfile names: If the filenames you specify for many
 # of the server's control files begin with "/" (or "drive:/" for Win32), the
 # server will use that explicit path.  If the filenames do *not* begin
-# with "/", the value of ServerRoot is prepended -- so "/var/apache2/2.2/logs/foo_log"
-# with ServerRoot set to "/usr/apache2/2.2" will be interpreted by the
-# server as "/usr/apache2/2.2//var/apache2/2.2/logs/foo_log".
+# with "/", the value of ServerRoot is prepended -- so "logs/access_log"
+# with ServerRoot set to "/usr/apache2/2.4" will be interpreted by the
+# server as "/usr/apache2/2.4/logs/foo_log", whereas "/logs/access_log"
+# will be interpreted as "/logs/access_log".
 
 #
 # ServerRoot: The top of the directory tree under which the server's
@@ -3833,7 +3834,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
 # at a local disk.  If you wish to share the same ServerRoot for multiple
 # httpd daemons, you will need to change at least LockFile and PidFile.
 #
-ServerRoot "/usr/apache2/2.2"
+ServerRoot "/usr/apache2/2.4"
 
 PidFile "{pidfile}"
 
@@ -3857,18 +3858,34 @@ Listen 0.0.0.0:{bad_proxy_port}
 # Dynamic Shared Object (DSO) Support
 #
 # To be able to use the functionality of a module which was built as a DSO you
-# have to place corresponding `LoadModule' lines within the appropriate
-# (32-bit or 64-bit module) /etc/apache2/2.2/conf.d/modules-*.load file so that
-# the directives contained in it are actually available _before_ they are used.
+# have to place corresponding `LoadModule' lines at this location so the
+# directives contained in it are actually available _before_ they are used.
+# Statically compiled modules (those listed by `httpd -l') do not need
+# to be loaded here.
 #
-<IfDefine 64bit>
-Include /etc/apache2/2.2/conf.d/modules-64.load
-</IfDefine>
-<IfDefine !64bit>
-Include /etc/apache2/2.2/conf.d/modules-32.load
-</IfDefine>
 
-<IfModule !mpm_netware_module>
+LoadModule access_compat_module libexec/mod_access_compat.so
+LoadModule alias_module libexec/mod_alias.so
+LoadModule authn_core_module libexec/mod_authn_core.so
+LoadModule authz_core_module libexec/mod_authz_core.so
+LoadModule authz_host_module libexec/mod_authz_host.so
+LoadModule cache_module libexec/mod_cache.so
+LoadModule deflate_module libexec/mod_deflate.so
+LoadModule dir_module libexec/mod_dir.so
+LoadModule env_module libexec/mod_env.so
+LoadModule filter_module libexec/mod_filter.so
+LoadModule headers_module libexec/mod_headers.so
+LoadModule log_config_module libexec/mod_log_config.so
+LoadModule mime_module libexec/mod_mime.so
+LoadModule mpm_worker_module libexec/mod_mpm_worker.so
+LoadModule rewrite_module libexec/mod_rewrite.so
+LoadModule ssl_module libexec/mod_ssl.so
+LoadModule proxy_module libexec/mod_proxy.so
+LoadModule proxy_connect_module libexec/mod_proxy_connect.so
+LoadModule proxy_http_module libexec/mod_proxy_http.so
+LoadModule unixd_module libexec/mod_unixd.so
+
+<IfModule unixd_module>
 #
 # If you wish httpd to run as a different user or group, you must run
 # httpd as root initially and it will switch.
@@ -3921,8 +3938,7 @@ DocumentRoot "/"
 <Directory />
     Options None
     AllowOverride None
-    Order deny,allow
-    Deny from all
+    Require all denied
 </Directory>
 
 #
@@ -3949,9 +3965,7 @@ DocumentRoot "/"
 # viewed by Web clients.
 #
 <FilesMatch "^\.ht">
-    Order allow,deny
-    Deny from all
-    Satisfy All
+    Require all denied
 </FilesMatch>
 
 #
@@ -3990,23 +4004,12 @@ LogLevel debug
     CustomLog "{log_locs}/access_log" common
 </IfModule>
 
-#
-# DefaultType: the default MIME type the server will use for a document
-# if it cannot otherwise determine one, such as from filename extensions.
-# If your server contains mostly text or HTML documents, "text/plain" is
-# a good value.  If most of your content is binary, such as applications
-# or images, you may want to use "application/octet-stream" instead to
-# keep browsers from trying to display binary files as though they are
-# text.
-#
-DefaultType text/plain
-
 <IfModule mime_module>
     #
     # TypesConfig points to the file containing the list of mappings from
     # filename extension to MIME-type.
     #
-    TypesConfig /etc/apache2/2.2/mime.types
+    TypesConfig /etc/apache2/2.4/mime.types
 
     #
     # AddType allows you to add to or override the MIME configuration
@@ -4056,9 +4059,7 @@ SSLRandomSeed connect builtin
 #
 <VirtualHost 0.0.0.0:{proxy_port}>
         <Proxy *>
-                Order Deny,Allow
-                Deny from all
-                Allow from 127.0.0.1
+                Require local
         </Proxy>
         AllowCONNECT {https_port}
         ProxyRequests on
@@ -4067,9 +4068,7 @@ SSLRandomSeed connect builtin
 
 <VirtualHost 0.0.0.0:{bad_proxy_port}>
         <Proxy *>
-                Order Deny,Allow
-                Deny from all
-                Allow from 127.0.0.1
+                Require local
         </Proxy>
 #  We purposely prevent this proxy from being able to connect to our SSL
 #  port, making sure that when we point pkg(1) to this bad proxy, operations
@@ -4358,7 +4357,7 @@ class ApacheController(object):
                 to be contacted via https or not.
                 """
 
-                self.apachectl = "/usr/apache2/2.2/bin/httpd.worker"
+                self.apachectl = "/usr/apache2/2.4/bin/apachectl"
                 if not os.path.exists(work_dir):
                         os.makedirs(work_dir)
                 self.__conf_path = os.path.join(work_dir, "httpd.conf")
@@ -4563,7 +4562,7 @@ class SysrepoController(ApacheController):
         def __init__(self, conf, port, work_dir, testcase=None, https=False):
                 ApacheController.__init__(self, conf, port, work_dir,
                     testcase=testcase, https=https)
-                self.apachectl = "/usr/apache2/2.2/bin/64/httpd.worker"
+                self.apachectl = "/usr/apache2/2.4/bin/apachectl"
 
         def _network_ping(self):
                 try:
@@ -4582,7 +4581,7 @@ class HttpDepotController(ApacheController):
         def __init__(self, conf, port, work_dir, testcase=None, https=False):
                 ApacheController.__init__(self, conf, port, work_dir,
                     testcase=testcase, https=https)
-                self.apachectl = "/usr/apache2/2.2/bin/64/httpd.worker"
+                self.apachectl = "/usr/apache2/2.4/bin/apachectl"
 
         def _network_ping(self):
                 try:
