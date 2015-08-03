@@ -2143,11 +2143,11 @@ class UnsupportedProxyURI(PublisherError):
                         scheme = urlsplit(self.data,
                             allow_fragments=0)[0]
                         return _("The proxy URI '{uri}' uses the unsupported "
-                            "scheme '{scheme}'.  Supported schemes are "
-                            "http://, and https://.").format(
+                            "scheme '{scheme}'. Currently the only supported "
+                            "scheme is http://.").format(
                             uri=self.data, scheme=scheme)
                 return _("The specified proxy URI uses an unsupported scheme."
-                    "  Supported schemes are: http://, and https://.")
+                    " Currently the only supported scheme is: http://.")
 
 class BadProxyURI(PublisherError):
         """Used to indicate that a proxy URI is not syntactically valid."""
