@@ -77,5 +77,6 @@ depend type=require fmri=library/python/six-27
 # our method script, and can't be detected by pkgdepend.
 #
 depend type=require fmri=web/server/apache-24
+depend type=require fmri=web/server/apache-24/module/apache-ssl
 # p5p support in the system repository requires mod_wsgi
 depend type=require fmri=web/server/apache-24/module/apache-wsgi-27

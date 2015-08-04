@@ -1,4 +1,3 @@
-    pkg:/archiver/gnu-tar
     pkg:/crypto/ca-certificates
     pkg:/developer/assembler
     pkg:/developer/base-developer-utilities
@@ -43,5 +42,5 @@
     pkg:/text/locale
     pkg:/text/tidy
     pkg:/web/server/apache-24
+    pkg:/web/server/apache-24/module/apache-ssl
     pkg:/web/server/apache-24/module/apache-wsgi-27
-    pkg:/web/wget

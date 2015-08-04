@@ -41,6 +41,7 @@ depend type=require fmri=pkg:/library/python/jsonrpclib-27
 depend type=require fmri=pkg:/library/python/jsonschema-27
 depend type=require fmri=pkg:/library/python/locale-services
 depend type=require fmri=pkg:/library/python/prettytable-27
+depend type=require fmri=pkg:/library/python/six-27
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-27
 depend type=require fmri=pkg:/runtime/python-34
@@ -52,4 +53,5 @@ depend type=require fmri=pkg:/text/gnu-gettext
 depend type=require fmri=pkg:/text/locale
 depend type=require fmri=pkg:/text/tidy
 depend type=require fmri=pkg:/web/server/apache-24
+depend type=require fmri=pkg:/web/server/apache-24/module/apache-ssl
 depend type=require fmri=pkg:/web/server/apache-24/module/apache-wsgi-27
