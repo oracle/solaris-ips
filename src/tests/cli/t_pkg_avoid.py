@@ -326,6 +326,22 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 self.pkg("--debug simulate_live_root={0} uninstall --deny-new-be A".format(
                     self.get_img_path()))
 
+        def test_corrupted_avoid_file(self):
+                self.image_create(self.rurl)
+                self.pkg("avoid A")
+                avoid_set_path = self.get_img_file_path("var/pkg/state/avoid_set")
+
+                #test for empty avoid set file 
+                f = open(avoid_set_path, "w+")
+                f.truncate(0)
+                f.close()
+                self.pkg("avoid B", exit=0)
+
+                #test avoid set file having junk values
+                f = open(avoid_set_path, "w+")
+                f.write('Some junk value\n')
+                f.close()
+                self.pkg("avoid C", exit=0)
 
 if __name__ == "__main__":
         unittest.main()

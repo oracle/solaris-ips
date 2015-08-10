@@ -4643,7 +4643,18 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__avoid_set = set()
                 self.__group_obsolete = set()
                 if os.path.isfile(state_file):
-                        version, d = json.load(open(state_file))
+                        try:
+                                 version, d = json.load(open(state_file))
+                        except EnvironmentError as e:
+                                 raise apx._convert_error(e)
+                        except ValueError as e:
+                                 salvaged_path = self.salvage(state_file, 
+                                     full_path=True)
+                                 logger.warn("Corrupted avoid list - salvaging"
+                                     " file {state_file} in {salvaged_path}"
+                                     .format(state_file=state_file,
+                                     salvaged_path=salvaged_path))
+                                 return
                         assert version == self.__AVOID_SET_VERSION
                         for stem in d:
                                 if d[stem] == "avoid":
