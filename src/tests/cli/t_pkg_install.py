@@ -4011,15 +4011,6 @@ adm
                 sock = socket.socket(socket.AF_UNIX)
                 sock.bind(os.path.join(self.img_path(), "salvage", "socket"))
                 sock.close()
-                # We also test block and character special files, but only if
-                # os.mknod() is available, which it isn't always.
-                # Since mknod only supports 32-bit integer currently, we have
-                # to check if we are running in 32-bit.
-                run_bit = struct.calcsize("P") * 8
-                if hasattr(os, "mknod") and run_bit == 32:
-                        st = os.stat("/dev/null")
-                        os.mknod(os.path.join(self.img_path(), "salvage",
-                            "node"), st.st_mode, st.st_dev)
 
                 # This could hang reading fifo, or keel over reading socket.
                 self.pkg("uninstall salvage-special")

@@ -172,12 +172,14 @@ def copytree(src, dst):
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISSOCK(s.st_mode):
                         sock = socket.socket(socket.AF_UNIX)
+                        # os.mknod doesn't work correctly in 64 bit. 
+                        run_bit = struct.calcsize("P") * 8
                         # The s11 fcs version of python doesn't have os.mknod()
                         # but sock.bind has a path length limitation that we can
                         # hit when archiving the test suite.
                         # E1101 Module '{0}' has no '{1}' member
                         # pylint: disable=E1101
-                        if hasattr(os, "mknod"):
+                        if hasattr(os, "mknod") and run_bit == 32:
                                 os.mknod(d_path, s.st_mode, s.st_dev)
                         else:
                                 try:
@@ -2888,3 +2890,21 @@ def cmp(a, b):
                         return 1
                 return NotImplemented
 
+def set_memory_limit(bytes, allow_override=True):
+        """Limit memory consumption of current process to 'bytes'."""
+
+        if allow_override:
+                try:
+                        bytes = int(os.environ["PKG_CLIENT_MAX_PROCESS_SIZE"])
+                except (KeyError, ValueError):
+                        pass
+
+        try:
+                resource.setrlimit(resource.RLIMIT_DATA, (bytes, bytes))
+        except AttributeError:
+                # If platform doesn't support RLIMIT_DATA, just ignore it.
+                pass
+        except ValueError:
+                # An unprivileged user can not raise a previously set limit,
+                # if that ever happens, just ignore it.
+                pass

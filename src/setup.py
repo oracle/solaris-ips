@@ -105,6 +105,14 @@ py_version = '.'.join(platform.python_version_tuple()[:2])
 assert py_version in ('2.7', '3.4')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
+py64_executable = None
+#Python 3 is always 64 bit and located in /usr/bin.
+if float(py_version) < 3 and osname == 'sunos':
+        if arch == 'sparc':
+                py64_executable = '/usr/bin/sparcv9/python' + py_version
+        elif arch == 'i386':
+                py64_executable = '/usr/bin/amd64/python' + py_version
+
 scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
 svc_method_dir = 'lib/svc/method'
@@ -736,7 +744,8 @@ class install_func(_install):
                                 dst_path = util.change_root(self.root_dir,
                                        os.path.join(d, dstname))
                                 dir_util.mkpath(dst_dir, verbose=True)
-                                file_util.copy_file(srcname, dst_path, update=True)
+                                file_util.copy_file(srcname, dst_path,
+                                    update=True)
                                 # make scripts executable
                                 os.chmod(dst_path,
                                     os.stat(dst_path).st_mode
@@ -838,6 +847,10 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
         cddl_re = re.compile("\n(#\s*\n)?^[^\n]*CDDL HEADER START.+"
             "CDDL HEADER END[^\n]*$(\n#\s*$)?", re.MULTILINE|re.DOTALL)
 
+        # Look for shebang line to replace with arch-specific Python executable. 
+        shebang_re = re.compile('^#!.*python[0-9]\.[0-9]')
+        first_buf = True
+
         with open(src, "r") as sfp:
                 try:
                         os.unlink(dst)
@@ -865,9 +878,21 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
                                                 blanks = "#\n" * count
                                                 buf = cddl_re.sub("\n" + blanks,
                                                     buf)
+
+                                        if not first_buf or not py64_executable:
+                                                dfp.write(buf)
+                                                continue
+
+                                        fl = buf[:buf.find(os.linesep) + 1]
+                                        sb_match = shebang_re.search(fl)
+                                        if sb_match:
+                                                buf = shebang_re.sub(
+                                                    "#!" + py64_executable,
+                                                    buf)
                                 else:
                                          buf = cddl_re.sub("", buf)
                                 dfp.write(buf)
+                                first_buf = False
 
 # Make file_util use our version of _copy_file_contents
 file_util._copy_file_contents = _copy_file_contents

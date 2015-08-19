@@ -33,6 +33,7 @@ import ctypes
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -115,6 +116,86 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 libc = ctypes.CDLL('libc.so')
                 self.assertEqual(psinfo.pr_zoneid, libc.getzoneid())
 
+        def test_memory_limit(self):
+                """Verify that set_memory_limit works."""
+
+                # memory limit to test, keep small to avoid test slowdown
+                mem_cap = 100 * 1024 * 1024
+                # memory tolerance: allowed discrepancy between set limit and
+                # measured process resources. Note, that we have a static
+                # overhead in waste.py for the forking of ps, so while 20M seems
+                # large compared to a 100M limit, in a real world example with
+                # 8G limit it's fairly small. 
+                mem_tol = 20 * 1024 * 1024
+
+                waste_mem_py = """
+import os
+import resource
+import subprocess
+
+import pkg.misc as misc
+
+misc.set_memory_limit({0})
+i = 0
+x = {{}}
+try:
+        while True:
+                i += 1
+                x[i] = range(i)
+except MemoryError:
+        # give us some breathing room (enough so the test with env var works)
+        misc.set_memory_limit({0} * 3, allow_override=False)
+        print subprocess.check_output(['ps', '-o', 'rss=', '-p',
+            str(os.getpid())]).strip()
+""".format(str(mem_cap))
+
+                # Re-setting limits which are higher than original limit can
+                # only be done by root. 
+                self.assertTrue(os.geteuid() == 0,
+                    "must be root to run this test")
+
+                tmpdir = tempfile.mkdtemp(dir=self.test_root)
+                tmpfile = os.path.join(tmpdir, 'waste.py')
+                with open(tmpfile, 'w') as f:
+                        f.write(waste_mem_py)
+
+                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                # convert from kB to bytes
+                res *= 1024
+
+                self.debug("mem_cap:   " + str(mem_cap))
+                self.debug("proc size: " + str(res))
+
+                self.assertTrue(res < mem_cap + mem_tol,
+                    "process mem consumption too high")
+                self.assertTrue(res > mem_cap - mem_tol,
+                    "process mem consumption too low")
+
+                # test if env var works
+                os.environ["PKG_CLIENT_MAX_PROCESS_SIZE"] = str(mem_cap * 2)
+                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                res *= 1024
+
+                self.debug("mem_cap:   " + str(mem_cap))
+                self.debug("proc size: " + str(res))
+
+                self.assertTrue(res < mem_cap * 2 + mem_tol,
+                    "process mem consumption too high")
+                self.assertTrue(res > mem_cap * 2 - mem_tol,
+                    "process mem consumption too low")
+
+                # test if invalid env var is handled correctly
+                os.environ["PKG_CLIENT_MAX_PROCESS_SIZE"] = "octopus"
+                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                res *= 1024
+
+                self.debug("mem_cap:   " + str(mem_cap))
+                self.debug("proc size: " + str(res))
+
+                self.assertTrue(res < mem_cap + mem_tol,
+                    "process mem consumption too high")
+                self.assertTrue(res > mem_cap - mem_tol,
+                    "process mem consumption too low")
 
 if __name__ == "__main__":
         unittest.main()
