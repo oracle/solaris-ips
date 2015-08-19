@@ -394,18 +394,33 @@ class Action(six.with_metaclass(NSG, object)):
                         return False
                 return True
 
-        def __cmp__(self, other):
-                """Compare actions for ordering.  The ordinality of a
-                   given action is computed and stored at action
-                   initialization."""
-
-                res = cmp(self.ordinality, other.ordinality)
-                if res == 0:
-                        return self.compare(other) # often subclassed
-                return res
+        def __hash__(self):
+                return hash(id(self))
 
         def compare(self, other):
-                return cmp(id(self), id(other))
+                return (id(self) > id(other)) - (id(self) < id(other))
+
+        def __lt__(self, other):
+                if self.ordinality == other.ordinality:
+                        if self.compare(other) < 0: # often subclassed
+                                return True
+                        else:
+                                return False
+                return self.ordinality < other.ordinality
+
+        def __gt__(self, other):
+                if self.ordinality == other.ordinality:
+                        if self.compare(other) > 0: # often subclassed
+                                return True
+                        else:
+                                return False
+                return self.ordinality > other.ordinality
+
+        def __le__(self, other):
+                return self == other or self < other
+
+        def __ge__(self, other):
+                return self == other or self > other
 
         def different(self, other, cmp_hash=True):
                 """Returns True if other represents a non-ignorable change from

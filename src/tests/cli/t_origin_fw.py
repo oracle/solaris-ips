@@ -49,7 +49,9 @@ def main():
         return 0
     for arg in sys.argv[1:]:
         if arg.startswith("minimum-version="):
-            c = cmp(installed_version, arg[len("minimum-version="):])
+            a = installed_version
+            b = arg[len("minimum-version="):]
+            c = (a > b) - (a < b)
             if c < 0:
                if int(devs_present) > 240:
                    devs_present = "240"
@@ -64,7 +66,7 @@ if __name__ == "__main__":
         # Make all warnings be errors.
         import warnings
         warnings.simplefilter('error')
-        
+
         sys.exit(main())
 """}
 
@@ -83,14 +85,14 @@ if __name__ == "__main__":
                     self.pkg_list+= ["""
                     open A@{0},5.11-0
                     add depend type=origin root-image=true fmri=pkg:/feature/firmware/testdriver minimum-version={1}
-                    close 
+                    close
                     open B@{2},5.11-0
-                    add depend type=origin root-image=true fmri=pkg:/feature/firmware/testdriver minimum-version={3} 
+                    add depend type=origin root-image=true fmri=pkg:/feature/firmware/testdriver minimum-version={3}
                     close """.format(*(t + t)) ]
 
 		self.pkg_list += ["""
                     open A@1.4,5.11-0
-                    add depend type=origin root-image=true fmri=pkg:/feature/firmware/testdriver 
+                    add depend type=origin root-image=true fmri=pkg:/feature/firmware/testdriver
                     close """]
 
 		self.pkg_list += ["""
@@ -139,11 +141,11 @@ if __name__ == "__main__":
 		del os.environ["PKG_INSTALLED_VERSION"]
 		self.pkg("update")
 		self.pkg("list")
-		self.pkg("verify A@1.6") 
-		# ok since we never drop core 
-		# here as device 
+		self.pkg("verify A@1.6")
+		# ok since we never drop core
+		# here as device
 		# doesn't exist.
-		
+
 		# check that we ignore dependencies w/ missing enumerators for now
 		self.pkg("install C@1.0")
 

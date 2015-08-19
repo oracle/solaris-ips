@@ -1717,4 +1717,8 @@ setup(cmdclass = cmdclasses,
     data_files = data_files,
     ext_package = 'pkg',
     ext_modules = ext_modules,
-    )
+    classifiers = [
+        'Programming Language :: Python :: 2 :: Only',
+        'Programming Language :: Python :: 2.7',
+    ]
+)

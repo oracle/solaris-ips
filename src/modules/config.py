@@ -48,7 +48,11 @@ manipulation of configuration data is needed.
 
 import ast
 import codecs
-import commands
+# 'commands' is deprecated in Python 3, use 'subprocess' instead.
+try:
+        import commands
+except ImportError:
+        import subprocess as commands
 import copy
 import errno
 import os
@@ -236,10 +240,21 @@ class Property(object):
                 self.value = default
                 self._value_map = value_map
 
-        def __cmp__(self, other):
+        def __lt__(self, other):
                 if not isinstance(other, Property):
-                        return -1
-                return cmp(self.name, other.name)
+                        return True
+                return self.name < other.name
+
+        def __gt__(self, other):
+                if not isinstance(other, Property):
+                        return False
+                return self.name > other.name
+
+        def __le__(self, other):
+                return self == other or self < other
+
+        def __ge__(self, other):
+                return self == other or self > other
 
         def __eq__(self, other):
                 if not isinstance(other, Property):
@@ -254,6 +269,9 @@ class Property(object):
                 if self.name != other.name:
                         return True
                 return self.value != other.value
+
+        def __hash__(self):
+                return hash((self.name, self.value))
 
         def __copy__(self):
                 return self.__class__(self.name, default=self.value,
@@ -880,10 +898,23 @@ class PropertySection(object):
                 # Should be set last.
                 self.__properties = dict((p.name, p) for p in properties)
 
-        def __cmp__(self, other):
+        def __lt__(self, other):
                 if not isinstance(other, PropertySection):
-                        return -1
-                return cmp(self.name, other.name)
+                        return True
+                return self.name < other.name
+
+        def __gt__(self, other):
+                if not isinstance(other, PropertySection):
+                        return False
+                return self.name > other.name
+
+        def __eq__(self, other):
+                if not isinstance(other, PropertySection):
+                        return False
+                return self.name == other.name
+
+        def __hash__(self):
+                return hash(self.name)
 
         def __copy__(self):
                 propsec = self.__class__(self.__name)

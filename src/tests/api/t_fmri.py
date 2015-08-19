@@ -66,13 +66,13 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                     "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
 
         def testfmricmp1(self):
-                self.assert_(self.n3.__cmp__(self.n3) == 0)
+                self.assert_(self.n3.__eq__(self.n3))
 
         def testfmricmp2(self):
-                self.assert_(self.n3.__cmp__(self.n4) < 0)
+                self.assert_(self.n3.__lt__(self.n4))
 
         def testfmricmp3(self):
-                self.assert_(self.n5.__cmp__(self.n3) > 0)
+                self.assert_(self.n5.__gt__(self.n3))
 
         def testfmrisuccessor1(self):
                 self.assert_(self.n8.is_successor(self.n7))

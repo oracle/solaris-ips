@@ -35,7 +35,6 @@ import os
 import simplejson as json
 import six
 import stat
-import statvfs
 import threading
 import types
 
@@ -91,7 +90,7 @@ class _JSONWriter(object):
                         destvfs = os.statvfs(dest_dir)
                         # Set the file buffer size to the blocksize of our
                         # filesystem.
-                        self.__bufsz = destvfs[statvfs.F_BSIZE]
+                        self.__bufsz = destvfs.f_bsize
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -739,16 +738,12 @@ class CatalogPart(CatalogPartBase):
                 pub_sort = None
                 if pubs:
                         pos = dict((p, i) for (i, p) in enumerate(pubs))
-                        def pos_sort(a, b):
+                        def pub_key(a):
                                 astem, apub = a.split("!", 1)
-                                bstem, bpub = b.split("!", 1)
-                                res = cmp(astem, bstem)
-                                if res != 0:
-                                        return res
-                                return cmp(pos[apub], pos[bpub])
-                        pub_sort = pos_sort
+                                return (astem, pos[apub])
+                        pub_sort = pub_key
 
-                for entry in sorted(pkg_list, cmp=pub_sort):
+                for entry in sorted(pkg_list, key=pub_sort):
                         stem, pub = entry.split("!", 1)
                         yield pub, stem
 
@@ -839,10 +834,8 @@ class CatalogPart(CatalogPartBase):
                 If neither 'pfmris' or 'pubs' is provided, all entries will be
                 sorted."""
 
-                def order(a, b):
-                        v1 = pkg.version.Version(a["version"])
-                        v2 = pkg.version.Version(b["version"])
-                        return cmp(v1, v2)
+                def key_func(item):
+                        return pkg.version.Version(item["version"])
 
                 self.load()
                 if pfmris is not None:
@@ -861,12 +854,12 @@ class CatalogPart(CatalogPartBase):
                                         ver_list = pkg_list.get(f.pkg_name,
                                             None)
                                         if ver_list:
-                                                ver_list.sort(cmp=order)
+                                                ver_list.sort(key=key_func)
                         return
 
                 for pub in self.publishers(pubs=pubs):
                         for stem in self.__data[pub]:
-                                self.__data[pub][stem].sort(cmp=order)
+                                self.__data[pub][stem].sort(key=key_func)
 
         def tuples(self, last=False, ordered=False, pubs=EmptyI):
                 """A generator function that produces FMRI tuples as it

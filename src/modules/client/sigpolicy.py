@@ -26,7 +26,9 @@
 
 import six
 import pkg.client.api_errors as apx
+from functools import total_ordering
 
+@total_ordering
 class Policy(object):
         """Abstract base Policy class.  It defines the interface all subclasses
         must provide.
@@ -54,8 +56,13 @@ class Policy(object):
                 Not implemented in the base class."""
                 raise NotImplementedError()
 
-        def __cmp__(self, other):
-                return cmp(self.strictness, other.strictness)
+        def __lt__(self, other):
+                return self.strictness < other.strictness
+
+        def __eq__(self, other):
+                return self.strictness == other.strictness
+
+        __hash__ = None
 
         def combine(self, other):
                 """If the other signature policy is more strict than this

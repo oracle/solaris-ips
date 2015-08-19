@@ -93,7 +93,9 @@ class DriverAction(generic.Action):
                 """Compare with other driver instance; defined to force
                 clone driver to be removed last"""
 
-                ret = cmp(self.attrs["name"], other.attrs["name"])
+                ret = (self.attrs["name"] > other.attrs["name"]) - \
+                    (self.attrs["name"] < other.attrs["name"])
+
                 if ret == 0:
                         return 0
 

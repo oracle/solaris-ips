@@ -60,9 +60,10 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
         """
 
         n = 520000
-        str2 = "cmp(a1, a2)"
+        str2 = "a1 == a2"
 
         print("action comparison")
+        print("\tequality")
         for i in (1, 2, 3):
 
                 try:
@@ -73,27 +74,50 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
                         import sys
                         sys.exit(0)
 
+        str2 = "a1 > a2"
+        print("\tgt")
+        for i in (1, 2, 3):
 
-        print("minimalist comparison")
+                try:
+                        t = timeit.Timer(str2, setup2).timeit(n)
+                        print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
+                            int(round(n / t))))
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
+
+        str2 = "a1 < a2"
+        print("\tlt")
+        for i in (1, 2, 3):
+
+                try:
+                        t = timeit.Timer(str2, setup2).timeit(n)
+                        print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
+                            int(round(n / t))))
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
+
+        print("minimalist comparison equality")
 
         setup3 = """
 class superc(object):
-        def __cmp__(a, b):
-                return cmp(a.ordinality, b.ordinality)
+        def __lt__(a, b):
+                return a.ordinality == b.ordinality
 
 class aa(superc):
         def __init__(self):
-                self.ordinality = 1    
-                
+                self.ordinality = 1
+
 class bb(superc):
         def __init__(self):
                 self.ordinality = 2
-                
+
 a = aa()
 b = bb()
         """
 
-        str3 = "cmp(a, b)"
+        str3 = "a == b"
         for i in (1, 2, 3):
 
                 try:
@@ -191,7 +215,7 @@ license f9562cfd7500134682a60f6d9d6dc256902917c8 license=SUNWzoner.copyright pat
 """
 
         n = 1000
-        
+
         str5="""
 mf = manifest.Manifest()
 mf.set_content(m)

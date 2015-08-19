@@ -69,7 +69,7 @@ import sys
 import tempfile
 import threading
 import time
-
+from functools import cmp_to_key
 # Pylint seems to be panic about six even if it is installed. Instead of using
 # 'disable' here, a better way is to use ignore-modules in pylintrc, but
 # it has an issue that is not fixed until recently. See pylint/issues/#223.
@@ -818,7 +818,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 for mediator in sorted(ret):
                         for med_priority, med_ver, med_impl in sorted(
-                            ret[mediator], cmp=med.cmp_mediations):
+                            ret[mediator], key=cmp_to_key(med.cmp_mediations)):
                                 val = {}
                                 if med_ver:
                                         # Don't expose internal Version object
@@ -3229,10 +3229,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # Determine highest ranked publisher for package stems
                 # listed in installed incorporations.
-                def pub_order(a, b):
-                        return cmp(pub_ranks[a][0], pub_ranks[b][0])
+                def pub_key(item):
+                        return pub_ranks[item][0]
 
-                for p in sorted(pub_ranks, cmp=pub_order):
+                for p in sorted(pub_ranks, key=pub_key):
                         if pubs and p not in pubs:
                                 continue
                         for stem in known_cat.names(pubs=[p]):
@@ -3916,13 +3916,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         for p in pubs:
                                 pub_ranks.setdefault(p, (99, (p, False, False)))
 
-                        def pub_order(a, b):
-                                res = cmp(pub_ranks[a], pub_ranks[b])
-                                if res != 0:
-                                        return res
-                                return cmp(a, b)
+                        def pub_key(a):
+                                return (pub_ranks[a], a)
 
-                        pubs = sorted(pubs, cmp=pub_order)
+                        pubs = sorted(pubs, key=pub_key)
 
                 ranked_stems = {}
                 for t, entry, actions in pkg_cat.entry_actions(cat_info,

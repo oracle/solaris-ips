@@ -25,6 +25,7 @@
 import re
 import six
 
+import pkg.misc as misc
 import pkg.version as version
 
 def valid_mediator(value):
@@ -143,24 +144,24 @@ def cmp_mediations(a, b):
 
         aprio = _MED_PRIORITIES.get(a[0], 3)
         bprio = _MED_PRIORITIES.get(b[0], 3)
-        res = cmp(aprio, bprio)
+        res = misc.cmp(aprio, bprio)
         if res != 0:
                 return res
 
         aver = a[1]
         bver = b[1]
-        res = cmp(aver, bver)
+        res = misc.cmp(aver, bver)
         if res != 0:
                 # Invert version sort so greatest is first.
                 return res * -1
 
         aimpl, aver = parse_mediator_implementation(a[2])
         bimpl, bver = parse_mediator_implementation(b[2])
-        res = cmp(aimpl, bimpl)
+        res = misc.cmp(aimpl, bimpl)
         if res != 0:
                 return res
 
-        res = cmp(aver, bver)
+        res = misc.cmp(aver, bver)
         if res != 0:
                 # Invert version sort so greatest is first.
                 return res * -1

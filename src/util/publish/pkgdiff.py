@@ -30,6 +30,7 @@ import gettext
 import locale
 import sys
 import traceback
+from functools import cmp_to_key
 
 import pkg.actions
 import pkg.variant as variant
@@ -235,31 +236,29 @@ def main_func():
         # First, a human version of action comparison that works across
         # variants and action changes...
         def compare(a, b):
+                # pull the relevant action out of the old value, new
+                # value tuples
+                a = a[0] if a[0] else a[1]
+                b = b[0] if b[0] else b[1]
+
                 if hasattr(a, "key_attr") and hasattr(b, "key_attr") and \
                     a.key_attr == b.key_attr:
-                        res = cmp(a.attrs[a.key_attr], b.attrs[b.key_attr])
+                        res = misc.cmp(a.attrs[a.key_attr], b.attrs[b.key_attr])
                         if res:
                                 return res
                         # sort by variant
-                        res = cmp(sorted(list(a.get_variant_template())),
+                        res = misc.cmp(sorted(list(a.get_variant_template())),
                             sorted(list(b.get_variant_template())))
                         if res:
                                 return res
                 else:
-                        res = cmp(a.ordinality, b.ordinality)
+                        res = misc.cmp(a.ordinality, b.ordinality)
                         if res:
                                 return res
-                return cmp(str(a), str(b))
-
-        # and something to pull the relevant action out of the old value, new
-        # value tuples
-        def tuple_key(a):
-                if not a[0]:
-                        return a[1]
-                return a[0]
+                return misc.cmp(str(a), str(b))
 
         # sort and....
-        diffs = sorted(diffs, key=tuple_key, cmp=compare)
+        diffs = sorted(diffs, key=cmp_to_key(compare))
 
         # handle list attributes
         def attrval(attrs, k, elide_iter=tuple()):

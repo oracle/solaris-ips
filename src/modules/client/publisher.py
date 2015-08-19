@@ -200,12 +200,27 @@ class RepositoryURI(object):
                         return self.uri != other
                 return True
 
-        def __cmp__(self, other):
+        __hash__ = object.__hash__
+
+        def __lt__(self, other):
                 if not other:
-                        return 1
+                        return False
                 if not isinstance(other, RepositoryURI):
                         other = RepositoryURI(other)
-                return cmp(self.uri, other.uri)
+                return self.uri < other.uri
+
+        def __gt__(self, other):
+                if not other:
+                        return True
+                if not isinstance(other, RepositoryURI):
+                        other = RepositoryURI(other)
+                return self.uri > other.uri
+
+        def __le__(self, other):
+                return self == other or self < other
+
+        def __ge__(self, other):
+                return self == other or self > other
 
         def __set_priority(self, value):
                 if value is not None:
@@ -511,18 +526,39 @@ class TransportRepoURI(RepositoryURI):
                         return self.uri != other or self.proxy != None
                 return True
 
-        def __cmp__(self, other):
+        __hash__ = object.__hash__
+
+        def __lt__(self, other):
                 if not other:
-                        return 1
+                        return False
                 if isinstance(other, six.string_types):
                         other = TransportRepoURI(other)
                 elif not isinstance(other, TransportRepoURI):
-                        return 1
-                res = cmp(self.uri, other.uri)
-                if res == 0:
-                        return cmp(self.proxy, other.proxy)
-                else:
-                        return res
+                        return False
+                if self.uri < other.uri:
+                        return True
+                if self.uri != other.uri:
+                        return False
+                return self.proxy < other.proxy
+
+        def __gt__(self, other):
+                if not other:
+                        return True
+                if isinstance(other, six.string_types):
+                        other = TransportRepoURI(other)
+                elif not isinstance(other, TransportRepoURI):
+                        return True
+                if self.uri > other.uri:
+                        return True
+                if self.uri != other.uri:
+                        return False
+                return self.proxy > other.proxy
+
+        def __le__(self, other):
+                return self == other or self < other
+
+        def __ge__(self, other):
+                return self == other or self > other
 
         def key(self):
                 """Returns a value that can be used to identify this RepoURI
@@ -1194,12 +1230,25 @@ class Publisher(object):
                 # Must be done last.
                 self._catalog = catalog
 
-        def __cmp__(self, other):
+        def __lt__(self, other):
                 if other is None:
-                        return 1
+                        return False
                 if isinstance(other, Publisher):
-                        return cmp(self.prefix, other.prefix)
-                return cmp(self.prefix, other)
+                        return self.prefix < other.prefix
+                return self.prefix < other
+
+        def __gt__(self, other):
+                if other is None:
+                        return True
+                if isinstance(other, Publisher):
+                        return self.prefix > other.prefix
+                return self.prefix > other
+
+        def __le__(self, other):
+                return not self > other
+
+        def __ge__(self, other):
+                return not self < other
 
         @staticmethod
         def __contains__(key):
@@ -1229,6 +1278,8 @@ class Publisher(object):
                 if isinstance(other, str):
                         return self.prefix == other
                 return False
+
+        __hash__ = object.__hash__
 
         def __getitem__(self, key):
                 """Deprecated compatibility interface allowing publisher

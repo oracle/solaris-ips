@@ -377,13 +377,9 @@ class DependencyAction(generic.Action):
                         # No special order for all other cases.
                         return 0
 
-                # actual cmp function
-                def cmpkv(a, b):
-                        c = cmp(kvord(a), kvord(b))
-                        if c:
-                                return c
-
-                        return cmp(a[0], b[0])
+                # actual key function
+                def key_func(a):
+                        return (kvord(a), a[0])
 
                 JOIN_TOK = " \\\n    " + base_indent
                 def grow(a, b, rem_values, force_nl=False):
@@ -419,7 +415,8 @@ class DependencyAction(generic.Action):
 
                         # Now build the action output string an attribute at a
                         # time.
-                        for k, v in sorted(six.iteritems(act.attrs), cmp=cmpkv):
+                        for k, v in sorted(six.iteritems(act.attrs),
+                            key=key_func):
                                 # Newline breaks are only forced when there is
                                 # more than one value for an attribute.
                                 if not (isinstance(v, list) or

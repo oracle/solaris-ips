@@ -1060,9 +1060,9 @@ class LintEngine(object):
                 """Creates a ProgressTracker if we don't already have one,
                 otherwise resetting our current tracker and returning it"""
 
-		if self.tracker:
-			if not self.in_setup:
-				self.tracker.reset()
+                if self.tracker:
+                        if not self.in_setup:
+                                self.tracker.reset()
                         self.tracker.set_major_phase(self.tracker.PHASE_UTILITY)
                         return self.tracker
                 if not self.use_tracker:

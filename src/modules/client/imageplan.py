@@ -41,7 +41,7 @@ import time
 import traceback
 import weakref
 
-from functools import reduce
+from functools import cmp_to_key, reduce
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -2718,7 +2718,16 @@ class ImagePlan(object):
 
                 # Group action types by namespace groups
                 kf = operator.attrgetter("namespace_group")
-                types = sorted(six.itervalues(pkg.actions.types), key=kf)
+                # Unequal types are not comparable in Python 3, therefore
+                # convert them to the same type 'int' first.
+                def key(a):
+                        kf = a.namespace_group
+                        if kf is None:
+                            return -1
+                        elif kf == "path":
+                            return 20
+                        return kf
+                types = sorted(six.itervalues(pkg.actions.types), key=key)
 
                 namespace_dict = dict(
                     (ns, list(action_classes))
@@ -3480,7 +3489,7 @@ class ImagePlan(object):
 
                         # Pick first "optimal" version and/or implementation.
                         for opt_priority, opt_ver, opt_impl in sorted(values,
-                            cmp=med.cmp_mediations):
+                            key=cmp_to_key(med.cmp_mediations)):
                                 if med_ver_source == "local":
                                         if opt_ver != med_ver:
                                                 # This mediation not allowed

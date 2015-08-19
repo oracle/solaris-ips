@@ -858,13 +858,11 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 for pd in api_obj.gen_plan_install(["licensed@1.0"]):
                         continue
 
-                def lic_sort(a, b):
-                        adest = a[2]
-                        bdest = b[2]
-                        return cmp(adest.license, bdest.license)
+                def lic_key(item):
+                        return item[2].license
 
                 plan = api_obj.describe()
-                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+                lics = sorted(plan.get_licenses(), key=lic_key)
 
                 # Expect one license action for each package: "licensed", and
                 # its dependency "baz".
@@ -915,7 +913,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                         continue
 
                 plan = api_obj.describe()
-                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+                lics = sorted(plan.get_licenses(), key=lic_key)
 
                 # Expect two license actions, both of which should be for the
                 # licensed@1.2 package.
@@ -965,7 +963,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Set the copyright as having been displayed.
                 api_obj.set_plan_license_status(pfmri, "copyright.licensed",
                     displayed=True)
-                lics = sorted(plan.get_licenses(pfmri=pfmri), cmp=lic_sort)
+                lics = sorted(plan.get_licenses(pfmri=pfmri), key=lic_key)
 
                 # Verify displayed was updated and accepted remains False.
                 dest_fmri, src, dest, accepted, displayed = lics[0]
@@ -1060,7 +1058,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                         continue
                 plan = api_obj.describe()
                 pfmri = fmri.PkgFmri(plist[5])
-                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+                lics = sorted(plan.get_licenses(), key=lic_key)
                 for dest_fmri, src, dest, accepted, displayed in lics:
                         # License information should only be for "licensed@1.4".
                         self.assertEqual(pfmri, dest_fmri)

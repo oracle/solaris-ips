@@ -36,7 +36,6 @@ from pkg.actions.file import FileAction
 import re
 import six
 import stat
-import string
 
 ObsoleteFmri = collections.namedtuple("ObsoleteFmri", "is_obsolete, fmri")
 

@@ -64,6 +64,7 @@ import textwrap
 import traceback
 import warnings
 import itertools
+from imp import reload
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
@@ -152,13 +153,13 @@ Subcommands:
      pkgrepo remove-publisher [-n] [--synchronous] -s repo_uri_or_path
          publisher ...
 
-     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path 
+     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path
          [--key ssl_key ... --cert ssl_cert ...] [section/property ...]
 
      pkgrepo info [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
          [--key ssl_key ... --cert ssl_cert ...]
 
-     pkgrepo list [-F format] [-H] [-p publisher ...] -s repo_uri_or_path 
+     pkgrepo list [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
          [--key ssl_key ... --cert ssl_cert ...] [pkg_fmri_pattern ...]
 
      pkgrepo contents [-m] [-t action_type ...] -s repo_uri_or_path
@@ -1064,26 +1065,26 @@ def refresh_pub(pub_data, xport):
 def subcmd_contents(conf, args):
         """List package contents."""
 
-	subcommand = "contents"
-	display_raw = False
-	pubs = set()
-	key = None
-	cert = None
+        subcommand = "contents"
+        display_raw = False
+        pubs = set()
+        key = None
+        cert = None
         attrs = []
         action_types = []
 
-	opts, pargs = getopt.getopt(args, "ms:t:", ["key=", "cert="])
-	for opt, arg in opts:
-		if opt == "-s":
+        opts, pargs = getopt.getopt(args, "ms:t:", ["key=", "cert="])
+        for opt, arg in opts:
+                if opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
-		elif opt == "-m":
-			display_raw = True
-		elif opt == "-t":
+                elif opt == "-m":
+                        display_raw = True
+                elif opt == "-t":
                         action_types.extend(arg.split(","))
-		elif opt == "--key":
-			key = arg
-		elif opt == "--cert":
-			cert = arg
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         # Setup transport so configuration can be retrieved.
         if not conf.get("repo_uri", None):
@@ -1098,7 +1099,7 @@ def subcmd_contents(conf, args):
         if rval == EXIT_OOPS:
                 return rval
 
-        # Default output prints out the raw manifest. The -m option is implicit 
+        # Default output prints out the raw manifest. The -m option is implicit
         # for now and supported to make the interface equivalent to pkg
         # contents.
         if not attrs or display_raw:

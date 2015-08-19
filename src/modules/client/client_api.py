@@ -923,7 +923,7 @@ def __get_parsable_plan(api_inst, parsable_version, child_images=None):
             "create-backup-be": backup_be_created,
             "create-new-be": new_be_created,
             "image-name": None,
-            "licenses": sorted(licenses),
+            "licenses": sorted(licenses, key=lambda x: x[0]),
             "release-notes": release_notes,
             "remove-packages": sorted(removed_fmris),
             "space-available": space_available,
@@ -1947,10 +1947,9 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                _("SYSPUB"), _("ENABLED"), _("TYPE"),
                                _("STATUS"), _("P"), _("LOCATION"))
 
-        # Custom sort function for preserving field ordering
-        def sort_fields(one, two):
-                return desired_field_order.index(get_header(one)) - \
-                    desired_field_order.index(get_header(two))
+        # Custom key function for preserving field ordering
+        def key_fields(item):
+                return desired_field_order.index(get_header(item))
 
         # Functions for manipulating field_data records
         def filter_default(record):
@@ -2039,9 +2038,9 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
 
                 # Extract our list of headers from the field_data
                 # dictionary Make sure they are extracted in the
-                # desired order by using our custom sort function.
+                # desired order by using our custom key function.
                 hdrs = list(map(get_header, sorted(filter(filter_func,
-                    list(field_data.values())), sort_fields)))
+                    list(field_data.values())), key=key_fields)))
 
                 if not omit_headers:
                         data["headers"] = hdrs
@@ -2118,7 +2117,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
 
                                 values = map(get_value,
                                     sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
+                                    field_data.values()), key=key_fields)
                                 )
                                 entry = []
                                 for e in values:
@@ -2152,7 +2151,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
 
                                 values = map(get_value,
                                     sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
+                                    field_data.values()), key=key_fields)
                                 )
                                 entry = []
                                 for e in values:
@@ -2169,7 +2168,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 set_value(field_data["proxy"], "")
                                 values = map(get_value,
                                     sorted(filter(filter_func,
-                                    field_data.values()), sort_fields)
+                                    field_data.values()), key=key_fields)
                                 )
                                 entry = []
                                 for e in values:
@@ -2442,10 +2441,11 @@ def _info(op, api_inst, pargs, display_license, info_local, info_remote,
                     "info.source-url": _("Source URL")
                 }
 
-                for item in sorted(pi.attrs, key=addl_attr_list.get):
-                        if item in addl_attr_list:
-                                __append_attr_lists(addl_attr_list[item],
-                                    pi.get_attr_values(item))
+
+                for key in addl_attr_list:
+                        if key in pi.attrs:
+                                __append_attr_lists(addl_attr_list[key],
+                                    pi.get_attr_values(key))
 
                 if "package_attrs" not in data:
                         data["package_attrs"] = [attr_list]

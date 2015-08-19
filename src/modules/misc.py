@@ -1652,10 +1652,9 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         """
         # Missing docstring; pylint: disable=C0111
 
-        # Custom sort function for preserving field ordering
-        def sort_fields(one, two):
-                return desired_field_order.index(get_header(one)) - \
-                    desired_field_order.index(get_header(two))
+        # Custom key function for preserving field ordering
+        def key_fields(item):
+                return desired_field_order.index(get_header(item))
 
         # Functions for manipulating field_data records
         def filter_default(record):
@@ -1767,7 +1766,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         # they are extracted in the desired order by using the custom sort
         # function.
         hdrs = map(get_header, sorted(filter(filter_func,
-            field_data.values()), sort_fields))
+            field_data.values()), key=key_fields))
 
         # Output a header if desired.
         output = ""
@@ -1782,7 +1781,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                     if f in field_data
                 ))
                 values = map(get_value, sorted(filter(filter_func,
-                    field_data.values()), sort_fields))
+                    field_data.values()), key=key_fields))
                 output += fmt.format(*values)
                 output += "\n"
 
@@ -2845,4 +2844,47 @@ def suggest_known_words(text, known_words):
 
         # Sort the candidates by their distance, and return the words only.
         return [c[0] for c in sorted(candidates, key=itemgetter(1))]
+
+def smallest_diff_key(a, b):
+        """Return the smallest key 'k' in 'a' such that a[k] != b[k]."""
+        keys = [k for k in a if a.get(k) != b.get(k)]
+        if not keys:
+                return None
+        return min(keys)
+
+def dict_cmp(a, b):
+        """cmp method for dictionary, translated from the source code
+        http://svn.python.org/projects/python/trunk/Objects/dictobject.c"""
+
+        if len(a) != len(b):
+                return cmp(len(a), len(b))
+
+        adiff = smallest_diff_key(a, b)
+        bdiff = smallest_diff_key(b, a)
+        if adiff is None and bdiff is None:
+                return 0
+        if adiff != bdiff:
+                return cmp(adiff, bdiff)
+        return cmp(a[adiff], b[bdiff])
+
+def cmp(a, b):
+        """Implementaion for Python 2.7's built-in function cmp(), which is
+        removed in Python 3."""
+
+        if isinstance(a, dict) and isinstance(b, dict):
+                return dict_cmp(a, b)
+
+        try:
+                if a == b:
+                        return 0
+                elif a < b:
+                        return -1
+                else:
+                        return 1
+        except TypeError:
+                if a is None and b:
+                        return -1
+                if a and b is None:
+                        return 1
+                return NotImplemented
 

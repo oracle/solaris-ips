@@ -295,6 +295,8 @@ class VariantCombinations(object):
         def __ne__(self, other):
                 return not self.__eq__(other)
 
+        __hash__ = object.__hash__
+
         def is_empty(self):
                 """Returns whether self was created with any potential variant
                 values."""

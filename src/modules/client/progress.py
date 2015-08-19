@@ -1563,7 +1563,8 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 # this guard prevents us from updating the item (which has
                 # no goal set, and will raise an exception).
                 #
-                if self.repub_send_bytes.goalitems > 0:
+                if self.repub_send_bytes.goalitems and \
+                    self.repub_send_bytes.goalitems > 0:
                         self.repub_send_bytes.items += nbytes
                         self._republish_output(OutSpec())
 

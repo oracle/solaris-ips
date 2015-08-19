@@ -29,6 +29,7 @@ import os
 import StringIO
 import six
 
+from functools import cmp_to_key
 from operator import itemgetter
 
 import pkg.catalog
@@ -523,11 +524,11 @@ class CatalogInterface(_Interface):
 
                                         if a.pkg_name == b.pkg_name:
                                                 # Version in descending order.
-                                                return cmp(a.version,
+                                                return misc.cmp(a.version,
                                                     b.version) * -1
-                                        return cmp(a, b)
+                                        return misc.cmp(a, b)
                                 return filter_results(sorted(results,
-                                    cmp=cmp_fmris), mver)
+                                    key=cmp_to_key(cmp_fmris)), mver)
 
                         return filter_results(results, mver)
 

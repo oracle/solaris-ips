@@ -361,18 +361,37 @@ class LinkedImageName(object):
         def __len__(self):
                 return len(self.__str__())
 
-        def __cmp__(self, other):
+        def __lt__(self, other):
                 assert (type(self) == LinkedImageName)
                 if not other:
-                        return 1
+                        return False
                 if other == PV_NAME_NONE:
-                        return 1
+                        return False
                 assert type(other) == LinkedImageName
-                c = cmp(self.lin_type, other.lin_type)
-                if c != 0:
-                        return c
-                c = cmp(self.lin_name, other.lin_name)
-                return c
+                if self.lin_type < other.lin_type:
+                        return True
+                if self.lin_type != other.lin_type:
+                        return False
+                return self.lin_name < other.lin_name
+
+        def __gt__(self, other):
+                assert (type(self) == LinkedImageName)
+                if not other:
+                        return True
+                if other == PV_NAME_NONE:
+                        return True
+                assert type(other) == LinkedImageName
+                if self.lin_type > other.lin_type:
+                        return True
+                if self.lin_type != other.lin_type:
+                        return False
+                return self.lin_name > other.lin_name
+
+        def __le__(self, other):
+                return not self > other
+
+        def __ge__(self, other):
+                return not self < other
 
         def __hash__(self):
                 return hash(str(self))

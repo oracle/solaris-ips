@@ -51,7 +51,8 @@ class DirectoryAction(generic.Action):
         ordinality = generic._orderdict[name]
 
         def compare(self, other):
-                return cmp(self.attrs["path"], other.attrs["path"])
+                return (self.attrs["path"] > other.attrs["path"]) - \
+                    (self.attrs["path"] < other.attrs["path"])
 
         def differences(self, other):
                 """Returns a list of attributes that have different values

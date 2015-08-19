@@ -1873,7 +1873,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         elif origin and pub.repository and \
                             pub.repository.has_origin(origin):
                                 return pub
-                raise apx.UnknownPublisher(max(prefix, alias, origin))
+
+                if prefix is None and alias is None and origin is None:
+                        raise apx.UnknownPublisher(None)
+
+                raise apx.UnknownPublisher(max(i for i in
+                    [prefix, alias, origin] if i is not None))
 
         def pub_search_before(self, being_moved, staying_put):
                 """Moves publisher "being_moved" to before "staying_put"

@@ -24,7 +24,6 @@
 #
 
 from __future__ import print_function
-import six
 
 # Prefixes should be ordered alphabetically with most specific first.
 DRIVER_ALIAS_PREFIXES = (
@@ -68,6 +67,7 @@ try:
         import tempfile
         import traceback
         from difflib import unified_diff
+        from functools import cmp_to_key
 
         import pkg
         import pkg.actions
@@ -209,12 +209,12 @@ def cmplines(a, b):
                         return 5
                 return 2
 
-        c = cmp(typeord(a[0]), typeord(b[0]))
+        c = misc.cmp(typeord(a[0]), typeord(b[0]))
         if c:
                 return c
 
         if opt_format != FMT_V2:
-                c = cmp(a[0].name, b[0].name)
+                c = misc.cmp(a[0].name, b[0].name)
                 if c:
                         return c
 
@@ -278,13 +278,13 @@ def cmplines(a, b):
                 if not b_sk:
                         b_sk = b[0].attrs[key_attr]
 
-                c = cmp(a_sk, b_sk)
+                c = misc.cmp(a_sk, b_sk)
                 if c:
                         return c
 
         # No key attribute or key attribute sorting provides equal placement, so
         # sort based on stringified action.
-        return cmp(str(a[0]), str(b[0]))
+        return misc.cmp(str(a[0]), str(b[0]))
 
 def write_line(line, fileobj):
         """Write out a manifest line"""
@@ -368,13 +368,9 @@ def write_line(line, fileobj):
                 # No special order for all other cases.
                 return 0
 
-        # actual cmp function
-        def cmpkv(a, b):
-                c = cmp(kvord(a), kvord(b))
-                if c:
-                        return c
-
-                return cmp(a[0], b[0])
+        # actual key function
+        def key_func(a):
+                return (kvord(a), a[0])
 
         JOIN_TOK = " \\\n    "
         def grow(a, b, rem_values, force_nl=False):
@@ -432,9 +428,9 @@ def write_line(line, fileobj):
         def cmp_aliases(a, b):
                 if opt_format == FMT_V1:
                         # Simple comparison for V1 format.
-                        return cmp(a, b)
+                        return misc.cmp(a, b)
                 # For V2 format, order aliases by interpreted value.
-                return cmp(get_alias_key(a), get_alias_key(b))
+                return misc.cmp(get_alias_key(a), get_alias_key(b))
 
         def astr(aout):
                 # Number of attribute values for first line and remaining.
@@ -447,7 +443,7 @@ def write_line(line, fileobj):
                 rem_count = total_count
 
                 # Now build the action output string an attribute at a time.
-                for k, v in sorted(six.iteritems(sattrs), cmp=cmpkv):
+                for k, v in sorted(sattrs.iteritems(), key=key_func):
                         # Newline breaks are only forced when there is more than
                         # one value for an attribute.
                         if not (isinstance(v, list) or isinstance(v, set)):
@@ -459,8 +455,8 @@ def write_line(line, fileobj):
 
                         cmp_attrs = None
                         if k == "alias":
-                                cmp_attrs = cmp_aliases
-                        for lmt in sorted(nv, cmp=cmp_attrs):
+                                cmp_attrs = cmp_to_key(cmp_aliases)
+                        for lmt in sorted(nv, key=cmp_attrs):
                                 force_nl = use_force_nl and \
                                     (k == "alias" or (opt_format == FMT_V2 and
                                     k.startswith("pkg.debug")))
@@ -690,7 +686,7 @@ def fmt_file(in_file, out_file):
                         lines.append(tp)
                         saw_action = True
 
-        lines.sort(cmp=cmplines)
+        lines.sort(key=cmp_to_key(cmplines))
         for l in lines:
                 write_line(l, out_file)
         out_file.writelines("\n".join(trailing_comments))

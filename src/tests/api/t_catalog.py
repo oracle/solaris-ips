@@ -36,6 +36,7 @@ import simplejson
 import six
 import stat
 import unittest
+from functools import cmp_to_key
 
 import pkg.actions
 import pkg.fmri as fmri
@@ -210,15 +211,15 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 # Next, ensure its populated.
                 def ordered(a, b):
-                        rval = cmp(a.pkg_name, b.pkg_name)
+                        rval = misc.cmp(a.pkg_name, b.pkg_name)
                         if rval != 0:
                                 return rval
-                        rval = cmp(a.publisher, b.publisher)
+                        rval = misc.cmp(a.publisher, b.publisher)
                         if rval != 0:
                                 return rval
-                        return cmp(a.version, b.version) * -1
+                        return misc.cmp(a.version, b.version) * -1
                 self.assertEqual([f for f in nc.fmris(ordered=True)],
-                    sorted(pkg_src_list, cmp=ordered))
+                    sorted(pkg_src_list, key=cmp_to_key(ordered)))
 
                 # This case should raise an AssertionError.
                 try:
@@ -574,39 +575,39 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(rlist, elist)
 
                 def fmri_order(a, b):
-                        rval = cmp(a.pkg_name, b.pkg_name)
+                        rval = misc.cmp(a.pkg_name, b.pkg_name)
                         if rval != 0:
                                 return rval
-                        rval = cmp(a.publisher, b.publisher)
+                        rval = misc.cmp(a.publisher, b.publisher)
                         if rval != 0:
                                 return rval
-                        return cmp(a.version, b.version) * -1
+                        return misc.cmp(a.version, b.version) * -1
 
                 def tuple_order(a, b):
                         apub, astem, aver = a
                         bpub, bstem, bver = b
-                        rval = cmp(astem, bstem)
+                        rval = misc.cmp(astem, bstem)
                         if rval != 0:
                                 return rval
-                        rval = cmp(apub, bpub)
+                        rval = misc.cmp(apub, bpub)
                         if rval != 0:
                                 return rval
                         aver = version.Version(aver)
                         bver = version.Version(bver)
-                        return cmp(aver, bver) * -1
+                        return misc.cmp(aver, bver) * -1
 
                 def tuple_entry_order(a, b):
                         (apub, astem, aver), entry = a
                         (bpub, bstem, bver), entry = b
-                        rval = cmp(astem, bstem)
+                        rval = misc.cmp(astem, bstem)
                         if rval != 0:
                                 return rval
-                        rval = cmp(apub, bpub)
+                        rval = misc.cmp(apub, bpub)
                         if rval != 0:
                                 return rval
                         aver = version.Version(aver)
                         bver = version.Version(bver)
-                        return cmp(aver, bver) * -1
+                        return misc.cmp(aver, bver) * -1
 
                 # test fmris()
                 for pubs in ([], ["extra", "opensolaris.org"], ["extra"],
@@ -632,7 +633,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(rlist, elist)
 
                         # Check ordered functionality.
-                        elist.sort(cmp=fmri_order)
+                        elist.sort(key=cmp_to_key(fmri_order))
 
                         rlist = [f for f in self.c.fmris(last=True,
                             ordered=True, pubs=pubs)]
@@ -653,7 +654,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                     f.version > elist[f.get_pkg_stem()].version:
                                         elist[f.get_pkg_stem()] = f
                         elist = [(f, {}) for f in sorted(elist.values(),
-                            cmp=fmri_order)]
+                            key=cmp_to_key(fmri_order))]
                         rlist = [e for e in self.c.entries(last=True,
                             ordered=True, pubs=pubs)]
                         self.assertEqual(rlist, elist)
@@ -679,7 +680,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 pub, stem, ver = f.tuple()
                                 ver = str(ver)
                                 nlist.append(((pub, stem, ver), {}))
-                        elist = sorted(nlist, cmp=tuple_entry_order)
+                        elist = sorted(nlist, key=cmp_to_key(tuple_entry_order))
                         nlist = None
                         rlist = [e for e in self.c.tuple_entries(last=True,
                             ordered=True, pubs=pubs)]

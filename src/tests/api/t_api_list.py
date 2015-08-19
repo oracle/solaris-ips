@@ -35,6 +35,7 @@ import pprint
 import re
 import shutil
 import unittest
+from functools import cmp_to_key
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
@@ -70,19 +71,18 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
             "zoo@2.0",
         ]
 
-        @staticmethod
-        def __tuple_order(a, b):
+        def __tuple_order(self, a, b):
                 apub, astem, aver = a
                 bpub, bstem, bver = b
-                rval = cmp(astem, bstem)
+                rval = misc.cmp(astem, bstem)
                 if rval != 0:
                         return rval
-                rval = cmp(apub, bpub)
+                rval = misc.cmp(apub, bpub)
                 if rval != 0:
                         return rval
                 aver = version.Version(aver)
                 bver = version.Version(bver)
-                return cmp(aver, bver) * -1
+                return misc.cmp(aver, bver) * -1
 
         def __get_pkg_variant(self, stem, ver):
                 var = "true"
@@ -356,7 +356,7 @@ add set name=pkg.description value="{desc}"
                         at = a[0]
                         bt = b[0]
                         return self.__tuple_order(at, bt)
-                expected.sort(cmp=pkg_list_order)
+                expected.sort(key=cmp_to_key(pkg_list_order))
                 return expected
 
         def __get_returned(self, pkg_list, api_obj=None, cats=None,

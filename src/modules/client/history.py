@@ -345,7 +345,12 @@ class History(object):
                         # last operation's exception won't be recorded to this
                         # one.  If the error hasn't been recorded by now, it
                         # doesn't matter anyway, so should be safe to clear.
-                        sys.exc_clear()
+                        # sys.exc_clear() isn't supported in Python 3, and
+                        # couldn't find a replacement.
+                        try:
+                                sys.exc_clear()
+                        except:
+                                pass
 
                         # Mark the operation as having started and record
                         # other, relevant information.
@@ -440,7 +445,7 @@ class History(object):
                 if not self.operation_release_notes:
                         return
                 try:
-                        rpath = os.path.join(self.root_dir, 
+                        rpath = os.path.join(self.root_dir,
                             "notes", 
                             self.operation_release_notes)
                         for a in open(rpath, "r"):
@@ -448,7 +453,7 @@ class History(object):
 
                 except Exception as e:
                         raise apx.HistoryLoadException(e)
-                        
+
         def clear(self):
                 """Discards all information related to the current history
                 object.

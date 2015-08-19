@@ -1075,7 +1075,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
             "create-backup-be": backup_be_created,
             "create-new-be": new_be_created,
             "image-name": None,
-            "licenses": sorted(licenses),
+            "licenses": sorted(licenses, key=lambda x: x[0]),
             "release-notes": release_notes,
             "remove-packages": sorted(removed_fmris),
             "space-available": space_available,

@@ -405,7 +405,7 @@ class PkgFmri(object):
                 #
                 # __hash__ need not generate a unique hash value for all
                 # possible objects-- it must simply guarantee that two
-                # items which are equal (i.e. cmp(a,b) == 0) always hash to
+                # items which are equal (i.e. a = b) always hash to
                 # the same value.
                 #
                 h = self._hash
@@ -413,25 +413,77 @@ class PkgFmri(object):
                         h = self._hash = hash(self.version) + hash(self.pkg_name)
                 return h
 
-        def __cmp__(self, other):
+        def __eq__(self, other):
                 if not other:
-                        return 1
+                        return False
 
                 if not isinstance(other, PkgFmri):
-                        return -1
+                        return False
 
-                c = cmp(self.publisher, other.publisher)
+                if self.publisher == other.publisher and \
+                    self.pkg_name == other.pkg_name and \
+                    self.version == other.version:
+                        return True
+                return False
 
-                if c != 0:
-                        return c
+        def __ne__(self, other):
+                return not self == other
 
-                c = cmp(self.pkg_name, other.pkg_name)
+        def __lt__(self, other):
+                if not other:
+                        return False
 
-                if c != 0:
-                        return c
+                if not isinstance(other, PkgFmri):
+                        return True
 
-                return cmp(self.version, other.version)
+                if self.publisher != other.publisher:
+                        if self.publisher is None and other.publisher:
+                                return True
+                        if self.publisher and other.publisher is None:
+                                return False
+                        if self.publisher < other.publisher:
+                                return True
+                        return False
 
+                if self.pkg_name < other.pkg_name:
+                        return True
+                if self.pkg_name != other.pkg_name:
+                        return False
+
+                if self.version is None and other.version is None:
+                        return False
+                return self.version < other.version
+
+        def __gt__(self, other):
+                if not other:
+                        return True
+
+                if not isinstance(other, PkgFmri):
+                        return False
+
+                if self.publisher != other.publisher:
+                        if self.publisher and other.publisher is None:
+                                return True
+                        if self.publisher is None and other.publisher:
+                                return False
+                        if self.publisher > other.publisher:
+                                return True
+                        return False
+
+                if self.pkg_name > other.pkg_name:
+                        return True
+                if self.pkg_name != other.pkg_name:
+                        return False
+
+                if self.version is None and other.version is None:
+                        return False
+                return self.version > other.version
+
+        def __ge__(self, other):
+                return not self < other
+
+        def __le__(self, other):
+                return not self > other
 
         def get_link_path(self, stemonly = False):
                 """Return the escaped link (or file) path fragment for this
@@ -494,6 +546,8 @@ class PkgFmri(object):
                 if self.pkg_name != other.pkg_name:
                         return False
 
+                if self.version is None and other.version is None:
+                        return True
                 if self.version < other.version:
                         return False
 

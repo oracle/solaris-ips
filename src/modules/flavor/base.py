@@ -25,6 +25,7 @@
 #
 
 import os
+from functools import total_ordering
 
 import pkg.actions.depend as depend
 import pkg.variant as variant
@@ -94,6 +95,7 @@ class InvalidPublishingDependency(DependencyAnalysisError):
                     "Invalid publishing dependency: {0}").format(self.error)
 
 
+@total_ordering
 class Dependency(depend.DependencyAction):
         """Base, abstract class to represent the dependencies a dependency
         generator can produce."""
@@ -172,16 +174,20 @@ class Dependency(depend.DependencyAction):
 
                 return self.action.attrs["path"]
 
-        def __cmp__(self, other):
-                """Generic way of ordering two Dependency objects."""
+        def key(self):
+                """Keys for ordering two Dependency objects. Use ComparableMinxin
+                to do the rich comparison."""
+                return (self.dep_key(), self.action_path(),
+                    self.__class__.__name__)
 
-                r = cmp(self.dep_key(), other.dep_key())
-                if r == 0:
-                        r = cmp(self.action_path(), other.action_path())
-                if r == 0:
-                        r = cmp(self.__class__.__name__,
-                            other.__class__.__name__)
-                return r
+        def __eq__(self, other):
+                return self.key() == other.key()
+
+        def __lt__(self, other):
+                return self.key() < other.key()
+
+        def __hash__(self):
+                return hash(self.key())
 
         def get_vars_str(self):
                 """Produce a string representation of the variants that apply

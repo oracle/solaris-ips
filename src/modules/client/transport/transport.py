@@ -30,9 +30,9 @@ import errno
 import os
 import simplejson as json
 import six
-import statvfs
 import tempfile
 import zlib
+from functools import cmp_to_key
 from six.moves import http_client, range
 
 import pkg.catalog as catalog
@@ -899,7 +899,7 @@ class Transport(object):
                         destvfs = os.statvfs(download_dir)
                         # Set the file buffer size to the blocksize of our
                         # filesystem.
-                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                        self.__engine.set_file_bufsz(destvfs.f_bsize)
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
@@ -1425,7 +1425,7 @@ class Transport(object):
                         destvfs = os.statvfs(download_dir)
                         # set the file buffer size to the blocksize of
                         # our filesystem
-                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                        self.__engine.set_file_bufsz(destvfs.f_bsize)
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 return
@@ -1899,7 +1899,7 @@ class Transport(object):
                         destvfs = os.statvfs(download_dir)
                         # set the file buffer size to the blocksize of
                         # our filesystem
-                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                        self.__engine.set_file_bufsz(destvfs.f_bsize)
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
@@ -2136,7 +2136,7 @@ class Transport(object):
                         # later.
                         aremote = a[0].scheme != "file"
                         bremote = b[0].scheme != "file"
-                        return cmp(aremote, bremote) * -1
+                        return misc.cmp(aremote, bremote) * -1
 
                 if versions:
                         versions = sorted(versions, reverse=True)
@@ -2147,7 +2147,7 @@ class Transport(object):
                         iteration += 1
                         rslist = self.stats.get_repostats(repolist, origins)
                         if prefer_remote:
-                                rslist.sort(cmp=remote_first)
+                                rslist.sort(key=cmp_to_key(remote_first))
 
                         fail = tx.TransportFailures()
                         repo_found = False

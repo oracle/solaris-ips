@@ -49,13 +49,13 @@ class Dependency(object):
                 # compare versions
                 return False
 
-	def __repr__(self):
-		if self.type == REQUIRE:
-			return "{0} => {1}".format(
-				self.host_pkg_fmri, self.req_pkg_fmri)
-		elif self.type == OPTIONAL:
-			return "{0} o> {1}".format(
-				self.host_pkg_fmri, self.req_pkg_fmri)
-		elif self.type == INCORPORATE:
-			return "{0} >> {1}".format(
-				self.host_pkg_fmri, self.req_pkg_fmri)
+        def __repr__(self):
+                if self.type == REQUIRE:
+                        return "{0} => {1}".format(
+                            self.host_pkg_fmri, self.req_pkg_fmri)
+                elif self.type == OPTIONAL:
+                        return "{0} o> {1}".format(
+                            self.host_pkg_fmri, self.req_pkg_fmri)
+                elif self.type == INCORPORATE:
+                        return "{0} >> {1}".format(
+                            self.host_pkg_fmri, self.req_pkg_fmri)

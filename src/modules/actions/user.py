@@ -340,6 +340,7 @@ class UserAction(generic.Action):
                 will only hold true for actions installed at one time, but that's
                 generally what we need on initial install."""
                 # put unspecified uids at the end
-                return cmp(int(self.attrs.get("uid", 1024)),
-                    int(other.attrs.get("uid", 1024)))
+                a = int(self.attrs.get("uid", 1024))
+                b = int(other.attrs.get("uid", 1024))
+                return (a > b) - (a < b)
 
