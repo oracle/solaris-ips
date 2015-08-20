@@ -3022,7 +3022,7 @@ adm
                 # attempt to force downgrade of package w/ older incorp
                 self.pkg("install incorp@2.0")
                 self.pkg("uninstall incorp@2.0")
-                self.pkg("install incorp@1.0", exit=1)
+                self.pkg("install incorp@1.0")
 
                 # upgrade pkg that loses incorp. deps. in new version
                 self.pkg("install incorp@2.0")
@@ -10887,6 +10887,171 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+
+class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):
+        persistent_setup = True
+
+        pkgs = (
+                """
+                    open A@1.0,5.11-0
+                    close """,
+                """
+                    open A@2.0,5.11-0
+                    close """,
+                """
+                    open B@1.0,5.11-0
+                    add set pkg.depend.install-hold=B
+                    close """,
+                """
+                    open B@2.0,5.11-0
+                    add set pkg.depend.install-hold=B
+                    close """,
+                """
+                    open C@1.0,5.11-0
+                    add set pkg.depend.install-hold=parent.C
+                    close """,
+                """
+                    open C@2.0,5.11-0
+                    add set pkg.depend.install-hold=parent.C
+                    close """,
+                """
+                    open incorp@1.0,5.11-0
+                    add depend type=incorporate fmri=A@2.0
+                    close """,
+                """
+                    open incorp@2.0,5.11-0
+                    add depend type=incorporate fmri=A@1.0
+                    close """,
+                """
+                    open parent_incorp@1.0,5.11-0
+                    add depend type=incorporate fmri=child_incorp@2.0
+                    close """,
+                """
+                    open parent_incorp@2.0,5.11-0
+                    add depend type=incorporate fmri=child_incorp@1.0
+                    close """,
+                """
+                    open child_incorp@1.0,5.11-0
+                    add depend type=incorporate fmri=A@1.0
+                    close """,
+                """
+                    open child_incorp@2.0,5.11-0
+                    add depend type=incorporate fmri=A@2.0
+                    close """,
+                """
+                    open ihold_incorp@1.0,5.11-0
+                    add set pkg.depend.install-hold=parent
+                    add depend type=incorporate fmri=B@1.0
+                    add depend type=incorporate fmri=C@1.0
+                    close """,
+                """
+                    open ihold_incorp@2.0,5.11-0
+                    add set pkg.depend.install-hold=parent
+                    add depend type=incorporate fmri=B@2.0
+                    add depend type=incorporate fmri=C@2.0
+                    close """,
+
+                """
+                    open p_incorp@1.0,5.11-0
+                    add depend type=incorporate fmri=D@2.0
+                    close """,
+
+                """
+                    open p_incorp@2.0,5.11-0
+                    add depend type=incorporate fmri=D@1.0
+                    close """,
+
+                """
+                    open D@2.0,5.11-0
+                    close """,
+                )
+
+        pub2_pkgs = (
+                """
+                    open D@1.0,5.11-0
+                    close """,
+                )
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                self.rurl = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+
+                self.pkgsend_bulk(self.rurl, self.pkgs)
+                self.pkgsend_bulk(self.rurl2, self.pub2_pkgs)
+
+        def test_incorp_downgrade(self):
+                """ Test that downgrades are allowed if they are incorporated
+                by FMRIs which are requested by the user or are about to be
+                updated as part of an update-all operation."""
+
+                self.image_create(self.rurl, prefix="")
+                self.pkg("install A incorp@1")
+                self.pkg("list A@2.0 incorp@1.0")
+
+                # When incorp moves forward, A should move backwards
+                self.pkg("update incorp@2")
+                self.pkg("list A@1.0 incorp@2.0")
+
+                # start over and test if that also works if we do an update all
+                self.pkg("update incorp@1")
+                self.pkg("update -v")
+                self.pkg("list A@1.0 incorp@2.0")
+
+                # prepare test for nested incorporations
+                self.pkg("uninstall incorp")
+                self.pkg("update A@2")
+                self.pkg("install parent_incorp@1 child_incorp@2")
+                self.pkg("list A@2.0 child_incorp@2 parent_incorp@1")
+
+                # test update of nested incorporation supports downgrade
+                self.pkg("update -v parent_incorp@2")
+                self.pkg("list A@1 child_incorp@1 parent_incorp@2")
+
+                # prepare test for explicit downgrade of incorp
+                self.pkg("uninstall parent_incorp")
+                self.pkg("update child_incorp@2")
+                self.pkg("list A@2 child_incorp@2")
+
+                # test explicit downgrade of incorp downgrades incorp'ed pkgs
+                self.pkg("update -v child_incorp@1")
+                self.pkg("list A@1 child_incorp@1")
+
+
+        def test_incorp_downgrade_installhold(self):
+                """Test correct handling of install-holds when determining
+                which pkgs are ok to downgrade."""
+
+                # prepare test for install-hold
+                self.image_create(self.rurl, prefix="")
+                self.pkg("install ihold_incorp@2 B")
+                self.pkg("list ihold_incorp@2 B@2")
+                # test that install hold prevents downgrade
+                self.pkg("update -v ihold_incorp@1", exit=1)
+
+                # prep test for parent install-hold
+                self.pkg("install --reject B C@2")
+                self.pkg("list ihold_incorp@2 C@2")
+                # test that downgrade is allowed if install-hold is child of
+                # requested FMRI
+                self.pkg("update -v ihold_incorp@1")
+                self.pkg("list ihold_incorp@1 C@1")
+
+        def test_incorp_downgrade_pubswitch(self):
+                """Test that implicit publisher switches of incorporated pkgs
+                are not allowed."""
+
+                # prepare test for publisher switch
+                self.image_create(self.rurl, prefix="")
+                self.pkg("set-publisher --non-sticky test1")
+                self.pkg("set-publisher --non-sticky -p {0}".format(self.rurl2))
+                self.pkg("list -af")
+                self.pkg("install p_incorp@1 D@2")
+                self.pkg("list p_incorp@1 D@2")
+
+                self.pkg("update p_incorp@2", exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

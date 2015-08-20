@@ -2501,6 +2501,66 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._pkg([2], "list network", rv=EXIT_OOPS)
 
 
+class TestPkgLinkedIncorpDowngrade(TestPkgLinked):
+        """Test that incorporated pkgs can be downgraded if incorporation is
+        updated."""
+
+        pkgs = (
+                """
+                    open incorp@1.0,5.11-0.1
+                    add depend type=incorporate fmri=A@2
+                    add depend type=parent fmri=%s
+                    close """ % pkg.actions.depend.DEPEND_SELF,
+                """
+                    open incorp@2.0,5.11-0.1
+                    add depend type=incorporate fmri=A@1
+                    add depend type=parent fmri=%s
+                    close """ % pkg.actions.depend.DEPEND_SELF,
+                """
+                    open A@1.0,5.11-0.1
+                    add depend type=require fmri=pkg:/incorp
+                    close """,
+                """
+                    open A@2.0,5.11-0.1
+                    add depend type=require fmri=pkg:/incorp
+                    close """,
+        )
+
+        def setUp(self):
+                self.i_count = 3
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test"],
+                    image_count=self.i_count)
+
+                # get repo url
+                self.rurl1 = self.dcs[1].get_repo_url()
+
+                # setup image names and paths
+                self.i_name = []
+                self.i_path = []
+                self.i_api = []
+                self.i_api_reset = []
+                for i in range(self.i_count):
+                        name = "system:img%d" % i
+                        self.i_name.insert(i, name)
+                        self.i_path.insert(i, self.img_path(i))
+
+                self.pkgsend_bulk(self.rurl1, self.pkgs)
+
+
+        def test_incorp_downgrade(self):
+                """Test that incorporated pkgs can be downgraded if
+                incorporation is updated."""
+
+                # create parent (0), push child (1, 2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                self._pkg([0, 1, 2], "install -v incorp@1 A")
+                self._pkg([0, 1, 2], "list A@2")
+                self._pkg([0], "update -v incorp@2")
+                self._pkg([0, 1, 2], "list A@1")
+
+
 class TestFacetInheritance(TestPkgLinked):
         """Class to test facet inheritance between images.
 
