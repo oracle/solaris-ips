@@ -144,7 +144,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
             "edit1": "<transform file path=usr/(share|lib)/locale.* -> edit path usr/(lib|share)/locale place/\\\\1/langs>",
             "doublequote": "<transform legacy -> default name %{{pkg.summary}}>",
             "delete-with-no-operand": "<transform file -> delete >",
-            "backreference-no-object": "<transform file path=(local/)?usr/* -> default refs %<1> >"
+            "backreference-no-object": "<transform file path=(local/)?usr/* -> default refs %<1>>",
+            "backreference-empty-string": "<transform file path=usr/bin/foo(.*)-> emit file path=usr/sbin/foo%<1>>"
         }
 
         basic_defines = {
@@ -627,10 +628,15 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # expression works.
                 self.pkgmogrify([self.transforms["bredit2"], source_file])
                 self.assertMatch("path=usr/share/locale/LANG/foo.mo")
-                
-                # A backreference to None object throws a Run time expection 
+
+                # A backreference to an unmatched group is an error.
                 self.pkgmogrify([self.transforms["backreference-no-object"],
-                    source_file],exit=1)
+                    source_file], exit=1)
+
+                # A backreference to an empty string should work.
+                self.pkgmogrify([self.transforms["backreference-empty-string"],
+                    source_file])
+                self.assertMatch("path=usr/sbin/foo")
 
 if __name__ == "__main__":
         unittest.main()

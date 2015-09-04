@@ -466,9 +466,9 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                         raise RuntimeError(_("no match group {group:d} "
                             "(max {maxgroups:d})").format(
                             group=ref, maxgroups=len(backrefs) - 1))
-                if not backrefs[ref]:
-                        raise RuntimeError(_("Error\nInvalid backreference:"
-                            "%<{ref}> refers to an empty match string"
+                if backrefs[ref] is None:
+                        raise RuntimeError(_("Error\nInvalid backreference: "
+                            "%<{ref}> refers to an unmatched string"
                             ).format(ref=ref))
                 newmsg += msg[prevend:i.start()] + backrefs[ref]
                 prevend = i.end()
