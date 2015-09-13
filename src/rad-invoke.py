@@ -35,8 +35,6 @@ import pkg.client.rad_pkg as entry
 import pkg.misc as misc
 import simplejson as json
 
-# progress delay.
-PROG_DELAY   = 5.0
 
 class _InfoFilter(logging.Filter):
         def filter(self, rec):
@@ -55,7 +53,7 @@ def error(text):
         """Create error message."""
 
         if os.getenv("__IPS_INVOKE_IN_RAD") == "true":
-                return {"status": 1, "errors": [{"reason": text}]}
+                return {"status": entry.ERROR, "errors": [{"reason": text}]}
         ips_logger.error(text)
         sys.exit(1)
 
@@ -82,7 +80,7 @@ def main_func():
         pkg_image = None
         pargs_json = None
         opts_json = None
-        prog_delay = PROG_DELAY
+        prog_delay = entry.PROG_DELAY
         if os.getenv("__IPS_INVOKE_IN_RAD") != "true":
                 return error(_("This script can only be invoked by RAD"))
         script_path = os.path.realpath(__file__)
@@ -112,7 +110,6 @@ def main_func():
         if len(pargs) < 1:
                 return error(_("missing argument in file: {0}").format(
                     script_path))
-
         return entry.rad_pkg(pargs[0], pargs_json=pargs_json,
             opts_json=opts_json, pkg_image=pkg_image,
             prog_delay=prog_delay)

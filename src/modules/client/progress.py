@@ -2269,25 +2269,30 @@ class RADProgressTracker(CommandLineProgressTracker):
 
         def _phase_prefix(self):
                 if self.major_phase == self.PHASE_UTILITY:
-                        return ""
+                        return "Utility"
 
                 return self.phase_names[self.major_phase]
 
         #
         # Helper routines
         #
-        def __prep_prog_json_str(self, msg=None, phase=None, prog_json=None):
-                # prepare progress json formatted string.
+        def __prep_prog_json(self, msg=None, phase=None, prog_json=None):
+                # prepare progress json.
                 phase_name = self._phase_prefix()
                 if phase:
                         phase_name = phase
                 if prog_json:
-                        ret_json = prog_json
+                        return prog_json
                 else:
-                        ret_json = {self.O_PHASE: phase_name,
-                                    self.O_MESSAGE: msg
-                                   }
-                return json.dumps(ret_json)
+                        return {self.O_PHASE: phase_name,
+                            self.O_MESSAGE: msg}
+
+        def __handle_prog_output(self, prog_json, end="\n"):
+                # If event handler is set, report an event. Otherwise, print.
+                if self.__prog_event_handler:
+                        self.__prog_event_handler(event=prog_json)
+                else:
+                        self._pe.cprint(json.dumps(prog_json), end=end)
 
         def __generic_start(self, msg):
                 # In the case of listing/up-to-date check operations, we
@@ -2295,12 +2300,8 @@ class RADProgressTracker(CommandLineProgressTracker):
                 if self.purpose != self.PURPOSE_NORMAL:
                         return
 
-                prog_str = self.__prep_prog_json_str(msg)
-                # If event handler is set, report an event. Otherwise, print.
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                prog_json = self.__prep_prog_json(msg)
+                self.__handle_prog_output(prog_json)
                 # indicate that we just printed.
                 self._ptimer.reset_now()
 
@@ -2310,12 +2311,8 @@ class RADProgressTracker(CommandLineProgressTracker):
                         return
                 if msg is None:
                         msg = _("Done")
-                prog_str = self.__prep_prog_json_str(msg, phase=phase,
-                        prog_json=prog_json)
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str, end='\n')
+                prog_json = self.__prep_prog_json(msg, phase, prog_json)
+                self.__handle_prog_output(prog_json, end='\n')
                 self._ptimer.reset()
 
         def __generic_done_item(self, item, msg=None):
@@ -2328,22 +2325,16 @@ class RADProgressTracker(CommandLineProgressTracker):
                         else:
                                 msg = _("Done")
                 outmsg = msg.format(elapsed=item.elapsed())
-                prog_str = self.__prep_prog_json_str(outmsg)
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str, end='\n')
+                prog_json = self.__prep_prog_json(outmsg)
+                self.__handle_prog_output(prog_json, end='\n')
                 self._ptimer.reset()
 
         def _change_purpose(self, op, np):
                 self._ptimer.reset()
                 if np == self.PURPOSE_PKG_UPDATE_CHK:
-                        prog_str = self.__prep_prog_json_str(
+                        prog_json = self.__prep_prog_json(
                             _("Checking that pkg(5) is up to date ..."))
-                        if self.__prog_event_handler:
-                                self.__prog_event_handler(desc=prog_str+"\n")
-                        else:
-                                self._pe.cprint(prog_str)
+                        self.__handle_prog_output(prog_json)
 
         def _cache_cats_output(self, outspec):
                 if outspec.first:
@@ -2407,17 +2398,14 @@ class RADProgressTracker(CommandLineProgressTracker):
                 goalitems = self.mfst_fetch.goalitems
                 if goalitems == None:
                         goalitems = 0
-                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                prog_json = {self.O_PHASE: self._phase_prefix(),
                     self.O_MESSAGE: _("Fetching manifests"),
                     self.O_PRO_ITEMS: self.mfst_fetch.items,
                     self.O_GOAL_ITEMS: goalitems,
                     self.O_PCT_DONE: int(self.mfst_fetch.pctdone()),
                     self.O_ITEM_U: _("manifest")
-                    })
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                    }
+                self.__handle_prog_output(prog_json)
 
         def _dl_output(self, outspec):
                 if not self._ptimer.time_to_print() and not outspec.first and \
@@ -2438,7 +2426,7 @@ class RADProgressTracker(CommandLineProgressTracker):
 
                 if not outspec.last:
                         # 'first' or time to print
-                        prog_str = json.dumps({
+                        prog_json = {
                             self.O_PHASE: self._phase_prefix(),
                             self.O_MESSAGE: _("Downloading"),
                             self.O_PRO_ITEMS: self.dl_bytes.items,
@@ -2446,11 +2434,8 @@ class RADProgressTracker(CommandLineProgressTracker):
                             self.O_PCT_DONE: int(self.dl_bytes.pctdone()),
                             self.O_SPEED: speedstr,
                             self.O_ITEM_U: _("byte")
-                            })
-                        if self.__prog_event_handler:
-                                self.__prog_event_handler(desc=prog_str+"\n")
-                        else:
-                                self._pe.cprint(prog_str)
+                            }
+                        self.__handle_prog_output(prog_json)
                 else:
                         # 'last'
                         prog_json = {self.O_PHASE: self._phase_prefix(),
@@ -2489,17 +2474,14 @@ class RADProgressTracker(CommandLineProgressTracker):
                         self.__generic_done(prog_json=prog_json)
                         return
 
-                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                prog_json = {self.O_PHASE: self._phase_prefix(),
                     self.O_MESSAGE: _("Archiving"),
                     self.O_PRO_ITEMS: self.archive_bytes.items,
                     self.O_GOAL_ITEMS: self.archive_bytes.goalitems,
                     self.O_PCT_DONE: int(self.archive_bytes.pctdone()),
                     self.O_ITEM_U: _("byte")
-                    })
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                    }
+                self.__handle_prog_output(prog_json)
 
         #
         # The progress tracking infrastructure wants to tell us about each
@@ -2516,17 +2498,14 @@ class RADProgressTracker(CommandLineProgressTracker):
                     sum(x.items for x in self._actionitems.values())
                 total_goal = \
                     sum(x.goalitems for x in self._actionitems.values())
-                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                prog_json = {self.O_PHASE: self._phase_prefix(),
                     self.O_MESSAGE: _("Action activity"),
                     self.O_PRO_ITEMS: total_actions,
                     self.O_GOAL_ITEMS: total_goal,
                     self.O_TYPE: actionitem.name,
                     self.O_ITEM_U: _("action")
-                    })
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                    }
+                self.__handle_prog_output(prog_json)
 
         def _act_output_all_done(self):
                 total_goal = \
@@ -2543,11 +2522,7 @@ class RADProgressTracker(CommandLineProgressTracker):
                     self.O_TIME: total_time,
                     self.O_TIME_U: _("second")
                     }
-                prog_str = self.__prep_prog_json_str(prog_json=prog_json)
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                self.__handle_prog_output(prog_json)
 
         def _job_output(self, outspec, jobitem):
                 if outspec.first:
@@ -2560,27 +2535,17 @@ class RADProgressTracker(CommandLineProgressTracker):
                         if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
                                 msg = "{0} ... ".format(
                                     self.lintitems.name)
-                                prog_str = json.dumps({
-                                    self.O_PHASE: _("Setup"),
+                                prog_json = {self.O_PHASE: _("Setup"),
                                     self.O_MESSAGE: msg
-                                    })
-                                if self.__prog_event_handler:
-                                        self.__prog_event_handler(
-                                            desc=prog_str+"\n")
-                                else:
-                                        self._pe.cprint(prog_str)
+                                    }
+                                self.__handle_prog_output(prog_json)
                         elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
                                 msg = "# --- {0} ---".format(
                                     self.lintitems.name)
-                                prog_str = json.dumps({
-                                    self.O_PHASE: _("Execute"),
+                                prog_json = {self.O_PHASE: _("Execute"),
                                     self.O_MESSAGE: msg
-                                    })
-                                if self.__prog_event_handler:
-                                        self.__prog_event_handler(
-                                            desc=prog_str+"\n")
-                                else:
-                                        self._pe.cprint(prog_str)
+                                    }
+                                self.__handle_prog_output(prog_json)
                 if outspec.last:
                         if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
                                 self.__generic_done(phase=_("Setup"))
@@ -2597,13 +2562,9 @@ class RADProgressTracker(CommandLineProgressTracker):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         self.__generic_done()
                         return
-                prog_str = self.__prep_prog_json_str(
+                prog_json = self.__prep_prog_json(
                     _("Finished processing linked images."))
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(
-                            desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                self.__handle_prog_output(prog_json)
 
         def __li_dump_output(self, output):
                 if not output:
@@ -2618,30 +2579,21 @@ class RADProgressTracker(CommandLineProgressTracker):
                     self.O_MESSAGE: _("Linked image '{0}' output:").format(lin)}
                 prog_json[self.O_LI_OUTPUT] = self.__li_dump_output(stdout)
                 prog_json[self.O_LI_ERROR] = self.__li_dump_output(stderr)
-                prog_str = self.__prep_prog_json_str(prog_json=prog_json)
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(
-                            desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                self.__handle_prog_output(prog_json)
 
         def _li_recurse_status_output(self, done):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
 
-                prog_str = json.dumps({self.O_PHASE: self._phase_prefix(),
+                prog_json = {self.O_PHASE: self._phase_prefix(),
                     self.O_MESSAGE: _("Linked images status"),
                     self.O_PRO_ITEMS: done,
                     self.O_GOAL_ITEMS: self.linked_total,
                     self.O_ITEM_U: _("linked image"),
                     self.O_RUNNING: [str(i) for i in self.linked_running]
-                    })
+                    }
 
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(
-                            desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                self.__handle_prog_output(prog_json)
 
         def _li_recurse_progress_output(self, lin):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
@@ -2666,7 +2618,7 @@ class RADProgressTracker(CommandLineProgressTracker):
                         self.__generic_done(prog_json=prog_json)
                         return
 
-                prog_str = json.dumps({self.O_PHASE: _("Reversion"),
+                prog_json = {self.O_PHASE: _("Reversion"),
                     self.O_MESSAGE: "Reversioning",
                     self.O_PRO_ITEMS: self.reversion_pkgs.items,
                     self.O_GOAL_PRO_ITEMS: self.reversion_pkgs.goalitems,
@@ -2674,12 +2626,8 @@ class RADProgressTracker(CommandLineProgressTracker):
                     self.O_GOAL_REV_ITEMS: self.reversion_revs.goalitems,
                     self.O_ADJ_ITEMS: self.reversion_adjs.items,
                     self.O_ITEM_U: _("package")
-                    })
-                if self.__prog_event_handler:
-                        self.__prog_event_handler(
-                            desc=prog_str+"\n")
-                else:
-                        self._pe.cprint(prog_str)
+                    }
+                self.__handle_prog_output(prog_json)
 
         @classmethod
         def get_json_schema(cls):
