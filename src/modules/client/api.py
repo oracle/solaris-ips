@@ -5253,6 +5253,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 break
 
                 def cleanup():
+                        # Attempting to unpack a non-sequence%s;
+                        # pylint: disable=W0633
                         new_id, old_pub = orig_pub
                         for new_pfx, new_pub in six.iteritems(publishers):
                                 if id(new_pub) == new_id:

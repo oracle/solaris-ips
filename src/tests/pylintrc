@@ -19,7 +19,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This file is used to control pylint when checking python source
@@ -39,7 +39,12 @@ persistent=no
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=
+load-plugins=multiplatform
+
+# A comma-separated list of package or module names from where C extensions may
+# be loaded. Extensions are loading into the active Python interpreter and may
+# run arbitrary code
+extension-pkg-whitelist=pkg.syscallat, pkg.solver
 
 [MESSAGES CONTROL]
 
@@ -50,6 +55,8 @@ disable-checker=similarities
 # Disable the message(s) with the given id(s).
 # C0103 Invalid name "%s" Used when the const/var/class name doesn't match regex
 # C0302 Too many lines in module
+# C0326 Bad whitespace
+# C0330 Bad continuation
 # R0901 Too many ancestors (%s/%s)
 # R0902 Too many instance attributes
 # R0904 Too many public methods
@@ -62,16 +69,19 @@ disable-checker=similarities
 # W0141 Used builtin function '%s'
 # W0142 Used * or ** magic
 # W0614 Unused import %s from wildcard import
+# W1504 Unidiomatic typecheck
 # I0011 Locally disabling %r
-disable=C0103,C0302,R0901,R0902,R0904,R0911,R0912,R0913,R0914,R0915,R0923,W0141,W0142,W0614,I0011
+# I0012 Locally enabling %s (%s)
+disable=C0103,C0302,C0326,C0330,R0901,R0902,R0904,R0911,R0912,R0913,R0914,R0915,R0923,W0141,W0142,W0614,W1504,I0011,I0012
 
 [REPORTS]
 # set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html
 output-format=text
 
-# Include message's id in output
-include-ids=yes
+# Deprecated. It was used to include message's id in output. Use --msg-template
+# instead.
+#include-ids=no
 
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be
@@ -91,6 +101,10 @@ evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / stateme
 # Add a comment according to your evaluation note. This is used by the global
 # evaluation report (R0004).
 comment=no
+
+# Template used to display messages. This is a python new-style format string
+# used to format the message information. See doc for all details
+msg-template='{msg_id}:{line:3d},{column:2d}: {msg} ({symbol})'
 
 # checks for :
 # * doc strings

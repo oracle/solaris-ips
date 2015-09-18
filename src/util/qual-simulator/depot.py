@@ -21,10 +21,12 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
+# pylint is picky about this message:
+# old-division; pylint: disable=W1619
 import math
 import random
 import sys

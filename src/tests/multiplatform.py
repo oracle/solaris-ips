@@ -22,11 +22,10 @@
 #
 # Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
-from logilab import astng
 
-from pylint.interfaces import IASTNGChecker
+from pylint.interfaces import IAstroidChecker
 from pylint.checkers import BaseChecker
-from logilab.common.modutils import is_standard_module, get_module_part
+from logilab.common.modutils import get_module_part
 
 class MultiPlatformAPIChecker(BaseChecker):
     """
@@ -98,12 +97,14 @@ class MultiPlatformAPIChecker(BaseChecker):
     #
     msgs = {
     'E0900': ('Imported Non-Portable API (%s)' ,
+              'imported non-portable api',
               'Used when a non-portable API is imported.'),
     'E0901': ('Non-portable API used (%s)',
+              'non-portable api',
               'Used when a non-portable API is called.'),
     }
 
-    __implements__ = IASTNGChecker
+    __implements__ = IAstroidChecker
     name = 'multiplatform'
     options = ()
 

@@ -32,6 +32,7 @@
 # SingleDepotTestCaseCorruptImage
 #
 
+from __future__ import division
 from __future__ import print_function
 import baseline
 import copy
@@ -1645,7 +1646,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                             {}).setdefault(mname, secs)
                         time_estimates[suite_name][cname][mname] = \
                             (time_estimates[suite_name][cname][mname] + secs) \
-                            / 2
+                            / 2.0
 
                 # For each test class, find the average time each test in the
                 # class takes to run.
@@ -1665,19 +1666,19 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 c_cnt += 1
                         total += c_tot
                         m_cnt += c_cnt
-                        c_avg = c_tot / max(c_cnt, 1)
+                        c_avg = c_tot // max(c_cnt, 1)
                         time_estimates[suite_name][cname].setdefault(
                             "CLASS", c_avg)
                         time_estimates[suite_name][cname]["CLASS"] = \
                             (time_estimates[suite_name][cname]["CLASS"] +
-                            c_avg) / 2
+                            c_avg) // 2
 
                 # Calculate the average per test, regardless of which test class
                 # or method is being run.
-                tot_avg = total / max(m_cnt, 1)
+                tot_avg = total // max(m_cnt, 1)
                 time_estimates[suite_name].setdefault("TOTAL", tot_avg)
                 time_estimates[suite_name]["TOTAL"] = \
-                    (time_estimates[suite_name]["TOTAL"] + tot_avg) / 2
+                    (time_estimates[suite_name]["TOTAL"] + tot_avg) // 2
 
                 # Save the estimates to disk.
                 json.dump(("1", time_estimates), stream)
@@ -1766,7 +1767,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         secs += class_tot
                         if class_tot > long_pole:
                                 long_pole = class_tot
-                est = secs/max(min(procs, len(test_classes)), 1)
+                est = secs//max(min(procs, len(test_classes)), 1)
                 return max(est, long_pole)
 
         def test_start_display(self, started_tests, remaining_time, p_dict,

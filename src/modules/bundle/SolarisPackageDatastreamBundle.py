@@ -151,6 +151,8 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                         return None
 
                 if mapline.type in "fev":
+                        # false positive
+                        # file-builtin; pylint: disable=W1607
                         act = file.FileAction(ci.extractfile(),
                             mode=mapline.mode, owner=mapline.owner,
                             group=mapline.group, path=mapline.pathname,

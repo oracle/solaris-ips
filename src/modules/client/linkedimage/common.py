@@ -165,7 +165,7 @@ def _li_rvdict_check(rvdict):
         """Given a linked image return value dictionary, sanity check all the
         entries."""
 
-        assert(type(rvdict) == dict)
+        assert type(rvdict) == dict
         for k, v in six.iteritems(rvdict):
                 assert type(k) == LinkedImageName, \
                     ("Unexpected rvdict key: ", k)
@@ -362,7 +362,7 @@ class LinkedImageName(object):
                 return len(self.__str__())
 
         def __lt__(self, other):
-                assert (type(self) == LinkedImageName)
+                assert type(self) == LinkedImageName
                 if not other:
                         return False
                 if other == PV_NAME_NONE:
@@ -375,7 +375,7 @@ class LinkedImageName(object):
                 return self.lin_name < other.lin_name
 
         def __gt__(self, other):
-                assert (type(self) == LinkedImageName)
+                assert type(self) == LinkedImageName
                 if not other:
                         return True
                 if other == PV_NAME_NONE:
@@ -739,7 +739,7 @@ class LinkedImage(object):
                         return None
 
                 # make sure there are no saved temporal properties
-                assert not (set(props) & temporal_props)
+                assert not set(props) & temporal_props
 
                 if PROP_NAME in props:
                         # convert PROP_NAME into a linked image name obj
@@ -1580,8 +1580,8 @@ class LinkedImage(object):
                 if type(rv_map) != type(None):
                         assert type(rv_map) == list
                         for (rv_set, rv) in rv_map:
-                                assert(type(rv_set) == set)
-                                assert(type(rv) == int)
+                                assert type(rv_set) == set
+                                assert type(rv) == int
 
                 if not rvdict:
                         return LI_RVTuple(pkgdefs.EXIT_OK, None, None)
@@ -1601,7 +1601,7 @@ class LinkedImage(object):
                     for rvtuple in six.itervalues(rvdict)
                 ])
                 for (rv_map_set, rv_map_rv) in rv_map:
-                        if (rv_seen == rv_map_set):
+                        if rv_seen == rv_map_set:
                                 return LI_RVTuple(rv_map_rv, None, p_dicts)
                         # keep track of all the return values that are mapped
                         rv_mapped |= rv_map_set
@@ -3698,7 +3698,7 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
                 err = "Invalid linked image type: {0}".format(bad_lin_type)
         elif bad_prop:
                 assert err == None
-                err = "Invalid linked property value: {0}={1}".format(bad_prop)
+                err = "Invalid linked property value: {0}={1}".format(*bad_prop)
         elif missing_props:
                 assert err == None
                 err = "Missing required linked properties: {0}".format(

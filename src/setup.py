@@ -82,7 +82,7 @@ elif osname == 'aix':
 pwd = os.path.normpath(sys.path[0])
 
 # the version of pylint that we must have in order to run the pylint checks.
-req_pylint_version = "0.25.2"
+req_pylint_version = "1.4.3"
 
 #
 # Unbuffer stdout and stderr.  This helps to ensure that subprocess output
@@ -502,7 +502,7 @@ class pylint_func(Command):
         def escape(astring):
                 return astring.replace(' ', '\\ ')
 
-        def run(self, quiet=False):
+        def run(self, quiet=False, py3k=False):
 
                 def supported_pylint_ver(version):
                         """Compare the installed version against the version
@@ -520,6 +520,8 @@ class pylint_func(Command):
                                 try:
                                         if int(inst) < int(req):
                                                 return False
+                                        elif int(inst) > int(req):
+                                                return True
                                 except ValueError:
                                         # if we somehow get non-numeric version
                                         # components, we ignore them.
@@ -548,6 +550,7 @@ class pylint_func(Command):
                 proto = os.path.join(root_dir, py_install_dir)
                 sys.path.insert(0, proto)
 
+
                 # Insert tests directory onto sys.path so any custom checkers
                 # can be found.
                 sys.path.insert(0, os.path.join(pwd, 'tests'))
@@ -555,22 +558,38 @@ class pylint_func(Command):
                 from pylint import lint
 
                 #
-                # For some reason, the load-plugins option, when used in the
-                # rcfile, does not work, so we put it here instead, to load
-                # our custom checkers.
-                #
                 # Unfortunately, pylint seems pretty fragile and will crash if
                 # we try to run it over all the current pkg source.  Hence for
                 # now we only run it over a subset of the source.  As source
                 # files are made pylint clean they should be added to the
                 # pylint_targets list.
                 #
-                args = ['--load-plugins=multiplatform']
-                if quiet:
-                        args += ['--reports=no']
-                args += ['--rcfile', os.path.join(pwd, 'tests', 'pylintrc')]
-                args += pylint_targets
-                lint.Run(args)
+                if not py3k:
+                        args = []
+                        if quiet:
+                                args += ['--reports=no']
+                        args += ['--rcfile={0}'.format(os.path.join(
+                            pwd, 'tests', 'pylintrc'))]
+                        args += pylint_targets
+                        lint.Run(args)
+                else:
+                        #
+                        # In Python 3 porting mode, all checkers will be
+                        # disabled and only messages emitted by the porting
+                        # checker will be displayed. Therefore we need to run
+                        # this checker separately.
+                        #
+                        args = []
+                        if quiet:
+                                args += ['--reports=no']
+                        args += ['--rcfile={0}'.format(os.path.join(
+                            pwd, 'tests', 'pylintrc_py3k'))]
+                        # We check all Python files in the gate.
+                        for root, dirs, files in os.walk(pwd):
+                                for f in files:
+                                    if f.endswith(".py"):
+                                            args += [os.path.join(root, f)]
+                        lint.Run(args)
 
 
 class pylint_func_quiet(pylint_func):
@@ -578,6 +597,9 @@ class pylint_func_quiet(pylint_func):
         def run(self, quiet=False):
                 pylint_func.run(self, quiet=True)
 
+class pylint_func_py3k(pylint_func):
+        def run(self, quiet=False, py3k=False):
+                pylint_func.run(self, py3k=True)
 
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
@@ -1602,6 +1624,7 @@ cmdclasses = {
         'clint': clint_func,
         'pylint': pylint_func,
         'pylint_quiet': pylint_func_quiet,
+        'pylint_py3k': pylint_func_py3k,
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,

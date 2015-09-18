@@ -55,6 +55,8 @@ class TarBundle(pkg.bundle.Bundle):
 
         def action(self, tarfile, tarinfo):
                 if tarinfo.isreg():
+                        # false positive
+                        # file-builtin; pylint: disable=W1607
                         return file.FileAction(tarfile.extractfile(tarinfo),
                             mode=oct(stat.S_IMODE(tarinfo.mode)),
                             owner=tarinfo.uname, group=tarinfo.gname,

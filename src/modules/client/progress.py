@@ -200,9 +200,10 @@ class SpeedEstimator(object):
                 # used to disable 'startup mode' if the d/l completes
                 # very rapidly.  We'll always start giving the user an
                 # estimate once ratiocomplete >= 50%.
-                #
+                # pylint is picky about this message:
+                # old-division; pylint: disable=W1619
                 ratiocomplete = 0.0 if self.goalbytes == 0 else \
-                    self.__curtotal / float(self.goalbytes)
+                    self.__curtotal / self.goalbytes
 
                 #
                 # Keep track of whether we're in the warmup phase.  This
@@ -262,7 +263,9 @@ class SpeedEstimator(object):
                         return None
                 if self.elapsed == 0.0:  # div by 0 paranoia
                         return None
-                return self.goalbytes / float(self.elapsed())
+                # pylint is picky about this message:
+                # old-division; pylint: disable=W1619
+                return self.goalbytes / self.elapsed()
 
         def elapsed(self):
                 return None if self.__donetime is None else \
@@ -514,8 +517,10 @@ class GoalTrackerItem(TrackerItem):
                 i.e. 37 / 100 would yield 37.0"""
                 if self.goalitems is None or self.goalitems == 0:
                         return 0
+                # pylint is picky about this message:
+                # old-division; pylint: disable=W1619
                 return math.floor(100.0 *
-                    float(self.items) / float(self.goalitems))
+                    self.items / self.goalitems)
 
         def __str__(self):
                 info = ""
@@ -1374,6 +1379,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self._archive_output(OutSpec(last=True))
 
         def download_set_goal(self, npkgs, nfiles, nbytes):
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.dl_mode = self.DL_MODE_DOWNLOAD
                 self.dl_pkgs.goalitems = npkgs
                 self.dl_files.goalitems = nfiles
@@ -1520,7 +1526,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.dl_estimator = SpeedEstimator(self.dl_bytes.goalitems)
 
         def republish_start_pkg(self, pkgfmri, getbytes=None, sendbytes=None):
-                assert(isinstance(pkgfmri, pkg.fmri.PkgFmri))
+                assert isinstance(pkgfmri, pkg.fmri.PkgFmri)
 
                 if getbytes is not None:
                         # Allow reset of GET and SEND amounts on a per-package
@@ -1589,7 +1595,8 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.repub_pkgs.printed = True
 
         def lint_next_phase(self, goalitems, lint_phasetype):
-                self.lint_phasetype = lint_phasetype # pylint: disable=W0201
+                # Attribute defined outside __init__; pylint: disable=W0201
+                self.lint_phasetype = lint_phasetype
                 if self.lint_phase is not None:
                         self._lint_output(OutSpec(last=True))
                 if self.lint_phase is None:
@@ -1601,7 +1608,6 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 else:
                         phasename = _("Lint phase {0:d}".format(
                             self.lint_phase))
-                # Attribute defined outside __init__; pylint: disable=W0201
                 self.lintitems = GoalTrackerItem(phasename)
                 self.lintitems.goalitems = goalitems
                 self._lint_output(OutSpec(first=True))
@@ -3287,6 +3293,8 @@ def test_progress_tracker(t, gofast=False):
                                 pkggoalbytes += delta
                         filelist.append(hunks)
 
+        # pylint is picky about this message:
+        # old-division; pylint: disable=W1619
         pauseperfile = approx_time / pkggoalfiles
 
         try:

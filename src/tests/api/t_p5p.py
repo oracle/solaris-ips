@@ -24,6 +24,7 @@
 # Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -913,7 +914,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 for m in arc.getmembers():
                         if m.name.endswith("/" + dest_fhash):
                                 dest_offset = m.offset
-                                trunc_sz = m.offset_data + int(m.size / 2)
+                                trunc_sz = m.offset_data + int(m.size // 2)
                         elif m.name.endswith("pkg5.index.0.gz"):
                                 idx_data_offset = m.offset_data
                         elif m.name.endswith("/" + src_fhash):

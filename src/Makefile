@@ -77,6 +77,7 @@ clint:
 
 pylint: install
 	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint_py3k
 
 #
 # This rule propagates the current make target through all of the

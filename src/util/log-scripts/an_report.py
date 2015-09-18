@@ -24,6 +24,7 @@
 # Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
 from __future__ import print_function
 import cPickle as pickle
 import GeoIP
@@ -140,7 +141,7 @@ def report_begin(cap_title):
 <head>
 <title>pkg.depotd Logs: {0}</title>
 </head>
-<body>""".format(cap_title)
+<body>""".format(cap_title))
 
 def report_end():
         print("""\
@@ -225,12 +226,12 @@ def report_by_date(data, title, summary_file = None):
 Total {0} requests: <b>{1:d}</b><br />
 Period: {2} - {3} ({4:d} days)<br />
 Average {5} requests per day: {6:.1f}</p>""".format(title, total, start_day, end_day,
-            days, title, float(total / days))
+            days, title, total / days) # old-division; pylint: disable=W1619
 
         ndays = int(str(days))
-        sz = (chart_hz / ndays)
+        sz = (chart_hz // ndays)
 
-        url = "cht=lc&chs={0:d}x{1:d}&chg={2:d},{3:d}&chds={4:d},{5:d}&chxt=y,x&chxl=0:|0|{6:d}|1:|{7}|{8}&chd=t:{9}".format(ndays * sz, chart_vt, 7 * sz, 250 * (chart_vt / chart_max, chart_min, chart_max, chart_max, start_day, end_day, chart_data))
+        url = "cht=lc&chs={0:d}x{1:d}&chg={2:d},{3:d}&chds={4:d},{5:d}&chxt=y,x&chxl=0:|0|{6:d}|1:|{7}|{8}&chd=t:{9}".format(ndays * sz, chart_vt, 7 * sz, 250 * (chart_vt // chart_max, chart_min, chart_max, chart_max, start_day, end_day, chart_data))
 
         fname = retrieve_chart("http://chart.apis.google.com/chart?{0}".format(url),
             "{0}-date".format(title))
@@ -249,7 +250,7 @@ def report_by_ip(data, title, summary_file = None):
         total = 0
         rf = prefix_raw_open(title, "ip")
 
-        for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(data.items(), key=lambda k_v: (k_v[1], k_v[0]))):
                 total += n
                 print(n, i, file=rf)
                 #print(n, host_cache_lookup(i))
@@ -276,7 +277,7 @@ def report_by_country(data, title, summary_file = None):
         chart_max = max(math.log(chart_max), 1)
 
         rf = prefix_raw_open(title, "country")
-        for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(data.items(), key=lambda k_v: (k_v[1], k_v[0]))):
                 total += n
                 print(n, i, file=rf)
                 if i == None:
@@ -288,9 +289,9 @@ def report_by_country(data, title, summary_file = None):
                         chart_ccs += "{0}".format(i)
 
                 if chart_data == "":
-                        chart_data += "{0:d}".format(math.log(n) / chart_max * 100)
+                        chart_data += "{0:d}".format(math.log(n) // chart_max * 100)
                 else:
-                        chart_data += ",{0:d}".format(math.log(n) / chart_max * 100)
+                        chart_data += ",{0:d}".format(math.log(n) // chart_max * 100)
 
         rf.close()
 
@@ -336,7 +337,7 @@ def report_by_country(data, title, summary_file = None):
 
 def report_by_raw_agent(data, title, summary_file = None):
         rf = prefix_raw_open(title, "country")
-        for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
+        for i, n in (sorted(data.items(), key=lambda k_v: (k_v[1], k_v[0]))):
                 print(i, n, file=rf)
 
         rf.close()

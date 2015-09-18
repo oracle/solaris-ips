@@ -172,7 +172,7 @@ def copytree(src, dst):
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISSOCK(s.st_mode):
                         sock = socket.socket(socket.AF_UNIX)
-                        # os.mknod doesn't work correctly in 64 bit. 
+                        # os.mknod doesn't work correctly in 64 bit.
                         run_bit = struct.calcsize("P") * 8
                         # The s11 fcs version of python doesn't have os.mknod()
                         # but sock.bind has a path length limitation that we can
@@ -286,7 +286,7 @@ _hostname_re = re.compile(r"""^(?:[a-zA-Z0-9\-]+[a-zA-Z0-9\-\.]*
                    |(?:\d{1,3}\.){3}\d{3}
                    |\[([a-fA-F0-9\.]*:){,7}[a-fA-F0-9\.]+\])$""", re.X)
 
-_invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.:\[\]]+")
+_invalid_host_chars = re.compile(r".*[^a-zA-Z0-9\-\.:\[\]]+")
 _valid_proto = ["file", "http", "https"]
 
 def valid_pub_prefix(prefix):
@@ -525,6 +525,8 @@ def bytes_to_str(nbytes, fmt="{num:>.2f} {unit}"):
         ]
 
         for uom, shortuom, limit in units:
+                # pylint is picky about this message:
+                # old-division; pylint: disable=W1619
                 if uom != _("EB") and nbytes >= limit:
                         # Try the next largest unit of measure unless this is
                         # the largest or if the byte size is within the current
@@ -533,13 +535,13 @@ def bytes_to_str(nbytes, fmt="{num:>.2f} {unit}"):
 
                 if "{num:d}" in fmt:
                         return fmt.format(
-                            num=int(nbytes / float(limit / 2**10)),
+                            num=int(nbytes / (limit // 2**10)),
                             unit=uom,
                             shortunit=shortuom
                         )
                 else:
                         return fmt.format(
-                            num=round(nbytes / float(limit / 2**10), 2),
+                            num=round(nbytes / (limit // 2**10), 2),
                             unit=uom,
                             shortunit=shortuom
                         )
@@ -1312,16 +1314,16 @@ class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.
         See http://en.wikipedia.org/wiki/Singleton_pattern """
 
-        def __init__(mcs, name, bases, dictionary):
-                super(Singleton, mcs).__init__(name, bases, dictionary)
-                mcs.instance = None
+        def __init__(cls, name, bases, dictionary):
+                super(Singleton, cls).__init__(name, bases, dictionary)
+                cls.instance = None
 
-        def __call__(mcs, *args, **kw):
-                if mcs.instance is None:
-                        mcs.instance = super(Singleton, mcs).__call__(*args,
+        def __call__(cls, *args, **kw):
+                if cls.instance is None:
+                        cls.instance = super(Singleton, cls).__call__(*args,
                             **kw)
 
-                return mcs.instance
+                return cls.instance
 
 
 EmptyDict = ImmutableDict()
@@ -2096,7 +2098,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
         # we don't decode None
         if data is None:
-                return (data)
+                return data
 
         # initialize parameters to default
         if commonize is None:

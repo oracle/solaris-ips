@@ -48,7 +48,6 @@ import pkg.client.actuator
 import pkg.client.api_errors as apx
 import pkg.client.linkedimage as li
 import pkg.client.pkgplan
-import pkg.client.pkgplan
 import pkg.facet
 import pkg.fmri
 import pkg.misc
@@ -721,8 +720,8 @@ class PlanDescription(object):
                 """Return all item messages.
 
                 'ordered' is an optional boolean value that indicates that
-                item messages will be sorted by msg_time. If False, item messages
-                will be in an arbitrary order."""
+                item messages will be sorted by msg_time. If False, item
+                messages will be in an arbitrary order."""
 
                 if ordered:
                         # Sort all the item messages by msg_time

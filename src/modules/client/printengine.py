@@ -94,7 +94,7 @@ class POSIXPrintEngine(PrintEngine):
                 if not self.__ttymode:
                         return
 
-                self.__putp_re = re.compile("\$<[0-9]+>")
+                self.__putp_re = re.compile(r"\$<[0-9]+>")
                 self.__el = None
                 if not self._out_file.isatty():
                         raise PrintEngineException("Not a TTY")
@@ -170,7 +170,7 @@ class POSIXPrintEngine(PrintEngine):
 
                 # find the rightmost newline in the msg
                 npos = outmsg.rfind("\n")
-                if (npos == -1):
+                if npos == -1:
                         self.__nchars_printed += len(outmsg)
                 else:
                         # there was an nl or cr, so only the portion

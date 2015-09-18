@@ -144,9 +144,9 @@ class RepoChooser(object):
                                 self.__rsobj[key] = rs
 
                 if origin_count > 0:
-                        origin_avg_speed = origin_speed / origin_count
+                        origin_avg_speed = origin_speed // origin_count
                 if origin_ccount > 0:
-                        origin_avg_cspeed = origin_cspeed / origin_ccount
+                        origin_avg_cspeed = origin_cspeed // origin_ccount
 
                 # Walk the list of repouris that we were provided.
                 # If they're already in the dictionary, copy a reference
@@ -325,6 +325,7 @@ class RepoStats(object):
                         else:
                                 return 0.0
 
+                # old-division; pylint: disable=W1619
                 return self.__connect_time / self.__connections
 
         @property
@@ -450,6 +451,7 @@ class RepoStats(object):
                 # The constants were derived by live testing, and using
                 # a simulated environment.
                 #
+                # old-division; pylint: disable=W1619
                 q = unused_bonus(self) + \
                     (Cspeed * ((self.__bytes_xfr / (.001 + self.__seconds_xfr))
                     / ospeed)**2) + \
@@ -483,7 +485,8 @@ class RepoStats(object):
                 if self.__seconds_xfr == 0:
                         return 0.0
 
-                return float(self.__bytes_xfr / self.__seconds_xfr)
+                # old-division; pylint: disable=W1619
+                return self.__bytes_xfr / self.__seconds_xfr
 
         @property
         def url(self):

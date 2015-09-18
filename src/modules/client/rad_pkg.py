@@ -345,7 +345,7 @@ class PkgImage(object):
                 return self.__progress_interval
 
         def __set_interval(self, val):
-                if not isinstance(val, (int, long, float)):
+                if not isinstance(val, (six.integer_types, float)):
                         raise PkgException(ERROR, "Wrong value type")
                 self.__progress_interval = val
 

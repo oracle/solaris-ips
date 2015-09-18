@@ -158,6 +158,9 @@ class Facets(dict):
                         rv = misc.cmp(self.__local, other.__local)
                 return rv
 
+        # this __cmp__ is used as a helper function for the rich comparison
+        # methods.
+        # __cmp__ defined; pylint: disable=W1630
         def __cmp__(self, other):
                 """Compare two Facets objects.  This comparison takes masked
                 values into account."""

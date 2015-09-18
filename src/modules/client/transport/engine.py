@@ -355,7 +355,7 @@ class CurlTransportEngine(TransportEngine):
                                 seconds -= conn_time
 
                         if seconds > 0:
-                                bytespersec = nbytes / seconds
+                                bytespersec = nbytes // seconds
                         else:
                                 bytespersec = 0
 

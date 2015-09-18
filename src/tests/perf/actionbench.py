@@ -28,6 +28,7 @@
 # actionbench - benchmark action creation
 #
 
+from __future__ import division
 from __future__ import print_function
 
 import pkg.actions as actions
@@ -49,7 +50,7 @@ if __name__ == "__main__":
                 try:
                         t = timeit.Timer(str1, setup1).timeit(n)
                         print("{0:>20f}  {1:>8d} actions/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -69,7 +70,7 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
                 try:
                         t = timeit.Timer(str2, setup2).timeit(n)
                         print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -81,7 +82,7 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
                 try:
                         t = timeit.Timer(str2, setup2).timeit(n)
                         print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -93,7 +94,7 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
                 try:
                         t = timeit.Timer(str2, setup2).timeit(n)
                         print("{0:>20f}  {1:>8d} action comparisons/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -123,7 +124,7 @@ b = bb()
                 try:
                         t = timeit.Timer(str3, setup3).timeit(n)
                         print("{0:>20f}  {1:>8d} comparisons/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -142,7 +143,7 @@ a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libz
                 try:
                         t = timeit.Timer(str4, setup4).timeit(n)
                         print("{0:>20f}  {1:>8d} actions to string/sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -227,7 +228,7 @@ mf.set_content(m)
 
                         t = timeit.Timer(str5, setup5).timeit(n)
                         print("{0:>20f} {1:>8d} manifest contents loads/sec ({2:d} actions/sec)".format(
-                            t, int(round(n / t)), int(round((n * 60) / t))))
+                            t, int(n // t), int((n * 60) // t)))
 
                 n = 1000000
                 str6 = "id(a1)"
@@ -236,7 +237,7 @@ mf.set_content(m)
 
                         t = timeit.Timer(str6, setup4).timeit(n)
                         print("{0:>20f} {1:>8d} calls to id(action) /sec".format(t,
-                            int(round(n / t))))
+                            int(n // t)))
         except KeyboardInterrupt:
                 import sys
                 sys.exit(0)

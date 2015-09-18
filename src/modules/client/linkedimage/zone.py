@@ -399,7 +399,7 @@ def _zonename():
         ferrout = tempfile.TemporaryFile()
         p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
-        if (p.returncode != 0):
+        if p.returncode != 0:
                 cmd = " ".join(cmd)
                 ferrout.seek(0)
                 errout = "".join(ferrout.readlines())
@@ -413,7 +413,7 @@ def _zonename():
 
 def _zoneadm_list_parse(line, cmd, output):
         """Parse zoneadm list -p output.  It's possible for zonepath to
-        contain a ":".  If it does it will be escaped to be "\:".  (But note
+        contain a ":".  If it does it will be escaped to be "\\:".  (But note
         that if the zonepath contains a "\" it will not be escaped, which
         is argubaly a bug.)"""
 
@@ -423,7 +423,7 @@ def _zoneadm_list_parse(line, cmd, output):
         tmp_char = "\0"
         fields = [
                 field.replace(tmp_char, ":")
-                for field in line.replace("\:", tmp_char).split(":")
+                for field in line.replace(r"\:", tmp_char).split(":")
         ]
 
         try:
@@ -466,7 +466,7 @@ def _list_zones(root, path_transform):
         ferrout = tempfile.TemporaryFile()
         p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
-        if (p.returncode != 0):
+        if p.returncode != 0:
                 cmd = " ".join(cmd)
                 ferrout.seek(0)
                 errout = "".join(ferrout.readlines())
@@ -490,7 +490,7 @@ def _list_zones(root, path_transform):
                         continue
 
                 # we don't care about the global zone.
-                if (z_name == "global"):
+                if z_name == "global":
                         continue
 
                 # append "/root" to zonepath

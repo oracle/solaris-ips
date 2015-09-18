@@ -28,6 +28,7 @@
 # membench - benchmark memory usage of various objects
 #
 
+from __future__ import division
 from __future__ import print_function
 
 import pkg.fmri as fmri
@@ -71,7 +72,7 @@ for func in funcs:
                                         collection.append(func(int("{0:0=4d}{1:0=2d}{2:0=2d}".format(y, m, d))))
                 endusage = misc.__getvmusage()
 
-                est = (endusage - startusage) / n
+                est = (endusage - startusage) // n
                 print(func.__name__, "{0:d} rounds, estimated memory per object: {1:d} bytes".format(n, est))
                 sys.exit(0)
         else:

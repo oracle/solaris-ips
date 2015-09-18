@@ -100,6 +100,8 @@ class PkgRemote(object):
                 else:
                         prefix = "PkgRemote({0}) client: ".format(id(self))
 
+                # it's not an enforcement but a coding style
+                # logging-format-interpolation; pylint: disable=W1202
                 global_settings.logger.info("{0}{1}".format(prefix, msg))
 
         def __rpc_server_fork(self, img_path,
@@ -482,6 +484,8 @@ class PkgRemote(object):
                 if e is None:
                         # unpack our results.
                         # our results can contain an embedded exception.
+                        # Attempting to unpack a non-sequence%s;
+                        # pylint: disable=W0633
                         rv, e, stdout, stderr = rvtuple
 
                 # make sure the return value is an int

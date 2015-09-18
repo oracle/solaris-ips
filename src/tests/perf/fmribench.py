@@ -29,6 +29,7 @@
 # fmribench - benchmark fmri creation and other related operations
 #
 
+from __future__ import division
 from __future__ import print_function
 
 import pkg.fmri as fmri
@@ -244,10 +245,10 @@ if __name__ == "__main__":
                 try:
                         for i in (1, 2, 3):
                                 t = timeit.Timer(action, setup).timeit(iter)
-                                print("#   {0:>6.2f}s   {1:>9d}/sec".format(t, int(round(iter / t))))
+                                print("#   {0:>6.2f}s   {1:>9d}/sec".format(t, int(iter // t)))
                                 tsum += t
                                 itersum += iter
-                        print("#\n{0:40}  {1:>9d}/sec".format(bname, int(round(itersum / tsum))))
+                        print("#\n{0:40}  {1:>9d}/sec".format(bname, int(itersum // tsum)))
                         print("#\n#")
                 except KeyboardInterrupt:
                         print("Tests stopped at user request.")

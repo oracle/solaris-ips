@@ -29,19 +29,32 @@ import pkg5unittest
 
 import errno
 import os
+import shutil
 import sys
+import tempfile
 import traceback
 import unittest
 
 import pkg.altroot as ar
 import pkg.client.image as image
 
-class TestAltroot(pkg5unittest.CliTestCase):
+
+class TestAltroot(pkg5unittest.Pkg5TestCase):
         persistent_setup = True
 
         def setUp(self):
                 self.i_count = 4
-                pkg5unittest.CliTestCase.setUp(self, image_count=self.i_count)
+
+                # Create images in /var/tmp to run the tests on ZFS
+                # filesystems.
+                self.test_path = tempfile.mkdtemp(prefix="test-suite",
+                    dir="/var/tmp")
+
+                self.imgs_path = {}
+                for i in range(0, self.i_count):
+                        path = os.path.join(self.test_path,
+                            "image{0:d}".format(i))
+                        self.imgs_path[i] = path
 
                 # image path
                 self.i = []
@@ -65,16 +78,16 @@ class TestAltroot(pkg5unittest.CliTestCase):
                         # first assign paths.  we'll use the image paths even
                         # though we're not actually doing any testing with
                         # real images.
-                        r = self.img_path(i)
+                        r = self.imgs_path[i]
                         self.i.insert(i, r)
 
                         os.makedirs(r)
                         if i == 0:
-                                # simulate a root image
+                                # simulate a user image
                                 os.makedirs(
                                     os.path.join(r, image.img_user_prefix))
                         elif i == 1:
-                                # simulate a user image
+                                # simulate a root image
                                 os.makedirs(
                                     os.path.join(r, image.img_root_prefix))
                         elif i == 2:
@@ -107,6 +120,9 @@ class TestAltroot(pkg5unittest.CliTestCase):
 
                         os.symlink(os.path.join("..", r_redir, self.p_d),
                             os.path.join(r, self.p_d_redir))
+
+        def tearDown(self):
+                shutil.rmtree(self.test_path)
 
         def __eremote(self, func, args):
                 e = None

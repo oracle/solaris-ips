@@ -1078,7 +1078,7 @@ class PkgSolver(object):
                 # and drive forward again w/ the remainder
                 self.__restore_solver(saved_solver)
 
-                for fmri in (saved_solution & self.__installed_fmris):
+                for fmri in saved_solution & self.__installed_fmris:
                         self.__addclauses(
                             self.__gen_one_of_these_clauses([fmri]))
 

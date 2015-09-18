@@ -2509,13 +2509,13 @@ class TestPkgLinkedIncorpDowngrade(TestPkgLinked):
                 """
                     open incorp@1.0,5.11-0.1
                     add depend type=incorporate fmri=A@2
-                    add depend type=parent fmri=%s
-                    close """ % pkg.actions.depend.DEPEND_SELF,
+                    add depend type=parent fmri={0}
+                    close """.format(pkg.actions.depend.DEPEND_SELF),
                 """
                     open incorp@2.0,5.11-0.1
                     add depend type=incorporate fmri=A@1
-                    add depend type=parent fmri=%s
-                    close """ % pkg.actions.depend.DEPEND_SELF,
+                    add depend type=parent fmri={0}
+                    close """.format(pkg.actions.depend.DEPEND_SELF),
                 """
                     open A@1.0,5.11-0.1
                     add depend type=require fmri=pkg:/incorp
@@ -2540,7 +2540,7 @@ class TestPkgLinkedIncorpDowngrade(TestPkgLinked):
                 self.i_api = []
                 self.i_api_reset = []
                 for i in range(self.i_count):
-                        name = "system:img%d" % i
+                        name = "system:img{0:d}".format(i)
                         self.i_name.insert(i, name)
                         self.i_path.insert(i, self.img_path(i))
 

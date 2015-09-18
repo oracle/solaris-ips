@@ -24,6 +24,7 @@
 # Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import division
 from __future__ import print_function
 import os
 import getopt
@@ -82,7 +83,7 @@ def dls_linked(codes_200, codes_206, size):
                 if k in codes_200.keys():
                         total = sum(codes_200[k]) + sum(codes_206[k])
                         if total > size:
-                                linked += total/size
+                                linked += total//size
 
                         if total > 10 * size:
                                 try:
@@ -125,5 +126,5 @@ if __name__ == "__main__":
 
         print("linked units: {0:d}".format(dls_linked(codes_200, codes_206, size)))
 
-        print("total units: {0:d}".format(totals["dl"] / size))
+        print("total units: {0:d}".format(totals["dl"] // size))
 
