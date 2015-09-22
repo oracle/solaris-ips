@@ -703,9 +703,8 @@ depend fmri=foo/bar@@134 type=require
 depend fmri=foo/bar fmri="" type=require-any
 """
 
-expected_failures["invalid_usernames.mf"] = ["pkglint.action010.2",
-    "pkglint.action010.3", "pkglint.action010.2",
-    "pkglint.action010.3", "pkglint.action010.1",
+expected_failures["invalid_usernames.mf"] = ["pkglint.action010.4",
+    "pkglint.action010.2", "pkglint.action010.3", "pkglint.action010.1",
     "pkglint.action010.3"]
 broken_manifests["invalid_usernames.mf"] = \
 """

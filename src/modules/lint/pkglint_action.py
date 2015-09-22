@@ -1471,6 +1471,14 @@ class PkgActionChecker(base.ActionChecker):
                         return
 
                 username = action.attrs["username"]
+
+                if len(username) == 0:
+                        engine.error(
+                            _("username attribute value must be set "
+                            "in {pkg}").format(pkg=manifest.fmri),
+                            msgid="{0}{1}.4".format(self.name, pkglint_id))
+                        return
+
                 if len(username) > 32:
                         engine.error(
                             _("Username {name} in {pkg} > 32 chars").format(
@@ -1478,17 +1486,19 @@ class PkgActionChecker(base.ActionChecker):
                             pkg=manifest.fmri),
                             msgid="{0}{1}.1".format(self.name, pkglint_id))
 
-                if len(username) == 0 or not re.match("[a-z]", username[0]):
-                        engine.error(
+                if not re.match("[a-z].*", username):
+                        engine.warning(
                             _("Username {name} in {pkg} does not have an "
-                            "initial lower-case alphabetical character").format(
+                            "initial lower-case alphabetical "
+                            "character").format(
                             name=username,
                             pkg=manifest.fmri),
                             msgid="{0}{1}.2".format(self.name, pkglint_id))
 
-                if not re.match("^[a-z]([a-zA-Z1-9._-])*$", username):
-                        engine.error(
-                            _("Username {name} in {pkg} is invalid - see "
+                if len(username)> 0 and not \
+                    re.match("^[a-z]([a-zA-Z1-9._-])*$", username):
+                        engine.warning(
+                            _("Username {name} in {pkg} is discouraged - see "
                             "passwd(4)").format(
                             name=username,
                             pkg=manifest.fmri),
