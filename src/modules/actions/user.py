@@ -40,6 +40,7 @@ except ImportError:
         have_cfgfiles = False
 
 import pkg.client.api_errors as apx
+import pkg.actions
 
 class UserAction(generic.Action):
         """Class representing a user packaging object."""
@@ -189,6 +190,7 @@ class UserAction(generic.Action):
                         if "uid" in self.attrs:
                                 img._usersbyname[self.attrs["username"]] = \
                                     int(self.attrs["uid"])
+                        raise pkg.actions.ActionRetry(self)
                 except KeyError as e:
                         # cannot find group
                         self.validate() # should raise error if no group in action
@@ -201,7 +203,7 @@ class UserAction(generic.Action):
                         if "pw" in locals():
                                 pw.unlock()
 
-        def postinstall(self, pkgplan, orig):
+        def retry(self, pkgplan, orig):
                 users = pkgplan.image._users
                 if users:
                         assert self in users
@@ -343,4 +345,3 @@ class UserAction(generic.Action):
                 a = int(self.attrs.get("uid", 1024))
                 b = int(other.attrs.get("uid", 1024))
                 return (a > b) - (a < b)
-

@@ -4649,11 +4649,21 @@ class ImagePlan(object):
                                 # be re-used.
                                 self.pd.removal_actions = []
 
-                                # execute installs
+                                # execute installs; if action throws a retry
+                                # exception try it again afterward.
+                                retries = []
                                 for p, src, dest in self.pd.install_actions:
-                                        p.execute_install(src, dest)
+                                        try:
+                                                p.execute_install(src, dest)
+                                                pt.actions_add_progress(
+                                                    pt.ACTION_INSTALL)
+                                        except pkg.actions.ActionRetry:
+                                                retries.append((p, src, dest))
+                                for p, src, dest in retries:
+                                        p.execute_retry(src, dest)
                                         pt.actions_add_progress(
                                             pt.ACTION_INSTALL)
+                                retries = []
                                 pt.actions_done(pt.ACTION_INSTALL)
 
                                 # Done with installs, so discard them so memory

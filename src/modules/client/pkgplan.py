@@ -608,6 +608,10 @@ class PkgPlan(object):
                             e.__class__.__name__, e))
                         raise
 
+        def execute_retry(self, src, dest):
+                """handle a retry operation"""
+                dest.retry(self, dest)
+
         def postexecute(self):
                 """Perform actions required after install or remove of a pkg.
 

@@ -92,6 +92,15 @@ class ActionError(Exception):
         def __str__(self):
                 raise NotImplementedError()
 
+class ActionRetry(ActionError):
+        def __init__(self, *args):
+                ActionError.__init__(self)
+                self.actionstr = str(args[0])
+
+        def __str__(self):
+                return _("Need to try installing {action} again").format(
+                    action=self.actionstr)
+
 class UnknownActionError(ActionError):
         def __init__(self, *args):
                 ActionError.__init__(self)

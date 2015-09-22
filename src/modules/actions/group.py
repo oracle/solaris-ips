@@ -39,6 +39,7 @@ except ImportError:
         have_cfgfiles = False
 
 import pkg.client.api_errors as apx
+import pkg.actions
 
 class GroupAction(generic.Action):
         """Class representing a group packaging object.
@@ -103,8 +104,9 @@ class GroupAction(generic.Action):
                         if "gid" in self.attrs:
                                 img._groupsbyname[self.attrs["groupname"]] = \
                                     int(self.attrs["gid"])
+                        raise pkg.actions.ActionRetry(self)
 
-        def postinstall(self, pkgplan, orig):
+        def retry(self, pkgplan, orig):
                 groups = pkgplan.image._groups
                 if groups:
                         assert self in groups
@@ -206,4 +208,3 @@ class GroupAction(generic.Action):
                 a = int(self.attrs.get("gid", 1024))
                 b = int(other.attrs.get("gid", 1024))
                 return (a > b) - (a < b)
-
