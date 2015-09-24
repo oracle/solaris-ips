@@ -1568,6 +1568,10 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                     add set name=pkg.additional-uninstall-on-uninstall value=A@2 value=B@2
                     close """,
                 """
+                    open trigger@6.0,5.11-0
+                    add set name=pkg.additional-uninstall-on-uninstall value=A@1
+                    close """,
+                """
                     open evil@1.0,5.11-0
                     add set name=pkg.additional-update-on-uninstall value=evil@2
                     close """,
@@ -1601,14 +1605,33 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A", exit=1)
 
+                # verify unversioned actuator triggers
                 self.pkg("install -v trigger@4 A@1")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A", exit=1)
+                self.pkg("install -v trigger@4 A@2")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A", exit=1)
+
+                # verify correct version is uninstalled
+                self.pkg("install -v trigger@6 A@1")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A", exit=1)
+
+                # verify non-matching version is not installed
+                self.pkg("install -v trigger@6 A@2")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A")
 
                 # multiple values
-                self.pkg("install -v trigger@5 A@1 B@1")
+                self.pkg("install -v trigger@5 A@2 B@2")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A B", exit=1)
+
+                # multiple values but at different versions
+                self.pkg("install -v trigger@5 A@1 B@1")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list A@1 B@1")
 
                 # test that uninstall actuators also work when pkg is rejected
                 self.pkg("install -v A@1 trigger@1")

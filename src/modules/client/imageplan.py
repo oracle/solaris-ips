@@ -454,16 +454,23 @@ class ImagePlan(object):
                 for m in matched_vals.values():
                         triggered_fmris |= set(m)
 
-                # When matching on the requested FMRI remove the versions which
-                # might be already in the image because we don't want them in
-                # the proposed list for the solver. Otherwise we might trim on
-                # the installed version which prevents us from downgrading.
+                # Removals are done by stem so we have to make sure we only add
+                # removal FMRIs for versions which are actually installed. If
+                # the actuator specifies a version which is not installed, treat
+                # as nop.
+                # For updates, we have to remove versions which are already in
+                # the image because we don't want them in the proposed list for
+                # the solver. Otherwise we might trim on the installed version
+                # which prevents us from downgrading.
                 for t in triggered_fmris.copy():
-                        if t in installed_dict.values():
+                        if (exec_op == pkgdefs.PKG_OP_UNINSTALL and
+                            t not in installed_dict.values()) or
+                            (exec_op != pkgdefs.PKG_OP_UNINSTALL
+                            and t in installed_dict.values()):
                                 triggered_fmris.remove(t)
-                        else:
-                                self.__pkg_actuators.add((trigger_fmri,
-                                    t.pkg_name, trigger_op, exec_op))
+                                continue
+                        self.__pkg_actuators.add((trigger_fmri, t.pkg_name,
+                            trigger_op, exec_op))
 
                 solver_inst.add_triggered_op(trigger_op, exec_op,
                     triggered_fmris)
