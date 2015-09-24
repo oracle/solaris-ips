@@ -464,7 +464,7 @@ class ImagePlan(object):
                 # which prevents us from downgrading.
                 for t in triggered_fmris.copy():
                         if (exec_op == pkgdefs.PKG_OP_UNINSTALL and
-                            t not in installed_dict.values()) or
+                            t not in installed_dict.values()) or \
                             (exec_op != pkgdefs.PKG_OP_UNINSTALL
                             and t in installed_dict.values()):
                                 triggered_fmris.remove(t)
