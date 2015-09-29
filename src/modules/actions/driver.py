@@ -580,21 +580,16 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                 # with it.
                 for i in rem_policy:
                         spec = i.split()
+                        if not spec:
+                                continue
+
                         # Test if there is a minor node and if so use it
                         # for the policy removal. Otherwise, if none is
                         # supplied, then use the wild card to match.
-                        if len(spec) == 3:
+                        if "=" not in spec[0]:
                                 minornode = spec[0]
-                        elif len(spec) == 2:
-                                # This can happen when the policy is defined
-                                # in the package manifest without an associated
-                                # minor node.
-                                minornode = "*"
                         else:
-                                print("driver ({0}) update (removal of "
-                                    "policy '{1}') failed: invalid policy "
-                                    "spec.".format(self.attrs["name"], i))
-                                continue
+                                minornode = "*"
 
                         args = rem_base + ("-p", minornode, self.attrs["name"])
                         self.__call(args, "driver ({name}) upgrade (removal "

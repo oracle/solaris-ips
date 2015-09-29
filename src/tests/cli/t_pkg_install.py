@@ -2631,7 +2631,7 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
             add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
-            add driver name=frigit policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+            add driver name=frigit policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess tpd_member=true"
             close
         """
 
@@ -2648,6 +2648,54 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
             add driver name=frigit
+            close
+        """
+
+        dripol3 = """
+            open dripol@3
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add dir path=/etc/security mode=755 owner=root group=root
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add driver name=frigit policy="tpd_member=true"
+            close
+        """
+
+        dripol4 = """
+            open dripol@4
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add dir path=/etc/security mode=755 owner=root group=root
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add driver name=frigit
+            close
+        """
+
+        dripol5 = """
+            open dripol@5
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add dir path=/etc/security mode=755 owner=root group=root
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add driver name=frigit perms="node1 0666 root sys" policy="node1 read_priv_set=all write_priv_set=all tpd_member=true"
             close
         """
 
@@ -3294,7 +3342,8 @@ adm
                 self.driver_policy_removal_helper("exact-install")
 
         def driver_policy_removal_helper(self, install_cmd):
-                self.pkgsend_bulk(self.rurl, (self.dripol1, self.dripol2))
+                self.pkgsend_bulk(self.rurl, (self.dripol1, self.dripol2,
+                    self.dripol3, self.dripol4, self.dripol5))
 
                 self.image_create(self.rurl)
 
@@ -3307,7 +3356,9 @@ adm
                 # device in /etc/security/device_policy
                 dp_contents = open(os.path.join(self.get_img_path(),
                     "etc/security/device_policy")).readlines()
-                self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" in dp_contents)
+                self.assert_("frigit:*\tread_priv_set=net_rawaccess\t"
+                    "write_priv_set=net_rawaccess\ttpd_member=true\n"
+                    in dp_contents)
 
                 # Should reinstall the frigit driver without a policy.
                 self.pkg("{0} dripol@2".format(install_cmd))
@@ -3316,7 +3367,27 @@ adm
                 # device in /etc/security/device_policy
                 dp_contents = open(os.path.join(self.get_img_path(),
                     "etc/security/device_policy")).readlines()
-                self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" not in dp_contents)
+                self.assert_("frigit:*\tread_priv_set=net_rawaccess\t"
+                    "write_priv_set=net_rawaccess\ttpd_member=true\n"
+                    not in dp_contents)
+
+                self.pkg("update dripol@3")
+                dp_contents = open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")).readlines()
+                self.assert_("frigit:*\ttpd_member=true\n"
+                    in dp_contents)
+
+                self.pkg("update dripol@5")
+                dp_contents = open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")).readlines()
+                self.assert_("frigit:node1\tread_priv_set=all"
+                    "\twrite_priv_set=all\ttpd_member=true\n"
+                    in dp_contents)
+
+                self.pkg("update dripol@4")
+                dp_contents = open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")).readlines()
+                self.assert_("frigit:node1" not in dp_contents)
 
         def test_file_preserve(self):
                 """Verify that file preserve=true works as expected during
