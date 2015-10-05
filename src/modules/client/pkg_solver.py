@@ -1258,7 +1258,8 @@ class PkgSolver(object):
                 renamed_set = orig_installed_set - \
                     self.__elide_possible_renames(orig_installed_set, excludes)
 
-                proposed_removals = set(uninstall_list) | renamed_set
+                proposed_removals = set(uninstall_list) | renamed_set | \
+                    self.__triggered_ops[PKG_OP_UNINSTALL][PKG_OP_UNINSTALL]
 
                 # find pkgs which are going to be installed/updated
                 triggered_set = set()

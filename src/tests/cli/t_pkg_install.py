@@ -1548,6 +1548,10 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                     open B@2.0,5.11-0
                     close """,
                 """
+                    open C@1.0,5.11-0
+                    add depend type=require fmri=trigger
+                    close """,
+                """
                     open trigger@1.0,5.11-0
                     add set name=pkg.additional-update-on-uninstall value=A@2
                     close """,
@@ -1570,6 +1574,10 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 """
                     open trigger@6.0,5.11-0
                     add set name=pkg.additional-uninstall-on-uninstall value=A@1
+                    close """,
+                """
+                    open trigger@7.0,5.11-0
+                    add set name=pkg.additional-uninstall-on-uninstall value=C
                     close """,
                 """
                     open evil@1.0,5.11-0
@@ -1632,6 +1640,11 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v trigger@5 A@1 B@1")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A@1 B@1")
+
+                # removal pkg depends on trigger
+                self.pkg("install -v trigger@7 C")
+                self.pkg("uninstall -v trigger")
+                self.pkg("list C", exit=1)
 
                 # test that uninstall actuators also work when pkg is rejected
                 self.pkg("install -v A@1 trigger@1")
