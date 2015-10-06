@@ -1515,11 +1515,6 @@ class clobber_func(Command):
                                 continue
                         path = os.path.join(cffi_dir, path)
                         rm_f(path)
-                for path in os.listdir(os.path.join(cffi_dir, "solver")):
-                        if not path.startswith("_"):
-                                continue
-                        path = os.path.join(cffi_dir, "solver", path)
-                        rm_f(path)
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py and the
