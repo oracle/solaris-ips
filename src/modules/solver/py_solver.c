@@ -18,9 +18,9 @@
  *
  * CDDL HEADER END
  */
+
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -183,6 +183,11 @@ refcntcon_del(container_t *old)
 
 #define BAILOUT(exception, string) {PyErr_SetString(exception, string); return (NULL);}
 
+
+#if PY_MAJOR_VERSION >= 3
+# define PyInt_AsLong PyLong_AsLong
+#endif
+
 typedef struct
 {
 	PyObject_HEAD
@@ -199,8 +204,12 @@ static PyObject *
 msat_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 static PyTypeObject minisat_solvertype = {
+#if PY_MAJOR_VERSION >= 3
+	PyVarObject_HEAD_INIT(NULL, 0)
+#else
 	PyObject_HEAD_INIT(NULL)
 	0, /*ob_size*/
+#endif
 	"solver.msat_solver", /*tp_name*/
 	sizeof (msat_solver), /*tp_basicsize*/
 	0, /*tp_itemsize*/
@@ -247,7 +256,11 @@ msat_dealloc(msat_solver *self)
 	refcntcon_del(self->msat_clauses);
 	if (self->msat_instance != NULL) 
 		solver_delete(self->msat_instance);
+#if PY_MAJOR_VERSION >= 3
+	Py_TYPE(self)->tp_free((PyObject*) self);
+#else
 	self->ob_type->tp_free((PyObject*) self);
+#endif
 }
 
 static void
@@ -545,15 +558,44 @@ static PyMethodDef no_module_methods[] = {
 	{NULL} /* Sentinel */
 };
 
-void
-initsolver()
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef solvermodule ={
+	PyModuleDef_HEAD_INIT,
+	"solver",
+	NULL,
+	-1,
+	msat_methods
+};
+#endif
+
+static PyObject *
+moduleinit()
 {
 	PyObject *m;
 
 	if (PyType_Ready(&minisat_solvertype) < 0)
-		return;
+		return NULL;
+#if PY_MAJOR_VERSION >= 3
+	m = PyModule_Create(&solvermodule);
+#else
 	m = Py_InitModule3("solver", no_module_methods,
 	    "MINISAT SAT solver module");
+#endif
 	Py_INCREF(&minisat_solvertype);
 	PyModule_AddObject(m, "msat_solver", (PyObject*) &minisat_solvertype);
+	return m;
 }
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC
+PyInit_solver(void)
+{
+	return moduleinit();
+}
+#else
+PyMODINIT_FUNC
+initsolver(void)
+{
+	moduleinit();
+}
+#endif

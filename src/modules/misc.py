@@ -2910,3 +2910,18 @@ def set_memory_limit(bytes, allow_override=True):
                 # An unprivileged user can not raise a previously set limit,
                 # if that ever happens, just ignore it.
                 pass
+
+def bytes_to_unicode(s):
+        """Convert bytes to unicode with encoding 'utf-8'."""
+
+        if isinstance(s, bytes):
+                return s.decode("utf-8")
+        return s
+
+
+def unicode_to_bytes(s):
+        """Convert unicode to bytes with encoding 'utf-8'."""
+
+        if isinstance(s, six.text_type):
+                return s.encode("utf-8")
+        return s

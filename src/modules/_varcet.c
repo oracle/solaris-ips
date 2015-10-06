@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -74,7 +74,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 	Py_DECREF(res);
 
 	while (PyDict_Next(act_attrs, &fpos, &attr, &value)) {
-		char *as = PyString_AS_STRING(attr);
+		char *as = PyBytes_AS_STRING(attr);
 		if (strncmp(as, "facet.", 6) != 0)
 			continue;
 
@@ -130,7 +130,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 
 prep_ret:
 		if (facet_ret != NULL) {
-			char *vs = PyString_AS_STRING(value);
+			char *vs = PyBytes_AS_STRING(value);
 			if (strcmp(vs, "all") == 0) {
 				/*
 				 * If facet == 'all' and is False, then no more
@@ -195,10 +195,10 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 		return (NULL);
 
 	while (PyDict_Next(act_attrs, &pos, &attr, &value)) {
-		char *as = PyString_AS_STRING(attr);
+		char *as = PyBytes_AS_STRING(attr);
 		if (strncmp(as, "variant.", 8) == 0) {
 			PyObject *sysv = PyDict_GetItem(vars, attr);
-			char *av = PyString_AsString(value);
+			char *av = PyBytes_AsString(value);
 			char *sysav = NULL;
 
 			if (sysv == NULL) {
@@ -215,7 +215,7 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 				continue;
 			}
 
-			sysav = PyString_AsString(sysv);
+			sysav = PyBytes_AsString(sysv);
 			if (strcmp(av, sysav) != 0) {
 				/*
 				 * If system variant value doesn't match action
@@ -239,8 +239,26 @@ static PyMethodDef methods[] = {
 	{ NULL, NULL, 0, NULL }
 };
 
-PyMODINIT_FUNC
-init_varcet(void)
-{
-	Py_InitModule("_varcet", methods);
-}
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef varcetmodule = {
+	PyModuleDef_HEAD_INIT,
+	"_varcet",
+	NULL,
+	-1,
+	methods
+};
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+	PyMODINIT_FUNC
+	PyInit__varcet(void)
+	{
+		return PyModule_Create(&varcetmodule);
+	}
+#else
+	PyMODINIT_FUNC
+	init_varcet(void)
+	{
+		Py_InitModule("_varcet", methods);
+	}
+#endif

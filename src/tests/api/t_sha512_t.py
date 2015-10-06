@@ -1,5 +1,6 @@
 #!/usr/bin/python
-#
+# -*- coding: utf-8 -*-
+# 
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -24,6 +25,7 @@
 # Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import unicode_literals
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -56,16 +58,16 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 expected = "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
-                
+
                 a = sha512_t.SHA512_t("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
                 expected = "3928e184fb8690f840da3988121d31be65cb9d3ef83ee6146feac861e19b563a"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
                 # Test the length of the output of hexdigest()
-                output = len(sha512_t.SHA512_t("0.861687995815").hexdigest()) 
+                output = len(sha512_t.SHA512_t("0.861687995815").hexdigest())
                 self.assertEqualDiff(64, output)
-                output = len(sha512_t.SHA512_t("0.861687995815", 224).hexdigest()) 
+                output = len(sha512_t.SHA512_t("0.861687995815", 224).hexdigest())
                 self.assertEqualDiff(56, output)
 
                 # Test digest()
@@ -76,9 +78,9 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 self.assertEqualDiff(expected, output)
 
                 # Test the length of the output of digest()
-                output = len(sha512_t.SHA512_t("0.861687995815").digest()) 
+                output = len(sha512_t.SHA512_t("0.861687995815").digest())
                 self.assertEqualDiff(32, output)
-                output = len(sha512_t.SHA512_t("0.861687995815", 224).digest()) 
+                output = len(sha512_t.SHA512_t("0.861687995815", 224).digest())
                 self.assertEqualDiff(28, output)
 
                 # Test update()
@@ -89,6 +91,7 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 self.assertEqualDiff(expected, output)
 
                 a = sha512_t.SHA512_t("a")
+                a.hexdigest()
                 a.digest()
                 a.update("b")
                 a.hexdigest()
@@ -134,6 +137,12 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(TypeError, sha512_t.SHA512_t, 8)
                 self.assertRaises(ValueError, sha512_t.SHA512_t, t=160)
                 self.assertRaises(TypeError, sha512_t.SHA512_t.update, 8)
+
+                # Test special unicode character
+                a = sha512_t.SHA512_t("α♭¢")
+                a.hexdigest()
+                a.update("ρ⑂☂♄øη")
+                a.hexdigest()
 
 
 if __name__ == "__main__":

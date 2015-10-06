@@ -24,6 +24,7 @@
 ^doc/dev-guide/doctools/
 ^doc/dev-guide/doctmp/
 ^doc/dev-guide/book.txt
+^src/cffi_src/_.*$
 ^src/man/nroff
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/

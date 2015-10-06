@@ -413,18 +413,49 @@ static PyMethodDef methods[] = {
 	{ NULL, NULL }
 };
 
-PyMODINIT_FUNC
-initelf(void)
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef elfmodule = {
+	PyModuleDef_HEAD_INIT,
+	"elf",
+	NULL,
+	-1,
+	methods
+};
+#endif
+
+static PyObject *
+moduleinit(void)
 {
 	PyObject *m;
 
+#if PY_MAJOR_VERSION >= 3
+	if ((m = PyModule_Create(&elfmodule)) == NULL)
+		return (NULL);
+#else
 	if ((m = Py_InitModule("elf", methods)) == NULL)
-		return;
+		return (NULL);
+#endif
 
 	ElfError = PyErr_NewException("pkg.elf.ElfError", NULL, NULL);
 	if (ElfError == NULL)
-		return;
+		return (NULL);
 
 	Py_INCREF(ElfError);
 	PyModule_AddObject(m, "ElfError", ElfError);
+
+	return (m);
 }
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC
+PyInit_elf(void)
+{
+	return (moduleinit());
+}
+#else
+PyMODINIT_FUNC
+initelf(void)
+{
+	moduleinit();
+}
+#endif
