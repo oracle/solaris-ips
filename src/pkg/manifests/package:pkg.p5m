@@ -181,6 +181,7 @@ file path=$(PYDIRVP)/pkg/lockfile.py
 file path=$(PYDIRVP)/pkg/manifest.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/mediator.py
 file path=$(PYDIRVP)/pkg/misc.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/mogrify.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/nrlock.py
 file path=$(PYDIRVP)/pkg/p5i.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/p5p.py pkg.depend.bypass-generate=.*six.*

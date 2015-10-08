@@ -57,6 +57,7 @@ modules/lint/pkglint_manifest.py
 modules/manifest.py
 modules/mediator.py
 modules/misc.py
+modules/mogrify.py
 modules/p5i.py
 modules/p5p.py
 modules/p5s.py

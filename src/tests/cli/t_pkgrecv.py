@@ -30,9 +30,12 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import simplejson as json
+import six
 import pkg.catalog as catalog
 import pkg.config as cfg
 import pkg.client.pkgdefs as pkgdefs
+import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
@@ -62,6 +65,36 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
+            close
+        """
+
+        filetrans110 = """
+            open pkg:/filetrans1@1.0,5.11-0
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            close
+        """
+
+        filetrans210 = """
+            open pkg:/filetrans2@1.0,5.11-0
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            close
+        """
+
+        filetrans310 = """
+            open pkg:/filetrans3@1.0,5.11-0
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            close
+        """
+
+        filetrans410 = """
+            open pkg:/filetrans4@1.0,5.11-0
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/etc/bronze1
+            close
+        """
+
+        signature10 = """
+            open pkg:/signature@1.0,5.11-0
+            add signature tmp/extrafile value=d2ff algorithm=sha256 variant.arch=i386
             close
         """
 
@@ -132,18 +165,19 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
-            "tmp/sh"]
+            "tmp/sh", "tmp/extrafile"]
 
         def setUp(self):
-                """ Start two depots.
+                """ Start six depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test1 (alternate)
-                    depot3 and depot4 are scratch depots"""
+                    depot3 and depot4 are scratch depots
+                    depot5 and depot6 are for testing mogrify."""
 
                 # This test suite needs actual depots.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1",
-                    "test2", "test2"], start_depots=True)
+                    "test2", "test2", "test1", "test1"], start_depots=True)
 
                 self.make_misc_files(self.misc_files)
 
@@ -164,8 +198,48 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.tempdir = tempfile.mkdtemp(dir=self.test_root)
 
+                self.mogdir = tempfile.mkdtemp(dir=self.test_root)
+
                 self.durl3 = self.dcs[3].get_depot_url()
                 self.durl4 = self.dcs[4].get_depot_url()
+
+                self.durl5 = self.dcs[5].get_depot_url()
+                self.durl6 = self.dcs[6].get_depot_url()
+                self.dpath5 = self.dcs[5].get_repodir()
+                self.dpath6 = self.dcs[6].get_repodir()
+                self.test_mog = self.pkgsend_bulk(self.durl5,
+                    (self.filetrans110, self.filetrans210, self.filetrans310,
+                    self.filetrans410, self.signature10))
+
+                self.transforms = {
+                    "pub_change": "<transform set name=pkg.fmri -> edit value (pkg://).*?(/.*) \\\\1testpub\\\\2>",
+                    "name_change": "<transform set name=pkg.fmri -> edit value (pkg://.*?/).*?(@.*) \\\\1testname\\\\2>",
+                    "add_file": "<transform file path=etc/bronze1 -> emit file {0} path=/etc/bronze2 owner=root group=bin mode=0755>".format(os.path.join(self.test_root, self.misc_files[8])),
+                    "add_none_file": "<transform file path=etc/bronze1 -> emit file tmp/nonono_such_file path=/etc/bronze2 owner=root group=bin mode=0755>",
+                    "drop_file": "<transform file path=etc/bronze1 -> drop>",
+                    "file_path_change": "<transform file path=etc/bronze1 -> edit path .* /opt/bronze2>",
+                    "add_invalid_act": "<transform file path=etc/bronze1 -> emit invalid_action name=invalid value=invalid>",
+                    "add_invalid_act2": "<transform file path=etc/bronze1 -> emit depend name=invalid value=invalid>",
+                    "add_invalid_act3": "<transform file path=etc/bronze1 -> emit depend fmri=*$# type=require>",
+                    "add_valid_act": "<transform file path=etc/bronze1 -> emit depend fmri=foo@1.0 type=require>"
+                }
+                # Map the transform names to path names
+                xformpaths = dict((
+                    (name, os.path.join(self.test_root, "transform_{0}".format(i)))
+                    for i, name in enumerate(six.iterkeys(self.transforms))
+                ))
+
+                # Now that we have path names, we can use the expandos in the
+                # transform contents to embed those pathnames, and write the
+                # transform files out.
+                for name, path in six.iteritems(xformpaths):
+                        f = open(path, "wb")
+                        self.transforms[name] = self.transforms[name].format(**xformpaths)
+                        f.write(self.transforms[name])
+                        f.close()
+
+                self.transform_contents = self.transforms
+                self.transforms = xformpaths
 
         @staticmethod
         def get_repo(uri):
@@ -179,6 +253,33 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                             "repository's configuration data is not "
                             "valid:\n{0}").format(e))
 
+        def __get_mf_path(self, fmri_str, dc_num, pub=None, repo_path=None):
+                """Given an FMRI, return the path to its manifest in our
+                repository."""
+
+                usepub = "test"
+                if pub:
+                        usepub = pub
+                if not repo_path:
+                        repo_path = self.dcs[dc_num].get_repodir()
+                path_comps = [repo_path, "publisher",
+                    usepub, "pkg"]
+                pfmri = pkg.fmri.PkgFmri(fmri_str)
+                path_comps.append(pfmri.get_name())
+                path_comps.append(pfmri.get_link_path().split("@")[1])
+                return os.path.sep.join(path_comps)
+
+        def __get_manifest_contents(self, fmri_str, dc_num, pub=None,
+            repo_path=None):
+                """Given an FMRI, return the unsorted manifest contents from our
+                repository as a string."""
+
+                mpath = self.__get_mf_path(fmri_str, dc_num, pub=pub,
+                    repo_path=repo_path)
+                mf = pkg.manifest.Manifest()
+                mf.set_content(pathname=mpath)
+                return mf.tostr_unsorted()
+
         def test_0_opts(self):
                 """Verify that various basic options work as expected and that
                 invalid options or option values return expected exit code."""
@@ -191,6 +292,15 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                     exit=1)
                 self.pkgrecv(self.durl1, "-d {0} invalid.fmri@1.0.a".format(
                     self.tempdir), exit=1)
+
+                self.pkgrecv(self.durl1, "-d {0} --mog-file fakefile --clone"
+                    .format(self.dpath2), exit=2)
+
+                self.pkgrecv(self.durl1, "-d {0} --mog-file fakefile --a amber@1.0"
+                    .format(self.dpath2), exit=2)
+
+                self.pkgrecv(self.durl1, "-d {0} --mog-file ++ amber@1.0"
+                    .format(self.dpath2), exit=1)
 
                 # Test help.
                 self.pkgrecv(command="-h", exit=0)
@@ -422,6 +532,85 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                             "manifest")
                         self.assertTrue(os.path.isfile(mpath))
 
+                # Verify --mog-file option changes all package fmris into new
+                # publisher name. Also verify the manifest pkg.fmri value is
+                # changed correspondingly.
+                npath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(npath)
+                self.pkgrecv(self.durl1, "-r --mog-file {0} -d {1} {2}".format(
+                    self.transforms["pub_change"], npath, bronze))
+                self.pkgrepo("verify -s {0}".format(npath))
+                self.pkgrepo("-s {0} list -F json".format(npath))
+                out_json = json.loads(self.output)
+                for elem in out_json:
+                        self.assert_(elem["publisher"] == "testpub" and
+                            "testpub" in elem["pkg.fmri"])
+                        ma = self.__get_manifest_contents(elem["pkg.fmri"], 0,
+                            pub="testpub", repo_path=npath)
+                        self.assert_("pkg://testpub/" in ma)
+
+                # Verify again with --raw option.
+                self.pkgrecv(self.durl1, "-r --raw --mog-file {0} -d {1} -v "
+                    "{2}".format(self.transforms["pub_change"],
+                    npath, bronze))
+                xport, xport_cfg = transport.setup_transport()
+                xport_cfg.pkg_root = npath
+                pkgdir = xport_cfg.get_pkg_dir(bronze)
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("testpub" in mcontent)
+                with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
+                    as f:
+                        ms = f.read()
+                self.assert_("testpub" in ms)
+                pkgdir = xport_cfg.get_pkg_dir(amber)
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("testpub" in mcontent)
+                with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
+                    as f:
+                        ms = f.read()
+                self.assert_("testpub" in ms)
+
+                # Verify changing package name works.
+                npath2 = tempfile.mkdtemp(dir=self.test_root)
+                self.pkgrecv(self.durl1, "-r --raw --mog-file {0} -d {1} -v "
+                    "{2}".format(self.transforms["name_change"],
+                    npath2, bronze))
+                xport, xport_cfg = transport.setup_transport()
+                xport_cfg.pkg_root = npath2
+                bronze = self.published[4]
+                # Assert old path does not exist
+                oldpath = xport_cfg.get_pkg_dir(fmri.PkgFmri(bronze))
+                self.assert_(not os.path.exists(oldpath))
+                self.assert_(not os.path.exists(os.path.dirname(oldpath)))
+                bronze = bronze.replace("bronze", "testname")
+                bronze = fmri.PkgFmri(bronze, None)
+                pkgdir = xport_cfg.get_pkg_dir(bronze)
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("testname" in mcontent)
+                with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
+                    as f:
+                        ms = f.read()
+                self.assert_("testname" in ms)
+
+                amber = self.published[1]
+                # Assert old path does not exist
+                oldpath = xport_cfg.get_pkg_dir(fmri.PkgFmri(amber))
+                self.assert_(not os.path.exists(oldpath))
+                self.assert_(not os.path.exists(os.path.dirname(oldpath)))
+                amber = amber.replace("amber", "testname")
+                amber = fmri.PkgFmri(amber, None)
+                pkgdir = xport_cfg.get_pkg_dir(amber)
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("testname" in mcontent)
+                with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
+                    as f:
+                        ms = f.read()
+                self.assert_("testname" in ms)
+
         def test_4_timever(self):
                 """Verify that receiving with -m options work as expected."""
 
@@ -585,6 +774,16 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # This would fail before behavior fixed to skip existing pkgs.
                 self.pkgrecv(self.durl1, "-r -d file://{0} {1}".format(npath, f2))
 
+                npath = tempfile.mkdtemp(dir=self.test_root)
+                self.pkgsend("file://{0}".format(npath),
+                    "create-repository --set-property publisher.prefix=testpub")
+                # Verify by changing publisher name, the second time run also
+                # does not fail with existing package error.
+                self.pkgrecv(self.durl1, "--mog-file {0} -d file://{1} {2}"
+                    .format(self.transforms["pub_change"], npath, f))
+                self.pkgrecv(self.durl1, "--mog-file {0} -r -d file://{1} {2}"
+                    .format(self.transforms["pub_change"], npath, f2))
+
         def test_7_recv_multipublisher(self):
                 """Verify that pkgrecv handles multi-publisher repositories as
                 expected."""
@@ -609,6 +808,23 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl4, "--newest")
                 self.assertNotEqual(self.output.find("test1/amber"), -1)
                 self.assertNotEqual(self.output.find("test2/amber"), -1)
+
+                # Test using --mog-file to change publishers of packages from
+                # multiple publishers.
+                npath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(npath)
+                self.pkgrecv(self.durl1, "--mog-file {0} -d {1} amber@1.0 "
+                    "bronze@1.0".format(self.transforms["pub_change"], npath))
+                self.pkgrepo("verify -s {0} --disable dependency"
+                    .format(npath))
+                self.pkgrepo("-s {0} list -F json".format(npath))
+                out_json = json.loads(self.output)
+                for elem in out_json:
+                        self.assert_(elem["publisher"] == "testpub" and
+                            "testpub" in elem["pkg.fmri"])
+                        ma = self.__get_manifest_contents(elem["pkg.fmri"], 0,
+                            pub="testpub", repo_path=npath)
+                        self.assert_("pkg://testpub/" in ma)
 
                 # Verify attempting to retrieve a non-existent package fails
                 # for a multi-publisher repository.
@@ -720,6 +936,50 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 arc_path = os.path.join(self.test_root, "dry-run.p5p")
                 self.pkgrecv(self.durl3, "-n -a -d {0} \*".format(arc_path))
                 self.assertFalse(os.path.exists(arc_path))
+
+                #
+                # Verify that packages can be received from an archive to an
+                # archive.
+                #
+                arc_mog_path = os.path.join(self.test_root, "test_mog.p5p")
+                self.pkgrecv(self.durl1, "-a --mog-file {0} --mog-file {1} "
+                    "-d {2} bronze@1".format(self.transforms["drop_file"],
+                    self.transforms["pub_change"], arc_mog_path))
+
+                # Check for expected publishers.
+                arc = p5p.Archive(arc_mog_path, mode="r")
+                expected = set(["testpub"])
+                pubs = set(p.prefix for p in arc.get_publishers())
+                self.assertEqualDiff(expected, pubs)
+
+                # Check for expected package FMRIs.
+                bronze = self.published[2]
+                bronze = bronze.replace("test1", "testpub")
+                expected = set([bronze])
+                tmpdir = tempfile.mkdtemp(dir=self.test_root)
+                returned = []
+                for pfx in pubs:
+                        catdir = os.path.join(tmpdir, pfx)
+                        os.mkdir(catdir)
+                        for part in ("catalog.attrs", "catalog.base.C"):
+                                arc.extract_catalog1(part, catdir, pfx)
+
+                        cat = catalog.Catalog(meta_root=catdir, read_only=True)
+                        returned.extend(str(f) for f in cat.fmris())
+                        fileObjs = []
+                        allcontents = ""
+                        for idx in arc.get_index():
+                                tarf = arc.get_file(idx)
+                                if tarf:
+                                        fileObjs.append(tarf)
+                                        allcontents += str(tarf.readlines())
+                        # 3 files + 1 license + 1 manifest +
+                        # 1 repo configuration.
+                        self.assert_(len(fileObjs) == 6)
+                        # etc/bronze1 has been dropped.
+                        self.assert_("etc/bronze1" not in allcontents)
+                self.assertEqualDiff(expected, set(returned))
+                arc.close()
 
         def test_9_dryruns(self):
                 """Test that the dry run option to pkgrecv works as expected."""
@@ -1031,10 +1291,136 @@ Estimated transfer size: 528.00 B
                         self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
                             include_scheme=False) in self.output)
 
+                # Verify mogrify works by retrieving mogrified pkgs from the
+                # new target catalog.
+                self.pkgrecv(self.dpath1, "--mog-file {0} -d {1} -v \*".format(
+                    self.transforms["pub_change"], self.tempdir))
+                self.assert_("target catalog 'testpub'" in self.output)
+                self.pkgrepo("verify -s {0}".format(self.tempdir))
+
                 # Test that output is correct if -n is not specified.
                 self.pkgrecv(self.dpath1, "-d {0} -v \*".format(self.tempdir))
                 self.assert_("dry-run" not in self.output)
 
+        def test_14_mog_manifest(self):
+                """Mogrify some contents in the manifest, and verify
+                republish behaviour."""
+
+                # Test with add an invalid action will fail.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_invalid_act"], self.durl6),
+                    exit=1)
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} "
+                    "-v filetrans1".format(self.transforms["add_invalid_act"],
+                    self.durl6), exit=1)
+
+                # Test add a depend action without fmri attribute will fail.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_invalid_act2"], self.durl6),
+                    exit=1)
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} "
+                    "-v filetrans1".format(self.transforms["add_invalid_act2"],
+                    self.durl6), exit=1)
+
+                # Test add a depend action with invalid fmri attribute will
+                # fail.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_invalid_act3"], self.durl6),
+                    exit=1)
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
+                    "filetrans1".format(self.transforms["add_invalid_act3"],
+                    self.durl6), exit=1)
+
+                # Test with adding a non-existing file will fail.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_none_file"], self.durl6),
+                    exit=1)
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
+                    "filetrans1".format(self.transforms["add_none_file"],
+                    self.durl6), exit=1)
+                self.assert_("not allowed" in self.errout)
+
+                # Test with adding an additional existing file
+                # (hashable content) should fail.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_file"], self.durl6), exit=1)
+                self.assert_("not allowed" in self.errout)
+
+                # Test with adding an depend action should succeed.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
+                    .format(self.transforms["add_valid_act"], self.durl6))
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
+                    "filetrans1".format(self.transforms["add_valid_act"],
+                    self.dpath6))
+                xport, xport_cfg = transport.setup_transport()
+                xport_cfg.pkg_root = self.dpath6
+                pkgdir = xport_cfg.get_pkg_dir(pkg.fmri.PkgFmri(
+                    self.test_mog[0]))
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("depend" in mcontent)
+                self.assert_(os.path.exists(os.path.join(pkgdir,
+                    "manifest.depend")))
+
+                # Drop the file.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} filetrans2"
+                    .format(self.transforms["drop_file"], self.durl6))
+                self.pkgrecv(self.durl5, "-v --raw --mog-file {0} -d {1} "
+                    "filetrans4".format(self.transforms["drop_file"],
+                    self.dpath6))
+                pkgdir = xport_cfg.get_pkg_dir(pkg.fmri.PkgFmri(
+                    self.test_mog[3]))
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("path" not in mcontent)
+                self.assert_(not os.path.exists(os.path.join(pkgdir,
+                    "manifest.file")))
+
+                # With -v.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans2"
+                    .format(self.transforms["drop_file"], self.durl6))
+                self.pkgrepo("-s {0} list -F json filetrans2".format(
+                    self.dpath6))
+                out_json = json.loads(self.output)
+                elem = out_json[0]
+                ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
+                    pub="test1")
+                self.assert_("etc/bronze1" not in ma)
+
+                # Change file path attribute.
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans3"
+                    .format(self.transforms["file_path_change"], self.durl6))
+                self.pkgrepo("-s {0} list -F json filetrans3".format(
+                    self.dpath6))
+                out_json = json.loads(self.output)
+                elem = out_json[0]
+                ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
+                    pub="test1")
+                self.assert_("opt/bronze2" in ma)
+                self.pkgrepo("verify -s {0} --disable dependency"
+                    .format(self.dpath6))
+
+                self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
+                    "filetrans3".format(self.transforms["file_path_change"],
+                    self.dpath6))
+                pkgdir = xport_cfg.get_pkg_dir(pkg.fmri.PkgFmri(
+                    self.test_mog[2]))
+                with open(os.path.join(pkgdir, "manifest")) as f:
+                        mcontent = f.read()
+                self.assert_("opt/bronze2" in mcontent)
+                self.assert_(os.path.exists(os.path.join(pkgdir,
+                    "manifest.file")))
+                with open(os.path.join(pkgdir, "manifest.file")) as f:
+                        mf = f.read()
+                self.assert_("opt/bronze2" in mf)
+
+                self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v signature"
+                    .format(self.transforms["pub_change"], self.durl6))
+                ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
+                    pub="test1")
+                self.assert_("signature" not in ma)
+                self.pkgrepo("verify -s {0} --disable dependency"
+                    .format(self.dpath6))
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 

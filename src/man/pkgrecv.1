@@ -7,11 +7,11 @@
 
 <refentry id="pkgrecv-1">
 <refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">21 Nov 2013</refmiscinfo>
+<refmiscinfo class="date">08 Oct 2015</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname>
@@ -20,7 +20,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
     [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
-    [-m <replaceable>match</replaceable>] [--raw]
+    [-m <replaceable>match</replaceable>] [--mog-file <replaceable>file_path</replaceable> ...] [--raw]
     [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
     [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
     (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
@@ -197,6 +197,17 @@ ZFS dataset, and a snapshot should be created prior to performing the clone
 operation.</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>-mog-file</option></term>
+<listitem><para>Specifies a file containing pkgmogrify(1) transforms to be
+applied to the manifest of each package before it is copied to the destination
+package repository. '-' can be specified to use stdin as input. If both files
+and '-' are specified together, '-' will be ignored and only files specified
+are used. Use of this option will automatically cause any existing package
+signatures to be dropped from the package. Adding new hashable actions
+such as files and licenses is not allowed. This option can be specified
+multiple times. This option may not be combined with --clone.</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><option>-newest</option></term>
 <listitem><para>List the most recent versions of the packages available from
 the repository specified by the <option>s</option> option. All other options
@@ -297,6 +308,13 @@ all of its dependencies from the repository located at <literal>http://example.c
 <para>Copy all of the packages in a package archive to an existing repository
 located at <filename>/export/repo</filename>.</para>
 <screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+</example>
+<example><title>Change publisher name</title>
+<para>Change the publisher name of the package 'foo' and all its
+dependencies into 'extra' during republishing.</para>
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+</userinput></screen>
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
