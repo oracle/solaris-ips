@@ -66,9 +66,7 @@ def __init_log():
         ips_logger.propagate = 0
         ips_logger.setLevel(logging.INFO)
 
-        # This logger is for delivering JSON result. Use stderr to distinguish
-        # it with progress output.
-        handler = _StreamHandler(sys.stderr)
+        handler = _StreamHandler(sys.stdout)
         handler.setLevel(logging.INFO)
 
         # If this script is used in RAD, only retrieve log levels <= INFO.

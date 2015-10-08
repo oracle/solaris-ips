@@ -361,7 +361,8 @@ class PkgImage(object):
                         if pargs_json and not isinstance(pargs_json,
                             six.string_types):
                                 pargs_json = json.dumps(pargs_json)
-                        if opts_json and not isinstance(opts_json, six.string_types):
+                        if opts_json and not isinstance(opts_json,
+                            six.string_types):
                                 opts_json = json.dumps(opts_json)
                         if self.__image_path:
                                 args.extend(["-R", self.__image_path])
@@ -371,25 +372,34 @@ class PkgImage(object):
                                 args.extend(["--opts", opts_json])
                         args.extend(["--prog-delay",
                             str(self.__progress_interval)])
+
                         args.append(subcommand)
+
                         p = subprocess.Popen(args, env=os.environ,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        # Use stderr channel for the actual return. stdout
-                        # progress.
-                        out, actualret = p.communicate()
-                        for line in out.split("\n"):
-                                try:
-                                        event = json.loads(line)
-                                except Exception as ex:
-                                        # If the event is in bad format or
-                                        # whatever, simply ignore it.
-                                        continue
-
-                                self._prog_event_handler(event)
-
+                            stdout=subprocess.PIPE)
+                        actualret = None
+                        # Process output JSON lines.
+                        while True:
+                                out_line = p.stdout.readline()
+                                if out_line == '' and p.poll() is not None:
+                                        break
+                                if out_line:
+                                        out_json = json.loads(out_line)
+                                        # This indicates it is progress output.
+                                        if "phase" in out_json:
+                                                self._prog_event_handler(
+                                                    out_json)
+                                        # This indicates it is the actual
+                                        # return.
+                                        elif "status" in out_json:
+                                                actualret = out_json
+                        if not actualret:
+                                return {"status": ERROR, "errors": [{"reason":
+                                    "no result collected in fork mode."}]}
                         return actualret
                 except Exception as ex:
-                        return {"status": ERROR, "errors": [{"reason": str(ex)}]}
+                        return {"status": ERROR, "errors": [{"reason": str(ex)}
+                            ]}
 
         def __pkg(self, subcommand, pargs_json=None, opts_json=None,
             mode=None):
