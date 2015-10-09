@@ -330,7 +330,7 @@ def resolve(args, img_dir):
                 return 1
 
         try:
-                pkg_deps, errs, unused_fmris, external_deps = \
+                pkg_deps, errs, warnings, unused_fmris, external_deps = \
                     dependencies.resolve_deps(manifest_paths, api_inst,
                         system_patterns, prune_attrs=not verbose)
         except (actions.MalformedActionError, actions.UnknownActionError) as e:
@@ -372,6 +372,8 @@ def resolve(args, img_dir):
                 if ret_code == 0:
                         ret_code = 1
                 emsg(e)
+        for w in warnings:
+                emsg(w)
         return ret_code
 
 def __resolve_echo_line(l):

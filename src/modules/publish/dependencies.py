@@ -79,6 +79,20 @@ class DependencyError(Exception):
         """The parent class for all dependency exceptions."""
         pass
 
+class DropPackageWarning(DependencyError):
+        """This exception is used when a package is dropped as it cannot
+        satisfy all dependencies."""
+
+        def __init__(self, pkgs, dep):
+                self.pkgs = pkgs
+                self.dep = dep
+
+        def __str__(self):
+                pkg_str = ", ".join(f.get_pkg_stem() for f in self.pkgs)
+                return _("WARNING: package {0} was ignored as it cannot "
+                    "satisfy all dependencies:\n{1}\n").format(pkg_str,
+                    prune_debug_attrs(self.dep))
+
 class UnresolvedDependencyError(DependencyError):
         """This exception is used when no package delivers a file which is
         depended upon."""
@@ -1251,7 +1265,20 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
 
         res = []
         omitted_req_any = {}
-        for cur_dep, cur_vars in deps:
+        fmri_dict = {}
+        warnings = []
+        # 
+        # We assume that the subsets are shorter than the supersets.
+        # 
+        # Example:
+        # #1 depend fmri=a, fmri=b, fmri=c, type=require-any
+        # #2 depend fmri=a, fmri=b, type=require=any
+        # #2 is treated as a subset of #1
+        #
+        # Sort the dependencies by length to visit the subsets before the
+        # supersets.
+        # 
+        for cur_dep, cur_vars in sorted(deps, key=lambda i: len(str(i))):
                 if cur_dep.attrs["type"] not in ("require", "require-any"):
                         res.append((cur_dep, cur_vars))
                         continue
@@ -1316,19 +1343,48 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
                             comp_vars.is_empty():
                                 marked = True
                                 successors.append((comp_fmri, inter))
-                # If the require-any dependency was never changed, then include
+
+                # If one require-any dependency is the subset of the other
+                # require-any dependency, we should drop the superset because
+                # ultimately they should end up with the package dependency
+                # as the subset requires.
+                #
+                # Note that we only drop the deps we generate (with the
+                # pkgdepend.debug.depend.* prefix); we ignore the deps a
+                # developer added.
+                is_superset = False
+                if files_prefix in cur_dep.attrs or \
+                    fullpaths_prefix in cur_dep.attrs:
+                        # convert to a set for set operation
+                        cur_fmris_set = set(cur_fmris)
+                        for (comp_dep, comp_vars), comp_fmris_set in \
+                            six.iteritems(fmri_dict):
+                                if comp_fmris_set != cur_fmris_set and \
+                                    comp_fmris_set.issubset(cur_fmris_set) and \
+                                    cur_vars == comp_vars:
+                                        is_superset = True
+                                        drop_f = cur_fmris_set - comp_fmris_set
+                                        warnings.append(DropPackageWarning(
+                                            drop_f, comp_dep))
+                                        break
+                        if not is_superset:
+                                fmri_dict.setdefault((cur_dep, cur_vars),
+                                    cur_fmris_set)
+
+                # If the require-any dependency was never changed or is not a
+                # superset of any other require-any dependency, then include
                 # it.  If it was changed, check whether there are situations
                 # where the require-any dependency is needed.
-                if not marked:
+                if not marked and not is_superset:
                         res.append((cur_dep, cur_vars))
                         continue
-                if cur_vars.sat_set:
+                if cur_vars.sat_set and not is_superset:
                         res.append((cur_dep, cur_vars))
-                assert successors
                 path_id = cur_dep.attrs.get(path_id_prefix, None)
                 if path_id:
                         omitted_req_any[path_id] = successors
-        return res, omitted_req_any
+
+        return res, omitted_req_any, warnings
 
 def __remove_extraneous_conditionals(deps, omitted_req_any):
         """Remove conditional dependencies which other dependencies have made
@@ -1446,7 +1502,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
 
         # Remove require dependencies on this package and require-any
         # dependencies which are unneeded.
-        res, omitted_require_any = \
+        res, omitted_require_any, warnings = \
             __remove_unneeded_require_and_require_any(res, pkg_fmri)
 
         # Now remove all conditionals which are no longer needed.
@@ -1496,7 +1552,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                 new_res.extend(add_vars(d, vc, pkg_vars))
         res = new_res
 
-        return res, errs
+        return res, errs, warnings
 
 def split_off_variants(dep, pkg_vars, satisfied=False):
         """Take a dependency which may be tagged with variants and move those
@@ -1710,6 +1766,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
 
         pkg_deps = {}
         errs = []
+        warnings = []
         external_deps = set()
         for mp, (name, pfmri), mfst, pkg_vars, manifest_errs in manifests:
                 name_to_use = pfmri or name
@@ -1782,8 +1839,10 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                                             mp, file_dep, dep_vars))
                 # Add variant information to the dependency actions and combine
                 # what would otherwise be duplicate dependencies.
-                deps, combine_errs = combine(deps, pkg_vars, pfmri, name_to_use)
+                deps, combine_errs, combine_warnings = combine(deps, pkg_vars,
+                    pfmri, name_to_use)
                 errs.extend(combine_errs)
+                warnings.extend(combine_warnings)
 
                 ext_pfmris = [
                     pkg_name
@@ -1805,4 +1864,4 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                 pkg_deps[mp] = deps
 
         sys_fmris.update(unmatched_patterns)
-        return pkg_deps, errs, sys_fmris, external_deps
+        return pkg_deps, errs, warnings, sys_fmris, external_deps
