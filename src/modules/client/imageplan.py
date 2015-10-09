@@ -1575,6 +1575,39 @@ class ImagePlan(object):
                             mode=mode, owner="root",
                             group="bin", path=pubpath)
 
+        def __get_overlaying_fmri(self, img, act, pfmri):
+                """Given an action with attribute overlay=allow, if there is an
+                overlaying action installed in the image, return the overlaying
+                package's name."""
+
+                for f in img.gen_installed_pkgs():
+                        if f == pfmri:
+                                # Not interested in ourselves.
+                                continue
+                        m = img.get_manifest(f)
+                        matching = list(m.gen_actions_by_types([act.name],
+                            {"path": [act.attrs["path"]]}))
+                        if matching:
+                                # Only one action can overlay another, so we
+                                # know we've found a match at this point.
+                                return f.get_pkg_stem(anarchy=True)
+
+        def __process_verify_result(self, args, img, act, errors, pfmri):
+                """Look further to see if we can include more details in the
+                verify result."""
+
+                if not args or act.name != "file" or \
+                    not act.attrs.get("overlay") == "allow":
+                        # No further processing required.
+                        return False
+
+                # We found errors and this is a file that can be overlaid.
+                overlaying = self.__get_overlaying_fmri(img, act, pfmri)
+                if overlaying:
+                        errors.append(_("verify or fix overlaying package: "
+                            "{0}").format(overlaying))
+                return True
+
         def plan_fix(self, args):
                 """Determine the changes needed to fix the image."""
 
@@ -1618,6 +1651,8 @@ class ImagePlan(object):
                         # for each package must be accumulated first to find
                         # an overall success/failure result and then the
                         # related messages output for it.
+                        process_overlay = False
+                        errs = []
                         for act, errors, warnings, pinfo in self.image.verify(
                             pfmri, pt, verbose=True, forever=True):
                                 # determine the package's status and message
@@ -1630,6 +1665,11 @@ class ImagePlan(object):
                                         # signature policy) and not a specific
                                         # action, so act may be None.
                                         needs_fix.append(act)
+                                        if act and not process_overlay:
+                                                process_overlay = \
+                                                    self.__process_verify_result(
+                                                    args, self.image, act, errs,
+                                                    pfmri)
                                 elif not failed and warnings:
                                         result = _("WARNING")
                                         msg_type = MSG_WARNING
@@ -1640,34 +1680,37 @@ class ImagePlan(object):
                             msg_type, _("{pkg_name:70} {result:>7}").format(
                             pkg_name=pfmri.get_pkg_stem(),
                             result=result))
+                        if errs:
+                                self.pd.add_item_message(ffmri, timestamp,
+                                    msg_type, "\tERROR: {0}".format(errs[0]))
 
                         for act, errors, warnings, info in entries:
-                                    if act:
-                                            # determine the action's message type
-                                            if errors:
-                                                    msg_type = MSG_ERROR
-                                            elif warnings:
-                                                    msg_type = MSG_WARNING
-                                            else:
-                                                    msg_type = MSG_INFO
+                                if act:
+                                        # determine the action's message type
+                                        if errors:
+                                                msg_type = MSG_ERROR
+                                        elif warnings:
+                                                msg_type = MSG_WARNING
+                                        else:
+                                                msg_type = MSG_INFO
 
-                                            self.pd.add_item_message(ffmri,
-                                                timestamp, msg_type,
-                                                "\t{0}".format(
-                                                act.distinguished_name()))
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, msg_type,
+                                            "\t{0}".format(
+                                            act.distinguished_name()))
 
-                                    for x in errors:
-                                            self.pd.add_item_message(ffmri,
-                                                timestamp, MSG_ERROR,
-                                                "\t\tERROR: {0}".format(x))
-                                    for x in warnings:
-                                            self.pd.add_item_message(ffmri,
-                                                timestamp, MSG_WARNING,
-                                                "\t\tWARNING: {0}".format(x))
-                                    for x in info:
-                                            self.pd.add_item_message(ffmri,
-                                                timestamp, MSG_INFO,
-                                                "\t\t{0}".format(x))
+                                for x in errors:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, MSG_ERROR,
+                                            "\t\tERROR: {0}".format(x))
+                                for x in warnings:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, MSG_WARNING,
+                                            "\t\tWARNING: {0}".format(x))
+                                for x in info:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, MSG_INFO,
+                                            "\t\t{0}".format(x))
 
                         if not needs_fix:
                                 continue

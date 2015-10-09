@@ -65,6 +65,17 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add dir path=etc mode=0755 owner=root group=bin
             close """
 
+        pkg_dupfile = """
+            open dupfile@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin preserve=renameold overlay=allow
+            close
+        """
+        pkg_duplink = """
+            open duplink@0,5.11-0
+            add link path=dir/pathname target=dir/other preserve=renameold overlay=true
+            close
+        """
+
         # All of these purposefully omit dir dependency.
         file10 = """
             open file@1.0,5.11-0
@@ -109,14 +120,38 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
         sysattr = """
             open sysattr@1.0-0
-            add file amber1 mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1 timestamp=20100731T014051Z
+            add file amber1 mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1 timestamp=20100731T014051Z overlay=allow
             add file amber2 mode=0555 owner=root group=bin sysattr=sensitive path=amber2 timestamp=20100731T014051Z
             close"""
 
-        misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
-            "license.licensed", "license.licensed.addendum", "amber1", "amber2"]
+        sysattr_o = """
+            open sysattr_overlay@1.0-0
+            add file mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1 overlay=true
+            close"""
 
-        misc_files2 = { "tmp/empty": "" }
+        gss = """
+            open gss@1.0-0
+            add file mech_1 path=etc/gss/mech owner=root group=sys mode=0644 overlay=allow preserve=renameold
+            add file mech_3 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=allow preserve=renameold
+            close """
+
+        krb = """
+            open krb5@1.0-0
+            add file mech_2 path=etc/gss/mech owner=root group=sys mode=0644 overlay=true preserve=renameold
+            add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold
+            close """
+
+        misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
+            "license.licensed", "license.licensed.addendum", "amber1", "amber2",
+            "tmp/file1"]
+
+        misc_files2 = {
+            "tmp/empty": "",
+            "mech_1": """kerberos_v5 1.2.840.113554.1.2.2 mech_krb5.so kmech_krb5\n""",
+            "mech_2": """\n""",
+            "mech_3": """kerberos_v5 1.2.840.113554.1.2.2 mech_krb5.so kmech_krb5\n""",
+            "mech_4": """\n"""
+        }
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
@@ -126,11 +161,14 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 for p in self.pkgsend_bulk(self.rurl, (self.amber10,
                     self.licensed13, self.dir10, self.file10, self.preserve10,
                     self.preserve11, self.preserve12, self.driver10,
-                    self.driver_prep10, self.sysattr)):
+                    self.driver_prep10, self.sysattr, self.sysattr_o, self.gss,
+                    self.krb, self.pkg_dupfile, self.pkg_duplink)):
                         pfmri = fmri.PkgFmri(p)
+                        old_publisher = pfmri.publisher
                         pfmri.publisher = None
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
                         self.plist[sfmri] = pfmri
+                        pfmri.publisher = old_publisher
 
         def test_01_basics(self):
                 """Basic fix test: install the amber package, modify one of the
@@ -540,6 +578,122 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.__do_alter_verify(pfmri, quiet=True)
                 assert(self.output == "")
 
+        def test_fix_overlay(self):
+                """Test that pkg verify / fix should tell the users to look at
+                the overlaying package in the error message if fix won't repair
+                the overlaid package."""
+
+                file_path = "etc/gss/mech"
+                file_path_1 = "etc/gss/mech_1"
+                self.image_create(self.rurl)
+                pfmri_gss = self.plist["gss@1.0-0"]
+                pfmri_krb = self.plist["krb5@1.0-0"]
+                pfmri_sysattr = self.plist["sysattr@1.0-0"]
+                pfmri_sysattr_o = self.plist["sysattr_overlay@1.0-0"]
+
+                # First, only install the package that has a file with
+                # attribute overlay=allow.
+                self.pkg("install gss")
+                self.file_exists(file_path)
+                self.file_remove(file_path)
+                self.file_doesnt_exist(file_path)
+                # Verify should report an error if the file is missing.
+                self.pkg("verify -v gss", exit=1)
+                # Fix should be able to repair the file.
+                self.pkg("fix -v gss")
+                self.file_exists(file_path)
+                self.__do_alter_verify(pfmri_gss)
+
+                # Install the overlaying package.
+                self.pkg("install krb5")
+                self.file_exists(file_path)
+                self.file_remove(file_path)
+                self.file_doesnt_exist(file_path)
+
+                # Now pkg verify should still report an error on the overlaid
+                # package and tell the users to verify the overlaying package.
+                self.pkg("verify gss", exit=1)
+                self.assertTrue("package: {0}".format(
+                    pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
+                # Verify should report an error on the overlaying package.
+                self.pkg("verify krb5", exit=1)
+                # Fix won't repair the overlaid package but will tell the users
+                # to fix the overlaying package in the verbose mode.
+                self.pkg("fix gss", exit=4)
+                self.pkg("fix -v gss", exit=4)
+                self.assertTrue("Could not repair: {0}".format(pfmri_gss) in
+                    self.output)
+                self.assertTrue("package: {0}".format(
+                    pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
+                self.file_doesnt_exist(file_path)
+
+                # Fix should be able to repair the file by fixing the overlaying
+                # package.
+                self.pkg("fix -v pkg:/krb5")
+                self.pkg("verify gss")
+                self.file_exists(file_path)
+
+                # Test that multiple overlaid files are missing.
+                self.file_remove(file_path)
+                self.file_remove(file_path_1)
+                self.pkg("verify gss", exit=1)
+                # Test that the overlay warning only emits once for each
+                # package.
+                self.pkg("verify gss | grep 'verify or fix' | wc -l | grep 1")
+                self.pkg("fix krb5")
+
+                # Test the owner, group and mode change.
+                self.__do_alter_verify(pfmri_gss, verbose=True, exit=4)
+                self.assertTrue("Could not repair: {0}".format(pfmri_gss) in
+                    self.output)
+                self.assertTrue("package: {0}".format(
+                    pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
+                self.__do_alter_verify(pfmri_krb, verbose=True)
+
+                # Test that verify / fix on system wide could report / fix the
+                # error on the overlaid and overlaying packges.
+                self.file_remove(file_path)
+                self.pkg("verify", exit=1)
+                # Test that verify / fix on all packages should not emit the
+                # overlaying warning.
+                self.assertTrue("verify or fix" not in self.output)
+                self.pkg("fix")
+                self.assertTrue("verify or fix" not in self.output)
+                self.pkg("verify")
+                self.file_exists(file_path)
+
+                # Test different file types install. Since fix will repair the
+                # overlaid package in this case, we don't need to tell the users
+                # to look at the overlaying package.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfile duplink")
+                self.pkg("verify dupfile", exit=1)
+                self.pkg("fix dupfile")
+                self.pkg("verify dupfile")
+
+                # Test overlaid package that contains system attribute error.
+                self.set_img_path(tempfile.mkdtemp(prefix="test-suite",
+                    dir="/var/tmp"))
+                self.image_create(self.rurl)
+                self.pkg("install sysattr")
+                fpath = os.path.join(self.img_path(), "amber1")
+
+                # Install the overlaying package.
+                self.pkg("install sysattr_overlay")
+                portable.remove(fpath)
+                portable.copyfile(os.path.join(self.test_root, "amber1"),
+                    fpath)
+                os.chmod(fpath, 0o555)
+                os.chown(fpath, -1, 2)
+                self.pkg("verify sysattr", exit=1)
+                self.pkg("fix -v sysattr", exit=4)
+                self.assertTrue("Could not repair: {0}".format(pfmri_sysattr) in
+                    self.output, self.plist)
+                self.assertTrue("package: {0}".format(
+                    pfmri_sysattr_o.get_pkg_stem(anarchy=True)) in self.output)
+                self.pkg("fix sysattr_overlay")
+                self.pkg("verify sysattr")
+                self.image_destroy()
 
 if __name__ == "__main__":
         unittest.main()

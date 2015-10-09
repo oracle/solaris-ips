@@ -1421,6 +1421,16 @@ def __api_plan_delete(api_inst):
         except OSError as e:
                 raise api_errors._convert_error(e)
 
+def _verify_exit_code(api_inst):
+        """Determine the exit code of pkg verify, which should be based on
+        whether we find errors."""
+
+        plan = api_inst.describe()
+        for item_id, msg_time, msg_type, msg_text in plan.gen_item_messages():
+                if msg_type == MSG_ERROR:
+                        return EXIT_OOPS
+        return EXIT_OK
+
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _origins=None, _parsable_version=None, _quiet=False,
     _review_release_notes=False, _show_licenses=False,
@@ -1458,6 +1468,9 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                         # consumer from creating a noop plan and then
                         # preparing and executing it.)
                         __api_plan_save(_api_inst, logger=logger)
+                # for pkg verify
+                if _op == PKG_OP_FIX and _noexecute and _quiet_plan:
+                        return __prepare_json(_verify_exit_code(_api_inst))
                 if _api_inst.planned_nothingtodo():
                         return __prepare_json(EXIT_NOP)
                 if _noexecute or _stage == API_STAGE_PLAN:
