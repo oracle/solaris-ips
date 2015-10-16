@@ -36,7 +36,7 @@ depend type=require fmri=pkg:/developer/gnome/gettext
 depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
-depend type=require fmri=pkg:/library/python/cffi
+depend type=require fmri=pkg:/library/python/cffi-27@1.1.2
 depend type=require fmri=pkg:/library/python/coverage-27
 depend type=require fmri=pkg:/library/python/jsonrpclib-27
 depend type=require fmri=pkg:/library/python/jsonschema-27

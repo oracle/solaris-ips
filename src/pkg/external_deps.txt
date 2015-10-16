@@ -8,7 +8,7 @@
     pkg:/developer/gnome/gnome-doc-utils
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
-    pkg:/library/python/cffi
+    pkg:/library/python/cffi-27
     pkg:/library/python/cherrypy-27
     pkg:/library/python/coverage-27
     pkg:/library/python/jsonrpclib-27

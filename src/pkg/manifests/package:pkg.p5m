@@ -487,3 +487,5 @@ depend type=group fmri=package/pkg/zones-proxy \
 depend type=parent fmri=feature/package/dependency/self \
     variant.opensolaris.zone=nonglobal
 depend type=require fmri=crypto/ca-certificates
+# CFFI import is done in C code, so it isn't picked up by pkgdepend
+depend type=require fmri=library/python/cffi-27@1.1.2
