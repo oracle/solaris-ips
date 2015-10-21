@@ -1058,6 +1058,11 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 plist = self.pkgsend_bulk(self.rurl, [self.secret1,
                     self.secret2, self.secret3, self.secret4])
 
+                # Try to install in /tmp which does not support system
+                # attributes. Just make sure we fail gracefully.
+                self.image_create(self.rurl)
+                self.pkg("install secret1", exit=1)
+
                 # Need to create an image in /var/tmp since sysattrs don't work
                 # in tmpfs.
                 self.debug(self.rurl)

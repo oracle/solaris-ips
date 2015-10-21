@@ -76,10 +76,16 @@ class TestSysattr(pkg5unittest.Pkg5TestCase):
                     dir="/var/tmp")
                 self.test_fh, self.test_fn = tempfile.mkstemp(
                     dir=self.test_path)
+                self.unsup_test_path = tempfile.mkdtemp(prefix="test-suite",
+                    dir="/tmp")
+                self.test_fh2, self.test_fn2 = tempfile.mkstemp(
+                    dir=self.unsup_test_path)
 
         def tearDown(self):
                 portable.remove(self.test_fn)
+                portable.remove(self.test_fn2)
                 os.rmdir(self.test_path)
+                os.rmdir(self.unsup_test_path)
 
         def test_0_bad_input(self):
                 # fsetattr
@@ -90,6 +96,9 @@ class TestSysattr(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(ValueError, portable.fsetattr, self.test_fn,
                     "xyz")
                 self.assertRaises(OSError, portable.fsetattr, "/nofile",
+                    "H")
+                # FS does not support system attributes.
+                self.assertRaises(OSError, portable.fsetattr, self.test_fn2,
                     "H")
 
                 # fgetattr

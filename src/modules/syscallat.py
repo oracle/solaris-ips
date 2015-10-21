@@ -25,6 +25,7 @@
 #
 
 from __future__ import unicode_literals
+import os
 import six
 from pkg._syscallat import lib, ffi
 
@@ -41,7 +42,7 @@ def mkdirat(fd, path, mode):
 
     rv = lib.mkdirat(fd, path, mode)
     if rv != 0:
-        raise OSError(ffi.errno, "No such file or directory")
+        raise OSError(ffi.errno, os.strerror(ffi.errno), path)
 
 
 def openat(fildes, path, oflag, mode):
@@ -58,7 +59,7 @@ def openat(fildes, path, oflag, mode):
 
     rv = lib.openat(fildes, path, oflag, mode)
     if rv < 0:
-        raise OSError(ffi.errno, "No such file or directory")
+        raise OSError(ffi.errno, os.strerror(ffi.errno), path)
     return rv
 
 
@@ -76,7 +77,7 @@ def renameat(fromfd, old, tofd, new):
 
     rv = lib.renameat(fromfd, old, tofd, new)
     if rv != 0:
-        raise OSError(ffi.errno, "No such file or directory")
+        raise OSError(ffi.errno, os.strerror(ffi.errno), old)
 
 
 def unlinkat(dirfd, path, flag):
@@ -91,4 +92,4 @@ def unlinkat(dirfd, path, flag):
 
     rv = lib.unlinkat(dirfd, path, flag)
     if rv < 0:
-        raise OSError(ffi.errno, "No such file or directory")
+        raise OSError(ffi.errno, os.strerror(ffi.errno), path)

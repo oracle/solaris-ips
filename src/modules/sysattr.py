@@ -66,11 +66,11 @@ def fgetattr(filename, compact=False):
 
     fd = os.open(filename, os.O_RDONLY)
     if fd == -1:
-        raise ffi.error(ffi.errno)
+        raise OSError(ffi.errno, os.strerror(ffi.errno), filename)
 
     if lib.fgetattr(fd, lib.XATTR_VIEW_READWRITE, response):
         os.close(fd)
-        raise ffi.error(ffi.errno)
+        raise OSError(ffi.errno, os.strerror(ffi.errno), filename)
     os.close(fd)
 
     count = 0
@@ -131,7 +131,7 @@ def fsetattr(filename, attr):
     request[0] = ffi.gc(request[0], lib.nvlist_free)
 
     if lib.nvlist_alloc(request, lib.NV_UNIQUE_NAME, 0) != 0:
-        raise ffi.error(ffi.errno)
+        raise OSError(ffi.errno, os.strerror(ffi.errno))
 
     # A single string indicates system attributes are passed in compact
     # form (e.g. AHi), verbose attributes are read as a list of strings.
@@ -161,15 +161,15 @@ def fsetattr(filename, attr):
                                  "attribute".format(attr))
         if lib.nvlist_add_boolean_value(request[0], lib.attr_to_name(sys_attr),
                                         1) != 0:
-            raise ffi.error(ffi.errno)
+            raise OSError(ffi.errno, os.strerror(ffi.errno))
 
     fd = os.open(filename, os.O_RDONLY)
     if fd == -1:
-        raise ffi.error(ffi.errno)
+        raise OSError(ffi.errno, os.strerror(ffi.errno), filename)
 
     if lib.fsetattr(fd, lib.XATTR_VIEW_READWRITE, request[0]):
         os.close(fd)
-        raise ffi.error(ffi.errno)
+        raise OSError(ffi.errno, os.strerror(ffi.errno), filename)
     os.close(fd)
 
 
