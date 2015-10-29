@@ -1043,8 +1043,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         if os.path.exists(orig_root):
                                 # Ensure all output is discarded; it really
                                 # doesn't matter if this succeeds.
-                                subprocess.Popen("rm -rf {0}".format(orig_root),
-                                    shell=True, stdout=nullf, stderr=nullf)
+                                cmdargs = ["/usr/bin/rm", "-rf", orig_root]
+                                subprocess.Popen(cmdargs, stdout=nullf,
+                                    stderr=nullf)
                         return False
 
                 if not progtrack:

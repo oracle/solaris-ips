@@ -3093,11 +3093,11 @@ class Repository(object):
                         self.__unlock_repository()
 
                 nullf = open(os.devnull, "w")
-                args = "/usr/bin/rm -rf " + " ".join(tmp_paths)
+                args = ["/usr/bin/rm", "-rf"]
+                args.extend(tmp_paths)
                 if not synch:
-                        args = "/usr/bin/nohup " + args
-                subp = subprocess.Popen(args, shell=True,
-                    stdout=nullf, stderr=nullf)
+                        args = ["/usr/bin/nohup"] + args
+                subp = subprocess.Popen(args, stdout=nullf, stderr=nullf)
 
                 if synch:
                         subp.wait()

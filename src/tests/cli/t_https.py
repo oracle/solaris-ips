@@ -293,13 +293,13 @@ class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
 
         misc_files = {
             "tmp/example_file": "tmp/example_file",
-            "tmp/test_ssl_auth": """
+            "tmp/test_ssl_auth": """\
 #!/usr/bin/sh
 reserved=$1
 port=$2
 echo "123"
 """,
-            "tmp/test_ssl_auth_bad": """
+            "tmp/test_ssl_auth_bad": """\
 #!/usr/bin/sh
 reserved=$1
 port=$2
