@@ -394,7 +394,14 @@ class _PipedTransport(rpc.Transport):
         def __init__(self, fd, http_enc=True):
                 self.__pipe_file = PipeFile(fd, "client-transport")
                 self.__http_enc = http_enc
-                rpc.Transport.__init__(self)
+                # This is a workaround to cope with the jsonrpclib update
+                # (version 0.2.6) more safely. Once jsonrpclib is out in
+                # the OS build, we can change it to always pass a 'config'
+                # argument to __init__.
+                if hasattr(rpclib.config, "DEFAULT"):
+                        rpc.Transport.__init__(self, rpclib.config.DEFAULT)
+                else:
+                        rpc.Transport.__init__(self)
                 self.verbose = False
                 self._extra_headers = None
 

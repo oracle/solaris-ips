@@ -111,10 +111,10 @@ class Facets(dict):
                 that that can be easily stored using JSON, pickle, etc."""
 
                 return [
-                        [k, v, True]
+                        [misc.force_text(k), v, True]
                         for k, v in six.iteritems(obj.__inherited)
                 ] + [
-                        [k, v, False]
+                        [misc.force_text(k), v, False]
                         for k, v in six.iteritems(obj.__local)
                 ]
 

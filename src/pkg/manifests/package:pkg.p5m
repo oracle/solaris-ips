@@ -218,7 +218,6 @@ file path=$(PYDIRVP)/pkg/server/api.py
 file path=$(PYDIRVP)/pkg/server/api_errors.py
 file path=$(PYDIRVP)/pkg/server/catalog.py
 file path=$(PYDIRVP)/pkg/server/depot.py pkg.depend.bypass-generate=.*six.*
-file path=$(PYDIRVP)/pkg/server/depotresponse.py
 file path=$(PYDIRVP)/pkg/server/face.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/feed.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/query_parser.py

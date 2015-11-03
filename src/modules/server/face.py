@@ -35,6 +35,7 @@ import sys
 from six.moves import http_client
 from six.moves.urllib.parse import unquote
 
+import pkg.misc as misc
 import pkg.server.api as api
 import pkg.server.api_errors as sae
 import pkg.server.feed
@@ -68,8 +69,10 @@ def feed(depot, request, response, pub):
 def __render_template(depot, request, path, pub, http_depot=None):
         template = tlookup.get_template(path)
         base = api.BaseInterface(request, depot, pub)
-        return template.render_unicode(g_vars={ "base": base, "pub": pub,
-            "http_depot": http_depot})
+        # Starting in CherryPy 3.2, cherrypy.response.body only allows
+        # bytes.
+        return misc.force_bytes(template.render(g_vars={ "base": base,
+            "pub": pub, "http_depot": http_depot}))
 
 def __handle_error(path, error):
         # All errors are treated as a 404 since reverse proxies such as Apache

@@ -628,20 +628,6 @@ class ConfigInterface(_Interface):
                 return self._depot.repo.file_requests
 
         @property
-        def filelist_requests(self):
-                """The number of /filelist operation requests that have occurred
-                during the current server session.
-                """
-                return self._depot.flist_requests
-
-        @property
-        def filelist_file_requests(self):
-                """The number of files served by /filelist operations requested
-                during the current server session.
-                """
-                return self._depot.flist_file_requests
-
-        @property
         def in_flight_transactions(self):
                 """The number of package transactions awaiting completion.
                 """

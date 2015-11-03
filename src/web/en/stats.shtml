@@ -66,10 +66,6 @@
                         <tr class="first">
                                 <th scope="row" class="last" colspan="2">Depot</th>
                         </tr>
-                        <tr>
-                                <td scope="row" class="label">Files served by filelist</td>
-                                <td class="value">${config.filelist_file_requests}</td>
-                        </tr>
 % if not config.mirror:
                         <tr>
                                 <td scope="row" class="label">In-flight Transactions</td>
@@ -93,10 +89,6 @@
                         <tr>
                                 <td scope="row" class="label">file</td>
                                 <td class="value">${config.file_requests}</td>
-                        </tr>
-                        <tr>
-                                <td scope="row" class="label">filelist</td>
-                                <td class="value">${config.filelist_requests}</td>
                         </tr>
 % if not config.mirror:
                         <tr>

@@ -1958,12 +1958,14 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
             "unexpected {0} for {1}, expected: {2}, value: {3}".format(
                 data_type, name, desc_type, data)
 
+        # The following situation is only true for Python 2.
         # We should not see unicode strings getting passed in. The assert is
         # necessary since we use the PkgDecoder hook function during json_decode
         # to convert unicode objects back into escaped str objects, which would
         # otherwise do that conversion unintentionally.
-        assert not isinstance(data_type, six.text_type), \
-            "unexpected unicode string: {0}".format(data)
+        if six.PY2:
+                assert not isinstance(data_type, six.text_type), \
+                    "unexpected unicode string: {0}".format(data)
 
         # we don't need to do anything for basic types
         for t in json_types_immediates:
@@ -2388,14 +2390,15 @@ def json_diff(name, d0, d1, alld0, alld1):
 
 def json_hook(dct):
         """Hook routine used by the JSON module to ensure that unicode objects
-        are converted to string objects."""
+        are converted to bytes objects in Python 2 and ensures that bytes
+        objects are converted to str objects in Python 3."""
 
         rvdct = {}
         for k, v in six.iteritems(dct):
-                if type(k) == six.text_type:
-                        k = k.encode("utf-8")
-                if type(v) == six.text_type:
-                        v = v.encode("utf-8")
+                if isinstance(k, six.string_types):
+                        k = force_str(k)
+                if isinstance(v, six.string_types):
+                        v= force_str(v)
 
                 rvdct[k] = v
         return rvdct
@@ -2911,17 +2914,41 @@ def set_memory_limit(bytes, allow_override=True):
                 # if that ever happens, just ignore it.
                 pass
 
-def bytes_to_unicode(s):
-        """Convert bytes to unicode with encoding 'utf-8'."""
+
+def force_bytes(s, encoding="utf-8", errors="strict"):
+        """Force the string into bytes."""
 
         if isinstance(s, bytes):
-                return s.decode("utf-8")
-        return s
+                if encoding == "utf-8":
+                        return s
+                return s.decode("utf-8", errors).encode(encoding,
+                    errors)
+        elif isinstance(s, six.string_types):
+                # this case is: unicode in Python 2 and str in Python 3
+                return s.encode(encoding, errors)
+        elif six.PY3:
+                # type not a string and Python 3's bytes() requires
+                # a string argument
+                return six.text_type(s).encode(encoding)
+        # type not a string
+        return bytes(s)
 
 
-def unicode_to_bytes(s):
-        """Convert unicode to bytes with encoding 'utf-8'."""
+def force_text(s, encoding="utf-8", errors="strict"):
+        """Force the string into text."""
 
         if isinstance(s, six.text_type):
-                return s.encode("utf-8")
-        return s
+                return s
+        if isinstance(s, six.string_types):
+                # this case is: str(bytes) in Python 2
+                return s.decode(encoding, errors)
+        elif isinstance(s, bytes):
+                # this case is: bytes in Python 3
+                return s.decode(encoding, errors)
+        # type not a string
+        return six.text_type(s)
+
+if six.PY3:
+        force_str = force_text
+else:
+        force_str = force_bytes

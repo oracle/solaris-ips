@@ -356,7 +356,17 @@ class ImagePlan(object):
                 # if we're changing variants or facets, save that to the plan.
                 if new_variants or facet_change or masked_facet_change:
                         self.pd._varcets_change = True
-                        self.pd._new_variants = new_variants
+                        if new_variants:
+                                # This particular data are passed as unicode
+                                # instead of bytes in the child image due to the
+                                # jsonrpclib update, so we use force_str here to
+                                # reduce the pain in comparing json data type.
+                                self.pd._new_variants = {}
+                                for k, v in new_variants.items():
+                                        self.pd._new_variants[misc.force_str(k)] = \
+                                            misc.force_str(v)
+                        else:
+                                self.pd._new_variants = new_variants
                         self.pd._old_facets   = self.image.cfg.facets
                         self.pd._new_facets   = new_facets
                         self.pd._facet_change = facet_change

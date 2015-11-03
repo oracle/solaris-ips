@@ -49,7 +49,7 @@ def fgetattr(filename, compact=False):
     Returns a list of verbose attributes by default. If 'compact' is True,
     return a string consisting of compact option identifiers."""
 
-    from pkg.misc import bytes_to_unicode, unicode_to_bytes
+    from pkg.misc import force_text
     if not isinstance(filename, six.string_types):
         raise TypeError("filename must be string type")
 
@@ -94,13 +94,13 @@ def fgetattr(filename, compact=False):
                 count += 1
             else:
                 # ffi.string returns a bytes
-                string = bytes_to_unicode(ffi.string(name))
+                string = force_text(ffi.string(name))
                 if string:
                     attr_list.append(string)
         pair = next_pair
 
     if compact:
-        cattrs = bytes_to_unicode(ffi.string(cattrs))
+        cattrs = force_text(ffi.string(cattrs))
         return cattrs
     return attr_list
 
@@ -119,7 +119,7 @@ def fsetattr(filename, attr):
     compact attributes example: 'HAT'
     """
 
-    from pkg.misc import bytes_to_unicode, unicode_to_bytes
+    from pkg.misc import force_bytes
     if not isinstance(filename, six.string_types):
         raise TypeError("filename must be string type")
     if not attr:
@@ -139,7 +139,7 @@ def fsetattr(filename, attr):
         compact = True
 
     for c in attr:
-        c = unicode_to_bytes(c)
+        c = force_bytes(c)
         if compact:
             sys_attr = lib.option_to_attr(c)
         else:
@@ -181,12 +181,12 @@ def get_attr_dict():
         }
     """
 
-    from pkg.misc import bytes_to_unicode, unicode_to_bytes
+    from pkg.misc import force_text
     sys_attrs = {}
     for i in range(F_ATTR_ALL):
         if not is_supported(i):
             continue
-        key = bytes_to_unicode(ffi.string(lib.attr_to_name(i)))
-        value = bytes_to_unicode(ffi.string(lib.attr_to_option(i)))
+        key = force_text(ffi.string(lib.attr_to_name(i)))
+        value = force_text(ffi.string(lib.attr_to_option(i)))
         sys_attrs.setdefault(key, value)
     return sys_attrs

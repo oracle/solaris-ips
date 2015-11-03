@@ -107,7 +107,6 @@ class DepotHTTP(_Depot):
             "catalog",
             "info",
             "manifest",
-            "filelist",
             "file",
             "open",
             "append",
@@ -127,7 +126,6 @@ class DepotHTTP(_Depot):
             "catalog",
             "info",
             "manifest",
-            "filelist",
             "file",
             "p5i",
             "publisher",
@@ -136,7 +134,6 @@ class DepotHTTP(_Depot):
 
         REPO_OPS_MIRROR = [
             "versions",
-            "filelist",
             "file",
             "publisher",
             "status",
@@ -161,8 +158,6 @@ class DepotHTTP(_Depot):
 
                 self.cfg = dconf
                 self.repo = repo
-                self.flist_requests = 0
-                self.flist_file_requests = 0
                 self.request_pub_func = request_pub_func
 
                 content_root = dconf.get_property("pkg", "content_root")
@@ -763,77 +758,6 @@ class DepotHTTP(_Depot):
 
                         cherrypy.request.tar_stream = None
 
-        def filelist_0(self, *tokens, **params):
-                """Request data contains application/x-www-form-urlencoded
-                entries with the requested filenames.  The resulting tar stream
-                is output directly to the client. """
-
-                try:
-                        self.flist_requests += 1
-
-                        # Create a dummy file object that hooks to the write()
-                        # callable which is all tarfile needs to output the
-                        # stream.  This will write the bytes to the client
-                        # through our parent server process.
-                        f = Dummy()
-                        f.write = cherrypy.response.write
-
-                        tar_stream = tarfile.open(mode = "w|",
-                            fileobj = f)
-
-                        # We can use the request object for storage of data
-                        # specific to this request.  In this case, it allows us
-                        # to provide our on_end_request function with access to
-                        # the stream we are processing.
-                        cherrypy.request.tar_stream = tar_stream
-
-                        # This is a special hook just for this request so that
-                        # if an exception is encountered, the stream will be
-                        # closed properly regardless of which thread is
-                        # executing.
-                        cherrypy.request.hooks.attach("on_end_request",
-                            self._tar_stream_close, failsafe=True)
-
-                        pub = self._get_req_pub()
-                        for v in params.values():
-                                try:
-                                        filepath = self.repo.file(v, pub=pub)
-                                except srepo.RepositoryFileNotFoundError:
-                                        # If file isn't here, skip it
-                                        continue
-
-                                tar_stream.add(filepath, v, False)
-                                self.flist_file_requests += 1
-
-                        # Flush the remaining bytes to the client.
-                        tar_stream.close()
-                        cherrypy.request.tar_stream = None
-
-                except Exception as e:
-                        # If we find an exception of this type, the
-                        # client has most likely been interrupted.
-                        if isinstance(e, socket.error) \
-                            and e.args[0] == errno.EPIPE:
-                                return
-                        raise
-
-                yield ""
-
-        # We have to configure the headers either through the _cp_config
-        # namespace, or inside the function itself whenever we are using
-        # a streaming generator.  This is because headers have to be setup
-        # before the response even begins and the point at which @tools
-        # hooks in is too late.
-        filelist_0._cp_config = {
-            "response.stream": True,
-            "tools.response_headers.on": True,
-            "tools.response_headers.headers": [
-                ("Content-Type", "application/data"),
-                ("Pragma", "no-cache"),
-                ("Cache-Control", "no-cache, no-transform, must-revalidate"),
-                ("Expires", 0)
-            ]
-        }
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash
@@ -1887,136 +1811,6 @@ class NastyDepotHTTP(DepotHTTP):
         manifest_0._cp_config = {
             "response.stream": True,
             "tools.nasty_before.maxroll": 200
-        }
-
-        def filelist_0(self, *tokens, **params):
-                """Request data contains application/x-www-form-urlencoded
-                entries with the requested filenames.  The resulting tar stream
-                is output directly to the client. """
-
-                try:
-                        self.flist_requests += 1
-
-                        # NASTY
-                        if self.need_nasty_2():
-                                cherrypy.log("NASTY filelist_0: empty response")
-                                return
-
-                        # Create a dummy file object that hooks to the write()
-                        # callable which is all tarfile needs to output the
-                        # stream.  This will write the bytes to the client
-                        # through our parent server process.
-                        f = Dummy()
-                        f.write = cherrypy.response.write
-
-                        tar_stream = tarfile.open(mode = "w|",
-                            fileobj = f)
-
-                        # We can use the request object for storage of data
-                        # specific to this request.  In this case, it allows us
-                        # to provide our on_end_request function with access to
-                        # the stream we are processing.
-                        cherrypy.request.tar_stream = tar_stream
-
-                        # This is a special hook just for this request so that
-                        # if an exception is encountered, the stream will be
-                        # closed properly regardless of which thread is
-                        # executing.
-                        cherrypy.request.hooks.attach("on_end_request",
-                            self._tar_stream_close, failsafe=True)
-
-                        pub = self._get_req_pub()
-                        for v in params.values():
-
-                                # NASTY
-                                # Stash filename for later use.
-                                # Toss out the list if it's larger than 1024
-                                # items.
-                                if len(self.requested_files) > 1024:
-                                        self.requested_files = [v]
-                                else:
-                                        self.requested_files.append(v)
-
-                                # NASTY
-                                if self.need_nasty_3():
-                                        # Give up early
-                                        cherrypy.log(
-                                            "NASTY filelist_0: give up early")
-                                        break
-                                elif self.need_nasty_3():
-                                        # Skip this file
-                                        cherrypy.log(
-                                            "NASTY filelist_0: skip a file")
-                                        continue
-                                elif self.need_nasty_4():
-                                        # Take a nap
-                                        self.nasty_nap()
-
-                                try:
-                                        filepath = self.repo.file(v, pub=pub)
-                                except srepo.RepositoryFileNotFoundError:
-                                        # If file isn't here, skip it
-                                        continue
-
-                                # NASTY
-                                # Send a file with the wrong content
-                                if self.need_nasty_4():
-                                        cherrypy.log(
-                                            "NASTY filelist_0: wrong content")
-                                        badfn = \
-                                            random.choice(self.requested_files)
-                                        badpath = self.__get_bad_path(badfn)
-
-                                        tar_stream.add(badpath, v, False)
-                                else:
-                                        tar_stream.add(filepath, v, False)
-
-                                self.flist_file_requests += 1
-
-                        # NASTY
-                        # Write garbage into the stream
-                        if self.need_nasty_3():
-                                cherrypy.log(
-                                    "NASTY filelist_0: add stream garbage")
-                                f.write("NASTY!")
-
-                        # NASTY
-                        # Send an extraneous file
-                        if self.need_nasty_3():
-                                cherrypy.log(
-                                    "NASTY filelist_0: send extra file")
-                                extrafn = random.choice(self.requested_files)
-                                extrapath = self.repo.file(extrafn, pub=pub)
-                                tar_stream.add(extrapath, extrafn, False)
-
-                        # Flush the remaining bytes to the client.
-                        tar_stream.close()
-                        cherrypy.request.tar_stream = None
-
-                except Exception as e:
-                        # If we find an exception of this type, the
-                        # client has most likely been interrupted.
-                        if isinstance(e, socket.error) \
-                            and e.args[0] == errno.EPIPE:
-                                return
-                        raise
-
-                yield ""
-
-        # We have to configure the headers either through the _cp_config
-        # namespace, or inside the function itself whenever we are using
-        # a streaming generator.  This is because headers have to be setup
-        # before the response even begins and the point at which @tools
-        # hooks in is too late.
-        filelist_0._cp_config = {
-            "response.stream": True,
-            "tools.response_headers.on": True,
-            "tools.response_headers.headers": [
-                ("Content-Type", "application/data"),
-                ("Pragma", "no-cache"),
-                ("Cache-Control", "no-cache, must-revalidate"),
-                ("Expires", 0)
-            ]
         }
 
         def __get_bad_path(self, v):

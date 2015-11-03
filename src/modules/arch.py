@@ -71,14 +71,14 @@ def get_isainfo():
     if buf2 == NULL and buf1:
         buf = buf1
 
-    from pkg.misc import bytes_to_unicode
+    from pkg.misc import force_text
     # ffi.string returns a bytes
     if buf == NULL:
-        buf1 = bytes_to_unicode(ffi.string(ffi.cast("char *", buf1)))
-        buf2 = bytes_to_unicode(ffi.string(ffi.cast("char *", buf2)))
+        buf1 = force_text(ffi.string(ffi.cast("char *", buf1)))
+        buf2 = force_text(ffi.string(ffi.cast("char *", buf2)))
         robj = [buf1, buf2]
     else:
-        buf = bytes_to_unicode(ffi.string(ffi.cast("char *", buf)))
+        buf = force_text(ffi.string(ffi.cast("char *", buf)))
         robj = [buf]
 
     return robj
@@ -89,8 +89,8 @@ def get_release():
     buf = _get_sysinfo(lib.SI_RELEASE)
     if buf == NULL:
         return
-    from pkg.misc import bytes_to_unicode
-    return bytes_to_unicode(ffi.string(ffi.cast("char *", buf)))
+    from pkg.misc import force_text
+    return force_text(ffi.string(ffi.cast("char *", buf)))
 
 
 def get_platform():
@@ -98,5 +98,5 @@ def get_platform():
     buf = _get_sysinfo(lib.SI_PLATFORM)
     if buf == NULL:
         return
-    from pkg.misc import bytes_to_unicode
-    return bytes_to_unicode(ffi.string(ffi.cast("char *", buf)))
+    from pkg.misc import force_text
+    return force_text(ffi.string(ffi.cast("char *", buf)))
