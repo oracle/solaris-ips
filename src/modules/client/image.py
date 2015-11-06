@@ -3867,6 +3867,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         else:
                                 raise
 
+        def get_usernames_by_gid(self, gid):
+                return portable.get_usernames_by_gid(gid, self.root)
+
         def update_index_dir(self, postfix="index"):
                 """Since the index directory will not reliably be updated when
                 the image root is, this should be called prior to using the

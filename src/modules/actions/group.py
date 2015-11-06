@@ -65,10 +65,19 @@ class GroupAction(generic.Action):
                 """client-side method that adds the group
                    use gid from disk if different"""
                 if not have_cfgfiles:
-                        # the group action is ignored if cfgfiles is not available
+                        # the group action is ignored if cfgfiles is not
+                        # available.
                         return
 
                 template = self.extract(["groupname", "gid"])
+
+                root = pkgplan.image.get_root()
+                try:
+                        pw = PasswordFile(root, lock=True)
+                except EnvironmentError as e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        pw = None
 
                 gr = GroupFile(pkgplan.image)
 
@@ -79,15 +88,41 @@ class GroupAction(generic.Action):
                 #        (XXX this doesn't chown any files on-disk)
                 # else, nothing to do
                 if cur_attrs:
-                        if (cur_attrs["gid"] != self.attrs["gid"]):
-                                template = cur_attrs;
-                                template["gid"] = self.attrs["gid"]
-                        else:
+                        if (cur_attrs["gid"] == self.attrs["gid"]):
+                                if pw:
+                                        pw.unlock()
                                 return
+
+                        cur_gid = cur_attrs["gid"]
+                        template = cur_attrs;
+                        template["gid"] = self.attrs["gid"]
+                        # Update the user database with the new gid
+                        # as well.
+                        try:
+                                usernames = pkgplan.image.get_usernames_by_gid(
+                                    cur_gid)
+                                for username in usernames:
+                                        user_entry = pw.getuser(
+                                            username)
+                                        user_entry["gid"] = self.attrs[
+                                            "gid"]
+                                        pw.setvalue(user_entry)
+                        except Exception as e:
+                                if pw:
+                                        pw.unlock()
+                                txt = _("Group cannot be installed. "
+                                    "Updating related user entries "
+                                    "failed.")
+                                raise apx.ActionExecutionError(self,
+                                    error=e, details=txt,
+                                    fmri=pkgplan.destination_fmri)
+
                 # XXX needs modification if more attrs are used
                 gr.setvalue(template)
                 try:
                         gr.writefile()
+                        if pw:
+                                pw.writefile()
                 except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
@@ -105,6 +140,9 @@ class GroupAction(generic.Action):
                                 img._groupsbyname[self.attrs["groupname"]] = \
                                     int(self.attrs["gid"])
                         raise pkg.actions.ActionRetry(self)
+                finally:
+                        if pw:
+                                pw.unlock()
 
         def retry(self, pkgplan, orig):
                 groups = pkgplan.image._groups

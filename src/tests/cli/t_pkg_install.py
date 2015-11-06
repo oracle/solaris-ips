@@ -9466,6 +9466,20 @@ adm
             close
         """
 
+        pkg_conflictgroup1 = """
+            open conflictgroup1@0,5.11
+            add user group=fozzie uid=20 username=fozzie
+            add group groupname=fozzie gid=200
+            close
+        """
+
+        pkg_conflictgroup2 = """
+            open conflictgroup2@0,5.11
+            add user group=fozzie uid=21 username=fozzie
+            add group groupname=fozzie gid=201
+            close
+        """
+
         pkg_driverdb = """
             open driverdb@0,5.11-0
             add file tmp/devlink.tab path=etc/devlink.tab mode=0644 owner=root group=bin
@@ -9591,6 +9605,45 @@ adm
                         pkgs.append(s)
 
                 self.plist = self.pkgsend_bulk(self.rurl, pkgs)
+
+
+        def test_conflictgroupid_install(self):
+                """Test conflict group IDs will not cause user action failure.
+                """
+
+                self.image_create(self.rurl)
+
+                self.pkg("install userdb")
+                self.pkg("install conflictgroup1")
+                with open(os.path.join(self.img_path(), "etc/group")) as f:
+                        lines = f.readlines()
+                for line in lines:
+                        if "fozzie" in line:
+                                self.assert_("200" in line)
+                                break
+                with open(os.path.join(self.img_path(), "etc/passwd")) as f:
+                        lines = f.readlines()
+                for line in lines:
+                        if "fozzie" in line:
+                                self.assert_("200" in line)
+                                break
+                self.pkg("install -v --reject conflictgroup1 conflictgroup2")
+
+                self.pkg("list conflictgroup1", exit=1)
+                self.pkg("list conflictgroup2")
+                with open(os.path.join(self.img_path(), "etc/passwd")) as f:
+                        lines = f.readlines()
+                for line in lines:
+                        if "fozzie" in line:
+                                self.assert_("201" in line)
+                                break
+                with open(os.path.join(self.img_path(), "etc/group")) as f:
+                        lines = f.readlines()
+                for line in lines:
+                        if "fozzie" in line:
+                                self.assert_("201" in line)
+                                break
+                self.pkg("verify")
 
         def test_multiple_files_install(self):
                 """Test the behavior of pkg(1) when multiple file actions

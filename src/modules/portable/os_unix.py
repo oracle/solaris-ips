@@ -167,6 +167,31 @@ def get_name_by_uid(uid, dirpath, use_file):
         except KeyError:
                 raise KeyError("user ID not found: {0:d}".format(uid))
 
+def get_usernames_by_gid(gid, dirpath):
+        if not already_called():
+                get_usernames_by_gid(gid, dirpath)
+
+        try:
+                load_passwd(dirpath)
+                return [unam
+                    for unam, pwdentry in users[dirpath].items()
+                    if str(pwdentry.pw_gid) == gid
+                ]
+        except OSError as e:
+                if e.errno != errno.ENOENT:
+                        raise
+                # If the password file doesn't exist, bootstrap
+                # ourselves from the current environment.
+                # The following call could be expensive.
+                allpwdentries = pwd.getpwall()
+                if not allpwdentries:
+                        allpwdentries = []
+                return [
+                    pwdentry.pw_name
+                    for pwdentry in allpwdentries
+                    if str(pwdentry.pw_gid) == gid
+                ]
+
 def load_passwd(dirpath):
         # check if we need to reload cache
         passwd_file = os.path.join(dirpath, "etc/passwd")

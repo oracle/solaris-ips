@@ -66,7 +66,11 @@ def get_name_by_gid(gid, dirpath, use_file):
 
 def get_name_by_uid(uid, dirpath, use_file):
         """group names/numbers are ignored on Windows."""
-        return '' 
+        return ''
+
+def get_usernames_by_gid(gid, dirpath, use_file):
+        """group names/numbers are ignored on Windows."""
+        return []
 
 def get_userid():
         """group names/numbers are ignored on Windows."""

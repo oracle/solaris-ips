@@ -115,6 +115,12 @@ def get_name_by_uid(uid, dirpath, use_file):
             KeyError if the specified group does not exist"""
         raise NotImplementedError
 
+def get_usernames_by_gid(gid, dirpath):
+        """ Return all user names associated with a group ID.
+        The user name is first retrieved from an OS-specific file rooted
+        by dirpath. If failed, try to retrieve it from the operating system."""
+        raise NotImplementedError
+
 def is_admin():
         """ Return true if the invoking user has administrative
         privileges on the current runtime OS (e.g. are they the
