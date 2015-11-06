@@ -504,7 +504,6 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                         url = urljoin(depot_url,
                             "{0}/catalog/1/catalog.attrs".format(p))
                         urlopen(url)
-                self.dc.stop()
 
 
 class TestDepotController(pkg5unittest.CliTestCase):

@@ -71,6 +71,7 @@ A RPC client can be implemented as follows:
 from __future__ import print_function
 import errno
 import fcntl
+import logging
 import os
 import socket
 import stat
@@ -87,6 +88,12 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler as \
     SimpleRPCRequestHandler
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCDispatcher as \
     SimpleRPCDispatcher
+
+# jsonrpclib 0.2.6's SimpleJSONRPCServer makes logging calls, but we don't
+# configure logging in this file, so we attach a do-nothing handler to it to
+# prevent error message being output to sys.stderr.
+logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
+    logging.NullHandler())
 
 #
 # These includes make it easier for clients to catch the specific
