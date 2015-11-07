@@ -173,7 +173,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
         def setUp(self):
                 # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test2", "test4", "test5", "nightly"])
+                    "test2", "test4", "test5", "nightly"], image_count=2)
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.rurl3 = self.dcs[3].get_repo_url()
@@ -442,6 +442,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 upgrades."""
 
                 self.image_create(self.rurl6)
+                self.image_clone(1)
                 self.pkg("change-facet "
                     "version-lock.consolidation/osnet/osnet-incorporation=false")
                 self.pkg("install entire@5.12-5.12.0.0.0.45.0 "
@@ -465,6 +466,13 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # Should exit with 'nothing to do' since update to new version
                 # of osnet-incorporation is not possible.
                 self.pkg("update -nv osnet-incorporation", exit=4)
+
+                # A pkg update (with no arguments) should not fail if we are a
+                # linked image child because we're likely constrained by our
+                # parent dependencies.
+                self.pkg("attach-linked --linked-md-only -p system:foo "
+                    "{0}".format(self.img_path(1)))
+                self.pkg("update -nv", exit=4)
 
 
 class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):

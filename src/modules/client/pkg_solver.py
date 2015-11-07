@@ -1200,9 +1200,12 @@ class PkgSolver(object):
 
                 incorps = self.__get_installed_upgradeable_incorps(
                     excludes)
-                if not incorps:
+                if not incorps or self.__is_child():
                         # If there are no installed, upgradeable incorporations,
-                        # then assume that no updates were available.
+                        # then assume that no updates were available.  Also if
+                        # we're a linked image child we may not be able to
+                        # update to the latest available incorporations due to
+                        # parent constraints, so don't generate an error.
                         return self.__end_solve(solution, excludes)
 
                 # Before making a guess, apply extra trimming to see if we can
@@ -2098,7 +2101,7 @@ class PkgSolver(object):
                         nonmatching = set(nonmatching)
 
                 elif dtype == "parent":
-                        if self.__parent_pkgs == None:
+                        if not self.__is_child():
                                 # ignore this dependency
                                 matching = nonmatching = frozenset()
                         else:
@@ -2251,7 +2254,7 @@ class PkgSolver(object):
                 relax_pkgs = set()
 
                 # check if we're a child image.
-                if self.__parent_pkgs is None:
+                if not self.__is_child():
                         return relax_pkgs
 
                 # if we're ignoring parent dependencies there is no reason to
@@ -3012,7 +3015,7 @@ class PkgSolver(object):
                 assert pkg_fmri.publisher
 
                 # if we're not a child then ignore "parent" dependencies.
-                if self.__parent_pkgs == None:
+                if not self.__is_child():
                         return True
 
                 # check if we're ignoring parent dependencies for installed
@@ -3219,6 +3222,10 @@ class PkgSolver(object):
                     for f in fmri_list
                     if f not in self.__trim_dict
                 ]
+
+        def __is_child(self):
+                """Return True if this image is a linked image child."""
+                return self.__parent_pkgs is not None
 
         def __is_zone(self):
                 """Return True if image is a nonglobal zone"""
