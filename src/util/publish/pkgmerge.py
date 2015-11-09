@@ -381,7 +381,7 @@ def main_func():
                             "packages in any of the specified repositories for "
                             "publisher {pub_name}:"
                             "\n{patterns}").format(patterns="\n".join(in_none),
-                            pub_name=pub.prefi))
+                            pub_name=pub.prefix))
                         continue
 
                 # generate set of all package names to be processed, and dict

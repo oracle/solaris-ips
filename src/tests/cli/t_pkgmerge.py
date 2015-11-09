@@ -422,6 +422,17 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                     "-d {0} -p noodles".format(self.test_root),
                 ]), exit=1)
 
+                # Create the target repository.
+                repodir = os.path.join(self.test_root, "test_0_repo")
+                self.create_repo(repodir)
+
+                # Should fail because of no matching packages.
+                self.pkgmerge(" ".join([
+                    "-s arch=i386,{0}".format(self.rurl1),
+                    "-d {0} nomatching".format(repodir),
+                ]), exit=1)
+                shutil.rmtree(repodir)
+
         def test_1_single_merge(self):
                 """Verify that merge functionality works as expected when
                 specifying a single source."""
