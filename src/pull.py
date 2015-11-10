@@ -732,7 +732,21 @@ def __mog_helper(mog_files, fmri, mpathname):
                 new_lines.append(al)
 
         return (nfmri, new_lines)
-    
+
+def _rm_temp_raw_files(fmri, xport_cfg, ignore_errors=False):
+        # pkgdir is a directory with format: pkg_name/version.
+        # pkg_parentdir is the actual pkg_name directory.
+        pkgdir = xport_cfg.get_pkg_dir(fmri)
+        pkg_parentdir = os.path.dirname(pkgdir)
+        shutil.rmtree(pkgdir,
+            ignore_errors=ignore_errors)
+
+        # If the parent directory become empty,
+        # remove it as well.
+        if not os.listdir(pkg_parentdir):
+                shutil.rmtree(pkg_parentdir,
+                    ignore_errors=ignore_errors)
+
 def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     keep_compresed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
     dkey, dcert, mog_files):
@@ -806,26 +820,23 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                         nf = f
                         if do_mog:
-                                nf, line_buffer = __mog_helper(mog_files,
-                                    f, m.pathname)
                                 try:
+                                        nf, line_buffer = __mog_helper(mog_files,
+                                            f, m.pathname)
                                         # Create mogrified manifest.
-                                        # Remove the old manifest cache first.
-                                        oldpkgdir = xport_cfg.get_pkg_dir(f)
-                                        oldpkg_parentdir = os.path.dirname(
-                                            oldpkgdir)
-                                        shutil.rmtree(oldpkgdir)
-                                        # If the parent directory become empty,
-                                        # remove it as well.
-                                        if not os.listdir(oldpkg_parentdir):
-                                                shutil.rmtree(oldpkg_parentdir)
+                                        # Remove the old raw pkg data first.
+                                        _rm_temp_raw_files(f, xport_cfg)
                                         nm = pkg.manifest.FactoredManifest(nf,
                                             xport_cfg.get_pkg_dir(nf),
                                             contents="\n".join(
                                             line_buffer))
                                 except EnvironmentError as e:
+                                        _rm_temp_raw_files(nf, xport_cfg,
+                                            ignore_errors=True)
                                         raise apx._convert_error(e)
                                 except Exception as e:
+                                        _rm_temp_raw_files(nf, xport_cfg,
+                                            ignore_errors=True)
                                         abort(_("Creating mogrified "
                                             "manifest failed: {0}"
                                             ).format(str(e)))
@@ -1428,8 +1439,13 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                         nf = f
                         if do_mog:
-                                nf, line_buffer = __mog_helper(mog_files,
-                                    f, m.pathname)
+                                try:
+                                        nf, line_buffer = __mog_helper(mog_files,
+                                            f, m.pathname)
+                                except Exception as e:
+                                        _rm_temp_raw_files(f, xport_cfg,
+                                            ignore_errors=True)
+                                        abort(err=e)
 
                         # Figure out whether the package is already in
                         # the target repository or not.
@@ -1473,25 +1489,23 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 # mogrified manifest for future use.
                                 try:
                                         # Create mogrified manifest.
-                                        # Remove the old manifest cache first.
-                                        oldpkgdir = xport_cfg.get_pkg_dir(f)
-                                        oldpkg_parentdir = os.path.dirname(
-                                            oldpkgdir)
-                                        shutil.rmtree(oldpkgdir)
-                                        # If the parent directory become empty,
-                                        # remove it as well.
-                                        if not os.listdir(oldpkg_parentdir):
-                                                shutil.rmtree(oldpkg_parentdir)
+                                        # Remove the old raw pkg data first.
+                                        _rm_temp_raw_files(f, xport_cfg)
                                         nm = pkg.manifest.FactoredManifest(nf,
                                             xport_cfg.get_pkg_dir(nf),
                                             contents="\n".join(
                                             line_buffer))
                                 except EnvironmentError as e:
+                                        _rm_temp_raw_files(nf, xport_cfg,
+                                            ignore_errors=True)
                                         raise apx._convert_error(e)
                                 except Exception as e:
+                                        _rm_temp_raw_files(nf, xport_cfg,
+                                            ignore_errors=True)
                                         abort(_("Creating mogrified "
                                             "manifest failed: {0}"
                                             ).format(str(e)))
+
                         else:
                                 # Use the original manifest if no
                                 # mogrify is done.
@@ -1512,6 +1526,9 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         get_bytes += getb
                         get_files += getf
 
+                        if dry_run:
+                                _rm_temp_raw_files(nf, xport_cfg,
+                                    ignore_errors=True)
                         tracker.manifest_fetch_progress(completion=True)
                 tracker.manifest_fetch_done()
                 # Next, retrieve and store the content for each package.

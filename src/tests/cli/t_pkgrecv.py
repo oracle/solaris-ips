@@ -1307,12 +1307,13 @@ Estimated transfer size: 528.00 B
                 republish behaviour."""
 
                 # Test with add an invalid action will fail.
+                rpth = tempfile.mkdtemp(dir=self.test_root)
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
                     .format(self.transforms["add_invalid_act"], self.durl6),
                     exit=1)
                 self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} "
                     "-v filetrans1".format(self.transforms["add_invalid_act"],
-                    self.durl6), exit=1)
+                    rpth), exit=1)
 
                 # Test add a depend action without fmri attribute will fail.
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
@@ -1320,7 +1321,7 @@ Estimated transfer size: 528.00 B
                     exit=1)
                 self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} "
                     "-v filetrans1".format(self.transforms["add_invalid_act2"],
-                    self.durl6), exit=1)
+                    rpth), exit=1)
 
                 # Test add a depend action with invalid fmri attribute will
                 # fail.
@@ -1329,7 +1330,7 @@ Estimated transfer size: 528.00 B
                     exit=1)
                 self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
                     "filetrans1".format(self.transforms["add_invalid_act3"],
-                    self.durl6), exit=1)
+                    rpth), exit=1)
 
                 # Test with adding a non-existing file will fail.
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
@@ -1337,7 +1338,7 @@ Estimated transfer size: 528.00 B
                     exit=1)
                 self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
                     "filetrans1".format(self.transforms["add_none_file"],
-                    self.durl6), exit=1)
+                    rpth), exit=1)
                 self.assert_("not allowed" in self.errout)
 
                 # Test with adding an additional existing file
