@@ -515,6 +515,16 @@ variant.opensolaris.zone\t{1}
                 self.assertEqualParsable(self.output, change_variants=[
                     ["variant.arch", "i386"]])
 
+        def test_invalid_variant(self):
+                """Test that invalid input is handled appropriately"""
+
+                self.image_create(self.rurl, variants={
+                    "variant.arch": "i386",
+                    "variant.opensolaris.zone": "nonglobal"
+                })
+                self.pkg("install pkg_shared")
+                self.pkg("change-variant variant.opensolaris.zone=bogus")
+
 
 class TestPkgChangeVariantPerTestRepo(pkg5unittest.SingleDepotTestCase):
         """A separate test class is needed because these tests modify packages

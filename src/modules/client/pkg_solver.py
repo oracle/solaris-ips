@@ -2938,9 +2938,10 @@ class PkgSolver(object):
                                             "image architecture")
                                 else:
                                         reason = (N_("Package supports image "
-                                            "variant {0}=[{1}] but doesn't "
-                                            "support this image's {0} ({2})"),
-                                            (v, vd[v], self.__variants[v]))
+                                            "variant {0}={1} but doesn't "
+                                            "support this image's {0}={2}"),
+                                            (v, str(vd[v]),
+                                            str(self.__variants[v])))
 
                                 self.__trim(fmri, _TRIM_VARIANT, reason)
                 return reason == ""
