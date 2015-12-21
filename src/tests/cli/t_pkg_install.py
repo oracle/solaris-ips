@@ -6802,9 +6802,10 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # Verify that no packages are installed.
                 self.pkg("list", exit=1)
 
-                # Verify moo can not be installed (as only depot1 has it) since
-                # test2 cannot be reached (and needs a refresh).
-                self.pkg("install moo", exit=1)
+                # Verify moo can be installed (as only depot1 has it) even
+                # though test2 cannot be reached (and needs a refresh).
+                self.pkg("install moo")
+                self.pkg("uninstall moo")
 
                 # Verify moo can be installed (as only depot1 has it) even
                 # though test2 cannot be reached (and needs a refresh) if
@@ -6827,10 +6828,6 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # Set test2 so that upgrade-np has a new version available
                 # even though test1's repository is not accessible.
                 self.pkg("set-publisher -O {0} test2".format(self.rurl4))
-
-                # Verify update does not work since test1 is unreachable
-                # even though upgrade-np@1.1 is available from test2.
-                self.pkg("update", exit=1)
 
                 # Verify update works even though test1 is unreachable
                 # since upgrade-np@1.1 is available from test2 if --no-refresh

@@ -2158,6 +2158,13 @@ pkg unset-publisher {0}
                                     e.filename)
                         raise
 
+                # Make a test contact to the repo to see if it is responding.
+                # We need to pass in a publisher object which only has one
+                # origin so create one from our current publisher.
+                test_pub = copy.copy(self)
+                test_pub.repository = repo
+                self.transport.version_check(test_pub)
+
                 # Ensure that the temporary directory gets removed regardless
                 # of success or failure.
                 try:
@@ -2175,7 +2182,7 @@ pkg unset-publisher {0}
                         shutil.rmtree(tempdir, True)
 
         def __refresh(self, full_refresh, immediate, mismatched=False,
-	    progtrack=None, include_updates=False):
+	    progtrack=None, include_updates=False, ignore_errors=False):
                 """The method to handle the overall refresh process.  It
                 determines if a refresh is actually needed, and then calls
                 the first version-specific refresh method in the chain."""
@@ -2204,19 +2211,26 @@ pkg unset-publisher {0}
                         # If catalog is on disk, check if refresh is necessary.
                         if not immediate and not self.needs_refresh:
                                 # No refresh needed.
-                                return False
+                                return False, None
 
                 any_changed = False
                 any_refreshed = False
+                failed = []
+                total = 0
                 for origin, opath in self.__gen_origin_paths():
-                        changed, refreshed = self.__refresh_origin(opath,
-                            full_refresh, immediate, mismatched, origin,
-			    progtrack=progtrack,
-                            include_updates=include_updates)
-                        if changed:
-                                any_changed = True
-                        if refreshed:
-                                any_refreshed = True
+                        total += 1
+                        try:
+                                changed, refreshed = self.__refresh_origin(
+                                    opath, full_refresh, immediate, mismatched,
+                                    origin, progtrack=progtrack,
+                                    include_updates=include_updates)
+                        except api_errors.InvalidDepotResponseException as e:
+                                failed.append((origin, e))
+                        else:
+                                if changed:
+                                        any_changed = True
+                                if refreshed:
+                                        any_refreshed = True
 
                 if any_refreshed:
                         # Update refresh time.
@@ -2227,13 +2241,20 @@ pkg unset-publisher {0}
                 if self.__rebuild_catalog():
                         any_changed = True
 
-                return any_changed
+                errors = None
+                if failed:
+                        errors = api_errors.CatalogOriginRefreshException(
+                            failed, total)
+
+                return any_changed, errors
 
         def refresh(self, full_refresh=False, immediate=False, progtrack=None,
             include_updates=False):
-                """Refreshes the publisher's metadata, returning a boolean
-                value indicating whether any updates to the publisher's
-                metadata occurred.
+                """Refreshes the publisher's metadata, returning a tuple
+                containing a boolean value indicating whether any updates to the 
+                publisher's metadata occurred and an error object, which is
+                either a CatalogOriginRefreshException containing all the failed
+                origins for this publisher or None.
 
                 'full_refresh' is an optional boolean value indicating whether
                 a full retrieval of publisher metadata (e.g. catalogs) or only

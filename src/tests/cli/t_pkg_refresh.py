@@ -625,6 +625,69 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 shutil.copytree(old_cat, v1_cat.meta_root)
                 self.pkg("refresh")
 
+        def test_multi_origin_refresh(self):
+                """Test that refresh behaves correctly if some origins of a
+                publisher are not reachable."""
+
+                # Use depots 1,3,4 which are all for pub 'test1'.
+                self.image_create(self.durl1, prefix="test1")
+                self.pkg("set-publisher -g {0} -g {1} test1".format(self.durl3,
+                    self.durl4))
+                self.pkgsend_bulk(self.durl1, self.foo10)
+                self.pkgsend_bulk(self.durl3, self.foo11)
+                self.pkgsend_bulk(self.durl4, self.foo12)
+                self.dcs[3].stop()
+                self.dcs[4].stop()
+
+                # Only packages in depot 1 should be visible,
+                # refresh should exit with partial success.
+                self.pkg("refresh", exit=3)
+                self.pkg("list -af foo@1.0")
+                self.pkg("list -af foo@1.1 foo@1.2", exit=1)
+
+                # Only packages in depot 1 and 2 should be visible,
+                # refresh should exit with partial success.
+                self.dcs[3].start()
+                self.pkg("refresh", exit=3)
+                self.pkg("list -af foo@1.0 foo@1.1")
+                self.pkg("list -af foo@1.2", exit=1)
+
+                # All packages should be visible, refresh should be complete.
+                self.dcs[4].start()
+                self.pkg("refresh")
+                self.pkg("list -af foo@1.0 foo@1.1 foo@1.2")
+
+        def test_implicit_multi_origin_refresh(self):
+                """Test that implicit refresh behaves correctly if some origins
+                of a publisher are not reachable."""
+
+                # Use depots 1,3,4 which are all for pub 'test1'.
+                self.image_create(self.durl1, prefix="test1")
+                self.pkg("set-publisher -g {0} -g {1} test1".format(self.durl3,
+                    self.durl4))
+                self.pkgsend_bulk(self.durl1, self.foo10)
+                self.pkgsend_bulk(self.durl3, self.foo11)
+                self.pkgsend_bulk(self.durl4, self.foo12)
+                self.dcs[3].stop()
+                self.dcs[4].stop()
+
+                # For now we can only install the version which is in the only
+                # online depot. However, the offline depots should not prevent
+                # us from upgrading to whatever is available.
+                self.pkg("install foo@latest")
+                self.pkg("list foo@1.0")
+                
+                # When we enable additional depots, newer version of foo should
+                # become available for install without us having to refresh
+                # explicitly.
+                self.dcs[3].start()
+                self.pkg("install foo@latest")
+                self.pkg("list foo@1.1")
+
+                self.dcs[4].start()
+                self.pkg("install foo@latest")
+                self.pkg("list foo@1.2")
+
 
 if __name__ == "__main__":
         unittest.main()

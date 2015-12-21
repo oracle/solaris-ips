@@ -1528,7 +1528,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 if refresh_allowed:
                         self.refresh_publishers(progtrack=progtrack,
-                            full_refresh=True)
+                            full_refresh=True, ignore_unreachable=False)
                 else:
                         # initialize empty catalogs on disk
                         self.__rebuild_image_catalogs(progtrack=progtrack)
@@ -2105,7 +2105,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 self.transport.valid_publisher_test(pub)
                                 pub.validate_config()
                                 self.refresh_publishers(pubs=[pub],
-                                    progtrack=progtrack)
+                                    progtrack=progtrack,
+                                    ignore_unreachable=False)
                         except Exception as e:
                                 # Remove the newly added publisher since
                                 # it is invalid or the retrieval failed.
@@ -3254,7 +3255,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.history.log_operation_end()
 
         def refresh_publishers(self, full_refresh=False, immediate=False,
-            pubs=None, progtrack=None):
+            pubs=None, progtrack=None, ignore_unreachable=True):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.  Callers are responsible for locking the image.
 
@@ -3271,7 +3272,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 'pubs' is a list of publisher prefixes or publisher objects
                 to refresh.  Passing an empty list or using the default value
-                implies all publishers."""
+                implies all publishers.
+
+                'ignore_unreachable' is an optional boolean value indicating
+                whether unreachable repositories should be ignored. If True,
+                errors contacting this repository are stored in the transport
+                but no exception is raised, allowing an operation to continue
+                if an unneeded repository is not online."""
 
                 if self.version < 3:
                         raise apx.ImageFormatUpdateNeeded(self.root)
@@ -3333,9 +3340,16 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         total += 1
                         progtrack.refresh_start_pub(pub)
                         try:
-                                if pub.refresh(full_refresh=full_refresh,
-                                    immediate=immediate, progtrack=progtrack):
+                                changed, e = pub.refresh(
+                                    full_refresh=full_refresh,
+                                    immediate=immediate, progtrack=progtrack)
+                                if changed:
                                         updated = True
+
+                                if not ignore_unreachable and e:
+                                        failed.append((pub, e))
+                                        continue
+
                         except apx.PermissionsException as e:
                                 failed.append((pub, e))
                                 # No point in continuing since no data can

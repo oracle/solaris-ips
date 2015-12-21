@@ -1993,6 +1993,10 @@ def __handle_client_json_api_output(out_json, op):
                 msg(_("NOTE: Please review release notes posted at:\n" ))
                 msg(out_json["data"]["release_notes_url"])
                 msg("-" * 75 + "\n")
+
+        if "data" in out_json and "repo_status" in out_json["data"]:
+                display_repo_failures(out_json["data"]["repo_status"])
+
         return out_json["status"]
 
 def _emit_error_general_cb(status, err, cmd=None, selected_type=[],
@@ -3377,9 +3381,34 @@ examining the catalogs:"""))
 def display_catalog_failures(cre, ignore_perms_failure=False):
         total = cre.total
         succeeded = cre.succeeded
+        partial = 0
+        refresh_errstr = ""
+
+        for pub, err in cre.failed:
+                if isinstance(err, api_errors.CatalogOriginRefreshException):
+                        if len(err.failed) < err.total:
+                                partial += 1
+
+                        refresh_errstr += _("\n{0}/{1} repositories for " \
+                            "publisher '{2}' could not be reached for " \
+                            "catalog refresh.\n").format(
+                            len(err.failed), err.total, pub)
+                        for o, e in err.failed:
+                                refresh_errstr += "\n"
+                                refresh_errstr += str(e)
+                                
+                        refresh_errstr += "\n"
+                else:
+                        refresh_errstr += "\n   \n" + str(err)
+                 
+
+        partial_str = ":"
+        if partial:
+                partial_str = _(" ({0} partial):").format(str(partial))
 
         txt = _("pkg: {succeeded}/{total} catalogs successfully "
-            "updated:").format(succeeded=succeeded, total=total)
+            "updated{partial}").format(succeeded=succeeded, total=total,
+            partial=partial_str)
         if cre.failed:
                 # This ensures that the text gets printed before the errors.
                 logger.error(txt)
@@ -3397,16 +3426,48 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
         if cre.failed and ignore_perms_failure:
                 # Consider those that failed to have succeeded and add them
                 # to the actual successful total.
-                return succeeded + len(cre.failed)
+                return succeeded + partial + len(cre.failed)
 
-        for pub, err in cre.failed:
-                logger.error("   ")
-                logger.error(str(err))
+        logger.error(refresh_errstr)
 
         if cre.errmessage:
                 logger.error(cre.errmessage)
 
-        return succeeded
+        return succeeded + partial
+
+
+def display_repo_failures(fail_dict):
+
+        outstr = """
+
+WARNING: Errors were encountered when attempting to retrieve package
+catalog information. Packages added to the affected publisher repositories since
+the last retrieval may not be available.
+
+"""
+        for pub in fail_dict:
+                failed = fail_dict[pub]
+
+                if failed is None or not "errors" in failed:
+                        # This pub did not have any repo problems, ignore.
+                        continue
+
+                assert type(failed) == dict
+                total = failed["total"]
+                if int(total) == 1:
+                        repo_str = _("repository")
+                else:
+                        repo_str = _("{0} of {1} repositories").format(
+                            len(failed["errors"]), total)
+                        
+                outstr += _("Errors were encountered when attempting to " \
+                    "contact {0} for publisher '{1}'.\n").format(repo_str, pub)
+                for err in failed["errors"]:
+                        outstr += "\n"
+                        outstr += str(err)
+                outstr += "\n"
+
+        msg(outstr)
 
 def __refresh(api_inst, pubs, full_refresh=False):
         """Private helper method for refreshing publisher data."""
@@ -3415,7 +3476,7 @@ def __refresh(api_inst, pubs, full_refresh=False):
                 # The user explicitly requested this refresh, so set the
                 # refresh to occur immediately.
                 api_inst.refresh(full_refresh=full_refresh,
-                    immediate=True, pubs=pubs)
+                    ignore_unreachable=False, immediate=True, pubs=pubs)
         except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return EXIT_OOPS

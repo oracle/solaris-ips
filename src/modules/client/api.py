@@ -2964,7 +2964,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 finally:
                         self._activity_lock.release()
 
-        def refresh(self, full_refresh=False, pubs=None, immediate=False):
+        def refresh(self, full_refresh=False, pubs=None, immediate=False,
+            ignore_unreachable=True):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
 
@@ -2983,6 +2984,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 interval period recorded in the image configuration has been
                 exceeded.
 
+                'ignore_unreachable' is an optional boolean value indicating
+                whether unreachable repositories should be ignored. If True,
+                errors contacting this repository are stored in the transport
+                but no exception is raised, allowing an operation to continue
+                if an unneeded repository is not online.
+
                 Currently returns an image object, allowing existing code to
                 work while the rest of the API is put into place."""
 
@@ -2992,7 +2999,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         self._img.lock()
                         try:
                                 self.__refresh(full_refresh=full_refresh,
-                                    pubs=pubs, immediate=immediate)
+                                    pubs=pubs,
+                                    ignore_unreachable=ignore_unreachable,
+                                    immediate=immediate)
                                 return self._img
                         finally:
                                 self._img.unlock()
@@ -3010,11 +3019,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 pass
                         self._activity_lock.release()
 
-        def __refresh(self, full_refresh=False, pubs=None, immediate=False):
+        def __refresh(self, full_refresh=False, pubs=None, immediate=False,
+            ignore_unreachable=True):
                 """Private refresh method; caller responsible for locking and
                 cleanup."""
 
                 self._img.refresh_publishers(full_refresh=full_refresh,
+                    ignore_unreachable=ignore_unreachable,
                     immediate=immediate, pubs=pubs,
                     progtrack=self.__progresstracker)
 
@@ -4545,6 +4556,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__alt_sources = {}
 
                 self._img.cleanup_downloads()
+                # Cache transport statistics about problematic repo sources
+                repo_status = self._img.transport.repo_status
                 self._img.transport.shutdown()
 
                 # Recreate the image object using the path the api
@@ -4554,6 +4567,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     user_provided_dir=True,
                     cmdpath=self.cmdpath)
                 self._img.blocking_locks = self.__blocking_locks
+
+                self._img.transport.repo_status = repo_status
 
                 lin = None
                 if self._img.linked.ischild():
@@ -5297,7 +5312,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                             proxies=proxies)
                                         pub.validate_config(repo)
 
-                                self.__refresh(pubs=[pub], immediate=True)
+                                self.__refresh(pubs=[pub], immediate=True,
+                                    ignore_unreachable=False)
                         elif refresh_catalog:
                                 # Something has changed (such as a repository
                                 # origin) for the publisher, so a refresh should

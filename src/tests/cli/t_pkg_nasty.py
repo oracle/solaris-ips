@@ -348,7 +348,7 @@ class TestNastyTempPub(TestPkgNasty):
                 # test update with temporary publisher
                 cmd = "update -g {0}".format(self.durl)
                 self._trythis(cmd,
-                    lambda: self.pkg(cmd, env_arg=env, exit=[0, 1]))
+                    lambda: self.pkg(cmd, env_arg=env, exit=[0, 1, 4]))
 
                 self.pkg("verify", exit=0)
 

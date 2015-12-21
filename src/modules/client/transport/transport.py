@@ -552,11 +552,13 @@ class Transport(object):
                 self.__engine = None
                 self.__cadir = None
                 self.__portal_test_executed = False
+                self.__version_check_executed = False
                 self.__repo_cache = None
                 self.__dynamic_mirrors = []
                 self._lock = nrlock.NRLock()
                 self.cfg = tcfg
                 self.stats = tstats.RepoChooser()
+                self.repo_status = {}
 
         def __setup(self):
                 self.__engine = engine.CurlTransportEngine(self)
@@ -636,9 +638,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
 
                 # For search, prefer remote sources if available.  This allows
                 # consumers to configure both a file-based and network-based set
@@ -748,9 +750,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
 
                 for d, retries in self.__gen_repo(pub, retry_count,
                     origin_only=True, alt_repo=alt_repo):
@@ -884,9 +886,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
 
                 # Check if the download_dir exists.  If it doesn't, create
                 # the directories.
@@ -1311,9 +1313,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1407,11 +1409,10 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
+                # If version check hasn't been executed, run it prior to this
+                # operation.
                 try:
-                        self._captive_portal_test(ccancel=ccancel,
-                            alt_repo=alt_repo)
+                        self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
                 except apx.InvalidDepotResponseException:
                         return
 
@@ -1884,9 +1885,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=mfile.get_ccancel(),
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=mfile.get_ccancel(),
                     alt_repo=mfile.get_alt_repo())
 
                 # Check if the download_dir exists.  If it doesn't create
@@ -1947,9 +1948,9 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If captive portal test hasn't been executed, run it
-                # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
+                # If version check hasn't been executed, run it prior to this
+                # operation.
+                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
 
                 for d, retries in self.__gen_repo(pub, retry_count,
                     origin_only=True, alt_repo=alt_repo):
@@ -2269,27 +2270,14 @@ class Transport(object):
 
                 return True
 
-        def captive_portal_test(self, ccancel=None):
-                """A captive portal forces a HTTP client on a network
-                to see a special web page, usually for authentication
-                purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
+        def _version_check_all(self, alt_repo=None, ccancel=None):
+                # Retrieve version info for all publishers to fill version info
+                # and test if repositories are responding.
 
-                self._lock.acquire()
-                try:
-                        self._captive_portal_test(ccancel=ccancel)
-                finally:
-                        self._lock.release()
-
-        def _captive_portal_test(self, ccancel=None, alt_repo=None):
-                """Implementation of captive_portal_test."""
-
-                fail = tx.TransportFailures()
-
-                if self.__portal_test_executed:
+                if self.__version_check_executed:
                         return
 
-                self.__portal_test_executed = True
-                vd = None
+                self.__version_check_executed = True
 
                 pubs = [pub for pub in self.cfg.gen_publishers()]
                 if not pubs and alt_repo:
@@ -2299,41 +2287,61 @@ class Transport(object):
                         pubs = [publisher.Publisher("temporary",
                             repository=alt_repo)]
 
+                fail = tx.TransportFailures()
                 for pub in pubs:
-                        try:
-                                vd = self._get_versions(pub, ccancel=ccancel,
-                                    alt_repo=alt_repo)
-                        except tx.TransportException as ex:
-                                # Encountered a transport error while
-                                # trying to contact this publisher.
-                                # Pick another publisher instead.
-                                if isinstance(ex, tx.TransportFailures):
-                                        fail.extend(ex.exceptions)
-                                else:
-                                        fail.append(ex)
+                        if pub.prefix in self.repo_status:
+                                # This publisher has already been tested, ignore
                                 continue
-                        except apx.CanceledException:
-                                self.__portal_test_executed = False
-                                raise
+                        for origin in pub.repository.origins:
+                                p = copy.copy(pub)
+                                p.repository.origins = [origin]
+                                try:
+                                        self._version_check(p, ccancel=ccancel)
+                                except apx.InvalidDepotResponseException as e:
+                                        # If there is a network connection issue
+                                        # with this repo ignore here. It will
+                                        # get recorded in self.repo_status. 
+                                        pass
 
-                        if self._valid_versions_test(vd):
-                                return
+        def version_check(self, pub, ccancel=None):
+                """Retrieve version info from publisher and fill internal
+                version caches. If we encounter problems contacting the repo,
+                store that information for later."""
+                self._lock.acquire()
+                try:
+                        self._version_check(pub, ccancel=ccancel)
+                finally:
+                        self._lock.release()
+
+        def _version_check(self, pub, ccancel=None):
+                """Implementation of version check."""
+
+                fail = tx.TransportFailures()
+                vd = None
+
+                if "total" in self.repo_status.setdefault(pub.prefix, {}):
+                        self.repo_status[pub.prefix]["total"] += 1
+                else:
+                        self.repo_status[pub.prefix]["total"] = 1
+
+                try:
+                        vd = self._get_versions(pub, ccancel=ccancel)
+                except tx.TransportException as ex:
+                        if isinstance(ex, tx.TransportFailures):
+                                fail.extend(ex.exceptions)
                         else:
-                                fail.append(tx.PkgProtoError(pub.prefix,
-                                    "version", 0,
-                                    "Invalid content in response"))
-                                continue
+                                fail.append(ex)
+                except apx.CanceledException:
+                        raise
 
-                if not vd:
-                        # We got all the way through the list of publishers but
-                        # encountered transport errors in every case.  This is
-                        # likely a network configuration problem.  Report our
-                        # inability to contact a server.
-                        estr = "Unable to contact any configured publishers." \
-                            "\nThis is likely a network configuration problem."
-                        if fail:
-                                estr += "\n{0}".format(fail)
-                        raise apx.InvalidDepotResponseException(None, estr)
+                if not vd or not self._valid_versions_test(vd):
+                        exc = apx.InvalidDepotResponseException(
+                            pub.repository.origins[0].uri, fail)
+                        # Publisher names can't start with _ so this is safe.
+                        self.repo_status["_failures"] = None
+                        self.repo_status[pub.prefix].setdefault(
+                            "errors", set([])).add(exc)
+                        raise exc
 
         @staticmethod
         def _valid_versions_test(versdict):
