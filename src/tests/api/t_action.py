@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -413,6 +413,10 @@ Incorrect attribute list.
 
                 # Mutiple fmri values only allowed for require-any deps.
                 self.assertInvalid("depend type=require fmri=foo fmri=bar")
+
+                # Multiple values never allowed for depend action 'type' attribute.
+                self.assertInvalid("depend type=require type=require-any fmri=foo")
+                self.assertInvalid("depend type=require type=require-any fmri=foo fmri=bar")
 
                 # 'path' attribute specified multiple times
                 self.assertInvalid("file 1234 path=foo path=foo mode=777 owner=root group=root")

@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -163,6 +163,13 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 			if (dt != NULL) {
 				char *ts = PyBytes_AsString(dt);
 				if (ts == NULL) {
+					PyObject *type_aname =
+					    PyBytes_FromStringAndSize("type",
+						4);
+					set_invalid_action_error(
+					    "KeyAttributeMultiValueError",
+					    action, type_aname);
+					Py_DECREF(type_aname);
 					Py_DECREF(key_aname);
 					Py_DECREF(aname);
 					return (NULL);
@@ -289,36 +296,36 @@ moduleinit(void)
 
 #if PY_MAJOR_VERSION >= 3
 	if ((m = PyModule_Create(&commonmodule)) == NULL)
-		return NULL;
+		return (NULL);
 #else
 	/*
 	 * Note that module initialization functions are void and may not return
 	 * a value.  However, they should set an exception if appropriate.
 	 */
 	if (Py_InitModule("_common", methods) == NULL)
-		return NULL;
+		return (NULL);
 #endif
 
 	if ((pkg_actions = PyImport_ImportModule("pkg.actions")) == NULL) {
 		/* No exception is set */
 		PyErr_SetString(PyExc_KeyError, "pkg.actions");
-		return NULL;
+		return (NULL);
 	}
 
 	if ((nohash = PyBytes_FromStringAndSize("NOHASH", 6)) == NULL) {
 		PyErr_SetString(PyExc_ValueError,
 		    "Unable to create nohash string object.");
-		return NULL;
+		return (NULL);
 	}
 
-	return m;
+	return (m);
 }
 
 #if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC
 PyInit__common(void)
 {
-	return moduleinit();
+	return (moduleinit());
 }
 #else
 PyMODINIT_FUNC
