@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -512,7 +512,9 @@ if __name__ == "__main__":
                     # These mako templates fail.
                     "*etc_pkg_*mako", "_depot_conf_mako",
                     # Complex use of module importer makes this fail.
-                    "*sysrepo_p5p.py"
+                    "*sysrepo_p5p.py",
+                    # Reading source file */fakeroot/pkg make this fail.
+                    "*/fakeroot/pkg",
                 ]
                 pkg_path = [os.path.join(pkg5unittest.g_pkg_path, "*")]
                 proto = ["{0}/*".format(pkg5unittest.g_proto_area)]

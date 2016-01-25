@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1668,7 +1668,7 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 # proposed dict
                 self.pkg("uninstall -v evil@1", exit=1)
                 # try workaround
-                self.cmdline_run("pkg -R {0} -D ignore-pkg-actuators=true "
+                self.pkg("-R {0} -D ignore-pkg-actuators=true "
                     "uninstall -v evil@1".format(self.get_img_path()))
                 self.pkg("list evil", exit=1)
 
