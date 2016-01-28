@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -940,7 +940,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 ext_dir = os.path.join(self.test_root, "extracted")
                 shutil.rmtree(ext_dir, True)
                 arc = pkg.p5p.Archive(bad_arc_path, mode="r")
-                self.assertRaisesStringify(pkg.p5p.CorruptArchiveFiles,
+                self.assertRaisesStringify(pkg.p5p.InvalidArchive,
                     arc.extract_package_files, [dest_fhash], ext_dir,
                     pub="test2")
                 arc.close()
