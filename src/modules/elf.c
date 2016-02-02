@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <sys/stat.h>
@@ -49,9 +49,9 @@
  */
 typedef struct
 {
-    int fd;
-    int sha1;
-    int sha256;
+	int fd;
+	int sha1;
+	int sha256;
 } hargs_t;
 
 static int
@@ -60,6 +60,7 @@ pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 	PyObject *pverlist = (PyObject *)info;
 	PyObject *ent;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	int rval;
 	char *str;
 
 	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
@@ -68,37 +69,50 @@ pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 	}
 
 	ent = Py_BuildValue("s", str);
-
-	return (PyList_Append(pverlist, ent));
+	rval = PyList_Append(pverlist, ent);
+	Py_DECREF(ent);
+	return (rval);
 }
 
 static int
 pythonify_2dliblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pdep = (PyObject *)info;
+	PyObject *pverlist;
+	PyObject *ent;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	int rval = -1;
 	char *str;
 
-	PyObject *pverlist;
-
 	pverlist = PyList_New(0);
-	if (liblist_foreach(
-	    n->verlist, pythonify_ver_liblist_cb, pverlist, dyn) == -1)
-		return (-1);
+	if (liblist_foreach(n->verlist, pythonify_ver_liblist_cb, pverlist,
+	    dyn) == -1) {
+		goto out;
+	}
 
 	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
-		return (-1);
+		goto out;
 	}
 
-	return (PyList_Append(pdep, Py_BuildValue("[s,O]", str, pverlist)));
+	if ((ent = Py_BuildValue("[s,O]", str, pverlist)) == NULL) {
+		goto out;
+	}
+	rval = PyList_Append(pdep, ent);
+	Py_DECREF(ent);
+
+out:
+	Py_DECREF(pverlist);
+	return (rval);
 }
 
 static int
 pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pdef = (PyObject *)info;
+	PyObject *ent;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	int rval;
 	char *str;
 
 	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
@@ -106,7 +120,10 @@ pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
 		return (-1);
 	}
 
-	return (PyList_Append(pdef, Py_BuildValue("s", str)));
+	ent = Py_BuildValue("s", str);
+	rval = PyList_Append(pdef, ent);
+	Py_DECREF(ent);
+	return (rval);
 }
 /*
  * Open a file named by python, setting an appropriate error on failure.
@@ -135,23 +152,23 @@ py_get_hash_args(PyObject *args, PyObject *kwargs)
 {
 	int fd = -1;
 	char *f;
-        int get_sha1 = 1;
-        int get_sha256 = 0;
+	int get_sha1 = 1;
+	int get_sha256 = 0;
 
-        hargs_t hargs;
-        hargs.fd = -1;
+	hargs_t hargs;
+	hargs.fd = -1;
 
-        /*
-         * By default, we always get an SHA-1 hash, and never get an SHA-2
-         * hash.
-         */
-        hargs.sha1 = 1;
-        hargs.sha256 = 0;
+	/*
+	 * By default, we always get an SHA-1 hash, and never get an SHA-2
+	 * hash.
+	 */
+	hargs.sha1 = 1;
+	hargs.sha256 = 0;
 
-        static char *kwlist[] = {"fd", "sha1", "sha256", NULL};
+	static char *kwlist[] = {"fd", "sha1", "sha256", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &f,
-            &get_sha1, &get_sha256)) {
+	    &get_sha1, &get_sha256)) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
 		return (hargs);
 	}
@@ -161,9 +178,9 @@ py_get_hash_args(PyObject *args, PyObject *kwargs)
 		return (hargs);
 	}
 
-        hargs.fd = fd;
-        hargs.sha1 = get_sha1;
-        hargs.sha256 = get_sha256;
+	hargs.fd = fd;
+	hargs.sha1 = get_sha1;
+	hargs.sha256 = get_sha256;
 	return (hargs);
 }
 
@@ -176,15 +193,17 @@ elf_is_elf_object(PyObject *self, PyObject *args)
 {
 	int fd, ret;
 
-	if ((fd = py_get_fd(args)) < 0)
+	if ((fd = py_get_fd(args)) < 0) {
 		return (NULL);
+	}
 
 	ret = iself(fd);
 
 	(void) close(fd);
 
-	if (ret == -1)
+	if (ret == -1) {
 		return (NULL);
+	}
 
 	return (Py_BuildValue("i", ret));
 }
@@ -211,29 +230,45 @@ get_info(PyObject *self, PyObject *args)
 	int fd;
 	hdrinfo_t *hi = NULL;
 	PyObject *pdict = NULL;
-
-	if ((fd = py_get_fd(args)) < 0)
+	if ((fd = py_get_fd(args)) < 0) {
 		return (NULL);
+	}
 
-	if ((hi = getheaderinfo(fd)) == NULL)
+	if ((hi = getheaderinfo(fd)) == NULL) {
 		goto out;
+	}
+
+#define	GI_SET_ITEM(key, valstr, val) \
+	{ \
+		PyObject *ent; \
+		int rval; \
+		if ((ent = Py_BuildValue(valstr, val)) == NULL) { \
+			goto err; \
+		} \
+		rval = PyDict_SetItemString(pdict, key, ent); \
+		Py_DECREF(ent); \
+		if (rval == -1) { \
+			goto err; \
+		} \
+	}
 
 	pdict = PyDict_New();
-	PyDict_SetItemString(pdict, "type",
-	    Py_BuildValue("s", pkg_string_from_type(hi->type)));
-	PyDict_SetItemString(pdict, "bits", Py_BuildValue("i", hi->bits));
-	PyDict_SetItemString(pdict, "arch",
-	    Py_BuildValue("s", pkg_string_from_arch(hi->arch)));
-	PyDict_SetItemString(pdict, "end",
-	    Py_BuildValue("s", pkg_string_from_data(hi->data)));
-	PyDict_SetItemString(pdict, "osabi",
-	    Py_BuildValue("s", pkg_string_from_osabi(hi->osabi)));
+	GI_SET_ITEM("type", "s", pkg_string_from_type(hi->type));
+	GI_SET_ITEM("bits", "i", hi->bits);
+	GI_SET_ITEM("arch", "s", pkg_string_from_arch(hi->arch));
+	GI_SET_ITEM("end", "s", pkg_string_from_data(hi->data));
+	GI_SET_ITEM("osabi", "s", pkg_string_from_osabi(hi->osabi));
 
 out:
-	if (hi != NULL)
+	if (hi != NULL) {
 		free(hi);
+	}
 	(void) close(fd);
 	return (pdict);
+
+err:
+	Py_CLEAR(pdict);
+	goto out;
 }
 
 /*
@@ -256,30 +291,37 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 	hargs_t		hargs;
 	hashinfo_t	*h = NULL;
 	PyObject	*pdict = NULL;
-	char            hexchars[17] = "0123456789abcdef";
+	PyObject	*ent = NULL;
+	char		hexchars[17] = "0123456789abcdef";
 
 	hargs = py_get_hash_args(args, keywords);
-	if (hargs.fd < 0)
+	if (hargs.fd < 0) {
 		return (NULL);
+	}
 
-	if ((h = gethashes(hargs.fd, hargs.sha1, hargs.sha256)) == NULL)
+	if ((h = gethashes(hargs.fd, hargs.sha1, hargs.sha256)) == NULL) {
 		goto out;
+	}
 
-	if ((pdict = PyDict_New()) == NULL)
+	if ((pdict = PyDict_New()) == NULL) {
 		goto out;
+	}
 
 	if (hargs.sha1 > 0) {
-		int	i;
-		char	hexhash[41];
+		PyObject	*ent;
+		int		i;
+		char		hexhash[41];
 
 		for (i = 0; i < 20; i++) {
 			hexhash[2 * i] = hexchars[(h->hash[i] & 0xf0) >> 4];
 			hexhash[2 * i + 1] = hexchars[h->hash[i] & 0x0f];
 		}
 		hexhash[40] = '\0';
-		if (PyDict_SetItemString(pdict, "elfhash",
-			Py_BuildValue("s", hexhash)) != 0)
-			goto pyerror;
+		ent = Py_BuildValue("s", hexhash);
+		if (PyDict_SetItemString(pdict, "elfhash", ent) != 0) {
+			goto err;
+		}
+		Py_CLEAR(ent);
 	}
 
 	if (hargs.sha256 > 0) {
@@ -291,23 +333,27 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 			hexhash[2 * i + 1] = hexchars[h->hash256[i] & 0x0f];
 		}
 		hexhash[64] = '\0';
+		ent = Py_BuildValue("s", hexhash);
 		if (PyDict_SetItemString(pdict, "pkg.content-type.sha256",
-			Py_BuildValue("s", hexhash)) != 0)
-			goto pyerror;
+		    ent) != 0) {
+			goto err;
+		}
+		Py_CLEAR(ent);
 	}
-
-	goto out;
-
-pyerror:
-	Py_CLEAR(pdict);
 
 out:
 	(void) close(hargs.fd);
 
-	if (h != NULL)
+	if (h != NULL) {
 		free(h);
+	}
 
 	return (pdict);
+
+err:
+	Py_CLEAR(ent);
+	Py_CLEAR(pdict);
+	goto out;
 }
 
 /*
@@ -333,31 +379,39 @@ out:
 static PyObject *
 get_dynamic(PyObject *self, PyObject *args)
 {
-	int	 	i;
-        int		fd;
-	dyninfo_t 	*dyn = NULL;
+	int		i;
+	int		fd;
+	dyninfo_t	*dyn = NULL;
+	PyObject	*ent = NULL;
 	PyObject	*pdep = NULL;
 	PyObject	*pdef = NULL;
 	PyObject	*pdict = NULL;
 
 	fd = py_get_fd(args);
-        if (fd < 0)
+	if (fd < 0) {
 		return (NULL);
+	}
 
-	if ((dyn = getdynamic(fd)) == NULL)
+	if ((dyn = getdynamic(fd)) == NULL) {
 		goto out;
+	}
 
-	if ((pdict = PyDict_New()) == NULL)
+	if ((pdict = PyDict_New()) == NULL) {
 		goto out;
+	}
 
 	if (dyn->deps->head) {
-		if ((pdep = PyList_New(0)) == NULL)
+		if ((pdep = PyList_New(0)) == NULL) {
 			goto err;
+		}
 		if (liblist_foreach(
-		    dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1)
+		    dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1) {
 			goto err;
-		if (PyDict_SetItemString(pdict, "deps", pdep) != 0)
+		}
+		if (PyDict_SetItemString(pdict, "deps", pdep) != 0) {
 			goto err;
+		}
+		Py_CLEAR(pdep);
 	}
 	if (dyn->def) {
 		char *str;
@@ -365,18 +419,25 @@ get_dynamic(PyObject *self, PyObject *args)
 		if ((pdef = PyList_New(0)) == NULL)
 			goto err;
 		if (liblist_foreach(
-		    dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1)
+		    dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1) {
 			goto err;
-		if (PyDict_SetItemString(pdict, "vers", pdef) != 0)
+		}
+		if (PyDict_SetItemString(pdict, "vers", pdef) != 0) {
 			goto err;
+		}
+		Py_CLEAR(pdef);
+
 		if ((str = elf_strptr(
 		    dyn->elf, dyn->dynstr, dyn->def)) == NULL) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto err;
 		}
-		if (PyDict_SetItemString(pdict, "def",
-			Py_BuildValue("s", str)) != 0)
+
+		ent = Py_BuildValue("s", str);
+		if (PyDict_SetItemString(pdict, "def", ent) != 0) {
 			goto err;
+		}
+		Py_CLEAR(ent);
 	}
 	if (dyn->runpath) {
 		char *str;
@@ -386,30 +447,34 @@ get_dynamic(PyObject *self, PyObject *args)
 			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto err;
 		}
-		if (PyDict_SetItemString(pdict, "runpath",
-			Py_BuildValue("s", str)) != 0)
+		ent = Py_BuildValue("s", str);
+		if (PyDict_SetItemString(pdict, "runpath", ent) != 0) {
 			goto err;
+		}
+		Py_CLEAR(ent);
 	}
 
-	goto out;
-
-err:
-	Py_CLEAR(pdict);
-
 out:
-	if (dyn != NULL)
-            dyninfo_free(dyn);
+	if (dyn != NULL) {
+		dyninfo_free(dyn);
+	}
 
 	(void) close(fd);
 	return (pdict);
+
+err:
+	Py_CLEAR(ent);
+	Py_XDECREF(pdep);
+	Py_XDECREF(pdef);
+	Py_CLEAR(pdict);
+	goto out;
 }
 
 static PyMethodDef methods[] = {
 	{ "is_elf_object", elf_is_elf_object, METH_VARARGS },
 	{ "get_info", get_info, METH_VARARGS },
 	{ "get_dynamic", (PyCFunction)get_dynamic, METH_VARARGS },
-	{ "get_hashes", (PyCFunction)get_hashes, 
-	  METH_VARARGS | METH_KEYWORDS },
+	{ "get_hashes", (PyCFunction)get_hashes, METH_VARARGS | METH_KEYWORDS },
 	{ NULL, NULL }
 };
 
@@ -429,16 +494,17 @@ moduleinit(void)
 	PyObject *m;
 
 #if PY_MAJOR_VERSION >= 3
-	if ((m = PyModule_Create(&elfmodule)) == NULL)
-		return (NULL);
+	if ((m = PyModule_Create(&elfmodule)) == NULL) {
 #else
-	if ((m = Py_InitModule("elf", methods)) == NULL)
-		return (NULL);
+	if ((m = Py_InitModule("elf", methods)) == NULL) {
 #endif
+		return (NULL);
+	}
 
 	ElfError = PyErr_NewException("pkg.elf.ElfError", NULL, NULL);
-	if (ElfError == NULL)
+	if (ElfError == NULL) {
 		return (NULL);
+	}
 
 	Py_INCREF(ElfError);
 	PyModule_AddObject(m, "ElfError", ElfError);

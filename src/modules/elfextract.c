@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <libelf.h>
@@ -280,8 +280,6 @@ elfhash_cb(size_t offset, size_t size, void *udata)
 	if (h->s2c != NULL) {
 		SHA256Update(h->s2c, h->base + offset, size);
 	}
-
-	return;
 }
 
 /*
@@ -306,7 +304,7 @@ getdynamic(int fd)
 	int		t = 0, num_dyn = 0, dynstr = -1;
 
 	SHA1_CTX	shc;
-        SHA256_CTX      shc2;
+	SHA256_CTX	shc2;
 	dyninfo_t	*dyn = NULL;
 
 	liblist_t	*deps = NULL;
@@ -461,12 +459,16 @@ getdynamic(int fd)
 			if (ea)
 				cp += ea->vna_next;
 			ea = (GElf_Vernaux*)cp;
-			if (liblist_add(veraux, ea->vna_name) == NULL)
+			if (liblist_add(veraux, ea->vna_name) == NULL) {
+				liblist_free(veraux);
 				goto bad;
+			}
 		}
 
-		if (liblist_add(vers, ev->vn_file) == NULL)
+		if (liblist_add(vers, ev->vn_file) == NULL) {
+			liblist_free(veraux);
 			goto bad;
+		}
 		vers->tail->verlist = veraux;
 
 		cp = buf;
@@ -572,12 +574,12 @@ gethashes(int fd, int dosha1, int dosha2)
 		PyErr_SetString(ElfError, strerror(errno));
 		goto hash_out;
 	}
-	    
+
 	if (dosha1 > 0) {
 		hdata.s1c = (SHA1_CTX *)malloc(sizeof (SHA1_CTX));
 		if (hdata.s1c == NULL) {
 			(void) PyErr_NoMemory();
-		        goto hash_out;
+			goto hash_out;
 		}
 		SHA1Init(hdata.s1c);
 	}

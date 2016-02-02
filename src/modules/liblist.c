@@ -20,8 +20,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <stdlib.h>
@@ -33,7 +32,7 @@
 static int copyto_liblist_cb(libnode_t *, void *, void *);
 
 liblist_t *
-liblist_alloc()
+liblist_alloc(void)
 {
 	liblist_t *n;
 
