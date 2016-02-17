@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -95,7 +95,7 @@ class ElfDependency(base.PublishingDependency):
                 # may be due to the library search path being set outside the
                 # file that generates the dependency.
                 if err == self.ERROR and vars.is_satisfied() and \
-                    self.base_names[0] in delivered_base_names:
+                    self.base_names and self.base_names[0] in delivered_base_names:
                         self.err_type = self.WARNING
                         self.attrs["{0}.severity".format(self.DEPEND_DEBUG_PREFIX)] =\
                             "warning"
@@ -107,8 +107,11 @@ class ElfDependency(base.PublishingDependency):
                         return err, vars
 
         def __repr__(self):
+                if self.base_names:
+                        return "ElfDep({0}, {1}, {2}, {3})".format(self.action,
+                            self.base_names[0], self.run_paths, self.pkg_vars)
                 return "ElfDep({0}, {1}, {2}, {3})".format(self.action,
-                    self.base_names[0], self.run_paths, self.pkg_vars)
+                    self.base_names, self.run_paths, self.pkg_vars)
 
 def expand_variables(paths, dyn_tok_conv):
         """Replace dynamic tokens, such as $PLATFORM, in the paths in the

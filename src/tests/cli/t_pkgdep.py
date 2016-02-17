@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -67,6 +67,10 @@ file NOHASH group=bin mode=0755 owner=root path=etc/pam.conf
         test_elf_warning_manf = """\
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
 file group=bin mode=0755 owner=root path=etc/libc.so.1
+"""
+
+        test_bypass_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1 pkg.depend.bypass-generate=lib/libc.so.1
 """
 
         test_64bit_manf = """\
@@ -856,6 +860,11 @@ The package's variants are: <none>
 
         res_elf_warning = """\
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/xpg4/lib/libcurses.so.1 pkg.debug.depend.severity=warning pkg.debug.depend.type=elf type=require
+"""
+
+        res_bypass = """\
+depend fmri=__TBD pkg.debug.depend.fullpath=usr/lib/libc.so.1 pkg.debug.depend.reason=usr/xpg4/lib/libcurses.so.1 pkg.debug.depend.type=elf type=require
+set name=pkg.debug.depend.bypassed value=lib/libc.so.1
 """
 
         bug_16013_simple_a_dep_manf = """\
@@ -3033,6 +3042,19 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 self.assert_(len(acts) == 1)
 
                 self.check_res("", self.errout)
+
+        def test_bypass_full_paths(self):
+                """Test that when a match between the full paths of a dependency
+                and something specified in the pkg.depend.bypass-generate is
+                found, pkgdepend ignores the dependency as expected.
+                """
+
+                tp = self.make_manifest(self.test_bypass_manf)
+                self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, tp))
+                self.check_res("", self.errout)
+                self.check_res(self.res_bypass, self.output)
 
 if __name__ == "__main__":
         unittest.main()

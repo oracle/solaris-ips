@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -290,7 +290,7 @@ def resolve(args, img_dir):
                                                         system_patterns.append(
                                                             l)
                         except EnvironmentError as e:
-                                if e.errno == errno.ENOENT:
+                                if e.errno in (errno.ENOENT, errno.EISDIR):
                                         error("{0}: '{1}'".format(
                                             e.args[1], e.filename),
                                             cmd="resolve")

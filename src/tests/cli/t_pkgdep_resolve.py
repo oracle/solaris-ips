@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -737,6 +737,10 @@ dependency resolution:
                 self.pkgdepend_resolve("-e {0} -e {1} -e {2} -E -m {3}".format(
                     ex_path + "foobar", var_fmri_path, empty_path, m1_path),
                     exit=1)
+
+                # Check that if -e points at a directory, no traceback happens.
+                self.pkgdepend_resolve("-e {0} -E -m {1}".format(
+                    self.test_root, m1_path), exit=1)
 
         def test_resolve_permissions(self):
                 """Test that a manifest or constraint file that pkgdepend
