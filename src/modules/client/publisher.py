@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -2461,12 +2461,13 @@ pkg unset-publisher {0}
                             "was expected to be a PEM certificate, but it "
                             "could not be parsed as such:\n{0}".format(s)))
 
-        def __add_cert(self, cert):
+        def __add_cert(self, cert, pkg_hash=None):
                 """Add the pem representation of the certificate 'cert' to the
                 certificates this publisher knows about."""
 
                 self.create_meta_root()
-                pkg_hash = self.__hash_cert(cert)
+                if not pkg_hash:
+                        pkg_hash = self.__hash_cert(cert)
                 pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
                 file_problem = False
                 try:
@@ -2528,7 +2529,7 @@ pkg unset-publisher {0}
                 c = self.__string_to_cert(s, pkg_hash)
                 if not pth_exists:
                         try:
-                                self.__add_cert(c)
+                                self.__add_cert(c, pkg_hash=pkg_hash)
                         except api_errors.PermissionsException:
                                 pass
                 if only_retrieve:
