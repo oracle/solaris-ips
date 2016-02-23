@@ -1186,10 +1186,10 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
         if e_type == api_errors.ConflictingActionErrors or \
             e_type == api_errors.ImageBoundaryErrors:
-                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
                 if verbose and display_plan_cb:
                         display_plan_cb(api_inst, verbose=verbose,
                             noexecute=noexecute, plan_only=True)
+                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ReadOnlyFileSystemException,

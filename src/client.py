@@ -1482,9 +1482,9 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                 return EXIT_OOPS
         if e_type == api_errors.ConflictingActionErrors or \
             e_type == api_errors.ImageBoundaryErrors:
-                error("\n" + str(e), cmd=op)
                 if verbose:
                         __display_plan(api_inst, verbose, noexecute)
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ReadOnlyFileSystemException,
