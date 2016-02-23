@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -290,8 +290,7 @@ def __get_plan_props():
 def __pkg_exact_install_output_schema():
         data_schema = {"type": "object",
             "properties": {
-                "plan": __get_plan_props(),
-                "release_notes_url": {"type": ["null", "string"]}
+                "plan": __get_plan_props()
                 }
             }
         return data_schema
@@ -299,8 +298,7 @@ def __pkg_exact_install_output_schema():
 def __pkg_install_output_schema():
         data_schema = {"type": "object",
             "properties": {
-                "plan": __get_plan_props(),
-                "release_notes_url": {"type": ["null", "string"]}
+                "plan": __get_plan_props()
                 }
             }
         return data_schema
@@ -308,8 +306,7 @@ def __pkg_install_output_schema():
 def __pkg_update_output_schema():
         data_schema = {"type": "object",
             "properties": {
-                "plan": __get_plan_props(),
-                "release_notes_url": {"type": ["null", "string"]}
+                "plan": __get_plan_props()
                 }
             }
         return data_schema
@@ -1257,9 +1254,8 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
 
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
-    _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, display_plan_cb=None, logger=None,
-    **kwargs):
+    _quiet_plan=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
+    _verbose=0, display_plan_cb=None, logger=None, **kwargs):
 
         # All the api interface functions that we invoke have some
         # common arguments.  Set those up now.
@@ -1456,8 +1452,7 @@ def _verify_exit_code(api_inst):
         return EXIT_OK
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
-    _origins=None, _parsable_version=None, _quiet=False,
-    _review_release_notes=False, _show_licenses=False,
+    _origins=None, _parsable_version=None, _quiet=False, _show_licenses=False,
     _stage=API_STAGE_DEFAULT, _verbose=0, display_plan_cb=None, logger=None,
     **kwargs):
         """Do something that involves the api.
@@ -1474,7 +1469,6 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                     _accept=_accept, _li_ignore=_li_ignore,
                     _noexecute=_noexecute, _origins=_origins,
                     _parsable_version=_parsable_version, _quiet=_quiet,
-                    _review_release_notes=_review_release_notes,
                     _show_licenses=_show_licenses, _stage=_stage,
                     _verbose=_verbose, display_plan_cb=display_plan_cb,
                     logger=logger, **kwargs)
@@ -1522,11 +1516,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         ret = __api_execute_plan(_op, _api_inst)
         pkg_timer.record("executing", logger=logger)
 
-        if _review_release_notes and ret["status"] == EXIT_OK and \
-            _stage == API_STAGE_DEFAULT and _api_inst.solaris_image():
-                data["release_notes_url"] = misc.get_release_notes_url()
-                ret = __prepare_json(EXIT_OK, data=data)
-        elif ret["status"] == EXIT_OK and data:
+        if ret["status"] == EXIT_OK and data:
                 ret = __prepare_json(EXIT_OK, data=data)
 
         return ret
@@ -1624,17 +1614,14 @@ def _update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
                 # allowed by the patterns specified.  (The versions
                 # specified can be older than what is installed.)
                 pkgs_update = pargs
-                review_release_notes = False
         else:
                 # If no packages were specified, attempt to update all
                 # installed packages.
                 pkgs_update = None
-                review_release_notes = True
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
             _noexecute=noexecute, _origins=origins,
             _parsable_version=parsable_version, _quiet=quiet,
-            _review_release_notes=review_release_notes,
             _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
             act_timeout=act_timeout, backup_be=backup_be,
             backup_be_name=backup_be_name, be_activate=be_activate,

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 
 """
 Misc utility functions used by the packaging system.
@@ -107,14 +107,6 @@ def get_traceback_message():
 This is an internal error in pkg(5) version {version}.  Please log a
 Service Request about this issue including the information above and this
 message.""").format(version=VERSION)
-
-def get_release_notes_url():
-        """Return a release note URL pointing to the correct release notes
-           for this version"""
-
-        # TBD: replace with a call to api.info() that can return a "release"
-        # attribute of form YYYYMM against the SUNWsolnm package
-        return "http://www.oracle.com/pls/topic/lookup?ctx=E23824&id=SERNS"
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""

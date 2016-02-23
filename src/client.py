@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1546,8 +1546,8 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
 
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
-    _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+    _quiet_plan=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
+    _verbose=0, **kwargs):
         """API plan invocation entry."""
 
         # All the api interface functions that we invoke have some
@@ -1729,8 +1729,8 @@ def _verify_exit_code(api_inst):
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
-    _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+    _quiet_plan=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
+    _verbose=0, **kwargs):
         """Do something that involves the api.
 
         Arguments prefixed with '_' are primarily used within this
@@ -1745,7 +1745,6 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                     _noexecute=_noexecute, _omit_headers=_omit_headers,
                     _origins=_origins, _parsable_version=_parsable_version,
                     _quiet=_quiet, _quiet_plan=_quiet_plan,
-                    _review_release_notes=_review_release_notes,
                     _show_licenses=_show_licenses, _stage=_stage,
                     _verbose=_verbose, **kwargs)
 
@@ -1783,13 +1782,6 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
         ret_code = __api_execute_plan(_op, _api_inst)
         pkg_timer.record("executing", logger=logger)
-
-        if _review_release_notes and ret_code == EXIT_OK and \
-            _stage == API_STAGE_DEFAULT and _api_inst.solaris_image():
-                msg("\n" + "-" * 75)
-                msg(_("NOTE: Please review release notes posted at:\n" ))
-                msg(misc.get_release_notes_url())
-                msg("-" * 75 + "\n")
 
         return ret_code
 
@@ -1987,12 +1979,6 @@ def __handle_client_json_api_output(out_json, op):
         if "errors" in out_json:
                 _generate_error_messages(out_json["status"],
                     out_json["errors"], cmd=op)
-
-        if "data" in out_json and "release_notes_url" in out_json["data"]:
-                msg("\n" + "-" * 75)
-                msg(_("NOTE: Please review release notes posted at:\n" ))
-                msg(out_json["data"]["release_notes_url"])
-                msg("-" * 75 + "\n")
 
         if "data" in out_json and "repo_status" in out_json["data"]:
                 display_repo_failures(out_json["data"]["repo_status"])
