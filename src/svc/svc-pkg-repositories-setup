@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates.  All rights reserved.
 #
 
 # Load SMF constants and functions
@@ -39,7 +39,6 @@ case "$1" in
 	if [ "$fstype" = zfs ] ; then
 		exit $SMF_EXIT_OK
 	else
-		rootistmpmnt=0
 		readmnttab / < /etc/mnttab
 		if [ "$fstype" = zfs ] ; then
 			#
