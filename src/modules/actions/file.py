@@ -32,6 +32,7 @@ packaging object."""
 import errno
 import generic
 import os
+import six
 import stat
 import tempfile
 import types
@@ -670,15 +671,6 @@ class FileAction(generic.Action):
                 if self.attrs.get("preserve") == "abandon":
                         return
 
-                try:
-                        # Make file writable so it can be deleted.
-                        os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
-                except OSError as e:
-                        if e.errno == errno.ENOENT:
-                                # Already gone; don't care.
-                                return
-                        raise
-
                 if not pkgplan.destination_fmri and \
                     self.attrs.get("preserve", "false").lower() != "false":
                         # Preserved files are salvaged if they have been
@@ -700,7 +692,47 @@ class FileAction(generic.Action):
                                 raise
 
                 # Attempt to remove the file.
-                self.remove_fsobj(pkgplan, path)
+                rm_exc = None
+                try:
+                        self.remove_fsobj(pkgplan, path)
+                        return
+                except Exception as e:
+                        if e.errno != errno.EACCES:
+                                raise
+                        rm_exc = e
+
+                # There are only two likely reasons we couldn't remove the file;
+                # either because the parent directory isn't writable, or
+                # because the file is read-only and the OS isn't allowing its
+                # removal.  Assume both and try making both the parent directory
+                # and the file writable, removing the file, and finally
+                # resetting the directory to its original mode.
+                pdir = os.path.dirname(path)
+                pmode = None
+                try:
+                        if pdir != pkgplan.image.get_root():
+                                # Parent directory is not image root (e.g. '/').
+                                ps = os.lstat(pdir)
+                                pmode = ps.st_mode
+                                os.chmod(pdir, misc.PKG_DIR_MODE)
+
+                        # Make file writable and try removing it again; required
+                        # on some operating systems or potentially for some
+                        # filesystems?
+                        os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
+                        self.remove_fsobj(pkgplan, path)
+                except Exception as e:
+                        # Raise new exception chained to old.
+                        six.raise_from(e, rm_exc)
+                finally:
+                        # If parent directory wasn't image root, then assume
+                        # mode needs reset.
+                        if pmode is not None:
+                                try:
+                                        os.chmod(pdir, pmode)
+                                except Exception as e:
+                                        # Ignore failure to reset parent mode.
+                                        pass
 
         def different(self, other, cmp_hash=True):
                 # Override the generic different() method to ignore the file

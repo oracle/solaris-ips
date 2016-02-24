@@ -18,7 +18,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -3359,6 +3359,24 @@ class CliTestCase(Pkg5TestCase):
                 file_path = os.path.join(self.get_img_path(), path)
                 if not os.path.isfile(file_path):
                         self.assert_(False, "File {0} does not exist".format(path))
+
+        def dir_exists(self, path, mode=None, owner=None, group=None):
+                """Assert the existence of a directory in the image."""
+                dir_path = os.path.join(self.get_img_path(), path)
+                try:
+                        st = os.stat(dir_path)
+                except OSError as e:
+                        if e.errno == errno.ENOENT:
+                                self.assert_(False,
+                                    "Directory {0} does not exist".format(path))
+                        else:
+                                raise
+                if mode is not None:
+                        self.assertEqual(mode, stat.S_IMODE(st.st_mode))
+                if owner is not None:
+                        self.assertEqual(owner, st.st_uid)
+                if group is not None:
+                        self.assertEqual(group, st.st_gid)
 
         def file_doesnt_exist(self, path):
                 """Assert the non-existence of a file in the image."""

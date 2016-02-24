@@ -278,6 +278,14 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,horst path=/p3/cat
             close """
 
+        rofiles = """
+            open rofilesdir@1.0-0
+            add dir mode=0755 owner=root group=bin path=rofdir
+            close
+            open rofiles@1.0-0
+            add file tmp/cat mode=0444 owner=root group=bin path=rofdir/rofile
+            close """
+
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -1154,6 +1162,35 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update b1@2.0-0", exit=1)
                 # this should pass because var/pkg/config is not reserved
                 self.pkg("update b1@3.0-0", exit=0)
+
+        def test_readonly_files(self):
+                """Ensure that packages containing files found in a read-only
+                directory or read-only files can be uninstalled."""
+
+                self.pkgsend_bulk(self.rurl, self.rofiles)
+                self.image_create(self.rurl)
+
+                # First, install parent directory package.
+                self.pkg("install -vvv rofilesdir@1.0")
+                pdir = os.path.join(self.get_img_path(), "rofdir")
+
+                # Next, install the package.  Note that this test intentionally
+                # does not cover the case of *installing* files to a read-only
+                # directory.
+                self.pkg("install -vvv rofiles@1.0")
+
+                # chmod parent directory to read-only and then verify that the
+                # package can still be uninstalled
+                os.chmod(pdir, 0o555)
+                self.pkg("verify -vvv rofilesdir", exit=1)
+                self.pkg("uninstall -vvv rofiles@1.0")
+
+                # Finally, verify directory mode was restored to 555.
+                try:
+                        self.dir_exists("rofdir", mode=0o555)
+                finally:
+                        # Ensure directory can be cleaned up.
+                        os.chmod(pdir, 0o755)
 
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
@@ -10622,22 +10659,6 @@ adm
                     "tripledupfilea")
                 self.pkg("change-variant -vvv variant.foo=two")
                 self.pkg("change-variant -vvv variant.foo=one", exit=1)
-
-        def dir_exists(self, path, mode=None, owner=None, group=None):
-                dir_path = os.path.join(self.get_img_path(), path)
-                try:
-                        st = os.stat(dir_path)
-                except OSError as e:
-                        if e.errno == errno.ENOENT:
-                                self.assert_(False, "Directory {0} does not exist".format(path))
-                        else:
-                                raise
-                if mode is not None:
-                        self.assert_(stat.S_IMODE(st.st_mode) == mode)
-                if owner is not None:
-                        self.assert_(st.st_uid == owner)
-                if group is not None:
-                        self.assert_(st.st_gid == group)
 
         def test_multiple_users_install(self):
                 """Test the behavior of pkg(1) when multiple user actions
