@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -1034,8 +1034,7 @@ class PkgActionChecker(base.ActionChecker):
                         if "_" in key:
                                 if key in ["original_name", "refresh_fmri",
                                     "restart_fmri", "suspend_fmri",
-                                    "disable_fmri", "clone_perms",
-                                    "reboot_needed"] or \
+                                    "disable_fmri", "clone_perms"] or \
                                         key.startswith("facet.locale.") or \
                                         key.startswith("facet.version-lock."):
                                         continue

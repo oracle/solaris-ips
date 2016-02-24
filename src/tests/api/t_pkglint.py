@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1699,7 +1699,7 @@ file path=var/svc/manifest/sample.db owner=root group=sys mode=644
 """
 
 expected_failures["underscores.mf"] = ["pkglint.action001.1",
-    "pkglint.action001.3", "pkglint.action001.2"]
+    "pkglint.action001.3", "pkglint.action001.2", "pkglint.action001.1"]
 broken_manifests["underscores.mf"] = \
 """
 #
@@ -1714,6 +1714,7 @@ set name=variant.arch value=i386 value=sparc
 set name=test value=i386 variant.arch=sparc
 set name=this_underscore_check value=i386 another_attribute=False
 set name=info.source_url value=http://www.sun.com
+# reboot_needed is a typo (should be reboot-needed); so should cause a warning
 dir group=bin mode=0755 owner=root path=usr/lib/X11 reboot_needed=False
 """
 
@@ -1911,7 +1912,6 @@ link path=usr/bin/foo1 target=bar restart_fmri=true
 link path=usr/bin/foo2 target=bar refresh_fmri=true
 link path=usr/bin/foo3 target=bar suspend_fmri=true
 link path=usr/bin/foo4 target=bar disable_fmri=true
-link path=usr/bin/foo5 target=bar reboot_needed=true
 link path=usr/bin/foo6 target=bar clone_perms="* 0666 root root"
 link path=usr/bin/foo7 target=bar original_name=SUNWcar:usr/bin/wazaap
 """
