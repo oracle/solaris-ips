@@ -24,7 +24,7 @@ SEARCH
    each  time a package is published. If indexing is already happening when 
    packages are published, they're queued and another update to the indexes 
    happens once the current run is finished. On the client side, it's 
-   hooked into the install, image-update, and uninstall code so that each 
+   hooked into the install, update, and uninstall code so that each 
    of those actions are reflected in the index.
 
    The query engine is responsible for processing the text from the user, 

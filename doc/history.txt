@@ -17,7 +17,7 @@ image-modifying operations that they perform.
         add-publisher
         image-create
         image-set-attributes
-        image-update
+        update
         install
         purge-history
         rebuild-index

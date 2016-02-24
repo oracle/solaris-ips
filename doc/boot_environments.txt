@@ -1,5 +1,5 @@
 As of 2010/03, we always create new boot environments
-when doing an image-update, and never do so for
+when doing an update, and never do so for
 install, instead failing the operation should an action
 tagged w/ reboot-needed be affected.  We also always 
 create new boot environments for change-variant and
@@ -32,7 +32,7 @@ would both get the following new options:
 [--no-new-be | --always-new-be]
 [--be-name name]
 
-pkg image-update
+pkg update
 pkg change-facet
 pkg change-variant
 
@@ -46,7 +46,7 @@ So, to retain the current behavior,
 
 invoke pkg install --no-new-be ....
 
-invoke pkg image-update --always-new-be ...
+invoke pkg update --always-new-be ...
        pkg change-facet --always-nes-be ...
        pkg change-variant --always-new-be ...
 

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -267,10 +267,6 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # was not preferred at the time of isntall and was not used
                 # to install the package.
                 self.pkg("install baz@1.0")
-                self.pkg("info baz@1.0 | grep test2")
-                # Also verify that the client still accepts 'image-update'
-                # as a synonym for 'update' for compatibility.
-                self.pkg("image-update -v", exit=4)
                 self.pkg("info baz@1.0 | grep test2")
 
                 # Finally, cleanup and verify no packages are installed.

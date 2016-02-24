@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 #
 msgid ""
@@ -1414,12 +1414,12 @@ msgstr ""
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the image-update, install, or uninstall\n"
+"Despite the error while indexing, the update, install, or uninstall\n"
 "has completed successfuly."
 msgstr ""
        "\n"
        "\n"
-       "image-update, install eller  uninstall\n"
+       "update, install eller  uninstall\n"
        "har körts färdigt trots felen som inträffade under indexeringen."
 
 #. The full usage message isn't desired.
@@ -2406,12 +2406,12 @@ msgstr "Kör ..."
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the image-update, install, or uninstall "
+"Despite the error while indexing, the update, install, or uninstall "
 "has completed successfuly."
 msgstr ""
        "\n"
        "\n"
-       "image-update, install eller  uninstall har körts färdigt trots felen som inträffade under indexeringen."
+       "update, install eller  uninstall har körts färdigt trots felen som inträffade under indexeringen."
 
 #: ../gui/modules/installupdate.py:897
 msgid "Gathering package information, please wait..."
@@ -4315,10 +4315,10 @@ msgstr "Startmiljön %s finns redan."
 #: ../modules/client/api_errors.py:999
 msgid ""
 "Boot environment naming during package install is not supported on this\n"
-"version of OpenSolaris. Please image-update without the --be-name option."
+"version of OpenSolaris. Please update without the --be-name option."
 msgstr ""
        "Med den här versionen av OpenSolaris går det inte att namnge en startmiljö under paketinstallationen\n"
-       "image-update utan alternativet --be-name."
+       "update utan alternativet --be-name."
 
 #: ../modules/client/api_errors.py:1005
 msgid "Unable to clone the current boot environment."

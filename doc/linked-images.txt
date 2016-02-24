@@ -164,7 +164,7 @@ patching of Solaris 10 system.  This change is the administrative model
 is being driven by pkg(5) and is largely orthogonal to zones.  With
 pkg(5), patching of systems will be done via pkg(1) update, where
 repositories are populated with the latests versions of packages that
-all system should be running, and when systems are image-updated they
+all system should be running, and when systems are updated they
 will automatically install the latest versions of software available
 within the repositories they are using.  Hence, if an administrator
 wants to install updated packages onto a system with zones, they should
@@ -407,7 +407,7 @@ delivered by this project.
   beadm(1M) does not support running within a non-global zone and
   creating snapshots of zone boot environments from within a zone.
   Beadm(1M) support within a zone is a requirements for supporting
-  pkg(5) image-update within a zone.  (Since image-update only operates
+  pkg(5) update within a zone.  (Since update only operates
   on alternate boot environments.) It is also the case that other pkg(5)
   operations may refuse to operate on the currently running image and
   may only be run on cloned and offline boot environments. Since
@@ -633,7 +633,7 @@ pkg(1) linked image common cli options: ignoring children
     attach-linked [-I | -i <li-name>]
     change-facet [-I | -i <li-name>]
     change-variant [-I | -i <li-name>]
-    image-update [-I | -i <li-name>]
+    update [-I | -i <li-name>]
     install [-I | -i <li-name>]
     set-property-linked [-I | -i <li-name>]
     sync-linked [-I | -i <li-name>]
@@ -718,7 +718,7 @@ pkg(1) linked image common cli options: syncing parent metadata
     audit [--no-parent-sync]
     change-facet [--no-parent-sync]
     change-variant [--no-parent-sync]
-    image-update [--no-parent-sync]
+    update [--no-parent-sync]
     install [--no-parent-sync]
     list [--no-parent-sync]
     sync [--no-parent-sync]

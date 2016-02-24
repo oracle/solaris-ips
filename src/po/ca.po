@@ -18,8 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 #
 msgid ""
@@ -49,7 +48,7 @@ msgid ""
 "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
 "        pkg uninstall [-nrvq] [--no-index] package...\n"
 "        pkg list [-Hafnsuv] [--no-refresh] [package...]\n"
-"        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
 "index]\n"
 "        pkg refresh [--full] [publisher ...]\n"
 "        pkg version\n"
@@ -106,7 +105,7 @@ msgstr ""
        "        pkg install [-nvq] [--no-refresh] [--no-index] paquet...\n"
        "        pkg uninstall [-nrvq] [--no-index] paquet...\n"
        "        pkg list [-Hafnsuv] [--no-refresh] [paquet...]\n"
-       "        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+       "        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
        "index]\n"
        "        pkg refresh [--full] [publicador ...]\n"
        "        pkg version\n"
@@ -1016,12 +1015,12 @@ msgstr ""
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the image-update, install, or uninstall\n"
+"Despite the error while indexing, the update, install, or uninstall\n"
 "has completed successfuly."
 msgstr ""
        "\n"
        "\n"
-       "Tot i l'error durant l'indexació, el image-update, l'instal·lació o la desinstal·lació\n"
+       "Tot i l'error durant l'indexació, el update, l'instal·lació o la desinstal·lació\n"
        "ha estat completada correctament."
 
 #. The full usage message isn't desired.
@@ -3524,10 +3523,10 @@ msgstr "L'entorn d'arranc '%s' ja existeix."
 #: ../modules/client/api_errors.py:878
 msgid ""
 "Boot environment naming during package install is not supported on this\n"
-"version of OpenSolaris. Please image-update without the --be-name option."
+"version of OpenSolaris. Please update without the --be-name option."
 msgstr ""
        "El nomenament de l'entorn d'arranc durant l'instal·lació no està suportat en aquesta \n"
-       "versió d'OpenSolaris. Si us plau utilitzeu image-update sense l'opció --be-name."
+       "versió d'OpenSolaris. Si us plau utilitzeu update sense l'opció --be-name."
 
 #: ../modules/client/api_errors.py:884
 msgid "Unable to clone the current boot environment."

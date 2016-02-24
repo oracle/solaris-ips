@@ -6454,7 +6454,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
                 # see if update works the same way
                 self.pkg("install pkg8@1.0 pkg9@1.0")  # install pkg
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list pkg8@1.1 pkg9@1.1")
                 self.pkg("uninstall '*'")
 
@@ -6520,11 +6520,11 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("{0} pkg10".format(install_cmd))
                 self.pkg("list pkg10@1.2")
                 self.pkg("uninstall '*'")
-                # check image-update behavior
+                # check update behavior
                 self.pkg("install pkg10@1.0")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list pkg10@1.1")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list pkg10@1.2")
                 self.pkg("uninstall '*'")
                 # check that dependencies are ignored if

@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -799,7 +799,7 @@ class TestPkgLinked1(TestPkgLinked):
                         self._pkg([1], "audit-linked", rv=rv)
                         self._pkg([1], "install {0}".format(self.p_foo1_name[1]), \
                             rv=rv)
-                        self._pkg([1], "image-update", rv=rv)
+                        self._pkg([1], "update", rv=rv)
 
                         # operations that need to access the parent should fail
                         self._attach_parent([2], 0, rv=rv)
@@ -857,7 +857,7 @@ class TestPkgLinked1(TestPkgLinked):
                         self._pkg_child_all(0, "detach-linked", rv=rv)
 
                         # TODO: test more recursive ops here
-                        # image-update, install, uninstall, etc
+                        # update, install, uninstall, etc
 
         def test_ignore_1_no_children(self):
                 self._imgs_create(1)
@@ -1171,9 +1171,9 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg_child(0, [1], "sync-linked -v --linked-md-only",
                     rv=rv)
 
-                # trying to sync via image-update should fail
-                self._pkg([1, 2], "image-update -vn", rv=EXIT_OOPS)
-                self._pkg([1, 2], "image-update -v", rv=EXIT_OOPS)
+                # trying to sync via update should fail
+                self._pkg([1, 2], "update -vn", rv=EXIT_OOPS)
+                self._pkg([1, 2], "update -v", rv=EXIT_OOPS)
 
                 # trying to sync via install should fail
                 self._pkg([1, 2], "install -vn {0}", self.p_sync1_name[0],

@@ -5098,7 +5098,6 @@ cmds = {
     "attach-linked"         : [attach_linked, 2],
     "avoid"                 : [avoid],
     "audit-linked"          : [audit_linked, 0],
-    "authority"             : [publisher_list],
     "change-facet"          : [change_facet],
     "change-variant"        : [change_variant],
     "contents"              : [list_contents],
@@ -5128,7 +5127,6 @@ cmds = {
     "remove-property-value" : [property_remove_value],
     "revert"                : [revert],
     "search"                : [search],
-    "set-authority"         : [publisher_set],
     "set-mediator"          : [set_mediator],
     "set-property"          : [property_set],
     "set-property-linked"   : [set_property_linked],
@@ -5137,7 +5135,6 @@ cmds = {
     "unavoid"               : [unavoid],
     "unfreeze"              : [unfreeze],
     "uninstall"             : [uninstall],
-    "unset-authority"       : [publisher_unset],
     "unset-property"        : [property_unset],
     "unset-mediator"        : [unset_mediator],
     "unset-publisher"       : [publisher_unset],
@@ -5279,8 +5276,6 @@ def main_func():
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)
-                # 'image-update' is an alias for 'update' for compatibility.
-                subcommand = subcommand.replace("image-update", "update")
                 if subcommand == "help":
                         if pargs:
                                 sub = pargs.pop(0)

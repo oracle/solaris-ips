@@ -353,7 +353,7 @@ LICENSE ACTIONS ACCEPTANCE PROPOSAL
         * contents
         * fix
         * history 
-        * image-update
+        * update
         * info
         * install
         * list

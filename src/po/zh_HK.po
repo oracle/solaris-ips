@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-06-25 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -6781,7 +6781,7 @@ msgstr "正在執行..."
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the image-update, install, or uninstall "
+"Despite the error while indexing, the update, install, or uninstall "
 "has completed successfuly."
 msgstr "\n\n雖然建立索引時曾發生錯誤，但影像更新、安裝或解除安裝已經成功完成。"
 
