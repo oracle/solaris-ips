@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import M2Crypto as m2
@@ -667,6 +667,22 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         setattr(u, prop, os.path.join(ssl_dir,
                                            os.path.basename(pval)))
 
+        def update_last_modified(self):
+                """Update $imgdir/modified timestamp for image; should be
+                called after any image modification has completed.  This
+                provides a public interface for programs that want to monitor
+                the image for modifications via event ports, etc."""
+
+                # This is usually /var/pkg/modified.
+                fname = os.path.join(self.imgdir, "modified")
+                try:
+                        with os.fdopen(
+                            os.open(fname, os.O_CREAT|os.O_NOFOLLOW,
+                                misc.PKG_FILE_MODE)) as f:
+                                os.utime(fname, None)
+                except EnvironmentError as e:
+                        raise apx._convert_error(e)
+
         def save_config(self):
                 # First, create the image directories if they haven't been, so
                 # the configuration file can be written.
@@ -674,6 +690,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 self.__store_publisher_ssl()
                 self.cfg.write()
+                self.update_last_modified()
                 self.__load_publisher_ssl()
 
                 # Remove the old the pkg.sysrepo(1M) cache, if present.
@@ -3251,6 +3268,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Ensure in-memory catalogs get reloaded.
                 self.__init_catalogs()
 
+                self.update_last_modified()
                 progtrack.cache_catalogs_done()
                 self.history.log_operation_end()
 
@@ -4717,11 +4735,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         json.dump((self.__AVOID_SET_VERSION, d), tf)
                         tf.close()
                         portable.rename(tmp_file, state_file)
-
                 except Exception as e:
                         logger.warn("Cannot save avoid list: {0}".format(
                             str(e)))
                         return
+
+                self.update_last_modified()
 
                 self.__avoid_set_altered = False
 
@@ -4773,6 +4792,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 json.dump(
                                     (self.__FROZEN_DICT_VERSION, new_dict), tf)
                         portable.rename(tmp_file, state_file)
+                        self.update_last_modified()
                 except EnvironmentError as e:
                         raise apx._convert_error(e)
                 self.__rebuild_image_catalogs()

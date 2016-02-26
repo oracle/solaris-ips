@@ -4780,6 +4780,11 @@ class ImagePlan(object):
                                         self.image.cfg.set_property("property",
                                             "dehydrated", self.operations_pubs)
                                         self.image.save_config()
+                                else:
+                                        # Mark image as modified if not calling
+                                        # save_config (which will do it for us).
+                                        self.image.update_last_modified()
+
                         except EnvironmentError as e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EPERM:
