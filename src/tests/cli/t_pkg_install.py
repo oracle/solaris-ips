@@ -961,7 +961,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                         # Now attempt to corrupt the client's copy of the
                         # manifest such that actions are malformed.
                         for bad_act in (
-                            'set name=description value="" \" my desc \" ""',
+                            'set name=description value="" \" my desc  ""',
                             "set name=com.sun.service.escalations value="):
                                 self.debug("Testing with bad action "
                                     "'{0}'.".format(bad_act))

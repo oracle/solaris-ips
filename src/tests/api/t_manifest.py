@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -62,7 +62,7 @@ file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 set com.sun,test=false
 set com.sun,data=true
 depend type=require fmri=pkg:/library/libc
-file fff555ff9 mode=0555 owner=sch group=staff \
+file fff555ff9 mode=0555 owner=sch group=staff \\
  path=/usr/bin/i386/sort isa=i386
 file eeeaaaeee mode=0555 owner=sch group=staff path=/usr/bin/amd64/sort isa=amd64
 
@@ -72,21 +72,27 @@ file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
 """
 
                 self.m2_signatures = {
-                    "sha-1": "e600f5e48a838b11ed73fd4afedfc35638ab0bbf"
+                    "sha-1": "7272cb2461a8a4ccf958b7a7f13f3ae20cbb0212"
                 }
 
                 #
-                # Try to keep this up to date with on of
+                # Try to keep this up to date with one of
                 # every action type.
                 #
                 self.diverse_contents = """\
 set com.sun,test=false
+set name=pkg.description value="The Z Shell (zsh) is a Bourne-like shell " \\
+    "designed for interactive use, although it is also a powerful scripting " \\
+    "language.  Many of the useful features of bash, ksh, and tcsh were " \\
+    "incorporated into zsh, but many original features were added."
 depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 dir owner=root path=usr/bin group=bin mode=0755 variant.arch=i386 variant.arch=sparc
 dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
-dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755
-link path=usr/lib/amd64/libjpeg.so \
+dir owner=root path="opt/dir with " \\
+    "whitespaces	" \\
+    "in value" group=bin mode=0755
+link path=usr/lib/amd64/libjpeg.so \\
 target=libjpeg.so.62.0.0
 hardlink path=usr/bin/amd64/rksh93 target=ksh93 variant.opensolaris.zone=global
 group groupname=testgroup gid=10
@@ -96,7 +102,7 @@ group groupname=testgroup gid=10
 set com.sun,test=false
 set com.sun,data=true
 depend type=require fmri=pkg:/library/libc
-file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort \
+file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort \\
 isa=i386
 """
 
@@ -119,10 +125,11 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 
                 # Index raises an exception if the substring isn't found;
                 # if that were to happen, the test case would then fail.
-                str(self.m1).index("fmri=pkg:/library/libc")
-                str(self.m1).index("owner=sch")
-                str(self.m1).index("group=staff")
-                str(self.m1).index("isa=i386")
+                mstr = str(self.m1)
+                mstr.index("fmri=pkg:/library/libc")
+                mstr.index("owner=sch")
+                mstr.index("group=staff")
+                mstr.index("isa=i386")
 
                 # Verify set_content with a byte string with unicode data
                 # works.
@@ -140,6 +147,26 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 output = list(m.as_lines())[0].rstrip()
                 self.assertEqual(bstr, output)
                 self.assert_(isinstance(output, str))
+
+                # Verify Manifests using line continuation '\' are parsed as
+                # expected.
+                m = manifest.Manifest()
+                m.set_content(self.diverse_contents)
+                expected = sorted('''\
+set name=com.sun,test value=false
+set name=pkg.description value="The Z Shell (zsh) is a Bourne-like shell designed for interactive use, although it is also a powerful scripting language.  Many of the useful features of bash, ksh, and tcsh were incorporated into zsh, but many original features were added."
+depend fmri=pkg:/library/libc type=require
+group gid=10 groupname=testgroup
+dir group=bin mode=0755 owner=root path="opt/dir with spaces in value"
+dir group=bin mode=0755 owner=root path="opt/dir with whitespaces	in value"
+dir group=bin mode=0755 owner=root path=usr/bin variant.arch=i386 variant.arch=sparc
+file fff555ff9 group=staff isa=i386 mode=0555 owner=sch path=usr/bin/i386/sort
+hardlink path=usr/bin/amd64/rksh93 target=ksh93 variant.opensolaris.zone=global
+link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
+'''.splitlines())
+                actual = sorted(l.strip() for l in m.as_lines())
+
+                self.assertEqualDiff(expected, actual)
 
         def test_diffs1(self):
                 """ humanized_differences runs to completion """
@@ -281,14 +308,14 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 #
                 # Expect to see something -> None differences
                 #
-                self.assertEqual(len(diffs), 9)
+                self.assertEqual(len(diffs), 10)
                 for d in diffs:
                         self.assertEqual(type(d[1]), type(None))
 
                 #
                 # Expect to see None -> something differences
                 #
-                self.assertEqual(len(diffs2), 9)
+                self.assertEqual(len(diffs2), 10)
                 for d in diffs2:
                         self.assertEqual(type(d[0]), type(None))
                         self.assertNotEqual(type(d[1]), type(None))
@@ -388,7 +415,9 @@ class TestFactoredManifest(pkg5unittest.Pkg5TestCase):
 set name=pkg.fmri value=pkg:/foo-content@1.0
 dir owner=root path=usr/bin group=bin mode=0755 variant.arch=i386
 dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
-dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 variant.debug.osnet=true
+dir owner=root path="opt/dir with " \\
+    "whitespaces	" \\
+    "in value" group=bin mode=0755 variant.debug.osnet=true
 """
 
         def setUp(self):

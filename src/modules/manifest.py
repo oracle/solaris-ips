@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple, defaultdict
@@ -972,6 +972,24 @@ class Manifest(object):
                 return alldups
 
         def __content_to_actions(self, content):
+                """Parse manifest content, stripping line-continuation
+                characters from the input as it is read; this results in actions
+                with values across multiple lines being passed to the
+                action parsing code whitespace-separated instead.
+                
+                For example:
+                        
+                set name=pkg.summary \
+                    value="foo"
+                set name=pkg.description value="foo " \
+                      "bar baz"
+
+                ...will each be passed to action parsing as:
+
+                set name=pkg.summary value="foo"
+                set name=pkg.description value="foo " "bar baz"
+                """
+
                 accumulate = ""
                 lineno = 0
                 errors = []

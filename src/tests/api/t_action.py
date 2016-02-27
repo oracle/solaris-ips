@@ -261,10 +261,18 @@ Incorrect attribute list.
                 self.assertEqual(a.must_accept, True)
                 self.assertEqual(a.must_display, False)
 
+        def __assert_action_str(self, astr, expected, expattrs):
+                """Private helper function for action stringification
+                testing."""
+                act = action.fromstr(astr)
+                self.assertEqualDiff(expected, str(act))
+                self.assertEqualDiff(expattrs, act.attrs)
+
         def test_action_tostr(self):
                 """Test that actions convert to strings properly.  This means
                 that we can feed the resulting string back into fromstr() and
-                get an identical action back."""
+                get an identical action back (excluding a few cases detailed in
+                the test)."""
 
                 for s in self.act_strings:
                         self.debug(str(s))
@@ -276,7 +284,7 @@ Incorrect attribute list.
                                 self.debug("a2 " + str(a2))
                                 self.assert_(not a.different(a2))
 
-                # The one place that invariant doesn't hold is when you specify
+                # The first case that invariant doesn't hold is when you specify
                 # the payload hash as the named attribute "hash", in which case
                 # the resulting re-stringification emits the payload hash as a
                 # positional attribute again ...
@@ -305,6 +313,63 @@ Incorrect attribute list.
                         self.assert_(action.fromstr(str(a)) == a)
                         self.assert_(a.hash == v)
                         self.assert_(k in str(a))
+
+                # The attributes are verified separately from the stringified
+                # action in the tests below to ensure that the attributes were
+                # parsed independently and not as a single value (e.g.
+                # 'file path=etc/foo\nfacet.debug=true' is parsed as having a
+                # path attribute and a facet.debug attribute).
+
+                # The next case that invariant doesn't hold is when you have
+                # multiple, quoted values for a single attribute (this case
+                # primarily exists for use with line-continuation support
+                # offered by the Manifest class).
+                expected = 'set name=pkg.description value="foo bar baz"'
+                expattrs = { 'name': 'pkg.description', 'value': 'foo bar baz' }
+                for astr in (
+                    "set name=pkg.description value='foo ''bar ''baz'",
+                    "set name=pkg.description value='foo ' 'bar ' 'baz'",
+                    'set name=pkg.description value="foo " "bar " "baz"'):
+                        self.__assert_action_str(astr, expected, expattrs)
+
+                expected = "set name=pkg.description value='foo \"bar\" baz'"
+                expattrs = { 'name': 'pkg.description',
+                    'value': 'foo "bar" baz' }
+                for astr in (
+                    "set name=pkg.description value='foo \"bar\" ''baz'",
+                    "set name=pkg.description value='foo \"bar\" '\"baz\""):
+                        self.__assert_action_str(astr, expected, expattrs)
+
+                # The next case that invariant doesn't hold is when there are
+                # multiple whitespace characters between attributes or after the
+                # action type.
+                expected = 'set name=pkg.description value=foo'
+                expattrs = { 'name': 'pkg.description', 'value': 'foo' }
+                for astr in (
+                    "set  name=pkg.description value=foo",
+                    "set name=pkg.description  value=foo",
+                    "set  name=pkg.description  value=foo",
+                    "set\n name=pkg.description \nvalue=foo",
+                    "set\t\nname=pkg.description\t\nvalue=foo"):
+                        # To force stressing the parsing logic a bit more, we
+                        # parse an action with a multi-value attribute that
+                        # needs concatention each time before we parse a
+                        # single-value attribute that needs concatenation.
+                        #
+                        # This simulates a refcount bug that was found during
+                        # development and serves as an extra stress-test.
+                        self.__assert_action_str(
+                            'set name=multi-value value=bar value="foo ""baz"',
+                            'set name=multi-value value=bar value="foo baz"',
+                            { 'name': 'multi-value',
+                                'value': ['bar', 'foo baz'] })
+
+                        self.__assert_action_str(astr, expected, expattrs)
+
+                astr = 'file path=etc/foo\nfacet.debug=true'
+                expected = 'file NOHASH facet.debug=true path=etc/foo'
+                expattrs = { 'path': 'etc/foo', 'facet.debug': 'true' }
+                self.__assert_action_str(astr, expected, expattrs)
 
         def test_action_sig_str(self):
                 sig_act = action.fromstr(
@@ -351,6 +416,8 @@ Incorrect attribute list.
                         action.fromstr(text)
                 except action.MalformedActionError as e:
                         assert e.actionstr == text
+                        self.debug(text)
+                        self.debug(str(e))
                         malformed = True
 
                 # If the action isn't malformed, something is wrong.
@@ -397,10 +464,17 @@ Incorrect attribute list.
                 # Missing value
                 self.assertMalformed("file 1234 path=/tmp/foo broken=")
                 self.assertMalformed("file 1234 path=/tmp/foo broken= ")
+                self.assertMalformed("file 1234 path=/tmp/foo broken=\t")
+                self.assertMalformed("file 1234 path=/tmp/foo broken=\n")
                 self.assertMalformed("file 1234 path=/tmp/foo broken")
 
                 # Whitespace in key
                 self.assertMalformed("file 1234 path=/tmp/foo bro ken")
+                self.assertMalformed("file 1234 path=/tmp/foo\tbro\tken")
+                self.assertMalformed("file 1234 path=/tmp/foo\nbro\nken")
+                self.assertMalformed("file 1234 path ='/tmp/foo")
+                self.assertMalformed("file 1234 path\t=/tmp/foo")
+                self.assertMalformed("file 1234 path\n=/tmp/foo")
 
                 # Attribute value is invalid.
                 self.assertInvalid("depend type=unknown fmri=foo@1.0")

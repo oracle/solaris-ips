@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -963,7 +963,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                                     [pfmri.pkg_name])
 
                         for bad_act in (
-                            'set name=description value="" \" my desc \" ""',
+                            'set name=description value="" \" my desc  ""',
                             "set name=com.sun.service.escalations value="):
                                 self.debug("Testing with bad action "
                                     "'{0}'.".format(bad_act))
