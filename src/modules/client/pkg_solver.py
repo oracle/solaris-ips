@@ -1553,151 +1553,8 @@ class PkgSolver(object):
                 CONSTRAINT.NONE of specified version and set of remaining
                 fmris."""
 
-                if dotrim or not obsolete_ok or not fmri.version or \
-                    not fmri.version.timestr:
-                        return self.__comb_common(fmri, dotrim,
-                            version.CONSTRAINT_NONE, obsolete_ok)
-
-                # In the case that a precise version (down to timestamp) is
-                # provided, no trimming is being done, and obsoletes are ok, the
-                # set of matching FMRIs can be determined without using version
-                # comparison because the solver caches catalog FMRIs in
-                # ascending version order.
-
-                # determine if the data is cacheable or cached:
-                tp = (fmri, dotrim, version.CONSTRAINT_NONE, obsolete_ok)
-                try:
-                        return self.__cache[tp]
-                except KeyError:
-                        pass
-
-                mver = fmri.version
-                # Always use a copy in reverse order (so versions are in
-                # descending order); return value may be cached.
-                all_fmris = self.__get_catalog_fmris(fmri.pkg_name)[::-1]
-
-                # frozensets are used so callers don't inadvertently
-                # update these sets (which may be cached).  Iteration is
-                # performed in descending version order with the
-                # assumption that systems are generally up-to-date so it
-                # should be faster to start at the end and look for the
-                # older version.
-                last_ver = None
-                for i, f in enumerate(all_fmris):
-                        if mver == f.version:
-                                last_ver = i
-                        elif last_ver is not None:
-                                break
-
-                if last_ver is not None:
-                        matching = frozenset(all_fmris[:last_ver + 1])
-                        remaining = frozenset(all_fmris[last_ver + 1:])
-                else:
-                        matching = frozenset()
-                        remaining = frozenset(all_fmris)
-
-                # if we haven't finished trimming, don't cache this
-                if not self.__trimdone:
-                        return matching, remaining
-
-                # cache the result
-                self.__cache[tp] = (matching, remaining)
-                return self.__cache[tp]
-
-        def __comb_common_noversion(self, fmri, dotrim, obsolete_ok):
-                """Implements versionless comb logic."""
-
-                all_fmris = self.__get_catalog_fmris(fmri.pkg_name)
-                matching = frozenset((
-                    f
-                    for f in all_fmris
-                    if not dotrim or f not in self.__trim_dict
-                    if obsolete_ok or not self.__fmri_is_obsolete(f)
-                ))
-                remaining = frozenset(set(all_fmris) - matching)
-                return matching, remaining
-
-        def __comb_common_version(self, fmri, dotrim, constraint, obsolete_ok):
-                """Implements versioned comb logic."""
-
-                # If using a version constraint that cares about branch (but not
-                # timestr), the fmris will have to be resorted so that the
-                # version chopping done here works as expected.  This is because
-                # version sort order is release, branch, timestr which is
-                # different than is_successor() order.  However, if the provided
-                # FMRI has a timestamp, doesn't have a branch, or we're applying
-                # a constraint that doesn't care about the branch, then we don't
-                # need to resort.
-                mver = fmri.version
-                branch_sort = not mver.timestr and mver.branch and \
-                    constraint not in (version.CONSTRAINT_NONE,
-                        version.CONSTRAINT_RELEASE,
-                        version.CONSTRAINT_RELEASE_MAJOR,
-                        version.CONSTRAINT_RELEASE_MINOR)
-
-                all_fmris = self.__get_catalog_fmris(fmri.pkg_name)
-                if branch_sort:
-                        # The first version of this attempted to perform
-                        # multiple passes to avoid the cost of sorting by
-                        # finding the last entry that matched CONSTRAINT_RELEASE
-                        # and then only resorting the slice of comb_fmris from
-                        # first_ver to last_ver, but that actually ended up
-                        # being slower because multiple passes with
-                        # is_successor() (even over a small portion of
-                        # comb_fmris) is more expensive than simply resorting
-                        # the entire list.  Ideally, we'd get the entries from
-                        # __get_catalog_fmris() in this order already which
-                        # would be faster since we'd avoid a second sort.
-                        skey = operator.attrgetter(
-                            'version.branch', 'version.release')
-                        # Always use a copy; return value may be cached.
-                        comb_fmris = sorted(all_fmris, key=skey,
-                            reverse=True)
-                else:
-                        # Always use a copy; return value may be cached.
-                        comb_fmris = all_fmris[::-1]
-
-                # Iteration is performed in descending version order with the
-                # assumption that systems are generally up-to-date so it should
-                # be faster to start at the end and look for the oldest version
-                # that matches.
-                first_ver = None
-                last_ver = None
-                for i, f in enumerate(comb_fmris):
-                        fver = f.version
-                        if ((fver.is_successor(mver, constraint=constraint) or
-                            fver == mver)):
-                                if first_ver is None:
-                                        first_ver = i
-                                last_ver = i
-                        elif last_ver is not None:
-                                break
-
-                if last_ver is not None:
-                        # Oddly enough, it's a little bit faster to iterate
-                        # through the slice of comb_fmris again and store
-                        # matches here instead of above.  Perhaps variable
-                        # scoping overhead is to blame?
-                        matching = []
-                        remaining = []
-                        for f in comb_fmris[first_ver:last_ver + 1]:
-                                if ((not dotrim or
-                                    f not in self.__trim_dict) and
-                                    (obsolete_ok or not
-                                        self.__fmri_is_obsolete(f))):
-                                        matching.append(f)
-                                else:
-                                        remaining.append(f)
-                        matching = frozenset(matching)
-                        remaining = frozenset(chain(
-                            comb_fmris[:first_ver],
-                            remaining,
-                            comb_fmris[last_ver + 1:]))
-                else:
-                        matching = frozenset()
-                        remaining = frozenset(comb_fmris)
-
-                return matching, remaining
+                return self.__comb_common(fmri, dotrim,
+                    version.CONSTRAINT_NONE, obsolete_ok)
 
         def __comb_common(self, fmri, dotrim, constraint, obsolete_ok):
                 """Underlying impl. of other comb routines"""
@@ -1709,14 +1566,18 @@ class PkgSolver(object):
                 if (not self.__trimdone and dotrim) or tp not in self.__cache:
                         # use frozensets so callers don't inadvertently update
                         # these sets (which may be cached).
-                        if not fmri.version or not fmri.version.release:
-                                matching, remaining = \
-                                    self.__comb_common_noversion(fmri, dotrim,
-                                        obsolete_ok)
-                        else:
-                                matching, remaining = \
-                                    self.__comb_common_version(fmri, dotrim,
-                                        constraint, obsolete_ok)
+                        all_fmris = set(self.__get_catalog_fmris(fmri.pkg_name))
+                        matching = frozenset([
+                            f
+                            for f in all_fmris
+                            if f not in self.__trim_dict or not dotrim
+                            if not fmri.version or
+                                fmri.version == f.version or
+                                f.version.is_successor(fmri.version,
+                                    constraint=constraint)
+                            if obsolete_ok or not self.__fmri_is_obsolete(f)
+                        ])
+                        remaining = frozenset(all_fmris - matching)
 
                         # if we haven't finished trimming, don't cache this
                         if not self.__trimdone:

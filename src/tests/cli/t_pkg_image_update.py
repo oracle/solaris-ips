@@ -36,7 +36,7 @@ import unittest
 
 import pkg.misc as misc
 
-class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
+class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
         need_ro_data = True
@@ -471,7 +471,68 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("update -nv", exit=4)
 
 
-class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
+class TestIDROps(pkg5unittest.SingleDepotTestCase):
+
+        need_ro_data = True
+
+        idr_comb = """
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115559Z 
+            add set name=pkg.description value="test package"
+            add dir path=tmp/hello owner=root group=sys mode=555
+            close
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1.1697.1:20160225T115610Z 
+            add set name=pkg.description value="test package"
+            add dir path=tmp/hello owner=root group=sys mode=555
+            add depend type=require fmri=idr1697@1
+            close
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115616Z 
+            add set name=pkg.description value="test package"
+            add dir path=tmp/hello owner=root group=sys mode=555
+            close
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.3.2.906,5.11-0.1:20160225T115622Z 
+            add set name=pkg.description value="test package"
+            add dir path=tmp/hello owner=root group=sys mode=555
+            close
+            open pkg://test/management/em-sysmgmt-ecpc/opscenter-ecpc-incorporation@12.2.2.1103,5.11-0.1:20141203T103418Z
+            add set name=pkg.description value="This incorporation constrains packages for the opscenter enterprise and proxy controller."
+            add depend fmri=management/em-sysmgmt-ecpc/em-oc-ec@12.2.2.1103-0.1 type=incorporate
+            add depend fmri=management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103-0.1 type=incorporate
+            add depend fmri=management/em-sysmgmt-ecpc/em-oc-pc@12.2.2.1103-0.1 type=incorporate
+            close
+            open pkg://test/idr1697@1
+            add set name=pkg.description value="idr package"
+            add dir path=tmp/hello owner=root group=sys mode=555
+            add depend type=incorporate fmri=management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103-0.1.1697.1
+            close"""
+
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.pkgsend_bulk(self.rurl, self.idr_comb)
+
+        def test_idr_application(self):
+                """Verify branch versioning that might that might lead to odd
+                ordering of the possible FMRIs will not be erroneously trimmed
+                during installation or removal."""
+
+                self.image_create(self.rurl)
+                self.pkg("install opscenter-ecpc-incorporation")
+                self.pkg("list -afv em-oc-common")
+                # If branch versioning ordering is working correctly, the next
+                # two packages should be installable.
+                self.pkg("install pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115559Z")
+                self.pkg("install pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115616Z")
+                # If branch ordering is broken, only this package will be
+                # instalable.
+                self.pkg("install pkg://test/management/em-sysmgmt-ecpc/em-oc-common")
+                self.pkg("list -afv em-oc-common")
+                # If branch ordering is broken, the upgrade will fail because
+                # em-oc-common won't be installable despite removal of the idr.
+                self.pkg("update --reject pkg://test/idr1697@1 "
+                    "pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115616Z")
+
+
+class NoTestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
 
         a_1 = """
             open a@1.0,5.11-0
