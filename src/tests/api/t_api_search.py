@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -47,6 +47,8 @@ import pkg.search_storage as ss
 
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         example_pkg10 = """
             open example_pkg@1.0,5.11-0
@@ -382,7 +384,7 @@ add dir group=sys mode=0755 owner=root path=usr/share
 add dir group=bin mode=0755 owner=root path=usr/share/info
 add dir group=bin mode=0755 owner=root path=usr/share/man
 add dir group=bin mode=0755 owner=root path=usr/share/man/man1
-add file tmp/example_file elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.size=12
+add file ro_data/elftest.so.1 elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-1 pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-2 pkg.size=12
@@ -398,7 +400,7 @@ close
 
         res_bug_983 = set([
             ("pkg:/SUNWgmake@3.81-0.89", "basename", "link path=usr/sfw/bin/gmake target=../../bin/gmake"),
-            ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.csize=30 pkg.size=12'),
+            ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file 038cc7a09940928aeac6966331a2f18bc40e7792 chash=a3e76bd1b97b715cddc93b2ad6502b41efa4d833 elfarch=i386 elfbits=32 elfhash=6975080bd79b8ccf8b6ba2e64a83ca67fac3e256 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.csize=1358 pkg.size=3948'),
             ('pkg:/SUNWgmake@3.81-0.89', 'gmake - GNU make', 'set name=description value="gmake - GNU make"')
         ])
 

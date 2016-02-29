@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -49,6 +49,7 @@ import time
 import unittest
 import zlib
 
+from pkg.actions import fromstr
 from pkg.digest import DEFAULT_HASH_FUNC
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.request import url2pathname
@@ -62,6 +63,8 @@ except ImportError:
 class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
@@ -160,6 +163,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
             add license tmp/copyright3 license=copyright
             add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
+            add file ro_data/elftest.so.1 mode=0755 owner=root group=bin path=bin/true
             close
         """
 
@@ -1251,9 +1255,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.dpath1, "-d {0} -n -v \*".format(self.tempdir))
                 expected = """\
 Retrieving packages (dry-run) ...
-        Packages to add:        9
-      Files to retrieve:       17
-Estimated transfer size: 528.00 B
+        Packages to add:       9
+      Files to retrieve:      19
+Estimated transfer size: 3.17 kB
 """
                 self.assert_(expected in self.output, self.output)
                 for s in self.published:
@@ -1267,9 +1271,9 @@ Estimated transfer size: 528.00 B
                 self.pkgrecv(self.dpath1, "-a -d {0} -n -v \*".format(self.tempdir))
                 expected = """\
 Archiving packages (dry-run) ...
-        Packages to add:        9
-      Files to retrieve:       17
-Estimated transfer size: 528.00 B
+        Packages to add:       9
+      Files to retrieve:      19
+Estimated transfer size: 3.17 kB
 """
                 self.assert_(expected in self.output, self.output)
                 for s in self.published:
@@ -1282,9 +1286,9 @@ Estimated transfer size: 528.00 B
                    .format(self.tempdir))
                 expected = """\
 Retrieving packages (dry-run) ...
-        Packages to add:        9
-      Files to retrieve:       17
-Estimated transfer size: 528.00 B
+        Packages to add:       9
+      Files to retrieve:      19
+Estimated transfer size: 3.17 kB
 """
                 self.assert_(expected in self.output, self.output)
                 for s in self.published:
@@ -1422,6 +1426,77 @@ Estimated transfer size: 528.00 B
                 self.assert_("signature" not in ma)
                 self.pkgrepo("verify -s {0} --disable dependency"
                     .format(self.dpath6))
+
+        def test_15_content_attrs(self):
+                """Ensure that relevant content-related attributes will not be
+                modified by pkgrecv.  This is important if changes are made to
+                how some attributes are calculated in the future and
+                modifications would invalidate signatures."""
+
+                #
+                # For now, this only needs to test 'elfhash'.
+                #
+                mfpath = os.path.join(self.test_root, "content-attrs.p5m")
+                with open(mfpath, "wb") as mf:
+                        mf.write("""\
+set name=pkg.fmri value=pkg://test/content-attrs@1.0
+file elftest.so.1 mode=0755 owner=root group=bin path=bin/true
+""")
+
+                # Create a repository and publish sample package.
+                rpath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(rpath)
+                ret, pfmri = self.pkgsend(rpath,
+                    "publish -d {0} {1}".format(self.ro_data_root, mfpath))
+                self.pkgrepo("list -s {0}".format(rpath))
+
+                # Now get the actual manifest and get current elfhash value.
+                orepo = repo.Repository(root=rpath)
+                rmpath = orepo.manifest(pfmri)
+                rm = manifest.Manifest()
+                rm.set_content(pathname=rmpath)
+                ract = list(rm.gen_actions_by_type('file'))[0]
+                oelfhash = ract.attrs["elfhash"]
+
+                # Create a new repository and pkgrecv package to that one so
+                # that we can safely modify it in place.
+                nrpath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(nrpath)
+                self.pkgrecv(rpath, "-d {0} \*".format(nrpath))
+                nrepo = repo.Repository(root=nrpath)
+                nmpath = nrepo.manifest(pfmri)
+                nm = manifest.Manifest()
+                nmcontent = rm.tostr_unsorted().replace(
+                    "elfhash=", "elfhash=42.")
+                nm.set_content(nmcontent)
+                nm.store(nmpath)
+                # Modifying the manifest requires a catalog rebuild.
+                self.pkgrepo("rebuild --no-index -s {0}".format(nrpath))
+
+                # Now create another repository and pkgrecv package *without*
+                # using --clone to that one and verify that elfhash remains
+                # unchanged from previous repository version.
+                trpath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(trpath)
+                self.pkgrecv(nrpath, "-d {0} \*".format(trpath))
+                trepo = repo.Repository(root=trpath)
+                tmpath = trepo.manifest(pfmri)
+                tm = manifest.Manifest()
+                tm.set_content(pathname=tmpath)
+                tact = list(tm.gen_actions_by_type('file'))[0]
+                self.assertEqual("42." + oelfhash, tact.attrs["elfhash"])
+
+                # Do the same thing again, but use --clone this time.
+                trpath = tempfile.mkdtemp(dir=self.test_root)
+                self.create_repo(trpath)
+                self.pkgrecv(nrpath, "--clone -d {0} -p \*".format(trpath))
+                trepo = repo.Repository(root=trpath)
+                tmpath = trepo.manifest(pfmri)
+                tm = manifest.Manifest()
+                tm.set_content(pathname=tmpath)
+                tact = list(tm.gen_actions_by_type('file'))[0]
+                self.assertEqual("42." + oelfhash, tact.attrs["elfhash"])
+
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 

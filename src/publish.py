@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -51,6 +51,16 @@ from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 
 nopub_actions = [ "unknown" ]
+
+# These attributes should always be stripped from input manifests for 'publish';
+# they will be re-calculated during publication.
+strip_attrs = [
+    "elfarch",
+    "elfbits",
+    "elfhash",
+    "pkg.csize",
+    "pkg.size",
+]
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -422,9 +432,10 @@ def trans_publish(repo_uri, fargs):
                 if a.name == "set" and a.attrs["name"] in ["pkg.fmri", "fmri"]:
                         continue
                 elif a.has_payload:
-                        # Don't trust values provided; forcibly discard these.
-                        a.attrs.pop("pkg.size", None)
-                        a.attrs.pop("pkg.csize", None)
+                        # Forcibly discard content-related attributes to prevent
+                        # errors when reusing manifests with different content.
+                        for attr in strip_attrs:
+                                a.attrs.pop(attr, None)
                         path = pkg.actions.set_action_data(a.hash, a,
                             basedirs=basedirs, bundles=bundles)[0]
                 elif a.name in nopub_actions:

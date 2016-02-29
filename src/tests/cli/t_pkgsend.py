@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -36,6 +36,7 @@ import shutil
 import stat
 import tempfile
 import unittest
+import six
 from six.moves import range
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import urlopen, Request, pathname2url
@@ -54,6 +55,8 @@ except ImportError:
 
 class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
         persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         def setUp(self):
                 # This test suite needs an actual depot.
@@ -1405,6 +1408,53 @@ path=dir-foo/subdir-foo/subdirfile-foo\n""".format(
 
                 self.assertEqualDiff(self.reduceSpaces(expected),
                     self.reduceSpaces(actual))
+
+        def test_28_content_attrs(self):
+                """Ensure that content-related attributes are ignored for
+                'pgksend publish'."""
+
+                mfpath = os.path.join(self.test_root, "content-attrs.p5m")
+                with open(mfpath, "wb") as mf:
+                        mf.write("""\
+set name=pkg.fmri value=pkg://test/content-attrs@1.0
+file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored pkg.csize=ignored elfhash=ignored elfbits=ignored elfarch=ignored
+""")
+
+                # Verify pkgsend publish can be performed even though values for
+                # content-related attributes are invalid.  They should be
+                # forcibly dropped and added back.
+                ret, pfmri = self.pkgsend(self.dc.get_depot_url(),
+                    "publish -d {0} {1}".format(self.ro_data_root, mfpath))
+
+                # Now get the actual manifest and ensure all attributes were
+                # overwritten.
+                repo = self.dc.get_repo()
+                rmpath = repo.manifest(pfmri)
+                rm = manifest.Manifest()
+                rm.set_content(pathname=rmpath)
+                a = list(rm.gen_actions_by_type('file'))[0]
+
+                # These attributes should always match pre-determined values.
+                expected = {
+                    'elfarch': 'i386',
+                    'elfbits': '32',
+                    'group': 'bin',
+                    'mode': '0755',
+                    'owner': 'root',
+                    'path': 'bin/true',
+                    'pkg.csize': '1358',
+                    'pkg.size': '3948'
+                }
+                actual = dict(
+                    (k, v) for (k, v) in six.iteritems(a.attrs)
+                    if k in expected
+                )
+                self.assertEqualDiff(expected, actual)
+
+                # 'elfhash' can vary depending upon whether we've changed the
+                # content-hashing algorithms, so we only verify it exists and
+                # doesn't have a value of 'ignored'.
+                self.assertNotEqual(a.attrs['elfhash'], 'ignored')
 
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
