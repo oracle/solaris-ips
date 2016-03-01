@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -242,7 +242,8 @@ scripts = {
         "unknown": scripts_sunos,
         }
 
-MANPAGE_OUTPUT_ROOT = "man/nroff"
+MANPAGE_SRC_ROOT = "man"
+MANPAGE_OUTPUT_ROOT = MANPAGE_SRC_ROOT + "/nroff"
 
 man1_files = [
     MANPAGE_OUTPUT_ROOT + '/man1/' + f
@@ -1657,17 +1658,23 @@ cmdclasses = {
         }
 
 # all builds of IPS should have manpages
-data_files += [
+english_manpage_files = [
         (man1_dir, man1_files),
         (man1m_dir, man1m_files),
         (man5_dir, man5_files),
+        ]
+data_files += english_manpage_files
+data_files += [
         (man1_ja_JP_dir, man1_ja_files),
         (man1m_ja_JP_dir, man1m_ja_files),
         (man5_ja_JP_dir, man5_ja_files),
         (man1_zh_CN_dir, man1_zh_CN_files),
         (man1m_zh_CN_dir, man1m_zh_CN_files),
         (man5_zh_CN_dir, man5_zh_CN_files),
-        (resource_dir, resource_files),
+        ]
+# add resource files
+data_files += [
+        (resource_dir, resource_files)
         ]
 # add transforms
 data_files += [
@@ -1706,6 +1713,13 @@ if osname == 'sunos':
         data_files += [
             (os.path.join(locale_dir, '__LOCALE__', 'LC_MESSAGES'),
                 [('po/pkg.pot', 'pkg.pot')])
+        ]
+        # install English manpage sources to put into localizable file package
+        data_files += [
+            (dir.replace('usr/share/man/', 'usr/share/man/__LOCALE__/'),
+                (os.path.join(MANPAGE_SRC_ROOT, os.path.basename(f))
+                 for f in files))
+             for dir, files in english_manpage_files
         ]
 
 if osname == 'sunos' or osname == "linux":
