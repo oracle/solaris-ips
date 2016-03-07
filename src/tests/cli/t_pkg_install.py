@@ -6290,6 +6290,24 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        optional_group = """
+            open consolidation/desktop/desktop-incorporation@0.5.11-0.175.3.0.0.28.0
+            add depend type=incorporate fmri=communication/im/pidgin@2.10.11-0.175.3.0.0.26.0
+            close
+            open communication/im/pidgin@2.10.11-0.175.3.0.0.26.0
+            add depend type=require fmri=consolidation/desktop/desktop-incorporation
+            close
+            open communication/im/pidgin@2.10.11-5.12.0.0.0.90.0
+            add depend type=require fmri=consolidation/desktop/desktop-incorporation
+            close
+            open group/feature/multi-user-desktop@5.12-5.12.0.0.0.94.0
+            add depend type=group fmri=communication/im/pidgin
+            close
+            open communication/im/libotr@4.1.0-5.12.0.0.0.94.0
+            add depend type=optional fmri=communication/im/pidgin@2.10.11-5.12.0.0.0.88.0
+            close
+        """
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
@@ -6300,7 +6318,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                     self.pkg101, self.pkg102, self.pkg110, self.pkg111,
                     self.pkg121, self.pkg122, self.pkg123, self.pkg132,
                     self.pkg142, self.pkg_nosol, self.pkg_renames,
-                    self.pkgSUNWcs075, self.exclude_group))
+                    self.pkgSUNWcs075, self.exclude_group,
+                    self.optional_group))
 
                 self.leaf_pkgs = []
                 for t in self.leaf_expansion:
@@ -6368,9 +6387,10 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # Now remove gold-server and then verify install will fail.
                 self.pkg("uninstall gold-server")
                 self.pkg("unavoid network/rsync")
-                # No solution as there's no installed constraining package and
-                # user didn't provide sufficient input.
-                self.pkg("install gold-server", assert_solution=False, exit=1)
+
+                # This should fail as there's no installed constraining package
+                # and user didn't provide sufficient input.
+                self.pkg("install gold-server", exit=1)
 
         def test_exclude_dependencies_install(self):
                 """ exercise exclude dependencies """
@@ -6853,6 +6873,26 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("{0} pkg14@1.2".format(install_cmd))
                 self.pkg("verify")
                 self.pkg("uninstall pkg14@1.2")
+
+        def test_optional_nosolution(self):
+                """Ensure useful error messages are produced when an optional
+                dependency in a proposed package cannot be satisfied due to
+                another proposed package."""
+
+                self.image_create(self.rurl)
+                self.pkg("install desktop-incorporation")
+                self.pkg("install -n multi-user-desktop@latest libotr@latest "
+                    "desktop-incorporation@latest", exit=1)
+                self.assertFalse("No solution" in self.errout)
+                # desktop-incorporation should not be listed as a rejected
+                # package; rejected packages are always listed with full FMRI
+                # and scheme
+                self.assertFalse("pkg://test/consolidation/desktop/desktop-incorporation" in self.errout)
+                # all of these should show up as rejected packages
+                self.assertTrue("pkg://test/communication/im/libotr" in self.errout)
+                self.assertTrue("pkg://test/group/feature/multi-user-desktop" in self.errout)
+                # reason for rejection should reference optional dependency type
+                self.assertTrue("optional" in self.errout)
 
 
 class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
