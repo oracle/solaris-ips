@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import testutils
@@ -40,6 +40,7 @@ class TestPkgFWDependencies(pkg5unittest.SingleDepotTestCase):
             "testdriver" :
 """#!/usr/bin/python
 import os
+import resource
 import sys
 
 def main():
@@ -58,6 +59,8 @@ def main():
                return int(devs_present)
             return 0
         if arg.startswith("dump_core="):
+            # avoid creating a core file
+            resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
             os.abort()
     print("attribute minimum-version not specified in dependency")
     return 241
