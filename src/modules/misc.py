@@ -77,6 +77,7 @@ import pkg.portable as portable
 import pkg.digest as digest
 
 from pkg import VERSION
+from pkg.altroot import ar_open
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import img_type_names, IMG_NONE
@@ -2944,3 +2945,22 @@ if six.PY3:
         force_str = force_text
 else:
         force_str = force_bytes
+
+
+def open_image_file(root, path, flag, mode=None):
+        """Safely open files that ensures that the path we'are accessing resides
+        within a specified image root.
+
+        'root' is a directory that the path must reside in.
+        """
+
+        try:
+                return os.fdopen(os.open(path, flag|os.O_NOFOLLOW, mode))
+        except EnvironmentError as e:
+                if e.errno != errno.ELOOP:
+                        # Access to protected member; pylint: disable=W0212
+                        raise api_errors._convert_error(e)
+        # If it is a symbolic link, fall back to ar_open. ar_open interprets
+        # 'path' as relative to 'root', that is, 'root' will be prepended to
+        # 'path', so we need to call os.path.relpath here.
+        return os.fdopen(ar_open(root, os.path.relpath(path, root), flag, mode))
