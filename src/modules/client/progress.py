@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -261,11 +261,12 @@ class SpeedEstimator(object):
         def get_final_speed(self):
                 if self.__donetime is None:
                         return None
-                if self.elapsed == 0.0:  # div by 0 paranoia
+                elapsed = self.elapsed()
+                if elapsed == 0.0:  # div by 0 paranoia
                         return None
                 # pylint is picky about this message:
                 # old-division; pylint: disable=W1619
-                return self.goalbytes / self.elapsed()
+                return self.goalbytes / elapsed
 
         def elapsed(self):
                 return None if self.__donetime is None else \
