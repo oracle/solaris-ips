@@ -3029,8 +3029,9 @@ class ImagePlan(object):
                                 # Ignore erroneously tagged files.
                                 continue
 
-                        if src.attrs.get("preserve") == "abandon":
-                                # preserve=abandon files are never removed.
+                        if src.attrs.get("preserve") in ("abandon",
+                            "install-only"):
+                                # these files are never removed.
                                 continue
 
                         entry = [src.attrs["path"]]
@@ -3046,10 +3047,12 @@ class ImagePlan(object):
                         dest = ap.dst
                         if dest.name != "file":
                                 continue
+
+                        dpres_type = dest.attrs.get("preserve")
                         if not ((orig and ("preserve" in orig.attrs or
                             "save_file" in orig.attrs or
                             "overlay" in orig.attrs)) or
-                            ("preserve" in dest.attrs or
+                            (dpres_type or
                             "save_file" in dest.attrs or
                             "overlay" in dest.attrs)):
                                 # At least one of the actions has to be a
@@ -3083,11 +3086,20 @@ class ImagePlan(object):
                                 else:
                                         save_file = None
 
-                        if not orig:
+                        if not orig and dpres_type == "install-only":
+                                # For install-only, we can rely on
+                                # _check_preserve.
+                                try:
+                                        if not dest._check_preserve(orig, ap.p):
+                                                installed.append(entry)
+                                except EnvironmentError as e:
+                                        if e.errno != errno.EACCES:
+                                                raise
+                                continue
+                        elif not orig:
                                 # We can't rely on _check_preserve for this case
                                 # as there's no existing on-disk file at the
                                 # destination path yet.
-                                dpres_type = dest.attrs.get("preserve")
                                 if (dpres_type != "legacy" and
                                     dpres_type != "abandon"):
                                         # 'abandon' actions are never delivered;
@@ -3138,7 +3150,7 @@ class ImagePlan(object):
                                 # newly-tagged preserve=abandon files never
                                 # delivered.
                                 continue
-                        if pres_type == "renameold":
+                        elif pres_type == "renameold":
                                 moved.append([mpath, tpath + ".old"])
                                 installed.append(entry)
                                 continue
@@ -3169,8 +3181,15 @@ class ImagePlan(object):
                         # file as "updated".
                         if (pres_type == True and
                             ImagePlan.__find_inconsistent_attrs(
-                                ((orig,), (dest,)), ignore=("path",))):
-                                updated.append(entry)
+                                ((orig,), (dest,)),
+                                ignore=("path", "preserve"))):
+
+                                # For 'install-only', we can only update for
+                                # inconsistent attributes if the file already
+                                # exists.
+                                if (dpres_type != "install-only" or
+                                    os.path.isfile(final_path)):
+                                        updated.append(entry)
                                 continue
 
                         # For remaining cases, what happens is based on the
@@ -3198,7 +3217,8 @@ class ImagePlan(object):
                                 # different content or unique_attrs.  Check to
                                 # see if it does.
                                 if ImagePlan.__find_inconsistent_attrs(
-                                    ((orig,), (dest,)), ignore=("path",)):
+                                    ((orig,), (dest,)),
+                                    ignore=("path", "preserve")):
                                         # Different unique_attrs.
                                         updated.append(entry)
                                         continue

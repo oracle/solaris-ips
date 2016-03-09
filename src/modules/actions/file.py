@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -120,9 +120,9 @@ class FileAction(generic.Action):
                             mode=misc.PKG_DIR_MODE,
                             fmri=pkgplan.destination_fmri)
                 elif (not orig and not pkgplan.origin_fmri and
-                     "preserve" in self.attrs and
-                     self.attrs["preserve"] != "abandon" and
-                     os.path.isfile(final_path)):
+                    "preserve" in self.attrs and
+                    self.attrs["preserve"] not in ("abandon",
+                        "install-only") and os.path.isfile(final_path)):
                         # Unpackaged editable file is already present during
                         # initial install; salvage it before continuing.
                         pkgplan.salvage(final_path)
@@ -514,6 +514,14 @@ class FileAction(generic.Action):
                 # boundaries.
                 is_file = os.path.isfile(final_path)
 
+                # 'install-only' preservation has very specific semantics as
+                # well; if there's an 'orig' or this is an initial install and
+                # the file exists, we should not modify the file content.
+                if pres_type == "install-only":
+                        if orig or is_file:
+                                return True
+                        return False
+
                 changed_hash = False
                 if orig:
                         # We must use the same hash algorithm when comparing old
@@ -668,7 +676,7 @@ class FileAction(generic.Action):
                                 # likely overlaid and is moving).
                                 return
 
-                if self.attrs.get("preserve") == "abandon":
+                if self.attrs.get("preserve") in ("abandon", "install-only"):
                         return
 
                 if not pkgplan.destination_fmri and \

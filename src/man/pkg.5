@@ -163,25 +163,31 @@ affect whether and how a <literal>file</literal> action is installed.</para>
 <listitem><para>Specifies when and how files are preserved during package
 operations.</para>
 <para>When a package is initially installed, if a file delivered by the package
-has a <literal>preserve</literal> attribute defined with any value except <literal>abandon</literal> and the
-file already exists in the image, the existing file is stored in <filename>/var/pkg/lost+found
-</filename> and the packaged file is installed.</para>
-<para>When a package is initially installed, if a file delivered by the package
-has a <literal>preserve</literal> attribute defined and the file does not
-already exist in the image, whether that file is installed depends on the
-value of the <literal>preserve</literal> attribute:</para>
+has a <literal>preserve</literal> attribute defined with any value except
+<literal>abandon</literal> or <literal>install-only</literal> and the file
+already exists in the image, the existing file is stored in
+<filename>/var/pkg/lost+found</filename> and the packaged file is
+installed.</para>
+<para>When a package is initially installed, if a file
+delivered by the package has a <literal>preserve</literal> attribute
+defined and the file does not already exist in the image, whether that file
+is installed depends on the value of the <literal>preserve</literal>
+attribute:</para>
 <itemizedlist>
-<listitem><para>If the value of <literal>preserve</literal> is <literal>legacy</literal>
-or <literal>abandon</literal>, the packaged file is not installed.</para></listitem>
-<listitem><para>If the value of <literal>preserve</literal> is not <literal>legacy
-</literal> or <literal>abandon</literal>, the packaged file is installed.</para></listitem>
+<listitem><para>If the value of <literal>preserve</literal> is
+<literal>abandon</literal> or <literal>legacy</literal>, the packaged file
+is not installed.</para></listitem>
+<listitem><para>If the value of <literal>preserve</literal> is not
+<literal>abandon</literal> or <literal>legacy</literal>, the packaged file
+is installed.</para></listitem>
 </itemizedlist>
 <para>When a package is downgraded, if a file delivered by the downgraded
 version of the package has a <literal>preserve</literal> attribute defined
-with any value except <literal>abandon</literal> and all of the following
-conditions are true, the file that currently exists in the image is renamed
-with the extension <filename>.update</filename>, and the file from the
-downgraded package is installed.</para>
+with any value except <literal>abandon</literal> or
+<literal>install-only</literal> and all of the following conditions are
+true, the file that currently exists in the image is renamed with the
+extension <filename>.update</filename>, and the file from the downgraded
+package is installed.</para>
 <itemizedlist>
 <listitem><para>The file exists in the image.</para></listitem>
 <listitem><para>The content of the file delivered by the downgraded version
@@ -207,9 +213,9 @@ the <literal>file</literal> action delivered by the currently installed version
 of the package, the upgrade is done in the following way:</para>
 <itemizedlist>
 <listitem><para>If the file delivered by the upgraded version of the package has
-a <literal>preserve</literal> value of <literal>abandon</literal> in the upgraded
-package, the new file will not be installed and the existing file will not be
-modified.
+a <literal>preserve</literal> value of <literal>abandon</literal> or
+<literal>install-only</literal> in the upgraded package, the new file will
+not be installed and the existing file will not be modified.
 </para></listitem>
 <listitem><para>If the file does not exist in the image, the new file is installed.
 </para></listitem>
@@ -259,8 +265,11 @@ exists in the image and has a <literal>preserve</literal> value of <literal>lega
 of the package, the permissions and timestamp (if present) are reset on the
 existing file.</para></listitem>
 </itemizedlist>
-<para>When a package is uninstalled, if a <literal>file</literal> action delivered by the currently installed version of the package has a <literal>preserve</literal> value of <literal>abandon</literal> and the file exists in the image, the file will not be removed.</para>
-</listitem>
+<para>When a package is uninstalled, if a <literal>file</literal> action
+delivered by the currently installed version of the package has a
+<literal>preserve</literal> value of <literal>abandon</literal> or
+<literal>install-only</literal> and the file exists in the image, the file
+will not be removed.</para></listitem>
 </varlistentry>
 <varlistentry><term><literal>overlay</literal></term>
 <listitem><para>Specifies whether the action allows other packages to deliver
