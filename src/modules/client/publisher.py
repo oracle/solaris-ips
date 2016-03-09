@@ -49,6 +49,10 @@ import tempfile
 import time
 import uuid
 
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 from six.moves.urllib.parse import quote, urlsplit, urlparse, urlunparse, \
     ParseResult
 from six.moves.urllib.request import url2pathname
@@ -61,7 +65,6 @@ import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.server.catalog as old_catalog
-import M2Crypto as m2
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
@@ -101,24 +104,37 @@ URI_SORT_POLICIES = {
     URI_SORT_PRIORITY: lambda obj: (obj.priority, obj.uri),
 }
 
-# This dictionary records the recognized values of extensions.
+# The strings in the value field refer to the boolean properties of the
+# Cryptography extension classes. If a property has a value True set, it means
+# this property is added as an extension value in the certificate generation,
+# and vice versa.
+EXTENSIONS_VALUES = {
+    x509.BasicConstraints: ["ca", "path_length"],
+    x509.KeyUsage: ["digital_signature", "content_commitment",
+    "key_encipherment", "data_encipherment", "key_agreement", "key_cert_sign",
+    "crl_sign", "encipher_only", "decipher_only"]
+}
+
+# Only listed extension values (properties) here can have a value True set in a
+# certificate extension; any other properties with a value True set will be
+# treated as unsupported.
 SUPPORTED_EXTENSION_VALUES = {
-    "basicConstraints": ("CA:TRUE", "CA:FALSE", "PATHLEN:"),
-    "keyUsage": ("DIGITAL SIGNATURE", "CERTIFICATE SIGN", "CRL SIGN")
+    x509.BasicConstraints: ("ca", "path_length"),
+    x509.KeyUsage: ("digital_signature", "key_cert_sign", "crl_sign")
 }
 
 # These dictionaries map uses into their extensions.
 CODE_SIGNING_USE = {
-    "keyUsage": ["DIGITAL SIGNATURE"]
+    x509.KeyUsage: ["digital_signature"],
 }
 
 CERT_SIGNING_USE = {
-    "basicConstraints": ["CA:TRUE"],
-    "keyUsage": ["CERTIFICATE SIGN"]
+    x509.BasicConstraints: ["ca"],
+    x509.KeyUsage: ["key_cert_sign"],
 }
 
 CRL_SIGNING_USE = {
-    "keyUsage": ["CRL SIGN"]
+    x509.KeyUsage: ["crl_sign"],
 }
 
 POSSIBLE_USES = [CODE_SIGNING_USE, CERT_SIGNING_USE, CRL_SIGNING_USE]
@@ -2444,15 +2460,17 @@ pkg unset-publisher {0}
         def __hash_cert(c):
                 # In order to interoperate with older images, we must use SHA-1
                 # here.
-                return hashlib.sha1(c.as_pem()).hexdigest()
+                return hashlib.sha1(
+                    c.public_bytes(serialization.Encoding.PEM)).hexdigest()
 
         @staticmethod
         def __string_to_cert(s, pkg_hash=None):
                 """Convert a string to a X509 cert."""
 
                 try:
-                        return m2.X509.load_cert_string(s)
-                except m2.X509.X509Error as e:
+                        return x509.load_pem_x509_certificate(
+                            misc.force_bytes(s), default_backend())
+                except ValueError:
                         if pkg_hash is not None:
                                 raise api_errors.BadFileFormat(_("The file "
                                     "with hash {0} was expected to be a PEM "
@@ -2473,14 +2491,20 @@ pkg unset-publisher {0}
                 file_problem = False
                 try:
                         with open(pkg_hash_pth, "wb") as fh:
-                                fh.write(cert.as_pem())
+                                fh.write(cert.public_bytes(
+                                    serialization.Encoding.PEM))
                 except EnvironmentError as e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
                         file_problem = True
 
                 # Note that while we store certs by their subject hashes,
-                # M2Crypto's subject hashes differ from what openssl reports
-                # the subject hash to be.
-                subj_hsh = cert.get_subject().as_hash()
+                # we use our own hashing since cryptography has no interface
+                # for the subject hash and other crypto frameworks have been
+                # inconsistent with OpenSSL.
+                subj_hsh = hashlib.sha1(misc.force_bytes(
+                    cert.subject)).hexdigest()
                 c = 0
                 made_link = False
                 while not made_link:
@@ -2544,21 +2568,59 @@ pkg unset-publisher {0}
                                     pth)
                 return c
 
+        def __rebuild_subj_root(self):
+                """Rebuild subject hash metadata."""
+
+                # clean up the old subject hash files to prevent
+                # junk files residing in the directory
+                try:
+                        shutil.rmtree(self.__subj_root)
+                except EnvironmentError:
+                        # if unprivileged user, we can't add
+                        # certs to it
+                        pass
+                else:
+                        for p in os.listdir(self.cert_root):
+                                path = os.path.join(self.cert_root, p)
+                                if not os.path.isfile(path):
+                                        continue
+                                with open(path, "rb") as fh:
+                                        s = fh.read()
+                                cert = self.__string_to_cert(s)
+                                self.__add_cert(cert)
+
         def __get_certs_by_name(self, name):
-                """Given 'name', a M2Crypto X509_Name, return the certs with
-                that name as a subject."""
+                """Given 'name', a Cryptograhy 'Name' object, return the certs
+                with that name as a subject."""
 
                 res = []
-                c = 0
-                name_hsh = name.as_hash()
+                count = 0
+                name_hsh = hashlib.sha1(misc.force_bytes(name)).hexdigest()
+
+                def load_cert(pth):
+                        with open(pth, "rb") as f:
+                                return x509.load_pem_x509_certificate(
+                                    f.read(), default_backend())
+
                 try:
                         while True:
                                 pth = os.path.join(self.__subj_root,
-                                    "{0}.{1}".format(name_hsh, c))
-                                cert = m2.X509.load_cert(pth)
-                                res.append(cert)
-                                c += 1
+                                    "{0}.{1}".format(name_hsh, count))
+                                res.append(load_cert(pth))
+                                count += 1
                 except EnvironmentError as e:
+                        # When switching to a different hash algorithm, the hash
+                        # name of file changes so that we couldn't find the
+                        # file. We try harder to rebuild the subject's metadata
+                        # if it's the first time we fail (count == 0).
+                        if count == 0 and e.errno == errno.ENOENT:
+                                self.__rebuild_subj_root()
+                                try:
+                                        res.append(load_cert(pth))
+                                except EnvironmentError as e:
+                                        if e.errno != errno.ENOENT:
+                                                raise
+
                         t = api_errors._convert_error(e,
                             [errno.ENOENT])
                         if t:
@@ -2578,7 +2640,8 @@ pkg unset-publisher {0}
                 # have or have not been approved.
                 for h in set(self.approved_ca_certs):
                         c = self.get_cert_by_hash(h, verify_hash=True)
-                        s = c.get_subject().as_hash()
+                        s = hashlib.sha1(misc.force_bytes(
+                            c.subject)).hexdigest()
                         self.ca_dict.setdefault(s, [])
                         self.ca_dict[s].append(c)
                 return self.ca_dict
@@ -2652,13 +2715,16 @@ pkg unset-publisher {0}
                 """CRLs seem to frequently come in DER format, so try reading
                 the CRL using both of the formats before giving up."""
 
+                with open(pth, "rb") as f:
+                        raw = f.read()
+
                 try:
-                        return m2.X509.load_crl(pth)
-                except m2.X509.X509Error:
+                        return x509.load_pem_x509_crl(raw, default_backend())
+                except ValueError:
                         try:
-                                return m2.X509.load_crl(pth,
-                                    format=m2.X509.FORMAT_DER)
-                        except m2.X509.X509Error:
+                                return x509.load_der_x509_crl(raw,
+                                    default_backend())
+                        except ValueError:
                                 raise api_errors.BadFileFormat(_("The CRL file "
                                     "{0} is not in a recognized "
                                     "format.").format(pth))
@@ -2703,14 +2769,9 @@ pkg unset-publisher {0}
                         except EnvironmentError:
                                 pass
                         else:
-                                nu = crl.get_next_update().get_datetime()
-                                # get_datetime is supposed to return a UTC time,
-                                # so assert that's the case.
-                                assert nu.tzinfo.utcoffset(nu) == \
-                                    dt.timedelta(0)
-                                # Add timezone info to cur_time so that cur_time
-                                # and nu can be compared.
-                                cur_time = dt.datetime.now(nu.tzinfo)
+                                nu = crl.next_update
+                                cur_time = dt.datetime.utcnow()
+
                                 if cur_time < nu:
                                         self.__tmp_crls[uri] = crl
                                         return crl
@@ -2765,23 +2826,41 @@ pkg unset-publisher {0}
                                 pass
                 return ncrl
 
-        def __check_crls(self, cert, ca_dict):
-                """Determines whether the certificate has been revoked by its
-                CRL.
+
+        def __verify_x509_signature(self, c, key):
+                """Verify the signature of a certificate or CRL 'c' against a
+                provided public key 'key'."""
+
+                verifier = key.verifier(
+                    c.signature, padding.PKCS1v15(),
+                    c.signature_hash_algorithm)
+
+                if isinstance(c, x509.Certificate):
+                        data = c.tbs_certificate_bytes
+                elif isinstance(c, x509.CertificateRevocationList):
+                        data = c.tbs_certlist_bytes
+                else:
+                        raise AssertionError("Invalid x509 object for "
+                            "signature verification: {0}".format(type(c)))
+
+                verifier.update(data)
+                try:
+                        verifier.verify()
+                        return True
+                except Exception:
+                        return False
+
+        def __check_crl(self, cert, ca_dict, crl_uri):
+                """Determines whether the certificate has been revoked by the
+                CRL located at 'crl_uri'.
 
                 The 'cert' parameter is the certificate to check for revocation.
 
                 The 'ca_dict' is a dictionary which maps subject hashes to
                 certs treated as trust anchors."""
 
-                # If the certificate doesn't have a CRL location listed, treat
-                # it as valid.
-                try:
-                        ext = cert.get_ext("crlDistributionPoints")
-                except LookupError as e:
-                        return True
-                uri = ext.get_value()
-                crl = self.__get_crl(uri)
+                crl = self.__get_crl(crl_uri)
+
                 # If we couldn't retrieve a CRL from the distribution point
                 # and no CRL is cached on disk, assume the cert has not been
                 # revoked.  It's possible that this should be an image or
@@ -2792,11 +2871,13 @@ pkg unset-publisher {0}
                 # A CRL has been found, now it needs to be validated like
                 # a certificate is.
                 verified_crl = False
-                crl_issuer = crl.get_issuer()
-                tas = ca_dict.get(crl_issuer.as_hash(), [])
+                crl_issuer = crl.issuer
+                tas = ca_dict.get(hashlib.sha1(misc.force_bytes(
+                    crl_issuer)).hexdigest(), [])
                 for t in tas:
                         try:
-                                if crl.verify(t.get_pubkey()):
+                                if self.__verify_x509_signature(crl,
+                                    t.public_key()):
                                         # If t isn't approved for signing crls,
                                         # the exception __check_extensions
                                         # raises will take the code to the
@@ -2809,7 +2890,8 @@ pkg unset-publisher {0}
                 if not verified_crl:
                         crl_cas = self.__get_certs_by_name(crl_issuer)
                         for c in crl_cas:
-                                if crl.verify(c.get_pubkey()):
+                                if self.__verify_x509_signature(crl,
+                                    c.public_key()):
                                         try:
                                                 self.verify_chain(c, ca_dict, 0,
                                                     True,
@@ -2821,11 +2903,69 @@ pkg unset-publisher {0}
                                                 break
                 if not verified_crl:
                         return True
+
                 # For a certificate to be revoked, its CRL must be validated
                 # and revoked the certificate.
-                rev = crl.is_revoked(cert)
-                if rev:
-                        raise api_errors.RevokedCertificate(cert, rev[1])
+
+                assert crl.issuer == cert.issuer
+                for rev in crl:
+                        if rev.serial_number != cert.serial:
+                                continue
+                        try:
+                                reason = rev.extensions.get_extension_for_oid(
+                                    x509.OID_CRL_REASON).value
+                        except x509.ExtensionNotFound:
+                                reason = None
+                        raise api_errors.RevokedCertificate(cert, reason)
+
+        def __check_crls(self, cert, ca_dict):
+                """Determines whether the certificate has been revoked by one of
+                its CRLs.
+
+                The 'cert' parameter is the certificate to check for revocation.
+
+                The 'ca_dict' is a dictionary which maps subject hashes to
+                certs treated as trust anchors."""
+
+                # If the certificate doesn't have a CRL location listed, treat
+                # it as valid.
+
+                # The CRLs to be retrieved are stored in the
+                # CRLDistributionPoints extensions which is structured like
+                # this:
+                #
+                # CRLDitsributionPoints = [
+                #     CRLDistributionPoint = [
+                #         union  {
+                #             full_name     = [ GeneralName, ... ]
+                #             relative_name = [ GeneralName, ... ]
+                #         }, ... ]
+                #     , ... ]
+                # 
+                # Relative names are a feature in X509 certs which allow to
+                # specify a location relative to another certificate. We are not
+                # supporting this and I'm not sure anybody is using this for
+                # CRLs.
+                # Full names are absolute locations but can be in different
+                # formats (refer to RFC5280) but in general only the URI type is
+                # used for CRLs. So this is the only thing we support here.
+
+                try:
+                        dps = cert.extensions.get_extension_for_oid(
+                            x509.oid.ExtensionOID.CRL_DISTRIBUTION_POINTS).value
+                except x509.ExtensionNotFound:
+                        return
+
+                for dp in dps:
+                        if not dp.full_name:
+                                # we don't support relative names
+                                continue
+                        for uri in dp.full_name:
+                                if not isinstance(uri,
+                                    x509.UniformResourceIdentifier):
+                                        # we only support URIs
+                                        continue
+                                self.__check_crl(cert, ca_dict, str(uri.value))
 
         def __check_revocation(self, cert, ca_dict, use_crls):
                 hsh = self.__hash_cert(cert)
@@ -2839,51 +2979,67 @@ pkg unset-publisher {0}
                 """Check whether the critical extensions in this certificate
                 are supported and allow the provided use(s)."""
 
+                try:
+                        exts = cert.extensions
+                except (ValueError, x509.UnsupportedExtension) as e:
+                        raise api_errors.InvalidCertificateExtensions(
+                            cert, e)
+
                 def check_values(vs):
                         for v in vs:
                                 if v in supported_vs:
                                         continue
-                                if v.startswith("PATHLEN:") and \
-                                    "PATHLEN:" in supported_vs:
-                                        try:
-                                                cert_pathlen = int(v[len("PATHLEN:"):])
-                                        except ValueError as e:
-                                                raise api_errors.UnsupportedExtensionValue(cert, ext, v)
-                                        if cur_pathlen > cert_pathlen:
-                                                raise api_errors.PathlenTooShort(cert, cur_pathlen, cert_pathlen)
-                                        continue
+                                # If there is only one extension value, it must
+                                # be the problematic one. Otherwise, we also
+                                # output the first unsupported value as the
+                                # problematic value following extension value.
                                 if len(vs) < 2:
-                                        raise api_errors.UnsupportedExtensionValue(cert, ext)
-                                else:
-                                        raise api_errors.UnsupportedExtensionValue(cert, ext, v)
+                                        raise api_errors.UnsupportedExtensionValue(
+                                            cert, ext, ", ".join(vs))
+                                raise api_errors.UnsupportedExtensionValue(
+                                    cert, ext, ", ".join(vs), v)
 
-
-                for i in range(0, cert.get_ext_count()):
-                        ext = cert.get_ext_at(i)
-                        name = ext.get_name()
-                        if name == "UNDEF":
-                                continue
-                        v = ext.get_value().upper()
-                        # Check whether the extension name is recognized.
-                        if name in SUPPORTED_EXTENSION_VALUES:
-                                supported_vs = \
-                                    SUPPORTED_EXTENSION_VALUES[name]
-                                vs = [s.strip() for s in v.split(",")]
+                for ext in exts:
+                        etype = type(ext.value)
+                        if etype in SUPPORTED_EXTENSION_VALUES:
+                                supported_vs = SUPPORTED_EXTENSION_VALUES[etype]
+                                keys = EXTENSIONS_VALUES[etype]
+                                if etype == x509.BasicConstraints:
+                                        pathlen = ext.value.path_length
+                                        if pathlen is not None and \
+                                            cur_pathlen > pathlen:
+                                                raise api_errors.PathlenTooShort(cert,
+                                                    cur_pathlen, pathlen)
+                                elif etype == x509.KeyUsage:
+                                        keys = list(EXTENSIONS_VALUES[etype])
+                                        if not getattr(ext.value,
+                                            "key_agreement"):
+                                                # Cryptography error:
+                                                # encipher_only/decipher_only is
+                                                # undefined unless key_agreement
+                                                # is true
+                                                keys.remove("encipher_only")
+                                                keys.remove("decipher_only")
+                                vs = [
+                                    key
+                                    for key in keys
+                                    if getattr(ext.value, key)
+                                ]
                                 # Check whether the values for the extension are
                                 # recognized.
                                 check_values(vs)
-                                uses = usages.get(name, [])
-                                if isinstance(uses, six.string_types):
-                                        uses = [uses]
                                 # For each use, check to see whether it's
                                 # permitted by the certificate's extension
                                 # values.
-                                for u in uses:
+                                if etype not in usages:
+                                        continue
+                                for u in usages[etype]:
                                         if u not in vs:
-                                                raise api_errors.InappropriateCertificateUse(cert, ext, u)
+                                                raise api_errors.InappropriateCertificateUse(
+                                                    cert, ext, u, ", ".join(vs))
                         # If the extension name is unrecognized and critical,
                         # then the chain cannot be verified.
-                        elif ext.get_critical():
+                        elif ext.critical:
                                 raise api_errors.UnsupportedCriticalExtension(
                                     cert, ext)
 
@@ -2930,10 +3086,10 @@ pkg unset-publisher {0}
 
                 def discard_names(cert, required_names):
                         for cert_cn in [
-                            str(c.get_data())
+                            str(c.value)
                             for c
-                            in cert.get_subject().get_entries_by_nid(
-                                m2.X509.X509_Name.nid["CN"])
+                            in cert.subject.get_attributes_for_oid(
+                                x509.oid.NameOID.COMMON_NAME)
                         ]:
                                 required_names.discard(cert_cn)
 
@@ -2954,13 +3110,15 @@ pkg unset-publisher {0}
                         discard_names(cert, required_names)
 
                         # Find the certificate that issued this certificate.
-                        issuer = cert.get_issuer()
-                        issuer_hash = issuer.as_hash()
+                        issuer = cert.issuer
+                        issuer_hash = hashlib.sha1(misc.force_bytes(
+                            issuer)).hexdigest()
 
                         # See whether this certificate was issued by any of the
                         # given trust anchors.
                         for c in ca_dict.get(issuer_hash, []):
-                                if cert.verify(c.get_pubkey()):
+                                if self.__verify_x509_signature(cert,
+                                    c.public_key()):
                                         verified = True
                                         # Remove any required names found in the
                                         # trust anchor.
@@ -2976,7 +3134,8 @@ pkg unset-publisher {0}
                         # identical and the certificate hasn't been verified
                         # then this is an untrusted self-signed cert and should
                         # be rejected.
-                        if cert.get_subject().as_hash() == issuer_hash:
+                        if hashlib.sha1(misc.force_bytes(
+                            cert.subject)).hexdigest() == issuer_hash:
                                 if not verified:
                                         raise \
                                             api_errors.UntrustedSelfSignedCert(
@@ -3002,8 +3161,9 @@ pkg unset-publisher {0}
                                         # next link in the chain.  check_ca
                                         # checks both the basicConstraints
                                         # extension and the keyUsage extension.
-                                        if c.check_ca() and \
-                                            cert.verify(c.get_pubkey()):
+                                        if misc.check_ca(c) and \
+                                            self.__verify_x509_signature(cert,
+                                            c.public_key()):
                                                 problem = False
                                                 # Check whether this certificate
                                                 # has a critical extension we

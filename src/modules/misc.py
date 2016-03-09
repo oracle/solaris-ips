@@ -2964,3 +2964,23 @@ def open_image_file(root, path, flag, mode=None):
         # 'path' as relative to 'root', that is, 'root' will be prepended to
         # 'path', so we need to call os.path.relpath here.
         return os.fdopen(ar_open(root, os.path.relpath(path, root), flag, mode))
+
+
+def check_ca(cert):
+        """Check if 'cert' is a proper CA. For this the BasicConstraints need to
+        identify it as a CA cert and it needs to have the CertSign
+        (key_cert_sign in Cryptography) KeyUsage flag. Based loosely on
+        OpenSSL's check_ca()"""
+
+        from cryptography import x509
+
+        bconst_ca = None
+        kuse_sign = None
+
+        for e in cert.extensions:
+                if isinstance(e.value, x509.BasicConstraints):
+                        bconst_ca = e.value.ca
+                elif isinstance(e.value, x509.KeyUsage):
+                        kuse_sign = e.value.key_cert_sign
+
+        return kuse_sign is not False and bconst_ca

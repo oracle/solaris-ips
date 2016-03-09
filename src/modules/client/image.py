@@ -24,7 +24,6 @@
 # Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import M2Crypto as m2
 import atexit
 import calendar
 import collections
@@ -43,6 +42,8 @@ import tempfile
 import time
 
 from contextlib import contextmanager
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from six.moves.urllib.parse import quote, unquote
 
 import pkg.actions
@@ -340,16 +341,19 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 if os.path.islink(pth):
                                         continue
                                 try:
-                                        trusted_ca = m2.X509.load_cert(pth)
-                                except m2.X509.X509Error as e:
+                                        with open(pth, "rb") as f:
+                                                raw = f.read()
+                                        trusted_ca = \
+                                            x509.load_pem_x509_certificate(
+                                            raw, default_backend())
+                                except (ValueError, IOError) as e:
                                         self.__bad_trust_anchors.append(
                                             (pth, str(e)))
                                 else:
-                                        # M2Crypto's subject hash doesn't match
-                                        # openssl's subject hash so recompute it
-                                        # so all hashes are in the same
-                                        # universe.
-                                        s = trusted_ca.get_subject().as_hash()
+                                        # We store certificates internally by
+                                        # the SHA-1 hash of its subject.
+                                        s = hashlib.sha1(misc.force_bytes(
+                                            trusted_ca.subject)).hexdigest()
                                         self.__trust_anchors.setdefault(s, [])
                                         self.__trust_anchors[s].append(
                                             trusted_ca)

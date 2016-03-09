@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 PYTHON27 = /usr/bin/python2.7
@@ -50,7 +50,7 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 
 PEP8 = /usr/bin/pep8
 
-SUBDIRS=zoneproxy
+SUBDIRS=zoneproxy util/mkcert
 
 all: $(SUBDIRS)
 	$(PYTHON27) setup.py build

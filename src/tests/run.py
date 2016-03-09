@@ -97,6 +97,15 @@ if __name__ == "__main__":
         # Make all warnings be errors.
         warnings.simplefilter('error')
 
+        # These warnings only happen in the test suite when importing
+        # pkg5unittest. It may be because of circular import inside pkg5unittest.
+        # Suppress the warning.
+        warnings.filterwarnings('ignore', message='Not importing directory .*',
+            category=ImportWarning)
+        warnings.filterwarnings('ignore', message='CRLExtensionOID has been '
+            'renamed to CRLEntryExtensionOID',
+            category=PendingDeprecationWarning)
+
         try:
                 #
                 # !!! WARNING !!!

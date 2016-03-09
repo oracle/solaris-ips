@@ -42,4 +42,5 @@
 ^src/zoneproxy/zoneproxy-adm/zoneproxy-adm$
 ^src/zoneproxy/zoneproxy-client/zoneproxy-client$
 ^src/zoneproxy/zoneproxyd/zoneproxyd$
+^src/util/mkcert/certgen$
 ^webrev

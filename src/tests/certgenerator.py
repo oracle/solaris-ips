@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -435,14 +435,24 @@ issuerAltName = critical,issuer:copy
 # Used to test a recognized non-critical extension with an unrecognized value.
 
 basicConstraints = critical,CA:FALSE
-keyUsage = encipherOnly
+keyUsage = keyAgreement
 
 [ issuer_ext_bad_val ]
 
 # Used to test a recognized critical extension with an unrecognized value.
+# keyAgreement needs to be set because otherwise Cryptography complains that
+# encipherOnly requires keyAgreement.
 
 basicConstraints = critical,CA:FALSE
-keyUsage = critical, encipherOnly
+keyUsage = critical, encipherOnly, keyAgreement
+
+[ invalid_ext ]
+
+# Used to test an invalid extension. Cryptography complains that enciperOnly
+# requires keyAgreement, so this is an invalid extension.
+
+basicConstraints = critical,CA:FALSE
+keyUsage = encipherOnly
 
 [ crl_ext ]
 

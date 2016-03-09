@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import os
+import pkg.pkgsubprocess as subprocess
 import shutil
-import subprocess
 import sys
 
 sys.path.append("../../")
@@ -109,6 +110,9 @@ if __name__ == "__main__":
             ext="v3_confused_cs")
         cg.make_cs_cert("cs1_cs8_ch1_ta3", "cs8_ch1_ta3",
             parent_loc="code_signing_certs")
+        # Add a certificate to the length 3 chain that has an invalid extension.
+        cg.make_cs_cert("cs9_ch1_ta3", "ch1_ta3", parent_loc="chain_certs",
+            ext="invalid_ext")
         # Make a chain where the CA has an unsupported critical extension.
         cg.make_ca_cert("ch1.1_ta3", "ta3", ext="issuer_ext_ca")
         cg.make_cs_cert("cs1_ch1.1_ta3", "ch1.1_ta3", parent_loc="chain_certs")
@@ -164,7 +168,7 @@ if __name__ == "__main__":
         fhw = open(os.path.join(output_dir, "combined_cas.pem"), "w")
         for x in range(6,12):
                 if x == 7:
-                        # ta requires a password to unlock cert, don't use 
+                        # ta requires a password to unlock cert, don't use
                         continue
                 fn = "{0}/ta{1:d}/ta{2:d}_cert.pem".format(output_dir, x, x)
                 fhr = open(fn, "r")
@@ -172,3 +176,28 @@ if __name__ == "__main__":
                 fhr.close()
         fhw.close()
 
+        # Create a certificate with an extension that Cryptography can't
+        # understand. We can't do it by the OpenSSL CLI, but we can use a C
+        # program that calls OpenSSL libraries to do it.
+        os.chdir("../../../util/mkcert")
+        cmdline = "./certgen"
+        p = subprocess.Popen(cmdline, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, shell=True)
+        p.wait()
+
+        output, error = p.communicate()
+        if p.returncode == 127:
+                print("certgen not found; execute 'make' in the mkcert "
+                    "directory first")
+                sys.exit(p.returncode)
+        elif p.returncode != 0:
+                print("failed: {0} {1}".format(output, error))
+                sys.exit(p.returncode)
+
+        # copy the generated cert files from util/mkcert to the ro_data area
+        shutil.copy("cust_key.pem",
+            "../../tests/ro_data/signing_certs/produced/keys/")
+        shutil.copy("cust_cert.pem",
+            "../../tests/ro_data/signing_certs/produced/code_signing_certs/")
+        shutil.copy("cust_cert.pem",
+            "../../tests/ro_data/signing_certs/produced/trust_anchors/")

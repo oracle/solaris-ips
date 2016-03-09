@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -2299,8 +2299,10 @@ class BrokenChain(CertificateException):
                         "\n".join([str(e) for e in self.ext_exs])
                 return _("The certificate which issued this "
                     "certificate: {subj} could not be found. The issuer "
-                    "is: {issuer}\n").format(subj=self.cert.get_subject(),
-                    issuer=self.cert.get_issuer()) + s + \
+                    "is: {issuer}\n").format(subj="/".join("{0}={1}".format(
+                    sub.oid._name, sub.value) for sub in self.cert.subject),
+                    issuer="/".join("{0}={1}".format(i.oid._name, i.value)
+                    for i in self.cert.issuer)) + s + "\n" + \
                     CertificateException.__str__(self)
 
 
@@ -2314,7 +2316,8 @@ class RevokedCertificate(CertificateException):
 
         def __str__(self):
                 return _("This certificate was revoked:{cert} for this "
-                    "reason:\n{reason}").format(cert=self.cert.get_subject(),
+                    "reason:\n{reason}\n").format(cert="/".join("{0}={1}".format(
+                    s.oid._name, s.value) for s in self.cert.subject),
                     reason=self.reason) + CertificateException.__str__(self)
 
 
@@ -2385,7 +2388,7 @@ class MissingRequiredNamesException(SigningException):
 
 class UnsupportedCriticalExtension(SigningException):
         """Exception used when a certificate in the chain of trust uses a
-        critical extension pkg5 doesn't understand."""
+        critical extension pkg doesn't understand."""
 
         def __init__(self, cert, ext):
                 SigningException.__init__(self)
@@ -2394,31 +2397,50 @@ class UnsupportedCriticalExtension(SigningException):
 
         def __str__(self):
                 return _("The certificate whose subject is {cert} could not "
-                    "be verified "
-                    "because it uses a critical extension that pkg5 cannot "
-                    "handle yet.\nExtension name:{name}\nExtension "
-                    "value:{val}").format(cert=self.cert.get_subject(),
-                    name=self.ext.get_name(), val=self.ext.get_value())
+                    "be verified because it uses an unsupported critical "
+                    "extension.\nExtension name: {name}\nExtension "
+                    "value: {val}").format(cert="/".join("{0}={1}".format(
+                    s.oid._name, s.value) for s in self.cert.subject),
+                    name=self.ext.oid._name, val=self.ext.value)
 
 class UnsupportedExtensionValue(SigningException):
         """Exception used when a certificate in the chain of trust has an
-        extension with a value pkg5 doesn't understand."""
+        extension with a value pkg doesn't understand."""
 
-        def __init__(self, cert, ext, bad_val=None):
+        def __init__(self, cert, ext, val, bad_val=None):
                 SigningException.__init__(self)
                 self.cert = cert
                 self.ext = ext
+                self.val = val
                 self.bad_val = bad_val
 
         def __str__(self):
                 s = _("The certificate whose subject is {cert} could not be "
                     "verified because it has an extension with a value that "
                     "pkg(5) does not understand."
-                    "\nExtension name:{name}\nExtension value:{val}").format(
-                    cert=self.cert.get_subject(),
-                    name=self.ext.get_name(), val=self.ext.get_value())
+                    "\nExtension name: {name}\nExtension value: {val}").format(
+                    cert="/".join("{0}={1}".format(
+                    s.oid._name, s.value) for s in self.cert.subject),
+                    name=self.ext.oid._name, val=self.val)
                 if self.bad_val:
-                        s += _("\nProblematic Value:{0}").format(self.bad_val)
+                        s += _("\nProblematic value: {0}").format(self.bad_val)
+                return s
+
+class InvalidCertificateExtensions(SigningException):
+        """Exception used when a certificate in the chain of trust has
+        invalid extensions."""
+
+        def __init__(self, cert, error):
+                SigningException.__init__(self)
+                self.cert = cert
+                self.error = error
+
+        def __str__(self):
+                s = _("The certificate whose subject is {cert} could not be "
+                    "verified because it has invalid extensions:\n{error}"
+                    ).format(cert="/".join("{0}={1}".format(
+                    s.oid._name, s.value) for s in self.cert.subject),
+                    error=self.error)
                 return s
 
 class InappropriateCertificateUse(SigningException):
@@ -2427,20 +2449,22 @@ class InappropriateCertificateUse(SigningException):
         supposed to be used to sign code being used to sign other certificates.
         """
 
-        def __init__(self, cert, ext, use):
+        def __init__(self, cert, ext, use, val):
                 SigningException.__init__(self)
                 self.cert = cert
                 self.ext = ext
                 self.use = use
+                self.val = val
 
         def __str__(self):
                 return _("The certificate whose subject is {cert} could not "
                     "be verified because it has been used inappropriately.  "
                     "The way it is used means that the value for extension "
                     "{name} must include '{use}' but the value was "
-                    "'{val}'.").format(cert=self.cert.get_subject(),
-                    use=self.use, name=self.ext.get_name(),
-                    val=self.ext.get_value())
+                    "'{val}'.").format(cert="/".join("{0}={1}".format(
+                    s.oid._name, s.value) for s in self.cert.subject),
+                    use=self.use, name=self.ext.oid._name,
+                    val=self.val)
 
 class PathlenTooShort(InappropriateCertificateUse):
         """Exception used when a certificate in the chain of trust has been used
@@ -2461,7 +2485,8 @@ class PathlenTooShort(InappropriateCertificateUse):
                     "certificate and the leaf certificate.  There are {al} "
                     "certificates between this certificate and the leaf in "
                     "this chain.").format(
-                        cert=self.cert.get_subject(),
+                        cert="/".join("{0}={1}".format(
+                        s.oid._name, s.value) for s in self.cert.subject),
                         al=self.al,
                         cl=self.cl
                    )

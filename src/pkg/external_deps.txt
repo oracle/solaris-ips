@@ -10,11 +10,11 @@
     pkg:/developer/versioning/mercurial
     pkg:/library/python/cffi-27
     pkg:/library/python/cherrypy-27
+    pkg:/library/python/cryptography-27
     pkg:/library/python/coverage-27
     pkg:/library/python/jsonrpclib-27
     pkg:/library/python/jsonschema-27
     pkg:/library/python/locale-services
-    pkg:/library/python/m2crypto-27
     pkg:/library/python/mako-27
     pkg:/library/python/pep8
     pkg:/library/python/ply-27

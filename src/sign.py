@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -33,6 +33,10 @@ import shutil
 import sys
 import tempfile
 import traceback
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from imp import reload
 
 import pkg
@@ -47,7 +51,6 @@ import pkg.publish.transaction as trans
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.misc import emsg, msg, PipeError
-import M2Crypto as m2
 
 PKG_CLIENT_NAME = "pkgsign"
 
@@ -107,14 +110,16 @@ def fetch_catalog(src_pub, xport, temp_root):
 
 def __make_tmp_cert(d, pth):
         try:
-                cert = m2.X509.load_cert(pth)
-        except m2.X509.X509Error as e:
+                with open(pth, "rb") as f:
+                        cert = x509.load_pem_x509_certificate(f.read(),
+                            default_backend())
+        except (ValueError, IOError) as e:
                 raise api_errors.BadFileFormat(_("The file {0} was expected to "
                     "be a PEM certificate but it could not be read.").format(
                     pth))
         fd, fp = tempfile.mkstemp(dir=d)
         with os.fdopen(fd, "wb") as fh:
-                fh.write(cert.as_pem())
+                fh.write(cert.public_bytes(serialization.Encoding.PEM))
         return fp
 
 def main_func():
