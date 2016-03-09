@@ -419,7 +419,10 @@ if __name__ == "__main__":
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
-            stderr=False, env_arg=None, usepty=False):
+            stdin=None, stderr=False, env_arg=None, usepty=False):
+
+                self.assertFalse(usepty and stdin,
+                    "usepty not supported with stdin")
 
                 # If caller provides arguments as a string, the shell must
                 # process them.
@@ -465,6 +468,7 @@ if __name__ == "__main__":
                         p = subprocess.Popen(cmdline,
                             env=newenv,
                             shell=shell,
+                            stdin=stdin,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
 

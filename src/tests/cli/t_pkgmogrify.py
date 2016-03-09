@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -37,6 +37,7 @@ import stat
 import sys
 import tempfile
 import unittest
+from pkg.misc import EmptyI
 
 class TestPkgMogrify(pkg5unittest.CliTestCase):
         """Tests for the pkgmogrify publication tool."""
@@ -186,7 +187,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 self.transform_contents = self.transforms
                 self.transforms = xformpaths
 
-        def pkgmogrify(self, sources, defines=None, output=None, args="", exit=0):
+        def pkgmogrify(self, sources=EmptyI, defines=None,
+            output=None, args="", exit=0, stdin=None):
                 if defines is None:
                         defines = self.basic_defines
 
@@ -194,14 +196,16 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                     "-D {0}={1}".format(k, v)
                     for k, v in six.iteritems(defines)
                 ])
+
                 sources = " ".join(sources)
+
                 if output:
                         args += " -O {0}".format(output)
 
                 cmd = "{0}/usr/bin/pkgmogrify {1} {2} {3}".format(
                     pkg5unittest.g_pkg_path, defines, args, sources)
 
-                self.cmdline_run(cmd, exit=exit)
+                self.cmdline_run(cmd, stdin=stdin, exit=exit)
 
         def __countMatches(self, regex, path=None):
                 """Count how many lines in the output of the previously run
@@ -267,6 +271,11 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 self.pkgmogrify(sources, defines=defines)
                 self.assertMatch("SUNWxorg-mesa")
 
+                # stdin only
+                with open(source_file, "r") as f:
+                        self.pkgmogrify(stdin=f, defines=defines)
+                        self.assertMatch("SUNWxorg-mesa")
+
         def test_2(self):
                 """The -O option: output goes to a file rather than stdout."""
 
@@ -286,6 +295,12 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 self.pkgmogrify([self.transforms["X11->Y11"], source_file])
                 self.assertNoMatch("X11")
                 self.assertMatch("Y11")
+
+                # stdin and source file combined
+                with open(source_file, "r") as f:
+                        self.pkgmogrify(["-", self.transforms["X11->Y11"]], stdin=f)
+                        self.assertNoMatch("X11")
+                        self.assertMatch("Y11")
 
                 self.pkgmogrify([self.transforms["add bobcat"], source_file])
                 self.assertMatch("bobcat", count=3)

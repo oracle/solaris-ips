@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -562,6 +562,9 @@ def apply_transforms(transforms, action, pkg_attrs, verbose, act_filename,
 
 def searching_open(filename, includes, try_cwd=False):
         """ implement include hierarchy """
+
+        if filename == "-":
+                return filename, sys.stdin
 
         if filename.startswith("/") or try_cwd == True and \
             os.path.exists(filename):

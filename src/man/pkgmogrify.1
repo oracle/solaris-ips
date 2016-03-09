@@ -7,11 +7,11 @@
 
 <refentry id="pkgmogrify-1">
 <refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">12 Jul 2013</refmiscinfo>
+<refmiscinfo class="date">8 Mar 2016</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>Image Packaging System manifest transmogrifier
@@ -27,6 +27,11 @@ outputfile</replaceable>]
 <para><command>pkgmogrify</command> provides for programmatic editing of package
 manifests to simplify the typical transformations needed when automating software
 builds and package publication.</para>
+<para>It reads all of the file(s) in the order specified and then will
+apply any embedded directives found within as detailed in the
+&ldquo;Embedded Directives&rdquo; section below. If no files are named,
+input will be read from stdin. '-' can also be specified as a filename to
+use stdin as input, alone, or in combination with other files.</para>
 <itemizedlist>
 <para><command>pkgmogrify</command> provides the following:</para>
 <listitem><para>Macro replacement to facilitate sharing of a single manifest
