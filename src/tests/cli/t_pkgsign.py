@@ -2921,6 +2921,26 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                 shutil.rmtree(repo_location)
                 self.pkgrepo("create {0}".format(repo_location))
 
+                # Add another signature that is just signed with the hash of
+                # the manifest.
+                sign_args = "{pkg}".format(
+                    pkg=plist[0]
+                )
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.rurl1))
+                shutil.rmtree(repo_location)
+                self.pkgrepo("create {0}".format(repo_location))
+
+                # Add another signature that is just signed with the hash of
+                # the manifest. Test "-a" option.
+                sign_args = "-a sha256 {pkg}".format(
+                    pkg=plist[0]
+                )
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.rurl1))
+                shutil.rmtree(repo_location)
+                self.pkgrepo("create {0}".format(repo_location))
+
                 # Add another signature which includes the same chain cert used
                 # in the first signature.
                 sign_args = "-k {key} -c {cert} -i {ch1} -i {ta} " \

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -1622,7 +1622,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                 # added to the manifest.
                                                 continue
 
-                                        if hasattr(a, "hash"):
+                                        if a.has_payload:
                                                 fname = os.path.join(pkgdir,
                                                     a.hash)
 
