@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -155,19 +155,12 @@ the packages available for it.</p>
                 <tr>
                         <td scope="row" class="label">Last Updated</td>
 <%
-        if catalog.version == 0:
-                # Note: last_modified() is in local time relative to the
-                # timezone where catalog was last modified.
-                lm = catalog.last_modified()
-                if not lm:
-                        lm = "Never"
-        else:
-                # last_modified is a UTC datetime object.
-                lm = catalog.last_modified
-                if lm:
-                        lm = lm.replace(microsecond=0)
-                else:
-                        lm = "Never"
+	# last_modified is a UTC datetime object.
+	lm = catalog.last_modified
+	if lm:
+		lm = lm.replace(microsecond=0)
+	else:
+		lm = "Never"
 %>
                         <td class="value">${lm}</td>
                 </tr>

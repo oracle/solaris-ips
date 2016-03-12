@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -450,35 +450,6 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 # Reset test2's origin.
                 self.pkg("set-publisher -O {0} test2".format(self.rurl2))
-
-        def test_11_v0_repo(self):
-                """Verify that pkg list works with a v0 repository, especially
-                for unprivileged users."""
-
-                # This test requires an actual depot due to v0 operation usage.
-                dc = self.dcs[1]
-                dc.set_disable_ops(["catalog/1"])
-                dc.start()
-                self.pkg("set-publisher --no-refresh -O {0} test1".format(
-                    dc.get_depot_url()))
-
-                self.pkg("refresh --full")
-
-                # This should work for an unprivileged user, even though it
-                # requires manifest retrieval (because of the v0 repo).
-
-                # we have to disable mandatory validation because v0 has
-                # no catalog checksums.
-                self.pkg("-D manifest_validate=Never list -a", su_wrap=True)
-
-                # This should work for a privileged user.
-                self.pkg("-D manifest_validate=Never list -a")
-
-                dc.stop()
-                dc.unset_disable_ops()
-
-                self.pkg("set-publisher --no-refresh -O {0} test1".format(self.rurl1))
-                self.pkg("refresh --full")
 
         def test_12_matching(self):
                 """Verify that pkg list pattern matching works as expected."""

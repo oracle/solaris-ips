@@ -1009,39 +1009,20 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg://extra/zpkg@1.0,5.11-1:20000101T120040Z")
                 ]
 
-                def manifest_cb(cat, f):
+                def ret_man(f):
                         if f.pkg_name == "apkg":
                                 m = manifest.Manifest()
                                 m.set_content("", signatures=True)
                                 return m
                         return self.__gen_manifest(f)
 
-                def ret_man(f):
-                        return manifest_cb(None, f)
-
-                # First, create a catalog (with callback) and populate it
-                # using only FMRIs.
-                nc = catalog.Catalog(manifest_cb=manifest_cb)
-                for f in pkg_src_list:
-                        nc.add_package(f)
-                self.__test_catalog_actions(nc, pkg_src_list)
-
-                # Second, create a catalog (without callback) and populate it
-                # using FMRIs and Manifests.
+                # Create a catalog and populate it using FMRIs and Manifests.
                 nc = catalog.Catalog()
                 for f in pkg_src_list:
                         nc.add_package(f, manifest=ret_man(f))
                 self.__test_catalog_actions(nc, pkg_src_list)
 
-                # Third, create a catalog (with callback), but populate it
-                # using FMRIs and Manifests.
-                nc = catalog.Catalog(manifest_cb=manifest_cb)
-                for f in pkg_src_list:
-                        nc.add_package(f, manifest=ret_man(f))
-                self.__test_catalog_actions(nc, pkg_src_list)
-
-                # Fourth, create a catalog (no callback) and populate it
-                # using only FMRIs.
+                # Create a catalog and populate it using only FMRIs.
                 nc = catalog.Catalog()
                 for f in pkg_src_list:
                         nc.add_package(f)
@@ -1068,18 +1049,14 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg://extra/zpkg@1.0,5.11-1:20000101T120040Z")
                 ]
 
-                def manifest_cb(cat, f):
+                def ret_man(f):
                         if f.pkg_name == "apkg":
                                 m = manifest.Manifest()
                                 m.set_content("", signatures=True)
                                 return m
                         return self.__gen_manifest(f)
 
-                def ret_man(f):
-                        return manifest_cb(None, f)
-
-                # First, create a catalog (with callback) and populate it
-                # using only FMRIs.
+                # Create a catalog and populate it using only FMRIs.
                 cpath = self.create_test_dir("test-10")
                 nc = catalog.Catalog(meta_root=cpath)
                 for f in pkg_src_list:
@@ -1098,7 +1075,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # Next, re-create the catalog and then delete a few arbitrary
                 # parts (specifically, the attrs file).
                 cpath = self.create_test_dir("test-10")
-                nc = catalog.Catalog(manifest_cb=manifest_cb, meta_root=cpath)
+                nc = catalog.Catalog(meta_root=cpath)
                 for f in pkg_src_list:
                         nc.add_package(f, manifest=ret_man(f))
                 nc.save()

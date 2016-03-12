@@ -71,7 +71,6 @@ import pkg.misc                         as misc
 import pkg.nrlock
 import pkg.pkgsubprocess                as subprocess
 import pkg.portable                     as portable
-import pkg.server.catalog
 import pkg.smf                          as smf
 import pkg.version
 
@@ -264,11 +263,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         def __init_catalogs(self):
                 """Initializes default catalog state.  Actual data is provided
                 on demand via get_catalog()"""
-
-                if self.__upgraded and self.version < 3:
-                        # Ignore request; transformed catalog data only exists
-                        # in memory and can't be reloaded from disk.
-                        return
 
                 # This is used to cache image catalogs.
                 self.__catalogs = {}
@@ -557,12 +551,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 version = None
                 if self.version > -1:
-                        if self.version >= 3:
-                                # Configuration version is currently 3
-                                # for all v3 images and newer.
-                                version = 3
-                        else:
-                                version = self.version
+                        # Configuration version is currently 3
+                        # for all v3 images and newer.
+                        version = 3
 
                 self.cfg = imageconfig.ImageConfig(self.__cfgpathname,
                     self.root, version=version,
@@ -851,39 +842,11 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         if purge:
                                 # This is a new image.
                                 self.version = self.CURRENT_VERSION
-                        elif os.path.exists(pub_root):
-                                cache_root = os.path.join(self.imgdir, "cache")
-                                if os.path.exists(cache_root):
-                                        # The image must be corrupted, as the
-                                        # version should have been loaded from
-                                        # configuration.  For now, raise an
-                                        # exception.  In the future, this
-                                        # behaviour should probably be optional
-                                        # so that pkg fix or pkg verify can
-                                        # still use the image.
-                                        raise apx.UnsupportedImageError(
-                                            self.root)
-                                else:
-                                        # Assume version 3 image.
-                                        self.version = 3
-
-                                # Reload image configuration again now that
-                                # version has been determined so that property
-                                # definitions match.
-                                self.__load_config()
-                        elif os.path.exists(os.path.join(self.imgdir,
-                            "catalog")):
-                                self.version = 2
-
-                                # Reload image configuration again now that
-                                # version has been determined so that property
-                                # definitions match.
-                                self.__load_config()
                         else:
                                 # Format is too old or invalid.
                                 raise apx.UnsupportedImageError(self.root)
 
-                if self.version > self.CURRENT_VERSION or self.version < 2:
+                if self.version > self.CURRENT_VERSION or self.version < 4:
                         # Image is too new or too old.
                         raise apx.UnsupportedImageError(self.root)
 
@@ -892,11 +855,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.cfg.set_property("image", "version", self.version)
 
                 # Remaining dirs may now be set.
-                if self.version == self.CURRENT_VERSION:
-                        self.__tmpdir = os.path.join(self.imgdir, "cache",
-                            "tmp")
-                else:
-                        self.__tmpdir = os.path.join(self.imgdir, "tmp")
+                self.__tmpdir = os.path.join(self.imgdir, "cache", "tmp")
                 self._statedir = os.path.join(self.imgdir, "state")
                 self.plandir = os.path.join(self.__tmpdir, "plan")
                 self.update_index_dir()
@@ -941,22 +900,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                             self.__user_cache_dir,
                             "incoming-{0:d}".format(os.getpid()))
 
-                if self.version < 4:
-                        self.__action_cache_dir = self.temporary_dir()
-                else:
-                        self.__action_cache_dir = os.path.join(self.imgdir,
-                            "cache")
+                self.__action_cache_dir = os.path.join(self.imgdir, "cache")
 
-                if self.version < 4:
-                        if not self.__user_cache_dir:
-                                self.__write_cache_dir = os.path.join(
-                                    self.imgdir, "download")
-                                self._incoming_cache_dir = os.path.join(
-                                    self.__write_cache_dir,
-                                    "incoming-{0:d}".format(os.getpid()))
-                        self.__read_cache_dirs.append(os.path.normpath(
-                            os.path.join(self.imgdir, "download")))
-                elif not self._incoming_cache_dir:
+                if not self._incoming_cache_dir:
                         # Only a global incoming cache exists for newer images.
                         self._incoming_cache_dir = os.path.join(self.imgdir,
                             "cache", "incoming-{0:d}".format(os.getpid()))
@@ -1069,422 +1015,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                     stderr=nullf)
                         return False
 
-                if not progtrack:
-                        progtrack = progress.NullProgressTracker()
-
-                # Not technically 'caching', but close enough ...
-                progtrack.cache_catalogs_start()
-
-                # Upgrade catalog data if needed.
-                self.__upgrade_catalogs()
-
-                # Data conversion finished.
-                self.__upgraded = True
-
-                # Determine if on-disk portion of the upgrade is allowed.
-                if self.allow_ondisk_upgrade == False:
-                        return True
-
-                if self.allow_ondisk_upgrade is None and self.type != IMG_USER:
-                        if not self.is_liveroot() and not self.is_zone():
-                                # By default, don't update image format if it
-                                # is not the live root, and is not for a zone.
-                                self.allow_ondisk_upgrade = False
-                                return True
-
-                # The logic to perform the on-disk upgrade is in its own
-                # function so that it can easily be wrapped with locking logic.
-                with self.locked_op("update-format",
-                    allow_unprivileged=allow_unprivileged):
-                        self.__upgrade_image_format(progtrack,
-                            allow_unprivileged=allow_unprivileged)
-
-                progtrack.cache_catalogs_done()
-                return True
-
-        def __upgrade_catalogs(self):
-                """Private helper function for update_format."""
-
-                if self.version >= 3:
-                        # Nothing to do.
-                        return
-
-                def installed_file_publisher(filepath):
-                        """Find the pkg's installed file named by filepath.
-                        Return the publisher that installed this package."""
-
-                        f = open(filepath)
-                        try:
-                                flines = f.readlines()
-                                version, pub = flines
-                                version = version.strip()
-                                pub = pub.strip()
-                                f.close()
-                        except ValueError:
-                                # If ValueError occurs, the installed file is of
-                                # a previous format.  For upgrades to work, it's
-                                # necessary to assume that the package was
-                                # installed from the highest ranked publisher.
-                                # Here, the publisher is setup to record that.
-                                if flines:
-                                        pub = flines[0]
-                                        pub = pub.strip()
-                                        newpub = "{0}_{1}".format(
-                                            pkg.fmri.PREF_PUB_PFX, pub)
-                                else:
-                                        newpub = "{0}_{1}".format(
-                                            pkg.fmri.PREF_PUB_PFX,
-                                            self.get_highest_ranked_publisher())
-                                pub = newpub
-                        assert pub
-                        return pub
-
-                # First, load the old package state information.
-                installed_state_dir = "{0}/state/installed".format(self.imgdir)
-
-                # If the state directory structure has already been created,
-                # loading information from it is fast.  The directory is
-                # populated with files, named by their (url-encoded) FMRI,
-                # which point to the "installed" file in the corresponding
-                # directory under /var/pkg.
-                installed = {}
-                def add_installed_entry(f):
-                        path = "{0}/pkg/{1}/installed".format(
-                            self.imgdir, f.get_dir_path())
-                        pub = installed_file_publisher(path)
-                        f.set_publisher(pub)
-                        installed[f.pkg_name] = f
-
-                for pl in os.listdir(installed_state_dir):
-                        fmristr = "{0}".format(unquote(pl))
-                        f = pkg.fmri.PkgFmri(fmristr)
-                        add_installed_entry(f)
-
-                # Create the new image catalogs.
-                kcat = pkg.catalog.Catalog(batch_mode=True,
-                    manifest_cb=self._manifest_cb, sign=False)
-                icat = pkg.catalog.Catalog(batch_mode=True,
-                    manifest_cb=self._manifest_cb, sign=False)
-
-                # XXX For backwards compatibility, 'upgradability' of packages
-                # is calculated and stored based on whether a given pkg stem
-                # matches the newest version in the catalog.  This is quite
-                # expensive (due to overhead), but at least the cost is
-                # consolidated here.  This comparison is also cross-publisher,
-                # as it used to be.
-                newest = {}
-                old_pub_cats = []
-                for pub in self.gen_publishers():
-                        try:
-                                old_cat = pkg.server.catalog.ServerCatalog(
-                                    pub.meta_root, read_only=True,
-                                    publisher=pub.prefix)
-
-                                old_pub_cats.append((pub, old_cat))
-                                for f in old_cat.fmris():
-                                        nver = newest.get(f.pkg_name, None)
-                                        newest[f.pkg_name] = max(nver,
-                                            f.version)
-
-                        except EnvironmentError as e:
-                                # If a catalog file is just missing, ignore it.
-                                # If there's a worse error, make sure the user
-                                # knows about it.
-                                if e.errno != errno.ENOENT:
-                                        raise
-
-                # Next, load the existing catalog data and convert it.
-                pub_cats = []
-                for pub, old_cat in old_pub_cats:
-                        new_cat = pub.catalog
-                        new_cat.batch_mode = True
-                        new_cat.sign = False
-                        if new_cat.exists:
-                                new_cat.destroy()
-
-                        # First convert the old publisher catalog to
-                        # the new format.
-                        for f in old_cat.fmris():
-                                new_cat.add_package(f)
-
-                                # Now populate the image catalogs.
-                                states = [pkgdefs.PKG_STATE_KNOWN,
-                                    pkgdefs.PKG_STATE_V0]
-                                mdata = { "states": states }
-                                if f.version != newest[f.pkg_name]:
-                                        states.append(
-                                            pkgdefs.PKG_STATE_UPGRADABLE)
-
-                                inst_fmri = installed.get(f.pkg_name, None)
-                                if inst_fmri and \
-                                    inst_fmri.version == f.version and \
-                                    pkg.fmri.is_same_publisher(f.publisher,
-                                    inst_fmri.publisher):
-                                        states.append(
-                                            pkgdefs.PKG_STATE_INSTALLED)
-                                        if inst_fmri.preferred_publisher():
-                                                # Strip the PREF_PUB_PFX.
-                                                inst_fmri.set_publisher(
-                                                    inst_fmri.get_publisher())
-                                        icat.add_package(f, metadata=mdata)
-                                        del installed[f.pkg_name]
-                                kcat.add_package(f, metadata=mdata)
-
-                        # Normally, the Catalog's attributes are automatically
-                        # populated as a result of catalog operations.  But in
-                        # this case, the new Catalog's attributes should match
-                        # those of the old catalog.
-                        old_lm = old_cat.last_modified()
-                        if old_lm:
-                                # Can be None for empty v0 catalogs.
-                                old_lm = pkg.catalog.ts_to_datetime(old_lm)
-                        new_cat.last_modified = old_lm
-                        new_cat.version = 0
-
-                        # Add to the list of catalogs to save.
-                        new_cat.batch_mode = False
-                        pub_cats.append(new_cat)
-
-                # Discard the old catalog objects.
-                old_pub_cats = None
-
-                for f in installed.values():
-                        # Any remaining FMRIs need to be added to all of the
-                        # image catalogs.
-                        states = [pkgdefs.PKG_STATE_INSTALLED,
-                            pkgdefs.PKG_STATE_V0]
-                        mdata = { "states": states }
-                        # This package may be installed from a publisher that
-                        # is no longer known or has been disabled.
-                        if f.pkg_name in newest and \
-                            f.version != newest[f.pkg_name]:
-                                states.append(pkgdefs.PKG_STATE_UPGRADABLE)
-
-                        if f.preferred_publisher():
-                                # Strip the PREF_PUB_PFX.
-                                f.set_publisher(f.get_publisher())
-
-                        icat.add_package(f, metadata=mdata)
-                        kcat.add_package(f, metadata=mdata)
-
-                for cat in pub_cats + [kcat, icat]:
-                        cat.finalize()
-
-                # Cache converted catalogs so that operations can function as
-                # expected if the on-disk format of the catalogs isn't upgraded.
-                self.__catalogs[self.IMG_CATALOG_KNOWN] = kcat
-                self.__catalogs[self.IMG_CATALOG_INSTALLED] = icat
-
-        def __upgrade_image_format(self, progtrack, allow_unprivileged=False):
-                """Private helper function for update_format."""
-
-                try:
-                        # Ensure Image directory structure is valid.
-                        self.mkdirs()
-                except apx.PermissionsException as e:
-                        if not allow_unprivileged:
-                                raise
-                        # An unprivileged user is attempting to use the
-                        # new client with an old image.  Since none of
-                        # the changes can be saved, warn the user and
-                        # then return.
-                        #
-                        # Raising an exception here would be a decidedly
-                        # bad thing as it would disrupt find_root, etc.
-                        return
-
-                # This has to be done after the permissions check above.
-                # First, create a new temporary root to store the converted
-                # image metadata.
-                tmp_root = self.imgdir + ".new"
-                try:
-                        shutil.rmtree(tmp_root)
-                except EnvironmentError as e:
-                        if e.errno in (errno.EROFS, errno.EPERM) and \
-                            allow_unprivileged:
-                                # Bail.
-                                return
-                        if e.errno != errno.ENOENT:
-                                raise apx._convert_error(e)
-
-                try:
-                        self.mkdirs(root=tmp_root, version=self.CURRENT_VERSION)
-                except apx.PermissionsException as e:
-                        # Same handling needed as above; but not after this.
-                        if not allow_unprivileged:
-                                raise
-                        return
-
-                def linktree(src_root, dest_root):
-                        if not os.path.exists(src_root):
-                                # Nothing to do.
-                                return
-
-                        for entry in os.listdir(src_root):
-                                src = os.path.join(src_root, entry)
-                                dest = os.path.join(dest_root, entry)
-                                if os.path.isdir(src):
-                                        # Recurse into directory to link
-                                        # its contents.
-                                        misc.makedirs(dest)
-                                        linktree(src, dest)
-                                        continue
-                                # Link source file into target dest.
-                                assert os.path.isfile(src)
-                                try:
-                                        os.link(src, dest)
-                                except EnvironmentError as e:
-                                        raise apx._convert_error(e)
-
-                # Next, link history data into place.
-                linktree(self.history.path, os.path.join(tmp_root,
-                    "history"))
-
-                # Next, link index data into place.
-                linktree(self.index_dir, os.path.join(tmp_root,
-                    "cache", "index"))
-
-                # Next, link ssl data into place.
-                linktree(os.path.join(self.imgdir, "ssl"),
-                    os.path.join(tmp_root, "ssl"))
-
-                # Next, write state data into place.
-                if self.version < 3:
-                        # Image state and publisher metadata
-                        tmp_state_root = os.path.join(tmp_root, "state")
-
-                        # Update image catalog locations.
-                        kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                        icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                        kcat.meta_root = os.path.join(tmp_state_root,
-                            self.IMG_CATALOG_KNOWN)
-                        icat.meta_root = os.path.join(tmp_state_root,
-                            self.IMG_CATALOG_INSTALLED)
-
-                        # Assume that since mkdirs succeeded that the remaining
-                        # data can be saved and the image structure can be
-                        # upgraded.  But first, attempt to save the image
-                        # catalogs.
-                        for cat in icat, kcat:
-                                misc.makedirs(cat.meta_root)
-                                cat.save()
-                else:
-                        # For version 3 and newer images, just link existing
-                        # state information into place.
-                        linktree(self._statedir, os.path.join(tmp_root,
-                            "state"))
-
-                # Reset each publisher's meta_root and ensure its complete
-                # directory structure is intact.  Then either link in or
-                # write out the metadata for each publisher.
-                for pub in self.gen_publishers():
-                        old_root = pub.meta_root
-                        old_cat_root = pub.catalog_root
-                        old_cert_root = pub.cert_root
-                        pub.meta_root = os.path.join(tmp_root,
-                            IMG_PUB_DIR, pub.prefix)
-                        pub.create_meta_root()
-
-                        if self.version < 3:
-                                # Should be loaded in memory and transformed
-                                # already, so just need to be written out.
-                                pub.catalog.save()
-                                continue
-
-                        # Now link any catalog or cert files from the old root
-                        # into the new root.
-                        linktree(old_cat_root, pub.catalog_root)
-                        linktree(old_cert_root, pub.cert_root)
-
-                        # Finally, create a directory for the publisher's
-                        # manifests to live in.
-                        misc.makedirs(os.path.join(pub.meta_root, "pkg"))
-
-                # Next, link licenses and manifests of installed packages into
-                # new image dir.
-                for pfmri in self.gen_installed_pkgs():
-                        # Link licenses.
-                        mdir = self.get_manifest_dir(pfmri)
-                        for entry in os.listdir(mdir):
-                                if not entry.startswith("license."):
-                                        continue
-                                src = os.path.join(mdir, entry)
-                                if os.path.isdir(src):
-                                        # Ignore broken licenses.
-                                        continue
-
-                                # For conversion, ensure destination link uses
-                                # encoded license name to match how new image
-                                # format stores licenses.
-                                dest = os.path.join(tmp_root, "license",
-                                    pfmri.get_dir_path(stemonly=True),
-                                    quote(entry, ""))
-                                misc.makedirs(os.path.dirname(dest))
-                                try:
-                                        os.link(src, dest)
-                                except EnvironmentError as e:
-                                        raise apx._convert_error(e)
-
-                        # Link manifest.
-                        src = self.get_manifest_path(pfmri)
-                        dest = os.path.join(tmp_root, "publisher",
-                            pfmri.publisher, "pkg", pfmri.get_dir_path())
-                        misc.makedirs(os.path.dirname(dest))
-                        try:
-                                os.link(src, dest)
-                        except EnvironmentError as e:
-                                raise apx._convert_error(e)
-
-                # Next, copy the old configuration into the new location using
-                # the new name.  The configuration is copied instead of being
-                # linked so that any changes to configuration as a result of
-                # the upgrade won't be written into the old image directory.
-                src = os.path.join(self.imgdir, "disabled_auth")
-                if os.path.exists(src):
-                        dest = os.path.join(tmp_root, "disabled_auth")
-                        portable.copyfile(src, dest)
-
-                src = self.cfg.target
-                dest = os.path.join(tmp_root, "pkg5.image")
-                try:
-                        portable.copyfile(src, dest)
-                except EnvironmentError as e:
-                        raise apx._convert_error(e)
-
-                # Update the new configuration's version information and then
-                # write it out again.
-                newcfg = imageconfig.ImageConfig(dest, tmp_root,
-                    version=3, overrides={ "image": {
-                    "version": self.CURRENT_VERSION } })
-                newcfg._version = 3
-                newcfg.write()
-
-                # Now reload configuration and write again to configuration data
-                # reflects updated version information.
-                newcfg.reset()
-                newcfg.write()
-
-                # Finally, rename the old package metadata directory, then
-                # rename the new one into place, and then reinitialize.  The
-                # old data will be dumped during initialization.
-                orig_root = self.imgdir + ".old"
-                try:
-                        portable.rename(self.imgdir, orig_root)
-                        portable.rename(tmp_root, self.imgdir)
-
-                        # /var/pkg/repo is renamed into place instead of being
-                        # linked piece-by-piece for performance reasons.
-                        # Crawling the entire tree structure of a repository is
-                        # far slower than simply renaming the top level
-                        # directory (since it often has thousands or millions
-                        # of objects).
-                        old_repo = os.path.join(orig_root, "repo")
-                        if os.path.exists(old_repo):
-                                new_repo = os.path.join(tmp_root, "repo")
-                                portable.rename(old_repo, new_repo)
-                except EnvironmentError as e:
-                        raise apx._convert_error(e)
-                self.find_root(self.root, exact_match=True, progtrack=progtrack)
+                raise apx.UnsupportedImageError(self.root)
 
         def create(self, pubs, facets=EmptyDict, is_zone=False,  progtrack=None,
             props=EmptyDict, refresh_allowed=True, variants=EmptyDict):
@@ -1638,10 +1169,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 """
 
                 file_layout = None
-                if self.version >= 4:
-                        # Assume cache directories are in V1 Layout if image
-                        # format is v4+.
-                        file_layout = fl.V1Layout()
+                # Assume cache directories are in V1 Layout.
+                file_layout = fl.V1Layout()
 
                 # Get all readonly cache directories.
                 cdirs = [
@@ -1656,24 +1185,20 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # For images newer than version 3, file data can be stored
                 # in the publisher's file root.
-                if self.version == self.CURRENT_VERSION:
-                        for pub in self.gen_publishers(inc_disabled=True):
-                                froot = os.path.join(pub.meta_root, "file")
-                                readonly = False
-                                if self.__write_cache_dir or \
-                                    self.__write_cache_root:
-                                        readonly = True
-                                cdirs.append((froot, readonly, pub.prefix,
-                                    file_layout))
+                for pub in self.gen_publishers(inc_disabled=True):
+                        froot = os.path.join(pub.meta_root, "file")
+                        readonly = False
+                        if self.__write_cache_dir or self.__write_cache_root:
+                                readonly = True
+                        cdirs.append((froot, readonly, pub.prefix, file_layout))
 
-                                if self.__write_cache_root:
-                                        # Cache is a tree structure like
-                                        # /var/pkg/publisher.
-                                        froot = os.path.join(
-                                            self.__write_cache_root, pub.prefix,
-                                            "file")
-                                        cdirs.append((froot, False, pub.prefix,
-                                            file_layout))
+                        if self.__write_cache_root:
+                                # Cache is a tree structure like
+                                # /var/pkg/publisher.
+                                froot = os.path.join(self.__write_cache_root,
+                                    pub.prefix, "file")
+                                cdirs.append((froot, False, pub.prefix,
+                                    file_layout))
 
                 return cdirs
 
@@ -2151,8 +1676,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     (not search_after and not search_first) or \
                     (not search_before and not search_first)
 
-                if self.version < self.CURRENT_VERSION:
-                        raise apx.ImageFormatUpdateNeeded(self.root)
+                if self.version < 4:
+                        raise apx.UnsupportedImageError(self.root)
 
                 for p in self.cfg.publishers.values():
                         if pub.prefix == p.prefix or \
@@ -2365,16 +1890,11 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         def get_license_dir(self, pfmri):
                 """Return path to package license directory."""
-                if self.version == self.CURRENT_VERSION:
-                        # Newer image format stores license files per-stem,
-                        # instead of per-stem and version, so that transitions
-                        # between package versions don't require redelivery
-                        # of license files.
-                        return os.path.join(self.imgdir, "license",
-                            pfmri.get_dir_path(stemonly=True))
-                # Older image formats store license files in the manifest cache
-                # directory.
-                return self.get_manifest_dir(pfmri)
+                # Version 4+ images store license files per-stem, instead of
+                # per-stem and version, so that transitions between package
+                # versions don't require redelivery of license files.
+                return os.path.join(self.imgdir, "license",
+                    pfmri.get_dir_path(stemonly=True))
 
         def __get_installed_pkg_publisher(self, pfmri):
                 """Returns the publisher for the FMRI of an installed package
@@ -2394,10 +1914,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         pfmri.publisher = self.__get_installed_pkg_publisher(
                             pfmri)
                 assert pfmri.publisher
-                if self.version == self.CURRENT_VERSION:
-                        root = self._get_publisher_cache_root(pfmri.publisher)
-                else:
-                        root = self.imgdir
+                root = self._get_publisher_cache_root(pfmri.publisher)
                 return os.path.join(root, "pkg", pfmri.get_dir_path())
 
         def get_manifest_path(self, pfmri):
@@ -2409,12 +1926,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         pfmri.publisher = self.__get_installed_pkg_publisher(
                             pfmri)
                 assert pfmri.publisher
-                if self.version == self.CURRENT_VERSION:
-                        root = os.path.join(self._get_publisher_meta_root(
-                            pfmri.publisher))
-                        return os.path.join(root, "pkg", pfmri.get_dir_path())
-                return os.path.join(self.get_manifest_dir(pfmri),
-                    "manifest")
+                root = os.path.join(self._get_publisher_meta_root(
+                    pfmri.publisher))
+                return os.path.join(root, "pkg", pfmri.get_dir_path())
 
         def __get_manifest(self, fmri, excludes=EmptyI, intent=None,
             alt_pub=None):
@@ -2487,8 +2001,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 the destination and origin package for each part of the
                 operation."""
 
-                if self.version < self.CURRENT_VERSION:
-                        raise apx.ImageFormatUpdateNeeded(self.root)
+                if self.version < 4:
+                        raise apx.UnsupportedImageError(self.root)
 
                 kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
                 icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
@@ -2759,29 +2273,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 return cat
 
-        def _manifest_cb(self, cat, f):
-                # Only allow lazy-load for packages from non-v1 sources.
-                # Assume entries for other sources have all data
-                # required in catalog.  This prevents manifest retrieval
-                # for packages that don't have any related action data
-                # in the catalog because they don't have any related
-                # action data in their manifest.
-                entry = cat.get_entry(f)
-                states = entry["metadata"]["states"]
-                if pkgdefs.PKG_STATE_V1 not in states:
-                        return self.get_manifest(f, ignore_excludes=True)
-                return
-
         def __get_catalog(self, name):
                 """Private method to retrieve catalog; this bypasses the
                 normal automatic caching (unless the image hasn't been
                 upgraded yet)."""
-
-                if self.__upgraded and self.version < 3:
-                        # Assume the catalog is already cached in this case
-                        # and can't be reloaded from disk as it doesn't exist
-                        # on disk yet.
-                        return self.__catalogs[name]
 
                 croot = os.path.join(self._statedir, name)
                 try:
@@ -2798,8 +2293,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # the catalogs (add or remove entries) are only done during an
                 # image upgrade or metadata refresh.  In both cases, the catalog
                 # is resorted and finalized so this is always safe to use.
-                cat = pkg.catalog.Catalog(batch_mode=True,
-                    manifest_cb=self._manifest_cb, meta_root=croot, sign=False)
+                cat = pkg.catalog.Catalog(batch_mode=True, meta_root=croot,
+                    sign=False)
                 return cat
 
         def __remove_catalogs(self):
@@ -2973,8 +2468,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 """Rebuilds the image catalogs based on the available publisher
                 catalogs."""
 
-                if self.version < 3:
-                        raise apx.ImageFormatUpdateNeeded(self.root)
+                if self.version < 4:
+                        raise apx.UnsupportedImageError(self.root)
 
                 if not progtrack:
                         progtrack = progress.NullProgressTracker()
@@ -3092,7 +2587,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                         # Avoid accessor overhead since these will be
                         # used for every entry.
-                        cat_ver = cat.version
                         dp = cat.get_part("catalog.dependency.C",
                             must_exist=True)
 
@@ -3127,11 +2621,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 states = mdata.setdefault("states", [])
                                 states.append(pkgdefs.PKG_STATE_KNOWN)
 
-                                if cat_ver == 0:
-                                        states.append(pkgdefs.PKG_STATE_V0)
-                                elif pkgdefs.PKG_STATE_V0 not in states:
-                                        # Assume V1 catalog source.
-                                        states.append(pkgdefs.PKG_STATE_V1)
+                                # Assume V1 catalog source.
+                                states.append(pkgdefs.PKG_STATE_V1)
 
                                 if installed:
                                         states.append(
@@ -3302,8 +2793,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 but no exception is raised, allowing an operation to continue
                 if an unneeded repository is not online."""
 
-                if self.version < 3:
-                        raise apx.ImageFormatUpdateNeeded(self.root)
+                if self.version < 4:
+                        raise apx.UnsupportedImageError(self.root)
 
                 if not progtrack:
                         progtrack = progress.NullProgressTracker()
@@ -3404,9 +2895,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.history.log_operation_end()
 
         def _get_publisher_meta_dir(self):
-                if self.version >= 3:
-                        return IMG_PUB_DIR
-                return "catalog"
+                return IMG_PUB_DIR
 
         def _get_publisher_cache_root(self, prefix):
                 return os.path.join(self.imgdir, "cache", "publisher", prefix)
@@ -3427,14 +2916,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 catalogs should be rebuilt after removing the publisher's
                 metadata.
                 """
-
-                if self.version < 4:
-                        # Older images don't require fine-grained deletion.
-                        pub.remove_meta_root()
-                        if rebuild:
-                                self.__rebuild_image_catalogs(
-                                    progtrack=progtrack)
-                        return
 
                 # Build a list of paths that shouldn't be removed because they
                 # belong to installed packages.
@@ -3911,11 +3392,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 the image root is, this should be called prior to using the
                 index directory.
                 """
-                if self.version == self.CURRENT_VERSION:
-                        self.index_dir = os.path.join(self.imgdir, "cache",
-                            postfix)
-                else:
-                        self.index_dir = os.path.join(self.imgdir, postfix)
+                self.index_dir = os.path.join(self.imgdir, "cache",
+                    postfix)
 
         def cleanup_downloads(self):
                 """Clean up any downloads that were in progress but that

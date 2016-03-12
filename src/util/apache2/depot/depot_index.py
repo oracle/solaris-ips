@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import atexit
@@ -588,14 +588,6 @@ class WsgiDepot(object):
                 query_str = "/".join(toks[3:])
                 return dh.search_1(query_str)
 
-        def search_0(self, *tokens):
-                """Use a DepotHTTP to return a search/0 response."""
-
-                toks = cherrypy.request.path_info.lstrip("/").split("/")
-                dh = self.__build_depot_http()
-                toks = self.__strip_pub(tokens, dh.repo)
-                return dh.search_0(toks[-1])
-
         def admin(self, *tokens, **params):
                 """ We support limited admin/0 operations.  For a repository
                 refresh, we only honor the index rebuild itself.
@@ -760,10 +752,6 @@ class Pkg5Dispatch(object):
                                 cherrypy.response.stream = True
                                 cherrypy.response.body = self.app.search_1(
                                     *toks, **params)
-                        elif "/search/0/" in path_info:
-                                cherrypy.response.stream = True
-                                cherrypy.response.body = self.app.search_0(
-                                    *toks)
                         elif "/manifest/0/" in path_info:
                                 cherrypy.response.body = self.app.manifest(
                                     *toks)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -826,9 +826,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 newenv.pop("PKGDEPOT_CONTROLLER", None)
                 cmdargs = "/usr/bin/ctrun -o noorphan {0}/usr/lib/pkg.depotd " \
                     "-p {1} -d {2} --content-root {3}/usr/share/lib/pkg " \
-                    "--readonly </dev/null > {4} 2> {5}".format(
-                    pkg5unittest.g_pkg_path, self.next_free_port, repopath,
-                    pkg5unittest.g_pkg_path, out_path, err_path)
+                    "--readonly </dev/null --log-access={4} " \
+                    "--log-errors={5}".format(pkg5unittest.g_pkg_path,
+                        self.next_free_port, repopath, pkg5unittest.g_pkg_path,
+                        out_path, err_path)
 
                 curport = self.next_free_port
                 self.next_free_port += 1
@@ -1120,17 +1121,18 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 raise RuntimeError("retrieval of {0} "
                                     "failed: {1}".format(req_path, str(e)))
 
-                for req_path in ("publisher/0", 'search/0/%2Fvar%2Ffile',
+                for req_path in ("publisher/0",
                     'search/1/False_2_None_None_%2Fvar%2Ffile',
                     "versions/0", "manifest/0/{0}".format(pfmri.get_url_path()),
-                    "catalog/0", "catalog/1/catalog.attrs",
+                    "catalog/1/catalog.attrs",
                     "file/0/3aad0bca6f3a6f502c175700ebe90ef36e312d7e"):
                         hdrs = dict(get_headers(req_path))
 
                         # Fields must be referenced in lowercase.
                         cc = hdrs.get("cache-control", "")
                         self.assertTrue(cc.startswith("must-revalidate, "
-                            "no-transform, max-age="))
+                            "no-transform, max-age="),
+                            "cache-control for '{0}' is '{1}'".format(req_path, cc))
                         exp = hdrs.get("expires", None)
                         self.assertNotEqual(exp, None)
                         self.assertTrue(exp.endswith(" GMT"))
@@ -1205,7 +1207,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                         # Issue a bad request to trigger the server logging
                         # the error msg.
-                        durl = "http://localhost:{0}/catalog/0".format(curport)
+                        durl = "http://localhost:{0}/catalog/1/404".format(
+                            curport)
                         try:
                                 urlopen(durl)
                         except URLError as e:
@@ -1217,6 +1220,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         # msgs.
                         with open(err_path, "r") as read_err:
                                 msgs = read_err.readlines()
+                        self.debug(durl)
+                        self.debug("".join(msgs))
                         self.assertRegexp(msgs[-1], "\[[\w:/]+\]  Request "
                             "failed")
                 except:

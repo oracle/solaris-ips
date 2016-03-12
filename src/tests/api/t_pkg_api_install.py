@@ -869,38 +869,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                         api_obj.gen_plan_install(*args, **kwargs)),
                     ["_foo"])
 
-        def test_catalog_v0(self):
-                """Test install from a publisher's repository that only supports
-                catalog v0, and then the transition from v0 to v1."""
-
-                # Actual depot required for this test due to v0 repository
-                # operation usage.
-                self.dc.set_disable_ops(["catalog/1"])
-                self.dc.start()
-
-                self.pkgsend_bulk(self.durl, self.foo10)
-                api_obj = self.image_create(self.durl)
-
-                self.__do_install(api_obj, ["foo"])
-
-                api_obj.reset()
-                self.__do_uninstall(api_obj, ["foo"])
-
-                api_obj.reset()
-                self.__do_install(api_obj, ["pkg://test/foo"])
-
-                self.pkgsend_bulk(self.durl, self.bar10)
-                self.dc.stop()
-                self.dc.unset_disable_ops()
-                self.dc.start()
-
-                api_obj.reset()
-                api_obj.refresh(immediate=True)
-
-                api_obj.reset()
-                self.__do_install(api_obj, ["pkg://test/bar@1.0"])
-                self.dc.stop()
-
         def test_bad_package_actions(self):
                 """Test the install of packages that have actions that are
                 invalid."""

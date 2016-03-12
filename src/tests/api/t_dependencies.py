@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import testutils
@@ -46,7 +46,6 @@ import pkg.flavor.smf_manifest as smf
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
-import pkg.updatelog as updatelog
 
 class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
 

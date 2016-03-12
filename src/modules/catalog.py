@@ -1238,8 +1238,7 @@ class CatalogAttrs(CatalogPartBase):
                 for key, val in six.iteritems(struct):
                         if key in ("created", "last-modified"):
                                 # Convert ISO-8601 basic format strings to
-                                # datetime objects.  These dates can be
-                                # 'null' due to v0 catalog transformations.
+                                # datetime objects.
                                 if val:
                                         struct[key] = cat_ts_to_datetime(val)
                                 continue
@@ -1335,7 +1334,6 @@ class Catalog(object):
         _attrs = None
         __batch_mode = None
         __lock = None
-        __manifest_cb = None
         __meta_root = None
         __sign = None
 
@@ -1349,7 +1347,7 @@ class Catalog(object):
         DEPENDENCY, SUMMARY = range(2)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
-            manifest_cb=None, read_only=False, sign=True):
+            read_only=False, sign=True):
                 """Initializes a Catalog object.
 
                 'batch_mode' is an optional boolean value that indicates that
@@ -1372,10 +1370,6 @@ class Catalog(object):
                 updates to the catalog should be logged.  This enables consumers
                 of the catalog to perform incremental updates.
 
-                'manifest_cb' is an optional callback used by actions() and
-                get_entry_actions() to lazy-load Manifest Actions if the catalog
-                does not have the actions data for a requested package entry.
-
                 'read_only' is an optional boolean value that indicates if
                 operations that modify the catalog are allowed (an assertion
                 error will be raised if one is attempted and this is True).
@@ -1387,7 +1381,6 @@ class Catalog(object):
                 for improved catalog serialization performance."""
 
                 self.__batch_mode = batch_mode
-                self.__manifest_cb = manifest_cb
                 self.__parts = {}
                 self.__updates = {}
 
@@ -1422,11 +1415,7 @@ class Catalog(object):
                                 yield f, self.__gen_actions(f, entry["actions"],
                                     excludes)
                         except KeyError:
-                                if self.__manifest_cb:
-                                        yield f, self.__gen_lazy_actions(f,
-                                            info_needed, locales, excludes)
-                                else:
-                                        yield f, EmptyI
+                                yield f, EmptyI
 
         def __append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Private version; caller responsible for locking."""
@@ -1660,45 +1649,6 @@ class Catalog(object):
 
                 if errors is not None:
                         raise api_errors.InvalidPackageErrors(errors)
-
-        def __gen_lazy_actions(self, f, info_needed, locales=EmptyI,
-            excludes=EmptyI):
-                # Note that the logic below must be kept in sync with
-                # group_actions found in add_package.
-                m = self.__manifest_cb(self, f)
-                if not m:
-                        # If the manifest callback returns None, then
-                        # assume there is no action data to yield.
-                        return
-
-                if Catalog.DEPENDENCY in info_needed:
-                        atypes = ("depend", "set")
-                elif Catalog.SUMMARY in info_needed:
-                        atypes = ("set",)
-                else:
-                        raise RuntimeError(_("Unknown info_needed "
-                            "type: {0}".format(info_needed)))
-
-                for a, attr_name in self.__gen_manifest_actions(m, atypes,
-                    excludes):
-                        if (a.name == "depend" or \
-                            attr_name.startswith("variant") or \
-                            attr_name.startswith("facet") or \
-                            attr_name.startswith("pkg.depend.") or \
-                            attr_name in ("pkg.obsolete",
-                                "pkg.renamed")):
-                                if Catalog.DEPENDENCY in info_needed:
-                                        yield a
-                        elif Catalog.SUMMARY in info_needed and a.name == "set":
-                                if attr_name in ("fmri", "pkg.fmri"):
-                                        continue
-
-                                comps = attr_name.split(":")
-                                if len(comps) > 1:
-                                        # 'set' is locale-specific.
-                                        if comps[1] not in locales:
-                                                continue
-                                yield a
 
         @staticmethod
         def __gen_manifest_actions(m, atypes, excludes):
@@ -2018,15 +1968,7 @@ class Catalog(object):
                 Actions corresponding to the requested information).
 
                 If the catalog doesn't contain any action data for the package
-                entry, and manifest_cb was defined at Catalog creation time,
-                the action data will be lazy-loaded by the actions generator;
-                otherwise it will return an empty iterator.  This means that
-                the manifest_cb will be executed even for packages that don't
-                actually have any actions corresponding to info_needed.  For
-                example, if a package doesn't have any dependencies, the
-                manifest_cb will still be executed.  This was considered a
-                reasonable compromise as packages are generally expected to
-                have DEPENDENCY and SUMMARY information.
+                entry, it will return an empty iterator.
 
                 'excludes' is a list of variants which will be used to determine
                 what should be allowed by the actions generator in addition to
@@ -2438,8 +2380,6 @@ class Catalog(object):
 
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
-                Note that unlike actions(), catalog entries will not lazy-load
-                action data if it is missing from the catalog.
 
                 'ordered' is an optional boolean value that indicates that
                 results should sorted by stem and then by publisher and
@@ -2551,15 +2491,7 @@ class Catalog(object):
                 information).
 
                 If the catalog doesn't contain any action data for the package
-                entry, and manifest_cb was defined at Catalog creation time,
-                the action data will be lazy-loaded by the actions generator;
-                otherwise it will return an empty iterator.  This means that
-                the manifest_cb will be executed even for packages that don't
-                actually have any actions corresponding to info_needed.  For
-                example, if a package doesn't have any dependencies, the
-                manifest_cb will still be executed.  This was considered a
-                reasonable compromise as packages are generally expected to
-                have DEPENDENCY and SUMMARY information.
+                entry, it will return an empty iterator.
 
                 'excludes' is a list of variants which will be used to determine
                 what should be allowed by the actions generator in addition to
@@ -2614,15 +2546,7 @@ class Catalog(object):
                                     self.__gen_actions(r, entry["actions"],
                                     excludes))
                         except KeyError:
-                                if self.__manifest_cb:
-                                        pub, stem, ver = r
-                                        f = fmri.PkgFmri(name=stem, publisher=pub,
-                                            version=ver)
-                                        yield (r, entry,
-                                            self.__gen_lazy_actions(f, info_needed,
-                                            locales, excludes))
-                                else:
-                                        yield r, entry, EmptyI
+                                yield r, entry, EmptyI
 
         @property
         def exists(self):
@@ -2792,10 +2716,8 @@ class Catalog(object):
                 """A generator function that produces Actions as it iterates
                 over the catalog entry of the specified FMRI corresponding to
                 the requested information).  If the catalog doesn't contain
-                any action data for the package entry, and manifest_cb was
-                defined at Catalog creation time, the action data will be
-                lazy-loaded by the actions generator; otherwise it will
-                return an empty iterator.
+                any action data for the package entry, it will return an empty
+                iterator.
 
                 'excludes' is a list of variants which will be used to determine
                 what should be allowed by the actions generator in addition to
@@ -2833,11 +2755,7 @@ class Catalog(object):
                         return self.__gen_actions(pfmri, entry["actions"],
                             excludes)
                 except KeyError:
-                        if self.__manifest_cb:
-                                return self.__gen_lazy_actions(pfmri,
-                                    info_needed, locales, excludes)
-                        else:
-                                return EmptyI
+                        return EmptyI
 
         def get_entry_all_variants(self, pfmri):
                 """A generator function that yields tuples of the format
@@ -2853,11 +2771,7 @@ class Catalog(object):
                 try:
                         actions = self.__gen_actions(pfmri, entry["actions"])
                 except KeyError:
-                        if self.__manifest_cb:
-                                actions = self.__gen_lazy_actions(pfmri,
-                                    info_needed)
-                        else:
-                                return
+                        return
 
                 for a in actions:
                         if a.name != "set":
@@ -3752,8 +3666,6 @@ class Catalog(object):
 
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
-                Note that unlike actions(), catalog entries will not lazy-load
-                action data if it is missing from the catalog.
 
                 'ordered' is an optional boolean value that indicates that
                 results should sorted by stem and then by publisher and

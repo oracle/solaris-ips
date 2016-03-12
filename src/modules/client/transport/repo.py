@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -60,12 +60,6 @@ class TransportRepo(object):
 
         def do_search(self, data, header=None, ccancel=None, pub=None):
                 """Perform a search request."""
-
-                raise NotImplementedError
-
-        def get_catalog(self, ts=None, header=None, ccancel=None, pub=None):
-                """Get the catalog from the repo.  If ts is defined,
-                request only changes newer than timestamp ts."""
 
                 raise NotImplementedError
 
@@ -490,20 +484,6 @@ class HTTPRepo(TransportRepo):
                 requesturl = urljoin(requesturl, quote(
                     str(data[0]), safe=''))
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
-
-        def get_catalog(self, ts=None, header=None, ccancel=None, pub=None):
-                """Get the catalog from the repo.  If ts is defined,
-                request only changes newer than timestamp ts."""
-
-                requesturl = self.__get_request_url("catalog/0/", pub=pub)
-                if ts:
-                        if not header:
-                                header = {"If-Modified-Since": ts}
-                        else:
-                                header["If-Modified-Since"] = ts
-
-                return self._fetch_url(requesturl, header, compress=True,
-                    ccancel=ccancel)
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
             progtrack=None, pub=None, revalidate=False, redownload=False):

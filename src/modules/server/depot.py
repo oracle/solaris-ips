@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -79,7 +79,6 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.nrlock
 import pkg.p5i as p5i
-import pkg.server.catalog as old_catalog
 import pkg.server.face as face
 import pkg.server.repository as srepo
 import pkg.version
@@ -489,57 +488,6 @@ class DepotHTTP(_Depot):
                 ) + "\n"
                 return versions
 
-        def search_0(self, *tokens):
-                """Based on the request path, return a list of token type / FMRI
-                pairs."""
-
-                response = cherrypy.response
-                response.headers["Content-type"] = "text/plain; charset=utf-8"
-                self.__set_response_expires("search", 86400, 86400)
-
-                try:
-                        token = tokens[0]
-                except IndexError:
-                        token = None
-
-                query_args_lst = [str(Query(token, case_sensitive=False,
-                    return_type=Query.RETURN_ACTIONS, num_to_return=None,
-                    start_point=None))]
-
-                try:
-                        res_list = self.repo.search(query_args_lst,
-                            pub=self._get_req_pub())
-                except srepo.RepositorySearchUnavailableError as e:
-                        raise cherrypy.HTTPError(http_client.SERVICE_UNAVAILABLE,
-                            str(e))
-                except srepo.RepositoryError as e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: {0}".format(str(e)))
-                        raise cherrypy.HTTPError(http_client.NOT_FOUND, str(e))
-
-                # Translate the results from v1 format into what a v0
-                # searcher expects as results.
-                def output():
-                        for i, res in enumerate(res_list):
-                                for v, return_type, vals in res:
-                                        fmri_str, fv, line = vals
-                                        a = actions.fromstr(line.rstrip())
-                                        if isinstance(a,
-                                            actions.attribute.AttributeAction):
-                                                yield "{0} {1} {2} {3}\n".format(
-                                                    a.attrs.get(a.key_attr),
-                                                    fmri_str, a.name, fv)
-                                        else:
-                                                yield "{0} {1} {2} {3}\n".format(
-                                                    fv, fmri_str, a.name,
-                                                    a.attrs.get(a.key_attr))
-
-                return output()
-
-        search_0._cp_config = { "response.stream": True }
-
         def search_1(self, *args, **params):
                 """Based on the request path, return a list of packages that
                 match the specified criteria."""
@@ -615,49 +563,6 @@ class DepotHTTP(_Depot):
                 return output()
 
         search_1._cp_config = { "response.stream": True }
-
-        def catalog_0(self, *tokens):
-                """Provide a full version of the catalog, as appropriate, to
-                the requesting client.  Incremental catalogs are not supported
-                for v0 catalog clients."""
-
-                request = cherrypy.request
-
-                # Response headers have to be setup *outside* of the function
-                # that yields the catalog content.
-                try:
-                        cat = self.repo.get_catalog(pub=self._get_req_pub())
-                except srepo.RepositoryError as e:
-                        cherrypy.log("Request failed: {0}".format(str(e)))
-                        raise cherrypy.HTTPError(http_client.BAD_REQUEST, str(e))
-
-                response = cherrypy.response
-                response.headers["Content-type"] = "text/plain; charset=utf-8"
-                if hasattr(cat, "version"):
-                        response.headers["Last-Modified"] = \
-                            cat.last_modified.isoformat()
-                else:
-                        response.headers["Last-Modified"] = \
-                            old_catalog.ts_to_datetime(
-                            cat.last_modified()).isoformat()
-                response.headers["X-Catalog-Type"] = "full"
-                self.__set_response_expires("catalog", 86400, 86400)
-
-                def output():
-                        try:
-                                for l in self.repo.catalog_0(
-                                    pub=self._get_req_pub()):
-                                        yield l
-                        except srepo.RepositoryError as e:
-                                # Can't do anything in a streaming generator
-                                # except log the error and return.
-                                cherrypy.log("Request failed: {0}".format(
-                                    str(e)))
-                                return
-
-                return output()
-
-        catalog_0._cp_config = { "response.stream": True }
 
         def catalog_1(self, *tokens):
                 """Outputs the contents of the specified catalog file, using the
@@ -1722,30 +1627,6 @@ class NastyDepotHTTP(DepotHTTP):
         # Fire the before handler less often for versions/0; when it
         # fails everything else comes to a halt.
         versions_0._cp_config = { "tools.nasty_before.maxroll": 200 }
-
-        # Override _cp_config for catalog_0 operation
-        def catalog_0(self, *tokens):
-                """Provide a full version of the catalog, as appropriate, to
-                the requesting client.  Incremental catalogs are not supported
-                for v0 catalog clients."""
-
-                # We always raise BAD_REQUEST here because v0 catalogs
-                # are toxic to clients who are facing a nasty antagonist--
-                # the client has no way to verify that the content, and
-                # things go badly off the rails.
-                raise cherrypy.HTTPError(http_client.BAD_REQUEST)
-
-        catalog_0._cp_config = {
-            "response.stream": True,
-            #
-            # We disable the nasty_before for catalog 0 because clients
-            # who receive a 0 length response for a catalog_0 see that
-            # as a valid but empty catalog.  This causes many issues when
-            # trying to write tests against the nasty depot.  catalog_0
-            # is going away imminently so we don't really care.
-            #
-            "tools.nasty_before.on": False
-        }
 
         def manifest_0(self, *tokens):
                 """The request is an encoded pkg FMRI.  If the version is

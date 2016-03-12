@@ -216,7 +216,6 @@ dir  path=$(PYDIRVP)/pkg/server
 file path=$(PYDIRVP)/pkg/server/__init__.py
 file path=$(PYDIRVP)/pkg/server/api.py
 file path=$(PYDIRVP)/pkg/server/api_errors.py
-file path=$(PYDIRVP)/pkg/server/catalog.py
 file path=$(PYDIRVP)/pkg/server/depot.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/face.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/feed.py pkg.depend.bypass-generate=.*six.*
@@ -230,7 +229,6 @@ file path=$(PYDIRVP)/pkg/solver.so
 file path=$(PYDIRVP)/pkg/sysattr.py
 file path=$(PYDIRVP)/pkg/syscallat.py
 file path=$(PYDIRVP)/pkg/sysvpkg.py
-file path=$(PYDIRVP)/pkg/updatelog.py
 file path=$(PYDIRVP)/pkg/variant.py
 file path=$(PYDIRVP)/pkg/version.py pkg.depend.bypass-generate=.*six.*
 dir  path=etc

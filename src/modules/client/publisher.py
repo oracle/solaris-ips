@@ -64,7 +64,6 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
-import pkg.server.catalog as old_catalog
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
@@ -1857,17 +1856,11 @@ pkg unset-publisher {0}
                                                 # Destination entry is one just
                                                 # added.
                                                 entry["metadata"] = {
-                                                    "sources": [],
-                                                    "states": [],
+                                                    "sources": []
                                                 }
 
                                         entry["metadata"]["sources"].append(
                                             origin.uri)
-
-                                        states = entry["metadata"]["states"]
-                                        if src_cat.version == 0:
-                                                states.append(
-                                                    pkgdefs.PKG_STATE_V0)
 
                 # Now go back and trim each entry to minimize footprint.  This
                 # ensures each package entry only has state and source info
@@ -1881,14 +1874,6 @@ pkg unset-publisher {0}
                                 # have it.
                                 del mdata["sources"]
 
-                        if len(mdata["states"]) < len(opaths):
-                                # At least one source is not V0, so the lazy-
-                                # load fallback for the package metadata isn't
-                                # needed.
-                                del mdata["states"]
-                        elif len(mdata["states"]) > 1:
-                                # Ensure only one instance of state value.
-                                mdata["states"] = [pkgdefs.PKG_STATE_V0]
                         if not mdata:
                                 mdata = None
                         ncat.update_entry(mdata, pub=pub, stem=stem, ver=ver)
@@ -1899,141 +1884,12 @@ pkg unset-publisher {0}
                 ncat.save()
                 return removals
 
-        def __convert_v0_catalog(self, v0_cat, v1_root):
-                """Transforms the contents of the provided version 0 Catalog
-                into a version 1 Catalog, replacing the current Catalog."""
-
-                v0_lm = v0_cat.last_modified()
-                if v0_lm:
-                        # last_modified can be none if the catalog is empty.
-                        v0_lm = pkg.catalog.ts_to_datetime(v0_lm)
-
-                # There's no point in signing this catalog since it's simply
-                # a transformation of a v0 catalog.
-                v1_cat = pkg.catalog.Catalog(batch_mode=True,
-                    meta_root=v1_root, sign=False)
-
-                # A check for a previous non-zero package count is made to
-                # determine whether the last_modified date alone can be
-                # relied on.  This works around some oddities with empty
-                # v0 catalogs.
-                try:
-                        # Could be 'None'
-                        n0_pkgs = int(v0_cat.npkgs())
-                except (TypeError, ValueError):
-                        n0_pkgs = 0
-
-                if v1_cat.exists and n0_pkgs != v1_cat.package_version_count:
-                        if v0_lm == v1_cat.last_modified:
-                                # Already converted.
-                                return
-                        # Simply rebuild the entire v1 catalog every time, this
-                        # avoids many of the problems that could happen due to
-                        # deficiencies in the v0 implementation.
-                        v1_cat.destroy()
-                        self._catalog = None
-                        v1_cat = pkg.catalog.Catalog(meta_root=v1_root,
-                            sign=False)
-
-                # Now populate the v1 Catalog with the v0 Catalog's data.
-                for f in v0_cat.fmris():
-                        v1_cat.add_package(f)
-
-                # Normally, the Catalog's attributes are automatically
-                # populated as a result of catalog operations.  But in
-                # this case, we want the v1 Catalog's attributes to
-                # match those of the v0 catalog.
-                v1_cat.last_modified = v0_lm
-
-                # While this is a v1 catalog format-wise, v0 data is stored.
-                # This allows consumers to be aware that certain data won't be
-                # available in this catalog (such as dependencies, etc.).
-                v1_cat.version = 0
-
-                # Finally, save the new Catalog, and replace the old in-memory
-                # catalog.
-                v1_cat.batch_mode = False
-                v1_cat.finalize()
-                v1_cat.save()
-
-        def __refresh_v0(self, croot, full_refresh, immediate, repo):
-                """The method to refresh the publisher's metadata against
-                a catalog/0 source.  If the more recent catalog/1 version
-                isn't supported, this routine gets invoked as a fallback.
-                Returns a tuple of (changed, refreshed) where 'changed'
-                indicates whether new catalog data was found and 'refreshed'
-                indicates that catalog data was actually retrieved to determine
-                if there were any updates."""
-
-                if full_refresh:
-                        immediate = True
-
-                # Catalog needs v0 -> v1 transformation if repository only
-                # offers v0 catalog.
-                v0_cat = old_catalog.ServerCatalog(croot, read_only=True,
-                    publisher=self.prefix)
-
-                new_cat = True
-                v0_lm = None
-                if v0_cat.exists:
-                        repo = self.repository
-                        if full_refresh or v0_cat.origin() not in repo.origins:
-                                try:
-                                        v0_cat.destroy(root=croot)
-                                except EnvironmentError as e:
-                                        if e.errno == errno.EACCES:
-                                                raise api_errors.PermissionsException(
-                                                    e.filename)
-                                        if e.errno == errno.EROFS:
-                                                raise api_errors.ReadOnlyFileSystemException(
-                                                    e.filename)
-                                        raise
-                                immediate = True
-                        else:
-                                new_cat = False
-                                v0_lm = v0_cat.last_modified()
-
-                if not immediate and not self.needs_refresh:
-                        # No refresh needed.
-                        return False, False
-
-                import pkg.updatelog as old_ulog
-                try:
-                        # Note that this currently retrieves a v0 catalog that
-                        # has to be converted to v1 format.
-                        self.transport.get_catalog(self, v0_lm, path=croot,
-                            alt_repo=repo)
-                except old_ulog.UpdateLogException:
-                        # If an incremental update fails, attempt a full
-                        # catalog retrieval instead.
-                        try:
-                                v0_cat.destroy(root=croot)
-                        except EnvironmentError as e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                if e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(
-                                            e.filename)
-                                raise
-                        self.transport.get_catalog(self, path=croot,
-                            alt_repo=repo)
-
-                v0_cat = pkg.server.catalog.ServerCatalog(croot, read_only=True,
-                    publisher=self.prefix)
-
-                self.__convert_v0_catalog(v0_cat, croot)
-                if new_cat or v0_lm != v0_cat.last_modified():
-                        # If the catalog was rebuilt, or the timestamp of the
-                        # catalog changed, then an update has occurred.
-                        return True, True
-                return False, True
-
         def __refresh_v1(self, croot, tempdir, full_refresh, immediate,
             mismatched, repo, progtrack=None, include_updates=False):
-                """The method to refresh the publisher's metadata against
-                a catalog/1 source.  If the more recent catalog/1 version
-                isn't supported, __refresh_v0 is invoked as a fallback.
+                """The method to refresh the publisher's metadata against a
+                catalog/1 source.  If catalog/1 isn't supported, an exception
+                will be raised.
+
                 Returns a tuple of (changed, refreshed) where 'changed'
                 indicates whether new catalog data was found and 'refreshed'
                 indicates that catalog data was actually retrieved to determine
@@ -2049,26 +1905,9 @@ pkg unset-publisher {0}
                 revalidate = not redownload and mismatched
 
                 v1_cat = pkg.catalog.Catalog(meta_root=croot)
-                try:
-                        self.transport.get_catalog1(self, ["catalog.attrs"],
-                            path=tempdir, redownload=redownload,
-                            revalidate=revalidate, alt_repo=repo,
-			    progtrack=progtrack)
-                except api_errors.UnsupportedRepositoryOperation:
-                        # No v1 catalogs available.
-                        if v1_cat.exists:
-                                # Ensure v1 -> v0 transition works right.
-                                v1_cat.destroy()
-                                self._catalog = None
-                        return self.__refresh_v0(croot, full_refresh, immediate,
-                            repo)
-
-                # If a v0 catalog is present, remove it before proceeding to
-                # ensure transitions between catalog versions work correctly.
-                v0_cat = old_catalog.ServerCatalog(croot, read_only=True,
-                    publisher=self.prefix)
-                if v0_cat.exists:
-                        v0_cat.destroy(root=croot)
+                self.transport.get_catalog1(self, ["catalog.attrs"],
+                    path=tempdir, redownload=redownload, revalidate=revalidate,
+                    alt_repo=repo, progtrack=progtrack)
 
                 # If above succeeded, we now have a catalog.attrs file.  Parse
                 # this to determine what other constituent parts need to be
@@ -2093,17 +1932,9 @@ pkg unset-publisher {0}
 
                 if flist:
                         # More catalog files to retrieve.
-                        try:
-                                self.transport.get_catalog1(self, flist,
-                                    path=tempdir, redownload=redownload,
-                                    revalidate=revalidate, alt_repo=repo,
-				    progtrack=progtrack)
-                        except api_errors.UnsupportedRepositoryOperation:
-                                # Couldn't find a v1 catalog after getting one
-                                # before.  This would be a bizzare error, but we
-                                # can try for a v0 catalog anyway.
-                                return self.__refresh_v0(croot, full_refresh,
-                                    immediate, repo)
+                        self.transport.get_catalog1(self, flist, path=tempdir,
+                            redownload=redownload, revalidate=revalidate,
+                            alt_repo=repo, progtrack=progtrack)
 
                 # Clear _catalog, so we'll read in the new catalog.
                 self._catalog = None

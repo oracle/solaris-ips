@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -170,7 +170,6 @@ PKG_STATE_UPGRADABLE = 4
 # version.  This is helpful to consumers of the catalog data so that
 # they can be aware of what metadata may not immediately available
 # (require manifest retrieval) based on the catalog version.
-PKG_STATE_V0 = 6
 PKG_STATE_V1 = 7
 
 PKG_STATE_OBSOLETE = 8

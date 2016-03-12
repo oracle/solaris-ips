@@ -59,7 +59,6 @@ import pkg.misc as misc
 import pkg.nrlock
 import pkg.search_errors as se
 import pkg.query_parser as qp
-import pkg.server.catalog as old_catalog
 import pkg.server.query_parser as sqp
 import pkg.server.transaction as trans
 import pkg.pkgsubprocess as subprocess
@@ -914,14 +913,8 @@ class _RepoStore(object):
                                 raise
                         return datetime.datetime.utcfromtimestamp(mod_time)
 
-                # To determine if a transformation is needed, first check for a
-                # v0 catalog attrs file.
-                need_transform = False
-                v0_attrs = os.path.join(self.catalog_root, "attrs")
-
                 # The only place a v1 catalog should exist, at all,
-                # is either in self.catalog_root, or in a subdirectory
-                # of self.writable_root if a v0 catalog exists.
+                # is in self.catalog_root.
                 v1_cat = None
                 writ_cat_root = None
                 if self.writable_root:
@@ -929,16 +922,6 @@ class _RepoStore(object):
                             self.writable_root, "catalog")
                         v1_cat = catalog.Catalog(
                             meta_root=writ_cat_root, read_only=True)
-
-                v0_lm = None
-                if os.path.exists(v0_attrs):
-                        # If a v0 catalog exists, then assume any existing v1
-                        # catalog needs to be kept in sync if it exists.  If
-                        # one doesn't exist, then it needs to be created.
-                        v0_lm = get_file_lm(v0_attrs)
-                        if not v1_cat or not v1_cat.exists or \
-                            v0_lm != v1_cat.last_modified:
-                                need_transform = True
 
                 if writ_cat_root and not self.read_only:
                         # If a writable root was specified, but the server is
@@ -949,84 +932,22 @@ class _RepoStore(object):
                         # and proceed.
                         shutil.rmtree(writ_cat_root, True)
                         writ_cat_root = None
-                        if os.path.exists(v0_attrs) and not self.catalog.exists:
-                                # A v0 catalog exists, but no v1 catalog exists;
-                                # this can happen when a repository that was
-                                # previously run with writable-root and
-                                # read_only is now being run with only
-                                # writable_root.
-                                need_transform = True
-                elif writ_cat_root and v0_lm and self.read_only:
-                        # The catalog lives in the writable_root if a v0 catalog
-                        # exists, writ_cat_root is set, and readonly is True.
-                        self.__set_catalog_root(writ_cat_root)
 
-                if self.mirror:
-                        need_transform = False
-
-                if need_transform and self.read_only and not self.writable_root:
-                        # Catalog data can't be transformed.
-                        need_transform = False
-
-                if need_transform:
-                        # v1 catalog should be destroyed if it exists already.
-                        self.catalog.destroy()
-
-                        # Create the transformed catalog.
-                        self.__log(_("Transforming repository catalog; this "
-                            "process will take some time."))
-                        self.__rebuild(lm=v0_lm)
-
-                        if not self.read_only and self.root:
-                                v0_cat = os.path.join(self.root,
-                                    "catalog", "catalog")
-                                for f in v0_attrs, v0_cat:
-                                        if os.path.exists(f):
-                                                portable.remove(f)
-
-                                # If this fails, it doesn't really matter, but
-                                # it should be removed if possible.
-                                shutil.rmtree(os.path.join(self.root,
-                                    "updatelog"), True)
-
-                # Determine effective catalog version after all transformation
-                # work is complete.
-                if os.path.exists(v0_attrs):
-                        # The only place a v1 catalog should exist, at all, is
-                        # either in catalog_root or in a subdirectory of
-                        # writable_root if a v0 catalog exists.
-                        v1_cat = None
-                        # If a writable root was specified, but the repository
-                        # is not in read-only mode, then the catalog must not be
-                        # stored using the writable root (this is consistent
-                        # with the storage of package data in this case).
-                        if self.writable_root and self.read_only:
-                                writ_cat_root = os.path.join(
-                                    self.writable_root, "catalog")
-                                v1_cat = catalog.Catalog(
-                                    meta_root=writ_cat_root, read_only=True)
-
-                        if v1_cat and v1_cat.exists:
+                try:
+                        if self.catalog.exists:
                                 self.catalog_version = 1
-                                self.__set_catalog_root(v1_cat.meta_root)
-                        else:
-                                self.catalog_version = 0
-                else:
-                        try:
-                                if self.catalog.exists:
-                                        self.catalog_version = 1
-                        except apx.CatalogError as e:
-                                if not allow_invalid:
-                                        raise
+                except apx.CatalogError as e:
+                        if not allow_invalid:
+                                raise
 
-                                # Catalog is invalid, but consumer wants to
-                                # proceed; assume version 1.  This will allow
-                                # pkgrepo rebuild, etc.
-                                self.__log(str(e))
-                                self.__catalog = catalog.Catalog(
-                                    read_only=self.read_only)
-                                self.catalog_verison = 1
-                                return
+                        # Catalog is invalid, but consumer wants to proceed;
+                        # assume version 1.  This will allow pkgrepo rebuild,
+                        # etc.
+                        self.__log(str(e))
+                        self.__catalog = catalog.Catalog(
+                            read_only=self.read_only)
+                        self.catalog_verison = 1
+                        return
 
                 if self.catalog_version >= 1 and not self.publisher:
                         # If there's no information available to determine
@@ -1229,7 +1150,7 @@ class _RepoStore(object):
                 """
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.catalog_root or self.catalog_version == 0:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
                 self.__lock_rstore()
@@ -1314,54 +1235,10 @@ class _RepoStore(object):
                 if not self.catalog_root:
                         # Object not available.
                         raise RepositoryUnsupportedOperationError()
-                if self.catalog_version == 0:
-                        return old_catalog.ServerCatalog(self.catalog_root,
-                            read_only=True, publisher=self.publisher)
 
                 self.__catalog = catalog.Catalog(meta_root=self.catalog_root,
                     log_updates=True, read_only=self.read_only)
                 return self.__catalog
-
-        def catalog_0(self):
-                """Returns a generator object for the full version of
-                the catalog contents.  Incremental updates are not provided
-                as the v0 updatelog does not support renames, obsoletion,
-                package removal, etc."""
-
-                if not self.catalog_root or self.catalog_version < 0:
-                        raise RepositoryUnsupportedOperationError()
-
-                if self.catalog_version == 0:
-                        # If catalog is v0, it must be read and returned
-                        # directly to the caller.
-                        if not self.publisher:
-                                raise RepositoryUnsupportedOperationError()
-                        c = old_catalog.ServerCatalog(self.catalog_root,
-                            read_only=True, publisher=self.publisher)
-                        output = cStringIO.StringIO()
-                        c.send(output)
-                        output.seek(0)
-                        for l in output:
-                                yield l
-                        return
-
-                # For all other cases where the catalog object is available,
-                # fake a v0 catalog for the caller's sake.
-                c = self.catalog
-
-                # Yield each catalog attr in the v0 format:
-                # S Last-Modified: 2009-08-28T15:01:48.546606
-                # S prefix: CRSV
-                # S npkgs: 46292
-                yield "S Last-Modified: {0}\n".format(
-                    c.last_modified.isoformat())
-                yield "S prefix: CRSV\n"
-                yield "S npkgs: {0}\n".format(c.package_version_count)
-
-                # Now yield each FMRI in the catalog in the v0 format:
-                # V pkg:/SUNWdvdrw@5.21.4.10.8,5.11-0.86:20080426T173208Z
-                for pub, stem, ver in c.tuples():
-                        yield "V pkg:/{0}@{1}\n".format(stem, ver)
 
         def catalog_1(self, name):
                 """Returns the absolute pathname of the named catalog file."""
@@ -1811,7 +1688,7 @@ class _RepoStore(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.catalog_root or self.catalog_version == 0:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
                 self.__lock_rstore()
@@ -3168,22 +3045,6 @@ class Repository(object):
                                 raise RepositoryUnqualifiedFMRIError(pfmri)
                         raise
                 return rstore.append(client_release, pfmri)
-
-        def catalog_0(self, pub=None):
-                """Returns a generator object for the full version of
-                the catalog contents.  Incremental updates are not provided
-                as the v0 updatelog does not support renames, obsoletion,
-                package removal, etc.
-
-                'pub' is the prefix of the publisher to return catalog data for.
-                If not specified, the default publisher will be used.  If no
-                default publisher has been configured, an AssertionError will be
-                raised.
-                """
-
-                self.inc_catalog()
-                rstore = self.get_pub_rstore(pub)
-                return rstore.catalog_0()
 
         def catalog_1(self, name, pub=None):
                 """Returns the absolute pathname of the named catalog file.

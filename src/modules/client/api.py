@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -3494,13 +3494,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                                         states = [pkgdefs.PKG_STATE_KNOWN,
                                             pkgdefs.PKG_STATE_ALT_SOURCE]
-                                        if cat_ver == 0:
-                                                states.append(
-                                                    pkgdefs.PKG_STATE_V0)
-                                        else:
-                                                # Assume V1 catalog source.
-                                                states.append(
-                                                    pkgdefs.PKG_STATE_V1)
+                                        # Assume V1 catalog source.
+                                        states.append(pkgdefs.PKG_STATE_V1)
 
                                         if installed:
                                                 states.append(
@@ -4704,20 +4699,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         raise ssu
 
         @staticmethod
-        def __parse_v_0(line, pub, v):
-                """This function parses the string returned by a version 0
-                search server and puts it into the expected format of
-                (query_number, publisher, (version, return_type, (results))).
-
-                "query_number" in the return value is fixed at 0 since search
-                v0 servers cannot accept multiple queries in a single HTTP
-                request."""
-
-                line = line.strip()
-                fields = line.split(None, 3)
-                return (0, pub, (v, Query.RETURN_ACTIONS, (fields[:4])))
-
-        @staticmethod
         def __parse_v_1(line, pub, v):
                 """This function parses the string returned by a version 1
                 search server and puts it into the expected format of
@@ -5804,8 +5785,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                 if not prefix:
                                         raise apx.RepoPubConfigUnavailable(
                                             location=repo_uri)
-                                # For a v0 repo where a prefix was specified,
-                                # fallback to manual configuration.
+                                # Fallback to manual configuration.
                                 if not origins:
                                         origins = [repo_uri]
                                 repo_uri = None

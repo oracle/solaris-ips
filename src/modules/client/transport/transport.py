@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -55,7 +55,6 @@ import pkg.p5i as p5i
 import pkg.p5s as p5s
 import pkg.portable as portable
 import pkg.server.repository as sr
-import pkg.updatelog as updatelog
 
 from pkg.actions import ActionError
 from pkg.client import global_settings
@@ -729,79 +728,6 @@ class Transport(object):
                         return cadir
 
                 return self.__cadir
-
-        @LockedTransport()
-        def get_catalog(self, pub, ts=None, ccancel=None, path=None,
-            alt_repo=None):
-                """Get the catalog for the specified publisher.  If
-                ts is defined, request only changes newer than timestamp
-                ts."""
-
-                failures = tx.TransportFailures()
-                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-                header = self.__build_header(uuid=self.__get_uuid(pub))
-                download_dir = self.cfg.incoming_root
-                if path:
-                        croot = path
-                else:
-                        croot = pub.catalog_root
-
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                # If version check hasn't been executed, run it prior to this
-                # operation.
-                self._version_check_all(ccancel=ccancel, alt_repo=alt_repo)
-
-                for d, retries in self.__gen_repo(pub, retry_count,
-                    origin_only=True, alt_repo=alt_repo):
-
-                        repostats = self.stats[d.get_repouri_key()]
-
-                        # If a transport exception occurs,
-                        # save it if it's retryable, otherwise
-                        # raise the error to a higher-level handler.
-                        try:
-
-                                resp = d.get_catalog(ts, header,
-                                    ccancel=ccancel, pub=pub)
-
-                                updatelog.recv(resp, croot, ts, pub)
-
-                                return
-
-                        except tx.ExcessiveTransientFailure as ex:
-                                # If an endpoint experienced so many failures
-                                # that we just gave up, grab the list of
-                                # failures that it contains
-                                failures.extend(ex.failures)
-                        except tx.TransportProtoError as e:
-                                if e.code == http_client.NOT_MODIFIED:
-                                        return
-                                elif e.retryable:
-                                        failures.append(e)
-                                else:
-                                        raise
-                        except tx.TransportException as e:
-                                if e.retryable:
-                                        failures.append(e)
-                                else:
-                                        raise
-                        except pkg.fmri.IllegalFmri as e:
-                                repostats.record_error()
-                                raise tx.TransportOperationError(
-                                    "Could not retrieve catalog from '{0}'\n"
-                                    " Unable to parse FMRI. Details "
-                                    "follow:\n{1}".format(pub.prefix, e))
-                        except EnvironmentError as e:
-                                repostats.record_error()
-                                raise tx.TransportOperationError(
-                                    "Could not retrieve catalog from '{0}'\n"
-                                    " Exception: str:{1!s} repr:{2!r}".format(
-                                    pub.prefix, e, e))
-
-                raise failures
 
         @staticmethod
         def _verify_catalog(filename, dirname):
