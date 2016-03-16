@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import testutils
@@ -1250,75 +1250,6 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(api_errors.UnrecognizedCatalogPart,
                     catalog.Catalog, meta_root=self.test_root)
 
-        def test_corrupt_attrs7(self):
-                """Raise UnrecognizedCatalogPart for a catalog.attrs{parts}
-                with bogus subpart."""
-
-                file_root = os.path.join(self.test_root, "file_root")
-                croot = os.path.join(self.test_root, "file_root", "catalog")
-                os.makedirs(file_root)
-                os.makedirs(croot)
-                # make catalog
-                c = catalog.Catalog(meta_root=croot, file_root=file_root)
-                c.save()
-
-                # Test catalog.attrs{parts} by adding a symbolic link to
-                # the set of parts, where the link has a good part name but
-                # reference a file outside of the image root.
-                for name in ["link", "shadow", "catalog.foo", "update.bar"]:
-                        # Create a file that is outside the 'file_root'.
-                        self.make_file(os.path.join(self.test_root, "foo"), "")
-                        # Symlink to the target.
-                        os.symlink(os.path.join(self.test_root, "foo"),
-                            os.path.join(croot, name))
-
-                        fname = os.path.join(croot, "catalog.attrs")
-                        with open(fname, "r") as f:
-                                struct = simplejson.load(f)
-                                struct["parts"][name] = {}
-                        with open(fname, "w") as f:
-                                print(simplejson.dumps(struct), file=f)
-
-                        # Catalog constructor should reject busted 'parts'.
-                        self.assertRaises(api_errors.UnrecognizedCatalogPart,
-                            catalog.Catalog, meta_root=croot,
-                            file_root=file_root)
-
-                        # Clears the contrived subpart for next loop.
-                        with open(fname, "r") as f:
-                               struct = simplejson.load(f)
-                               del struct["parts"][name]
-                        with open(fname, "w") as f:
-                                print(simplejson.dumps(struct), file=f)
-
-        def test_corrupt_attrs8(self):
-                """Raise UnrecognizedCatalogPart for a catalog.attrs file
-                itself being a symlink referencing a file outside of the
-                image root."""
-
-                file_root = os.path.join(self.test_root, "file_root")
-                croot = os.path.join(self.test_root, "file_root", "catalog")
-                os.makedirs(file_root)
-                os.makedirs(croot)
-                # make catalog
-                c = catalog.Catalog(meta_root=croot, file_root=file_root)
-                c.save()
-
-                self.make_file(os.path.join(self.test_root, "foo"), "")
-                # Make catalog.attrs being a symlink to reference a file
-                # outside of 'file_root'.
-                temp = os.path.join(croot, "temp")
-                attrs = os.path.join(croot, "catalog.attrs")
-                portable.rename(attrs, temp)
-                os.symlink(os.path.join(self.test_root, "foo"), attrs)
-                with open(temp, "r") as rf:
-                        with open(attrs, "w") as wf:
-                                wf.write(rf.read())
-
-                # Catalog constructor should reject busted 'parts'.
-                self.assertRaises(api_errors.UnrecognizedCatalogPart,
-                    catalog.Catalog, meta_root=croot,
-                    file_root=file_root)
 
 if __name__ == "__main__":
         unittest.main()

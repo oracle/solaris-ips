@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -469,7 +469,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 pub_path = os.path.join(img_root, "publisher")
 
                 v1_cat = pkg.catalog.Catalog(meta_root=os.path.join(pub_path,
-                    "test1", "catalog"), read_only=True, file_root=img_root)
+                    "test1", "catalog"), read_only=True)
                 v0_cat_path = os.path.join(cat_path, "test1")
 
                 # For conversion, the v0 catalogs need to be generated in
@@ -497,8 +497,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # The existing installed state has to be converted to v2.
                 state_dir = os.path.join(img_root, "state")
                 inst_state_dir = os.path.join(state_dir, "installed")
-                cat = pkg.catalog.Catalog(meta_root=inst_state_dir,
-                    file_root=img_root)
+                cat = pkg.catalog.Catalog(meta_root=inst_state_dir)
                 for f in cat.fmris():
                         self.__add_install_file(img_root, f)
                 cat = None
@@ -751,8 +750,8 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t{1}/\t-
                     self.rurl1, p), su_wrap=True, exit=1)
 
         def test_11_ssl_key_cert_set(self):
-                """Verify that pkg image create will still pass if
-                repo_uri doesn't have ssl_scheme but one of the origins or
+                """Verify that pkg image create will still pass if 
+                repo_uri doesn't have ssl_scheme but one of the origins or 
                 mirrors have schemes"""
 
                 self.image_create(self.rurl1)

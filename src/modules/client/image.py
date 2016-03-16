@@ -1358,10 +1358,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                         kcat.meta_root = os.path.join(tmp_state_root,
                             self.IMG_CATALOG_KNOWN)
-                        kcat.file_root = tmp_root
                         icat.meta_root = os.path.join(tmp_state_root,
                             self.IMG_CATALOG_INSTALLED)
-                        icat.file_root = tmp_root
 
                         # Assume that since mkdirs succeeded that the remaining
                         # data can be saved and the image structure can be
@@ -2678,7 +2676,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 progtrack.job_add_progress(
                                     progtrack.JOB_IMAGE_STATE)
                                 cat.meta_root = cpath
-                                cat.file_root = tmp_state_root
                                 cat.finalize(pfmris=added)
                                 progtrack.job_add_progress(
                                     progtrack.JOB_IMAGE_STATE)
@@ -2802,8 +2799,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # image upgrade or metadata refresh.  In both cases, the catalog
                 # is resorted and finalized so this is always safe to use.
                 cat = pkg.catalog.Catalog(batch_mode=True,
-                    manifest_cb=self._manifest_cb, meta_root=croot, sign=False,
-                    file_root=self.imgdir)
+                    manifest_cb=self._manifest_cb, meta_root=croot, sign=False)
                 return cat
 
         def __remove_catalogs(self):
@@ -3024,8 +3020,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 kcat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
-                    self.IMG_CATALOG_KNOWN), sign=False,
-                    file_root=self.imgdir)
+                    self.IMG_CATALOG_KNOWN), sign=False)
 
                 # XXX if any of the below fails for any reason, the old 'known'
                 # catalog needs to be re-loaded so the client is in a consistent
@@ -3077,8 +3072,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Create the new installed catalog in a temporary location.
                 icat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
-                    self.IMG_CATALOG_INSTALLED), sign=False,
-                    file_root=self.imgdir)
+                    self.IMG_CATALOG_INSTALLED), sign=False)
 
                 excludes = self.list_excludes()
 

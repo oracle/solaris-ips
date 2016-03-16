@@ -1441,7 +1441,6 @@ class Publisher(object):
                 self.__meta_root = pathname
                 if self._catalog:
                         self._catalog.meta_root = self.catalog_root
-                        self._catalog.file_root = self.__meta_root
                 if self.__meta_root:
                         self.__origin_root = os.path.join(self.__meta_root,
                             "origins")
@@ -1572,7 +1571,7 @@ pkg unset-publisher {0}
                                 # an image format upgrade.)
                                 croot = None
                         self._catalog = pkg.catalog.Catalog(
-                            meta_root=croot, file_root=self.meta_root)
+                            meta_root=croot)
                 return self._catalog
 
         @property

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -846,7 +846,6 @@ class Archive(object):
                 # as having catalog data cached.
                 croot = self.__mkdtemp()
                 cat.meta_root = croot
-                cat.file_root = croot
                 cat.batch_mode = False
                 cat.finalize()
                 if lm:
