@@ -49,6 +49,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.firmware import Firmware
 from pkg.client.pkgdefs import PKG_OP_UNINSTALL, PKG_OP_UPDATE
 from pkg.misc import EmptyI, EmptyDict, N_
+# Unable to import; pylint: disable=F0401
 from six.moves import range
 
 SOLVER_INIT    = "Initialized"
@@ -448,8 +449,8 @@ class PkgSolver(object):
                                         (da.attrs["type"],
                                             pkg.fmri.extract_pkg_name(
                                                 da.attrs["fmri"]))
-                                        for da in self.__get_dependency_actions(f,
-                                            excludes)
+                                        for da in self.__get_dependency_actions(
+                                            f, excludes)
                                         if da.attrs["type"] == "conditional" or
                                             da.attrs["type"] == "group" or
                                             da.attrs["type"] == "require"
