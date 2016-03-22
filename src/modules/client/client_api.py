@@ -990,15 +990,16 @@ def __api_alloc(pkg_image, orig_cwd, prog_delay=PROG_DELAY, prog_tracker=None,
                         if pkg_image_used:
                                 _error_json(_("No image rooted at '{0}' "
                                     "(set by $PKG_IMAGE)").format(e.user_dir),
-                                    errors=errors_json)
+                                    errors_json=errors_json)
                         else:
                                 _error_json(_("No image rooted at '{0}'")
-                                   .format(e.user_dir), errors=errors_json)
+                                   .format(e.user_dir), errors_json=errors_json)
                 else:
-                        _error_json(_("No image found."), errors=errors_json)
+                        _error_json(_("No image found."),
+                            errors_json=errors_json)
                 return
         except api_errors.PermissionsException as e:
-                _error_json(e, errors=errors_json)
+                _error_json(e, errors_json=errors_json)
                 return
         except api_errors.ImageFormatUpdateNeeded as e:
                 _format_update_error(e, errors_json=errors_json)
@@ -1079,7 +1080,7 @@ def __api_execute_plan(operation, api_inst):
                 _error_json(_("Requested \"{0}\" operation would affect files "
                     "that cannot be modified in live image.\n"
                     "Please retry this operation on an alternate boot "
-                    "environment.").format(operation), errors=errors_json)
+                    "environment.").format(operation), errors_json=errors_json)
                 rval = __prepare_json(EXIT_NOTLIVE, errors=errors_json)
         except api_errors.CorruptedIndexException as e:
                 _error_json("The search index appears corrupted.  Please "
@@ -1111,7 +1112,7 @@ def __api_execute_plan(operation, api_inst):
         except Exception as e:
                 _error_json(_("An unexpected error happened during "
                     "{operation}: {err}").format(
-                    operation=operation, err=e), errors=errors_json)
+                    operation=operation, err=e), errors_json=errors_json)
                 rval = __prepare_json(EXIT_OOPS, errors=errors_json)
         finally:
                 exc_type = exc_value = exc_tb = None
