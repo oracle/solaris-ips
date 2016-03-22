@@ -1276,64 +1276,6 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # did not have the cRLSign keyUsage extension set.
                 self._api_install(api_obj, ["example_pkg"])
 
-        def test_unknown_value_for_non_critical_extension(self):
-                """Test that an unknown value for a recognized non-critical
-                extension causes an exception to be raised."""
-
-                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
-                        name=plist[0],
-                        key=os.path.join(self.keys_dir,
-                            "cs5_ch1_ta3_key.pem"),
-                        cert=os.path.join(self.cs_dir,
-                            "cs5_ch1_ta3_cert.pem"),
-                        i1=os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem"))
-                self.pkgsign(self.rurl1, sign_args)
-                self.pkg_image_create(self.rurl1)
-                self.seed_ta_dir("ta3")
-                self.pkg("set-property signature-policy verify")
-                api_obj = self.get_img_api_obj()
-                self.assertRaises(apx.UnsupportedExtensionValue,
-                    self._api_install, api_obj, ["example_pkg"])
-                # Tests that the cli can handle an UnsupportedExtensionValue.
-                self.pkg("install example_pkg", exit=1)
-                self.pkg("set-property signature-policy ignore")
-                self.pkg("set-publisher --set-property signature-policy=ignore "
-                    "test")
-                api_obj = self.get_img_api_obj()
-                self._api_install(api_obj, ["example_pkg"])
-
-        def test_unknown_value_for_critical_extension(self):
-                """Test that an unknown value for a recognized critical
-                extension causes an exception to be raised."""
-
-                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
-                        name=plist[0],
-                        key=os.path.join(self.keys_dir,
-                            "cs6_ch1_ta3_key.pem"),
-                        cert=os.path.join(self.cs_dir,
-                            "cs6_ch1_ta3_cert.pem"),
-                        i1=os.path.join(self.chain_certs_dir,
-                            "ch1_ta3_cert.pem"))
-                self.pkgsign(self.rurl1, sign_args)
-
-                self.pkg_image_create(self.rurl1)
-                self.seed_ta_dir("ta3")
-
-                self.pkg("set-property signature-policy verify")
-                api_obj = self.get_img_api_obj()
-                self.assertRaises(apx.UnsupportedExtensionValue,
-                    self._api_install, api_obj, ["example_pkg"])
-                # Tests that the cli can handle an UnsupportedExtensionValue.
-                self.pkg("install example_pkg", exit=1)
-                self.pkg("set-property signature-policy ignore")
-                self.pkg("set-publisher --set-property signature-policy=ignore "
-                    "test")
-                api_obj = self.get_img_api_obj()
-                self._api_install(api_obj, ["example_pkg"])
-
         def test_invalid_extension_1(self):
                 """Test that an invalid value in the extension causes an
                 exception to be raised."""
@@ -1389,6 +1331,25 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-property signature-policy ignore")
                 self.pkg("set-publisher --set-property signature-policy=ignore "
                     "test")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_keyusage_values(self):
+                """Test that more keyUsage extension values are supported."""
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k {key} -c {cert} -i {i1} {name}".format(
+                        name=plist[0],
+                        key=os.path.join(self.keys_dir,
+                            "cs5_ch1_ta3_key.pem"),
+                        cert=os.path.join(self.cs_dir,
+                            "cs5_ch1_ta3_cert.pem"),
+                        i1=os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"))
+                self.pkgsign(self.rurl1, sign_args)
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+                self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 

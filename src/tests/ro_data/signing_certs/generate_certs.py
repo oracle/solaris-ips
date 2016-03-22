@@ -93,14 +93,10 @@ if __name__ == "__main__":
         # Add a certificate to the length 3 chain that is in the future.
         cg.make_cs_cert("cs4_ch1_ta3", "ch1_ta3", parent_loc="chain_certs",
             future=True)
-        # Add a certificate to the length 3 chain that has an unknown value for
-        # a recognized non-critical extension.
+        # Add a certificate to the length 3 chain that has some supported
+        # keyUsage values.
         cg.make_cs_cert("cs5_ch1_ta3", "ch1_ta3", parent_loc="chain_certs",
-            ext="issuer_ext_non_critical")
-        # Add a certificate to the length 3 chain that has an unknown value for
-        # a recognized critical extension.
-        cg.make_cs_cert("cs6_ch1_ta3", "ch1_ta3", parent_loc="chain_certs",
-            ext="issuer_ext_bad_val")
+            ext="issuer_ext_keyUsage")
         # Add a certificate to the length 3 chain that has keyUsage information
         # but cannot be used to sign code.
         cg.make_cs_cert("cs7_ch1_ta3", "ch1_ta3", parent_loc="chain_certs",

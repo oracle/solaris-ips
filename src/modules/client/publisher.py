@@ -114,13 +114,7 @@ EXTENSIONS_VALUES = {
     "crl_sign", "encipher_only", "decipher_only"]
 }
 
-# Only listed extension values (properties) here can have a value True set in a
-# certificate extension; any other properties with a value True set will be
-# treated as unsupported.
-SUPPORTED_EXTENSION_VALUES = {
-    x509.BasicConstraints: ("ca", "path_length"),
-    x509.KeyUsage: ("digital_signature", "key_cert_sign", "crl_sign")
-}
+SUPPORTED_EXTENSIONS = [x509.BasicConstraints, x509.KeyUsage]
 
 # These dictionaries map uses into their extensions.
 CODE_SIGNING_USE = {
@@ -2815,24 +2809,9 @@ pkg unset-publisher {0}
                         raise api_errors.InvalidCertificateExtensions(
                             cert, e)
 
-                def check_values(vs):
-                        for v in vs:
-                                if v in supported_vs:
-                                        continue
-                                # If there is only one extension value, it must
-                                # be the problematic one. Otherwise, we also
-                                # output the first unsupported value as the
-                                # problematic value following extension value.
-                                if len(vs) < 2:
-                                        raise api_errors.UnsupportedExtensionValue(
-                                            cert, ext, ", ".join(vs))
-                                raise api_errors.UnsupportedExtensionValue(
-                                    cert, ext, ", ".join(vs), v)
-
                 for ext in exts:
                         etype = type(ext.value)
-                        if etype in SUPPORTED_EXTENSION_VALUES:
-                                supported_vs = SUPPORTED_EXTENSION_VALUES[etype]
+                        if etype in SUPPORTED_EXTENSIONS:
                                 keys = EXTENSIONS_VALUES[etype]
                                 if etype == x509.BasicConstraints:
                                         pathlen = ext.value.path_length
@@ -2855,9 +2834,6 @@ pkg unset-publisher {0}
                                     for key in keys
                                     if getattr(ext.value, key)
                                 ]
-                                # Check whether the values for the extension are
-                                # recognized.
-                                check_values(vs)
                                 # For each use, check to see whether it's
                                 # permitted by the certificate's extension
                                 # values.

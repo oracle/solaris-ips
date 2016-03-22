@@ -430,21 +430,12 @@ issuerAltName = critical,issuer:copy
 basicConstraints = critical,CA:TRUE
 issuerAltName = critical,issuer:copy
 
-[ issuer_ext_non_critical ]
+[ issuer_ext_keyUsage ]
 
-# Used to test a recognized non-critical extension with an unrecognized value.
-
-basicConstraints = critical,CA:FALSE
-keyUsage = keyAgreement
-
-[ issuer_ext_bad_val ]
-
-# Used to test a recognized critical extension with an unrecognized value.
-# keyAgreement needs to be set because otherwise Cryptography complains that
-# encipherOnly requires keyAgreement.
+# Used to test an extension with some more supported keyusage set.
 
 basicConstraints = critical,CA:FALSE
-keyUsage = critical, encipherOnly, keyAgreement
+keyUsage = critical, digitalSignature, keyEncipherment, dataEncipherment, keyAgreement, encipherOnly
 
 [ invalid_ext ]
 

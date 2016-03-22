@@ -2403,29 +2403,6 @@ class UnsupportedCriticalExtension(SigningException):
                     s.oid._name, s.value) for s in self.cert.subject),
                     name=self.ext.oid._name, val=self.ext.value)
 
-class UnsupportedExtensionValue(SigningException):
-        """Exception used when a certificate in the chain of trust has an
-        extension with a value pkg doesn't understand."""
-
-        def __init__(self, cert, ext, val, bad_val=None):
-                SigningException.__init__(self)
-                self.cert = cert
-                self.ext = ext
-                self.val = val
-                self.bad_val = bad_val
-
-        def __str__(self):
-                s = _("The certificate whose subject is {cert} could not be "
-                    "verified because it has an extension with a value that "
-                    "pkg(5) does not understand."
-                    "\nExtension name: {name}\nExtension value: {val}").format(
-                    cert="/".join("{0}={1}".format(
-                    s.oid._name, s.value) for s in self.cert.subject),
-                    name=self.ext.oid._name, val=self.val)
-                if self.bad_val:
-                        s += _("\nProblematic value: {0}").format(self.bad_val)
-                return s
-
 class InvalidCertificateExtensions(SigningException):
         """Exception used when a certificate in the chain of trust has
         invalid extensions."""
