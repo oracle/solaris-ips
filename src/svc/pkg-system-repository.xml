@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2011, 2015 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -71,10 +71,10 @@
 			value='svc:/system/filesystem/autofs:default'/>
 		</dependency>
 
-		<!-- The following methods use the 'all' privilege when
-		     run, but drop privileges once they are no longer
-		     needed using ppriv -s. We need 'all' privileges to
-		     write to /system/volatile. -->
+		<!--
+		  Restrict privileges to basic,net_privaddr and the paths
+		  that are allowed to operate on.
+		-->
 		<exec_method
 			type='method'
 			name='start'
@@ -82,7 +82,8 @@
 			timeout_seconds='60'>
 			<method_context>
 				<method_credential user='pkg5srv'
-				group='pkg5srv' privileges='all' />
+				group='pkg5srv'
+				privileges='basic,net_privaddr,{zone}:/system/volatile/pkg*' />
 			</method_context>
 		</exec_method>
 
@@ -108,7 +109,8 @@
 			timeout_seconds='60' >
 			<method_context>
 				<method_credential user='pkg5srv'
-				group='pkg5srv' privileges='all' />
+				group='pkg5srv'
+				privileges='{zone}:/system/volatile/pkg*' />
 			</method_context>
 		</exec_method>
 
