@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -40,7 +40,7 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri
 import pkg.version
 
-from pkg.client.firmware import Firmware
+from pkg.client.firmware import Driver, Cpu
 
 known_types = (
     "conditional",
@@ -59,6 +59,7 @@ known_types = (
 # this is useful with the "parent" dependency type.
 #
 DEPEND_SELF = "feature/package/dependency/self"
+
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -106,9 +107,10 @@ class DependencyAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 try:
                         if self.attrs["type"] not in known_types:
-                                raise pkg.actions.InvalidActionError(str(self),
-                                    _("Unknown type ({0}) in depend action").format(
-                                    self.attrs["type"]))
+                                raise pkg.actions.InvalidActionError(
+                                    str(self),
+                                    _("Unknown type ({0}) in depend action").
+                                    format(self.attrs["type"]))
                 except KeyError:
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing type attribute"))
@@ -128,64 +130,67 @@ class DependencyAction(generic.Action):
 
                 errors = []
                 if fmri.pkg_name not in ppkgs_dict:
-                        errors.append(_("Package is not installed in "
-                            "parent image {0}").format(fmri.pkg_name))
+                        errors.append(
+                                _("Package is not installed in "
+                                  "parent image {0}").format(fmri.pkg_name))
                         return errors
 
                 pf = ppkgs_dict[fmri.pkg_name]
                 if fmri.publisher and fmri.publisher != pf.publisher:
                         # package is from a different publisher
                         errors.append(_("Package in parent is from a "
-                            "different publisher: {0}").format(pf))
+                                        "different publisher: {0}").
+                                      format(pf))
                         return errors
 
                 if pf.version == fmri.version or pf.version.is_successor(
-                    fmri.version, pkg.version.CONSTRAINT_AUTO):
+                                fmri.version, pkg.version.CONSTRAINT_AUTO):
                         # parent dependency is satisfied
                         return []
 
                 if pf.version.is_successor(fmri.version,
-                    pkg.version.CONSTRAINT_NONE):
+                                           pkg.version.CONSTRAINT_NONE):
                         errors.append(_("Parent image has a newer "
-                            "version of package {0}").format(pf))
+                                        "version of package {0}").format(pf))
                 else:
                         errors.append(_("Parent image has an older "
-                            "version of package {0}").format(pf))
+                                        "version of package {0}").format(pf))
 
                 return errors
 
         def __check_installed(self, image, installed_version, min_fmri,
-            max_fmri, required, ctype):
+                              max_fmri, required, ctype):
                 errors = []
                 if not installed_version:
                         return errors
                 vi = installed_version.version
                 if min_fmri and min_fmri.version and \
-                    min_fmri.version.is_successor(vi,
-                    pkg.version.CONSTRAINT_NONE):
+                    min_fmri.version.is_successor(
+                            vi, pkg.version.CONSTRAINT_NONE):
                         errors.append(
                             _("{dep_type} dependency {dep_val} "
-                            "is downrev ({inst_ver})").format(
-                            dep_type=ctype, dep_val=min_fmri,
-                            inst_ver=installed_version))
+                              "is downrev ({inst_ver})").format(
+                                    dep_type=ctype, dep_val=min_fmri,
+                                    inst_ver=installed_version))
                         return errors
                 if max_fmri and max_fmri.version and  \
                     vi > max_fmri.version and \
                     not vi.is_successor(max_fmri.version,
-                    pkg.version.CONSTRAINT_AUTO):
+                                        pkg.version.CONSTRAINT_AUTO):
                         errors.append(
                             _("{dep_type} dependency {dep_val} "
-                            "is uprev ({inst_ver})").format(
-                            dep_type=ctype, dep_val=max_fmri,
-                            inst_ver=installed_version))
+                              "is uprev ({inst_ver})").format(
+                                    dep_type=ctype, dep_val=max_fmri,
+                                    inst_ver=installed_version))
                         return errors
                 if required and pkgdefs.PKG_STATE_OBSOLETE in \
-                    image.get_pkg_state(installed_version):
+                   image.get_pkg_state(installed_version):
                         errors.append(
-                            _("{dep_type} dependency on an obsolete package "
-                            "({obs_pkg}); this package must be uninstalled "
-                            "manually").format(
-                            dep_type=ctype, obs_pkg=installed_version))
+                            _("{dep_type} dependency on an obsolete "
+                              "package ({obs_pkg}); this package must "
+                              "be uninstalled manually").format(
+                                      dep_type=ctype,
+                                      obs_pkg=installed_version))
                         return errors
                 return errors
 
@@ -210,8 +215,8 @@ class DependencyAction(generic.Action):
 
                 if ctype not in known_types:
                         errors.append(
-                            _("Unknown type ({0}) in depend action").format(
-                            ctype))
+                                _("Unknown type ({0}) in depend action").
+                                format(ctype))
                         return errors, warnings, info
 
                 # get a list of fmris and do fmri token substitution
@@ -225,8 +230,8 @@ class DependencyAction(generic.Action):
                 if ctype == "parent":
                         # handle "parent" dependencies here
                         assert len(pfmris) == 1
-                        errors.extend(self.__check_parent_installed(image,
-                            pfmris[0]))
+                        errors.extend(self.__check_parent_installed(
+                                image, pfmris[0]))
                         return errors, warnings, info
 
                 installed_versions = [
@@ -257,45 +262,55 @@ class DependencyAction(generic.Action):
                         cfmri = pkg.fmri.PkgFmri(self.attrs["predicate"])
                         installed_cversion = image.get_version_installed(cfmri)
                         if installed_cversion is not None and \
-                            installed_cversion.is_successor(cfmri):
+                           installed_cversion.is_successor(cfmri):
                                 min_fmri = pfmri
                                 required = True
                 elif ctype == "group":
                         if pfmri.pkg_name not in \
-                            (image.avoid_set_get() | image.obsolete_set_get()):
+                           (image.avoid_set_get() | image.obsolete_set_get()):
                                 required = True
                 elif ctype == "require-any":
                         for ifmri, rpfmri in zip(installed_versions, pfmris):
-                                e = self.__check_installed(image, ifmri, rpfmri,
-                                    None, True, ctype)
+                                e = self.__check_installed(image, ifmri,
+                                                           rpfmri, None, True,
+                                                           ctype)
                                 if ifmri and not e:
                                         # this one is present and happy
                                         return [], [], []
                                 else:
                                         errors.extend(e)
-                        if not errors: # none was installed
-                                errors.append(_("Required dependency on one of "
-                                    "{0} not met").format(
-                                    ", ".join((str(p) for p in pfmris))))
+                        if not errors:  # none was installed
+                                errors.append(
+                                        _("Required dependency on one of "
+                                          "{0} not met").
+                                        format(", ".join((str(p)
+                                                          for p in pfmris))))
                         return errors, warnings, info
                 elif ctype == "origin" and pfmri.pkg_name.startswith(
-                    "feature/firmware/"):
-                        ok, reason = Firmware().check_firmware(self, pfmri.pkg_name)
+                                "feature/firmware/"):
+                        ok, reason = Driver().check(self, pfmri.pkg_name)
+                        if ok:
+                                return [], [], []
+                        else:
+                                errors.append(reason)
+                elif ctype == "origin" and pfmri.pkg_name.startswith(
+                                "feature/cpu"):
+                        ok, reason = Cpu().check(self, pfmri.pkg_name)
                         if ok:
                                 return [], [], []
                         else:
                                 errors.append(reason)
 
-                        # can only check origin firmware dependencies
-
                 # do checking for other dependency types
 
-                errors.extend(self.__check_installed(image, installed_version,
-                    min_fmri, max_fmri, required, ctype))
+                errors.extend(self.__check_installed(image,
+                                                     installed_version,
+                                                     min_fmri, max_fmri,
+                                                     required, ctype))
 
                 if required and not installed_version:
                         errors.append(_("Required dependency {0} is not "
-                            "installed").format(pfmri))
+                                        "installed").format(pfmri))
 
                 # cannot verify origin since it applys to upgrade
                 # operation, not final state
@@ -313,11 +328,11 @@ class DependencyAction(generic.Action):
                         return []
 
                 #
-                # XXX Ideally, we'd turn the string into a PkgFmri, and separate
-                # the stem from the version, or use get_dir_path, but we can't
-                # create a PkgFmri without supplying a build release and without
-                # it creating a dummy timestamp.  So we have to split it apart
-                # manually.
+                # XXX Ideally, we'd turn the string into a PkgFmri, and
+                # separate the stem from the version, or use get_dir_path,
+                # but we can't create a PkgFmri without supplying a build
+                # release and without it creating a dummy timestamp.
+                # Instead we have to split it apart manually.
                 #
                 if isinstance(pfmris, six.string_types):
                         pfmris = [pfmris]
@@ -382,6 +397,7 @@ class DependencyAction(generic.Action):
                         return (kvord(a), a[0])
 
                 JOIN_TOK = " \\\n    " + base_indent
+
                 def grow(a, b, rem_values, force_nl=False):
                         if not force_nl:
                                 lastnl = a.rfind("\n")
@@ -394,8 +410,8 @@ class DependencyAction(generic.Action):
                                         max_len = 80
                                 else:
                                         # If V1 format, or there are more
-                                        # attributes to output, then account for
-                                        # line-continuation marker.
+                                        # attributes to output, then account
+                                        # for the line-continuation marker.
                                         max_len = 78
 
                                 # Note this length comparison doesn't include
@@ -411,16 +427,17 @@ class DependencyAction(generic.Action):
                         first_line = True
 
                         # Total number of remaining attribute values to output.
-                        rem_count = sum(len(act.attrlist(k)) for k in act.attrs)
+                        rem_count = sum(len(act.attrlist(k))
+                                        for k in act.attrs)
 
                         # Now build the action output string an attribute at a
                         # time.
                         for k, v in sorted(six.iteritems(act.attrs),
-                            key=key_func):
+                                           key=key_func):
                                 # Newline breaks are only forced when there is
                                 # more than one value for an attribute.
                                 if not (isinstance(v, list) or
-                                    isinstance(v, set)):
+                                        isinstance(v, set)):
                                         nv = [v]
                                         use_force_nl = False
                                 else:
@@ -430,11 +447,12 @@ class DependencyAction(generic.Action):
                                 for lmt in sorted(nv):
                                         force_nl = use_force_nl and \
                                             k.startswith("pkg.debug")
-                                        aout = grow(aout,
-                                            "=".join((k,
-                                                generic.quote_attr_value(lmt))),
-                                            rem_count,
-                                            force_nl=force_nl)
+                                        aout = grow(aout, "=".join(
+                                                (k,
+                                                 generic.quote_attr_value(
+                                                         lmt))),
+                                                    rem_count,
+                                                    force_nl=force_nl)
                                         # Must be done for each value.
                                         if first_line and JOIN_TOK in aout:
                                                 first_line = False
@@ -450,24 +468,28 @@ class DependencyAction(generic.Action):
                 This is primarily intended for use during publication or during
                 error handling to provide additional diagonostics.
 
-                'fmri' is an optional package FMRI (object or string) indicating
-                what package contained this action."""
+                'fmri' is an optional package FMRI (object or string)
+                indicating what package contained this action."""
 
                 required_attrs = ["type"]
                 dtype = self.attrs.get("type")
                 if dtype == "conditional":
                         required_attrs.append("predicate")
 
-                errors = generic.Action._validate(self, fmri=fmri,
-                    raise_errors=False, required_attrs=required_attrs,
-                    single_attrs=("predicate", "root-image", "ignore-check"))
+                errors = generic.Action._validate(
+                        self, fmri=fmri, raise_errors=False,
+                        required_attrs=required_attrs,
+                        single_attrs=("predicate", "root-image",
+                                      "ignore-check"))
 
                 if "predicate" in self.attrs and dtype != "conditional":
-                        errors.append(("predicate", _("a predicate may only be "
-                            "specified for conditional dependencies")))
+                        errors.append(("predicate",
+                                       _("a predicate may only be specified "
+                                         "for conditional dependencies")))
                 if "root-image" in self.attrs and dtype != "origin":
-                        errors.append(("root-image", _("the root-image "
-                            "attribute is only valid for origin dependencies")))
+                        errors.append(("root-image",
+                                       _("the root-image attribute is only "
+                                         "valid for origin dependencies")))
 
                 # Logic here intentionally treats 'predicate' and 'fmri' as
                 # having multiple values for simplicity.
@@ -476,16 +498,20 @@ class DependencyAction(generic.Action):
                                 try:
                                         pkg.fmri.PkgFmri(f)
                                 except (pkg.version.VersionError,
-                                    pkg.fmri.FmriError) as e:
+                                        pkg.fmri.FmriError) as e:
                                         if attr == "fmri" and f == "__TBD":
                                                 # pkgdepend uses this special
                                                 # value.
                                                 continue
-                                        errors.append((attr, _("invalid "
-                                            "{attr} value '{value}': "
-                                            "{error}").format(attr=attr,
-                                            value=f, error=str(e))))
+                                        errors.append((
+                                                attr,
+                                                _("invalid {attr} value "
+                                                  "'{value}': {error}").
+                                                format(attr=attr,
+                                                       value=f,
+                                                       error=str(e))))
 
                 if errors:
-                        raise pkg.actions.InvalidActionAttributesError(self,
-                            errors, fmri=fmri)
+                        raise pkg.actions.InvalidActionAttributesError(
+                                self,
+                                errors, fmri=fmri)

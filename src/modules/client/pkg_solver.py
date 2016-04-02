@@ -46,7 +46,7 @@ from collections import defaultdict
 from functools import reduce
 from itertools import chain
 from pkg.client.debugvalues import DebugValues
-from pkg.client.firmware import Firmware
+from pkg.client.firmware import Driver, Cpu
 from pkg.client.pkgdefs import PKG_OP_UNINSTALL, PKG_OP_UPDATE
 from pkg.misc import EmptyI, EmptyDict, N_
 # Unable to import; pylint: disable=F0401
@@ -87,7 +87,8 @@ _TRIM_UNSUPPORTED = 20             # invalid or unsupported actions
 _TRIM_VARIANT = 21                 # unsupported variant (e.g. i386 on sparc)
 _TRIM_EXPLICIT_INSTALL = 22        # pkg.depend.explicit-install is true.
 _TRIM_SYNCED_INC = 23              # incorporation must be in sync with parent
-_TRIM_MAX = 24                     # number of trim constants
+_TRIM_CPU = 24                     # cpu version requirement
+_TRIM_MAX = 25                     # number of trim constants
 
 
 class DependencyException(Exception):
@@ -219,8 +220,9 @@ class PkgSolver(object):
                             for f in self.__parent_pkgs
                         ])
 
-                # cache of firmware dependencies
-                self.__firmware = Firmware()
+                # cache of firmware and cpu dependencies
+                self.__firmware = Driver()
+                self.__cpu = Cpu()
 
                 self.__triggered_ops = {
                     PKG_OP_UNINSTALL : {
@@ -287,6 +289,7 @@ class PkgSolver(object):
                 self.__dependents = None
                 self.__fmridict = {}
                 self.__firmware = None
+                self.__cpu = None
                 self.__allowed_downgrades = None
                 self.__dg_incorp_cache = None
                 self.__linked_pkgs = set()
@@ -3093,15 +3096,29 @@ class PkgSolver(object):
                         req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"])
 
                         if da.attrs.get("root-image", "").lower() == "true":
+                                # Are firmware (driver) updates needed?
                                 if req_fmri.pkg_name.startswith(
                                     "feature/firmware/"):
-                                        # this is a firmware dependency
                                         fw_ok, reason = \
-                                            self.__firmware.check_firmware(da,
+                                            self.__firmware.check(da,
                                             req_fmri.pkg_name)
                                         if not fw_ok:
                                                 self.__trim((fmri,),
                                                     _TRIM_FIRMWARE, reason)
+                                                return False
+                                        continue
+
+                                # Check that the CPU is supported in the
+                                # new root-image
+                                if req_fmri.pkg_name.startswith(
+                                    "feature/cpu"):
+                                        cpu_ok, reason = \
+                                            self.__cpu.check(da,
+                                            req_fmri.pkg_name)
+                                        if not cpu_ok:
+                                                self.__trim((fmri,),
+                                                            _TRIM_CPU,
+                                                            reason)
                                                 return False
                                         continue
 
