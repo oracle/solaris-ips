@@ -71,7 +71,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 82
+CLIENT_API_VERSION = 83
 PKG_CLIENT_NAME = "pkg"
 pkg_timer = pkg.misc.Timer("pkg client")
 SYSREPO_HIDDEN_URI = "<system-repository>"
@@ -176,6 +176,15 @@ def __pkg_list_output_schema():
         return data_schema
 
 def __get_plan_props():
+        msg_payload_item = {
+            "type": "object",
+            "properties": {
+                "msg_time": {"type": ["null", "string"]},
+                "msg_level": {"type": ["null", "string"]},
+                "msg_type": {"type": ["null", "string"]},
+                "msg_text": {"type": ["null", "string"]}
+            }
+        }
         plan_props = {"type": "object",
             "properties": {
                 "image-name": {"type": ["null", "string"]},
@@ -282,6 +291,20 @@ def __get_plan_props():
                 },
                 "activate-be": {
                   "type": ["null", "boolean"],
+                },
+                # Because item id is non-deterministic, only properties that
+                # can be determined are listed here.
+                "item-messages": {"type": "object",
+                    "properties": {
+                        "unpackaged": {"type": "object",
+                            "properties": {
+                                "errors": {"type": "array",
+                                                "items": msg_payload_item},
+                                "warnings": {"type": "array",
+                                                     "items": msg_payload_item}
+                            }
+                        }
+                    }
                 }
               }
             }
@@ -368,6 +391,22 @@ def __pkg_info_output_schema():
                     "items": {"type": ["null", "string"]}}]}}}
             }
         }
+        return data_schema
+
+def __pkg_verify_output_schema():
+        data_schema = {"type": "object",
+            "properties": {
+                "plan": __get_plan_props(),
+                }
+            }
+        return data_schema
+
+def __pkg_fix_output_schema():
+        data_schema = {"type": "object",
+            "properties": {
+                "plan": __get_plan_props(),
+                }
+            }
         return data_schema
 
 def _format_update_error(e, errors_json=None):
@@ -824,135 +863,6 @@ def _accept_plan_licenses(api_inst):
 display_plan_options = ["basic", "fmris", "variants/facets", "services",
     "actions", "boot-archive"]
 
-def __get_parsable_plan(api_inst, parsable_version, child_images=None):
-        """Display the parsable version of the plan."""
-
-        assert parsable_version == 0, "parsable_version was {0!r}".format(
-            parsable_version)
-        plan = api_inst.describe()
-        # Set the default values.
-        added_fmris = []
-        removed_fmris = []
-        changed_fmris = []
-        affected_fmris = []
-        backup_be_created = False
-        new_be_created = False
-        backup_be_name = None
-        be_name = None
-        boot_archive_rebuilt = False
-        be_activated = True
-        space_available = None
-        space_required = None
-        facets_changed = []
-        variants_changed = []
-        services_affected = []
-        mediators_changed = []
-        editables_changed = []
-        licenses = []
-        if child_images is None:
-                child_images = []
-        release_notes = []
-
-        if plan:
-                for rem, add in plan.get_changes():
-                        assert rem is not None or add is not None
-                        if rem is not None and add is not None:
-                                # Lists of lists are used here becuase json will
-                                # convert lists of tuples into lists of lists
-                                # anyway.
-                                if rem.fmri == add.fmri:
-                                        affected_fmris.append(str(rem))
-                                else:
-                                        changed_fmris.append(
-                                            [str(rem), str(add)])
-                        elif rem is not None:
-                                removed_fmris.append(str(rem))
-                        else:
-                                added_fmris.append(str(add))
-                variants_changed, facets_changed = plan.varcets
-                backup_be_created = plan.backup_be
-                new_be_created = plan.new_be
-                backup_be_name = plan.backup_be_name
-                be_name = plan.be_name
-                boot_archive_rebuilt = plan.update_boot_archive
-                be_activated = plan.activate_be
-                space_available = plan.bytes_avail
-                space_required = plan.bytes_added
-                services_affected = plan.services
-                mediators_changed = plan.mediators
-
-                emoved, eremoved, einstalled, eupdated = \
-                    plan.get_editable_changes()
-
-                # Lists of lists are used here to ensure a consistent ordering
-                # and because tuples will be convereted to lists anyway; a
-                # dictionary would be more logical for the top level entries,
-                # but would make testing more difficult and this is a small,
-                # known set anyway.
-                emoved = [[e for e in entry] for entry in emoved]
-                eremoved = [src for (src, dest) in eremoved]
-                einstalled = [dest for (src, dest) in einstalled]
-                eupdated = [dest for (src, dest) in eupdated]
-                if emoved:
-                        editables_changed.append(["moved", emoved])
-                if eremoved:
-                        editables_changed.append(["removed", eremoved])
-                if einstalled:
-                        editables_changed.append(["installed", einstalled])
-                if eupdated:
-                        editables_changed.append(["updated", eupdated])
-
-                for n in plan.get_release_notes():
-                        release_notes.append(n)
-
-                for dfmri, src_li, dest_li, acc, disp in \
-                    plan.get_licenses():
-                        src_tup = None
-                        if src_li:
-                                li_txt = misc.decode(src_li.get_text())
-                                src_tup = (str(src_li.fmri), src_li.license,
-                                    li_txt, src_li.must_accept,
-                                    src_li.must_display)
-                        dest_tup = None
-                        if dest_li:
-                                li_txt = misc.decode(dest_li.get_text())
-                                dest_tup = (str(dest_li.fmri),
-                                    dest_li.license, li_txt,
-                                    dest_li.must_accept, dest_li.must_display)
-                        licenses.append(
-                            (str(dfmri), src_tup, dest_tup))
-                        api_inst.set_plan_license_status(dfmri, dest_li.license,
-                            displayed=True)
-
-        # The image name for the parent image is always None.  If this image is
-        # a child image, then the image name will be set when the parent image
-        # processes this dictionary.
-        ret = {
-            "activate-be": be_activated,
-            "add-packages": sorted(added_fmris),
-            "affect-packages": sorted(affected_fmris),
-            "affect-services": sorted(services_affected),
-            "backup-be-name": backup_be_name,
-            "be-name": be_name,
-            "boot-archive-rebuild": boot_archive_rebuilt,
-            "change-facets": sorted(facets_changed),
-            "change-editables": editables_changed,
-            "change-mediators": sorted(mediators_changed),
-            "change-packages": sorted(changed_fmris),
-            "change-variants": sorted(variants_changed),
-            "child-images": child_images,
-            "create-backup-be": backup_be_created,
-            "create-new-be": new_be_created,
-            "image-name": None,
-            "licenses": sorted(licenses, key=lambda x: x[0]),
-            "release-notes": release_notes,
-            "remove-packages": sorted(removed_fmris),
-            "space-available": space_available,
-            "space-required": space_required,
-            "version": parsable_version,
-        }
-        return ret
-
 def __api_alloc(pkg_image, orig_cwd, prog_delay=PROG_DELAY, prog_tracker=None,
     errors_json=None):
         """Allocate API instance."""
@@ -1256,13 +1166,20 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
     _quiet_plan=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
-    _verbose=0, display_plan_cb=None, logger=None, **kwargs):
+    _verbose=0, display_plan_cb=None, logger=None, _unpackaged=False,
+    _unpackaged_only=False, **kwargs):
 
         # All the api interface functions that we invoke have some
         # common arguments.  Set those up now.
-        if _op not in (PKG_OP_REVERT, PKG_OP_FIX, PKG_OP_DEHYDRATE,
-            PKG_OP_REHYDRATE):
+        if _op not in (PKG_OP_REVERT, PKG_OP_FIX, PKG_OP_VERIFY,
+            PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE):
                 kwargs["li_ignore"] = _li_ignore
+        if _op == PKG_OP_VERIFY:
+                kwargs["unpackaged"] = _unpackaged
+                kwargs["unpackaged_only"] = _unpackaged_only
+        elif _op == PKG_OP_FIX:
+                kwargs["unpackaged"] = _unpackaged
+
         kwargs["noexecute"] = _noexecute
         if _origins:
                 kwargs["repos"] = _origins
@@ -1300,6 +1217,8 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 api_plan_func = _api_inst.gen_plan_uninstall
         elif _op == PKG_OP_UPDATE:
                 api_plan_func = _api_inst.gen_plan_update
+        elif _op == PKG_OP_VERIFY:
+                api_plan_func = _api_inst.gen_plan_verify
         else:
                 raise RuntimeError("__api_plan() invalid op: {0}".format(_op))
 
@@ -1325,8 +1244,8 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                                 display_plan_cb(_api_inst, [], _noexecute,
                                     _omit_headers, _op, _parsable_version,
                                     _quiet, _quiet_plan, _show_licenses,
-                                    _stage, _verbose,
-                                    get_parsable_plan_cb=__get_parsable_plan)
+                                    _stage, _verbose, _unpackaged,
+                                    _unpackaged_only)
 
                         # if requested accept licenses for child images.  we
                         # have to do this before recursing into children.
@@ -1359,10 +1278,12 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                                     _noexecute, _omit_headers, _op,
                                     _parsable_version, _quiet, _quiet_plan,
                                     _show_licenses, _stage, _verbose,
-                                    get_parsable_plan_cb=__get_parsable_plan)
+                                    _unpackaged, _unpackaged_only)
                         else:
-                                parsable_plan = __get_parsable_plan(_api_inst,
-                                    _parsable_version, child_plans)
+                                plan = _api_inst.describe()
+                                parsable_plan =plan.get_parsable_plan(
+                                    _parsable_version, child_plans,
+                                    api_inst=_api_inst)
                                 # Convert to json.
                                 parsable_plan = json.loads(json.dumps(
                                     parsable_plan))
@@ -1374,10 +1295,11 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         if not planned_self and _accept:
                 _accept_plan_licenses(_api_inst)
 
+        data = {}
         if parsable_plan:
-                data = {"plan": parsable_plan}
-                return __prepare_json(EXIT_OK, data=data)
-        return __prepare_json(EXIT_OK)
+                data["plan"] = parsable_plan
+
+        return __prepare_json(EXIT_OK, data=data)
 
 def __api_plan_file(api_inst):
         """Return the path to the PlanDescription save file."""
@@ -1442,20 +1364,21 @@ def __api_plan_delete(api_inst):
         except OSError as e:
                 raise api_errors._convert_error(e)
 
-def _verify_exit_code(api_inst):
-        """Determine the exit code of pkg verify, which should be based on
-        whether we find errors."""
+def __verify_exit_status(api_inst):
+        """Determine verify exit status."""
 
         plan = api_inst.describe()
-        for item_id, msg_time, msg_type, msg_text in plan.gen_item_messages():
-                if msg_type == MSG_ERROR:
+        for item_id, parent_id, msg_time, msg_level, msg_type, msg_text in \
+            plan.gen_item_messages():
+                if msg_level == MSG_ERROR:
                         return EXIT_OOPS
         return EXIT_OK
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
-    _origins=None, _parsable_version=None, _quiet=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, display_plan_cb=None, logger=None,
-    **kwargs):
+    _origins=None, _parsable_version=None, _quiet=False, _quiet_plan=False,
+    _show_licenses=False, _stage=API_STAGE_DEFAULT, _verbose=0,
+    _unpackaged=False, _unpackaged_only=False, display_plan_cb=None,
+    logger=None, **kwargs):
         """Do something that involves the api.
 
         Arguments prefixed with '_' are primarily used within this
@@ -1471,8 +1394,9 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                     _noexecute=_noexecute, _origins=_origins,
                     _parsable_version=_parsable_version, _quiet=_quiet,
                     _show_licenses=_show_licenses, _stage=_stage,
-                    _verbose=_verbose, display_plan_cb=display_plan_cb,
-                    logger=logger, **kwargs)
+                    _verbose=_verbose, _quiet_plan=_quiet_plan,
+                    _unpackaged=_unpackaged, _unpackaged_only=_unpackaged_only,
+                    display_plan_cb=display_plan_cb, logger=logger, **kwargs)
 
                 if "_failures" in _api_inst._img.transport.repo_status:
                         ret.setdefault("data", {}).update(
@@ -1492,9 +1416,11 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                         # consumer from creating a noop plan and then
                         # preparing and executing it.)
                         __api_plan_save(_api_inst, logger=logger)
-                # for pkg verify
-                if _op == PKG_OP_FIX and _noexecute and _quiet_plan:
-                        return __prepare_json(_verify_exit_code(_api_inst), data=data)
+                # for pkg verify or fix.
+                if _op in [PKG_OP_FIX, PKG_OP_VERIFY] and _noexecute and \
+                    _quiet_plan:
+                        exit_code = __verify_exit_status(_api_inst)
+                        return __prepare_json(exit_code, data=data)
                 if _api_inst.planned_nothingtodo():
                         return __prepare_json(EXIT_NOP, data=data)
                 if _noexecute or _stage == API_STAGE_PLAN:
@@ -2525,6 +2451,36 @@ examining the catalogs:\n""")
 
         return __prepare_json(err, errors=errors_json, data=data)
 
+def _verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
+    unpackaged, unpackaged_only, display_plan_cb=None, logger=None):
+        """Determine if installed packages match manifests."""
+
+        errors_json = []
+        if pargs and unpackaged_only:
+                error = {"reason": _("can not report only unpackaged contents "
+                    "with package arguments.")}
+                errors_json.append(error)
+                return __prepare_json(EXIT_BADOPT, errors=errors_json)
+
+        return __api_op(op, api_inst, args=pargs, _noexecute=True,
+            _omit_headers=omit_headers, _quiet=quiet, _quiet_plan=True,
+            _verbose=verbose, _parsable_version=parsable_version,
+            _unpackaged=unpackaged, _unpackaged_only=unpackaged_only,
+            display_plan_cb=display_plan_cb, logger=logger)
+
+def _fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
+    be_name, new_be, noexecute, omit_headers, parsable_version, quiet,
+    show_licenses, verbose, unpackaged, display_plan_cb=None, logger=None):
+        """Fix packaging errors found in the image."""
+
+        return __api_op(op, api_inst, args=pargs, _accept=accept,
+            _noexecute=noexecute, _omit_headers=omit_headers, _quiet=quiet,
+            _show_licenses=show_licenses, _verbose=verbose, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, new_be=new_be, _parsable_version=parsable_version,
+            _unpackaged=unpackaged, display_plan_cb=display_plan_cb,
+            logger=logger)
+
 def __refresh(api_inst, pubs, full_refresh=False):
         """Private helper method for refreshing publisher data."""
 
@@ -2877,7 +2833,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
                 jsonschema.validate({arg_name: pargs, "opts_json": opts},
                     input_schema)
         except jsonschema.ValidationError as e:
-                return None, __prepare_json(EXIT_OOPS,
+                return None, __prepare_json(EXIT_BADOPT,
                     errors=[{"reason": str(e)}])
 
         orig_cwd = _get_orig_cwd()
@@ -3275,6 +3231,18 @@ class ClientInterface(object):
                 return self._cmd_invoke("publisher", pargs_json=pargs_json,
                     opts_json=opts_json)
 
+        def verify(self, pargs_json=None, opts_json=None):
+                """Invoke pkg verify subcommand."""
+
+                return self._cmd_invoke("verify", pargs_json=pargs_json,
+                    opts_json=opts_json)
+
+        def fix(self, pargs_json=None, opts_json=None):
+                """Invoke pkg fix subcommand."""
+
+                return self._cmd_invoke("fix", pargs_json=pargs_json,
+                    opts_json=opts_json)
+
         def get_pkg_input_schema(self, subcommand):
                 """Get input schema for a specific subcommand."""
 
@@ -3289,6 +3257,7 @@ class ClientInterface(object):
 
 cmds = {
     "exact-install"   : [_exact_install, __pkg_exact_install_output_schema],
+    "fix"             : [_fix, __pkg_fix_output_schema],
     "list"            : [_list_inventory, __pkg_list_output_schema],
     "install"         : [_install, __pkg_install_output_schema],
     "update"          : [_update, __pkg_update_output_schema],
@@ -3298,7 +3267,8 @@ cmds = {
     "unset-publisher" : [_publisher_unset,
                           __pkg_publisher_unset_output_schema],
     "publisher"       : [_publisher_list, __pkg_publisher_output_schema],
-    "info"            : [_info, __pkg_info_output_schema]
+    "info"            : [_info, __pkg_info_output_schema],
+    "verify"          : [_verify, __pkg_verify_output_schema]
 }
 
 # Addendum table for option extensions.

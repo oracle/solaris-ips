@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -54,6 +54,7 @@ import pkg.misc
 import pkg.version
 
 from pkg.api_common import (PackageInfo, LicenseInfo)
+from pkg.client.pkgdefs import MSG_GENERAL
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -129,7 +130,9 @@ class PlanDescription(object):
                 "installed": [[str]],
                 "updated": [[str]],
             },
-            "_item_msgs": collections.defaultdict(list),
+            # Messaging looks like:
+            # {"item_id": {"sub_item_id": [], "messages": []}}
+            "_item_msgs": collections.defaultdict(dict),
             "_pkg_actuators": { str: { str: [ str ] } },
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
@@ -189,7 +192,7 @@ class PlanDescription(object):
                 self.li_ppubs = None
                 self.li_props = {}
                 self._li_pkg_updates = True
-                self._item_msgs = collections.defaultdict(list)
+                self._item_msgs = collections.defaultdict(dict)
 
                 #
                 # Properties set when state >= EVALUATED_OK
@@ -707,14 +710,186 @@ class PlanDescription(object):
 
                 return self._solver_errors
 
-        def add_item_message(self, item_id, msg_time, msg_type, msg_text):
+        def get_parsable_plan(self, parsable_version, child_images=None,
+            api_inst=None):
+                """Display the parsable version of the plan."""
+
+                assert parsable_version == 0, \
+                    "parsable_version was {0!r}".format(parsable_version)
+                # Set the default values.
+                added_fmris = []
+                removed_fmris = []
+                changed_fmris = []
+                affected_fmris = []
+                backup_be_created = False
+                new_be_created = False
+                backup_be_name = None
+                be_name = None
+                boot_archive_rebuilt = False
+                be_activated = True
+                space_available = None
+                space_required = None
+                facets_changed = []
+                variants_changed = []
+                services_affected = []
+                mediators_changed = []
+                editables_changed = []
+                licenses = []
+
+                if child_images is None:
+                        child_images = []
+                release_notes = []
+                if self:
+                        for rem, add in self.get_changes():
+                                assert rem is not None or add is not None
+                                if rem is not None and add is not None:
+                                        # Lists of lists are used here becuase
+                                        # json will convert lists of tuples
+                                        # into lists of lists anyway.
+                                        if rem.fmri == add.fmri:
+                                                affected_fmris.append(str(rem))
+                                        else:
+                                                changed_fmris.append(
+                                                    [str(rem), str(add)])
+                                elif rem is not None:
+                                        removed_fmris.append(str(rem))
+                                else:
+                                        added_fmris.append(str(add))
+                        variants_changed, facets_changed = self.varcets
+                        backup_be_created = self.backup_be
+                        new_be_created = self.new_be
+                        backup_be_name = self.backup_be_name
+                        be_name = self.be_name
+                        boot_archive_rebuilt = self.update_boot_archive
+                        be_activated = self.activate_be
+                        space_available = self.bytes_avail
+                        space_required = self.bytes_added
+                        services_affected = self.services
+                        mediators_changed = self.mediators
+
+                        emoved, eremoved, einstalled, eupdated = \
+                            self.get_editable_changes()
+
+                        # Lists of lists are used here to ensure a consistent
+                        # ordering and because tuples will be converted to
+                        # lists anyway; a dictionary would be more logical for
+                        # the top level entries, but would make testing more
+                        # difficult and this is a small, known set anyway.
+                        emoved = [[e for e in entry] for entry in emoved]
+                        eremoved = [src for (src, dest) in eremoved]
+                        einstalled = [dest for (src, dest) in einstalled]
+                        eupdated = [dest for (src, dest) in eupdated]
+                        if emoved:
+                                editables_changed.append(["moved", emoved])
+                        if eremoved:
+                                editables_changed.append(["removed", eremoved])
+                        if einstalled:
+                                editables_changed.append(["installed",
+                                    einstalled])
+                        if eupdated:
+                                editables_changed.append(["updated", eupdated])
+
+                        for n in self.get_release_notes():
+                                release_notes.append(n)
+
+                        for dfmri, src_li, dest_li, dummy_acc, dummy_disp in \
+                            self.get_licenses():
+                                src_tup = None
+                                if src_li:
+                                        li_txt = pkg.misc.decode(
+                                            src_li.get_text())
+                                        src_tup = (str(src_li.fmri),
+                                            src_li.license, li_txt,
+                                            src_li.must_accept,
+                                            src_li.must_display)
+                                dest_tup = None
+                                if dest_li:
+                                        li_txt = pkg.misc.decode(
+                                            dest_li.get_text())
+                                        dest_tup = (str(dest_li.fmri),
+                                            dest_li.license, li_txt,
+                                            dest_li.must_accept,
+                                            dest_li.must_display)
+                                licenses.append(
+                                    (str(dfmri), src_tup, dest_tup))
+
+                                # If api_inst is set, mark licenses as
+                                # displayed.
+                                if api_inst:
+                                        api_inst.set_plan_license_status(dfmri,
+                                            dest_li.license, displayed=True)
+
+                # The image name for the parent image is always None.  If this
+                # image is a child image, then the image name will be set when
+                # the parent image processes this dictionary.
+                ret = {
+                    "activate-be": be_activated,
+                    "add-packages": sorted(added_fmris),
+                    "affect-packages": sorted(affected_fmris),
+                    "affect-services": sorted(services_affected),
+                    "backup-be-name": backup_be_name,
+                    "be-name": be_name,
+                    "boot-archive-rebuild": boot_archive_rebuilt,
+                    "change-facets": sorted(facets_changed),
+                    "change-editables": editables_changed,
+                    "change-mediators": sorted(mediators_changed),
+                    "change-packages": sorted(changed_fmris),
+                    "change-variants": sorted(variants_changed),
+                    "child-images": child_images,
+                    "create-backup-be": backup_be_created,
+                    "create-new-be": new_be_created,
+                    "image-name": None,
+                    "item-messages": self.get_parsable_item_messages(),
+                    "licenses": sorted(licenses, key=lambda x: x[0]),
+                    "release-notes": release_notes,
+                    "remove-packages": sorted(removed_fmris),
+                    "space-available": space_available,
+                    "space-required": space_required,
+                    "version": parsable_version
+                }
+                return ret
+
+        def get_parsable_item_messages(self):
+                """Return parsable item messages."""
+                return self._item_msgs
+
+        def add_item_message(self, item_id, msg_time, msg_level, msg_text,
+            msg_type=MSG_GENERAL, parent=None):
                 """Add a new message with its time, type and text for an
                 item."""
-                self._item_msgs[item_id].append([msg_time, msg_type, msg_text])
+                if parent:
+                        item_key = parent
+                        sub_item = item_id
+                else:
+                        item_key = item_id
+                        sub_item = "messages"
+                # First level messaging looks like:
+                # {"item_id": {"messages": [msg_payload ...]}}
+                # Second level messaging looks like:
+                # {"item_id": {"sub_item_id": [msg_payload ...]}}.
+                msg_payload = {"msg_time": msg_time,
+                               "msg_level": msg_level,
+                               "msg_type": msg_type,
+                               "msg_text": msg_text}
+                self._item_msgs[item_key].setdefault(sub_item,
+                    []).append(msg_payload)
 
-        def extend_item_messages(self, item_id, messages):
+        def extend_item_messages(self, item_id, messages, parent=None):
                 """Add new messages to an item."""
-                self._item_msgs[item_id].extend(messages)
+                if parent:
+                        item_key = parent
+                        sub_item = item_id
+                else:
+                        item_key = item_id
+                        sub_item = "messages"
+                self._item_msgs[item_key].setdefault(sub_item, []).extend(
+                    messages)
+
+        @staticmethod
+        def __msg_dict2list(msg):
+                """Convert a message dictionary to a list."""
+                return [msg["msg_time"], msg["msg_level"], msg["msg_type"],
+                    msg["msg_text"]]
 
         def gen_item_messages(self, ordered=False):
                 """Return all item messages.
@@ -724,21 +899,50 @@ class PlanDescription(object):
                 messages will be in an arbitrary order."""
 
                 if ordered:
-                        # Sort all the item messages by msg_time
-                        ordered_list = sorted(six.iteritems(self._item_msgs),
-                            key=lambda k_v: k_v[1][0][0])
-                        for item in ordered_list:
-                                item_id = item[0]
-                                for msg_time, msg_type, msg_text in \
-                                    self._item_msgs[item_id]:
-                                        yield item_id, msg_time, msg_type, \
-                                            msg_text
+                        ordered_list = []
+                        for item_id in self._item_msgs:
+                                # To make the first level messages come
+                                # relatively earlier.
+                                if "messages" in self._item_msgs[item_id]:
+                                        for msg in self._item_msgs[item_id
+                                            ]["messages"]:
+                                                ordered_list.append([item_id,
+                                                    None] +
+                                                    PlanDescription. \
+                                                    __msg_dict2list(msg))
+                                for si, si_list in six.iteritems(
+                                    self._item_msgs[item_id]):
+                                        if si == "messages":
+                                                continue
+                                        for msg in si_list:
+                                                ordered_list.append(
+                                                    [si, item_id] +
+                                                    PlanDescription. \
+                                                    __msg_dict2list(msg))
+                        ordered_list = sorted(ordered_list,
+                            key=operator.itemgetter(2))
+                        for item_id, parent_id, msg_time, msg_level, \
+                            msg_type, msg_text in ordered_list:
+                                yield (item_id, parent_id, msg_time,
+                                    msg_level, msg_type, msg_text)
                 else:
                         for item_id in self._item_msgs:
-                                for msg_time, msg_type, msg_text in \
-                                    self._item_msgs[item_id]:
-                                        yield item_id, msg_time, msg_type, \
-                                            msg_text
+                                for si, si_list in six.iteritems(
+                                    self._item_msgs[item_id]):
+                                        if si == "messages":
+                                                for mp in si_list:
+                                                        yield (item_id, None,
+                                                            mp["msg_time"],
+                                                            mp["msg_level"],
+                                                            mp["msg_type"],
+                                                            mp["msg_text"])
+                                                continue
+                                        for mp in si_list:
+                                                yield (si, item_id,
+                                                    mp["msg_time"],
+                                                    mp["msg_level"],
+                                                    mp["msg_type"],
+                                                    mp["msg_text"])
 
         def set_actuator_timeout(self, timeout):
                 """Set timeout for synchronous actuators."""

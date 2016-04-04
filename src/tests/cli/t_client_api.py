@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -78,14 +78,46 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
             open hier/foo@1.0,5.11-0
             close """
 
+        verifypkg10 = """
+            open verifypkg@1.0,5.11-0:20160302T054916Z
+            add dir mode=0755 owner=root group=sys path=/etc
+            add dir mode=0755 owner=root group=sys path=/etc/security
+            add dir mode=0755 owner=root group=sys path=/usr
+            add dir mode=0755 owner=root group=bin path=/usr/bin
+            add file bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
+            add file bobcat path=/etc/preserved mode=644 owner=root group=sys preserve=true timestamp="20080731T024051Z"
+            add file dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file dricon_cls path=/etc/driver_classes mode=644 owner=root group=sys preserve=true
+            add file dricon_mp path=/etc/minor_perm mode=644 owner=root group=sys preserve=true
+            add file dricon_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add file dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
+            add file permission mode=0600 owner=root group=bin path=/etc/permission preserve=true
+            add driver name=zigit alias=pci8086,1234
+            close
+            """
+
+        misc_files = {
+           "bobcat": "",
+           "dricon_da": """zigit "pci8086,1234"\n""",
+           "dricon_maj": """zigit 103\n""",
+           "dricon_cls": """\n""",
+           "dricon_mp": """\n""",
+           "dricon_dp": """\n""",
+           "dricon_ep": """\n""",
+           "permission": ""
+        }
+
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test2"])
+                self.make_misc_files(self.misc_files)
 
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo1, self.foo10,
                     self.foo11, self.foo12, self.foo121, self.food12,
-                    self.hierfoo10, self.newpkg10, self.newpkg210))
+                    self.hierfoo10, self.newpkg10, self.newpkg210,
+                    self.verifypkg10))
 
                 # Ensure that the second repo's packages have exactly the same
                 # timestamps as those in the first ... by copying the repo over.
@@ -179,7 +211,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 try:
                         jsonschema.validate(input, schema)
                         return True
-                except:
+                except Exception as e:
                         return False
 
         def test_03_list_json_args_opts(self):
@@ -284,7 +316,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
 
                 # Run through pkg install.
                 pkgs = ["newpkg@1.0"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
                 global_settings.client_output_quiet = True
                 retjson = self.__call_cmd("install", pkgs, opts)
                 global_settings.client_output_quiet = False
@@ -395,7 +427,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 # Run through pkg update.
                 self.pkg("install pkg://test1/foo@1.0")
                 pkgs = ["foo@1.1"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
 
                 retjson = self.__call_cmd("update", pkgs, opts)
                 self.assert_("errors" not in retjson)
@@ -474,7 +506,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 # Run through pkg uninstall.
                 self.pkg("install pkg://test1/foo@1.0")
                 pkgs = ["foo"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
 
                 retjson = self.__call_cmd("uninstall", pkgs, opts)
                 self.assert_("errors" not in retjson)
@@ -520,13 +552,13 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 self.assert_("errors" not in retjson)
 
                 pkgs = ["newpkg@1.0"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
                 retjson = self.__call_cmd("install", pkgs, opts)
                 self.assert_("errors" not in retjson)
                 self.assert_(retjson["status"] == 0)
 
                 pkgs = ["newpkg"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
                 retjson = self.__call_cmd("uninstall", pkgs, opts)
                 self.assert_("errors" not in retjson)
                 self.assert_(retjson["status"] == 0)
@@ -555,7 +587,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 self.assert_("errors" not in retjson)
 
                 pkgs = ["pkg://test1/foo@1"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
                 retjson = self.__call_cmd("install", pkgs, opts)
                 self.assert_("errors" not in retjson)
                 self.assert_(retjson["status"] == 0)
@@ -656,7 +688,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 opts = {"output_format": ["invalid"]}
                 retjson = self.__call_cmd("publisher", pubs, opts)
                 self.assert_("errors" in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 pubs = []
                 opts = {"output_format": None}
@@ -674,7 +706,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 opts = {"inc_disabled": "False"}
                 retjson = self.__call_cmd("publisher", pubs, opts)
                 self.assert_("errors" in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 pubs = ["test1"]
                 opts = {}
@@ -713,25 +745,25 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 opts = {"origins": [None]}
                 retjson = self.__call_cmd("info", pkgs, opts)
                 self.assert_("errors" in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 pkgs = []
                 opts = {"origins": None}
                 retjson = self.__call_cmd("info", pkgs, opts)
                 self.assert_("errors" in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 opts = {"origins": "single"}
                 retjson = self.__call_cmd("info", pkgs, opts)
                 self.assert_("errors" in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 pkgs = ["foo"]
                 opts = {"origins": [self.rurl1], "quiet": "True"}
                 retjson = self.__call_cmd("info", pkgs, opts)
                 self.assert_("errors" in retjson)
                 self.assert_("data" not in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
                 pkgs = ["foo"]
                 opts = {"origins": [self.rurl1], "quiet": True}
@@ -776,7 +808,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 retjson = self.__call_cmd("info", pkgs, opts)
                 self.assert_("errors" in retjson)
                 self.assert_("data" not in retjson)
-                self.assert_(retjson["status"] == 1)
+                self.assert_(retjson["status"] == 2)
 
         def test_10_exact_install_json_args_opts(self):
                 """Test json args or opts for exact-install command."""
@@ -815,7 +847,7 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
 
                 # Run through pkg install.
                 pkgs = ["newpkg@1.0"]
-                opts = {"verbose": 3, "parsable_version": 0}
+                opts = {"parsable_version": 0}
                 global_settings.client_output_quiet = True
                 retjson = self.__call_cmd("exact-install", pkgs, opts)
                 global_settings.client_output_quiet = False
@@ -880,7 +912,180 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
                 self.assert_(not self.__schema_validation(einstall_input,
                     einstall_schema))
 
-        def test_11_ClientInterface(self):
+        def test_11_verify_json_args_opts(self):
+                """Test json args or opts for verify command."""
+
+                self.image_create(self.rurl1, prefix="test1")
+                os.environ["PKG_IMAGE"] = self.img_path()
+                pkgs = ["verifypkg@1.0"]
+                opts = {"parsable_version": 0}
+                global_settings.client_output_quiet = True
+                retjson = self.__call_cmd("install", pkgs, opts)
+                global_settings.client_output_quiet = False
+
+                # Test invalid options.
+                pkgs = ["verifypkg"]
+                opts = {"omit_headers": True, "parsable_version": 0}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+                self.assertTrue("combined" in retjson["errors"][0]["reason"])
+
+                pkgs = ["verifypkg"]
+                opts = {"fake_opt": True}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+                self.assertTrue("invalid" in retjson["errors"][0]["reason"])
+
+                pkgs = ["verifypkg"]
+                opts = {"parsable_version": "wrongValueType"}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+
+                pkgs = ["verifypkg"]
+                opts = {"parsable_version": 1}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+
+                pkgs = ["verifypkg"]
+                opts = {"unpackaged_only": True}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+
+                pkgs = ["verifypkg"]
+                opts = {"unpackaged": True}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 0)
+
+                # Run through verify.
+                pkgs = ["verifypkg"]
+                opts = {"parsable_version": 0}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 0)
+                self.assertTrue(retjson["data"]["plan"]["item-messages"])
+                reslist = retjson["data"]["plan"]["item-messages"]
+                self.assertTrue(len(reslist) == 1 and
+                    reslist['pkg://test1/verifypkg@1.0,5.11-0:20160302T054916Z']
+                    ["messages"][0]["msg_level"] == "info")
+                verify_outschema = cli_api._get_pkg_output_schema("verify")
+                self.assert_(self.__schema_validation(retjson,
+                    verify_outschema))
+
+                pkgs = []
+                opts = {"unpackaged": True, "parsable_version": 0}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 0)
+                self.assertTrue(retjson["data"]["plan"]
+                    ["item-messages"])
+                reslist = retjson["data"]["plan"]["item-messages"]["unpackaged"]
+                self.assertTrue(len(reslist) == 2 and reslist.values()[0][0]["msg_level"]
+                    == "info")
+                # Also check if the packaged content is still there.
+                reslist = retjson["data"]["plan"]["item-messages"]
+                self.assertTrue(len(reslist) == 2 and
+                    reslist['pkg://test1/verifypkg@1.0,5.11-0:20160302T054916Z']
+                    ["messages"][0]["msg_level"] == "info")
+                self.assert_(self.__schema_validation(retjson,
+                    verify_outschema))
+
+                pkgs = []
+                opts = {"unpackaged_only": True, "parsable_version": 0}
+                retjson = self.__call_cmd("verify", pkgs, opts)
+                self.assertTrue(retjson["status"] == 0)
+                self.assertTrue(retjson["data"]["plan"]
+                    ["item-messages"])
+                reslist = retjson["data"]["plan"]["item-messages"]["unpackaged"]
+                self.assertTrue(len(reslist) == 2 and reslist.values()[0][0]["msg_level"]
+                    == "info")
+                # Also check if the packaged content is gone.
+                reslist = retjson["data"]["plan"]["item-messages"]
+                self.assertTrue(len(reslist) == 1 and
+                    'pkg://test1/verifypkg@1.0,5.11-0:20160302T054916Z'
+                    not in reslist)
+                self.assert_(self.__schema_validation(retjson,
+                    verify_outschema))
+
+                # Test input directly against schema.
+                pargs = "pargs_json"
+                verify_schema = cli_api._get_pkg_input_schema("verify")
+                verify_input = {pargs : [], "opts_json": {}}
+                self.assert_(self.__schema_validation(verify_input,
+                    verify_schema))
+
+                verify_input = {pargs : [], "opts_json": {"unpackaged":
+                    "wrongValueType"}}
+                self.assert_(not self.__schema_validation(verify_input,
+                    verify_schema))
+
+        def test_12_fix_json_args_opts(self):
+                """Test json args or opts for fix command."""
+
+                self.image_create(self.rurl1, prefix="test1")
+                os.environ["PKG_IMAGE"] = self.img_path()
+                pkgs = ["verifypkg@1.0"]
+                opts = {"parsable_version": 0}
+                global_settings.client_output_quiet = True
+                retjson = self.__call_cmd("install", pkgs, opts)
+                global_settings.client_output_quiet = False
+
+                # Test invalid options.
+                pkgs = ["verifypkg"]
+                opts = {"omit_headers": True, "parsable_version": 0}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+                self.assertTrue("combined" in retjson["errors"][0]["reason"])
+
+                pkgs = ["verifypkg"]
+                opts = {"fake_opt": True}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+                self.assertTrue("invalid" in retjson["errors"][0]["reason"])
+
+                pkgs = ["verifypkg"]
+                opts = {"parsable_version": "wrongValueType"}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+
+                opts = {"unpackaged": True}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 4)
+
+                pkgs = []
+                opts = {"unpackaged": True}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 4)
+
+                pkgs = []
+                opts = {"unpackaged_only": True}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 2)
+
+                # Run through fix.
+                pkgs = ["verifypkg"]
+                opts = {"parsable_version": 0}
+                retjson = self.__call_cmd("fix", pkgs, opts)
+                self.assertTrue(retjson["status"] == 4)
+                self.assertTrue(retjson["data"]["plan"]["item-messages"])
+                reslist = retjson["data"]["plan"]["item-messages"]
+                self.assertTrue(len(reslist) == 1 and
+                    reslist['pkg://test1/verifypkg@1.0,5.11-0:20160302T054916Z']
+                    ["messages"][0]["msg_level"] == "info")
+                fix_outschema = cli_api._get_pkg_output_schema("fix")
+                self.assert_(self.__schema_validation(retjson,
+                    fix_outschema))
+                # Test input directly against schema.
+                pargs = "pargs_json"
+                fix_schema = cli_api._get_pkg_input_schema("fix")
+                fix_input = {pargs : [], "opts_json": {}}
+                self.assert_(self.__schema_validation(fix_input,
+                    fix_schema))
+
+                pargs = "pargs_json"
+                fix_schema = cli_api._get_pkg_input_schema("fix")
+                fix_input = {pargs : [], "opts_json": {"verbose": "WrongType"}}
+                self.assert_(not self.__schema_validation(fix_input,
+                    fix_schema))
+
+        def test_13_ClientInterface(self):
                 """Test the clientInterface class."""
                 pt = progress.QuietProgressTracker()
                 cli_inst = cli_api.ClientInterface(pkg_image=self.img_path(),

@@ -114,6 +114,7 @@ API_OP_SET_MEDIATOR   = "set-mediator"
 API_OP_SYNC           = "sync-linked"
 API_OP_UNINSTALL      = "uninstall"
 API_OP_UPDATE         = "update"
+API_OP_VERIFY         = "verify"
 api_op_values         = frozenset([
     API_OP_ATTACH,
     API_OP_CHANGE_FACET,
@@ -129,7 +130,8 @@ api_op_values         = frozenset([
     API_OP_SET_MEDIATOR,
     API_OP_SYNC,
     API_OP_UNINSTALL,
-    API_OP_UPDATE
+    API_OP_UPDATE,
+    API_OP_VERIFY
 ])
 
 API_STAGE_DEFAULT  = "default"
@@ -189,7 +191,12 @@ PKG_STATE_FROZEN = 11
 # to disk.
 PKG_STATE_ALT_SOURCE = 99
 
+# Message levels
+MSG_ERROR = "error"
+MSG_WARNING = "warning"
+MSG_INFO = "info"
+
 # Message types
-MSG_ERROR = 0
-MSG_WARNING = 1
-MSG_INFO = 2
+MSG_GENERAL = "general"
+MSG_UNPACKAGED = "unpackaged"
+

@@ -33,6 +33,7 @@ import itertools
 import mmap
 import operator
 import os
+import shutil
 import six
 import stat
 import sys
@@ -50,6 +51,7 @@ import pkg.actions
 import pkg.actions.driver as driver
 import pkg.catalog
 import pkg.client.api_errors as api_errors
+import pkg.client.bootenv as bootenv
 import pkg.client.indexer as indexer
 import pkg.client.linkedimage.zone as zone
 import pkg.client.pkg_solver as pkg_solver
@@ -68,7 +70,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.plandesc import _ActionPlan
 from pkg.mediator import mediator_impl_matches
 from pkg.client.pkgdefs import (PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE, MSG_ERROR,
-    MSG_WARNING, MSG_INFO)
+    MSG_WARNING, MSG_INFO, MSG_GENERAL, MSG_UNPACKAGED, PKG_OP_VERIFY)
 
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
@@ -1616,11 +1618,156 @@ class ImagePlan(object):
                 # We found errors and this is a file that can be overlaid.
                 overlaying = self.__get_overlaying_fmri(img, act, pfmri)
                 if overlaying:
-                        errors.append(_("verify or fix overlaying package: "
+                        errors.add(_("verify or fix overlaying package: "
                             "{0}").format(overlaying))
                 return True
 
-        def plan_fix(self, args):
+        def __is_active_liveroot_be(self, img):
+                """Check if an image is in an active live be."""
+
+                if not img.is_liveroot():
+                        return False, None
+
+                try:
+                        be_name, be_uuid = bootenv.BootEnv.get_be_name(
+                            img.root)
+                        return True, be_name
+                except api_errors.BEException:
+                        # If boot environment logic isn't supported, return
+                        # False.  This is necessary for user images and for
+                        # the test suite.
+                        return False, None
+
+        def __alt_image_root_with_new_be(self, dup_be_name, orig_img_root):
+                img_root = orig_img_root
+                mntpoint = None
+                isalbe, src_be_name = self.__is_active_liveroot_be(self.image)
+                if isalbe:
+                        try:
+                                bootenv.BootEnv.cleanup_be(dup_be_name)
+                                temp_root = misc.config_temp_root()
+                                mntpoint = tempfile.mkdtemp(dir=temp_root,
+                                    prefix="pkg-verify" + "-")
+                                bootenv.BootEnv.copy_be(src_be_name,
+                                    dup_be_name)
+                                bootenv.BootEnv.mount_be(dup_be_name, mntpoint)
+                                img_root = mntpoint
+                        except Exception as e:
+                                did_create = False
+                                be_list = bootenv.BootEnv.get_be_list()
+                                for elem in be_list:
+                                        if "orig_be_name" in elem and \
+                                            dup_be_name == \
+                                            elem["orig_be_name"]:
+                                                did_create = True
+                                                break
+                                warn = _("Cannot create or mount a copy of " \
+                                    "current be. Reporting unpackaged " \
+                                    "content aganist current live image.")
+                                timestamp = misc.time_to_timestamp(time.time())
+                                if did_create:
+                                        try:
+                                                if img_root != mntpoint:
+                                                        bootenv.BootEnv.mount_be(
+                                                            dup_be_name,
+                                                            mntpoint)
+                                                        img_root = mntpoint
+                                        except Exception as e:
+                                                # If we could not mount be,
+                                                # fallback.
+                                                self.pd.add_item_message(
+                                                    "warnings", timestamp,
+                                                    MSG_WARNING, warn,
+                                                    msg_type=MSG_UNPACKAGED,
+                                                    parent="unpackaged")
+                                else:
+                                        # If we could not create be,
+                                        # fallback.
+                                        self.pd.add_item_message(
+                                            "warnings", timestamp, MSG_WARNING,
+                                            warn, msg_type=MSG_UNPACKAGED,
+                                            parent="unpackaged")
+                return img_root, mntpoint
+
+        def __process_unpackaged(self, proposed_fmris, pt=None):
+                allentries = {}
+                img_root = self.image.get_root()
+
+                for fmri in proposed_fmris:
+                        m = self.image.get_manifest(fmri)
+                        for act in m.gen_actions():
+                                if act.name in ["link", "hardlink", "dir",
+                                    "file"]:
+                                        install_path = os.path.normpath(
+                                            os.path.join(img_root,
+                                            act.attrs["path"]))
+                                        allentries[install_path] = act.name
+                        # Process possible implicit directories.
+                        for d in m.get_directories(()):
+                                install_path = os.path.normpath(
+                                    os.path.join(img_root, d))
+                                if install_path not in allentries:
+                                        allentries[install_path] = "dir"
+                        if pt:
+                                pt.plan_add_progress(pt.PLAN_PKG_VERIFY)
+
+                def handle_walk_error(oserror_inst):
+                        timestamp = misc.time_to_timestamp(time.time())
+                        self.pd.add_item_message("errors", timestamp,
+                            MSG_ERROR, str(oserror_inst),
+                            msg_type=MSG_UNPACKAGED, parent="unpackaged")
+
+                orig_img_root = img_root
+                dup_be_name = "duplicate_livebe_for_verify"
+                img_root, mntpoint = self.__alt_image_root_with_new_be(
+                    dup_be_name, orig_img_root)
+
+                # Walk through file system structure.
+                for root, dirs, files in os.walk(img_root,
+                    onerror=handle_walk_error):
+                        newdirs = []
+                        # Since we possibly changed the img_root into the
+                        # mounted be root, we need to change it back for look
+                        # up.
+                        orig_root = os.path.normpath(os.path.join(
+                            orig_img_root, os.path.relpath(root, img_root)))
+                        for d in sorted(dirs):
+                                timestamp = misc.time_to_timestamp(time.time())
+                                path = os.path.normpath(os.path.join(
+                                    orig_root, d))
+                                # Since the mntpoint is created solely for
+                                # verify purpose, ignore it.
+                                if mntpoint and path == mntpoint:
+                                        continue
+                                if path not in allentries or allentries[path] \
+                                    not in ["dir", "link"]:
+                                        self.pd.add_item_message(
+                                            _("dir: {0}").format(path),
+                                            timestamp,
+                                            MSG_INFO,
+                                            _("Unpackaged directory"),
+                                            msg_type=MSG_UNPACKAGED,
+                                            parent="unpackaged")
+                                else:
+                                        newdirs.append(d)
+                        dirs[:] = newdirs
+
+                        for f in sorted(files):
+                                timestamp = misc.time_to_timestamp(time.time())
+                                path = os.path.normpath(os.path.join(
+                                    orig_root, f))
+                                if path not in allentries or allentries[path] \
+                                    not in ["file", "link", "hardlink"]:
+                                        self.pd.add_item_message(
+                                            _("file: {0}").format(path),
+                                            timestamp, MSG_INFO,
+                                            _("Unpackaged file"),
+                                            msg_type=MSG_UNPACKAGED,
+                                            parent="unpackaged")
+                # Clean up the BE used for verify.
+                bootenv.BootEnv.cleanup_be(dup_be_name)
+
+        def plan_fix(self, args, unpackaged=False, unpackaged_only=False):
                 """Determine the changes needed to fix the image."""
 
                 self.__plan_op()
@@ -1647,16 +1794,28 @@ class ImagePlan(object):
 
                 if proposed_fixes:
                         pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(proposed_fixes))
+                        # Verify unpackaged contents.
+                        if unpackaged or unpackaged_only:
+                                self.__process_unpackaged(proposed_fixes,
+                                    pt=pt)
+                                pt.plan_done(pt.PLAN_PKG_VERIFY)
+                                if unpackaged_only:
+                                        self.__finish_plan(plandesc.EVALUATED_PKGS)
+                                        return
+                                # Otherwise we reset the goals for packaged
+                                # contents.
+                                pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(
+                                    proposed_fixes))
+
                 repairs = []
 
                 for pfmri in proposed_fixes:
                         entries = []
                         needs_fix = []
-                        result = _("OK")
+                        result = "OK"
                         failed = False
-                        msg_type = MSG_INFO
+                        msg_level = MSG_INFO
                         ffmri = str(pfmri)
-                        timestamp = time.time()
 
                         # Since every entry returned by verify might not be
                         # something needing repair, the relevant information
@@ -1664,15 +1823,15 @@ class ImagePlan(object):
                         # an overall success/failure result and then the
                         # related messages output for it.
                         process_overlay = False
-                        errs = []
+                        errs = set()
                         for act, errors, warnings, pinfo in self.image.verify(
                             pfmri, pt, verbose=True, forever=True):
                                 # determine the package's status and message
                                 # type
                                 if errors:
                                         failed = True
-                                        result = _("ERROR")
-                                        msg_type = MSG_ERROR
+                                        result = "ERROR"
+                                        msg_level = MSG_ERROR
                                         # Some errors are based on policy (e.g.
                                         # signature policy) and not a specific
                                         # action, so act may be None.
@@ -1683,46 +1842,42 @@ class ImagePlan(object):
                                                     args, self.image, act, errs,
                                                     pfmri)
                                 elif not failed and warnings:
-                                        result = _("WARNING")
-                                        msg_type = MSG_WARNING
+                                        result = "WARNING"
+                                        msg_level = MSG_WARNING
 
                                 entries.append((act, errors, warnings, pinfo))
-
+                        timestamp = misc.time_to_timestamp(time.time())
                         self.pd.add_item_message(ffmri, timestamp,
-                            msg_type, _("{pkg_name:70} {result:>7}").format(
+                            msg_level, _("{pkg_name:70} {result:>7}").format(
                             pkg_name=pfmri.get_pkg_stem(),
                             result=result))
-                        if errs:
-                                self.pd.add_item_message(ffmri, timestamp,
-                                    msg_type, "\tERROR: {0}".format(errs[0]))
+                        timestamp = misc.time_to_timestamp(time.time())
+                        for e in errs:
+                                self.pd.add_item_message("overlay_errors",
+                                    timestamp, msg_level, e, parent=ffmri)
 
                         for act, errors, warnings, info in entries:
                                 if act:
-                                        # determine the action's message type
-                                        if errors:
-                                                msg_type = MSG_ERROR
-                                        elif warnings:
-                                                msg_type = MSG_WARNING
-                                        else:
-                                                msg_type = MSG_INFO
-
-                                        self.pd.add_item_message(ffmri,
-                                            timestamp, msg_type,
-                                            "\t{0}".format(
-                                            act.distinguished_name()))
-
+                                        item_id = act.distinguished_name()
+                                        parent = ffmri
+                                else:
+                                        item_id = ffmri
+                                        parent = None
                                 for x in errors:
-                                        self.pd.add_item_message(ffmri,
+                                        self.pd.add_item_message(item_id,
                                             timestamp, MSG_ERROR,
-                                            "\t\tERROR: {0}".format(x))
+                                            _("ERROR: {0}").format(x),
+                                            parent=parent)
                                 for x in warnings:
-                                        self.pd.add_item_message(ffmri,
+                                        self.pd.add_item_message(item_id,
                                             timestamp, MSG_WARNING,
-                                            "\t\tWARNING: {0}".format(x))
+                                            _("WARNING: {0}").format(x),
+                                            parent=parent)
                                 for x in info:
-                                        self.pd.add_item_message(ffmri,
+                                        self.pd.add_item_message(item_id,
                                             timestamp, MSG_INFO,
-                                            "\t\t{0}".format(x))
+                                            _("{0}").format(x),
+                                            parent=parent)
 
                         if not needs_fix:
                                 continue
@@ -1733,12 +1888,12 @@ class ImagePlan(object):
                 if proposed_fixes:
                         pt.plan_done(pt.PLAN_PKG_VERIFY)
 
-                # Repair anything we failed to verify
+                # If no repairs, finish the plan.
                 if not repairs:
-                        # No repairs for this image.
                         self.__finish_plan(plandesc.EVALUATED_PKGS)
                         return
 
+                # Repair anything we failed to verify.
                 pt.plan_start(pt.PLAN_PKG_FIX, goal=len(repairs))
                 for fmri, actions in repairs:
                         pt.plan_add_progress(pt.PLAN_PKG_FIX)
@@ -5253,7 +5408,9 @@ class ImagePlan(object):
 
                         except (pkg.fmri.FmriError,
                             pkg.version.VersionError) as e:
-                                illegals.append(e)
+                                # illegals should be a list of fmri patterns so that
+                                # PackageMatchErrors can construct correct error message.
+                                illegals.append(pat)
                 patterns = npatterns
                 del npatterns, seen
 

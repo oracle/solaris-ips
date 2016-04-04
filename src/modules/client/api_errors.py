@@ -3339,7 +3339,7 @@ class InvalidOptionError(ApiException):
                             op2=self.options[1])
                         if self.valid_args:
                                 s += _("\nSupported: {0}").format(", ".join(
-                                    self.valid_args))
+                                    [str(va) for va in self.valid_args]))
                         return s
                 elif self.err_type == self.INCOMPAT:
                         assert len(self.options) == 2

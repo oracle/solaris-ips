@@ -112,9 +112,9 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 82
+CURRENT_API_VERSION = 83
 COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
-    CURRENT_API_VERSION])
+    82, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -1388,7 +1388,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if _li_md_only:
                         _refresh_catalogs = _update_index = False
                 if _op in [API_OP_DETACH, API_OP_SET_MEDIATOR, API_OP_FIX,
-                    API_OP_DEHYDRATE, API_OP_REHYDRATE]:
+                    API_OP_VERIFY, API_OP_DEHYDRATE, API_OP_REHYDRATE]:
                         # these operations don't change fmris and don't need
                         # to recurse, so disable a bunch of linked image
                         # operations.
@@ -1457,7 +1457,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         elif _op == API_OP_INSTALL or \
                             _op == API_OP_EXACT_INSTALL:
                                 self._img.make_install_plan(**kwargs)
-                        elif _op == API_OP_FIX:
+                        elif _op in [API_OP_FIX, API_OP_VERIFY]:
                                 self._img.make_fix_plan(**kwargs)
                         elif _op == API_OP_REHYDRATE:
                                 self._img.make_rehydrate_plan(**kwargs)
@@ -2261,8 +2261,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     _refresh_catalogs=False, _update_index=False,
                     publishers=publishers)
 
-        def gen_plan_fix(self, args, backup_be=None, backup_be_name=None,
-            be_activate=True, be_name=None, new_be=None, noexecute=True):
+        def gen_plan_verify(self, args, noexecute=True, unpackaged=False,
+            unpackaged_only=False):
                 """This is a generator function that yields a PlanDescription
                 object.
 
@@ -2271,19 +2271,34 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 and then execute_plan().  After execution of a plan, or to
                 abandon a plan, reset() should be called.
 
-                'show_licenses' indicates whether we should display all licenses.
+                For parameters, refer to the 'gen_plan_install'
+                function for an explanation of their usage and effects."""
 
-                'accept' indicates whether we agree to and accept the terms
-                of the licenses.
+                op = API_OP_VERIFY
+                return self.__plan_op(op, args=args, _noexecute=noexecute,
+                    _refresh_catalogs=False, _update_index=False,
+                    unpackaged=unpackaged, unpackaged_only=unpackaged_only)
 
-                For all other parameters, refer to the 'gen_plan_install'
+        def gen_plan_fix(self, args, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, new_be=None, noexecute=True,
+            unpackaged=False):
+                """This is a generator function that yields a PlanDescription
+                object.
+
+                Plan to repair anything that fails to verify. Once an operation
+                has been planned, it may be executed by first calling prepare(),
+                and then execute_plan().  After execution of a plan, or to
+                abandon a plan, reset() should be called.
+
+                For parameters, refer to the 'gen_plan_install'
                 function for an explanation of their usage and effects."""
 
                 op = API_OP_FIX
                 return self.__plan_op(op, args=args, _be_activate=be_activate,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_name=be_name, _new_be=new_be, _noexecute=noexecute,
-                    _refresh_catalogs=False, _update_index=False)
+                    _refresh_catalogs=False, _update_index=False,
+                    unpackaged=unpackaged)
 
         def attach_linked_child(self, lin, li_path, li_props=None,
             accept=False, allow_relink=False, force=False, li_md_only=False,

@@ -1,3 +1,18 @@
+Version 83:
+Compatible with clients using versions 72-82.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * Introduced new non-linked image interfaces:
+                gen_plan_verify()
+
+        * Changed methods:
+                add_item_message()
+                extend_item_messages()
+                gen_item_messages()
+
+        * Added method:
+                get_parsable_item_messages()
+
 Version 82:
 Compatible with clients using versions 72-81.
 

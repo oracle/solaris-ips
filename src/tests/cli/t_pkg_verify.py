@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,18 +30,18 @@ import pkg5unittest
 import os
 import pkg.portable as portable
 import shutil
+import simplejson as json
 import subprocess
 import tempfile
 import time
 import unittest
-
 
 class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
         # Tests in this suite use the read only data directory
         need_ro_data = True
 
         foo10 = """
-            open foo@1.0,5.11-0
+            open foo@1.0,5.11-0:20160229T095441Z
             add dir mode=0755 owner=root group=sys path=/etc
             add dir mode=0755 owner=root group=sys path=/etc/security
             add dir mode=0755 owner=root group=sys path=/usr
@@ -195,7 +195,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg_verify("foo")
                 self.assert_("4321" in self.output and "WARNING" in self.output)
 
-                # Vefify on system wide should also find the extra alias.
+                # Verify on system wide should also find the extra alias.
                 self.pkg_verify("")
                 self.assert_("4321" in self.output and "WARNING" in self.output)
 
@@ -294,6 +294,148 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 shutil.rmtree(self.img_path())
                 self.set_img_path(old_img_path)
 
+        def test_verify_invalid_fmri(self):
+                """Test invalid fmri triggers correct output."""
+
+                self.image_create(self.rurl)
+                self.pkg("install foo")
+
+                self.pkg_verify("foo@invalid", exit=1)
+                self.assertTrue("verify" in self.errout and "illegal" in
+                    self.errout)
+
+        def test_verify_parsable_output(self):
+                """Test parsable output."""
+
+                self.image_create(self.rurl)
+                self.pkg("install foo")
+                # Test invalid option combo.
+                self.pkg_verify("-v --parsable 0 foo", exit=2)
+                self.pkg_verify("-H --parsable 0 foo", exit=2)
+                # Test invalid option value.
+                self.pkg_verify("--parsable 1 foo", exit=2)
+                self.pkg_verify("--parsable 0 foo")
+                out_json = json.loads(self.output)
+                self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
+                    in out_json["item-messages"])
+                fmri_entry = out_json["item-messages"][
+                    "pkg://test/foo@1.0,5.11-0:20160229T095441Z"]
+                self.assertTrue(fmri_entry["messages"][0]["msg_level"]
+                    == "info")
+                self.assertTrue("file: usr/bin/bobcat" in fmri_entry)
+
+                # Verify should fail if file is missing.
+                fpath = os.path.join(self.get_img_path(), "usr", "bin",
+                    "bobcat")
+                portable.remove(fpath)
+                self.pkg_verify("--parsable 0 foo", exit=1)
+                out_json = json.loads(self.output)
+                self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
+                    in out_json["item-messages"])
+                fmri_entry = out_json["item-messages"][
+                    "pkg://test/foo@1.0,5.11-0:20160229T095441Z"]
+                self.assertTrue(fmri_entry["messages"][0]["msg_type"]
+                    == "general")
+                self.assertTrue(fmri_entry["messages"][0]["msg_level"]
+                    == "error")
+                self.assertTrue("file: usr/bin/bobcat" in fmri_entry)
+                self.assertTrue(fmri_entry["file: usr/bin/bobcat"][0]["msg_type"]
+                    == "general")
+                self.assertTrue(fmri_entry["file: usr/bin/bobcat"][0]["msg_level"]
+                    == "error")
+
+        def test_unpackaged(self):
+                """Test unpackaged option."""
+
+                self.image_create(self.rurl)
+                self.pkg("install foo")
+                self.pkg_verify("--unpackaged")
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "Unpackaged" in
+                    self.output and "UNPACKAGED" in self.output)
+                self.assertTrue("----" not in self.output)
+                # Test verbose.
+                self.pkg_verify("-v --unpackaged")
+                self.assertTrue("----" in self.output)
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "Unpackaged" in
+                    self.output and "UNPACKAGED" in self.output)
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "bobcat" in
+                    self.output and "UNPACKAGED" in self.output)
+                # Test omit header.
+                self.pkg_verify("--unpackaged -H")
+                self.assertTrue("----" not in self.output)
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "Unpackaged" in
+                    self.output and "UNPACKAGED" not in self.output)
+                # Test unpackaged only.
+                self.pkg_verify("--unpackaged-only -v")
+                self.assertTrue("----" not in self.output)
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "Unpackaged" in
+                    self.output and "UNPACKAGED" in self.output)
+                self.assertTrue("ERROR" not in self.output and
+                    "WARNING" not in self.output and "Unpackaged" in
+                    self.output and "bobcat" not in self.output)
+
+                # Test quiet result.
+                self.pkg_verify("-q --unpackaged")
+                self.assertTrue(not self.output)
+
+                # Test invalid usage.
+                self.pkg_verify("--unpackaged-only foo", exit=2)
+                self.pkg_verify("--unpackaged --unpackaged-only", exit=2)
+                self.pkg_verify("-H --parsable 0 --unpackaged", exit=2)
+
+                # Test --unpackaged with package arguments.
+                self.pkg_verify("--unpackaged -v foo")
+                self.assertTrue("----" in self.output and "bobcat" in
+                    self.output and "UNPACKAGED" in self.output)
+                self.pkg_verify("--parsable 0 --unpackaged foo")
+                out_json = json.loads(self.output)
+                self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
+                    in out_json["item-messages"])
+                fmri_entry = out_json["item-messages"][
+                    "pkg://test/foo@1.0,5.11-0:20160229T095441Z"]
+                self.assertTrue(fmri_entry["messages"][0]["msg_level"]
+                    == "info")
+                self.assertTrue("file: usr/bin/bobcat" in fmri_entry)
+
+                # Test parsable output for --unpackaged.
+                self.pkg_verify("--parsable 0 --unpackaged")
+                out_json = json.loads(self.output)
+                self.assertTrue("unpackaged" in out_json["item-messages"]
+                    and out_json["item-messages"]["unpackaged"])
+                out_entry = out_json["item-messages"]["unpackaged"]
+                self.assertTrue("dir" in out_entry.keys()[0] or "file" in
+                    out_entry.keys()[0])
+                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_level"]
+                    == "info")
+                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_type"]
+                    == "unpackaged")
+                self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
+                    in out_json["item-messages"])
+                fmri_entry = out_json["item-messages"][
+                    "pkg://test/foo@1.0,5.11-0:20160229T095441Z"]
+                self.assertTrue(fmri_entry["messages"][0]["msg_level"]
+                    == "info")
+                self.assertTrue("file: usr/bin/bobcat" in fmri_entry)
+
+                # Test parsable output for --unpackaged-only.
+                self.pkg_verify("--parsable 0 --unpackaged-only")
+                out_json = json.loads(self.output)
+                self.assertTrue("unpackaged" in out_json["item-messages"]
+                    and out_json["item-messages"]["unpackaged"])
+                out_entry = out_json["item-messages"]["unpackaged"]
+                self.assertTrue("dir" in out_entry.keys()[0] or "file" in
+                    out_entry.keys()[0])
+                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_level"]
+                    == "info")
+                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_type"]
+                    == "unpackaged")
+                self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
+                    not in out_json["item-messages"])
 
 if __name__ == "__main__":
         unittest.main()

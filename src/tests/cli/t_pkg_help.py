@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -67,7 +67,8 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                         ret, out, err = self.pkg(option, out=True, stderr=True)
                         verify_help(err,
                             ["pkg [options] command [cmd_options] [operands]",
-                            "pkg verify [-Hqv] [pkg_fmri_pattern ...]",
+                            "pkg verify [-Hqv] [--parsable version] [--unpackaged]\n"
+                            "            [--unpackaged-only] [pkg_fmri_pattern ...]",
                             "PKG_IMAGE", "Usage:"])
 
                 # Invalid subcommands, ensuring we exit 2

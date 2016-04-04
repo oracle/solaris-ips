@@ -20,10 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import errno
 import os
+import shutil
 import tempfile
 
 from pkg.client import global_settings
@@ -256,12 +257,49 @@ class BootEnv(object):
                     bee.get("space_used"), bee.get("date"))
 
         @staticmethod
+        def copy_be(src_be_name, dst_be_name):
+                ret, be_name_clone, not_used = be.beCopy(
+                    dst_bename=dst_be_name,
+                    src_bename=src_be_name)
+                if ret != 0:
+                        raise api_errors.UnableToCopyBE()
+
+        @staticmethod
         def rename_be(orig_name, new_name):
                 return be.beRename(orig_name, new_name)
 
         @staticmethod
         def destroy_be(be_name):
                 return be.beDestroy(be_name, 1, True)
+
+        @staticmethod
+        def cleanup_be(be_name):
+                be_list = BootEnv.get_be_list()
+                for elem in be_list:
+                        if "orig_be_name" in elem and be_name == \
+                            elem["orig_be_name"]:
+                                # Force unmount the be and destroy it.
+                                # Ignore errors.
+                                try:
+                                        if elem.get("mounted"):
+                                                BootEnv.unmount_be(
+                                                    be_name, force=True)
+                                                shutil.rmtree(elem.get(
+                                                    "mountpoint"),
+                                                    ignore_errors=True)
+                                        BootEnv.destroy_be(
+                                            be_name)
+                                except Exception as e:
+                                            pass
+                                break
+
+        @staticmethod
+        def mount_be(be_name, mntpt, include_bpool=False):
+                return be.beMount(be_name, mntpt, include_bpool=include_bpool)
+
+        @staticmethod
+        def unmount_be(be_name, force=False):
+                return be.beUnmount(be_name, force=force)
 
         @staticmethod
         def set_default_be(be_name):
@@ -713,12 +751,28 @@ class BootEnvNull(object):
                 return None
 
         @staticmethod
+        def copy_be(src_be_name, dst_be_name):
+                pass
+
+        @staticmethod
         def rename_be(orig_name, new_name):
-	        pass
+                pass
 
         @staticmethod
         def destroy_be(be_name):
-	        pass
+                pass
+
+        @staticmethod
+        def cleanup_be(be_name):
+                pass
+
+        @staticmethod
+        def mount_be(be_name, mntpt, include_bpool=False):
+                return None
+
+        @staticmethod
+        def unmount_be(be_name, force=False):
+                return None
 
         @staticmethod
         def set_default_be(be_name):

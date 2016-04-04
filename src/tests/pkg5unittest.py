@@ -1020,6 +1020,10 @@ if __name__ == "__main__":
                 # is correct.
                 self.assert_("space-required" in outd)
                 del outd["space-required"]
+                # Do not check item-messages, since it will be checked
+                # somewhere else.
+                self.assertTrue("item-messages" in outd)
+                del outd["item-messages"]
                 # Add 4 to account for self, output, include, and outd.
                 self.assertEqual(len(expected), len(outd) + 4, "Got a "
                     "different set of keys for expected and outd.  Those in "

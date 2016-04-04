@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -33,6 +33,7 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
 import shutil
+import simplejson as json
 import tempfile
 import time
 import unittest
@@ -177,6 +178,29 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
                 self.pkg("install amber@1.0")
 
+                # Test invalid option combo.
+                self.pkg("fix -v --parsable 0 foo", exit=2)
+                self.pkg("fix -H --parsable 0 foo", exit=2)
+                # Test invalid option value.
+                self.pkg("fix --parsable 1 foo", exit=2)
+
+                # Test parsable output.
+                self.pkg("fix --parsable 0 amber", exit=4)
+                out_json = json.loads(self.output)
+                item_id = out_json["item-messages"].keys()[0]
+                self.assertTrue(
+                    out_json["item-messages"][item_id]["messages"][0]["msg_level"]
+                    == "info")
+
+                # Test unpackaged option.
+                self.pkg("fix --unpackaged", exit=4)
+                self.pkg("fix --parsable 0 --unpackaged", exit=4)
+                out_json = json.loads(self.output)
+                subitem_id = out_json["item-messages"]["unpackaged"].keys()[0]
+                self.assertTrue(
+                    out_json["item-messages"]["unpackaged"][subitem_id][0]["msg_level"]
+                    == "info")
+
                 index_dir = self.get_img_api_obj().img.index_dir
                 index_file = os.path.join(index_dir, "main_dict.ascii.v2")
                 orig_mtime = os.stat(index_file).st_mtime
@@ -195,6 +219,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
                 # Verify that unprivileged users are handled by fix.
                 self.pkg("fix amber", exit=1, su_wrap=True)
+
+                self.pkg("fix --unpackaged -nv amber")
+                self.assertTrue("----" in self.output and "UNPACKAGED" in
+                    self.output)
 
                 # Fix the package
                 self.pkg("fix amber")

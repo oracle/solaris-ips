@@ -11,7 +11,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System retrieval client</refpurpose>
@@ -66,12 +66,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
-<synopsis>/usr/bin/pkg verify [-Hqv] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [--parsable <replaceable>version</replaceable>] [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
     [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
-    [--accept] [--licenses] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -885,8 +885,9 @@ list of packages that contain actions that match <literal>token</literal>.</para
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<replaceable>
-pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>]
+[<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>]
+[<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>Validate the installation of all packages installed in the
 current image. If current signature policy for related publishers is not <literal>
 ignore</literal>, the signatures of each package are validated based on policy.
@@ -907,16 +908,30 @@ in the current image.</para>
 description of the <option>v</option> option for the install command above.</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>Parsable output. The supported version is 0. Use of this option
+implies <option>-q</option>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>report unpackaged contents in addition to general output.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged-only</option></term>
+<listitem><para>report only unpackaged contents.</para>
+</listitem>
+</varlistentry>
 </variablelist>
 <para>For all other options, see the <command>install</command> command above.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg fix</command> [<option>Hnvq</option>]
+<varlistentry><term><command>pkg fix</command> [<option>HnvqP</option>]
 [<option>-no-be-activate</option>]
 [<option>-no-backup-be</option> | <option>-require-backup-be</option>]
 [<option>-backup-be-name</option> <replaceable>name</replaceable>]
 [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>]
-[<option>-accept</option>] [<option>-licenses</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+[<option>-accept</option>] [<option>-licenses</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>]
+[<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>Fix any errors reported by <command>pkg verify</command>.
 Verification of installed package content is based on a custom content analysis
 that might return different results than those of other programs.</para>
@@ -945,6 +960,15 @@ option, and any package licenses require acceptance, the operation fails.</para>
 <listitem><para>Display all of the licenses for the packages that are installed
 or updated as part of this operation. For updated packages, display the license
 only if the license has changed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>Parsable output. The supported version is 0. Use of this option
+implies <option>-q</option>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>report unpackaged contents in addition to general output.</para>
 </listitem>
 </varlistentry>
 </variablelist>

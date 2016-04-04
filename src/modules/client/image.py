@@ -3808,7 +3808,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         ip.plan_install(**kwargs)
                                 elif _op ==pkgdefs.API_OP_EXACT_INSTALL:
                                         ip.plan_exact_install(**kwargs)
-                                elif _op == pkgdefs.API_OP_FIX:
+                                elif _op in [pkgdefs.API_OP_FIX,
+                                    pkgdefs.API_OP_VERIFY]:
                                         ip.plan_fix(**kwargs)
                                 elif _op == pkgdefs.API_OP_REHYDRATE:
                                         ip.plan_rehydrate(**kwargs)
@@ -4012,12 +4013,15 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     noexecute, publishers=publishers)
                 progtrack.plan_all_done()
 
-        def make_fix_plan(self, op, progtrack, check_cancel, noexecute, args):
-                """Create an image plan to fix the image."""
+        def make_fix_plan(self, op, progtrack, check_cancel, noexecute, args,
+            unpackaged=False, unpackaged_only=False):
+                """Create an image plan to fix the image. Note: verify shares
+                the same routine."""
 
                 progtrack.plan_all_start()
                 self.__make_plan_common(op, progtrack, check_cancel, noexecute,
-                    args=args)
+                    args=args, unpackaged=unpackaged,
+                    unpackaged_only=unpackaged_only)
                 progtrack.plan_all_done()
 
         def make_noop_plan(self, op, progtrack, check_cancel,
