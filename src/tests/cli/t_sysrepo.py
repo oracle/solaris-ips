@@ -22,10 +22,10 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -40,10 +40,10 @@ import shutil
 import unittest
 import shutil
 import simplejson
+import six
 import stat
 import sys
 import time
-import StringIO
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.parse import urlparse, unquote
 from six.moves.urllib.request import urlopen
@@ -92,7 +92,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 """Tests that we show a usage message."""
 
                 ret, output = self.sysrepo("--help", out=True, exit=2)
-                self.assert_("Usage:" in output,
+                self.assertTrue("Usage:" in output,
                     "No usage string printed: {0}".format(output))
 
         def test_2_invalid_root(self):
@@ -101,7 +101,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_root in ["/dev/null", "/etc/passwd", "/proc"]:
                         ret, output, err = self.sysrepo("-R {0}".format(invalid_root),
                             out=True, stderr=True, exit=1)
-                        self.assert_(invalid_root in err, "error message "
+                        self.assertTrue(invalid_root in err, "error message "
                             "did not contain {0}: {1}".format(invalid_root, err))
 
         def test_3_invalid_cache_dir(self):
@@ -110,7 +110,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_cache in ["/dev/null", "/etc/passwd"]:
                         ret, output, err = self.sysrepo("-c {0}".format(invalid_cache),
                             out=True, stderr=True, exit=1)
-                        self.assert_(invalid_cache in err, "error message "
+                        self.assertTrue(invalid_cache in err, "error message "
                             "did not contain {0}: {1}".format(invalid_cache, err))
 
         def test_4_invalid_hostname(self):
@@ -119,7 +119,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_host in ["1.2.3.4.5.6", "pkgsysrepotestname", "."]:
                         ret, output, err = self.sysrepo("-h {0}".format(invalid_host),
                             out=True, stderr=True, exit=1)
-                        self.assert_(invalid_host in err, "error message "
+                        self.assertTrue(invalid_host in err, "error message "
                             "did not contain {0}: {1}".format(invalid_host, err))
 
         def test_5_invalid_logs_dir(self):
@@ -128,7 +128,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_log in ["/dev/null", "/etc/passwd"]:
                         ret, output, err = self.sysrepo("-l {0}".format(invalid_log),
                             out=True, stderr=True, exit=1)
-                        self.assert_(invalid_log in err, "error message "
+                        self.assertTrue(invalid_log in err, "error message "
                             "did not contain {0}: {1}".format(invalid_log, err))
 
                 for invalid_log in ["/proc"]:
@@ -145,7 +145,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_port in [999999, "bobcat", "-1234"]:
                         ret, output, err = self.sysrepo("-p {0}".format(invalid_port),
                             out=True, stderr=True, exit=1)
-                        self.assert_(str(invalid_port) in err, "error message "
+                        self.assertTrue(str(invalid_port) in err, "error message "
                             "did not contain {0}: {1}".format(invalid_port, err))
 
         def test_7_invalid_runtime_dir(self):
@@ -154,7 +154,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_runtime in ["/dev/null", "/etc/passwd", "/proc"]:
                         ret, output, err = self.sysrepo("-r {0}".format(
                             invalid_runtime), out=True, stderr=True, exit=1)
-                        self.assert_(invalid_runtime in err, "error message "
+                        self.assertTrue(invalid_runtime in err, "error message "
                             "did not contain {0}: {1}".format(invalid_runtime, err))
 
         def test_8_invalid_cache_size(self):
@@ -163,7 +163,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_csize in [0, "cats", "-1234"]:
                         ret, output, err = self.sysrepo("-s {0}".format(invalid_csize),
                             out=True, stderr=True, exit=1)
-                        self.assert_(str(invalid_csize) in err, "error message "
+                        self.assertTrue(str(invalid_csize) in err, "error message "
                             "did not contain {0}: {1}".format(invalid_csize, err))
 
         def test_9_invalid_templates_dir(self):
@@ -172,7 +172,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_tmp in ["/dev/null", "/etc/passwd", "/proc"]:
                         ret, output, err = self.sysrepo("-t {0}".format(invalid_tmp),
                             out=True, stderr=True, exit=1)
-                        self.assert_(invalid_tmp in err, "error message "
+                        self.assertTrue(invalid_tmp in err, "error message "
                             "did not contain {0}: {1}".format(invalid_tmp, err))
 
         def test_10_invalid_http_timeout(self):
@@ -181,7 +181,7 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 for invalid_time in ["cats", "0", "-1"]:
                         ret, output, err = self.sysrepo("-T {0}".format(invalid_time),
                             out=True, stderr=True, exit=1)
-                        self.assert_("http_timeout" in err, "error message "
+                        self.assertTrue("http_timeout" in err, "error message "
                              "did not contain http_timeout: {0}".format(err))
 
         def test_11_invalid_proxies(self):
@@ -191,11 +191,11 @@ class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                     "http://user:password@hostname:3128"]:
                         ret, output, err = self.sysrepo("-w {0}".format(invalid_proxy),
                             out=True, stderr=True, exit=1)
-                        self.assert_("http_proxy" in err, "error message "
+                        self.assertTrue("http_proxy" in err, "error message "
                              "did not contain http_proxy: {0}".format(err))
                         ret, output, err = self.sysrepo("-W {0}".format(invalid_proxy),
                             out=True, stderr=True, exit=1)
-                        self.assert_("https_proxy" in err, "error message "
+                        self.assertTrue("https_proxy" in err, "error message "
                              "did not contain https_proxy: {0}".format(err))
 
 
@@ -393,8 +393,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # attempt to create images using the sysrepo
                 for dc in overlap_dcs:
                         pub = dc.get_property("publisher", "prefix")
-                        hash = hashlib.sha1("file://" +
-                            dc.get_repodir().rstrip("/")).hexdigest()
+                        hash = hashlib.sha1(misc.force_bytes("file://" +
+                            dc.get_repodir().rstrip("/"))).hexdigest()
                         url = "http://localhost:{port}/{pub}/{hash}/".format(
                             port=self.sysrepo_port, hash=hash,
                             pub=pub)
@@ -434,7 +434,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         self.sysrepo("")
                         self._start_sysrepo()
 
-                        hash = hashlib.sha1(file_url.rstrip("/")).hexdigest()
+                        hash = hashlib.sha1(misc.force_bytes(
+                            file_url.rstrip("/"))).hexdigest()
                         url = "http://localhost:{port}/test1/{hash}/".format(
                             port=self.sysrepo_port, hash=hash)
                         self.pkg_image_create(prefix="test1", repourl=url)
@@ -471,7 +472,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 ret, output, err = self.sysrepo("-R {0}".format(self.img_path()),
                     out=True, stderr=True, exit=1)
                 # restore our image before going any further
-                self.assert_("does not exist" in err, "unable to find expected "
+                self.assertTrue("does not exist" in err, "unable to find expected "
                     "error message in stderr: {0}".format(err))
 
         def test_11_proxy_args(self):
@@ -564,7 +565,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self._start_sysrepo()
 
                 # create an image which uses the system publisher
-                hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+                hash = hashlib.sha1(misc.force_bytes(p5p_url.rstrip("/"))).hexdigest()
                 url = "http://localhost:{port}/test1/{hash}/".format(
                     port=self.sysrepo_port, hash=hash)
 
@@ -612,9 +613,11 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 p5p_url = "file://{0}".format(p5p_path)
                 self.pkgrecv(server_url=self.durl1, command="-a -d {0} sample".format(
                     p5p_path))
-                p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+                p5p_hash = hashlib.sha1(misc.force_bytes(
+                    p5p_url.rstrip("/"))).hexdigest()
                 file_url = self.dcs[2].get_repo_url()
-                file_hash = hashlib.sha1(file_url.rstrip("/")).hexdigest()
+                file_hash = hashlib.sha1(misc.force_bytes(
+                    file_url.rstrip("/"))).hexdigest()
 
                 # configure an image from which to generate a sysrepo config
                 self.image_create(prefix="test1", repourl=self.durl1)
@@ -655,11 +658,14 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                                 resp =  urlopen(url, None, None)
                         except HTTPError as e:
                                 if e.code != code:
-                                        self.assert_(False,
+                                        self.assertTrue(False,
                                             "url {0} returned: {1}".format(url, e))
 
                 for url_part in queries_404:
-                        test_response(url_part, 404)
+                        # Python 3's http.client try to encode the url with
+                        # ASCII encoding, so non-ASCII characters should have
+                        # been eliminated earlier.
+                        test_response(misc.force_bytes(url_part), 404)
                 for url_part in queries_414:
                         test_response(url_part, 414)
                 self.sc.stop()
@@ -667,6 +673,13 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
         def test_15_unicode(self):
                 """Tests the system repository with some unicode paths to p5p
                 files."""
+                # Running test on remote machines, the locale is usally "C",
+                # then the file system encoding will be "ascii" and os.mkdir
+                # will fail with some unicode characters in Python 3 because
+                # os.mkdir uses the file system encoding. We don't have a way
+                # to set the file system encoding in Python, so we just skip.
+                if six.PY3 and sys.getfilesystemencoding() == "ascii":
+                        return
                 unicode_str = "ΰŇﺇ⊂⏣⊅ℇ"
                 unicode_dir = os.path.join(self.test_root, unicode_str)
                 os.mkdir(unicode_dir)
@@ -681,7 +694,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                         p5p_url = "file://{0}".format(p5p_path)
                         self.pkgrecv(server_url=self.durl1,
                             command="-a -d {0} sample".format(p5p_path))
-                        p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+                        p5p_hash = hashlib.sha1(misc.force_bytes(
+                            p5p_url.rstrip("/"))).hexdigest()
 
                         self.image_create()
                         self.pkg("set-publisher -p {0}".format(p5p_url))
@@ -715,8 +729,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.file_doesnt_exist(cache_path)
 
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" not in self.output)
-                self.assert_("Unable to store config" not in self.output)
+                self.assertTrue("Unable to load config" not in self.output)
+                self.assertTrue("Unable to store config" not in self.output)
                 self.file_exists(cache_path)
                 self.file_contains(sysrepo_conf, self.durl1)
                 self.file_remove(cache_path)
@@ -725,8 +739,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # that sysrepo doesn't mind, and cache creation works
                 self.pkg("install sample")
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" not in self.output)
-                self.assert_("Unable to store config" not in self.output)
+                self.assertTrue("Unable to load config" not in self.output)
+                self.assertTrue("Unable to store config" not in self.output)
                 self.file_exists(cache_path)
                 self.file_contains(sysrepo_conf, self.durl1)
                 self.file_remove(cache_path)
@@ -734,8 +748,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # ensure we get warnings when we can't load/store the config
                 os.makedirs(full_cache_path)
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" in self.errout)
-                self.assert_("Unable to store config" in self.errout)
+                self.assertTrue("Unable to load config" in self.errout)
+                self.assertTrue("Unable to store config" in self.errout)
                 self.file_contains(sysrepo_conf, self.durl1)
                 os.rmdir(full_cache_path)
 
@@ -743,10 +757,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.sysrepo("")
                 self.file_append(cache_path, "noodles")
                 self.sysrepo("", stderr=True)
-                self.assert_("Invalid config cache file at" in self.errout)
+                self.assertTrue("Invalid config cache file at" in self.errout)
                 # we should have overwritten the corrupt cache, so check again
                 self.sysrepo("", stderr=True)
-                self.assert_("Invalid config cache file at" not in self.errout)
+                self.assertTrue("Invalid config cache file at" not in self.errout)
                 self.file_contains(cache_path, self.durl1)
                 self.file_remove(cache_path)
 
@@ -754,10 +768,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # treat it as corrupt, and clobber the old cache
                 rubbish = {"food preference": "I like noodles."}
                 other = ["nonsense here"]
-                with open(full_cache_path, "wb") as cache_file:
+                with open(full_cache_path, "w") as cache_file:
                         simplejson.dump((rubbish, other), cache_file)
                 self.sysrepo("", stderr=True)
-                self.assert_("Invalid config cache at" in self.errout)
+                self.assertTrue("Invalid config cache at" in self.errout)
                 self.file_doesnt_contain(cache_path, "noodles")
                 self.file_contains(cache_path, self.durl1)
                 self.file_contains(sysrepo_conf, self.durl1)
@@ -776,17 +790,17 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
                 # no image modification, so no new config file
                 self.sysrepo("")
-                self.assert_(mtime == os.lstat(full_cache_path).st_mtime,
+                self.assertTrue(mtime == os.lstat(full_cache_path).st_mtime,
                     "Changed mtime of cache despite no image config change")
 
                 # load the config from the cache, remove a URI then save
                 # it - despite being well-formed, the cache doesn't contain the
                 # same configuration as the image, simulating an older version
                 # of pkg(1) having changed publisher configuration.
-                with open(full_cache_path, "rb") as cache_file:
+                with open(full_cache_path, "r") as cache_file:
                         uri_pub_map, no_uri_pubs = simplejson.load(cache_file)
 
-                with open(full_cache_path, "wb") as cache_file:
+                with open(full_cache_path, "w") as cache_file:
                         del uri_pub_map[self.durl1]
                         simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
@@ -796,7 +810,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # we expect an 'invalid config cache' message, and a new cache
                 # written with correct content.
                 self.sysrepo("", stderr=True)
-                self.assert_("Invalid config cache at" in self.errout)
+                self.assertTrue("Invalid config cache at" in self.errout)
                 self.file_contains(cache_path, self.durl1)
                 self.sysrepo("")
 
@@ -811,9 +825,9 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 os.symlink(full_cache_path + ".new", full_cache_path)
 
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" in self.errout)
-                self.assert_("not a regular file" in self.errout)
-                self.assert_("Unable to store config" in self.errout)
+                self.assertTrue("Unable to load config" in self.errout)
+                self.assertTrue("not a regular file" in self.errout)
+                self.assertTrue("Unable to store config" in self.errout)
                 # our symlinked cache should be untouched, and still contain
                 # rurl1, despite it being absent from our actual configuration.
                 self.file_contains(cache_path, self.durl1)
@@ -824,19 +838,19 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.pkg("publisher", out=True, stderr=True)
                 self.file_doesnt_exist(cache_path)
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" not in self.output)
-                self.assert_("Unable to store config" not in self.output)
+                self.assertTrue("Unable to load config" not in self.output)
+                self.assertTrue("Unable to store config" not in self.output)
                 self.file_doesnt_contain(sysrepo_conf, self.durl1)
 
                 # check that removing packages doesn't impact the cache
                 self.pkg("uninstall sample")
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" not in self.output)
-                self.assert_("Unable to store config" not in self.output)
+                self.assertTrue("Unable to load config" not in self.output)
+                self.assertTrue("Unable to store config" not in self.output)
                 self.file_remove(cache_path)
                 self.sysrepo("", stderr=True)
-                self.assert_("Unable to load config" not in self.output)
-                self.assert_("Unable to store config" not in self.output)
+                self.assertTrue("Unable to load config" not in self.output)
+                self.assertTrue("Unable to store config" not in self.output)
 
                 # check that when a file-repository is inaccessible, the
                 # sysrepo_httpd.conf generated from the cache remains identical
@@ -853,7 +867,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 os.rename(repo_dir, repo_dir + ".new")
                 try:
                         self.sysrepo("", stderr=True)
-                        self.assert_(misc.get_data_digest(sysrepo_conf,
+                        self.assertTrue(misc.get_data_digest(sysrepo_conf,
                             hash_func=DEFAULT_HASH_FUNC)[0] ==
                             misc.get_data_digest(saved_sysrepo_conf,
                             hash_func=DEFAULT_HASH_FUNC)[0],
@@ -917,7 +931,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.pkg("set-property use-system-repo True")
                 ret, out, err = self.pkg("refresh", exit=1, stderr=True,
                     out=True)
-                self.assert_("503 reason: Service Unavailable" in err)
+                self.assertTrue("503 reason: Service Unavailable" in err)
 
                 # By enabling the remote proxy, the system-repository should
                 # now be able to proxy this resource.
@@ -1045,18 +1059,18 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                                         # so to reduce console noise, we
                                         # redirect that temporarily.
                                         saved_stdout = sys.stdout
-                                        sys.stdout = StringIO.StringIO()
+                                        sys.stdout = six.StringIO()
                                         for item in self.sysrepo_p5p.application(
                                             environ, start_response):
                                                 seen_content = item
                                 finally:
                                         sys.stdout = saved_stdout
 
-                                self.assert_(code in self.http_status,
+                                self.assertTrue(code in self.http_status,
                                     "Query {0} response did not contain {1}: {2}".format(
                                     query, code, self.http_status))
                                 if expect_content:
-                                        self.assert_(seen_content,
+                                        self.assertTrue(seen_content,
                                             "No content returned for {0}".format(
                                             query))
                                 else:

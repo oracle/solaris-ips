@@ -21,15 +21,17 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
 import getopt
 import gettext
 import locale
+import six
 import sys
 import traceback
+import warnings
 from functools import cmp_to_key
 
 import pkg.actions
@@ -357,6 +359,9 @@ def main_func():
         return int(different)
 
 if __name__ == "__main__":
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 exit_code = main_func()
         except (PipeError, KeyboardInterrupt):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -386,10 +386,15 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
                         st_cache = os.lstat(cache_path)
                         if not stat.S_ISREG(st_cache.st_mode):
                                 raise IOError("not a regular file")
+                except IOError as e:
+                        # IOError has been merged into OSError in Python 3.4,
+                        # so we need a special case here.
+                        if str(e) == "not a regular file":
+                                raise
                 except OSError:
                         pass
 
-                with open(cache_path, "wb") as cache_file:
+                with open(cache_path, "w") as cache_file:
                         simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
                         os.chmod(cache_path, 0o600)
@@ -505,8 +510,8 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                         hash = _uri_hash(uri)
                         # we don't have per-uri ssl key/cert information yet,
                         # so we just pull it from one of the RepositoryURIs.
-                        cert = repo_uri.ssl_cert
-                        key = repo_uri.ssl_key
+                        cert = repo.origins[-1].ssl_cert
+                        key = repo.origins[-1].ssl_key
                         uri_pub_map.setdefault(uri, []).append(
                             (prefix, cert, key, hash, proxy_map.get(uri), utype)
                             )
@@ -613,9 +618,11 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 # we're disabling unicode here because we want Mako to
                 # passthrough any filesystem path names, whatever the
                 # original encoding.
+                # Mako for Python 3 doesn't support disabling Unicode. 
+                disable_unicode = True if six.PY2 else False
                 httpd_conf_template = Template(
                     filename=httpd_conf_template_path,
-                    disable_unicode=True)
+                    disable_unicode=disable_unicode)
 
                 # our template expects cache size expressed in Kb
                 httpd_conf_text = httpd_conf_template.render(
@@ -632,10 +639,12 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                     https_proxy=https_proxy)
                 httpd_conf_path = os.path.join(runtime_dir,
                     SYSREPO_HTTP_FILENAME)
-                httpd_conf_file = open(httpd_conf_path, "wb")
+                httpd_conf_file = open(httpd_conf_path, "w")
                 httpd_conf_file.write(httpd_conf_text)
                 httpd_conf_file.close()
-        except socket.gaierror as err:
+        except (socket.gaierror, UnicodeError) as err:
+                # socket.gethostbyname raise UnicodeDecodeError in Python 3
+                # for some input, such as '.'
                 raise SysrepoException(
                     _("Unable to write sysrepo_httpd.conf: {host}: "
                     "{err}").format(**locals()))
@@ -752,7 +761,8 @@ def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
 
 def _uri_hash(uri):
         """Returns a string hash of the given URI"""
-        return digest.DEFAULT_HASH_FUNC(uri).hexdigest()
+        # Unicode-objects must be encoded before hashing 
+        return digest.DEFAULT_HASH_FUNC(misc.force_bytes(uri)).hexdigest()
 
 def _chown_runtime_dir(runtime_dir):
         """Change the ownership of all files under runtime_dir to our sysrepo
@@ -950,6 +960,9 @@ if __name__ == "__main__":
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         __retval = handle_errors(main_func)
         try:

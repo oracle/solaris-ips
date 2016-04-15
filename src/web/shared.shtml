@@ -19,9 +19,10 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
+        import six
         import operator
 %>
 ## Returns the value of the named respository configuration property in the
@@ -68,7 +69,7 @@
 
         return [
                 ver[1] for ver in
-                sorted(versions.iteritems(), key=operator.itemgetter(1),
+                sorted(six.iteritems(versions), key=operator.itemgetter(1),
                     reverse=True)
         ]
 %></%def>\

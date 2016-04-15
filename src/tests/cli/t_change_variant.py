@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -147,7 +147,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     " ".join(names)), exit=exit, su_wrap=su_wrap)
                 self.assertEqualDiff(expected, self.output)
                 if errout:
-                        self.assert_(self.errout != "")
+                        self.assertTrue(self.errout != "")
                 else:
                         self.assertEqualDiff("", self.errout)
 
@@ -167,7 +167,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         raise
 
                 if negate and not token:
-                        self.assert_(False,
+                        self.assertTrue(False,
                             "File exists when it shouldn't: {0}".format(path))
 
                 token_re = re.compile(
@@ -184,10 +184,10 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 f.close()
 
                 if not negate and not found:
-                        self.assert_(False, "File {0} ({1}) does not contain {2}".format(
+                        self.assertTrue(False, "File {0} ({1}) does not contain {2}".format(
                             path, file_path, token))
                 if negate and found:
-                        self.assert_(False, "File {0} ({1}) contains {2}".format(
+                        self.assertTrue(False, "File {0} ({1}) contains {2}".format(
                             path, file_path, token))
 
         def p_verify(self, p=None, v_arch=None, v_zone=None, negate=False):
@@ -269,18 +269,18 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 # verify the variant settings
                 ic = self.get_img_api_obj().img.cfg
                 if "variant.arch" not in ic.variants:
-                        self.assert_(False,
+                        self.assertTrue(False,
                             "unable to determine image arch variant")
                 if ic.variants["variant.arch"] != v_arch:
-                        self.assert_(False,
+                        self.assertTrue(False,
                             "unexpected arch variant: {0} != {1}".format(
                             ic.variants["variant.arch"], v_arch))
 
                 if "variant.opensolaris.zone" not in ic.variants:
-                        self.assert_(False,
+                        self.assertTrue(False,
                             "unable to determine image zone variant")
                 if ic.variants["variant.opensolaris.zone"] != v_zone:
-                        self.assert_(False, "unexpected zone variant")
+                        self.assertTrue(False, "unexpected zone variant")
 
 
                 # adjust the package list based on known dependancies.

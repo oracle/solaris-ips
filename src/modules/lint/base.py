@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import inspect
@@ -81,10 +81,7 @@ class Checker(object):
                         'pkglint_id' keyword argument default and returns it."""
 
                         # the short name for this checker class, Checker.name
-                        if six.PY3:
-                                name = method.__self__.__class__.name
-                        else:
-                                name = method.im_class.name
+                        name = method.__self__.__class__.name
 
                         arg_spec = inspect.getargspec(method)
 
@@ -246,10 +243,18 @@ class ManifestChecker(Checker):
 
                 if os.path.exists(self.classification_path):
                         try:
-                                self.classification_data = \
-                                    configparser.SafeConfigParser()
-                                self.classification_data.readfp(
-                                    open(self.classification_path))
+                                if six.PY2:
+                                        self.classification_data = \
+                                            configparser.SafeConfigParser()
+                                        self.classification_data.readfp(
+                                            open(self.classification_path))
+                                else:
+                                        # SafeConfigParser has been renamed to
+                                        # ConfigParser in Python 3.2.
+                                        self.classification_data = \
+                                            configparser.ConfigParser()
+                                        self.classification_data.read_file(
+                                            open(self.classification_path))
                         except Exception as err:
                                 # any exception thrown here results in a null
                                 # classification_data object.  We deal with that

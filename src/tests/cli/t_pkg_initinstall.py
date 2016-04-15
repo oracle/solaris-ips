@@ -22,10 +22,10 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -96,7 +96,7 @@ class TestPkgInitInstall(pkg5unittest.SingleDepotTestCase):
                                 previous = int(line.split(":")[column])
                         else:
                                 now = int(line.split(":")[column])
-                                self.assert_(now >= previous,
+                                self.assertTrue(now >= previous,
                                     "{0} is not sorted by column {1}".format(
                                     path, column))
 

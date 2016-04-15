@@ -42,7 +42,6 @@ else:
 
 import atexit
 import ast
-import cStringIO
 import errno
 import inspect
 import itertools
@@ -59,7 +58,7 @@ import tempfile
 import threading
 import time
 
-from six.moves import http_client, queue
+from six.moves import cStringIO, http_client, queue
 from six.moves.urllib.parse import quote, urlunsplit
 
 # Without the below statements, tarfile will trigger calls to getpwuid and
@@ -387,7 +386,7 @@ class DepotHTTP(_Depot):
                 face.init(self)
 
                 # Map new publishers into operation space.
-                map(self.__map_pub_ops, self.repo.publishers - old_pubs)
+                list(map(self.__map_pub_ops, self.repo.publishers - old_pubs))
 
         def __map_pub_ops(self, pub_prefix):
                 # Map the publisher into the depot's operation namespace if
@@ -543,23 +542,28 @@ class DepotHTTP(_Depot):
                 response.headers["Content-type"] = "text/plain; charset=utf-8"
                 self.__set_response_expires("search", 86400, 86400)
 
+                # The WSGI script depot_index.py will call this method and a WSGI
+                # application under Python 3 must return bytes as the output, so
+                # we force the output to be bytes here.
                 def output():
                         # Yield the string used to let the client know it's
                         # talking to a valid search server.
-                        yield str(Query.VALIDATION_STRING[1])
+                        yield misc.force_bytes(Query.VALIDATION_STRING[1])
                         for i, res in enumerate(res_list):
                                 for v, return_type, vals in res:
                                         if return_type == Query.RETURN_ACTIONS:
                                                 fmri_str, fv, line = vals
-                                                yield "{0} {1} {2} {3} {4}\n".format(
+                                                yield misc.force_bytes(
+                                                    "{0} {1} {2} {3} {4}\n".format(
                                                     i, return_type, fmri_str,
                                                     quote(fv),
-                                                    line.rstrip())
+                                                    line.rstrip()))
                                         elif return_type == \
                                             Query.RETURN_PACKAGES:
                                                 fmri_str = vals
-                                                yield "{0} {1} {2}\n".format(
-                                                    i, return_type, fmri_str)
+                                                yield misc.force_bytes(
+                                                    "{0} {1} {2}\n".format(
+                                                    i, return_type, fmri_str))
                 return output()
 
         search_1._cp_config = { "response.stream": True }
@@ -1144,7 +1148,7 @@ class DepotHTTP(_Depot):
                 pub, name, ver = pfmri.tuple()
                 summary = m.get("pkg.summary", m.get("description", ""))
 
-                lsummary = cStringIO.StringIO()
+                lsummary = cStringIO()
                 for i, entry in enumerate(m.gen_actions_by_type("license")):
                         if i > 0:
                                 lsummary.write("\n")
@@ -1202,7 +1206,7 @@ License:
                         cherrypy.log("Request failed: {0}".format(str(e)))
                         raise cherrypy.HTTPError(http_client.NOT_FOUND, str(e))
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 try:
                         p5i.write(buf, pubs)
                 except Exception as e:
@@ -1212,7 +1216,8 @@ License:
                         raise cherrypy.HTTPError(http_client.NOT_FOUND, str(e))
                 buf.seek(0)
                 self.__set_response_expires("publisher", 86400*365, 86400*365)
-                return buf.getvalue()
+                # Page handlers MUST return bytes.
+                return misc.force_bytes(buf.getvalue())
 
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])
@@ -1238,7 +1243,7 @@ License:
                                 raise cherrypy.HTTPError(http_client.NOT_FOUND,
                                     str(e))
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 try:
                         p5i.write(buf, pubs)
                 except Exception as e:
@@ -1289,7 +1294,7 @@ License:
                             for m in matches
                         ]
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 pkg_names = { pub.prefix: matches }
                 p5i.write(buf, [pub], pkg_names=pkg_names)
                 buf.seek(0)
@@ -1349,7 +1354,8 @@ License:
                             "matching package found in repository."))
 
                 self.__set_response_expires("p5i", 86400*365, 86400*365)
-                return output
+                # Page handlers MUST return bytes.
+                return misc.force_bytes(output)
 
         @cherrypy.tools.response_headers(headers=\
             [("Content-Type", "application/json; charset=utf-8")])
@@ -1367,7 +1373,7 @@ License:
                 except Exception as e:
                         raise cherrypy.HTTPError(http_client.NOT_FOUND, _("Unable "
                             "to generate statistics."))
-                return out + "\n"
+                return misc.force_bytes(out + "\n")
 
 def nasty_before_handler(nasty_depot, maxroll=100):
         """Cherrypy Tool callable which generates various problems prior to a

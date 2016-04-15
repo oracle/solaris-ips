@@ -29,6 +29,7 @@ from collections import defaultdict, namedtuple
 import contextlib
 import errno
 import fnmatch
+import io
 import itertools
 import mmap
 import operator
@@ -398,7 +399,7 @@ class ImagePlan(object):
                         dehydrate = set()
                 dehydrate = set(dehydrate) | (old_dehydrated - rehydrate)
 
-                self.operations_pubs = dehydrate
+                self.operations_pubs = sorted(dehydrate)
                 # Only allows actions in new image that cannot be dehydrated
                 # or that are in the dehydrate list and not in the rehydrate
                 # list.
@@ -1063,7 +1064,7 @@ class ImagePlan(object):
                 pt.plan_start(pt.PLAN_MEDIATION_CHG)
                 # keys() is used since entries are deleted during iteration.
                 update_mediators = {}
-                for m in self.pd._new_mediators.keys():
+                for m in list(self.pd._new_mediators.keys()):
                         pt.plan_add_progress(pt.PLAN_MEDIATION_CHG)
                         for k in ("implementation", "version"):
                                 if k in self.pd._new_mediators[m]:
@@ -1578,14 +1579,14 @@ class ImagePlan(object):
                 pstat = os.lstat(path)
                 mode = oct(stat.S_IMODE(pstat.st_mode))
                 if stat.S_ISLNK(pstat.st_mode):
-                        return pkg.actions.link.LinkAction(
+                        return pkg.actions.link.LinkAction(None,
                             target=os.readlink(path), path=pubpath)
                 elif stat.S_ISDIR(pstat.st_mode):
-                        return pkg.actions.directory.DirectoryAction(
+                        return pkg.actions.directory.DirectoryAction(None,
                             mode=mode, owner="root",
                             group="bin", path=pubpath)
                 else: # treat everything else as a file
-                        return pkg.actions.file.FileAction(
+                        return pkg.actions.file.FileAction(None,
                             mode=mode, owner="root",
                             group="bin", path=pubpath)
 
@@ -2623,7 +2624,8 @@ class ImagePlan(object):
                                 pns = None
                                 i = 0
                                 while 1:
-                                        line = sf.readline()
+                                        # sf is reading in binary mode
+                                        line = misc.force_str(sf.readline())
                                         i += 1
                                         if i > cnt:
                                                 break
@@ -2669,7 +2671,7 @@ class ImagePlan(object):
 
                 # .keys() is being used because we're removing keys from the
                 # dictionary as we go.
-                for key in new.keys():
+                for key in list(new.keys()):
                         actions = new[key]
                         assert len(actions) > 0
                         oactions = old.get(key, [])
@@ -2752,7 +2754,7 @@ class ImagePlan(object):
 
                 # .keys() is being used because we're removing keys from the
                 # dictionary as we go.
-                for key in old.keys():
+                for key in list(old.keys()):
                         # If actions that aren't in conflict are being removed,
                         # then nothing more needs to be done.
                         if key not in new:
@@ -3559,10 +3561,9 @@ class ImagePlan(object):
                         misc.makedirs(dpath)
                         fd, path = tempfile.mkstemp(suffix=".txt",
                             dir=dpath, prefix="release-notes-")
-                        tmpfile = os.fdopen(fd, "wb")
+                        tmpfile = os.fdopen(fd, "w")
                         for note in self.pd.release_notes[1]:
-                                if isinstance(note, six.text_type):
-                                        note = note.encode("utf-8")
+                                note = misc.force_str(note)
                                 print(note, file=tmpfile)
                         # make file world readable
                         os.chmod(path, 0o644)
@@ -3973,7 +3974,7 @@ class ImagePlan(object):
                 # Initially assume mediation is changing.
                 self.pd._mediators_change = True
 
-                for m in prop_mediators.keys():
+                for m in list(prop_mediators.keys()):
                         if m not in cfg_mediators:
                                 if prop_mediators[m]:
                                         # Fully-defined mediation not in previous
@@ -4542,8 +4543,12 @@ class ImagePlan(object):
                 # a perfect sort of this, but we only really care for things
                 # we fetch over the wire.
                 #
-                self.pd.pkg_plans.sort(
-                    key=operator.attrgetter("destination_fmri"))
+                def key_func(a):
+                        if a.destination_fmri:
+                                return a.destination_fmri
+                        return ""
+
+                self.pd.pkg_plans.sort(key=key_func)
 
                 pt.plan_done(pt.PLAN_ACTION_FINALIZE)
 
@@ -4987,8 +4992,16 @@ class ImagePlan(object):
                         except:
                                 # Ensure the real cause of failure is raised.
                                 pass
-                        six.reraise(api_errors.InvalidPackageErrors([
-                            exc_value]), None, exc_tb)
+                        if six.PY2:
+                                six.reraise(api_errors.InvalidPackageErrors([
+                                    exc_value]), None, exc_tb)
+                        else:
+                                # six.reraise requires the first argument
+                                # callable if the second argument is None.
+                                # Also the traceback is automatically attached,
+                                # in Python 3, so we can simply raise it.
+                                raise api_errors.InvalidPackageErrors([
+                                    exc_value])
                 except:
                         exc_type, exc_value, exc_tb = sys.exc_info()
                         self.pd.state = plandesc.EXECUTED_ERROR
@@ -4999,7 +5012,11 @@ class ImagePlan(object):
                                 # This ensures that the original exception and
                                 # traceback are used if exec_fail_actuators
                                 # fails.
-                                six.reraise(exc_value, None, exc_tb)
+                                if six.PY2:
+                                        six.reraise(exc_value, None, exc_tb)
+                                else:
+                                        raise exc_value
+
                 else:
                         self.pd._actuators.exec_post_actuators(self.image)
 
@@ -5569,7 +5586,7 @@ class ImagePlan(object):
                                     for pf in renamed_fmris[f]
                                 ])
 
-                                for pkg_name in ret[p].keys():
+                                for pkg_name in list(ret[p].keys()):
                                         if pkg_name in targets:
                                                 del ret[p][pkg_name]
 

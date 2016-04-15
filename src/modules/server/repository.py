@@ -21,7 +21,8 @@
 #
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import cStringIO
+from __future__ import print_function
+
 import codecs
 import datetime
 import errno
@@ -38,6 +39,7 @@ import zlib
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from io import BytesIO
 from six.moves.urllib.parse import unquote
 
 import pkg.actions as actions
@@ -1810,9 +1812,18 @@ class _RepoStore(object):
                         else:
                                 os.fchmod(fd, misc.PKG_FILE_MODE)
 
-                        with os.fdopen(fd, "wb") as f:
-                                with codecs.EncodedFile(f, "utf-8") as ef:
-                                        p5i.write(ef, [pub])
+                        if six.PY2:
+                                with os.fdopen(fd, "wb") as f:
+                                        with codecs.EncodedFile(f, "utf-8") as ef:
+                                                p5i.write(ef, [pub])
+                        else:
+                               # we use simpleson.dump() in p5i.write(),
+                               # simplejson module will produce str objects
+                               # in Python 3, therefore fp.write()
+                               # must support str input.
+
+                                with open(fd, "w", encoding="utf-8") as fp:
+                                        p5i.write(fp, [pub])
                         portable.rename(fn, p5ipath)
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
@@ -2338,7 +2349,7 @@ class _RepoStore(object):
                                 yield err
                 except (Exception, EnvironmentError) as e:
                         import traceback
-                        traceback.print_exc(e)
+                        traceback.print_exc()
                         raise apx._convert_error(e)
                 finally:
                         self.__unlock_rstore()
@@ -2936,7 +2947,10 @@ class Repository(object):
                         finally:
                                 # This ensures that the original exception and
                                 # traceback are used.
-                                six.reraise(exc_value, None, exc_tb)
+                                if six.PY2:
+                                        six.reraise(exc_value, None, exc_tb)
+                                else:
+                                        raise exc_value
 
         def remove_publisher(self, pfxs, repo_path, synch=False):
                 """Removes a repository storage area and configuration
@@ -4248,7 +4262,7 @@ def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
 
                 # ...and this file (which can be empty).
                 try:
-                        with open(os.path.join(path, "cfg_cache"), "wb") as cf:
+                        with open(os.path.join(path, "cfg_cache"), "w") as cf:
                                 cf.write("\n")
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:

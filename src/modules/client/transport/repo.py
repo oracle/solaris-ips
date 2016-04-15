@@ -24,7 +24,6 @@
 # Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import cStringIO
 import errno
 import itertools
 import os
@@ -35,7 +34,7 @@ import sys
 import tempfile
 
 from email.utils import formatdate
-from six.moves import http_client
+from six.moves import cStringIO, http_client
 from six.moves.urllib.parse import quote, urlencode, urlsplit, urlparse, \
     urlunparse, urljoin
 from six.moves.urllib.request import url2pathname, pathname2url
@@ -50,7 +49,7 @@ import pkg.p5p
 import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
-from pkg.misc import N_
+from pkg.misc import N_, force_str
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -255,7 +254,7 @@ class TransportRepo(object):
                         return msg
 
                 from xml.dom.minidom import Document, parse
-                dom = parse(cStringIO.StringIO(content))
+                dom = parse(cStringIO(content))
                 msg = ""
 
                 paragraphs = []
@@ -423,10 +422,18 @@ class HTTPRepo(TransportRepo):
                                 try:
                                         e.details = self._parse_html_error(
                                             fobj.read())
+                                # six.reraise requires the first argument
+                                # callable if the second argument is None.
+                                # Also the traceback is automatically attached,
+                                # in Python 3, so we can simply raise it.
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        six.reraise(exc_value, None, exc_tb)
+                                        if six.PY2:
+                                                six.reraise(exc_value, None,
+                                                    exc_tb)
+                                        else:
+                                                raise exc_value
                         raise
                 finally:
                         fobj.close()
@@ -756,9 +763,12 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If analysis fails, raise original
                                         # exception.
-                                        six.reraise(exc_value, None, exc_tb)
+                                        if six.PY2:
+                                                six.reraise(exc_value, None,
+                                                    exc_tb)
+                                        else:
+                                                raise exc_value
                         raise
-
                 return fobj
 
         def has_version_data(self):
@@ -850,7 +860,11 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        six.reraise(exc_value, None, exc_tb)
+                                        if six.PY2:
+                                                six.reraise(exc_value, None,
+                                                    exc_tb)
+                                        else:
+                                                raise exc_value
                         raise
                 finally:
                         fobj.close()
@@ -890,7 +904,11 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        six.reraise(exc_value, None, exc_tb)
+                                        if six.PY2:
+                                                six.reraise(exc_value, None,
+                                                    exc_tb)
+                                        else:
+                                                raise exc_value
 
                         raise
                 finally:
@@ -934,7 +952,11 @@ class HTTPRepo(TransportRepo):
                                 except:
                                         # If parse fails, raise original
                                         # exception.
-                                        six.reraise(exc_value, None, exc_tb)
+                                        if six.PY2:
+                                                six.reraise(exc_value, None,
+                                                    exc_tb)
+                                        else:
+                                                raise exc_value
                         raise
                 finally:
                         fobj.close()
@@ -1356,7 +1378,7 @@ class _FilesystemRepo(TransportRepo):
 
                 try:
                         pubs = self._frepo.get_publishers()
-                        buf = cStringIO.StringIO()
+                        buf = cStringIO()
                         p5i.write(buf, pubs)
                 except Exception as e:
                         reason = "Unable to retrieve publisher configuration " \
@@ -1371,7 +1393,7 @@ class _FilesystemRepo(TransportRepo):
         def get_status(self, header=None, ccancel=None):
                 """Get status/0 information from the repository."""
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 try:
                         rstatus = self._frepo.get_status()
                         json.dump(rstatus, buf, ensure_ascii=False, indent=2,
@@ -1562,7 +1584,7 @@ class _FilesystemRepo(TransportRepo):
                 """Query the repo for versions information.
                 Returns a file-like object."""
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 vops = {
                     "abandon": ["0"],
                     "add": ["0"],
@@ -1889,7 +1911,7 @@ class _ArchiveRepo(TransportRepo):
                                 # Remove temporary directory if possible.
                                 shutil.rmtree(tmpdir, ignore_errors=True)
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 try:
                         json.dump(arcdata, buf, ensure_ascii=False, indent=2,
                             sort_keys=True)
@@ -1966,7 +1988,7 @@ class _ArchiveRepo(TransportRepo):
 
                 try:
                         pubs = self._arc.get_publishers()
-                        buf = cStringIO.StringIO()
+                        buf = cStringIO()
                         p5i.write(buf, pubs)
                 except Exception as e:
                         reason = "Unable to retrieve publisher configuration " \
@@ -2075,7 +2097,7 @@ class _ArchiveRepo(TransportRepo):
                 """Query the repo for versions information.
                 Returns a file-like object."""
 
-                buf = cStringIO.StringIO()
+                buf = cStringIO()
                 vops = {
                     "catalog": ["1"],
                     "file": ["0"],

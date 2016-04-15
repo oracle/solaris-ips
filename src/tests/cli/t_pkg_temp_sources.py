@@ -24,7 +24,7 @@
 # Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -122,8 +122,8 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
-                self.assert_(dest_dir)
-                self.assert_(self.raw_trust_anchor_dir)
+                self.assertTrue(dest_dir)
+                self.assertTrue(self.raw_trust_anchor_dir)
                 for c in certs:
                         name = "{0}_cert.pem".format(c)
                         portable.copyfile(
@@ -425,10 +425,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 """Verify that the info operation works as expected for
                 temporary origins.
                 """
-		# because we compare date strings we must run this in
-		# a consistent locale, which we made 'C'
+                # because we compare date strings we must run this in
+                # a consistent locale, which we made 'C'
 
-		os.environ['LC_ALL'] = 'C'
+                os.environ['LC_ALL'] = 'C'
 
                 # Create an image and verify no packages are known.
                 self.image_create(self.empty_rurl, prefix=None)
@@ -601,6 +601,9 @@ Last Install Time: {pkg_install}
 
                 # Cleanup.
                 self.image_destroy()
+                # Change locale back to 'UTF-8' to not affect other test cases.
+                if six.PY3:
+                        os.environ["LC_ALL"] = "en_US.UTF-8"
 
         def test_02_contents(self):
                 """Verify that the contents operation works as expected for
@@ -934,7 +937,7 @@ test2
 
                 self.pkg("install -g {0} --licenses licensed@1.0".format(
                     self.licensed_rurl))
-                self.assert_("tmp/LICENSE" in self.output, "Expected "
+                self.assertTrue("tmp/LICENSE" in self.output, "Expected "
                     "tmp/LICENSE to be in the output of the install. Output "
                     "was:\n{0}".format(self.output))
                 self.pkg("info -g {0} --license licensed".format(self.licensed_rurl))
@@ -945,7 +948,7 @@ test2
 
                 self.pkg("update -g {0} --licenses licensed@2.0".format(
                     self.licensed_rurl))
-                self.assert_("tmp/LICENSE2" in self.output, "Expected "
+                self.assertTrue("tmp/LICENSE2" in self.output, "Expected "
                     "tmp/LICENSE2 to be in the output of the install. Output "
                     "was:\n{0}".format(self.output))
                 self.pkg("info -g {0} --license licensed".format(self.licensed_rurl))

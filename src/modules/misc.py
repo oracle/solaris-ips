@@ -30,7 +30,6 @@ from __future__ import division
 from __future__ import print_function
 
 import OpenSSL.crypto as osc
-import cStringIO
 import calendar
 import collections
 import datetime
@@ -55,7 +54,9 @@ import traceback
 import urllib
 import zlib
 
+from binascii import hexlify, unhexlify
 from collections import defaultdict
+from io import BytesIO
 from operator import itemgetter
 # Pylint seems to be panic about six even if it is installed. Instead of using
 # 'disable' here, a better way is to use ignore-modules in pylintrc, but
@@ -368,7 +369,7 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
 
         # Read the header
         magic = gz.read(2)
-        if magic != "\037\213":
+        if magic != b"\037\213":
                 raise zlib.error("Not a gzipped file")
         method = ord(gz.read(1))
         if method != 8:
@@ -386,14 +387,14 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
         if flag & FNAME:
                 while True:
                         s = gz.read(1)
-                        if not s or s == "\000":
+                        if not s or s == b"\000":
                                 break
 
         # Discard a null-terminated comment
         if flag & FCOMMENT:
                 while True:
                         s = gz.read(1)
-                        if not s or s == "\000":
+                        if not s or s == b"\000":
                                 break
 
         # Discard a 16-bit CRC
@@ -412,7 +413,7 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
 
         while True:
                 buf = gz.read(64 * 1024)
-                if buf == "":
+                if buf == b"":
                         ubuf = dcobj.flush()
                         if ignore_hash:
                                 pass
@@ -611,7 +612,7 @@ def get_data_digest(data, length=None, return_content=False,
 
         # Read the data in chunks and compute the SHA hashes as the data comes
         # in.  A large read on some platforms (e.g. Windows XP) may fail.
-        content = cStringIO.StringIO()
+        content = BytesIO()
         while length > 0:
                 data = f.read(min(bufsz, length))
                 if return_content:
@@ -628,7 +629,7 @@ def get_data_digest(data, length=None, return_content=False,
                 if l == 0:
                         break
                 length -= l
-        content.reset()
+        content.seek(0)
         if closefobj:
                 f.close()
 
@@ -706,7 +707,8 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                 chashes[chash_attr] = chash_algs[chash_attr]()
         while True:
                 cdata = cfile.read(bufsz)
-                if cdata == "":
+                # cdata is bytes
+                if cdata == b"":
                         break
                 for chash_attr in chashes:
                         chashes[chash_attr].update(
@@ -890,8 +892,8 @@ class ProcFS(object):
                         psinfo_size = 288
 
                 try:
-                        psinfo_data = open("/proc/self/psinfo").read(
-                            psinfo_size)
+                        with open("/proc/self/psinfo", "rb") as f:
+                                psinfo_data = f.read(psinfo_size)
                 # Catch "Exception"; pylint: disable=W0703
                 except Exception:
                         return None
@@ -1032,6 +1034,10 @@ class DictProperty(object):
                                 raise AttributeError("can't iterate over items")
                         return self.__iteritems(self.__obj)
 
+                # for Python 3 compatibility
+                def items(self):
+                        return self.iteritems()
+
                 def keys(self):
                         if self.__keys is None:
                                 raise AttributeError("can't iterate over keys")
@@ -1137,7 +1143,8 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
 
         now = datetime.datetime.utcnow()
         nb = cert.get_notBefore()
-        t = time.strptime(nb, "%Y%m%d%H%M%SZ")
+        # strptime's first argument must be str
+        t = time.strptime(force_str(nb), "%Y%m%d%H%M%SZ")
         nbdt = datetime.datetime.utcfromtimestamp(
             calendar.timegm(t))
 
@@ -1149,7 +1156,7 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
                     publisher=prefix)
 
         na = cert.get_notAfter()
-        t = time.strptime(na, "%Y%m%d%H%M%SZ")
+        t = time.strptime(force_str(na), "%Y%m%d%H%M%SZ")
         nadt = datetime.datetime.utcfromtimestamp(
             calendar.timegm(t))
 
@@ -1161,31 +1168,15 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
 
         return cert
 
-# Used for the conversion of the signature value between hex and binary.
-char_list = "0123456789abcdef"
-
 def binary_to_hex(s):
         """Converts a string of bytes to a hexadecimal representation.
         """
-
-        res = ""
-        for p in s:
-                p = ord(p)
-                a = char_list[p % 16]
-                p = p // 16
-                b = char_list[p % 16]
-                res += b + a
-        return res
+        return force_str(hexlify(s))
 
 def hex_to_binary(s):
         """Converts a string of hex digits to the binary representation.
         """
-
-        res = ""
-        for i in range(0, len(s), 2):
-                res += chr(char_list.find(s[i]) * 16 +
-                    char_list.find(s[i+1]))
-        return res
+        return unhexlify(s)
 
 def config_temp_root():
         """Examine the environment.  If the environment has set TMPDIR, TEMP,
@@ -1563,7 +1554,7 @@ def api_pkgcmd():
                 except OSError:
                         pass
 
-        pkg_cmd = [pkg_bin]
+        pkg_cmd = [sys.executable] + [pkg_bin]
 
         # propagate debug options
         for k, v in six.iteritems(DebugValues):
@@ -1771,11 +1762,14 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                 output += "\n"
 
         for entry in field_values:
-                map(set_value, (
+                # In Python 3, map() returns an iterator and will not process
+                # elements unless being called, so we turn it into a list to
+                # force it to process elements.
+                list(map(set_value, (
                     (field_data[f], v)
                     for f, v in six.iteritems(entry)
                     if f in field_data
-                ))
+                )))
                 values = map(get_value, sorted(filter(filter_func,
                     field_data.values()), key=key_fields))
                 output += fmt.format(*values)
@@ -2652,6 +2646,8 @@ def get_runtime_proxy(proxy, uri):
 def decode(s):
         """convert non-ascii strings to unicode;
         replace non-convertable chars"""
+        if six.PY3:
+                return s
         try:
                 # this will fail if any 8 bit chars in string
                 # this is a nop if string is ascii.
@@ -2911,19 +2907,20 @@ def force_bytes(s, encoding="utf-8", errors="strict"):
         """Force the string into bytes."""
 
         if isinstance(s, bytes):
-                if encoding == "utf-8":
-                        return s
-                return s.decode("utf-8", errors).encode(encoding,
-                    errors)
-        elif isinstance(s, six.string_types):
-                # this case is: unicode in Python 2 and str in Python 3
-                return s.encode(encoding, errors)
-        elif six.PY3:
-                # type not a string and Python 3's bytes() requires
-                # a string argument
-                return six.text_type(s).encode(encoding)
-        # type not a string
-        return bytes(s)
+                return s
+        try:
+                if isinstance(s, six.string_types):
+                        # this case is: unicode in Python 2 and str in Python 3
+                        return s.encode(encoding, errors)
+                elif six.PY3:
+                        # type not a string and Python 3's bytes() requires
+                        # a string argument
+                        return six.text_type(s).encode(encoding)
+                # type not a string
+                s = bytes(s)
+        except UnicodeEncodeError:
+                raise
+        return s
 
 
 def force_text(s, encoding="utf-8", errors="strict"):
@@ -2931,19 +2928,25 @@ def force_text(s, encoding="utf-8", errors="strict"):
 
         if isinstance(s, six.text_type):
                 return s
-        if isinstance(s, six.string_types):
-                # this case is: str(bytes) in Python 2
-                return s.decode(encoding, errors)
-        elif isinstance(s, bytes):
-                # this case is: bytes in Python 3
-                return s.decode(encoding, errors)
-        # type not a string
-        return six.text_type(s)
+        try:
+                if isinstance(s, (six.string_types, bytes)):
+                        # this case is: str(bytes) in Python 2 and bytes in
+                        # Python 3
+                        s = s.decode(encoding, errors)
+                else:
+                        # type not a string
+                        s = six.text_type(s)
+        except UnicodeDecodeError as e:
+                raise api_errors.PkgUnicodeDecodeError(s, *e.args)
+        return s
 
-if six.PY3:
-        force_str = force_text
-else:
+# force_str minimizes the work for compatible string handling between Python
+# 2 and 3 because we will have the native string type in its runtime, that is,
+# bytes in Python 2 and unicode string in Python 3.
+if six.PY2:
         force_str = force_bytes
+else:
+        force_str = force_text
 
 
 def check_ca(cert):

@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -30,6 +30,7 @@ import pkg5unittest
 import json
 import os
 import shutil
+import six
 import unittest
 
 import pkg.catalog as catalog
@@ -90,10 +91,10 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         def __check_qoutput(self, errout=False):
                 self.assertEqualDiff(self.output, "")
                 if errout:
-                        self.assert_(self.errout != "",
+                        self.assertTrue(self.errout != "",
                             "-q must print fatal errors!")
                 else:
-                        self.assert_(self.errout == "",
+                        self.assertTrue(self.errout == "",
                             "-q should only print fatal errors!")
 
         def setUp(self):
@@ -207,21 +208,21 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 # can't retrieve it.
                 self.pkg("unset-publisher test")
                 self.pkg("info -r jade", su_wrap=True, exit=1)
-                self.assert_("no errors" not in self.errout, self.errout)
-                self.assert_("Unknown" not in self.errout, self.errout)
+                self.assertTrue("no errors" not in self.errout, self.errout)
+                self.assertTrue("Unknown" not in self.errout, self.errout)
 
                 self.pkg("info jade", su_wrap=True, exit=1)
-                self.assert_("no errors" not in self.errout, self.errout)
-                self.assert_("Unknown" not in self.errout, self.errout)
+                self.assertTrue("no errors" not in self.errout, self.errout)
+                self.assertTrue("Unknown" not in self.errout, self.errout)
 
                 self.pkg("set-publisher test")
                 self.pkg("info -r jade", su_wrap=True, exit=1)
-                self.assert_("no errors" not in self.errout, self.errout)
-                self.assert_("Unknown" not in self.errout, self.errout)
+                self.assertTrue("no errors" not in self.errout, self.errout)
+                self.assertTrue("Unknown" not in self.errout, self.errout)
 
                 self.pkg("info jade", su_wrap=True, exit=1)
-                self.assert_("no errors" not in self.errout, self.errout)
-                self.assert_("Unknown" not in self.errout, self.errout)
+                self.assertTrue("no errors" not in self.errout, self.errout)
+                self.assertTrue("Unknown" not in self.errout, self.errout)
 
                 self.pkg("set-publisher -p {0} test".format(self.durl))
 
@@ -375,25 +376,25 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 # grep for some attributes that are defined and they have
                 # single values
                 self.pkg("info jade")
-                self.assert_("Category" in self.output) 
+                self.assertTrue("Category" in self.output) 
                 
                 # grep for some attributes that are defined and they have
                 # multiple values
                 self.pkg("info jade")
-                self.assert_("Project Maintainer" in self.output) 
+                self.assertTrue("Project Maintainer" in self.output) 
 
                 # grep for some attributes that are defined , with no value
                 self.pkg("info jade")
-                self.assert_("Project Maintainer URL" not in self.output) 
+                self.assertTrue("Project Maintainer URL" not in self.output) 
                    
                 # grep for same attributes that are defined above in different
                 # packages, with some value 
                 self.pkg("info copper")
-                self.assert_("Project Maintainer URL" in self.output) 
+                self.assertTrue("Project Maintainer URL" in self.output) 
 
                 # grep for attributes that are not defined
                 self.pkg("info jade")
-                self.assert_("info.foo" not in self.output) 
+                self.assertTrue("info.foo" not in self.output) 
 
         def test_info_bad_packages(self):
                 """Verify that pkg info handles packages with invalid
@@ -445,10 +446,10 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 multiple publishers provide the same package based on
                 publisher search order."""
 
-		# because we compare date strings we must run this in
-		# a consistent locale, which we made 'C'
+                # because we compare date strings we must run this in
+                # a consistent locale, which we made 'C'
 
-		os.environ['LC_ALL'] = 'C'
+                os.environ['LC_ALL'] = 'C'
 
                 # Create an isolated repository for this test
                 repodir = os.path.join(self.test_root, "test-ranked")
@@ -578,14 +579,17 @@ Packaging Date: Thu Sep 08 00:45:46 2011
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
+                if six.PY3:
+                        os.environ["LC_ALL"] = "en_US.UTF-8"
+
         def test_renamed_packages(self):
                 """Verify that info returns the expected output for renamed
                 packages."""
 
-		# because we compare date strings we must run this in
-		# a consistent locale, which we made 'C'
+                # because we compare date strings we must run this in
+                # a consistent locale, which we made 'C'
 
-		os.environ['LC_ALL'] = 'C'
+                os.environ['LC_ALL'] = 'C'
 
                 target10 = """
                     open target@1.0
@@ -715,6 +719,9 @@ Packaging Date: {pkg_date}
 """.format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
                 self.assertEqualDiff(expected, actual)
 
+                if six.PY3:
+                        os.environ["LC_ALL"] = "en_US.UTF-8"
+
         def test_appropriate_license_files(self):
                 """Verify that the correct license file is displayed."""
 
@@ -726,7 +733,7 @@ Packaging Date: {pkg_date}
                 self.assertEqual("tmp/copyright0\n", self.output)
 
                 self.pkg("install --licenses bronze@0.5")
-                self.assert_("tmp/copyright0" in self.output, "Expected "
+                self.assertTrue("tmp/copyright0" in self.output, "Expected "
                     "tmp/copyright0 to be in the output of the install. Output "
                     "was:\n{0}".format(self.output))
                 self.pkg("info -l --license bronze")
@@ -737,7 +744,7 @@ Packaging Date: {pkg_date}
                 self.assertEqual("tmp/copyright1\n", self.output)
 
                 self.pkg("update --licenses bronze@1.0")
-                self.assert_("tmp/copyright1" in self.output, "Expected "
+                self.assertTrue("tmp/copyright1" in self.output, "Expected "
                     "tmp/copyright1 to be in the output of the install. Output "
                     "was:\n{0}".format(self.output))
                 self.pkg("info -r --license bronze")
@@ -775,6 +782,9 @@ Packaging Date: {pkg_date}
                 self.pkg(("info bronze | grep 'Last Update Time: "
                     "{0}'").format(last_update))
 
+                if six.PY3:
+                        os.environ["LC_ALL"] = "en_US.UTF-8"
+
 
 class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):
         """A separate test class is needed because these tests modify packages
@@ -807,9 +817,9 @@ class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):
         def __mangle_license(self, fmri):
                 repo = self.dc.get_repo()
                 m_path = repo.manifest(fmri)
-                with open(m_path, "rb") as fh:
+                with open(m_path, "r") as fh:
                         fmri_lines = fh.readlines()
-                with open(m_path, "wb") as fh:
+                with open(m_path, "w") as fh:
                         a = None
                         for l in fmri_lines:
                                 if "license=copyright" in l:
@@ -817,7 +827,7 @@ class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):
                                 elif "path=etc/bronze1" in l:
                                         a = actions.fromstr(l)
                                 fh.write(l)
-                        self.assert_(a)
+                        self.assertTrue(a)
                         l = """\
 license {hash} license=foo chash={chash} pkg.csize={csize} \
 pkg.size={size}""".format(
@@ -838,18 +848,18 @@ pkg.size={size}""".format(
                 self.pkg("install bronze")
 
                 self.pkg("info --license bronze")
-                self.assert_("tmp/copyright1" in self.output)
+                self.assertTrue("tmp/copyright1" in self.output)
                 self.__mangle_license(self.plist[0])
 
                 self.pkg("refresh --full")
 
                 self.pkg("info --license bronze")
-                self.assert_("tmp/bronze1" not in self.output)
-                self.assert_("tmp/copyright1" in self.output)
+                self.assertTrue("tmp/bronze1" not in self.output)
+                self.assertTrue("tmp/copyright1" in self.output)
 
                 self.pkg("info -r --license bronze")
-                self.assert_("tmp/bronze1" not in self.output)
-                self.assert_("tmp/copyright1" in self.output)
+                self.assertTrue("tmp/bronze1" not in self.output)
+                self.assertTrue("tmp/copyright1" in self.output)
 
         def test_info_uninstalled_changed_manifest(self):
                 """Test that if an uninstalled manifest has changed in the
@@ -860,13 +870,13 @@ pkg.size={size}""".format(
                 self.image_create(self.rurl)
 
                 self.pkg("info -r  --license bronze")
-                self.assert_("tmp/copyright1" in self.output)
+                self.assertTrue("tmp/copyright1" in self.output)
                 self.__mangle_license(self.plist[0])
                 self.pkg("refresh --full")
 
                 self.pkg("info -r  --license bronze")
-                self.assert_("tmp/bronze1" in self.output)
-                self.assert_("tmp/copyright1" not in self.output)
+                self.assertTrue("tmp/bronze1" in self.output)
+                self.assertTrue("tmp/copyright1" not in self.output)
 
 
 if __name__ == "__main__":

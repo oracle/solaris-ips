@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -250,8 +250,8 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 # Refresh all publishers should try to validate all certs.
                 self.pkg("refresh", exit=1)
-                self.assert_("Publisher: tmp" in self.errout, self.errout)
-                self.assert_("Publisher: test" in self.errout, self.errout)
+                self.assertTrue("Publisher: tmp" in self.errout, self.errout)
+                self.assertTrue("Publisher: test" in self.errout, self.errout)
 
         def test_expiring_certs(self):
                 """Test that image-create will not raise exception for

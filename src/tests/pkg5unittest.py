@@ -53,7 +53,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import traceback
 import unittest
 import operator
 import platform
@@ -61,16 +60,17 @@ import pty
 import pwd
 import re
 import ssl
-import StringIO
 import textwrap
 import threading
 import traceback
-import types
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from imp import reload
+if sys.version_info[:2] >= (3, 4):
+        from importlib import reload
+else:
+        from imp import reload
 from six.moves import configparser, http_client
 from six.moves.urllib.error import HTTPError, URLError
 from six.moves.urllib.parse import urljoin
@@ -382,7 +382,7 @@ if __name__ == "__main__":
                                         break
 
                 # This is the arg handling protocol from Popen
-                if isinstance(args, (str, bytes)):
+                if isinstance(args, six.string_types):
                         args = [args]
                 else:
                         args = list(args)
@@ -407,7 +407,7 @@ if __name__ == "__main__":
                                 traceback.print_exc()
                                 os._exit(99)
                 else:
-                        masterf = os.fdopen(fd)
+                        masterf = os.fdopen(fd, "rb")
                         outlist = []
                         t = threading.Thread(target=__drain,
                             args=(masterf, outlist))
@@ -415,7 +415,7 @@ if __name__ == "__main__":
                         waitedpid, retcode = os.waitpid(pid, 0)
                         retcode = retcode >> 8
                         t.join()
-                return retcode, "".join(outlist)
+                return retcode, b"".join(outlist)
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
@@ -463,7 +463,6 @@ if __name__ == "__main__":
                         newenv.update(self.coverage_env)
                 if env_arg:
                         newenv.update(env_arg)
-
                 if not usepty:
                         p = subprocess.Popen(cmdline,
                             env=newenv,
@@ -483,6 +482,20 @@ if __name__ == "__main__":
                             env=newenv, shell=True)
                         self.errout = ""
 
+                # In Python 3, subprocess returns bytes, while our pkg CLI
+                # utilites' standard output and error streams return
+                # str (unicode). To mimic the behavior of CLI, we force the
+                # output to be str. This is a no-op in Python 2.
+                encoding = "utf-8"
+                # For testing encoding other than utf-8, we need to pass the
+                # encoding to fore_str.
+                if newenv.get("LC_ALL", None) not in (None, "en_US.utf-8"):
+                        # locale is a form of "x.y" and we ignore the C locale
+                        index = newenv["LC_ALL"].find(".")
+                        if index > -1:
+                                encoding = newenv["LC_ALL"][index + 1:]
+                self.output = misc.force_str(self.output, encoding)
+                self.errout = misc.force_str(self.errout, encoding)
                 self.debugresult(retcode, exit, self.output + self.errout)
 
                 if raise_error and retcode == 99:
@@ -861,11 +874,14 @@ if __name__ == "__main__":
                 if not os.path.exists(os.path.dirname(path)):
                         os.makedirs(os.path.dirname(path), 0o777)
                 self.debugfilecreate(content, path)
-                fh = open(path, 'wb')
-                if isinstance(content, six.text_type):
-                        content = content.encode("utf-8")
-                fh.write(content)
-                fh.close()
+                if six.PY2:
+                        if isinstance(content, six.text_type):
+                                content = content.encode("utf-8")
+                        with open(path, "wb") as fh:
+                                fh.write(content)
+                else:
+                        with open(path, "w", encoding="utf-8") as fh:
+                                fh.write(content)
                 os.chmod(path, mode)
 
         def make_misc_files(self, files, prefix=None, mode=0o644):
@@ -929,7 +945,7 @@ if __name__ == "__main__":
         @staticmethod
         def calc_pem_hash(pth):
                 """Find the hash of pem representation the file."""
-                with open(pth) as f:
+                with open(pth, "rb") as f:
                         cert = x509.load_pem_x509_certificate(
                             f.read(), default_backend())
                 return hashlib.sha1(
@@ -1007,18 +1023,18 @@ if __name__ == "__main__":
                                     "output.\nError was: {0}\nOutput was:\n{1}".format(
                                     e, output))
                 else:
-                        self.assert_(isinstance(output, dict))
+                        self.assertTrue(isinstance(output, dict))
                         outd = output
                 expected = locals()
                 # It's difficult to check that space-available is correct in the
                 # test suite.
-                self.assert_("space-available" in outd)
+                self.assertTrue("space-available" in outd)
                 del outd["space-available"]
                 # While we could check for space-required, it just means lots of
                 # tests would need to be changed if we ever changed our size
                 # measurement and other tests should be ensuring that the number
                 # is correct.
-                self.assert_("space-required" in outd)
+                self.assertTrue("space-required" in outd)
                 del outd["space-required"]
                 # Do not check item-messages, since it will be checked
                 # somewhere else.
@@ -1068,17 +1084,21 @@ if __name__ == "__main__":
                 to /.
                 """
 
-                new_rcfile = open("{0}/{1}{2}".format(test_root, os.path.basename(rcfile),
-                    suffix), "w")
+                with open("{0}/{1}{2}".format(test_root, os.path.basename(rcfile),
+                    suffix), "w") as new_rcfile:
 
-                conf = configparser.RawConfigParser()
-                conf.readfp(open(rcfile))
+                        conf = configparser.RawConfigParser()
+                        with open(rcfile) as f:
+                                if six.PY2:
+                                        conf.readfp(f)
+                                else:
+                                        conf.read_file(f)
 
-                for key in config:
-                        conf.set(section, key, config[key])
+                        for key in config:
+                                conf.set(section, key, config[key])
 
-                conf.write(new_rcfile)
-                return new_rcfile.name
+                        conf.write(new_rcfile)
+                        return new_rcfile.name
 
 
 class _OverTheWireResults(object):
@@ -1561,7 +1581,7 @@ def q_run(inq, outq, i, o, baseline_filepath, bail_on_fail,
                         outq.put(("START", find_names(test_suite.tests[0]), i),
                             block=True)
 
-                        buf = StringIO.StringIO()
+                        buf = six.StringIO()
                         b = baseline.ReadOnlyBaseLine(
                             filename=baseline_filepath)
                         b.load()
@@ -1714,8 +1734,11 @@ class Pkg5TestRunner(unittest.TextTestRunner):
 
                 if self.timing_history:
                         try:
+                                # simpleson module will produce str
+                                # in Python 3, therefore fh.write()
+                                # must support str input.
                                 with open(self.timing_history + ".tmp",
-                                    "wb+") as fh:
+                                    "w+") as fh:
                                         self.__write_timing_history(fh,
                                             suite_name, lst, time_estimates)
                                 portable.rename(self.timing_history + ".tmp",
@@ -1729,7 +1752,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 if not self.timing_file:
                         return
                 try:
-                        fh = open(self.timing_file, "ab+")
+                        fh = open(self.timing_file, "a+")
                         opened = True
                 except KeyboardInterrupt:
                         raise TestStopException()
@@ -2110,13 +2133,15 @@ class Pkg5TestSuite(unittest.TestSuite):
                 # changed which can can cause tests to succeed when they should
                 # fail due to unicode issues:
                 #     https://bugzilla.gnome.org/show_bug.cgi?id=132040
-                default_utf8 = getattr(self._tests[0], "default_utf8", False)
-                if not default_utf8:
-                        # Now reset to the default a standard Python
-                        # distribution uses.
-                        sys.setdefaultencoding("ascii")
-                else:
-                        sys.setdefaultencoding("utf-8")
+                if six.PY2:
+                        default_utf8 = getattr(self._tests[0], "default_utf8",
+                            False)
+                        if not default_utf8:
+                                # Now reset to the default a standard Python
+                                # distribution uses.
+                                sys.setdefaultencoding("ascii")
+                        else:
+                                sys.setdefaultencoding("utf-8")
 
                 def setUp_donothing():
                         pass
@@ -2455,7 +2480,8 @@ class CliTestCase(Pkg5TestCase):
 
                 self.image_destroy()
                 os.mkdir(self.img_path())
-                cmdline = "{0} image-create -F ".format(self.pkg_cmdpath)
+                cmdline = sys.executable + " {0} image-create -F ".format(
+                    self.pkg_cmdpath)
                 if repourl:
                         cmdline = "{0} -p {1}={2} ".format(cmdline, prefix, repourl)
                 cmdline += additional_args
@@ -2510,7 +2536,7 @@ class CliTestCase(Pkg5TestCase):
                 else:
                         cmdstr = command
 
-                cmdline = []
+                cmdline = [sys.executable]
 
                 if not cmd_path:
                         cmd_path = self.pkg_cmdpath
@@ -2542,7 +2568,7 @@ class CliTestCase(Pkg5TestCase):
                         # default to prevent silent failures for the wrong
                         # reason.
                         for buf in (self.errout, self.output):
-                                self.assert_("No solution" not in buf,
+                                self.assertTrue("No solution" not in buf,
                                     msg="Solver could not find solution for "
                                     "operation; set assert_solution=False if "
                                     "this is expected when calling pkg().")
@@ -2571,27 +2597,28 @@ class CliTestCase(Pkg5TestCase):
                 ops = ""
                 if "-R" not in args:
                         ops = "-R {0}".format(self.get_img_path())
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgdepend {0} resolve {1}".format(ops, args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False,
             env_arg=None):
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgdepend generate {0}".format(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdiff(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgdiff {0}".format(command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgfmt(self, args, exit=0, su_wrap=False, env_arg=None):
-                cmd= os.path.join(g_pkg_path, "usr/bin/pkgfmt {0}".format(args))
+                cmd= sys.executable + " " + \
+                     os.path.join(g_pkg_path, "usr/bin/pkgfmt {0}".format(args))
                 self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap,
                     env_arg=env_arg)
 
@@ -2599,10 +2626,10 @@ class CliTestCase(Pkg5TestCase):
             env_arg=None):
                 if testrc:
                         rcpath = "{0}/pkglintrc".format(self.test_root)
-                        cmdline = os.path.join(g_pkg_path,
+                        cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                             "usr/bin/pkglint -f {0} {1}".format(rcpath, args))
                 else:
-                        cmdline = os.path.join(g_pkg_path,
+                        cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                             "usr/bin/pkglint {0}".format(args))
                 return self.cmdline_run(cmdline, exit=exit, out=True,
                     comment=comment, stderr=True, env_arg=env_arg)
@@ -2616,7 +2643,7 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgrecv {0}".format(" ".join(args)))
 
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
@@ -2624,7 +2651,7 @@ class CliTestCase(Pkg5TestCase):
 
         def pkgmerge(self, args, comment="", exit=0, su_wrap=False,
             env_arg=None):
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgmerge {0}".format(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
@@ -2639,14 +2666,14 @@ class CliTestCase(Pkg5TestCase):
                 # Always add the current ignored_deps dir path.
                 debug_arg += "-D ignored_deps={0} ".format(os.path.join(
                     g_pkg_path, "usr/share/pkg/ignored_deps"))
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgrepo {0}{1}".format(debug_arg, command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgsurf(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgsurf {0}".format(command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
@@ -2663,7 +2690,7 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgsign {0}".format(" ".join(args)))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     env_arg=env_arg)
@@ -2700,7 +2727,7 @@ class CliTestCase(Pkg5TestCase):
                         args.append(command)
 
                 prefix = "cd {0};".format(self.test_root)
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgsend {0}".format(" ".join(args)))
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,
@@ -2779,7 +2806,7 @@ class CliTestCase(Pkg5TestCase):
                                 if line == "":
                                         continue
                                 if line.startswith("add"):
-                                        self.assert_(current_fmri != None,
+                                        self.assertTrue(current_fmri != None,
                                             "Missing open in pkgsend string")
                                         accumulate.append(line[4:])
                                         continue
@@ -2787,7 +2814,8 @@ class CliTestCase(Pkg5TestCase):
                                 if current_fmri: # send any content seen so far (can be 0)
                                         fd, f_path = tempfile.mkstemp(dir=self.test_root)
                                         for l in accumulate:
-                                                os.write(fd, "{0}\n".format(l))
+                                                os.write(fd, misc.force_bytes(
+                                                    "{0}\n".format(l)))
                                         os.close(fd)
                                         if su_wrap:
                                                 os.chown(f_path,
@@ -2841,7 +2869,7 @@ class CliTestCase(Pkg5TestCase):
                 return plist
 
         def merge(self, args=EmptyI, exit=0):
-                cmd = os.path.join(g_pkg_path,
+                cmd = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/bin/pkgmerge {0}".format(" ".join(args)))
                 self.cmdline_run(cmd, exit=exit)
 
@@ -2864,7 +2892,7 @@ class CliTestCase(Pkg5TestCase):
                 if "-t" not in args:
                         args += " -t {0}".format(self.sysrepo_template_dir)
 
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/lib/pkg.sysrepo {0}".format(args))
                 if env_arg is None:
                         env_arg = {}
@@ -2909,7 +2937,7 @@ class CliTestCase(Pkg5TestCase):
                         args += " --debug smf_cmds_dir={0}".format(
                             DebugValues["smf_cmds_dir"])
 
-                cmdline = os.path.join(g_pkg_path,
+                cmdline = sys.executable + " " + os.path.join(g_pkg_path,
                     "usr/lib/pkg.depot-config {0}".format(args))
                 if env_arg is None:
                         env_arg = {}
@@ -2959,9 +2987,9 @@ class CliTestCase(Pkg5TestCase):
                                                     mode=0o755)
 
                                         msrc = open(os.path.join(src_pkg_path,
-                                            mname), "rb")
+                                            mname), "r")
                                         mdest = open(os.path.join(dest_pkg_path,
-                                            mname), "wb")
+                                            mname), "w")
                                         for l in msrc:
                                                 if l.find("pkg://") == -1:
                                                         mdest.write(l)
@@ -3049,7 +3077,7 @@ class CliTestCase(Pkg5TestCase):
                 responsible for all error handling."""
 
                 mpath = self.get_img_manifest_path(pfmri)
-                with open(mpath, "rb") as f:
+                with open(mpath, "r") as f:
                         return f.read()
 
         def write_img_manifest(self, pfmri, mdata):
@@ -3065,13 +3093,13 @@ class CliTestCase(Pkg5TestCase):
                 # cached information related to it is gone.
                 shutil.rmtree(mdir, True)
                 shutil.rmtree(mcdir, True)
-                self.assert_(not os.path.exists(mdir))
-                self.assert_(not os.path.exists(mcdir))
+                self.assertTrue(not os.path.exists(mdir))
+                self.assertTrue(not os.path.exists(mcdir))
                 os.makedirs(mdir, mode=0o755)
                 os.makedirs(mcdir, mode=0o755)
 
                 # Finally, write the new manifest.
-                with open(mpath, "wb") as f:
+                with open(mpath, "w") as f:
                         f.write(mdata)
 
         def validate_fsobj_attrs(self, act, target=None):
@@ -3371,7 +3399,7 @@ class CliTestCase(Pkg5TestCase):
 
                 file_path = os.path.join(self.get_img_path(), path)
                 if not os.path.isfile(file_path):
-                        self.assert_(False, "File {0} does not exist".format(path))
+                        self.assertTrue(False, "File {0} does not exist".format(path))
 
         def dir_exists(self, path, mode=None, owner=None, group=None):
                 """Assert the existence of a directory in the image."""
@@ -3380,7 +3408,7 @@ class CliTestCase(Pkg5TestCase):
                         st = os.stat(dir_path)
                 except OSError as e:
                         if e.errno == errno.ENOENT:
-                                self.assert_(False,
+                                self.assertTrue(False,
                                     "Directory {0} does not exist".format(path))
                         else:
                                 raise
@@ -3396,7 +3424,7 @@ class CliTestCase(Pkg5TestCase):
 
                 file_path = os.path.join(self.get_img_path(), path)
                 if os.path.exists(file_path):
-                        self.assert_(False, "File {0} exists".format(path))
+                        self.assertTrue(False, "File {0} exists".format(path))
 
         def files_are_all_there(self, paths):
                 """"Assert that files are there in the image."""
@@ -3405,10 +3433,10 @@ class CliTestCase(Pkg5TestCase):
                                 file_path = os.path.join(self.get_img_path(), p)
                                 if not os.path.isdir(file_path):
                                         if not os.path.exists(file_path):
-                                                self.assert_(False,
+                                                self.assertTrue(False,
                                                     "missing dir {0}".format(file_path))
                                         else:
-                                                self.assert_(False,
+                                                self.assertTrue(False,
                                                     "not dir: {0}".format(file_path))
                         else:
                                 self.file_exists(p)
@@ -3431,7 +3459,7 @@ class CliTestCase(Pkg5TestCase):
                 try:
                         f = open(file_path)
                 except:
-                        self.assert_(False,
+                        self.assertTrue(False,
                             "File {0} does not exist or contain {1}".format(
                             path, string))
 
@@ -3443,7 +3471,7 @@ class CliTestCase(Pkg5TestCase):
                                         break
                 else:
                         f.close()
-                        self.assert_(False, "File {0} does not contain {1}".format(
+                        self.assertTrue(False, "File {0} does not contain {1}".format(
                             path, string))
 
         def file_doesnt_contain(self, path, string):
@@ -3455,7 +3483,7 @@ class CliTestCase(Pkg5TestCase):
                 for line in f:
                         if string in line:
                                 f.close()
-                                self.assert_(False, "File {0} contains {1}".format(
+                                self.assertTrue(False, "File {0} contains {1}".format(
                                     path, string))
                 else:
                         f.close()
@@ -3472,8 +3500,8 @@ class CliTestCase(Pkg5TestCase):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
-                self.assert_(dest_dir)
-                self.assert_(self.raw_trust_anchor_dir)
+                self.assertTrue(dest_dir)
+                self.assertTrue(self.raw_trust_anchor_dir)
                 for c in certs:
                         name = "{0}_cert.pem".format(c)
                         portable.copyfile(
@@ -3548,6 +3576,7 @@ class ManyDepotTestCase(CliTestCase):
                 for line in output.splitlines():
                         if line.find("Traceback") > -1:
                                 raise DepotTracebackException(logpath, output)
+                logfile.close()
 
         def restart_depots(self):
                 self.debug("restarting {0:d} depot(s)".format(len(self.dcs)))
@@ -3726,8 +3755,8 @@ class HTTPSTestClass(ApacheDepotTestCase):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
-                self.assert_(dest_dir)
-                self.assert_(self.raw_trust_anchor_dir)
+                self.assertTrue(dest_dir)
+                self.assertTrue(self.raw_trust_anchor_dir)
                 for c in certs:
                         name = "{0}_cert.pem".format(c)
                         portable.copyfile(
@@ -3840,7 +3869,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
 
                 self.https_conf_path = os.path.join(self.test_root,
                     "https.conf")
-                with open(self.https_conf_path, "wb") as fh:
+                with open(self.https_conf_path, "w") as fh:
                         fh.write(self.https_conf.format(**conf_dict))
 
                 ac = ApacheController(self.https_conf_path,
@@ -4216,7 +4245,8 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                                 raise RuntimeError("Got unknown subdir option:"
                                     "{0}\n".format(s))
 
-                        cmdline = self.pkg_cmdpath + " " + cmdline
+                        cmdline = sys.executable + " " + self.pkg_cmdpath + \
+                            " " + cmdline
                         self.cmdline_run(cmdline, exit=0)
 
                         tmpDir = os.path.join(self.img_path(), s)

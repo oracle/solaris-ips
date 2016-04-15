@@ -25,7 +25,7 @@
 #
 
 from __future__ import division
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -96,8 +96,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                         certs = [certs]
                 if not dest_dir:
                         dest_dir = self.ta_dir
-                self.assert_(dest_dir)
-                self.assert_(self.raw_trust_anchor_dir)
+                self.assertTrue(dest_dir)
+                self.assertTrue(self.raw_trust_anchor_dir)
                 for c in certs:
                         name = "{0}_cert.pem".format(c)
                         portable.copyfile(
@@ -273,7 +273,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 for member in members:
                         # All archive members should be a file or directory.
-                        self.assert_(member.isreg() or member.isdir())
+                        self.assertTrue(member.isreg() or member.isdir())
 
                         if member.name == "pkg5.index.0.gz":
                                 assert member.isreg()
@@ -451,6 +451,9 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 sm = pkg.manifest.Manifest(pfmri=pfmri)
                 sm.set_content(pathname=repo.manifest(pfmri), signatures=True)
 
+                # p5p archive extraction file return bytes
+                if isinstance(content, bytes):
+                        content = pkg.misc.force_str(content)
                 if isinstance(content, six.string_types):
                         dm = pkg.manifest.Manifest()
                         dm.set_content(content=content, signatures=True)
@@ -656,6 +659,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                             hash_func=hash_func)
                         self.assertEqual(uchash, h)
                         fobj.close()
+                nullf.close()
 
                 #
                 # Verify behaviour of get_package_manifest().
@@ -707,7 +711,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                                 assert os.path.exists(expected)
 
                         cat = pkg.catalog.Catalog(meta_root=ext_tmp_dir)
-                        self.assertEqual([f for f in cat.fmris()], pfmris)
+                        self.assertEqual(sorted([f for f in cat.fmris()]),
+                            sorted(pfmris))
 
                 verify_catalog("test", [self.foo, self.signed])
                 shutil.rmtree(ext_tmp_dir)
@@ -778,8 +783,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                             recursive=False)
 
                 for dirpath, dirnames, filenames in os.walk(ext_dir):
-                        map(add_entry, filenames)
-                        map(add_entry, dirnames)
+                        list(map(add_entry, filenames))
+                        list(map(add_entry, dirnames))
                 arc.close()
 
                 # Verify that archive has expected contents.
@@ -821,9 +826,9 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 os.unlink(arc_path)
                 arc = ptf.PkgTarFile(name=arc_path, mode="w")
                 for dirpath, dirnames, filenames in os.walk(ext_dir):
-                        map(add_entry,
-                            [f for f in filenames if f != "pkg5.index.0.gz"])
-                        map(add_entry, dirnames)
+                        list(map(add_entry,
+                            [f for f in filenames if f != "pkg5.index.0.gz"]))
+                        list(map(add_entry, dirnames))
                 arc.close()
 
                 # Verify pkg(5) archive class extraction behaviour using
@@ -879,7 +884,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 #
                 # Check that invalid archive file is handled.
                 #
-                with open(arc_path, "wb") as f:
+                with open(arc_path, "w") as f:
                         f.write("not_a_valid_archive")
                 self.assertRaisesStringify(pkg.p5p.InvalidArchive,
                     pkg.p5p.Archive, arc_path, mode="r")
@@ -952,7 +957,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                         dest.seek(idx_data_offset)
                         dest.truncate()
                         with open(arc_path, "rb") as src:
-                                bogus_data = "invalid_index_data"
+                                bogus_data = b"invalid_index_data"
                                 dest.write(bogus_data)
                                 src.seek(idx_data_offset + len(bogus_data))
                                 dest.write(src.read())

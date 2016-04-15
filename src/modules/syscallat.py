@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import unicode_literals
 import os
 import six
 from pkg._syscallat import lib, ffi
+from pkg.misc import force_bytes
 
 
 def mkdirat(fd, path, mode):
@@ -40,7 +41,7 @@ def mkdirat(fd, path, mode):
     if not isinstance(mode, int):
         raise TypeError("mode must be int type")
 
-    rv = lib.mkdirat(fd, path, mode)
+    rv = lib.mkdirat(fd, force_bytes(path), mode)
     if rv != 0:
         raise OSError(ffi.errno, os.strerror(ffi.errno), path)
 
@@ -57,7 +58,7 @@ def openat(fildes, path, oflag, mode):
     if not isinstance(mode, int):
         raise TypeError("mode must be int type")
 
-    rv = lib.openat(fildes, path, oflag, mode)
+    rv = lib.openat(fildes, force_bytes(path), oflag, mode)
     if rv < 0:
         raise OSError(ffi.errno, os.strerror(ffi.errno), path)
     return rv
@@ -75,7 +76,7 @@ def renameat(fromfd, old, tofd, new):
     if not isinstance(new, six.string_types):
         raise TypeError("new must be a string")
 
-    rv = lib.renameat(fromfd, old, tofd, new)
+    rv = lib.renameat(fromfd, force_bytes(old), tofd, force_bytes(new))
     if rv != 0:
         raise OSError(ffi.errno, os.strerror(ffi.errno), old)
 
@@ -90,6 +91,6 @@ def unlinkat(dirfd, path, flag):
     if not isinstance(flag, int):
         raise TypeError("flag must be int type")
 
-    rv = lib.unlinkat(dirfd, path, flag)
+    rv = lib.unlinkat(dirfd, force_bytes(path), flag)
     if rv < 0:
         raise OSError(ffi.errno, os.strerror(ffi.errno), path)

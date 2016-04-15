@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -107,14 +107,14 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 file_path = os.path.join(self.get_img_path(), str(path))
 
                 try:
-                        f = open(file_path)
+                        open(file_path).close()
                 except IOError as e:
                         if e.errno == errno.ENOENT and negate:
                                 return
-                        self.assert_(False, "File {0} is missing".format(path))
+                        self.assertTrue(False, "File {0} is missing".format(path))
                 # file is there
                 if negate:
-                        self.assert_(False, "File {0} should not exist".format(path))
+                        self.assertTrue(False, "File {0} should not exist".format(path))
                 return
 
         def test_01_facets(self):
@@ -157,7 +157,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 )
 
                 # notice that a file should not exist according to its facet
-                open(os.path.join(self.get_img_path(), "3"), "w")
+                open(os.path.join(self.get_img_path(), "3"), "w").close()
                 self.pkg("verify", exit=1)
                 os.remove(os.path.join(self.get_img_path(), "3"))
 

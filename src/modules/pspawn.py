@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 import os
 import six
 from pkg._pspawn import lib, ffi
@@ -157,13 +157,22 @@ def posix_spawnp(filename, args, fileactions=None, env=None):
 
     pid = ffi.new("pid_t *")
 
-    spawn_args = [ffi.new("char []", arg) for arg in args]
+    spawn_args = []
+    # This essentially does force_bytes in pkg.misc, but importing pkg.misc has
+    # a circular import issue, so we implement the conversion here.
+    for arg in args:
+        if six.PY3 and isinstance(arg, six.string_types):
+            arg = arg.encode()
+        spawn_args.append(ffi.new("char []", arg))
     spawn_args.append(ffi.NULL)
 
     # Process env, if supplied by caller
     spawn_env = []
     if env:
-        spawn_env = [ffi.new("char []", arg) for arg in env]
+        for arg in env:
+            if six.PY3 and isinstance(arg, six.string_types):
+                arg = arg.encode()
+            spawn_env.append(ffi.new("char []", arg))
     spawn_env.append(ffi.NULL)
 
     # setup file actions, if passed by caller
@@ -174,8 +183,8 @@ def posix_spawnp(filename, args, fileactions=None, env=None):
         s_action = fileactions.fa
 
     # Now do the actual spawn
-    rc = lib.posix_spawnp(pid, filename, s_action, ffi.NULL, spawn_args,
-                          spawn_env)
+    rc = lib.posix_spawnp(pid, filename.encode(), s_action, ffi.NULL,
+                          spawn_args, spawn_env)
     _check_error(rc)
 
     return pid[0]

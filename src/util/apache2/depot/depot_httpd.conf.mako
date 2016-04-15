@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -90,13 +90,23 @@ LoadModule rewrite_module libexec/mod_rewrite.so
 LoadModule ssl_module libexec/mod_ssl.so
 LoadModule socache_shmcb_module libexec/mod_socache_shmcb.so
 LoadModule unixd_module libexec/mod_unixd.so
-LoadModule wsgi_module libexec/mod_wsgi-2.7.so
-
+<%!
+    import os
+    import sys
+%>
+<%
+        context.write("""
+LoadModule wsgi_module libexec/mod_wsgi-{0}.so
+""".format(sys.version[:3]))
+%>
 
 # Turn on deflate for file types that support it
 AddOutputFilterByType DEFLATE text/html application/javascript text/css text/plain
 # We only alias a specific script, not all files in ${template_dir}
 WSGIScriptAlias ${sroot}/depot ${template_dir}/depot_index.py
+# Run wsgi script in the current version of Python runtime
+WSGIPythonHome sys.executable
+WSGIPythonPath os.pathsep.join(sys.path)
 
 # We set a 5 minute inactivity timeout: if no requests have been received in the
 # last 5 minutes and no requests are currently being processed, mod_wsgi shuts
@@ -107,9 +117,9 @@ WSGIScriptAlias ${sroot}/depot ${template_dir}/depot_index.py
         test_proto = os.environ.get("PKG5_TEST_PROTO", None)
         if test_proto:
                 context.write("""
-WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path={0}/usr/lib/python2.7
-SetEnv PKG5_TEST_PROTO {1}
-""".format(test_proto, test_proto))
+WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path={0}/usr/lib/python{1}
+SetEnv PKG5_TEST_PROTO {2}
+""".format(test_proto, sys.version[:3], test_proto))
         else:
                 context.write("""
 WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300

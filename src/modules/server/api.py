@@ -20,16 +20,16 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
 import itertools
 import os
-import StringIO
 import six
 
 from functools import cmp_to_key
+from io import BytesIO
 from operator import itemgetter
 
 import pkg.catalog
@@ -134,7 +134,9 @@ class CatalogInterface(_Interface):
                     for pfmri in pfmris
                 )
 
-                self.__get_allowed_packages(cat, pfmri, allowed,
+                # pfmri is not leaked from the above list comprehension in
+                # Python 3, so we need to use pfmris[-1] explicitly.
+                self.__get_allowed_packages(cat, pfmris[-1], allowed,
                     build_release=build_release, excludes=excludes,
                     pubs=pubs)
 
@@ -575,7 +577,7 @@ class CatalogInterface(_Interface):
                 manifest mfst."""
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
-                        s = StringIO.StringIO()
+                        s = BytesIO()
                         lpath = self._depot.repo.file(lic.hash, pub=self._pub)
                         lfile = open(lpath, "rb")
                         misc.gunzip_from_stream(lfile, s, ignore_hash=True)
@@ -583,6 +585,7 @@ class CatalogInterface(_Interface):
                         s.close()
                         license_lst.append(LicenseInfo(mfst.fmri, lic,
                             text=text))
+                        lfile.close()
                 return license_lst
 
         @property

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This module provides a basic interface to smf.
@@ -29,6 +29,7 @@
 import os
 import six
 
+import pkg.misc as misc
 import pkg.pkgsubprocess as subprocess
 
 from pkg.client import global_settings
@@ -85,7 +86,7 @@ def __call(args, zone=None):
         try:
                 proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
-                buf = proc.stdout.readlines()
+                buf = [misc.force_str(l) for l in proc.stdout.readlines()]
                 ret = proc.wait()
         except OSError as e:
                 raise RuntimeError("cannot execute {0}: {1}".format(args, e))

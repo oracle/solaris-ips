@@ -20,10 +20,15 @@
  */
 
 /*
- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
+
+#if PY_MAJOR_VERSION >= 3
+	#define PyBytes_AS_STRING PyUnicode_AsUTF8
+	#define PyBytes_AsString PyUnicode_AsUTF8
+#endif
 
 /*ARGSUSED*/
 static PyObject *
@@ -49,7 +54,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 	static char *kwlist[] = {"facets", "action", "publisher", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O:_allow_facet",
-		kwlist, &facets, &action, &publisher))
+	    kwlist, &facets, &action, &publisher))
 		return (NULL);
 
 	if ((act_attrs = PyObject_GetAttrString(action, "attrs")) == NULL)
@@ -188,7 +193,7 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 	static char *kwlist[] = {"vars", "action", "publisher", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O:_allow_variant",
-		kwlist, &vars, &action, &publisher))
+	    kwlist, &vars, &action, &publisher))
 		return (NULL);
 
 	if ((act_attrs = PyObject_GetAttrString(action, "attrs")) == NULL)
@@ -253,7 +258,7 @@ static struct PyModuleDef varcetmodule = {
 	PyMODINIT_FUNC
 	PyInit__varcet(void)
 	{
-		return PyModule_Create(&varcetmodule);
+		return (PyModule_Create(&varcetmodule));
 	}
 #else
 	PyMODINIT_FUNC

@@ -57,27 +57,29 @@ dir  path=$(PYDIRVP)/pkg/actions
 dir  path=$(PYDIRVP)/pkg/actions/64
 file path=$(PYDIRVP)/pkg/actions/64/_actions.so
 file path=$(PYDIRVP)/pkg/actions/64/_common.so
-file path=$(PYDIRVP)/pkg/actions/__init__.py
+# pkgdepend doesn't understand the relative import syntax "from .x import y",
+# so we have to bypass generating dependencies on those files.
+file path=$(PYDIRVP)/pkg/actions/__init__.py pkg.depend.bypass-generate=.*
 file path=$(PYDIRVP)/pkg/actions/_actions.so
 file path=$(PYDIRVP)/pkg/actions/_common.so
-file path=$(PYDIRVP)/pkg/actions/attribute.py
-file path=$(PYDIRVP)/pkg/actions/depend.py
-file path=$(PYDIRVP)/pkg/actions/directory.py
-file path=$(PYDIRVP)/pkg/actions/driver.py
-file path=$(PYDIRVP)/pkg/actions/file.py
-file path=$(PYDIRVP)/pkg/actions/generic.py
-file path=$(PYDIRVP)/pkg/actions/group.py
-file path=$(PYDIRVP)/pkg/actions/hardlink.py
-file path=$(PYDIRVP)/pkg/actions/legacy.py
+file path=$(PYDIRVP)/pkg/actions/attribute.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/depend.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/directory.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/driver.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/file.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/generic.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/group.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/hardlink.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/legacy.py pkg.depend.bypass-generate=.*
 #
 # Don't worry about the "from x.y.z" six imports since pkgdepend has some issues
 # with the python importer. Instead, we force a dependency on the six package.
 #
-file path=$(PYDIRVP)/pkg/actions/license.py pkg.depend.bypass-generate=.*six.*
-file path=$(PYDIRVP)/pkg/actions/link.py
-file path=$(PYDIRVP)/pkg/actions/signature.py
-file path=$(PYDIRVP)/pkg/actions/unknown.py
-file path=$(PYDIRVP)/pkg/actions/user.py
+file path=$(PYDIRVP)/pkg/actions/license.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/link.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/signature.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/unknown.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/user.py pkg.depend.bypass-generate=.*
 file path=$(PYDIRVP)/pkg/altroot.py
 file path=$(PYDIRVP)/pkg/api_common.py
 file path=$(PYDIRVP)/pkg/arch.py
@@ -114,8 +116,10 @@ dir  path=$(PYDIRVP)/pkg/client/linkedimage
 file path=$(PYDIRVP)/pkg/client/linkedimage/__init__.py
 file path=$(PYDIRVP)/pkg/client/linkedimage/common.py \
     pkg.depend.bypass-generate=.*six.*
-file path=$(PYDIRVP)/pkg/client/linkedimage/system.py
-file path=$(PYDIRVP)/pkg/client/linkedimage/zone.py
+file path=$(PYDIRVP)/pkg/client/linkedimage/system.py \
+    pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/client/linkedimage/zone.py \
+    pkg.depend.bypass-generate=.*
 file path=$(PYDIRVP)/pkg/client/options.py
 file path=$(PYDIRVP)/pkg/client/pkg_solver.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/pkgdefs.py
@@ -136,7 +140,7 @@ file path=$(PYDIRVP)/pkg/client/transport/exception.py \
     pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/transport/fileobj.py
 file path=$(PYDIRVP)/pkg/client/transport/mdetect.py \
-    pkg.depend.bypass-generate=.*six.*
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/transport/repo.py \
     pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/transport/stats.py \
@@ -191,16 +195,14 @@ file path=$(PYDIRVP)/pkg/pkggzip.py
 file path=$(PYDIRVP)/pkg/pkgsubprocess.py
 file path=$(PYDIRVP)/pkg/pkgtarfile.py
 dir  path=$(PYDIRVP)/pkg/portable
-file path=$(PYDIRVP)/pkg/portable/__init__.py
-file path=$(PYDIRVP)/pkg/portable/os_aix.py
+file path=$(PYDIRVP)/pkg/portable/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_aix.py pkg.depend.bypass-generate=.*
 # Python on Solaris doesn't deliver the macostools module.
-file path=$(PYDIRVP)/pkg/portable/os_darwin.py \
-    pkg.depend.bypass-generate=.*macostools.*
-file path=$(PYDIRVP)/pkg/portable/os_sunos.py
-file path=$(PYDIRVP)/pkg/portable/os_unix.py
+file path=$(PYDIRVP)/pkg/portable/os_darwin.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_sunos.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_unix.py pkg.depend.bypass-generate=.*
 # Python on Solaris doesn't deliver the win32api module.
-file path=$(PYDIRVP)/pkg/portable/os_windows.py \
-    pkg.depend.bypass-generate=.*win32api.*
+file path=$(PYDIRVP)/pkg/portable/os_windows.py pkg.depend.bypass-generate=.*
 file path=$(PYDIRVP)/pkg/portable/util.py
 file path=$(PYDIRVP)/pkg/pspawn.py
 dir  path=$(PYDIRVP)/pkg/publish
@@ -216,7 +218,8 @@ dir  path=$(PYDIRVP)/pkg/server
 file path=$(PYDIRVP)/pkg/server/__init__.py
 file path=$(PYDIRVP)/pkg/server/api.py
 file path=$(PYDIRVP)/pkg/server/api_errors.py
-file path=$(PYDIRVP)/pkg/server/depot.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/server/depot.py \
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/face.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/feed.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/server/query_parser.py
@@ -259,7 +262,7 @@ dir  path=usr/bin
 file path=usr/bin/pkg
 file path=usr/bin/pkgdepend
 file path=usr/bin/pkgdiff
-file path=usr/bin/pkgfmt
+file path=usr/bin/pkgfmt pkg.depend.bypass-generate=.*six.*
 file path=usr/bin/pkglint
 file path=usr/bin/pkgmerge pkg.depend.bypass-generate=.*six.*
 file path=usr/bin/pkgmogrify

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -40,8 +40,8 @@ class _NRLock(threading._RLock):
         able to support things like RLocks._is_owned() so that we can "assert"
         lock ownership assumptions in our code."""
 
-        def __init__(self, verbose=None):
-                threading._RLock.__init__(self, verbose)
+        def __init__(self):
+                threading._RLock.__init__(self)
 
         def acquire(self, blocking=1):
                 if self._is_owned():

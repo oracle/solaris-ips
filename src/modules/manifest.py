@@ -24,6 +24,7 @@
 # Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 from collections import namedtuple, defaultdict
 from functools import reduce
 
@@ -511,7 +512,7 @@ class Manifest(object):
 
                         # For each variant combination, remove unvarianted
                         # facets since they are common to all variants.
-                        for varkey, fnames in facets.items():
+                        for varkey, fnames in list(facets.items()):
                                 fnames.difference_update(cfacets)
                                 if not fnames:
                                         # No facets unique to this combo;
@@ -576,7 +577,8 @@ class Manifest(object):
                                         cfacets.update(vcfacets)
 
                                         # Remove facets common to all combos.
-                                        for varkey, fnames in facets.items():
+                                        for varkey, fnames in list(
+                                            facets.items()):
                                                 fnames.difference_update(vcfacets)
                                                 if not fnames:
                                                         # No facets unique to
@@ -615,7 +617,8 @@ class Manifest(object):
                                 # string below looks like this before hashing:
                                 #     variant.archi386variant.debug.osnetTrue...
                                 key = hashlib.sha1(
-                                    "".join("{0}{1}".format(*v) for v in varkey)
+                                    misc.force_bytes("".join(
+                                    "{0}{1}".format(*v) for v in varkey))
                                 ).hexdigest()
 
                                 # Omit the "facet." prefix from attribute values
@@ -656,9 +659,9 @@ class Manifest(object):
                                 # a reproducible, unique identifier.  The key
                                 # string below looks like this before hashing:
                                 #     facet.docTruevariant.archi386...
-                                key = hashlib.sha1(
+                                key = hashlib.sha1(misc.force_bytes(
                                     "".join("{0}{1}".format(*v) for v in varcetkeys)
-                                ).hexdigest()
+                                )).hexdigest()
 
                                 # The sizes are abbreviated in the name of byte
                                 # conservation.
@@ -1062,10 +1065,14 @@ class Manifest(object):
                 # together has to be solved somewhere else, though.)
                 if pathname:
                         try:
-                                with open(pathname, "rb") as mfile:
+                                with open(pathname, "r") as mfile:
                                         content = mfile.read()
                         except EnvironmentError as e:
                                 raise apx._convert_error(e)
+
+                if six.PY3 and isinstance(content, bytes):
+                        raise TypeError("content must be str, not bytes")
+
                 if isinstance(content, six.string_types):
                         if signatures:
                                 # Generate manifest signature based upon
@@ -1119,7 +1126,6 @@ class Manifest(object):
                 if excludes and not action.include_this(excludes,
                     publisher=self.publisher):
                         return
-
                 self.actions.append(action)
                 try:
                         self.actions_bytype[aname].append(action)
@@ -1211,7 +1217,7 @@ class Manifest(object):
                         log = lambda x: None
 
                 try:
-                        file_handle = open(file_path, "rb")
+                        file_handle = open(file_path, "r")
                 except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
@@ -1346,7 +1352,7 @@ class Manifest(object):
                                     e.filename)
                         raise
 
-                mfile = os.fdopen(fd, "wb")
+                mfile = os.fdopen(fd, "w")
 
                 #
                 # We specifically avoid sorting manifests before writing
@@ -1451,10 +1457,16 @@ class Manifest(object):
                         # allow you to be selective and various bits in
                         # pkg.manifest assume you always filter on both so we
                         # have to fake up a filter for facets.
-                        nexcludes = [
-                            x for x in excludes
-                            if x.__func__ != facet._allow_facet
-                        ]
+                        if six.PY2:
+                                nexcludes = [
+                                    x for x in excludes
+                                    if x.__func__ != facet._allow_facet
+                                ]
+                        else:
+                                nexcludes = [
+                                    x for x in excludes
+                                    if x.__func__ != facet.Facets.allow_action
+                                ]
                         # Excludes list must always have zero or 2+ items; so
                         # fake second entry.
                         nexcludes.append(lambda x, publisher: True)
@@ -1644,7 +1656,7 @@ class FactoredManifest(Manifest):
                         except EnvironmentError as e:
                                 raise apx._convert_error(e)
 
-                        f = os.fdopen(fd, "wb")
+                        f = os.fdopen(fd, "w")
                         try:
                                 for a in acts:
                                         f.write("{0}\n".format(a))
@@ -1671,7 +1683,7 @@ class FactoredManifest(Manifest):
                         try:
                                 fd, fn = tempfile.mkstemp(dir=t_dir,
                                     prefix=name + ".")
-                                with os.fdopen(fd, "wb") as f:
+                                with os.fdopen(fd, "w") as f:
                                         f.writelines(refs())
                                 os.chmod(fn, PKG_FILE_MODE)
                                 portable.rename(fn, self.__cache_path(name))
@@ -1721,7 +1733,7 @@ class FactoredManifest(Manifest):
                 if os.path.exists(mpath):
                         # we have cached copy on disk; use it
                         try:
-                                with open(mpath, "rb") as f:
+                                with open(mpath, "r") as f:
                                         self._cache[name] = [
                                             a for a in
                                             (
@@ -1806,7 +1818,7 @@ class FactoredManifest(Manifest):
                         attr_match = _compile_fnpats(attr_match)
 
                 try:
-                        with open(mpath, "rb") as f:
+                        with open(mpath, "r") as f:
                                 for l in f:
                                         a = actions.fromstr(l.rstrip())
                                         if (excludes and
@@ -1865,7 +1877,7 @@ class FactoredManifest(Manifest):
                 mpath = self.__cache_path("manifest.set")
                 if not os.path.exists(mpath):
                         return False
-                with open(mpath, "rb") as f:
+                with open(mpath, "r") as f:
                         for l in f:
                                 a = actions.fromstr(l.rstrip())
                                 if not self.excludes or \

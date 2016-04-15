@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a unknown packaging object
@@ -31,7 +31,7 @@ of packaging object.  This is used when the client side of the package
 publishing transaction is not given enough information to determine what type of
 object it is.  No datastreams or attributes aside from a path are stored."""
 
-import generic
+from . import generic
 
 class UnknownAction(generic.Action):
         """Class representing a unknown type of packaging object."""

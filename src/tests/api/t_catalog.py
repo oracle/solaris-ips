@@ -21,10 +21,10 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -50,6 +50,7 @@ import pkg.variant as variant
 
 class TestCatalog(pkg5unittest.Pkg5TestCase):
         """Tests for all catalog functionality."""
+        maxDiff = None
 
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
@@ -107,7 +108,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
         def __gen_manifest(self, f):
                 m = manifest.Manifest()
-                lines = six.text_type(
+                lines = misc.force_text(
                     "depend fmri=foo@1.0 type=require\n"
                     "set name=facet.devel value=true\n"
                     "set name=info.classification "
@@ -123,7 +124,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "set name=pkg.summary value=\"Sparc Summary {2}\""
                     " variant.arch=sparc\n"
                     "set name=pkg.summary:th value=\"ซอฟต์แวร์ {3}\"\n"
-                    "set name=pkg.description value=\"Desc {4}\"\n", "utf-8").format(
+                    "set name=pkg.description value=\"Desc {4}\"\n").format(
                     f, f, f, f, f)
 
                 if f.pkg_name == "zpkg":
@@ -265,7 +266,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 latest = [f for f in nc.fmris(last=True)]
                 for f, actions in nc.actions([nc.DEPENDENCY], last=True):
-                        self.assert_(f in latest)
+                        self.assertTrue(f in latest)
                         validate_dep(f, actions)
 
                 latest = [
@@ -274,7 +275,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 ]
                 for (pub, stem, ver), entry, actions in nc.entry_actions(
                     [nc.DEPENDENCY], last=True):
-                        self.assert_((pub, stem, ver) in latest)
+                        self.assertTrue((pub, stem, ver) in latest)
                         f = fmri.PkgFmri("{0}@{1}".format(stem, ver), publisher=pub)
                         validate_dep(f, actions)
 
@@ -795,11 +796,11 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 entry = cat.get_entry(p2_fmri)
                 self.assertEqual(entry["metadata"], { "foo": True })
 
-                self.assert_(cat.last_modified > orig_cat_lm)
-                self.assert_(base.last_modified > orig_base_lm)
+                self.assertTrue(cat.last_modified > orig_cat_lm)
+                self.assertTrue(base.last_modified > orig_base_lm)
 
                 part_lm = cat.parts[base.name]["last-modified"]
-                self.assert_(base.last_modified == part_lm)
+                self.assertTrue(base.last_modified == part_lm)
 
         def test_07_updates(self):
                 """Verify that catalog updates are applied as expected."""
@@ -927,8 +928,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 nc.append(c)
                 nc.finalize(pfmris=set([f for f in c.fmris()]))
 
-                self.assertEqual([f for f in c.fmris()],
-                    [f for f in nc.fmris()])
+                self.assertEqual(sorted([f for f in c.fmris()]),
+                    sorted([f for f in nc.fmris()]))
                 self.assertEqual(c.package_version_count,
                     nc.package_version_count)
 
@@ -988,8 +989,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 break
                 nc.finalize()
 
-                self.assertEqual([f for f in c.fmris()],
-                    [f for f in nc.fmris()])
+                self.assertEqual(sorted([f for f in c.fmris()]),
+                    sorted([f for f in nc.fmris()]))
                 self.assertEqual(c.package_version_count,
                     nc.package_version_count)
 

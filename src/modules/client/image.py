@@ -682,7 +682,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # First, create the image directories if they haven't been, so
                 # the configuration file can be written.
                 self.mkdirs()
-
                 self.__store_publisher_ssl()
                 self.cfg.write()
                 self.update_last_modified()
@@ -1013,6 +1012,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 cmdargs = ["/usr/bin/rm", "-rf", orig_root]
                                 subprocess.Popen(cmdargs, stdout=nullf,
                                     stderr=nullf)
+                        nullf.close()
                         return False
 
                 raise apx.UnsupportedImageError(self.root)
@@ -1708,7 +1708,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 for ca in approved_cas:
                         try:
                                 ca = os.path.abspath(ca)
-                                fh = open(ca, "rb")
+                                fh = open(ca, "r")
                                 s = fh.read()
                                 fh.close()
                         except EnvironmentError as e:
@@ -2126,7 +2126,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # intersection of installed and alternate minus
                         # the already configured.
                         newpubs = (instpubs & altpubs) - cfgpubs
-                        for pfx in newpubs:
+                        # Sort the set to get a deterministic output.
+                        for pfx in sorted(newpubs):
                                 npub = publisher.Publisher(pfx,
                                     repository=publisher.Repository())
                                 self.__add_publisher(npub,
@@ -2436,8 +2437,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # create the flag file and return 0
                 file_mode = misc.PKG_FILE_MODE
                 try:
-                        open(pathname, "w")
-                        os.chmod(pathname, file_mode)
+                        with open(pathname, "w"):
+                                os.chmod(pathname, file_mode)
                 except EnvironmentError as e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
@@ -3086,9 +3087,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         of, op = self.temporary_file(close=False)
                         bf, bp = self.temporary_file(close=False)
 
-                        sf = os.fdopen(sf, "wb")
-                        of = os.fdopen(of, "wb")
-                        bf = os.fdopen(bf, "wb")
+                        sf = os.fdopen(sf, "w")
+                        of = os.fdopen(of, "w")
+                        bf = os.fdopen(bf, "w")
 
                         # We need to make sure the files are coordinated.
                         timestamp = int(time.time())
@@ -3221,7 +3222,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 try:
                         of = open(os.path.join(self.__action_cache_dir,
-                            "actions.offsets"), "rb")
+                            "actions.offsets"), "r")
                 except IOError as e:
                         if e.errno != errno.ENOENT:
                                 raise
@@ -3286,7 +3287,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 return the corresponding file object."""
 
                 sf = open(os.path.join(self.__action_cache_dir,
-                    "actions.stripped"), "rb")
+                    "actions.stripped"), "r")
                 sversion = sf.readline().rstrip()
                 stimestamp = sf.readline().rstrip()
                 if internal:
@@ -3301,7 +3302,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 pth = os.path.join(self.__action_cache_dir, "keys.conflicting")
                 try:
-                        with open(pth, "rb") as fh:
+                        with open(pth, "r") as fh:
                                 version = fh.readline().rstrip()
                                 if version != "VERSION 1":
                                         return None
@@ -4171,13 +4172,14 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__group_obsolete = set()
                 if os.path.isfile(state_file):
                         try:
-                                 version, d = json.load(open(state_file))
+                                 with open(state_file) as f:
+                                        version, d = json.load(f)
                         except EnvironmentError as e:
                                  raise apx._convert_error(e)
                         except ValueError as e:
                                  salvaged_path = self.salvage(state_file, 
                                      full_path=True)
-                                 logger.warn("Corrupted avoid list - salvaging"
+                                 logger.warning("Corrupted avoid list - salvaging"
                                      " file {state_file} in {salvaged_path}"
                                      .format(state_file=state_file,
                                      salvaged_path=salvaged_path))
@@ -4189,7 +4191,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 elif d[stem] == "obsolete":
                                         self.__group_obsolete.add(stem)
                                 else:
-                                        logger.warn("Corrupted avoid list - ignoring")
+                                        logger.warning("Corrupted avoid list - ignoring")
                                         self.__avoid_set = set()
                                         self.__group_obsolete = set()
                                         self.__avoid_set_altered = True
@@ -4222,7 +4224,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         tf.close()
                         portable.rename(tmp_file, state_file)
                 except Exception as e:
-                        logger.warn("Cannot save avoid list: {0}".format(
+                        logger.warning("Cannot save avoid list: {0}".format(
                             str(e)))
                         return
 
@@ -4254,7 +4256,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 state_file = os.path.join(self._statedir, "frozen_dict")
                 if os.path.isfile(state_file):
                         try:
-                                version, d = json.load(open(state_file))
+                                with open(state_file) as f:
+                                        version, d = json.load(f)
                         except EnvironmentError as e:
                                 raise apx._convert_error(e)
                         except ValueError as e:

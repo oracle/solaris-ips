@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -233,7 +233,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 # Now verify that none of the saved operations are one that
                 # should have been discarded.
                 for op_name in sorted(history.DISCARDED_OPERATIONS):
-                        self.assert_(op_name not in loaded_ops)
+                        self.assertTrue(op_name not in loaded_ops)
 
         def test_06_purge_history(self):
                 """Verify that purge() removes all history and creates a new
@@ -255,7 +255,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                             filename=entry)
                         loaded_ops.append([he.operation_name, he.operation_result])
 
-                self.assert_(loaded_ops == expected_ops)
+                self.assertTrue(loaded_ops == expected_ops)
 
         def test_07_aborted_operations(self):
                 """Verify that aborted operations are saved properly."""
@@ -283,7 +283,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
 
                 # There should be three operations: operation-1, operation-2,
                 # and operation-3.
-                self.assert_(len(loaded_ops) == 3)
+                self.assertTrue(len(loaded_ops) == 3)
 
                 for op in loaded_ops:
                         op_name, op_result = op
@@ -374,7 +374,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 """Verify that a history file with unexpected start state, end
                 state, and error data won't cause an exception."""
 
-                bad_hist = """<?xml version="1.0" encoding="ascii"?>
+                bad_hist = b"""<?xml version="1.0" encoding="ascii"?>
 <history>
   <client name="pkg" version="e827313523d8+">
     <args>

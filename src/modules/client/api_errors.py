@@ -3233,7 +3233,7 @@ the patterns provided.  The package stem and the versions it was frozen at are
 provided:""")
                         res += [s]
                         res += ["\t{0}\t{1}".format(stem, " ".join([
-                            str(v) for v in versions]))
+                            str(v) for v in sorted(versions)]))
                             for stem, versions in sorted(self.multiversions)]
 
                 if self.unmatched_wildcards:
@@ -3255,7 +3255,7 @@ at a version different from the version at which the packages are installed.""")
                                         res += [
                                             "\t\t{0}".format(stem)
                                             for stem
-                                            in self.version_mismatch[pat]
+                                            in sorted(self.version_mismatch[pat])
                                         ]
 
                 if self.versionless_uninstalled:
@@ -3416,3 +3416,15 @@ class InvalidConfigFile(ApiException):
         def __str__(self):
                 return _("Cannot parse configuration file "
                     "{path}'.").format(path=self.path)
+
+
+class PkgUnicodeDecodeError(UnicodeDecodeError):
+        def __init__(self, obj, *args):
+                self.obj = obj
+                UnicodeDecodeError.__init__(self, *args)
+
+        def __str__(self):
+                s = UnicodeDecodeError.__str__(self)
+                return "{0}. You passed in {1!r} {2}".format(s, self.obj,
+                    type(self.obj))
+

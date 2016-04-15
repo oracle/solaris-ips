@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -284,16 +284,17 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                 # passthrough any filesystem path names, whatever the
                 # original encoding.
                 conf_lookup = TemplateLookup(directories=[template_dir])
+                disable_unicode = True if six.PY2 else False
                 if fragment:
                         conf_template = Template(
                             filename=fragment_conf_template_path,
-                            disable_unicode=True, lookup=conf_lookup)
+                            disable_unicode=disable_unicode, lookup=conf_lookup)
                         conf_path = os.path.join(runtime_dir,
                             DEPOT_FRAGMENT_FILENAME)
                 else:
                         conf_template = Template(
                             filename=httpd_conf_template_path,
-                            disable_unicode=True, lookup=conf_lookup)
+                            disable_unicode=disable_unicode, lookup=conf_lookup)
                         conf_path = os.path.join(runtime_dir,
                             DEPOT_HTTP_FILENAME)
 
@@ -315,15 +316,17 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                     ssl_cert_chain_file=ssl_cert_chain_file
                 )
 
-                with open(conf_path, "wb") as conf_file:
+                with open(conf_path, "w") as conf_file:
                         conf_file.write(conf_text)
 
-        except socket.gaierror as err:
+        except (socket.gaierror, UnicodeError) as err:
+                # socket.getaddrinfo raise UnicodeDecodeError in Python 3
+                # for some input, such as '.'
                 raise DepotException(
                     _("Unable to write Apache configuration: {host}: "
                     "{err}").format(**locals()))
         except (OSError, IOError, EnvironmentError, apx.ApiException) as err:
-                traceback.print_exc(err)
+                traceback.print_exc()
                 raise DepotException(
                     _("Unable to write depot_httpd.conf: {0}").format(err))
 
@@ -442,17 +445,18 @@ def _createCertificateKey(serial, CN, starttime, endtime,
 
         # If there is a issuer key, sign with that key. Otherwise,
         # create a self-signed cert.
+        # Cert requires bytes.
         if issuerKey:
-                cert.add_extensions([X509Extension("basicConstraints", True,
-                    "CA:FALSE")])
+                cert.add_extensions([X509Extension(b"basicConstraints", True,
+                    b"CA:FALSE")])
                 cert.sign(issuerKey, digest)
         else:
-                cert.add_extensions([X509Extension("basicConstraints", True,
-                    "CA:TRUE")])
+                cert.add_extensions([X509Extension(b"basicConstraints", True,
+                    b"CA:TRUE")])
                 cert.sign(key, digest)
-        with open(dump_cert_path, "w") as f:
+        with open(dump_cert_path, "wb") as f:
                 f.write(dump_certificate(FILETYPE_PEM, cert))
-        with open(dump_key_path, "w") as f:
+        with open(dump_key_path, "wb") as f:
                 f.write(dump_privatekey(FILETYPE_PEM, key))
         return (cert, key)
 
@@ -989,6 +993,9 @@ if __name__ == "__main__":
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         __retval = handle_errors(main_func)
         try:

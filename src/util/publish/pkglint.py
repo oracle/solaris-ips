@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
@@ -31,6 +31,7 @@ import sys
 import gettext
 import locale
 import traceback
+import warnings
 from optparse import OptionParser
 
 from pkg.client.api_errors import InvalidPackageErrors
@@ -179,15 +180,9 @@ def list_checks(checkers, exclude, verbose=False):
                 if "pkglint_desc" in method.__dict__ and not verbose:
                         return method.pkglint_desc
                 else:
-                        if six.PY3:
-                                return "{0}.{1}.{2}".format(method.__self__.__class__.__module__,
-                                    method.__self__.__class__.__name__,
-                                    method.__func__.__name__)
-                        else:
-                                return "{0}.{1}.{2}".format(method.im_class.__module__,
-                                    method.im_class.__name__,
-                                    method.im_func.func_name)
-
+                        return "{0}.{1}.{2}".format(method.__self__.__class__.__module__,
+                            method.__self__.__class__.__name__,
+                            method.__func__.__name__)
 
         def emit(name, value):
                 msg("{0} {1}".format(name.ljust(width), value))
@@ -320,6 +315,9 @@ def _make_list(opt):
 
 
 if __name__ == "__main__":
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 __ret = main_func()
         except (PipeError, KeyboardInterrupt):

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -147,12 +147,12 @@ providing a version at which to freeze them.
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("None" in self.output)
+                self.assertTrue("None" in self.output)
                 self.pkg("unfreeze -H")
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("None" in self.output)
+                self.assertTrue("None" in self.output)
                 self.api_obj.reset()
                 self._api_install(self.api_obj, ["foo"])
                 # Test that a frozen package can't be updated.
@@ -163,9 +163,9 @@ providing a version at which to freeze them.
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("None" in self.output)
+                self.assertTrue("None" in self.output)
                 self.pkg("info foo")
-                self.assert_("(Frozen)" in self.output)
+                self.assertTrue("(Frozen)" in self.output)
 
                 # Test that unfreezing a package allows it to move.
                 self.pkg("unfreeze foo")
@@ -192,16 +192,16 @@ providing a version at which to freeze them.
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("1.2 is broken" in self.output)
+                self.assertTrue("1.2 is broken" in self.output)
 
                 # Test that the reason a package was frozen is included in the
                 # output of a failed install.
                 self.pkg("install foo@1.1", exit=1)
-                self.assert_("1.2 is broken" in self.errout)
+                self.assertTrue("1.2 is broken" in self.errout)
 
                 self.pkg("freeze obso@1.0")
                 self.pkg("info -r obso")
-                self.assert_("(Obsolete, Frozen)" in self.output)
+                self.assertTrue("(Obsolete, Frozen)" in self.output)
 
         def test_unprived_operation(self):
                 """Test that pkg freeze and unfreeze display the frozen packages
@@ -217,12 +217,12 @@ providing a version at which to freeze them.
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("None" in self.output)
+                self.assertTrue("None" in self.output)
                 self.pkg("unfreeze -H", su_wrap=True)
                 tmp = self.output.split()
                 self.assertEqualDiff("foo", tmp[0])
                 self.assertEqualDiff("1.0", tmp[1])
-                self.assert_("None" in self.output)
+                self.assertTrue("None" in self.output)
 
                 # Test that if the freeze file can't be read, we handle the
                 # exception appropriately.
@@ -240,7 +240,7 @@ providing a version at which to freeze them.
 
                 # Test that we don't stack trace if the version is unexpected.
                 version, d = json.load(open(pth))
-                with open(pth, "wb") as fh:
+                with open(pth, "w") as fh:
                         json.dump((-1, d), fh)
                 self.pkg("freeze", exit=1)
                 self.pkg("unfreeze", exit=1)

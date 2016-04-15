@@ -34,7 +34,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-import generic
+from . import generic
 import pkg.actions
 import pkg.client.api_errors as apx
 import pkg.digest as digest
@@ -473,7 +473,8 @@ class SignatureAction(generic.Action):
                 verifier = pub_key.verifier(
                     misc.hex_to_binary(self.attrs["value"]), padding.PKCS1v15(),
                     hhash())
-                verifier.update(self.actions_to_str(acts, ver))
+                verifier.update(misc.force_bytes(
+                    self.actions_to_str(acts, ver)))
                 try:
                         verifier.verify()
                 except InvalidSignature:
@@ -536,7 +537,7 @@ class SignatureAction(generic.Action):
                         signer.update(misc.force_bytes(self.actions_to_str(acts,
                             generic.Action.sig_version)))
                         self.attrs["value"] = \
-                            misc.binary_to_hex(signer.finalize())
+                                misc.binary_to_hex(signer.finalize())
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

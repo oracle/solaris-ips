@@ -25,7 +25,7 @@
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -39,6 +39,7 @@ import socket
 import subprocess
 import stat
 import struct
+import sys
 import tempfile
 import time
 import unittest
@@ -1051,7 +1052,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     "etc/cat_link",
                 ):
                         self.debug("fname: {0}".format(name))
-                        self.assert_(os.path.exists(os.path.join(self.get_img_path(),
+                        self.assertTrue(os.path.exists(os.path.join(self.get_img_path(),
                             name)))
 
                 self.pkg("uninstall -vvv fuzzy")
@@ -1089,7 +1090,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     stdout=subprocess.PIPE)
                 out, err = p.communicate()
                 # sensitive attr is not in 11 FCS, so no closing }
-                expected = "{AH-S---m----"
+                expected = b"{AH-S---m----"
                 self.assertTrue(expected in out, out)
 
                 self.pkg("install secret2")
@@ -1098,7 +1099,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     stdout=subprocess.PIPE)
                 out, err = p.communicate()
                 # sensitive attr is not in 11 FCS, so no closing }
-                expected = "{AH-S---m----"
+                expected = b"{AH-S---m----"
                 self.assertTrue(expected in out, out)
 
                 # test some packages with invalid sysattrs
@@ -1193,6 +1194,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                         os.chmod(pdir, 0o755)
 
 
+
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
 
         # Only start/stop the depot once (instead of for every test)
@@ -1264,12 +1266,13 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
 
                 def corrupt_path(path, value="noodles\n", rename=False):
                         """Given a path, corrupt its contents."""
-                        self.assert_(os.path.exists(path))
+                        self.assertTrue(os.path.exists(path))
                         if rename:
                                 os.rename(path, path + ".not-corrupt")
-                                open(path, "wb").write(value)
+                                with open(path, "w") as f:
+                                        f.write(value)
                         else:
-                                df = open(path, "wb")
+                                df = open(path, "w")
                                 df.write(value)
                                 df.close()
 
@@ -1307,7 +1310,8 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                         # cache
                         u = urlopen(url)
                         content = u.readlines()
-                        self.assert_(content != ["noodles\n"],
+                        # content from urlopen is bytes
+                        self.assertTrue(content != [b"noodles\n"],
                             "Unexpected content from depot")
 
                         # get the corrupted version, and verify it is broken
@@ -1315,7 +1319,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                         u = proxy_opener.open(req)
                         content = u.readlines()
 
-                        self.assert_(content == ["noodles\n"],
+                        self.assertTrue(content == [b"noodles\n"],
                             "Expected noodles, got {0} for {1}".format(content, url))
 
                 # the following should work, as pkg should retry requests
@@ -1331,7 +1335,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                         req = Request(url)
                         u = proxy_opener.open(req)
                         content = u.readlines()
-                        self.assert_(content != ["noodles\n"],
+                        self.assertTrue(content != ["noodles\n"],
                             "Unexpected content from depot")
 
                 # ensure that when we actually corrupt the repository
@@ -1364,13 +1368,13 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                         # we should be getting two hash errors, one from the
                         # cache, one from the repo. The one from the repo should
                         # repeat
-                        self.assert_(
+                        self.assertTrue(
                             "1: Invalid contentpath lib/libc.so.1: chash" in
                             self.errout)
-                        self.assert_(
+                        self.assertTrue(
                             "2: Invalid contentpath lib/libc.so.1: chash" in
                             self.errout)
-                        self.assert_("(happened 3 times)" in self.errout)
+                        self.assertTrue("(happened 3 times)" in self.errout)
 
                         # now corrupt the manifest (we have to re-corrupt the
                         # cache, since attempting to install foo above would
@@ -1386,18 +1390,18 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
 
                         # we should get two hash errors, one from the cache, one
                         # from the repo - the one from the repo should repeat.
-                        self.assert_(
+                        self.assertTrue(
                             "1: Invalid content: manifest hash failure" in
                             self.errout)
-                        self.assert_("2: Invalid content: manifest hash failure"
+                        self.assertTrue("2: Invalid content: manifest hash failure"
                             in self.errout)
-                        self.assert_("(happened 3 times)" in self.errout)
+                        self.assertTrue("(happened 3 times)" in self.errout)
 
                         # finally, corrupt the catalog. Given we've asked for a
                         # full refresh, we retrieve the upstream version only.
                         corrupt_path(catpath, value="spaghetti\n", rename=True)
                         self.pkg("refresh --full", stderr=True, exit=1)
-                        self.assert_("catalog.base.C' is invalid." in
+                        self.assertTrue("catalog.base.C' is invalid." in
                             self.errout)
                         os.rename(catpath + ".not-corrupt", catpath)
 
@@ -1550,13 +1554,13 @@ class TestPkgInstallRepoPerTest(pkg5unittest.SingleDepotTestCase):
                 # Install the package
                 self._api_install(api_inst, ["disappear"])
 
-                self.assert_(os.path.isfile(os.path.join(
+                self.assertTrue(os.path.isfile(os.path.join(
                     self.img_path(), "bin", "cat")))
                 repo = self.dc.get_repo()
                 m_path = repo.manifest(pfmri)
-                with open(m_path, "rb") as fh:
+                with open(m_path, "r") as fh:
                         fmri_lines = fh.readlines()
-                with open(m_path, "wb") as fh:
+                with open(m_path, "w") as fh:
                         for l in fmri_lines:
                                 if "usr/bin/cat" in l:
                                         continue
@@ -1565,7 +1569,7 @@ class TestPkgInstallRepoPerTest(pkg5unittest.SingleDepotTestCase):
 
                 pfmri = self.pkgsend_bulk(self.rurl, self.disappear11)[0]
                 self._api_update(api_inst)
-                self.assert_(not os.path.isfile(os.path.join(
+                self.assertTrue(not os.path.isfile(os.path.join(
                     self.img_path(), "bin", "cat")))
 
 
@@ -2241,13 +2245,13 @@ class TestPkgInstallOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_inst, ["a*@1", "a@2"])
                 self.pkg("list -Hv")
                 self.assertEqual(len(self.output.splitlines()), 3)
-                self.assert_("a@2" in self.output)
+                self.assertTrue("a@2" in self.output)
                 self._api_uninstall(api_inst, ["a", "aa", "a/foo"])
 
                 self._api_install(api_inst, ["/a@1", "a*@2", "*foo*@1"])
                 self.pkg("list -Hv")
                 self.assertEqual(len(self.output.splitlines()), 5)
-                self.assert_("a@1" in self.output)
+                self.assertTrue("a@1" in self.output)
                 self._api_uninstall(api_inst,
                     ["/a", "a/foo", "b/foo", "foo/a", "foo/b"])
 
@@ -2271,26 +2275,26 @@ class TestPkgInstallOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_inst, ["a@1", "pkg://pub2/a@1"])
                 self.pkg("list -Hv 'pkg://pub2/*'")
                 self.assertEqual(len(self.output.splitlines()), 1)
-                self.assert_("a@1" in self.output)
+                self.assertTrue("a@1" in self.output)
                 self._api_uninstall(api_inst, ["a"])
 
                 self._api_install(api_inst, ["a@1", "pkg://test/a@1"])
                 self.pkg("list -Hv 'pkg://test/*'")
                 self.assertEqual(len(self.output.splitlines()), 1)
-                self.assert_("a@1" in self.output)
+                self.assertTrue("a@1" in self.output)
                 self._api_uninstall(api_inst, ["a"])
 
                 self._api_install(api_inst, ["a*@1", "pkg://pub2/*@2"])
                 self.pkg("list -Hv 'pkg://pub2/*'")
                 self.assertEqual(len(self.output.splitlines()), 1)
-                self.assert_("a@2" in self.output)
+                self.assertTrue("a@2" in self.output)
                 self._api_uninstall(api_inst, ["a"])
 
                 self._api_install(api_inst,
                     ["pkg://test/a@1", "pkg://pub2/*@2"])
                 self.pkg("list -Hv 'pkg://test/*'")
                 self.assertEqual(len(self.output.splitlines()), 1)
-                self.assert_("a@1" in self.output)
+                self.assertTrue("a@1" in self.output)
                 self._api_uninstall(api_inst, ["a"])
 
                 # This intentionally doesn't use api_install to check for
@@ -2298,7 +2302,7 @@ class TestPkgInstallOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install '*' 'pkg://pub2/*@2'")
                 self.pkg("list -Hv 'pkg://pub2/*'")
                 self.assertEqual(len(self.output.splitlines()), 1)
-                self.assert_("a@2" in self.output)
+                self.assertTrue("a@2" in self.output)
                 self._api_uninstall(api_inst, ["a"])
 
 
@@ -3047,7 +3051,7 @@ adm
                 ]
 
                 sfile = os.path.join(sroot, salvaged[0])
-                with open(sfile, "rb") as f:
+                with open(sfile, "r") as f:
                         found = [l.strip() for l in f if entry in l]
                         self.assertEqual(found, [entry])
 
@@ -3124,7 +3128,7 @@ adm
                 self.pkg("list amber@2.0 bronze@2.0")
                 self.pkg("verify -v")
                 # make sure old implicit directories for bronzeA1 were removed
-                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(),
+                self.assertTrue(not os.path.isdir(os.path.join(self.get_img_path(),
                     "A")))
                 # Remove packages
                 self.pkg("uninstall amber bronze")
@@ -3395,12 +3399,13 @@ adm
                 self.pkg("{0} dricon@1".format(install_cmd))
                 # This one should comment out the wigit entry in driver_aliases
                 self.pkg("{0} dricon@2".format(install_cmd))
-                da_contents = open(os.path.join(self.get_img_path(),
-                    "etc/driver_aliases")).readlines()
-                self.assert_("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
-                self.assert_("wigit \"pci8086,1234\"\n" not in da_contents)
-                self.assert_("wigit \"pci8086,4321\"\n" in da_contents)
-                self.assert_("zigit \"pci8086,1234\"\n" in da_contents)
+                with open(os.path.join(self.get_img_path(),
+                    "etc/driver_aliases")) as f:
+                        da_contents = f.readlines()
+                self.assertTrue("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
+                self.assertTrue("wigit \"pci8086,1234\"\n" not in da_contents)
+                self.assertTrue("wigit \"pci8086,4321\"\n" in da_contents)
+                self.assertTrue("zigit \"pci8086,1234\"\n" in da_contents)
                 # This one should fail
                 self.pkg("{0} dricon@3".format(install_cmd), exit=1)
 
@@ -3426,9 +3431,10 @@ adm
 
                 # Check that there is a policy entry for this
                 # device in /etc/security/device_policy
-                dp_contents = open(os.path.join(self.get_img_path(),
-                    "etc/security/device_policy")).readlines()
-                self.assert_("frigit:*\tread_priv_set=net_rawaccess\t"
+                with open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")) as f:
+                        dp_contents = f.readlines()
+                self.assertTrue("frigit:*\tread_priv_set=net_rawaccess\t"
                     "write_priv_set=net_rawaccess\ttpd_member=true\n"
                     in dp_contents)
 
@@ -3437,29 +3443,33 @@ adm
 
                 # Check that there is no longer a policy entry for this
                 # device in /etc/security/device_policy
-                dp_contents = open(os.path.join(self.get_img_path(),
-                    "etc/security/device_policy")).readlines()
-                self.assert_("frigit:*\tread_priv_set=net_rawaccess\t"
+                with open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")) as f:
+                        dp_contents = f.readlines()
+                self.assertTrue("frigit:*\tread_priv_set=net_rawaccess\t"
                     "write_priv_set=net_rawaccess\ttpd_member=true\n"
                     not in dp_contents)
 
                 self.pkg("update dripol@3")
-                dp_contents = open(os.path.join(self.get_img_path(),
-                    "etc/security/device_policy")).readlines()
-                self.assert_("frigit:*\ttpd_member=true\n"
+                with open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")) as f:
+                        dp_contents = f.readlines()
+                self.assertTrue("frigit:*\ttpd_member=true\n"
                     in dp_contents)
 
                 self.pkg("update dripol@5")
-                dp_contents = open(os.path.join(self.get_img_path(),
-                    "etc/security/device_policy")).readlines()
-                self.assert_("frigit:node1\tread_priv_set=all"
+                with open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")) as f:
+                        dp_contents = f.readlines()
+                self.assertTrue("frigit:node1\tread_priv_set=all"
                     "\twrite_priv_set=all\ttpd_member=true\n"
                     in dp_contents)
 
                 self.pkg("update dripol@4")
-                dp_contents = open(os.path.join(self.get_img_path(),
-                    "etc/security/device_policy")).readlines()
-                self.assert_("frigit:node1" not in dp_contents)
+                with open(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")) as f:
+                        dp_contents = f.readlines()
+                self.assertTrue("frigit:node1" not in dp_contents)
 
         def test_file_preserve(self):
                 """Verify that file preserve=true works as expected during
@@ -3613,9 +3623,9 @@ adm
                 # original_name use and even when the original file is missing.
                 self.pkg("{0} --parsable=0 orig_pkg@1.0".format(install_cmd))
                 foo1_path = os.path.join(self.get_img_path(), "foo1")
-                self.assert_(os.path.isfile(foo1_path))
+                self.assertTrue(os.path.isfile(foo1_path))
                 bronze1_path = os.path.join(self.get_img_path(), "bronze1")
-                self.assert_(os.path.isfile(bronze1_path))
+                self.assertTrue(os.path.isfile(bronze1_path))
 
                 # Update across the rename boundary, then verify that the files
                 # were installed with their new name and the old ones were
@@ -3627,9 +3637,9 @@ adm
                 )
 
                 foo2_path = os.path.join(self.get_img_path(), "foo2")
-                self.assert_(not os.path.exists(foo1_path))
-                self.assert_(os.path.isfile(foo2_path))
-                self.assert_(os.path.isfile(bronze1_path))
+                self.assertTrue(not os.path.exists(foo1_path))
+                self.assertTrue(os.path.isfile(foo2_path))
+                self.assertTrue(os.path.isfile(bronze1_path))
                 self.pkg("uninstall --parsable=0 \*")
 
                 # Update across the rename boundary, then truncate each of the
@@ -3643,10 +3653,10 @@ adm
                 self._assertEditables(
                     moved=[['foo1', 'foo2']],
                 )
-                self.assert_(not os.path.exists(foo1_path))
-                self.assert_(os.path.isfile(foo2_path))
+                self.assertTrue(not os.path.exists(foo1_path))
+                self.assertTrue(os.path.isfile(foo2_path))
                 self.assertEqual(os.stat(foo2_path).st_size, 0)
-                self.assert_(os.path.isfile(bronze1_path))
+                self.assertTrue(os.path.isfile(bronze1_path))
                 self.assertEqual(os.stat(bronze1_path).st_size, 0)
                 self.pkg("uninstall --parsable=0 \*")
                 self._assertEditables(
@@ -3663,9 +3673,9 @@ adm
                 self._assertEditables(
                     moved=[['foo1', 'foo2']],
                 )
-                self.assert_(not os.path.exists(foo1_path))
-                self.assert_(os.path.isfile(foo2_path))
-                self.assert_(not os.path.exists(bronze1_path))
+                self.assertTrue(not os.path.exists(foo1_path))
+                self.assertTrue(os.path.isfile(foo2_path))
+                self.assertTrue(not os.path.exists(bronze1_path))
                 self.pkg("uninstall --parsable=0 \*")
 
                 # Ensure directory is empty before testing.
@@ -3965,7 +3975,7 @@ adm
                 self.pkg("{0} --parsable=0 presabandon@2".format(install_cmd))
                 self._assertEditables()
                 self.file_contains("testme", "unpackaged")
-                self.assert_(not os.path.exists(os.path.join(sroot, "testme")))
+                self.assertTrue(not os.path.exists(os.path.join(sroot, "testme")))
                 self.file_remove("testme")
                 self.pkg("uninstall presabandon")
 
@@ -4142,7 +4152,7 @@ adm
                 self.pkg("install --parsable=0 presinstallonly@2")
                 self._assertEditables()
                 self.file_contains("testme", "unpackaged")
-                self.assert_(not os.path.exists(os.path.join(sroot, "testme")))
+                self.assertTrue(not os.path.exists(os.path.join(sroot, "testme")))
                 # Verify uninstall of the package will not remove the file.
                 self.pkg("uninstall presinstallonly")
                 self.file_exists("testme")
@@ -4435,7 +4445,7 @@ adm
                 abs_path = os.path.join(self.get_img_path(), cfg_path)
 
                 self.file_exists(cfg_path)
-                self.assert_(not os.path.islink(abs_path))
+                self.assertTrue(not os.path.islink(abs_path))
 
                 # Modify the file.
                 self.file_append(cfg_path, "modified")
@@ -4447,7 +4457,7 @@ adm
                 self._assertEditables(
                     moved=[['etc/ssh/sshd_config', 'etc/sunssh/sshd_config']]
                 )
-                self.assert_(os.path.islink(abs_path))
+                self.assertTrue(os.path.islink(abs_path))
                 self.file_exists(new_cfg_path)
                 self.file_contains(new_cfg_path, "modified")
 
@@ -4481,7 +4491,7 @@ adm
                 self.pkg("install iron@1.0")
                 self.pkg("contents -m iron")
                 # We have not enabled SHA2 hash publication yet.
-                self.assert_(("pkg.hash.{0}".format(hash_alg) not in self.output))
+                self.assertTrue(("pkg.hash.{0}".format(hash_alg) not in self.output))
 
                 # publish with SHA1 and SHA2 hashes
                 self.pkgsend_bulk(self.rurl, self.iron20,
@@ -4496,7 +4506,7 @@ adm
                 # most-preferred hash.
                 self.pkg("install iron@2.0")
                 self.pkg("contents -m iron")
-                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
 
                 # publish with only SHA-2 hashes
                 self.pkgsend_bulk(self.rurl, self.iron20,
@@ -4505,7 +4515,7 @@ adm
                 # verify that a non-SHA2 aware client cannot install these bits
                 # since there are no SHA1 hashes present
                 self.pkg("-D hash=sha1 update", exit=1)
-                self.assert_(
+                self.assertTrue(
                     "No file could be found for the specified hash name: "
                     "'NOHASH'" in self.errout)
 
@@ -4517,8 +4527,8 @@ adm
                 for attr in ["pkg.hash.{0}".format(hash_alg),
                     "pkg.chash.{0}".format(hash_alg)]:
                         self.output = self.output.replace(attr, "")
-                self.assert_("hash" not in self.output)
-                self.assert_("chash" not in self.output)
+                self.assertTrue("hash" not in self.output)
+                self.assertTrue("chash" not in self.output)
 
         def test_content_hash_ignore(self):
                 """Test that pkgs with content-hash attributes are ignored for
@@ -5047,46 +5057,55 @@ adm:NP:6445::::::
                 # the file, and that the user verifies.
                 self.pkg("install notftpuser")
                 fpath = self.get_img_path() + "/etc/ftpd/ftpusers"
-                self.assert_("animal\n" in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("animal\n" in f.readlines())
                 self.pkg("verify notftpuser")
 
                 # Add a user with an explicit ftpuser=true.  Make sure the user
                 # is not added to the file, and that the user verifies.
                 self.pkg("install ftpuserexp")
-                self.assert_("fozzie\n" not in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("fozzie\n" not in f.readlines())
                 self.pkg("verify ftpuserexp")
 
                 # Add a user with an implicit ftpuser=true.  Make sure the user
                 # is not added to the file, and that the user verifies.
                 self.pkg("install ftpuserimp")
-                self.assert_("gonzo\n" not in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("gonzo\n" not in f.readlines())
                 self.pkg("verify ftpuserimp")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with ftpuser=false.  Make sure the user remains in the
                 # file, and that the user verifies.
                 self.pkg("uninstall notftpuser")
-                open(fpath, "a").write("animal\n")
+                with open(fpath, "a") as f:
+                        f.write("animal\n")
                 self.pkg("install notftpuser")
-                self.assert_("animal\n" in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("animal\n" in f.readlines())
                 self.pkg("verify notftpuser")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with an explicit ftpuser=true.  Make sure the user is
                 # stripped from the file, and that the user verifies.
                 self.pkg("uninstall ftpuserexp")
-                open(fpath, "a").write("fozzie\n")
+                with open(fpath, "a") as f:
+                        f.write("fozzie\n")
                 self.pkg("install ftpuserexp")
-                self.assert_("fozzie\n" not in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("fozzie\n" not in f.readlines())
                 self.pkg("verify ftpuserexp")
 
                 # Put a user into the ftpusers file as shipped, then add that
                 # user, with an implicit ftpuser=true.  Make sure the user is
                 # stripped from the file, and that the user verifies.
                 self.pkg("uninstall ftpuserimp")
-                open(fpath, "a").write("gonzo\n")
+                with open(fpath, "a") as f:
+                        f.write("gonzo\n")
                 self.pkg("install ftpuserimp")
-                self.assert_("gonzo\n" not in open(fpath).readlines())
+                with open(fpath) as f:
+                        self.assertTrue("gonzo\n" not in f.readlines())
                 self.pkg("verify ftpuserimp")
 
         def test_groupverify_install(self):
@@ -5110,21 +5129,25 @@ adm:NP:6445::::::
 
                 # add additional members to group & verify
                 gpath = self.get_img_file_path("etc/group")
-                gdata = open(gpath).readlines()
+                with open(gpath) as f:
+                        gdata = f.readlines()
                 gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
-                open(gpath, "w").writelines(gdata)
+                with open(gpath, "w") as f:
+                        f.writelines(gdata)
                 self.pkg("verify simplegroup")
                 self.pkg("uninstall simplegroup")
 
                 # verify that groups appear in gid order.
                 self.pkg("install simplegroup simplegroup2")
                 self.pkg("verify")
-                gdata = open(gpath).readlines()
-                self.assert_(gdata[-1].find("muppets2") == 0)
+                with open(gpath) as f:
+                        gdata = f.readlines()
+                self.assertTrue(gdata[-1].find("muppets2") == 0)
                 self.pkg("uninstall simple*")
                 self.pkg("install simplegroup2 simplegroup")
-                gdata = open(gpath).readlines()
-                self.assert_(gdata[-1].find("muppets2") == 0)
+                with open(gpath) as f:
+                        gdata = f.readlines()
+                self.assertTrue(gdata[-1].find("muppets2") == 0)
 
         def test_preexisting_group_install(self):
                 """Make sure we correct any errors in pre-existing group actions"""
@@ -5142,15 +5165,18 @@ adm:NP:6445::::::
 
                 self.pkg("install basics")
                 gpath = self.get_img_file_path("etc/group")
-                gdata = open(gpath).readlines()
+                with open(gpath) as f:
+                        gdata = f.readlines()
                 gdata = ["muppets::1010:\n"] + gdata
-                open(gpath, "w").writelines(gdata)
+                with open(gpath, "w") as f:
+                        f.writelines(gdata)
                 self.pkg("verify")
                 self.pkg("install simplegroup@1")
                 self.pkg("verify simplegroup")
                 # check # lines beginning w/ 'muppets' in group file
-                gdata = open(gpath).readlines()
-                self.assert_(
+                with open(gpath) as f:
+                        gdata = f.readlines()
+                self.assertTrue(
                     len([a for a in gdata if a.find("muppets") == 0]) == 1)
 
                 # make sure we can add new version of same package
@@ -5196,8 +5222,10 @@ adm:NP:6445::::::
                 self.pkg("verify")
                 # edit group file to remove muppets group
                 gpath = self.get_img_file_path("etc/group")
-                gdata = open(gpath).readlines()
-                open(gpath, "w").writelines(gdata[0:-1])
+                with open(gpath) as f:
+                        gdata = f.readlines()
+                with open(gpath, "w") as f:
+                        f.writelines(gdata[0:-1])
 
                 # verify that we catch missing group
                 # in both group and user actions
@@ -5208,7 +5236,8 @@ adm:NP:6445::::::
                 self.pkg("uninstall missing*")
                 # try installing w/ broken group
 
-                open(gpath, "w").writelines(gdata[0:-1])
+                with open(gpath, "w") as f:
+                        f.writelines(gdata[0:-1])
                 self.pkg("install missing_group@1", 1)
                 self.pkg("fix muppetsgroup")
                 self.pkg("install missing_group@1")
@@ -5239,16 +5268,19 @@ adm:NP:6445::::::
                 self.pkg("verify simpleuser")
 
                 ppath = self.get_img_path() + "/etc/passwd"
-                pdata = open(ppath).readlines()
+                with open(ppath) as f:
+                        pdata = f.readlines()
                 spath = self.get_img_path() + "/etc/shadow"
-                sdata = open(spath).readlines()
+                with open(spath) as f:
+                        sdata = f.readlines()
 
                 def finderr(err):
-                        self.assert_("\t\tERROR: " + err in self.output)
+                        self.assertTrue("\t\tERROR: " + err in self.output)
 
                 # change a provided, empty-default field to something else
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
                 self.pkg("fix simpleuser")
@@ -5256,7 +5288,8 @@ adm:NP:6445::::::
 
                 # change a provided, non-empty-default field to the default
                 pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '& User' should be '& loves Kermie'")
                 self.pkg("fix simpleuser")
@@ -5265,7 +5298,8 @@ adm:NP:6445::::::
                 # change a non-provided, non-empty-default field to something
                 # other than the default
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/misspiggy:/bin/sh"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '/misspiggy' should be '/'")
                 self.pkg("fix simpleuser")
@@ -5274,10 +5308,12 @@ adm:NP:6445::::::
                 # add a non-provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
                 sdata[-1] = "misspiggy:*LK*:14579:7:::::"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 os.chmod(spath,
                     stat.S_IMODE(os.stat(spath).st_mode)|stat.S_IWUSR)
-                open(spath, "w").writelines(sdata)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("min: '7' should be '<empty>'")
                 # fails fix since we don't repair shadow entries on purpose
@@ -5288,8 +5324,10 @@ adm:NP:6445::::::
                 # remove a non-provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
                 sdata[-1] = "misspiggy:*LK*:14579::::::"
-                open(ppath, "w").writelines(pdata)
-                open(spath, "w").writelines(sdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '' should be '/'")
                 self.pkg("fix simpleuser")
@@ -5297,7 +5335,8 @@ adm:NP:6445::::::
 
                 # remove a provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '' should be '& loves Kermie'")
                 self.pkg("fix simpleuser")
@@ -5305,7 +5344,8 @@ adm:NP:6445::::::
 
                 # remove a provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '' should be '/bin/sh'")
                 self.pkg("fix simpleuser")
@@ -5313,7 +5353,8 @@ adm:NP:6445::::::
 
                 # remove the user from /etc/passwd
                 pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
-                open(ppath, "w").writelines(pdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '<missing>' should be '/bin/sh'")
                 finderr("gcos-field: '<missing>' should be '& loves Kermie'")
@@ -5324,8 +5365,10 @@ adm:NP:6445::::::
                 # remove the user completely
                 pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
                 sdata[-1] = "misswiggy:*LK*:14579::::::"
-                open(ppath, "w").writelines(pdata)
-                open(spath, "w").writelines(sdata)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("username: '<missing>' should be 'misspiggy'")
                 self.pkg("fix simpleuser")
@@ -5334,7 +5377,8 @@ adm:NP:6445::::::
                 # change the password and show an error
                 self.pkg("verify simpleuser")
                 sdata[-1] = "misspiggy:NP:14579::::::"
-                open(spath, "w").writelines(sdata)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("password: 'NP' should be '*LK*'")
                 self.pkg("fix simpleuser")
@@ -5345,10 +5389,13 @@ adm:NP:6445::::::
                 # do not cause verify errors if changed.
                 self.pkg("install --reject simpleuser simpleuser2@1")
                 self.pkg("verify simpleuser2")
-                pdata = open(ppath).readlines()
-                sdata = open(spath).readlines()
+                with open(ppath) as f:
+                        pdata = f.readlines()
+                with open(spath) as f:
+                        sdata = f.readlines()
                 sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
-                open(spath, "w").writelines(sdata)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
                 self.pkg("verify simpleuser2")
 
                 # verify that upgrading package to version that implicitly
@@ -5356,7 +5403,8 @@ adm:NP:6445::::::
                 # verifies correctly
                 self.pkg("update simpleuser2@2")
                 self.pkg("verify simpleuser2")
-                sdata = open(spath).readlines()
+                with open(spath) as f:
+                        sdata = f.readlines()
                 sdata[-1].index("*LK*")
 
                 # ascertain that users are added in uid order when
@@ -5364,13 +5412,15 @@ adm:NP:6445::::::
                 self.pkg("uninstall simpleuser2")
                 self.pkg("install simpleuser simpleuser2")
 
-                pdata = open(ppath).readlines()
+                with open(ppath) as f:
+                        pdata = f.readlines()
                 pdata[-1].index("kermit")
 
                 self.pkg("uninstall simpleuser simpleuser2")
                 self.pkg("install simpleuser2 simpleuser")
 
-                pdata = open(ppath).readlines()
+                with open(ppath) as f:
+                        pdata = f.readlines()
                 pdata[-1].index("kermit")
 
         def test_minugid(self):
@@ -5394,13 +5444,13 @@ adm:NP:6445::::::
                     "/etc/passwd"))
                 for line in passwd_file:
                         if line.startswith("dummy"):
-                                self.assert_(line.startswith("dummy:x:5:"))
+                                self.assertTrue(line.startswith("dummy:x:5:"))
                 passwd_file.close()
                 group_file = open(os.path.join(self.get_img_path(),
                     "/etc/group"))
                 for line in group_file:
                         if line.startswith("dummy"):
-                                self.assert_(line.startswith("dummy::5:"))
+                                self.assertTrue(line.startswith("dummy::5:"))
                 group_file.close()
 
         def test_upgrade_with_user(self):
@@ -5453,11 +5503,11 @@ adm:NP:6445::::::
                                 self.pkg("{0} basics singleuser".format(install_cmd))
                         with open(pwd_path) as pwd_file:
                                 lines = pwd_file.readlines()
-                                self.assert_(garbage in lines)
+                                self.assertTrue(garbage in lines)
                         self.pkg("uninstall singleuser")
                         with open(pwd_path) as pwd_file:
                                 lines = pwd_file.readlines()
-                                self.assert_(garbage in lines)
+                                self.assertTrue(garbage in lines)
 
                         self.pkg("uninstall '*'")
 
@@ -5553,7 +5603,7 @@ adm:NP:6445::::::
                 def assertContents(dllines, contents):
                         actual = re.findall("name=([^\t;]*)",
                             "\n".join(dllines), re.M)
-                        self.assert_(set(actual) == set(contents))
+                        self.assertTrue(set(actual) == set(contents))
 
                 # Install
                 self.pkg("install devlinktest@1.0")
@@ -5562,10 +5612,10 @@ adm:NP:6445::::::
                 dllines = readfile()
 
                 # Verify that three entries got added
-                self.assert_(len(dllines) == 3)
+                self.assertTrue(len(dllines) == 3)
 
                 # Verify that the tab character got written correctly
-                self.assert_(dllines[0].find("\t") > 0)
+                self.assertTrue(dllines[0].find("\t") > 0)
 
                 # Upgrade
                 self.pkg("{0} devlinktest@2.0".format(install_cmd))
@@ -5574,7 +5624,7 @@ adm:NP:6445::::::
                 dllines = readfile()
 
                 # Verify that there are four entries now
-                self.assert_(len(dllines) == 4)
+                self.assertTrue(len(dllines) == 4)
 
                 # Verify they are what they should be
                 assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
@@ -5597,12 +5647,12 @@ adm:NP:6445::::::
                 self.pkg("{0} devlinktest@2.0".format(install_cmd))
 
                 # Verify that we spewed a message on upgrade
-                self.assert_(self.output.find("not found") != -1)
-                self.assert_(self.output.find("name=zerg") != -1)
+                self.assertTrue(self.output.find("not found") != -1)
+                self.assertTrue(self.output.find("name=zerg") != -1)
 
                 # Verify the new set
                 dllines = readfile()
-                self.assert_(len(dllines) == 5)
+                self.assertTrue(len(dllines) == 5)
                 assertContents(dllines,
                     ["zerg2", "zorg", "borg", "zork", "zippy"])
 
@@ -5625,12 +5675,12 @@ adm:NP:6445::::::
                 self.pkg("uninstall devlinktest")
 
                 # Verify that we spewed a message on removal
-                self.assert_(self.output.find("not found") != -1)
-                self.assert_(self.output.find("name=zerg") != -1)
+                self.assertTrue(self.output.find("not found") != -1)
+                self.assertTrue(self.output.find("name=zerg") != -1)
 
                 # Verify that the one left behind was the one we overwrote.
                 dllines = readfile()
-                self.assert_(len(dllines) == 1)
+                self.assertTrue(len(dllines) == 1)
                 assertContents(dllines, ["zippy"])
 
                 # Null out the "zippy" entry, but add the "zerg" entry
@@ -5679,10 +5729,10 @@ adm:NP:6445::::::
                 dalines = daf.readlines()
                 daf.close()
 
-                self.assert_(len(dalines) == 1, msg=dalines)
-                self.assert_(",1234" not in dalines[0])
-                self.assert_(",4321" not in dalines[0])
-                self.assert_(",5555" in dalines[0])
+                self.assertTrue(len(dalines) == 1, msg=dalines)
+                self.assertTrue(",1234" not in dalines[0])
+                self.assertTrue(",4321" not in dalines[0])
+                self.assertTrue(",5555" in dalines[0])
 
         def test_driver_aliases_move(self):
                 """Make sure that an alias can be moved from one driver action
@@ -5698,7 +5748,7 @@ adm:NP:6445::::::
                 self.image_create(self.rurl)
                 self.pkg("{0} devicebase devaliasmove@1".format(install_cmd))
                 self.pkg("update devaliasmove")
-                self.assert_("pci8086,5555" not in self.output)
+                self.assertTrue("pci8086,5555" not in self.output)
 
         def test_uninstall_without_perms(self):
                 """Verify uninstall fails as expected for unprivileged users."""
@@ -5831,7 +5881,7 @@ adm:NP:6445::::::
                 self.pkg("{0} badhardlink2".format(install_cmd))
                 ino1 = os.stat(os.path.join(self.get_img_path(), "foo")).st_ino
                 ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
-                self.assert_(ino1 == ino2)
+                self.assertTrue(ino1 == ino2)
 
         def test_legacy(self):
                 self.pkgsend_bulk(self.rurl,
@@ -5847,10 +5897,10 @@ adm:NP:6445::::::
                 pi = os.path.join(vsp, "SUNWcsu/pkginfo")
                 pi2 = os.path.join(vsp, "SUNWcsu/pkginfo.2")
                 pi3 = os.path.join(vsp, "SUNWcsu/pkginfo.3")
-                self.assert_(os.path.exists(pi), "pkginfo doesn't exist")
+                self.assertTrue(os.path.exists(pi), "pkginfo doesn't exist")
                 self.file_contains(pi, "VERSION=11.11,REV=2009.11.11")
-                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
-                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
+                self.assertTrue(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assertTrue(not os.path.exists(pi3), "pkginfo.3 exists")
                 # Create the hardlinks as we'd have for the old refcounting
                 # system.
                 os.link(pi, pi2)
@@ -5860,8 +5910,8 @@ adm:NP:6445::::::
                 # correctly, and that the hardlinks go away.
                 self.pkg("update")
                 self.file_contains(pi, "VERSION=11.11,REV=2010.11.11")
-                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
-                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
+                self.assertTrue(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assertTrue(not os.path.exists(pi3), "pkginfo.3 exists")
 
                 # Start over, but this time "break" the hardlinks.
                 self.pkg("uninstall -vvv \*")
@@ -5870,8 +5920,8 @@ adm:NP:6445::::::
                 shutil.copy(pi, pi3)
                 self.pkg("update")
                 self.file_contains(pi, "VERSION=11.11,REV=2010.11.11")
-                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
-                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
+                self.assertTrue(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assertTrue(not os.path.exists(pi3), "pkginfo.3 exists")
 
 
 class TestDependencies(pkg5unittest.SingleDepotTestCase):
@@ -8660,7 +8710,7 @@ class TestObsoletionNestedIncorporations(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("update -v entire@2", exit=1)
 
-                self.assert_("oldcompiler" in self.errout and
+                self.assertTrue("oldcompiler" in self.errout and
                     "oldperl" in self.errout,
                     "error message does not mention oldcompiler and oldperl packages")
 
@@ -8808,6 +8858,7 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
         """Tests involving one or more packages that require license acceptance
         or display."""
 
+        maxDiff = None
         persistent_depot = True
 
         # Tests in this suite use the read only data directory.
@@ -8900,10 +8951,10 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install --parsable=0 licensed@1.0")
                 self.assertEqualParsable(self.output,
                     add_packages=[self.plist[3], self.plist[0]], licenses=[
-                        [self.plist[3], None,
+                        [self.plist[3], [],
                             [self.plist[3], "copyright.baz", "copyright.baz",
                             False, False]],
-                        [self.plist[0], None,
+                        [self.plist[0], [],
                             [self.plist[0], "copyright.licensed",
                             "copyright.licensed", False, False]
                         ]])
@@ -8924,7 +8975,7 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualParsable(self.output,
                     change_packages=[[self.plist[0], self.plist[1]]], licenses=[
                         [self.plist[1],
-                            None,
+                            [],
                             [self.plist[1], "license.licensed",
                             "license.licensed", False, False]],
                         [self.plist[1],
@@ -9032,7 +9083,7 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
 
         @staticmethod
         def __write_empty_file(target, mode=644, owner="root", group="bin"):
-                f = open(target, "wb")
+                f = open(target, "w")
                 f.write("\n")
                 f.close()
                 os.chmod(target, mode)
@@ -9091,11 +9142,11 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 pfmri = fmri.PkgFmri(sfmri)
                 repo = self.get_repo(self.dcs[1].get_repodir())
                 mpath = repo.manifest(pfmri)
-                with open(mpath, "ab+") as mfile:
+                with open(mpath, "a+") as mfile:
                         mfile.write(unsupp_content + "\n")
 
                 mcontent = None
-                with open(mpath, "rb") as mfile:
+                with open(mpath, "r") as mfile:
                         mcontent = mfile.read()
 
                 cat = repo.get_catalog("test")
@@ -9927,13 +9978,13 @@ adm
                         lines = f.readlines()
                 for line in lines:
                         if "fozzie" in line:
-                                self.assert_("200" in line)
+                                self.assertTrue("200" in line)
                                 break
                 with open(os.path.join(self.img_path(), "etc/passwd")) as f:
                         lines = f.readlines()
                 for line in lines:
                         if "fozzie" in line:
-                                self.assert_("200" in line)
+                                self.assertTrue("200" in line)
                                 break
                 self.pkg("install -v --reject conflictgroup1 conflictgroup2")
 
@@ -9943,13 +9994,13 @@ adm
                         lines = f.readlines()
                 for line in lines:
                         if "fozzie" in line:
-                                self.assert_("201" in line)
+                                self.assertTrue("201" in line)
                                 break
                 with open(os.path.join(self.img_path(), "etc/group")) as f:
                         lines = f.readlines()
                 for line in lines:
                         if "fozzie" in line:
-                                self.assert_("201" in line)
+                                self.assertTrue("201" in line)
                                 break
                 self.pkg("verify")
 
@@ -10017,8 +10068,8 @@ adm
                         index = i
                 expected = "\n  {0}\n  {1}\n  {2}".format(
                     self.plist[index], self.plist[index + 1], self.plist[index + 3])
-                self.assert_(expected in err1, err1)
-                self.assert_("Hash" not in out1)
+                self.assertTrue(expected in err1, err1)
+                self.assertTrue("Hash" not in out1)
                 self.pkg("uninstall dupfilesp3")
                 # Removing dupfilesp3, verify should still report a duplicate
                 # action error on dupfilesp1 and dupfilesp2.
@@ -10026,8 +10077,8 @@ adm
                 out2, err2 = self.output, self.errout
                 expected = "\n  {0}\n  {1}".format(
                     self.plist[index], self.plist[index + 1])
-                self.assert_(expected in err2)
-                self.assert_("Hash" not in out2)
+                self.assertTrue(expected in err2)
+                self.assertTrue("Hash" not in out2)
 
                 # Removing all but one of the offending actions should get us
                 # back to sanity.
@@ -10060,10 +10111,10 @@ adm
                 self.pkg("uninstall implicitdirs3 implicitdirs4")
 
                 if os.path.isdir(os.path.join(self.get_img_path(), "usr/bin")):
-                        self.assert_(False, "Directory 'usr/bin' should not exist")
+                        self.assertTrue(False, "Directory 'usr/bin' should not exist")
 
                 if os.path.isdir(os.path.join(self.get_img_path(), "usr")):
-                        self.assert_(False, "Directory 'usr' should not exist")
+                        self.assertTrue(False, "Directory 'usr' should not exist")
 
                 # Make sure identical actions don't cause problems
                 self.pkg("install -nv identicalfiles", exit=1)
@@ -10440,9 +10491,9 @@ adm
                 # with 'pam.conf', and finally a 'pam-XXX' directory containing
                 # the 'pam.conf.new-XXX'.
                 self.assertEqualDiff(salvaged[0], "pam")
-                self.assert_(salvaged[1].startswith("pam-"),
+                self.assertTrue(salvaged[1].startswith("pam-"),
                     msg=str(salvaged))
-                self.assert_(salvaged[2].startswith("pam.conf"),
+                self.assertTrue(salvaged[2].startswith("pam.conf"),
                     msg=str(salvaged))
 
                 # Next, install overlaid package and overlaying package, then
@@ -10590,13 +10641,13 @@ adm
                 # We make sure that what got reported is correct -- two actions
                 # of different types in conflict with whatever actually got laid
                 # down.
-                self.assert_(len(matches) == 2)
+                self.assertTrue(len(matches) == 2)
                 whatis = matches[0][0]
-                self.assert_(matches[1][0] == whatis)
-                self.assert_(whatis == tmap[fmt])
+                self.assertTrue(matches[1][0] == whatis)
+                self.assertTrue(whatis == tmap[fmt])
                 shouldbe = set(["symbolic link", "regular file", "directory"]) - \
                     set([whatis])
-                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                self.assertTrue(set([matches[0][1], matches[1][1]]) == shouldbe)
                 # Now we uninstall one of the packages delivering a type which
                 # isn't what's on the filesystem.  The filesystem should remain
                 # unchanged, but one of the errors should go away.
@@ -10606,9 +10657,9 @@ adm
                         self.pkg("uninstall dupdir")
                 self.pkg("verify", exit=1)
                 matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 1)
+                self.assertTrue(len(matches) == 1)
                 nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                self.assert_(nfmt == fmt)
+                self.assertTrue(nfmt == fmt)
 
                 # Now we do the same thing, but we uninstall the package
                 # delivering the type which *is* what's on the filesystem.  This
@@ -10621,13 +10672,13 @@ adm
                 fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
                 self.pkg("verify", exit=1)
                 matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 2)
+                self.assertTrue(len(matches) == 2)
                 whatis = matches[0][0]
-                self.assert_(matches[1][0] == whatis)
-                self.assert_(whatis == tmap[fmt])
+                self.assertTrue(matches[1][0] == whatis)
+                self.assertTrue(whatis == tmap[fmt])
                 shouldbe = set(["symbolic link", "regular file", "directory"]) - \
                     set([whatis])
-                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                self.assertTrue(set([matches[0][1], matches[1][1]]) == shouldbe)
                 if whatis == "directory":
                         self.pkg("uninstall dupdir")
                 elif whatis == "symbolic link":
@@ -10636,9 +10687,9 @@ adm
                         self.pkg("uninstall dupfilesp1")
                 self.pkg("verify", exit=1)
                 matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 2)
+                self.assertTrue(len(matches) == 2)
                 nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                self.assert_(nfmt == fmt)
+                self.assertTrue(nfmt == fmt)
 
                 # Go from multiple conflicting types down to just one type.
                 # This also tests the case where a package version being newly
@@ -10702,7 +10753,7 @@ adm
                 # third package isn't blamed.
                 self.pkg("install implicitdirs4 implicitdirs5 implicitdirs6",
                     exit=1)
-                self.assert_("implicitdirs4" not in self.errout)
+                self.assertTrue("implicitdirs4" not in self.errout)
 
                 # Two packages, two links with different targets, installed at
                 # once
@@ -10854,7 +10905,7 @@ adm
                         f = open(path)
                 except OSError as e:
                         if e.errno == errno.ENOENT:
-                                self.assert_(False, "File dir/pathname does not exist")
+                                self.assertTrue(False, "File dir/pathname does not exist")
                         else:
                                 raise
                 self.assertEqual(f.read().rstrip(), "tmp/file2")
@@ -11005,7 +11056,7 @@ adm
                 self.pkg("verify", exit=1)
                 out2 = self.output
                 out2 = out2[out2.index("STATUS\n") + 7:]
-                self.assert_(out2 in out1)
+                self.assertTrue(out2 in out1)
 
                 # Removing all but one of the offending actions should get us
                 # back to sanity.

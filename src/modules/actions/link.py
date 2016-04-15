@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (symbolic) link packaging object
@@ -34,7 +34,7 @@ import os
 import six
 import stat
 
-import generic
+from . import generic
 import pkg.actions
 import pkg.mediator as med
 

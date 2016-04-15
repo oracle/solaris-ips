@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -34,6 +34,7 @@ import pkg.client.publisher as publisher
 import pkg.digest as digest
 import pkg.fmri as fmri
 from pkg.client.imageconfig import DEF_TOKEN
+from pkg.misc import force_bytes
 
 CURRENT_VERSION = 0
 
@@ -189,7 +190,7 @@ def write(fileobj, pubs, cfg):
                                 res.append("http://{0}/{1}/{2}".format(
                                     publisher.SYSREPO_PROXY, prefix,
                                     digest.DEFAULT_HASH_FUNC(
-                                    m.uri.rstrip("/")).hexdigest()
+                                    force_bytes(m.uri.rstrip("/"))).hexdigest()
                                     ))
                         else:
                                 assert False, "{0} is an unknown scheme.".format(

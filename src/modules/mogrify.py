@@ -660,6 +660,7 @@ def read_file(tp, ignoreincludes, transforms, macros, printinfo, includes,
                                     exception=e),
                                     exitcode=None)
                         raise RuntimeError("<included from>")
+        f.close()
 
         return ret
 

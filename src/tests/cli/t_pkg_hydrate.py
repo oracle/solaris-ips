@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -348,7 +348,7 @@ class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("dehydrate -p test1 -p test2 -p test3")
                 self.pkg("property dehydrated")
                 expected = \
-"""PROPERTY   VALUE\ndehydrated ['test1', 'test3', 'test2']\n"""
+"""PROPERTY   VALUE\ndehydrated ['test1', 'test2', 'test3']\n"""
                 self.assertEqual(expected, self.output)
                 self.pkg("rehydrate -p test3")
                 self.pkg("property dehydrated")
@@ -367,7 +367,7 @@ class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("dehydrate")
                 self.pkg("property dehydrated")
                 expected = \
-"""PROPERTY   VALUE\ndehydrated ['test1', 'test3', 'test2']\n"""
+"""PROPERTY   VALUE\ndehydrated ['test1', 'test2', 'test3']\n"""
                 self.assertEqual(expected, self.output)
                 self.pkg("rehydrate")
                 self.pkg("property dehydrated")
@@ -561,7 +561,7 @@ class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
                 self.file_contains("dev/cfg/bar", "junk")
                 self.pkg("verify -vvv")
                 # dev/cfg/bar1 is dehydrated, so verify will not look at it
-                self.assert_("dev/cfg/bar1" not in self.output)
+                self.assertTrue("dev/cfg/bar1" not in self.output)
                 self.pkg("verify -v")
                 self.output.index("editable file has been changed")
 
@@ -735,9 +735,9 @@ WARNING: pkg mediators may not be accurately shown when one or more publishers h
                 self.file_exists(dev_path)
                 self.pkg("set-mediator -vvv -I dev vi")
                 self.file_doesnt_exist(vi_path)
-                self.assert_(warning in self.output, self.output)
+                self.assertTrue(warning in self.output, self.output)
                 self.pkg("mediator")
-                self.assert_(warning in self.output, self.output)
+                self.assertTrue(warning in self.output, self.output)
                 self.pkg("rehydrate")
                 assert_target(vi_path, dev_path)
                 assert_mediation_matches("""\

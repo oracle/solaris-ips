@@ -1253,7 +1253,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 msg(_("\n\nVerifying repository contents."))
                 cmd = os.path.join(os.path.dirname(misc.api_cmdpath()),
                     "pkgrepo")
-                args = [cmd, 'verify', '-s',
+                args = [sys.executable, cmd, 'verify', '-s',
                     target.get_pathname(), '--disable', 'dependency']
 
                 try:
@@ -1695,7 +1695,10 @@ if __name__ == "__main__":
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
-
+        import six
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 __ret = main_func()
         except (KeyboardInterrupt, apx.CanceledException):

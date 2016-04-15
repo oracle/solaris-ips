@@ -22,7 +22,7 @@
 
 # Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -654,7 +654,7 @@ depend fmri=pkg://// type=require
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(errs), 1)
-                self.assert_(isinstance(errs[0],
+                self.assertTrue(isinstance(errs[0],
                     actions.InvalidActionAttributesError))
 
                 bad_require_any_dep_manf = """\
@@ -666,7 +666,7 @@ depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(errs), 1)
-                self.assert_(isinstance(errs[0],
+                self.assertTrue(isinstance(errs[0],
                     actions.InvalidActionAttributesError))
 
                 bad_variant = """\
@@ -680,7 +680,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional predicate=pkg:/b@2,5.11-1 variant.n
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(errs), 1)
-                self.assert_(isinstance(errs[0],
+                self.assertTrue(isinstance(errs[0],
                     actions.MalformedActionError),
                     "Error was of the type. The type was:{0}. The error "
                     "was:\n:{1}".format(type(errs[0]), errs[0]))
@@ -951,7 +951,7 @@ dependency resolution:
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
                                     "bar")
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
                         elif d.attrs["fmri"] == "pkg:/s-v-baz-one":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
@@ -1046,6 +1046,7 @@ dependency resolution:
                         self.assertEqual(len(pkg_deps[mf_path]), 1,
                             "Didn't get one dependency:\n{0}".format(
                             "\n".join([str(d) for d in pkg_deps[mf_path]])))
+                        d = pkg_deps[mf_path][0]
                         self.assertEqual(d.attrs["type"], "require-any")
                         self.assertEqual(set(d.attrs["fmri"]),
                             set(["pkg:/sat_py", "pkg:/sat_pyc"]))
@@ -1066,6 +1067,7 @@ dependency resolution:
                         self.assertEqual(len(pkg_deps[mf_path]), 1,
                             "Didn't get one dependency:\n{0}".format(
                             "\n".join([str(d) for d in pkg_deps[mf_path]])))
+                        d = pkg_deps[mf_path][0]
                         self.assertEqual(d.attrs["type"], "require-any")
                         self.assertEqual(set(d.attrs["fmri"]), set(
                             ["pkg:/sat_py", "pkg:/sat_pyc", "pkg:/sat_both"]))
@@ -1228,8 +1230,8 @@ dependency resolution:
                         else:
                                 raise RuntimeError("Unexpected dependency:{0}".format(
                                     d))
-                self.assert_(have_req_any)
-                self.assert_(have_require)
+                self.assertTrue(have_req_any)
+                self.assertTrue(have_require)
 
                 # This resolution should also produce a require-any dependency.
                 pkg_deps, errs, warnings, unused_fmris, external_deps = \
@@ -1472,7 +1474,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
-                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                self.assertTrue(pkg_deps[dep_path][0].attrs["fmri"].startswith(
                     "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18045_reverse(self):
@@ -1496,7 +1498,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
-                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                self.assertTrue(pkg_deps[dep_path][0].attrs["fmri"].startswith(
                     "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18045_mixed(self):
@@ -1520,7 +1522,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                 self.assertEqual(len(pkg_deps), 1)
                 self.assertEqual(len(pkg_deps[dep_path]), 1)
                 self.debug("fmri:{0}".format(pkg_deps[dep_path][0].attrs["fmri"]))
-                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                self.assertTrue(pkg_deps[dep_path][0].attrs["fmri"].startswith(
                     "pkg:/runtime/python-27@2.7.8-0.161"))
 
         def test_bug_18077(self):
@@ -1573,7 +1575,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                     "of pkgdeps for the dependent package. Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[d_path]])))
                 for k in pkg_deps[d_path][0].attrs:
-                        self.assert_(not k.startswith("variant."), "The "
+                        self.assertTrue(not k.startswith("variant."), "The "
                             "resulting dependency should not contain any "
                             "variants. The action is:\n{0}".format(
                             pkg_deps[d_path][0]))
@@ -1621,19 +1623,19 @@ depend fmri=pkg2 type=require variant.foo=bar
                                 self.assertEqual(d.attrs[VOZ], "global")
                                 got_prov_2 = True
                         elif d.attrs["fmri"].startswith("pkg:/provider1"):
-                                self.assert_(VA in d.attrs)
+                                self.assertTrue(VA in d.attrs)
                                 if d.attrs[VA] == "i386":
                                         self.assertEqual(d.attrs[VOZ],
                                             "nonglobal")
                                         got_prov_1_i386 = True
                                 else:
                                         self.assertEqual(d.attrs[VA], "sparc")
-                                        self.assert_(VOZ not in d.attrs)
+                                        self.assertTrue(VOZ not in d.attrs)
                                         got_prov_1_sparc = True
                         else:
                                 raise RuntimeError("Unexpected fmri seen:{0}".format(
                                     d))
-                self.assert_(got_prov_2 and got_prov_1_i386 and
+                self.assertTrue(got_prov_2 and got_prov_1_i386 and
                     got_prov_1_sparc, "Got the right number of dependencies "
                     "but missed one of the expected ones. Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[d_path]])))
@@ -1670,7 +1672,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                     "of pkgdeps for the dependent package. Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[d_path]])))
                 for k in pkg_deps[d_path][0].attrs:
-                        self.assert_(not k.startswith("variant."), "The "
+                        self.assertTrue(not k.startswith("variant."), "The "
                             "resulting dependency should not contain any "
                             "variants. The action is:\n{0}".format(
                             pkg_deps[d_path][0]))
@@ -1705,19 +1707,19 @@ depend fmri=pkg2 type=require variant.foo=bar
                                 self.assertEqual(d.attrs[VD], "False")
                                 got_prov_2 = True
                         elif d.attrs["fmri"].startswith("pkg:/provider1"):
-                                self.assert_(VA in d.attrs)
+                                self.assertTrue(VA in d.attrs)
                                 if d.attrs[VA] == "i386":
-                                        self.assert_(VD not in d.attrs)
-                                        self.assert_(VOZ not in d.attrs)
+                                        self.assertTrue(VD not in d.attrs)
+                                        self.assertTrue(VOZ not in d.attrs)
                                         got_prov_1_i386 = True
                                 elif d.attrs[VA] == "sparc":
-                                        self.assert_(VD not in d.attrs)
-                                        self.assert_(VOZ not in d.attrs)
+                                        self.assertTrue(VD not in d.attrs)
+                                        self.assertTrue(VOZ not in d.attrs)
                                         got_prov_1_sparc = True
                                 else:
                                         self.assertEqual(d.attrs[VA], "foo")
                                         if d.attrs[VD] == "True":
-                                                self.assert_(VOZ not in d.attrs)
+                                                self.assertTrue(VOZ not in d.attrs)
                                                 got_prov_1_foo_debug = True
                                         else:
                                                 self.assertEqual(d.attrs[VD],
@@ -1728,7 +1730,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                         else:
                                 raise RuntimeError("Unexpected fmri seen:{0}".format(
                                     d))
-                self.assert_(got_prov_2 and got_prov_1_i386 and
+                self.assertTrue(got_prov_2 and got_prov_1_i386 and
                     got_prov_1_sparc and got_prov_1_foo_debug and
                     got_prov_1_foo_nondebug_global, "Got the right number "
                     "of dependencies but missed one of the expected ones. "
@@ -1758,17 +1760,17 @@ depend fmri=pkg2 type=require variant.foo=bar
                 for d in pkg_deps[d_path]:
                         if d.attrs["fmri"].startswith("pkg:/provider2"):
                                 self.assertEqual(d.attrs[VD], "False")
-                                self.assert_(VOZ not in d.attrs)
-                                self.assert_(VA not in d.attrs)
+                                self.assertTrue(VOZ not in d.attrs)
+                                self.assertTrue(VA not in d.attrs)
                                 got_prov_2 = True
                         else:
-                                self.assert_(d.attrs["fmri"].startswith(
+                                self.assertTrue(d.attrs["fmri"].startswith(
                                     "pkg:/provider1"))
                                 self.assertEqual(d.attrs[VD], "True")
-                                self.assert_(VA not in d.attrs)
-                                self.assert_(VOZ not in d.attrs)
+                                self.assertTrue(VA not in d.attrs)
+                                self.assertTrue(VOZ not in d.attrs)
                                 got_prov_1 = True
-                self.assert_(got_prov_2 and got_prov_1, "Got the right number "
+                self.assertTrue(got_prov_2 and got_prov_1, "Got the right number "
                     "of dependencies but missed one of the expected ones. "
                     "Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[d_path]])))
@@ -1840,10 +1842,10 @@ depend fmri=pkg2 type=require variant.foo=bar
                         elif pfmri.startswith("pkg:/l2"):
                                 got_l2 = True
                         else:
-                                self.assert_(pfmri.startswith(
+                                self.assertTrue(pfmri.startswith(
                                     "pkg:/l3"))
                                 got_l3 = True
-                self.assert_(got_top and got_l1 and got_l2 and got_l3, "Got "
+                self.assertTrue(got_top and got_l1 and got_l2 and got_l3, "Got "
                     "the right number of dependencies but missed one of the "
                     "expected ones. Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[top_path]])))
@@ -1882,7 +1884,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                 for d in pkg_deps[zones_path]:
                         pfmri = d.attrs["fmri"]
                         if pfmri.startswith("pkg:/cs"):
-                                self.assert_(pfmri.endswith("-2"))
+                                self.assertTrue(pfmri.endswith("-2"))
                                 self.assertEqual(
                                     d.attrs[dependencies.files_prefix],
                                     ["usr/lib/isaexec"])
@@ -1893,7 +1895,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                                     d.attrs[dependencies.type_prefix], "script")
                                 got_cs2 = True
                         else:
-                                self.assert_(pfmri.startswith(
+                                self.assertTrue(pfmri.startswith(
                                     "pkg:/ksh"))
                                 self.assertEqual(
                                     d.attrs[dependencies.files_prefix],
@@ -1901,7 +1903,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
                                 got_ksh = True
-                self.assert_(got_cs2 and got_ksh, "Got the right number "
+                self.assertTrue(got_cs2 and got_ksh, "Got the right number "
                     "of dependencies but missed one of the expected ones. "
                     "Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[zones_path]])))
@@ -1934,14 +1936,14 @@ depend fmri=pkg2 type=require variant.foo=bar
                     "\n".join([str(d) for d in pkg_deps[der_path]])))
                 for d in pkg_deps[der_path]:
                         if d.attrs["type"] == "require":
-                                self.assert_(d.attrs["fmri"].startswith(
+                                self.assertTrue(d.attrs["fmri"].startswith(
                                     "pkg:/dependee"))
                         else:
                                 self.assertEqual(d.attrs["type"], "require-any")
                                 self.assertEqual(len(d.attrs["fmri"]), 2)
                                 fmri0 = d.attrs["fmri"][0]
                                 fmri1 = d.attrs["fmri"][1]
-                                self.assert_(
+                                self.assertTrue(
                                     (fmri0.startswith("pkg:/link1") and
                                     fmri1.startswith("pkg:/link2")) or
                                     (fmri0.startswith("pkg:/link2") and
@@ -1980,10 +1982,10 @@ depend fmri=pkg2 type=require variant.foo=bar
                 for d in pkg_deps[der_path]:
                         if d.attrs["type"] == "require":
                                 if d.attrs.get("variant.arch", None) == "foo":
-                                        self.assert_(d.attrs["fmri"].startswith(
+                                        self.assertTrue(d.attrs["fmri"].startswith(
                                             "pkg:/link5"))
                                 else:
-                                        self.assert_(d.attrs["fmri"].startswith(
+                                        self.assertTrue(d.attrs["fmri"].startswith(
                                             "pkg:/dependee"))
                                 continue
                         self.assertEqual(d.attrs["type"], "require-any")
@@ -2189,7 +2191,7 @@ depend fmri=link1@1-1 type=require
                             "errors:\n{0}".format("\n".join(["{0}".format(e) for e in errs])))
                 self.assertEqual(len(warnings), 2)
                 for i in range(len(errs)):
-                        self.assert_(isinstance(errs[i],
+                        self.assertTrue(isinstance(errs[i],
                             dependencies.DropPackageWarning))
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
@@ -2291,7 +2293,7 @@ depend fmri=link1@1-1 type=require variant.arch=i386
                         raise RuntimeError("Got the following unexpected "
                             "errors:\n{0}".format("\n".join(["{0}".format(e) for e in errs])))
                 self.assertEqual(len(warnings), 1)
-                self.assert_(isinstance(warnings[0],
+                self.assertTrue(isinstance(warnings[0],
                     dependencies.DropPackageWarning))
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
@@ -2357,7 +2359,7 @@ file NOHASH path=usr/bin/baz group=sys mode=0600 owner=root
                         raise RuntimeError("Got the following unexpected "
                             "errors:\n{0}".format("\n".join(["{0}".format(e) for e in errs])))
                 self.assertEqual(len(warnings), 1)
-                self.assert_(isinstance(warnings[0],
+                self.assertTrue(isinstance(warnings[0],
                     dependencies.DropPackageWarning))
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
@@ -2383,7 +2385,7 @@ file NOHASH path=usr/bin/baz group=sys mode=0600 owner=root
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
                         else:
-                                self.assert_(
+                                self.assertTrue(
                                     d.attrs["fmri"].startswith("pkg:/link1"))
                                 self.assertEqual(d.attrs["type"], "require")
                                 self.assertEqual(
@@ -2427,8 +2429,8 @@ link path=usr/lib/64 target=amd64
                 self.assertEqual(dep.attrs["type"], "require",
                     "type was {0} instead of require\ndep:{1}".format(
                     dep.attrs["type"], dep))
-                self.assert_("predicate" not in dep.attrs)
-                self.assert_(dep.attrs["fmri"].startswith("pkg:/link1"))
+                self.assertTrue("predicate" not in dep.attrs)
+                self.assertTrue(dep.attrs["fmri"].startswith("pkg:/link1"))
                 self.assertEqual(dep.attrs[self.depend_dp + ".type"], "link")
 
         def test_bug_18884_1(self):
@@ -2482,10 +2484,10 @@ file elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec
                     "Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[dep_path]])))
                 for dep in pkg_deps[dep_path]:
-                        self.assert_("variant.foo" not in dep.attrs, str(dep))
-                        self.assert_("variant.debug.osnet" not in
+                        self.assertTrue("variant.foo" not in dep.attrs, str(dep))
+                        self.assertTrue("variant.debug.osnet" not in
                             dep.attrs, str(dep))
-                        self.assert_("variant.opensolaris.zone" not in
+                        self.assertTrue("variant.opensolaris.zone" not in
                             dep.attrs, str(dep))
 
         def test_bug_18884_2(self):
@@ -2534,9 +2536,9 @@ file elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec
                     "Deps were:\n{0}".format(
                     "\n".join([str(d) for d in pkg_deps[dep_path]])))
                 for dep in pkg_deps[dep_path]:
-                        self.assert_("variant.opensolaris.zone" not in
+                        self.assertTrue("variant.opensolaris.zone" not in
                             dep.attrs, str(dep))
-                        self.assert_("variant.debug.osnet" not in
+                        self.assertTrue("variant.debug.osnet" not in
                             dep.attrs, str(dep))
 
         def test_bug_19009_conditional_collapsing_corner_cases(self):
@@ -2602,18 +2604,18 @@ depend fmri=pkg:/b@2-1 type=require variant.num=two
                                 self.assertEqual(d.attrs["fmri"],
                                     "pkg:/a@0-1")
                                 self.assertEqual(d.attrs["variant.num"], "one")
-                                self.assert_("predicate" in d.attrs)
+                                self.assertTrue("predicate" in d.attrs)
                                 have_uncollapsed_cond = True
                         else:
                                 self.assertEqual(d.attrs["type"], "require")
                                 self.assertEqual(d.attrs["fmri"],
                                     "pkg:/a@0-1")
                                 self.assertEqual(d.attrs["variant.num"], "two")
-                                self.assert_("predicate" not in d.attrs)
+                                self.assertTrue("predicate" not in d.attrs)
                                 have_collapsed_cond = True
-                self.assert_(have_req)
-                self.assert_(have_uncollapsed_cond)
-                self.assert_(have_collapsed_cond)
+                self.assertTrue(have_req)
+                self.assertTrue(have_uncollapsed_cond)
+                self.assertTrue(have_collapsed_cond)
 
                 manf = """
 set name=pkg.fmri value=foo@1.0,5.11-1
@@ -2643,10 +2645,10 @@ depend fmri=pkg:/b@2-1 type=require
                                 self.assertEqual(d.attrs["fmri"],
                                     "pkg:/a@0-1")
                                 self.assertEqual(d.attrs["variant.num"], "two")
-                                self.assert_("predicate" not in d.attrs)
+                                self.assertTrue("predicate" not in d.attrs)
                                 have_collapsed_cond = True
-                self.assert_(have_req)
-                self.assert_(have_collapsed_cond)
+                self.assertTrue(have_req)
+                self.assertTrue(have_collapsed_cond)
 
                 manf = """
 set name=pkg.fmri value=foo@1.0,5.11-1
@@ -2677,10 +2679,10 @@ depend fmri=pkg:/b@2-1 type=require variant.num=two
                                 self.assertEqual(d.attrs["fmri"],
                                     "pkg:/a@0-1")
                                 self.assertEqual(d.attrs["variant.num"], "one")
-                                self.assert_("predicate" in d.attrs)
+                                self.assertTrue("predicate" in d.attrs)
                                 have_uncollapsed_cond = True
-                self.assert_(have_req)
-                self.assert_(have_uncollapsed_cond)
+                self.assertTrue(have_req)
+                self.assertTrue(have_uncollapsed_cond)
 
         def test_bug_19009_collapsing_conditional_to_require_any(self):
                 """Check that conditional dependencies don't get collapsed into
@@ -2724,9 +2726,9 @@ depend fmri=pkg:/b@2-1 type=require
                                 self.assertEqual(d.attrs["fmri"],
                                     "pkg:/c@0-1")
                                 have_cond_c = True
-                self.assert_(have_req)
-                self.assert_(have_cond_a)
-                self.assert_(have_cond_c)
+                self.assertTrue(have_req)
+                self.assertTrue(have_cond_a)
+                self.assertTrue(have_cond_c)
 
                 # Check that manually specified conditional dependencies aren't
                 # collapsed into require-any dependencies even if other
@@ -2794,8 +2796,8 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
                                     "pkg:/c@3-1")
                                 have_cond_c = True
                 self.assertEqual(have_req, 2)
-                self.assert_(have_cond_a)
-                self.assert_(have_cond_c)
+                self.assertTrue(have_cond_a)
+                self.assertTrue(have_cond_c)
 
                 # Check that an inferred require-any dependency will not be
                 # removed if the require dependencies in the package are at a
@@ -2846,7 +2848,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
                         if d.attrs["type"] == "require-any":
                                 self.assertEqual(set(d.attrlist("fmri")),
                                     set(["pkg:/a@2-1", "pkg:/c@2-1"]))
-                                self.assert_("predicate" not in d.attrs)
+                                self.assertTrue("predicate" not in d.attrs)
                                 have_req_any = True
                         elif d.attrs["fmri"].startswith("pkg:/b"):
                                 self.assertEqual(d.attrs["type"], "require")
@@ -2862,9 +2864,9 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
                                     "pkg:/c@0-1")
                                 have_cond_c = True
                 self.assertEqual(have_req, 2)
-                self.assert_(have_cond_a)
-                self.assert_(have_cond_c)
-                self.assert_(have_req_any)
+                self.assertTrue(have_cond_a)
+                self.assertTrue(have_cond_c)
+                self.assertTrue(have_req_any)
 
         def __check_19009_results(self, pkg_deps, errs, paths,
             expected_conditionals, expected_require_any, expected_require,
@@ -2910,7 +2912,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
                         elif d.attrs["type"] == "require-any":
                                 found_require_any.add(frozenset(
                                     d.attrs["fmri"]))
-                                self.assert_(len(d.attrlist("fmri")) > 1)
+                                self.assertTrue(len(d.attrlist("fmri")) > 1)
                         elif d.attrs["type"] == "conditional":
                                 found_conditionals.add((d.attrs["fmri"],
                                     d.attrs["predicate"]))
@@ -2952,7 +2954,7 @@ digraph G {
 
                 # Collect the set of package names which should deliver a file.
                 for c in chains:
-                        self.assert_(len(c) > 1)
+                        self.assertTrue(len(c) > 1)
                         end_pfmris.add(c[-1])
                 # If only a single package delivers a file, then a require
                 # dependency is expected.
@@ -3061,7 +3063,7 @@ link path={path} target={target}
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
                 self.assertEqual(len(err.conditionals), 1)
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 # Check that the exception prints correctly.
                 self.debug(err)
@@ -3090,7 +3092,7 @@ link path={path} target={target}
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
                 self.assertEqual(len(err.conditionals), 1)
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 # Check that the exception prints correctly.
                 self.debug(err)
@@ -3119,7 +3121,7 @@ link path={path} target={target}
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
                 self.assertEqual(len(err.conditionals), 1)
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 # Check that the exception prints correctly.
                 self.debug(err)
@@ -3148,7 +3150,7 @@ link path={path} target={target}
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
                 self.assertEqual(len(err.conditionals), 1)
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 # Check that the exception prints correctly.
                 self.debug(err)
@@ -3177,7 +3179,7 @@ link path={path} target={target}
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
                 self.assertEqual(len(err.conditionals), 1)
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 # Check that the exception prints correctly.
                 self.debug(err)
@@ -3212,7 +3214,7 @@ link path={path} target={target}
 
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 self.assertEqual(len(err.conditionals), 1)
                 self.assertEqualDiff(sorted(set([
@@ -3254,7 +3256,7 @@ link path={path} target={target}
                     str(d) for d in pkg_deps[paths[0]]])))
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 self.assertEqual(len(err.conditionals), 1)
                 self.assertEqualDiff(sorted(set([
@@ -3295,7 +3297,7 @@ link path={path} target={target}
                     str(d) for d in pkg_deps[paths[0]]])))
                 self.assertEqual(len(errs), 1)
                 err = errs[0]
-                self.assert_(isinstance(err,
+                self.assertTrue(isinstance(err,
                     dependencies.NeedConditionalRequireAny))
                 self.assertEqual(len(err.conditionals), 1)
                 expected_vars = set([
@@ -3311,7 +3313,7 @@ link path={path} target={target}
 
                 # Check that the exception prints correctly.
                 self.debug(err)
-                self.assert_("variant.foo" not in str(err))
+                self.assertTrue("variant.foo" not in str(err))
 
         def test_bug_19009_no_links_one_variant(self):
                 """Test that resolve correctly handles multiple packages
@@ -3398,8 +3400,8 @@ file group=bin mode=0555 owner=root path=foo
                         else:
                                 raise RuntimeError("Unexpected dependency:{0}"%
                                     d)
-                self.assert_(have_req_any)
-                self.assert_(have_required)
+                self.assertTrue(have_req_any)
+                self.assertTrue(have_required)
 
                 # Check that three packages each delivering under two of three
                 # variant values works.
@@ -3802,7 +3804,7 @@ depend fmri=pkg:/D@2.0 type=require variant.num=one
                 for d in deps:
                         if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):
                                 self.assertEqual(d.attrs["type"], "conditional")
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
                         elif d.attrs["fmri"] == "pkg:/B@1.0":
                                 if d.attrs["type"] == "conditional":
                                         self.assertEqual(
@@ -3827,7 +3829,7 @@ depend fmri=pkg:/D@2.0 type=require variant.num=one
                                 self.assertEqual(d.attrs["type"], "require-any")
                                 self.assertEqual(set(d.attrs["fmri"]),
                                     set(["pkg:/F@1.0", "pkg:/G@1.0"]))
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
 
         def test_bug_19009_remove_paths_6(self):
                 """Test that when a require dependency on the middle of a
@@ -3883,18 +3885,18 @@ depend fmri=pkg:/D@2.0 type=require
                 for d in deps:
                         if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):
                                 self.assertEqual(d.attrs["type"], "conditional")
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
                         elif d.attrs["fmri"] == "pkg:/B@1.0":
                                 self.assertEqual(d.attrs["type"], "require")
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
                         elif d.attrs["fmri"] == "pkg:/D@2.0":
                                 self.assertEqual(d.attrs["type"], "require")
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
                         else:
                                 self.assertEqual(d.attrs["type"], "require-any")
                                 self.assertEqual(set(d.attrs["fmri"]),
                                     set(["pkg:/F@1.0", "pkg:/G@1.0"]))
-                                self.assert_("variant.num" not in d.attrs)
+                                self.assertTrue("variant.num" not in d.attrs)
 
         def test_bug_19009_simple_1(self):
                 """Check that resolve infers the correct dependencies when more
@@ -4155,7 +4157,7 @@ depend fmri=pkg:/a@0-1 type=conditional
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(errs), 1)
-                self.assert_(isinstance(errs[0],
+                self.assertTrue(isinstance(errs[0],
                     actions.InvalidActionAttributesError))
 
                 manf = """
@@ -4168,7 +4170,7 @@ depend fmri=pkg:/a@0-1 type=conditionalpredicate
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(errs), 1)
-                self.assert_(isinstance(errs[0], actions.InvalidActionError))
+                self.assertTrue(isinstance(errs[0], actions.InvalidActionError))
 
         def test_duplicate_require_any(self):
                 """Test that when one require-any dependency is the subset of
@@ -4224,7 +4226,7 @@ link path=usr/perl5/bin target=5.20/bin
                             for e in errs])))
                 # Verify that a warning is emitted.
                 self.assertEqual(len(warnings), 1)
-                self.assert_(isinstance(warnings[0],
+                self.assertTrue(isinstance(warnings[0],
                     dependencies.DropPackageWarning))
                 self.assertEqualDiff(set(), unused_fmris)
                 self.assertEqualDiff(set(), external_deps)
@@ -4309,17 +4311,17 @@ link path=usr/perl5/bin target=5.20/bin
                 self.assertEqual(len(pkg_deps[dep_path]), 2)
                 for d in pkg_deps[dep_path]:
                         if d.attrs["variant.foo"] == "a":
-                                self.assert_(p1_name in d.attrs["fmri"])
-                                self.assert_(p2_name in d.attrs["fmri"])
-                                self.assert_(p3_name in d.attrs["fmri"])
+                                self.assertTrue(p1_name in d.attrs["fmri"])
+                                self.assertTrue(p2_name in d.attrs["fmri"])
+                                self.assertTrue(p3_name in d.attrs["fmri"])
                         elif d.attrs["variant.foo"] == "b":
-                                self.assert_(p1_name in d.attrs["fmri"])
-                                self.assert_(p3_name in d.attrs["fmri"])
+                                self.assertTrue(p1_name in d.attrs["fmri"])
+                                self.assertTrue(p3_name in d.attrs["fmri"])
 
                 # Verify that a warning is not emitted.
                 self.pkgdepend_resolve("{0} {1} {2} {3}".format(
                     dep_path, perl512_path, perl516_path, perl520_path))
-                self.assert_("WARNING: dropping dependency" not in self.output)
+                self.assertTrue("WARNING: dropping dependency" not in self.output)
 
 if __name__ == "__main__":
         unittest.main()

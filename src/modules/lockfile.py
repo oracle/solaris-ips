@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -30,6 +30,7 @@ import os
 import platform
 
 import pkg.catalog
+import pkg.misc as misc
 import pkg.nrlock as nrlock
 import pkg.client.api_errors as api_errors
 
@@ -163,7 +164,7 @@ class LockFile(object):
                         if self._set_lockstr:
                                 lock_str = self._set_lockstr()
                         if lock_str:
-                                lf.write(lock_str)
+                                lf.write(misc.force_bytes(lock_str))
                         lf.flush()
                         self._fileobj = lf
                 except:
@@ -220,7 +221,7 @@ def client_lock_get_str(lockstr):
         lockdict = {}
 
         try:
-                pid, pid_name, hostname, lock_ts =  lockstr.split("\n", 4)
+                pid, pid_name, hostname, lock_ts =  lockstr.split(b"\n", 4)
                 lockdict["pid"] = pid
                 lockdict["pid_name"] = pid_name
                 lockdict["hostname"] = hostname
@@ -237,7 +238,7 @@ def client_lock_set_str():
 def generic_lock_get_str(lockstr):
         lock_dict = {}
         try:
-                pid, hostname, lock_ts = lockstr.split("\n", 3)
+                pid, hostname, lock_ts = lockstr.split(b"\n", 3)
                 lock_dict["pid"] = pid
                 lock_dict["hostname"] = hostname
                 return lock_dict

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -158,14 +158,14 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                     api.PackageInfo.STATE]))
 
                 entries = self.get_intent_entries()
-                self.assert_(entries == [])
+                self.assertTrue(entries == [])
 
                 api_obj.info(plist, False,
                     frozenset([api.PackageInfo.DEPENDENCIES]))
 
                 entries = self.get_intent_entries()
                 # Verify that no entries are present
-                self.assert_(not entries)
+                self.assertTrue(not entries)
 
 
         def test_1_install_uninstall(self):
@@ -179,7 +179,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 self.__do_install(api_obj, ["foo"], noexecute=True)
                 entries = self.get_intent_entries()
                 # no data should be there
-                self.assert_(not entries)
+                self.assertTrue(not entries)
 
                 self.__do_install(api_obj, ["foo"])
 
@@ -187,7 +187,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
                 foo = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
 
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "install",
                     "new_fmri" : foo,
                     "reference": "foo"
@@ -198,7 +198,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
                 # Verify that processing entries are present for uninstall.
                 entries = self.get_intent_entries()
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
                     "old_fmri" :  foo,
                     "reference": "*"
@@ -225,19 +225,19 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 entries = self.get_intent_entries()
                 # Verify that evaluation and processing entries are present
                 # for install.
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "install",
                     "new_fmri" : foo10,
                     "reference": "foo@1.0"
                 }))
 
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "install",
                     "new_fmri" : foo11,
                     "old_fmri" : foo10,
                     "reference": "foo@1.1"
                 }))
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
                     "old_fmri" :  foo11,
                     "reference": "foo"
@@ -259,13 +259,13 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
                 # Only testing for process; no need to re-test for evaluate.
                 entries = self.get_intent_entries()
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "install",
                     "new_fmri" : bar,
                     "reference": "bar@1.0"
                 }))
 
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "install",
                     "new_fmri" : foo,
                 }))
@@ -305,25 +305,25 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
                 entries = self.get_intent_entries()
                 # Verify that foo11 was installed when upgrading to foo12.
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "update",
                     "new_fmri" : fmris["foo12"],
                     "old_fmri" : fmris["foo11"]
                 }))
 
                 # Verify that bar10 was installed when upgrading to bar11.
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "update",
                     "new_fmri" : fmris["bar11"],
                     "old_fmri" : fmris["bar10"]
                 }))
                 # Verify that bar and foo were uninstalled
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
                     "old_fmri" : fmris["bar11"],
                     "reference": "bar"
                 }))
-                self.assert_(self.intent_entry_exists(entries, {
+                self.assertTrue(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
                     "old_fmri" : fmris["foo12"],
                     "reference": "foo"

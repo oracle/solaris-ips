@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -86,7 +86,6 @@ Got a {2} exception with a differnt type:
 
 def assertRaises(validate_cb, func, *args, **kwargs):
         (validate_func, validate_args) = validate_cb
-        sys.exc_clear()
 
         e = None
         try:
@@ -1187,7 +1186,6 @@ packages known:
 
                 # link the images
                 self._children_attach(0, [1])
-
                 # update the synced package in the parent so it delivers some
                 # content.  this will cause us to implicitly recurse into the
                 # child and serialize the child update plans to disk, which

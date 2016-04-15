@@ -19,15 +19,15 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import six
-        if six.PY3:
-                import html as cgi
+        if six.PY2:
+                import cgi
         else:
                 # cgi.escape is deprecated since python 3.2
-                import cgi
+                import html as cgi
         import itertools
         import pkg.actions as actions
         import pkg.query_parser as qp
@@ -131,7 +131,10 @@
         # have to be checked for the real return type.
         if results:
                 try:
-                        result = results.next()
+                        if six.PY3:
+                                result = results.__next__()
+                        else:
+                                result = results.next()
                 except StopIteration:
                         result = None
                         results = None
@@ -184,7 +187,7 @@
         scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
-        for name, val in request.params.iteritems():
+        for name, val in six.iteritems(request.params):
                 if name == "start":
                         continue
                 nparams.append((name, val))
@@ -208,7 +211,7 @@
         scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
-        for name, val in request.params.iteritems():
+        for name, val in six.iteritems(request.params):
                 if name == "start":
                         continue
                 nparams.append((name, val))
@@ -314,7 +317,7 @@ Next</a>
                             fragment = urlparse(uri)
 
                         nparams = []
-                        for name, val in request.params.iteritems():
+                        for name, val in six.iteritems(request.params):
                                 if name in ("failed", "query_error"):
                                         continue
                                 nparams.append((name, val))

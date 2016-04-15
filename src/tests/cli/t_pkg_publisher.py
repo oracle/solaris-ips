@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -128,17 +128,17 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 # from $IMG_DIR/pkg.
                 api_inst = self.get_img_api_obj()
                 pub = api_inst.get_publisher(prefix="test")
-                self.assert_(os.path.exists(pub.meta_root))
+                self.assertTrue(os.path.exists(pub.meta_root))
                 pub.remove_meta_root()
-                self.assert_(not os.path.exists(pub.meta_root))
+                self.assertTrue(not os.path.exists(pub.meta_root))
 
                 pub_cache_path = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "publisher", "test")
-                self.assert_(os.path.exists(pub_cache_path),
+                self.assertTrue(os.path.exists(pub_cache_path),
                     os.listdir(os.path.join(self.img_path(), "var", "pkg",
                     "cache", "publisher")))
                 shutil.rmtree(pub_cache_path)
-                self.assert_(not os.path.exists(pub_cache_path))
+                self.assertTrue(not os.path.exists(pub_cache_path))
 
                 self.pkg("unset-publisher test")
 
@@ -261,15 +261,15 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh --set-property "
                     "signature-policy=ignore test1")
                 self.pkg("publisher test1")
-                self.assert_("signature-policy = ignore" in self.output)
+                self.assertTrue("signature-policy = ignore" in self.output)
                 self.pkg("set-publisher --no-refresh --set-property foo=bar "
                     "test1")
                 self.pkg("publisher test1")
-                self.assert_("foo = bar" in self.output)
+                self.assertTrue("foo = bar" in self.output)
                 self.pkg("set-publisher --no-refresh  --remove-property-value "
                     "foo=baz test1", exit=1)
                 self.pkg("publisher test1")
-                self.assert_("foo = bar" in self.output)
+                self.assertTrue("foo = bar" in self.output)
                 self.pkg("set-publisher --no-refresh  --set-property "
                     "signature-policy=require-names test1", exit=1)
                 self.pkg("set-publisher --no-refresh --remove-property-value "
@@ -453,12 +453,12 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
                 self.pkg("publisher test")
-                self.assert_("Properties:" not in self.output)
+                self.assertTrue("Properties:" not in self.output)
 
                 self.pkg("set-publisher --set-property foo=bar test")
                 self.pkg("publisher test")
-                self.assert_("Properties:" in self.output)
-                self.assert_("foo = bar" in self.output)
+                self.assertTrue("Properties:" in self.output)
+                self.assertTrue("foo = bar" in self.output)
                 self.pkg("set-publisher --add-property-value foo=bar1 test",
                     exit=1)
 
@@ -466,13 +466,13 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "signature-policy=require-names --add-property-value "
                     "signature-required-names=n1 test")
                 self.pkg("publisher test")
-                self.assert_("signature-policy = require-names" in self.output)
-                self.assert_("signature-required-names = n1" in self.output)
+                self.assertTrue("signature-policy = require-names" in self.output)
+                self.assertTrue("signature-required-names = n1" in self.output)
 
                 self.pkg("set-publisher --add-property-value "
                     "signature-required-names=n2 test")
                 self.pkg("publisher test")
-                self.assert_("signature-required-names = n1, n2" in self.output)
+                self.assertTrue("signature-required-names = n1, n2" in self.output)
 
         def test_bug_7141684(self):
                 """Test that pkg(1) client does not traceback if no publisher
@@ -492,7 +492,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
                 self.pkg("publisher test")
-                self.assert_("Proxy:" not in self.output)
+                self.assertTrue("Proxy:" not in self.output)
 
                 # check origin and mirror addition/removal when proxies are used
                 for add, remove in [("-g", "-G"), ("-m", "-M")]:
@@ -502,7 +502,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                             "--proxy http://foo test".format(
                             add=add, url=self.rurl), exit=1)
                         self.pkg("publisher test")
-                        self.assert_("Proxy:" not in self.output)
+                        self.assertTrue("Proxy:" not in self.output)
 
                         # we can set the proxy for http repos
                         self.pkg("set-publisher --no-refresh {add} {url} "
@@ -510,16 +510,16 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                             add=add, url=self.durl))
 
                         self.pkg("publisher test")
-                        self.assert_("Proxy: http://foo" in self.output)
+                        self.assertTrue("Proxy: http://foo" in self.output)
 
                         # remove the file-based repository and ensure we still
                         # have a proxied http-based publisher
                         self.pkg("set-publisher --no-refresh -G {0} test".format(
                             self.rurl))
                         self.pkg("publisher -F tsv")
-                        self.assert_("{0}/\thttp://foo".format(
+                        self.assertTrue("{0}/\thttp://foo".format(
                             self.durl in self.output))
-                        self.assert_(self.rurl not in self.output)
+                        self.assertTrue(self.rurl not in self.output)
 
                         # ensure we can't add duplicate proxied or unproxied
                         # repositories
@@ -531,9 +531,9 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                         # we should have 1 proxied occurrence of our http url
                         self.pkg("publisher -F tsv")
-                        self.assert_("{0}/\thttp://foo".format(
+                        self.assertTrue("{0}/\thttp://foo".format(
                             self.durl in self.output))
-                        self.assert_("\t\t{0}".format(self.durl not in self.output))
+                        self.assertTrue("\t\t{0}".format(self.durl not in self.output))
 
                         # when removing a proxied url, then adding the same url
                         # unproxied, the proxy configuration does get removed
@@ -543,7 +543,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                         self.pkg("set-publisher --no-refresh {add} {url} "
                             "test".format(add=add, url=self.durl), exit=0)
                         self.pkg("publisher -F tsv")
-                        self.assert_("{0}/\thttp://foo".format(
+                        self.assertTrue("{0}/\thttp://foo".format(
                             self.durl not in self.output))
                         self.pkg("set-publisher --no-refresh {remove} "
                             "{url} test".format(
@@ -558,9 +558,9 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                             "{add} http://c --proxy http://foo test".format(
                             add=add))
                         self.pkg("publisher -F tsv")
-                        self.assert_("http://a/\t-" in self.output)
-                        self.assert_("http://b/\thttp://foo" in self.output)
-                        self.assert_("http://c/\thttp://foo" in self.output)
+                        self.assertTrue("http://a/\t-" in self.output)
+                        self.assertTrue("http://b/\thttp://foo" in self.output)
+                        self.assertTrue("http://c/\thttp://foo" in self.output)
 
         def test_publisher_special_repo_name(self):
                 """Tests that set-publisher can use the repository name with
@@ -613,8 +613,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     -k {2} test1" .format(self.bogus_url, cert_path, key_path))
 
                 # cert and key should exist
-                self.assert_(os.path.exists(img_key_path))
-                self.assert_(os.path.exists(img_cert_path))
+                self.assertTrue(os.path.exists(img_key_path))
+                self.assertTrue(os.path.exists(img_cert_path))
 
                 # Now change test1 to http URL to check whether
                 # certificate and key are removed
@@ -622,8 +622,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     test1".format(self.bogus_url))
 
                 # cert and key should not exist.
-                self.assert_(not os.path.exists(img_key_path))
-                self.assert_(not os.path.exists(img_cert_path))
+                self.assertTrue(not os.path.exists(img_key_path))
+                self.assertTrue(not os.path.exists(img_cert_path))
 
                 # Now test if cert and key is still in use
                 # we should not remove them
@@ -634,34 +634,34 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     -k {2} foo".format(self.bogus_url, cert_path, key_path))
 
                 # cert and key should exist
-                self.assert_(os.path.exists(img_key_path))
-                self.assert_(os.path.exists(img_cert_path))
+                self.assertTrue(os.path.exists(img_key_path))
+                self.assertTrue(os.path.exists(img_cert_path))
 
                 # Remove ssl for test1
                 self.pkg("set-publisher --no-refresh -O http://{0} \
                     foo".format(self.bogus_url))
 
                 # cert and key should still exist.
-                self.assert_(os.path.exists(img_key_path))
-                self.assert_(os.path.exists(img_cert_path))
+                self.assertTrue(os.path.exists(img_key_path))
+                self.assertTrue(os.path.exists(img_cert_path))
 
                 # Test unset-publisher
                 self.pkg("set-publisher --no-refresh -O https://{0} -c {1} \
                     -k {2} foo".format(self.bogus_url, cert_path, key_path))
 
                 # cert and key should exist.
-                self.assert_(os.path.exists(img_key_path))
-                self.assert_(os.path.exists(img_cert_path))
+                self.assertTrue(os.path.exists(img_key_path))
+                self.assertTrue(os.path.exists(img_cert_path))
 
                 self.pkg("unset-publisher foo")
                 # cert and key should still exist.
-                self.assert_(os.path.exists(img_key_path))
-                self.assert_(os.path.exists(img_cert_path))
+                self.assertTrue(os.path.exists(img_key_path))
+                self.assertTrue(os.path.exists(img_cert_path))
 
                 self.pkg("unset-publisher test1")
                 # cert and key should not exist.
-                self.assert_(not os.path.exists(img_key_path))
-                self.assert_(not os.path.exists(img_cert_path))
+                self.assertTrue(not os.path.exists(img_key_path))
+                self.assertTrue(not os.path.exists(img_cert_path))
 
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
@@ -1029,15 +1029,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 img_cert_path = os.path.join(self.img_path(), "var", "pkg",
                     "ssl", pkg.misc.get_data_digest(cert_path,
                     hash_func=hashlib.sha1)[0])
-                self.assert_(img_key_path in self.output)
-                self.assert_(img_cert_path in self.output)
+                self.assertTrue(img_key_path in self.output)
+                self.assertTrue(img_cert_path in self.output)
 
                 # Verify that removing all SSL origins does not leave key
                 # and cert information intact.
                 self.pkg("set-publisher -G '*' -g {0} test1".format(durl1))
                 self.pkg("publisher test1")
-                self.assert_(img_key_path not in self.output)
-                self.assert_(img_cert_path not in self.output)
+                self.assertTrue(img_key_path not in self.output)
+                self.assertTrue(img_cert_path not in self.output)
 
                 # Verify that https mirrors can be mixed with other types of
                 # origins.
@@ -1051,8 +1051,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # and cert information intact.
                 self.pkg("set-publisher -M '*' -m {0} test1".format(durl1))
                 self.pkg("publisher test1")
-                self.assert_(img_key_path not in self.output)
-                self.assert_(img_cert_path not in self.output)
+                self.assertTrue(img_key_path not in self.output)
+                self.assertTrue(img_cert_path not in self.output)
 
                 # Test short options for mirrors.
                 self.__test_mirror_origin("mirror", "-m", "-M")

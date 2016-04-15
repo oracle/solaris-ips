@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -54,7 +54,6 @@ DRIVER_ALIAS_PREFIXES = (
 # 7) key attribute tags come first
 
 try:
-        import cStringIO
         import copy
         import errno
         import getopt
@@ -63,11 +62,14 @@ try:
         import operator
         import os
         import re
+        import six
         import sys
         import tempfile
         import traceback
+        import warnings
         from difflib import unified_diff
         from functools import cmp_to_key
+        from six.moves import cStringIO
 
         import pkg
         import pkg.actions
@@ -279,7 +281,13 @@ def cmplines(a, b):
                         b_sk = b[0].attrs[key_attr]
 
                 c = misc.cmp(a_sk, b_sk)
-                if c:
+                # misc.cmp raises NotImplemented for uncomparable types in
+                # Python 3. Sort them based on stringified key attribute.
+                if c is NotImplemented:
+                        c = misc.cmp(str(a_sk), str(b_sk))
+                        if c:
+                                return c
+                elif c:
                         return c
 
         # No key attribute or key attribute sorting provides equal placement, so
@@ -443,7 +451,7 @@ def write_line(line, fileobj):
                 rem_count = total_count
 
                 # Now build the action output string an attribute at a time.
-                for k, v in sorted(sattrs.iteritems(), key=key_func):
+                for k, v in sorted(six.iteritems(sattrs), key=key_func):
                         # Newline breaks are only forced when there is more than
                         # one value for an attribute.
                         if not (isinstance(v, list) or isinstance(v, set)):
@@ -542,8 +550,8 @@ def main_func():
 
         def difference(in_file):
                 whole_f1 = in_file.readlines()
-                f2 = cStringIO.StringIO()
-                fmt_file(cStringIO.StringIO("".join(whole_f1)), f2)
+                f2 = cStringIO()
+                fmt_file(cStringIO("".join(whole_f1)), f2)
                 f2.seek(0)
                 whole_f2 = f2.readlines()
 
@@ -559,7 +567,7 @@ def main_func():
         flist = pargs
         if not flist:
                 try:
-                        in_file = cStringIO.StringIO()
+                        in_file = cStringIO()
                         in_file.write(sys.stdin.read())
                         in_file.seek(0)
 
@@ -604,7 +612,8 @@ def main_func():
                         # something goes wrong.
                         path = os.path.abspath(fname)
 
-                        rcode, formatted = difference(open(fname, "rb"))
+                        with open(fname, "r") as f:
+                                rcode, formatted = difference(f)
                         if rcode == 0:
                                 continue
 
@@ -613,8 +622,8 @@ def main_func():
                                 # a format explicitly, try V1 format.
                                 if not orig_opt_format:
                                         opt_format = FMT_V1
-                                        rcode, formatted = difference(
-                                            open(fname, "rb"))
+                                        with open(fname, "r") as f:
+                                                rcode, formatted = difference(f)
                                         opt_format = FMT_V2
                                         if rcode == 0:
                                                 # Manifest is in V1 format.
@@ -639,7 +648,7 @@ def main_func():
                         # Replace manifest with formatted version.
                         pathdir = os.path.dirname(path)
                         tfd, tname = tempfile.mkstemp(dir=pathdir)
-                        with os.fdopen(tfd, "wb") as t:
+                        with os.fdopen(tfd, "w") as t:
                                 t.write(formatted)
 
                         try:
@@ -696,6 +705,9 @@ def fmt_file(in_file, out_file):
 
 
 if __name__ == "__main__":
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 __ret = main_func()
         except (PipeError, KeyboardInterrupt):

@@ -417,8 +417,8 @@ class PlanDescription(object):
                                     "version-source")
                         return mimpl, mver, mimpl_source, mver_source
 
-                for m in sorted(set(self._new_mediators.keys() +
-                    self._cfg_mediators.keys())):
+                for m in sorted(set(list(self._new_mediators.keys()) +
+                    list(self._cfg_mediators.keys()))):
                         orig_impl, orig_ver, orig_impl_source, \
                             orig_ver_source = get_mediation(
                                 self._cfg_mediators, m)
@@ -794,7 +794,7 @@ class PlanDescription(object):
 
                         for dfmri, src_li, dest_li, dummy_acc, dummy_disp in \
                             self.get_licenses():
-                                src_tup = None
+                                src_tup = ()
                                 if src_li:
                                         li_txt = pkg.misc.decode(
                                             src_li.get_text())
@@ -802,7 +802,7 @@ class PlanDescription(object):
                                             src_li.license, li_txt,
                                             src_li.must_accept,
                                             src_li.must_display)
-                                dest_tup = None
+                                dest_tup = ()
                                 if dest_li:
                                         li_txt = pkg.misc.decode(
                                             dest_li.get_text())
@@ -840,7 +840,8 @@ class PlanDescription(object):
                     "create-new-be": new_be_created,
                     "image-name": None,
                     "item-messages": self.get_parsable_item_messages(),
-                    "licenses": sorted(licenses, key=lambda x: x[0]),
+                    "licenses": sorted(licenses,
+                        key=lambda x: (x[0], x[1], x[2])),
                     "release-notes": release_notes,
                     "remove-packages": sorted(removed_fmris),
                     "space-available": space_available,

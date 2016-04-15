@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -56,7 +56,7 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
                         estr += "The following methods were missing from " \
                             "BootEnvNull:\n" + \
                             "\n".join("\t{0}".format(s) for s in null_missing)
-                self.assert_(not estr, estr)
+                self.assertTrue(not estr, estr)
 
         def test_bootenv(self):
                 """All other test suite tests test the BootEnv class with,
@@ -70,15 +70,15 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
                 """
 
                 del os.environ["PKG_NO_LIVE_ROOT"]
-                self.assert_(bootenv.BootEnv.libbe_exists())
-                self.assert_(bootenv.BootEnv.check_verify())
-                self.assert_(isinstance(
+                self.assertTrue(bootenv.BootEnv.libbe_exists())
+                self.assertTrue(bootenv.BootEnv.check_verify())
+                self.assertTrue(isinstance(
                     bootenv.BootEnv.get_be_list(raise_error=False), list))
-                self.assert_(isinstance(
+                self.assertTrue(isinstance(
                     bootenv.BootEnv.get_be_list(raise_error=True), list))
 
                 bootenv.BootEnv.get_be_name("/")
-                self.assert_(
+                self.assertTrue(
                     isinstance(bootenv.BootEnv.get_uuid_be_dic(), dict))
                 bootenv.BootEnv.get_activated_be_name()
                 bootenv.BootEnv.get_active_be_name()

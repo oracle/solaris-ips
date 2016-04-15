@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a directory packaging object
@@ -30,7 +30,7 @@ This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
 import errno
-import generic
+from . import generic
 import os
 import pkg.portable as portable
 import pkg.actions

@@ -49,6 +49,7 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 	/usr/bin/awk -F: '{print $$2}' | /usr/bin/sed -e 's/ //g'
 
 PEP8 = /usr/bin/pep8
+JOBS = 4
 
 SUBDIRS=zoneproxy util/mkcert
 
@@ -69,6 +70,7 @@ clobber: $(SUBDIRS)
 #
 install: $(SUBDIRS)
 	$(PYTHON27) setup.py install
+	$(PYTHON34) setup.py install
 
 lint:
 	$(PYTHON27) setup.py lint
@@ -95,11 +97,11 @@ $(SUBDIRS): FRC
 # Use the bits we just built to create the packages.
 packages: install pylint pep8
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
-		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
-		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.7/vendor-packages
+		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
 test:
-	$(PYTHON27) setup.py test
+	$(PYTHON27) tests/run.py -j ${JOBS} -v
+	$(PYTHON34) tests/run.py -j ${JOBS} -v
 
 test-verbose:
 	$(PYTHON27) setup.py test -v

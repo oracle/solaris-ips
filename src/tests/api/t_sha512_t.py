@@ -22,15 +22,16 @@
 #
 
 #
-# Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import unicode_literals
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import six
 import unittest
 from six.moves import range
 
@@ -54,48 +55,48 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 # Test SHA512/256
                 # Test hexdigest()
                 a = sha512_t.SHA512_t()
-                a.update("abc")
+                a.update(b"abc")
                 expected = "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
-                a = sha512_t.SHA512_t("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+                a = sha512_t.SHA512_t(b"abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
                 expected = "3928e184fb8690f840da3988121d31be65cb9d3ef83ee6146feac861e19b563a"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
                 # Test the length of the output of hexdigest()
-                output = len(sha512_t.SHA512_t("0.861687995815").hexdigest())
+                output = len(sha512_t.SHA512_t(b"0.861687995815").hexdigest())
                 self.assertEqualDiff(64, output)
-                output = len(sha512_t.SHA512_t("0.861687995815", 224).hexdigest())
+                output = len(sha512_t.SHA512_t(b"0.861687995815", 224).hexdigest())
                 self.assertEqualDiff(56, output)
 
                 # Test digest()
                 a = sha512_t.SHA512_t()
-                a.update("abc")
-                expected = "S\x04\x8e&\x81\x94\x1e\xf9\x9b.)\xb7kL}\xab\xe4\xc2\xd0\xc64\xfcmF\xe0\xe2\xf11\x07\xe7\xaf#"
+                a.update(b"abc")
+                expected = b"S\x04\x8e&\x81\x94\x1e\xf9\x9b.)\xb7kL}\xab\xe4\xc2\xd0\xc64\xfcmF\xe0\xe2\xf11\x07\xe7\xaf#"
                 output = a.digest()
                 self.assertEqualDiff(expected, output)
 
                 # Test the length of the output of digest()
-                output = len(sha512_t.SHA512_t("0.861687995815").digest())
+                output = len(sha512_t.SHA512_t(b"0.861687995815").digest())
                 self.assertEqualDiff(32, output)
-                output = len(sha512_t.SHA512_t("0.861687995815", 224).digest())
+                output = len(sha512_t.SHA512_t(b"0.861687995815", 224).digest())
                 self.assertEqualDiff(28, output)
 
                 # Test update()
-                a = sha512_t.SHA512_t("a")
-                a.update("bc")
+                a = sha512_t.SHA512_t(b"a")
+                a.update(b"bc")
                 expected = "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
-                a = sha512_t.SHA512_t("a")
+                a = sha512_t.SHA512_t(b"a")
                 a.hexdigest()
                 a.digest()
-                a.update("b")
+                a.update(b"b")
                 a.hexdigest()
-                a.update("c")
+                a.update(b"c")
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
@@ -105,24 +106,24 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
 
                 # Test SHA512/224
                 a = sha512_t.SHA512_t(t=224)
-                a.update("abc")
+                a.update(b"abc")
                 expected = "4634270f707b6a54daae7530460842e20e37ed265ceee9a43e8924aa"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
-                a = sha512_t.SHA512_t("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", t=224)
+                a = sha512_t.SHA512_t(b"abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", t=224)
                 expected = "23fec5bb94d60b23308192640b0c453335d664734fe40e7268674af9"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
                 # Test positional arguments
-                a = sha512_t.SHA512_t("abc", 224)
+                a = sha512_t.SHA512_t(b"abc", 224)
                 expected = "4634270f707b6a54daae7530460842e20e37ed265ceee9a43e8924aa"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
 
                 # Test keyword arguments
-                a = sha512_t.SHA512_t(message="abc", t=224)
+                a = sha512_t.SHA512_t(message=b"abc", t=224)
                 expected = "4634270f707b6a54daae7530460842e20e37ed265ceee9a43e8924aa"
                 output = a.hexdigest()
                 self.assertEqualDiff(expected, output)
@@ -130,7 +131,7 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 # Test scalability
                 a = sha512_t.SHA512_t()
                 for i in range(1000000):
-                        a.update("abc")
+                        a.update(b"abc")
                 a.hexdigest()
 
                 # Test bad input
@@ -138,11 +139,20 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(ValueError, sha512_t.SHA512_t, t=160)
                 self.assertRaises(TypeError, sha512_t.SHA512_t.update, 8)
 
-                # Test special unicode character
-                a = sha512_t.SHA512_t("α♭¢")
-                a.hexdigest()
-                a.update("ρ⑂☂♄øη")
-                a.hexdigest()
+                if six.PY2:
+                        # We allow unicode in Python 2 as hashlib does
+                        a = sha512_t.SHA512_t(u"abc")
+                        expected = "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
+                        output = a.hexdigest()
+                        self.assertEqualDiff(expected, output)
+                        # Test special unicode character
+                        a = sha512_t.SHA512_t("α♭¢")
+                        a.hexdigest()
+                        a.update("ρ⑂☂♄øη")
+                        a.hexdigest()
+                else:
+                        # We don't allow unicode in Python 3 as hashlib does
+                        self.assertRaises(TypeError, sha512_t.SHA512_t, "str")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@
 # Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -157,17 +157,14 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
 
-                f = open(os.path.join(self.test_root, "source_file"), "wb")
-                f.write(self.pkgcontents)
-                f.close()
+                with open(os.path.join(self.test_root, "source_file"), "w") as f:
+                        f.write(self.pkgcontents)
 
-                f = open(os.path.join(self.test_root, "source_file2"), "wb")
-                f.write(self.pkgcontents2)
-                f.close()
+                with open(os.path.join(self.test_root, "source_file2"), "w") as f:
+                        f.write(self.pkgcontents2)
 
-                f = open(os.path.join(self.test_root, "source_file3"), "wb")
-                f.write(self.pkgcontents3)
-                f.close()
+                with open(os.path.join(self.test_root, "source_file3"), "w") as f:
+                        f.write(self.pkgcontents3)
 
                 # Map the transform names to path names
                 xformpaths = dict((
@@ -179,10 +176,9 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # transform contents to embed those pathnames, and write the
                 # transform files out.
                 for name, path in six.iteritems(xformpaths):
-                        f = open(path, "wb")
-                        self.transforms[name] = self.transforms[name].format(**xformpaths)
-                        f.write(self.transforms[name])
-                        f.close()
+                        with open(path, "w") as f:
+                                self.transforms[name] = self.transforms[name].format(**xformpaths)
+                                f.write(self.transforms[name])
 
                 self.transform_contents = self.transforms
                 self.transforms = xformpaths
@@ -202,7 +198,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 if output:
                         args += " -O {0}".format(output)
 
-                cmd = "{0}/usr/bin/pkgmogrify {1} {2} {3}".format(
+                cmd = sys.executable + " {0}/usr/bin/pkgmogrify {1} {2} {3}".format(
                     pkg5unittest.g_pkg_path, defines, args, sources)
 
                 self.cmdline_run(cmd, stdin=stdin, exit=exit)
@@ -213,7 +209,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 specified, the contents of that file are searched."""
 
                 if path is not None:
-                        output = open(path).read()
+                        with open(path) as f:
+                                output = f.read()
                 else:
                         output = self.output + self.errout
 
@@ -247,7 +244,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 c = self.__countMatches(regex, path)
 
-                self.assert_(c == 0, "Match for '{0}' found unexpectedly".format(regex))
+                self.assertTrue(c == 0, "Match for '{0}' found unexpectedly".format(regex))
 
         def test_1(self):
                 """Basic and nested macro substitution.  Allow a macro to

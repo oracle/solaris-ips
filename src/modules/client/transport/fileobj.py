@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import uuid as uuidm
 import pkg.client.transport.exception as tx
 
-from pkg.misc import DummyLock
+from pkg.misc import DummyLock, force_str
 
 class StreamingFileObj(object):
 
@@ -37,7 +38,7 @@ class StreamingFileObj(object):
                 transport doesn't have its own streaming interface and the
                 repo operation needs a streaming response."""
 
-                self.__buf = ""
+                self.__buf = b""
                 self.__url = url
                 self.__engine = engine
                 self.__data_callback_invoked = False
@@ -84,7 +85,7 @@ class StreamingFileObj(object):
                                 self.__done = True
                         finally:
                                 self.__lock.release()
-                self.__buf = ""
+                self.__buf = b""
                 self.__engine = None
                 self.__url = None
 
@@ -106,7 +107,7 @@ class StreamingFileObj(object):
                                 # just fill the buffer
                                 pass
                         curdata = self.__buf
-                        self.__buf = ""
+                        self.__buf = b""
                         return curdata
                 else:
                         curdata = self.__buf
@@ -125,49 +126,51 @@ class StreamingFileObj(object):
                                 self.__buf = curdata[size:]
                                 return curdata[:size]
 
-                        self.__buf = ""
+                        self.__buf = b""
                         return curdata
 
         def readline(self, size=-1):
                 """Read a line from the remote host.  If size is
-                specified, read to newline or size, whichever is smaller."""
+                specified, read to newline or size, whichever is smaller.
+                We force the return value to be str here since the caller
+                expect str."""
 
                 # Caller shouldn't hold lock when calling this method
                 assert not self.__lock._is_owned()
 
                 if size < 0:
                         curdata = self.__buf
-                        newline = curdata.find("\n")
+                        newline = curdata.find(b"\n")
                         if newline >= 0:
                                 newline += 1
                                 self.__buf = curdata[newline:]
-                                return curdata[:newline]
+                                return force_str(curdata[:newline])
                         while self.__fill_buffer():
-                                newline = self.__buf.find("\n")
+                                newline = self.__buf.find(b"\n")
                                 if newline >= 0:
                                         break
 
                         curdata = self.__buf
-                        newline = curdata.find("\n")
+                        newline = curdata.find(b"\n")
                         if newline >= 0:
                                 newline += 1
                                 self.__buf = curdata[newline:]
-                                return curdata[:newline]
-                        self.__buf = ""
-                        return curdata
+                                return force_str(curdata[:newline])
+                        self.__buf = b""
+                        return force_str(curdata)
                 else:
                         curdata = self.__buf
-                        newline = curdata.find("\n", 0, size)
+                        newline = curdata.find(b"\n", 0, size)
                         datalen = len(curdata)
                         if newline >= 0:
                                 newline += 1
                                 self.__buf = curdata[newline:]
-                                return curdata[:newline]
+                                return force_str(curdata[:newline])
                         if datalen >= size:
                                 self.__buf = curdata[size:]
-                                return curdata[:size]
+                                return force_str(curdata[:size])
                         while self.__fill_buffer():
-                                newline = self.__buf.find("\n", 0, size)
+                                newline = self.__buf.find(b"\n", 0, size)
                                 datalen = len(self.__buf)
                                 if newline >= 0:
                                         break
@@ -175,17 +178,17 @@ class StreamingFileObj(object):
                                         break
 
                         curdata = self.__buf
-                        newline = curdata.find("\n", 0, size)
+                        newline = curdata.find(b"\n", 0, size)
                         datalen = len(curdata)
                         if newline >= 0:
                                 newline += 1
                                 self.__buf = curdata[newline:]
-                                return curdata[:newline]
+                                return force_str(curdata[:newline])
                         if datalen >= size:
                                 self.__buf = curdata[size:]
-                                return curdata[:size]
-                        self.__buf = ""
-                        return curdata
+                                return force_str(curdata[:size])
+                        self.__buf = b""
+                        return force_str(curdata)
 
         def readlines(self, sizehint=0):
                 """Read lines from the remote host, returning an
@@ -366,6 +369,9 @@ class StreamingFileObj(object):
                 if not self.__data_callback_invoked:
                         self.__data_callback_invoked = True
 
+                # We don't force data to str here because data could be from a
+                # gizpped file, which contains gzip magic number that can't be
+                # decoded by 'utf-8'.
                 self.__buf = self.__buf + data
 
         def __header_callback(self, data):
@@ -374,14 +380,16 @@ class StreamingFileObj(object):
                 the message from the http response, as well as a dictionary
                 of headers that it can parse."""
 
-                if data.startswith("HTTP/"):
+                if data.startswith(b"HTTP/"):
                         rtup = data.split(None, 2)
                         try:
                                 self.__httpmsg = rtup[2]
                         except IndexError:
                                 pass
 
-                elif data.find(":") > -1:
-                        k, v = data.split(":", 1)
+                elif data.find(b":") > -1:
+                        k, v = data.split(b":", 1)
                         if v:
-                                self.__headers[k.lower()] = v.strip()
+                                # convert to str as early as we can
+                                self.__headers[force_str(k.lower())] = \
+                                        force_str(v.strip())

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module implements PrintEngine (abstract), POSIXPrintEngine and
@@ -34,12 +34,11 @@ import logging
 import os
 import re
 import six
-import StringIO
 import termios
 import time
 from abc import ABCMeta, abstractmethod
 
-from pkg.misc import PipeError
+from pkg.misc import PipeError, force_str
 
 
 class PrintEngineException(Exception):
@@ -116,7 +115,7 @@ class POSIXPrintEngine(PrintEngine):
                 # Hardware terminals are pretty much gone now; we choose
                 # to drop delays specified in termcap (delays are in the
                 # form: $<[0-9]+>).
-                self._out_file.write(self.__putp_re.sub("", string))
+                self._out_file.write(self.__putp_re.sub("", force_str(string)))
 
         def isslow(self):
                 """Returns true if out_file is 'slow' (<=9600 baud)."""
@@ -220,7 +219,7 @@ class LoggingPrintEngine(PrintEngine):
                 PrintEngine.__init__(self)
                 self._logger = logger
                 self._loglevel = loglevel
-                self._stringio = StringIO.StringIO()
+                self._stringio = six.StringIO()
                 self._pxpe = POSIXPrintEngine(self._stringio, False)
 
         def isslow(self):

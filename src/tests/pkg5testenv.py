@@ -20,10 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import os
+import six
 import sys
 import platform
 import tempfile
@@ -87,7 +88,8 @@ def setup_environment(path_to_proto, debug=False, system_test=False):
         pkg_path = os.path.realpath(pkg_path)
         proto_area = os.path.realpath(proto_area)
 
-        pkgs = os.path.join(pkg_path, "usr/lib/python2.7/vendor-packages")
+        pkgs = os.path.join(pkg_path, "usr/lib/python{0}/vendor-packages".format(
+            sys.version[0:3]))
         bins = os.path.join(pkg_path, "usr/bin")
         sys.path.insert(1, pkgs)
 
@@ -104,10 +106,16 @@ def setup_environment(path_to_proto, debug=False, system_test=False):
 
         os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
+        # Because some test cases will fail under Python 3 if the locale is set
+        # to "C". A "C" locale supports only "ascii" characters, so esentially
+        # if we want to test unicode characters, we need to use "utf-8" locale.
+        if six.PY3:
+                os.environ["LANG"] = "en_US.UTF-8"
+
         # Proxy environment variables cause all kinds of problems, strip them
         # all out.
         # Use "keys"; otherwise we'll change dictionary size during iteration.
-        for k in os.environ.keys():
+        for k in list(os.environ.keys()):
                 if k.startswith("PKG_") or k.lower().endswith("_proxy"):
                         del os.environ[k]
 

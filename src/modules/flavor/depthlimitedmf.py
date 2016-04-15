@@ -1,8 +1,8 @@
 #!/usr/bin/python
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Python
+# Copyright (c) 2001, 2016, 2003, 2016, 2005, 2016, 2007, 2016, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 """A standalone version of ModuleFinder which limits the depth of exploration
@@ -90,6 +90,12 @@ class ModuleInfo(object):
 
 
 if __name__ == "__main__":
+        import pkg.misc as misc
+        import gettext
+        import locale
+        misc.setlocale(locale.LC_ALL, "")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
         class MultipleDefaultRunPaths(Exception):
 
                 def __str__(self):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -381,7 +381,7 @@ class PkgImage(object):
                         # Process output JSON lines.
                         while True:
                                 out_line = p.stdout.readline()
-                                if out_line == '' and p.poll() is not None:
+                                if out_line == b'' and p.poll() is not None:
                                         break
                                 if out_line:
                                         out_json = json.loads(out_line)

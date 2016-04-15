@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -831,7 +831,7 @@ def subcmd_info(conf, args):
                 notfound = set()
 
         def gen_listing():
-                for pfx in found:
+                for pfx in sorted(found):
                         pdata = pub_idx[pfx]
                         pkg_count = pdata.get("package-count", 0)
                         last_update = pdata.get("last-catalog-update", "")
@@ -935,7 +935,7 @@ def subcmd_list(conf, args):
 
         def gen_listing():
                 collect_attrs = out_format.startswith("json")
-                for pub in pub_data:
+                for pub in sorted(pub_data):
                         cat = pub.catalog
                         for f, states, attrs in cat.gen_packages(
                             collect_attrs=collect_attrs, matched=matched,
@@ -2119,7 +2119,7 @@ def __repo_diff(conf, pubs, xport, rpubs, rxport, tmp_dir, verbose, quiet,
                         info_table = PrettyTable(res_dict["table_header"],
                             encoding=locale.getpreferredencoding())
                         info_table.align = "r"
-                        info_table.align[six.text_type(_("Publisher"),
+                        info_table.align[misc.force_text(_("Publisher"),
                             locale.getpreferredencoding())] = "l"
                         # Calculate column wise maximum number for formatting.
                         col_maxs = 4 * [0]
@@ -2367,6 +2367,9 @@ if __name__ == "__main__":
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         __retval = handle_errors(main_func)
         try:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -30,8 +30,7 @@ This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
 import errno
-import generic
-import link
+from . import generic, link
 import os
 import stat
 

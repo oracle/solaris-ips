@@ -65,10 +65,22 @@ LoadModule rewrite_module libexec/mod_rewrite.so
 LoadModule ssl_module libexec/mod_ssl.so
 LoadModule socache_memcache_module libexec/mod_socache_memcache.so
 LoadModule unixd_module libexec/mod_unixd.so
-LoadModule wsgi_module libexec/mod_wsgi-2.7.so
+<%!
+    import os
+    import sys
+%>
+<%
+        context.write("""
+LoadModule wsgi_module libexec/mod_wsgi-{0}.so
+""".format(sys.version[:3]))
+%>
+
 
 # We only alias a specific script, not all files in ${sysrepo_template_dir}
 WSGIScriptAlias /wsgi_p5p ${sysrepo_template_dir}/sysrepo_p5p.py
+# Run wsgi script in the current version of Python runtime
+WSGIPythonHome sys.executable
+WSGIPythonPath os.pathsep.join(sys.path)
 WSGIDaemonProcess sysrepo processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_sysrepo inactivity-timeout=120
 WSGIProcessGroup sysrepo
 WSGISocketPrefix ${sysrepo_runtime_dir}/wsgi

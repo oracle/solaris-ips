@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -36,6 +36,7 @@ import sys
 import tempfile
 import unittest
 
+import pkg.misc as misc
 import pkg.file_layout.file_manager as file_manager
 import pkg.file_layout.layout as layout
 
@@ -52,7 +53,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 if not os.path.exists(os.path.dirname(p)):
                         os.makedirs(os.path.dirname(p))
                 fh = open(p, "wb")
-                fh.write(data)
+                fh.write(misc.force_bytes(data))
                 fh.close()
                 return p
 
@@ -70,23 +71,23 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                         raise RuntimeError("Didn't raise expected exception")
 
         def check_readonly(self, fm, unmoved, p):
-                self.assert_(os.path.isfile(p))
+                self.assertTrue(os.path.isfile(p))
                 self.assertEqual(fm.lookup(unmoved), p)
                 fh = fm.lookup(unmoved, opener=True)
                 try:
-                        self.assertEqual(fh.read(), unmoved)
+                        self.assertEqual(fh.read(), misc.force_bytes(unmoved))
                 finally:
                         fh.close()
-                self.assert_(os.path.isfile(p))
+                self.assertTrue(os.path.isfile(p))
 
                 self.check_exception(fm.insert,
                     file_manager.NeedToModifyReadOnlyFileManager,
                     ["create", unmoved], unmoved, p)
-                self.assert_(os.path.isfile(p))
+                self.assertTrue(os.path.isfile(p))
                 self.check_exception(fm.remove,
                     file_manager.NeedToModifyReadOnlyFileManager,
                     ["remove", unmoved], unmoved)
-                self.assert_(os.path.isfile(p))
+                self.assertTrue(os.path.isfile(p))
 
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
@@ -133,12 +134,12 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 # directory no longer exists as only a single file existed
                 # there.  Finally, remove it for the next test if successful.
                 p1 = self.touch_old_file(hash1)
-                self.assert_(os.path.isfile(p1))
-                self.assert_(os.path.isdir(os.path.dirname(p1)))
+                self.assertTrue(os.path.isfile(p1))
+                self.assertTrue(os.path.isdir(os.path.dirname(p1)))
                 self.assertEqual(fm.lookup(hash1),
                     os.path.join(self.base_dir, l.lookup(hash1)))
-                self.assert_(not os.path.exists(p1))
-                self.assert_(not os.path.exists(os.path.dirname(p1)))
+                self.assertTrue(not os.path.exists(p1))
+                self.assertTrue(not os.path.exists(os.path.dirname(p1)))
                 fm.remove(hash1)
 
                 # Test that looking up a file stored under the old system gets
@@ -149,39 +150,39 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 # few tests.
                 p1 = self.touch_old_file(hash1)
                 self.touch_old_file(hash2)
-                self.assert_(os.path.isfile(p1))
-                self.assert_(os.path.isdir(os.path.dirname(p1)))
+                self.assertTrue(os.path.isfile(p1))
+                self.assertTrue(os.path.isdir(os.path.dirname(p1)))
                 self.assertEqual(fm.lookup(hash1),
                     os.path.join(self.base_dir, l.lookup(hash1)))
-                self.assert_(not os.path.exists(p1))
-                self.assert_(os.path.exists(os.path.dirname(p1)))
+                self.assertTrue(not os.path.exists(p1))
+                self.assertTrue(os.path.exists(os.path.dirname(p1)))
                 fm.remove(hash2)
 
                 # Test that looking up a file stored under the old system gets
                 # moved and that it returns a file handle with the correct
                 # contents.
                 p4 = self.touch_old_file(hash4)
-                self.assert_(os.path.isfile(p4))
-                self.assert_(os.path.isdir(os.path.dirname(p4)))
+                self.assertTrue(os.path.isfile(p4))
+                self.assertTrue(os.path.isdir(os.path.dirname(p4)))
                 fh = fm.lookup(hash4, opener=True)
                 try:
-                        self.assertEqual(fh.read(), hash4)
+                        self.assertEqual(fh.read(), misc.force_bytes(hash4))
                 finally:
                         fh.close()
-                self.assert_(not os.path.exists(p4))
-                self.assert_(not os.path.exists(os.path.dirname(p4)))
+                self.assertTrue(not os.path.exists(p4))
+                self.assertTrue(not os.path.exists(os.path.dirname(p4)))
 
                 p3 = self.touch_old_file(hash3)
-                self.assert_(os.path.isfile(p3))
-                self.assert_(os.path.isdir(os.path.dirname(p3)))
+                self.assertTrue(os.path.isfile(p3))
+                self.assertTrue(os.path.isdir(os.path.dirname(p3)))
                 fm.insert(hash3, p3)
 
-                self.assert_(not os.path.exists(p3))
-                self.assert_(not os.path.exists(os.path.dirname(p3)))
+                self.assertTrue(not os.path.exists(p3))
+                self.assertTrue(not os.path.exists(os.path.dirname(p3)))
 
                 fh = fm.lookup(hash3, opener=True)
                 try:
-                        self.assertEqual(fh.read(), hash3)
+                        self.assertEqual(fh.read(), misc.force_bytes(hash3))
                 finally:
                         fh.close()
 
@@ -208,15 +209,15 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 hash3_loc = os.path.join(self.base_dir, l.lookup(hash3))
                 v0_hash3_loc = self.touch_old_file(hash3)
 
-                self.assert_(os.path.isfile(hash3_loc))
-                self.assert_(os.path.isfile(v0_hash3_loc))
+                self.assertTrue(os.path.isfile(hash3_loc))
+                self.assertTrue(os.path.isfile(v0_hash3_loc))
                 fm.remove(hash3)
                 self.assertEqual(fm.lookup(hash3), None)
-                self.assert_(not os.path.exists(hash3_loc))
-                self.assert_(not os.path.exists(os.path.dirname(hash3_loc)))
-                self.assert_(not os.path.exists(v0_hash3_loc))
-                self.assert_(not os.path.exists(os.path.dirname(v0_hash3_loc)))
-                self.assert_(os.path.isfile(fm.lookup(hash1)))
+                self.assertTrue(not os.path.exists(hash3_loc))
+                self.assertTrue(not os.path.exists(os.path.dirname(hash3_loc)))
+                self.assertTrue(not os.path.exists(v0_hash3_loc))
+                self.assertTrue(not os.path.exists(os.path.dirname(v0_hash3_loc)))
+                self.assertTrue(os.path.isfile(fm.lookup(hash1)))
 
                 rh2_fd, raw_hash_2_loc = tempfile.mkstemp(dir=self.base_dir)
                 rh2_fh = os.fdopen(rh2_fd, "w")
@@ -225,21 +226,21 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
                 fm.insert(hash2, raw_hash_2_loc)
                 h2_loc = fm.lookup(hash2)
-                self.assert_(os.path.isfile(fm.lookup(hash2)))
+                self.assertTrue(os.path.isfile(fm.lookup(hash2)))
                 # Test that the directory has two files in it as expected.
                 self.assertEqual(set(os.listdir(
                     os.path.dirname(fm.lookup(hash2)))),
                     set([hash1, hash2]))
                 # Test removing one of the two files doesn't remove the other.
                 fm.remove(hash1)
-                self.assert_(os.path.isfile(h2_loc))
+                self.assertTrue(os.path.isfile(h2_loc))
                 self.assertEqual(fm.lookup(hash2), h2_loc)
                 self.assertEqual(fm.lookup(hash1), None)
                 # Test that removing the second file works and removes the
                 # containing directory as well.
                 fm.remove(hash2)
-                self.assert_(not os.path.exists(h2_loc))
-                self.assert_(not os.path.exists(os.path.dirname(h2_loc)))
+                self.assertTrue(not os.path.exists(h2_loc))
+                self.assertTrue(not os.path.exists(os.path.dirname(h2_loc)))
 
                 # Test that setting the read_only property works and that none
                 # of the activities has effected the location where unmoved has
@@ -309,7 +310,8 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                             l1.lookup(fhash)))
 
                         f = open(loc, "rb")
-                        self.assertEqual(f.read(), "old-{0}".format(fhash))
+                        self.assertEqual(f.read(), misc.force_bytes(
+                            "old-{0}".format(fhash)))
                         f.close()
 
                 # Now replace each file using the old hashnames and verify
@@ -320,13 +322,14 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
                         npath = os.path.join(self.base_dir, "new-{0}".format(fhash))
                         nfile = open(npath, "wb")
-                        nfile.write("new-{0}".format(fhash))
+                        nfile.write(misc.force_bytes("new-{0}".format(fhash)))
                         nfile.close()
                         fm.insert(fhash, npath)
 
                         loc = fm.lookup(fhash)
                         f = open(loc, "rb")
-                        self.assertEqual(f.read(), "new-{0}".format(fhash))
+                        self.assertEqual(f.read(), misc.force_bytes(
+                            "new-{0}".format(fhash)))
                         f.close()
 
 if __name__ == "__main__":

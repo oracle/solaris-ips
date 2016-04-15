@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -35,7 +35,7 @@ import errno
 import os
 from stat import S_IWRITE, S_IREAD
 
-import generic
+from . import generic
 import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
@@ -209,7 +209,7 @@ class LicenseAction(generic.Action):
                                     length=length, return_content=True,
                                     hash_func=hash_func)
                                 if chash == hash_attr_val:
-                                        return txt
+                                        return misc.force_str(txt)
                 except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise

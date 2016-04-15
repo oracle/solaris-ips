@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -33,7 +33,7 @@ from six.moves.urllib.parse import quote, unquote
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
-from pkg.misc import PKG_FILE_BUFSIZ
+from pkg.misc import PKG_FILE_BUFSIZ, force_bytes
 
 FAST_ADD = 'fast_add.v1'
 FAST_REMOVE = 'fast_remove.v1'
@@ -75,7 +75,7 @@ def consistent_open(data_list, directory, timeout = 1):
                         # in the function is greater than timeout.
                         try:
                                 f = os.path.join(directory, d.get_file_name())
-                                fh = open(f, 'rb')
+                                fh = open(f, 'r')
                                 # If we get here, then the current index file
                                 # is present.
                                 if missing == None:
@@ -180,7 +180,7 @@ class IndexStoreBase(object):
                 Note: Only child classes should call this method.
                 """
                 version_string = "VERSION: "
-                file_handle = open(os.path.join(path, self._name), 'wb')
+                file_handle = open(os.path.join(path, self._name), 'w')
                 file_handle.write(version_string + str(version_num) + "\n")
                 for name in iterable:
                         file_handle.write(str(name) + "\n")
@@ -588,7 +588,7 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """
                 self.write_dict_file(use_dir, version_num)
                 self._file_handle = open(os.path.join(use_dir, self._name),
-                    'ab', buffering=PKG_FILE_BUFSIZ)
+                    'a', buffering=PKG_FILE_BUFSIZ)
 
         def write_entity(self, entity, my_id):
                 """Writes the entity out to the file with my_id """
@@ -629,7 +629,8 @@ class IndexStoreSetHash(IndexStoreBase):
                 # here.
                 shasum = hashlib.sha1()
                 for v in vl:
-                        shasum.update(v)
+                         # Unicode-objects must be encoded before hashing.
+                         shasum.update(force_bytes(v))
                 return shasum.hexdigest()
 
         def write_dict_file(self, path, version_num):
@@ -763,7 +764,7 @@ class InvertedDict(IndexStoreBase):
                 packages with the same set of offsets share a common bucket."""
 
                 inv = {}
-                for p_id in self._fmri_offsets.keys():
+                for p_id in list(self._fmri_offsets.keys()):
                         old_o = 0
                         bucket = []
                         for o in sorted(set(self._fmri_offsets[p_id])):

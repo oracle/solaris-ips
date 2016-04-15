@@ -22,7 +22,7 @@
 
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -327,7 +327,7 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install foo")
                 self.pkg("set-publisher -p {0}".format(self.rurl1))
                 self.pkg("update foo@1.1", exit=1)
-                self.assert_("test1" in self.errout)
+                self.assertTrue("test1" in self.errout)
 
         def test_nothingtodo(self):
                 """Test that if we have multiple facets of equal length that
@@ -452,12 +452,12 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # Should fail and result in 'no solution' because user failed to
                 # specify any input.
                 self.pkg("update -nv", exit=1, assert_solution=False)
-                self.assert_("No solution" in self.errout)
+                self.assertTrue("No solution" in self.errout)
 
                 # Should fail, but not result in 'no solution' because user
                 # specified a particular package.
                 self.pkg("update -nv osnet-incorporation@latest", exit=1)
-                self.assert_("No matching version" in self.errout)
+                self.assertTrue("No matching version" in self.errout)
 
                 # Should exit with 'nothing to do' since update to new version
                 # of osnet-incorporation is not possible.

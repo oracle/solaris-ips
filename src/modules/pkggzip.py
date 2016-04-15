@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 #ident	"%Z%%M%	%I%	%E% SMI"
 
@@ -49,7 +48,7 @@ class PkgGzipFile(gzip.GzipFile):
         # Byte 9 is the XFL (Extra Flags) field, set to 2 (compressor used
         # max compression).  The final bit is the OS type, set to 255 (for
         # "unknown").
-        magic = "\037\213\010\000\000\000\000\000\002\377"
+        magic = b"\037\213\010\000\000\000\000\000\002\377"
 
         def _write_gzip_header(self):
                 self.fileobj.write(self.magic)

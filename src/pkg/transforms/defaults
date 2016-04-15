@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Set some specific permissions
@@ -61,10 +61,19 @@
 # Don't bother specifying each .py file.  Allow individual actions to
 # override this by setting pkg.tmp.autopyc to false.
 <transform file path=.*\.py$ -> default pkg.tmp.autopyc true>
-<transform file pkg.tmp.autopyc=true -> emit file path=%(path)c>
-<transform file pkg.tmp.autopyc=.* -> delete pkg.tmp.autopyc .*>
-<transform hardlink path=.*\.py$ -> emit hardlink path=%(path)c target=%(target)c>
+<transform file hardlink pkg.tmp.autopyc=true path=usr/lib/python2\.(.*)\.py$ -> default pkg.tmp.pyversion 2.X>
+<transform file hardlink pkg.tmp.autopyc=true path=usr/lib/python3\.(.*)/.*\.py$ -> default pkg.tmp.pyversion 3.%<1>>
 
+<transform file pkg.tmp.pyversion=2\.X -> emit file path=%(path)c>
+<transform hardlink pkg.tmp.pyversion=2\.X -> emit hardlink path=%(path)c target=%(target)c>
+
+<transform file pkg.tmp.pyversion=3\.([0-9])(.*) path=.*/(.*)\.py$ -> emit file path=/usr/lib/python3.%<1>%<2>/__pycache__/%<3>.cpython-3%<1>.pyc>
+<transform file pkg.tmp.pyversion=3\.([0-9])(.*) path=.*/(.*)\.py$ -> emit dir path=/usr/lib/python3.%<1>%<2>/__pycache__>
+<transform hardlink pkg.tmp.pyversion=3\.(.*) -> emit hardlink path=%(path)c target=%(target)c>
+
+<transform file pkg.tmp.autopyc=.* -> delete pkg.tmp.autopyc .*>
+<transform pkg.tmp.pyversion=.* -> delete pkg.tmp.pyversion .*>
+ 
 # Add actuators
 <transform file path=(var|lib)/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
 
@@ -105,14 +114,5 @@
 <transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
 set name=org.opensolaris.consolidation value=ips
 set name=variant.opensolaris.zone value=global value=nonglobal
-
-# XXX Uncomment it when we need to deliver python 3.4 version of modules.
-# Generate a python 3.4 dir/file action for each python 2.7 dir/file action
-# it ran across.
-# <transform file dir link hardlink path=(.*)python2.7(.*) -> emit %(action.name) path=%<1>python3.4%<2>>
-# Do the version substitution on the .egg-info file.
-# <transform file path=.*python3.4.*py2.7.egg-info -> edit path py2.7 py3.4>
-# Avoid generating dependencies against any 3.4 file.
-# <transform file path=.*python3.4 -> default pkg.depend.bypass-generate .*>
 
 # vim: ft=pkg5manifest

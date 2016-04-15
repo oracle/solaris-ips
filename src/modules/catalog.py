@@ -19,11 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
 
+from __future__ import  print_function
 import copy
 import calendar
 import collections
@@ -38,6 +39,7 @@ import stat
 import threading
 import types
 
+from collections import OrderedDict
 from operator import itemgetter
 
 import pkg.actions
@@ -127,7 +129,7 @@ class _JSONWriter(object):
                     indent=indent, separators=separators, encoding=encoding,
                     default=default, **kw).iterencode(obj,
                     _one_shot=self.__single_pass)
-                fp.writelines(iterable)
+                fp.writelines(misc.force_bytes(i) for i in iterable)
 
         def save(self):
                 """Serializes and stores the provided data in JSON format."""
@@ -146,7 +148,7 @@ class _JSONWriter(object):
 
                 self._dump(self.__data, out, check_circular=False,
                     separators=(",", ":"), sort_keys=self.__sign)
-                out.write("\n")
+                out.write(b"\n")
 
                 if self.__fileobj:
                         self.__fileobj.close()
@@ -170,22 +172,20 @@ class _JSONWriter(object):
                     hash_func=hashlib.sha1)[0]
 
                 # Open the JSON file so that the signature data can be added.
-                sfile = open(self.pathname, "rb+", self.__bufsz)
+                with open(self.pathname, "rb+", self.__bufsz) as sfile:
+                        # The last bytes should be "}\n", which is where the
+                        # signature data structure needs to be appended.
+                        sfile.seek(-2, os.SEEK_END)
 
-                # The last bytes should be "}\n", which is where the signature
-                # data structure needs to be appended.
-                sfile.seek(-2, os.SEEK_END)
-
-                # Add the signature data and close.
-                sfoffset = sfile.tell()
-                if sfoffset > 1:
-                        # Catalog is not empty, so a separator is needed.
-                        sfile.write(",")
-                sfile.write('"_SIGNATURE":')
-                self._dump(self.signatures(), sfile, check_circular=False,
-                    separators=(",", ":"))
-                sfile.write("}\n")
-                sfile.close()
+                        # Add the signature data and close.
+                        sfoffset = sfile.tell()
+                        if sfoffset > 1:
+                                # Catalog is not empty, so a separator is needed.
+                                sfile.write(b",")
+                        sfile.write(b'"_SIGNATURE":')
+                        self._dump(self.signatures(), sfile, check_circular=False,
+                            separators=(",", ":"))
+                        sfile.write(b"}\n")
 
         def write(self, data):
                 """Wrapper function that should not be called by external
@@ -326,6 +326,7 @@ class CatalogPartBase(object):
                 # Signature data, if present, should be removed from the struct
                 # on load and then stored in the signatures object property.
                 self.signatures = struct.pop("_SIGNATURE", {})
+                fobj.close()
                 return struct
 
         @property
@@ -2999,7 +3000,9 @@ class Catalog(object):
                         omit_var = False
                         states = set()
                         if collect_attrs:
-                                ddm = lambda: collections.defaultdict(list)
+                                # use OrderedDict to get a deterministic output
+                                ddm = lambda: OrderedDict(
+                                    collections.defaultdict(list))
                                 attrs = collections.defaultdict(ddm)
                         else:
                                 attrs = EmptyDict
@@ -3021,8 +3024,11 @@ class Catalog(object):
                                                     for k in six.iterkeys(a.attrs)
                                                     if k not in ("name", "value")
                                                 )
-                                                attrs[atname][mods].extend(
-                                                    atvlist)
+                                                if mods not in attrs[atname]:
+                                                        attrs[atname][mods] = atvlist
+                                                else:
+                                                        attrs[atname][mods].extend(
+                                                            atvlist)
 
                                         if atname == "pkg.summary":
                                                 summ = atvalue

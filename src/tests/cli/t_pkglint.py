@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -30,6 +30,7 @@ import pkg5unittest
 import os
 import os.path
 import shutil
+import sys
 import unittest
 import tempfile
 import threading
@@ -228,7 +229,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
         def test_1_usage(self):
                 """Tests that we show a usage message."""
                 ret, output, err = self.pkglint("--help")
-                self.assert_("Usage:" in output,
+                self.assertTrue("Usage:" in output,
                     "No usage string printed")
 
         def test_2_badopts(self):
@@ -241,22 +242,22 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 """Tests that -L prints headers and descriptions or methods."""
                 for flag in ["-L", "-vL"]:
                         ret, output, err = self.pkglint(flag)
-                        self.assert_("pkglint.dupaction001" in output,
+                        self.assertTrue("pkglint.dupaction001" in output,
                             "short name didn't appear in {0} output".format(flag))
 
-                        self.assert_("NAME" in output,
+                        self.assertTrue("NAME" in output,
                             "Header not printed in {0} output".format(flag))
                         if flag == "-vL":
-                                self.assert_(
+                                self.assertTrue(
                                     "pkg.lint.pkglint_action.PkgDupActionChecker.duplicate_paths"
                                     in output,
                                     "verbose list output didn't show method")
                         elif flag == "-L":
-                                self.assert_(
+                                self.assertTrue(
                                     "Paths should be unique." in output,
                                     "description didn't appear in "
                                     "-L output: {0}".format(output))
-                                self.assert_("pkg.lint." not in output,
+                                self.assertTrue("pkg.lint." not in output,
                                     "description contained pkg.lint, possible "
                                     "missing <checker>.pkglint_desc attribute.")
 
@@ -297,17 +298,17 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 ret, output, err = self.pkglint("-f {0}/rcfile -vL".format(
                     self.test_root, testrc=False, exit=0))
-                self.assert_(
+                self.assertTrue(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"
                     in output, "List output missing excluded checker")
-                self.assert_("Excluded checks:" in output)
+                self.assertTrue("Excluded checks:" in output)
 
                 ret, output, err = self.pkglint("-f {0}/rcfile1 -vL".format(
                     self.test_root, testrc=False, exit=0))
-                self.assert_(
+                self.assertTrue(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"
                     in output, "List output missing excluded checker")
-                self.assert_("Excluded checks:" in output)
+                self.assertTrue("Excluded checks:" in output)
 
         def test_7_linted(self):
                 """Checks that the pkg.linted keyword works for actions and
@@ -329,7 +330,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 # we should succeed, but get a warning from one check
                 ret, output, err = self.pkglint(linted_manifest_path1, exit=0)
-                self.assert_("pkglint.action005.1" in err,
+                self.assertTrue("pkglint.action005.1" in err,
                     "Expected to get a pkglint.action005.1 warning from "
                     "linted_manifest_path_1:\n{0}".format(err))
 
@@ -340,15 +341,15 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 # default log setting
                 ret, output, err = self.pkglint("{0}".format(mpath), exit=1)
-                self.assert_("Total number of checks found" not in output,
+                self.assertTrue("Total number of checks found" not in output,
                     "verbose output detected in non-verbose mode")
 
-                self.assert_("duplicate set actions" in err)
+                self.assertTrue("duplicate set actions" in err)
 
                 ret, output_verbose, err = self.pkglint("-v {0}".format(mpath), exit=1)
-                self.assert_("Total number of checks found" in output_verbose,
+                self.assertTrue("Total number of checks found" in output_verbose,
                     "verbose output not printed in verbose mode")
-                self.assert_("duplicate set actions" in err)
+                self.assertTrue("duplicate set actions" in err)
 
                 # override log setting in config file
                 self.make_misc_files(
@@ -356,15 +357,15 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                     pkg5unittest.g_pkg_path)})
                 ret, output, err = self.pkglint("-f {0}/low_noise_rc {1}".format(
                     self.test_root, mpath), exit=0)
-                self.assert_("Total number of checks found" not in output,
+                self.assertTrue("Total number of checks found" not in output,
                     "verbose output detected in non-verbose mode")
-                self.assert_("duplicate set actions" not in err)
+                self.assertTrue("duplicate set actions" not in err)
 
                 ret, output, err = self.pkglint("-v -f {0}/low_noise_rc {1}".format(
                     self.test_root, mpath), exit=1)
-                self.assert_("Total number of checks found" in output,
+                self.assertTrue("Total number of checks found" in output,
                     "verbose output detected in non-verbose mode")
-                self.assert_("duplicate set actions" in err)
+                self.assertTrue("duplicate set actions" in err)
 
         def test_9_order(self):
                 """Checks that we always visit manifests in the same order."""
@@ -373,9 +374,9 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 ret, out, err = self.pkglint("-v {0} {1}".format(mpath, mpath1))
                 ret, out2, err2 = self.pkglint("-v {0} {1}".format(mpath1, mpath))
 
-                self.assert_(out == out2,
+                self.assertTrue(out == out2,
                     "different stdout with different cli order")
-                self.assert_(err == err2,
+                self.assertTrue(err == err2,
                     "different stderr with different cli order")
 
         def test_10_rcfile_params(self):
@@ -389,7 +390,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 # verify we fail first
                 ret, output, err = self.pkglint("{0}".format(mpath))
-                self.assert_("pkglint.action005.1" in err,
+                self.assertTrue("pkglint.action005.1" in err,
                     "Expected missing dependency warning not printed")
 
                 # verify that with the given rc file, we don't report an error
@@ -397,7 +398,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 # pkglint.action005.1 whitelisting that particular dependency
                 ret, output, err = self.pkglint("-f {0}/rcfile {1}".format(
                     self.test_root, mpath), testrc=False)
-                self.assert_("pkglint.action005.1" not in err,
+                self.assertTrue("pkglint.action005.1" not in err,
                     "Missing dependency warning printed, despite paramter")
 
                 # this time, we've whitelisted a versioned dependency, but
@@ -405,7 +406,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 # complain
                 ret, output, err = self.pkglint("-f {0}/versioned {1}".format(
                     self.test_root, mpath), testrc=False)
-                self.assert_("pkglint.action005.1" in err,
+                self.assertTrue("pkglint.action005.1" in err,
                     "Missing dep warning not printed, despite versioned rcfile")
 
                 # finally, verify the parameter set in either the action or
@@ -414,7 +415,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                     self.missing_dep_manifest_mf]:
                         mpath = self.make_manifest(mf)
                         ret, output, err = self.pkglint(mpath)
-                        self.assert_("pkglint.action005.1" not in err,
+                        self.assertTrue("pkglint.action005.1" not in err,
                             "Missing dependency warning printed, despite "
                             "paramter set in {0}".format(mf))
 
@@ -449,15 +450,15 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 ret, output, err = self.pkglint("-f {0}/rcfile1 {1}".format(
                     self.test_root,  mpath1), exit=0)
-                self.assert_("INFO " in err, "error output: {0}".format(err))
-                self.assert_("Linted message: pkglint.manifest008.6" in err,
+                self.assertTrue("INFO " in err, "error output: {0}".format(err))
+                self.assertTrue("Linted message: pkglint.manifest008.6" in err,
                     "error output: {0}".format(err))
 
                 # now we should still fail, but should not emit the linted INFO
                 ret, output, err = self.pkglint("-f {0}/rcfile {1}".format(
                     self.test_root,  mpath1), testrc=False, exit=0)
-                self.assert_("INFO " not in err, "error output: {0}".format(err))
-                self.assert_("Linted message: pkglint.manifest008.6" not in
+                self.assertTrue("INFO " not in err, "error output: {0}".format(err))
+                self.assertTrue("Linted message: pkglint.manifest008.6" not in
                     err, "error output: {0}".format(err))
 
 
@@ -598,7 +599,7 @@ dir group=sys mode=0755 owner=root path=etc
                 cache = tempfile.mkdtemp("pkglint-cache", "", self.test_root)
 
                 for args in [[mpath1], ["-c", cache, "-l", self.lint_uri]]:
-                        cmdline = ["{0}/usr/bin/pkglint".format(
+                        cmdline = [sys.executable, "{0}/usr/bin/pkglint".format(
                             pkg5unittest.g_pkg_path)]
                         cmdline.extend(args)
 
@@ -645,13 +646,13 @@ dir group=sys mode=0755 owner=root path=etc
                 self.pkglint("-c {0} -r {1} -r {2} -r {3} {4}".format(
                     self.cache_dir, self.ref_uri, durl3, durl5, mpath1))
                 self.pkg("-R {0}/ref_image publisher".format(self.cache_dir))
-                self.assert_("opensolaris.org" in self.output and
+                self.assertTrue("opensolaris.org" in self.output and
                     "test" in self.output and durl3 in self.output and
                     durl5 in self.output)
                 self.pkglint("-c {0} -l {1} -l {2} -l {3}".format(
                     self.cache_dir, self.ref_uri, durl3, durl5))
                 self.pkg("-R {0}/lint_image publisher".format(self.cache_dir))
-                self.assert_("opensolaris.org" in self.output and
+                self.assertTrue("opensolaris.org" in self.output and
                     "test" in self.output and durl3 in self.output and
                     durl5 in self.output)
                 shutil.rmtree(self.cache_dir)
@@ -680,13 +681,13 @@ dir group=sys mode=0755 owner=root path=etc
                 self.pkglint("-c {0} -r {1} -r {2} {3}".format(
                     self.cache_dir, self.ref_uri, durl3, mpath1))
                 self.pkg("-R {0}/ref_image publisher".format(self.cache_dir))
-                self.assert_("opensolaris.org" in self.output and
+                self.assertTrue("opensolaris.org" in self.output and
                     "test" in self.output and "second-pub" in self.output and
                     "third-pub" in self.output)
                 self.pkglint("-c {0} -l {1} -l {2}".format(
                     self.cache_dir, self.ref_uri, durl3))
                 self.pkg("-R {0}/lint_image publisher".format(self.cache_dir))
-                self.assert_("opensolaris.org" in self.output and
+                self.assertTrue("opensolaris.org" in self.output and
                     "test" in self.output and "second-pub" in self.output and
                     "third-pub" in self.output)
                 shutil.rmtree(self.cache_dir)
@@ -714,12 +715,12 @@ dir group=sys mode=0755 owner=root path=etc
                 self.pkglint("-c {0} -r {1} -r {2} {3}".format(
                     self.cache_dir, self.ref_uri, self.lint_uri, mpath1))
                 self.pkg("-R {0}/ref_image publisher".format(self.cache_dir))
-                self.assert_(self.ref_uri in self.output,
+                self.assertTrue(self.ref_uri in self.output,
                     self.lint_uri in self.output)
                 self.pkglint("-c {0} -l {1} -l {2}".format(
                     self.cache_dir, self.ref_uri, self.lint_uri))
                 self.pkg("-R {0}/lint_image publisher".format(self.cache_dir))
-                self.assert_(self.ref_uri in self.output,
+                self.assertTrue(self.ref_uri in self.output,
                     self.lint_uri in self.output)
                 shutil.rmtree(self.cache_dir)
  
@@ -736,11 +737,11 @@ dir group=sys mode=0755 owner=root path=etc
                 self.pkglint("-c {0} -r {1} -r {2} {3}".format(
                     self.cache_dir, durl3, durl5, mpath1))
                 self.pkg("-R {0}/ref_image publisher".format(self.cache_dir))
-                self.assert_(self.output.count(durl5) == 1)
+                self.assertTrue(self.output.count(durl5) == 1)
                 self.pkglint("-c {0} -l {1} -l {2}".format(
                     self.cache_dir, durl3, durl5))
                 self.pkg("-R {0}/lint_image publisher".format(self.cache_dir))
-                self.assert_(self.output.count(durl5) == 1)
+                self.assertTrue(self.output.count(durl5) == 1)
                 shutil.rmtree(self.cache_dir)
 
 

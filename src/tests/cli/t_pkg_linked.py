@@ -28,7 +28,7 @@
 from __future__ import division
 from __future__ import print_function
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -71,8 +71,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         ]
 
         # generate packages that don't need to be synced
-        p_foo1_name_gen = "foo1"
-        pkgs = [p_foo1_name_gen + ver for ver in p_vers]
+        pkgs = ["foo1" + ver for ver in p_vers]
         p_foo1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_foo1_name:
                 p_data = "open {0}\n".format(p_foo1_name[i])
@@ -83,8 +82,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                     close\n"""
                 p_foo1.append(p_data)
 
-        p_foo2_name_gen = "foo2"
-        pkgs = [p_foo2_name_gen + ver for ver in p_vers]
+        pkgs = ["foo2" + ver for ver in p_vers]
         p_foo2_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_foo2_name:
                 p_data = "open {0}\n".format(p_foo2_name[i])
@@ -96,8 +94,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 p_all.append(p_data)
 
         # generate packages that do need to be synced
-        p_sync1_name_gen = "sync1"
-        pkgs = [p_sync1_name_gen + ver for ver in p_vers]
+        pkgs = ["sync1" + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
                 p_data = "open {0}\n".format(p_sync1_name[i])
@@ -112,8 +109,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 p_sync1.append(p_data)
 
         # generate packages that do need to be synced
-        p_sync2_name_gen = "sync2"
-        pkgs = [p_sync2_name_gen + ver for ver in p_vers]
+        pkgs = ["sync2" + ver for ver in p_vers]
         p_sync2_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync2_name:
                 p_data = "open {0}\n".format(p_sync2_name[i])
@@ -3928,6 +3924,8 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
         """Test the scalability of the linked image subsystem."""
 
         max_image_count = 256
+        if six.PY3:
+                max_image_count = 32
 
         p_sync1 = []
         p_vers = [
@@ -3944,7 +3942,7 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
 
         # generate packages that do need to be synced
         p_sync1_name_gen = "sync1"
-        pkgs = [p_sync1_name_gen + ver for ver in p_vers]
+        pkgs = ["sync1" + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
                 p_data = "open {0}\n".format(p_sync1_name[i])
@@ -4008,7 +4006,12 @@ class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
 
                 The maximum value successfully tested here has been 512.  I
                 tried 1024 but it resulted in death by swapping on a u27 with
-                12 GB of memory."""
+                12 GB of memory.
+
+                Under Python 3, the maximum value successfully tested is 32.
+                I tried 64 but it resulted in "too many open files" on s12_89 on
+                a ThinkCentre M93p with 16 GB of memory.
+                """
 
                 # we will require at least 11 GB of memory to run this test.
                 # This is a rough estimate of required memory based on
@@ -4161,7 +4164,7 @@ exit 0""".strip("\n")
 
         # generate packages that do need to be synced
         p_sync1_name_gen = "sync1"
-        pkgs = [p_sync1_name_gen + ver for ver in p_vers]
+        pkgs = ["sync1" + ver for ver in p_vers]
         p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
         for i in p_sync1_name:
                 p_data = "open {0}\n".format(p_sync1_name[i])
@@ -4314,7 +4317,7 @@ exit 0""".strip("\n")
                     if t != self.T_NONE
                 ])
                 for pdir in parents:
-                        p = os.path.join(base_path, cdir)
+                        p = os.path.join(base_path, limages[-1][0])
                         self.pkg("-R {0} audit-linked".format(p))
 
         def __ccmd(self, args, rv=0):
@@ -4932,8 +4935,8 @@ exit 0""".strip("\n")
                     "-R {2} list-linked".format(
                     bin_zonename, bin_zoneadm, gzpath), exit=EXIT_OOPS)
 
-                self.assert_(self.output == "")
-                self.assert_("this is invalid zoneadm list -p output." in
+                self.assertTrue(self.output == "")
+                self.assertTrue("this is invalid zoneadm list -p output." in
                     self.errout)
 
         def test_linked_paths_zone_paths_with_colon(self):

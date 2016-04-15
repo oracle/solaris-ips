@@ -2186,6 +2186,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 lines = output.splitlines()
                 nlines = len(lines)
                 for linenum, line in enumerate(lines):
+                        line = misc.force_str(line)
                         if linenum < nlines - 1:
                                 self._pe.cprint("| " + line)
                         else:
@@ -3125,6 +3126,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 lines = output.splitlines()
                 nlines = len(lines)
                 for linenum, line in enumerate(lines):
+                        line = misc.force_str(line)
                         if linenum < nlines - 1:
                                 self._pe.cprint("| " + line)
                         else:
@@ -3395,7 +3397,6 @@ def test_progress_tracker(t, gofast=False):
                                 t.lint_add_progress()
                                 time.sleep(0.02 * fast)
                 t.lint_done()
-
         except KeyboardInterrupt:
                 t.flush()
         return

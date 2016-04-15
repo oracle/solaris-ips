@@ -20,10 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 elif opt == "-p":
                         prop = arg
         with open(os.path.join(os.environ["PKG_TEST_DIR"],
-            os.environ["PKG_SVCPROP_OUTPUT"]), "rb") as fh:
+            os.environ["PKG_SVCPROP_OUTPUT"]), "r") as fh:
                 s = fh.read()
         if prop:
                 prop_dict = {}
@@ -465,10 +465,10 @@ stop/type astring method""",
                 self.assertEqual(smf.get_prop("foo", "stop/exec"), ":true")
 
                 p = smf.get_props("foo")
-                self.assert_("start/timeout_seconds" in p)
-                self.assert_("0" in p["start/timeout_seconds"])
-                self.assert_("stop/exec" in p)
-                self.assert_("true" in p["stop/exec"])
+                self.assertTrue("start/timeout_seconds" in p)
+                self.assertTrue("0" in p["start/timeout_seconds"])
+                self.assertTrue("stop/exec" in p)
+                self.assertTrue("true" in p["stop/exec"])
 
                 # "a" should be removed from the list of fmris since it's not
                 # an instance.
@@ -484,31 +484,31 @@ stop/type astring method""",
                     set(["svc:/system/test_disable_svc:default"]))
 
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_ENABLED)
-                self.assert_(not smf.is_disabled("foo"))
+                self.assertTrue(not smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_disabled"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_DISABLED)
-                self.assert_(smf.is_disabled("foo"))
+                self.assertTrue(smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_enabled"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_ENABLED)
-                self.assert_(not smf.is_disabled("foo"))
+                self.assertTrue(not smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_enabled2"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_ENABLED)
-                self.assert_(not smf.is_disabled("foo"))
+                self.assertTrue(not smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_disabled"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_DISABLED)
-                self.assert_(smf.is_disabled("foo"))
+                self.assertTrue(smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_disabled2"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_DISABLED)
-                self.assert_(smf.is_disabled("foo"))
+                self.assertTrue(smf.is_disabled("foo"))
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_maintenance"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_MAINTENANCE)
-                self.assert_(smf.is_disabled("foo"))
+                self.assertTrue(smf.is_disabled("foo"))
 
                 # test if supplying tuples and lists as arguments works
                 smf.enable(["svc:/system/test_enable_svc:default", "foo"])

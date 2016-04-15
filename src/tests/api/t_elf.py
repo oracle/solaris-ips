@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -77,7 +77,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                 for p in self.elf_paths:
                         p = re.sub("__ARCH__", arch, p)
                         self.debug("testing elf file {0}".format(p))
-                        self.assert_(os.path.exists(p), "{0} does not exist".format(p))
+                        self.assertTrue(os.path.exists(p), "{0} does not exist".format(p))
                         self.assertEqual(elf.is_elf_object(p), True)
                         elf.get_dynamic(p)
                         elf.get_hashes(p)
@@ -94,20 +94,20 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 
                 # the default is to return an SHA-1 elfhash only
                 d = elf.get_hashes(self.elf_paths[0])
-                self.assert_(len(d["elfhash"]) == sha1_len)
-                self.assert_("pkg.content-type.sha256" not in d)
+                self.assertTrue(len(d["elfhash"]) == sha1_len)
+                self.assertTrue("pkg.content-type.sha256" not in d)
 
                 d = elf.get_hashes(self.elf_paths[0], sha256=True)
-                self.assert_(len(d["elfhash"]) == sha1_len)
-                self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
+                self.assertTrue(len(d["elfhash"]) == sha1_len)
+                self.assertTrue(len(d["pkg.content-type.sha256"]) == sha256_len)
 
                 d = elf.get_hashes(self.elf_paths[0], sha1=False, sha256=True)
-                self.assert_("elfhash" not in d)
-                self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
+                self.assertTrue("elfhash" not in d)
+                self.assertTrue(len(d["pkg.content-type.sha256"]) == sha256_len)
 
                 d = elf.get_hashes(self.elf_paths[0], sha1=False, sha256=False)
-                self.assert_("elfhash" not in d)
-                self.assert_("pkg.content-type.sha256" not in d)
+                self.assertTrue("elfhash" not in d)
+                self.assertTrue("pkg.content-type.sha256" not in d)
 
 
 if __name__ == "__main__":

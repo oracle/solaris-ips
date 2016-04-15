@@ -80,7 +80,10 @@ try:
         import pkg.portable as portable
         import pkg.version as version
 
-        from imp import reload
+        if sys.version_info[:2] >= (3, 4):
+                from importlib import reload
+        else:
+                from imp import reload
         from pkg.client import global_settings
         from pkg.client.api import (IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL,
             IMG_TYPE_USER, RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
@@ -948,10 +951,9 @@ def __write_tmp_release_notes(plan):
                         fd, path = tempfile.mkstemp(suffix=".txt", prefix="release-notes")
                         # make file world readable
                         os.chmod(path, 0o644)
-                        tmpfile = os.fdopen(fd, "w+b")
+                        tmpfile = os.fdopen(fd, "w+")
                         for a in plan.get_release_notes():
-                                if isinstance(a, six.text_type):
-                                        a = a.encode("utf-8")
+                                a = misc.force_str(a)
                                 print(a, file=tmpfile)
                         tmpfile.close()
                         return path
@@ -1044,13 +1046,13 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
 
                 for dfmri, src_li, dest_li, acc, disp in \
                     plan.get_licenses():
-                        src_tup = None
+                        src_tup = ()
                         if src_li:
                                 li_txt = misc.decode(src_li.get_text())
                                 src_tup = (str(src_li.fmri), src_li.license,
                                     li_txt, src_li.must_accept,
                                     src_li.must_display)
-                        dest_tup = None
+                        dest_tup = ()
                         if dest_li:
                                 li_txt = misc.decode(dest_li.get_text())
                                 dest_tup = (str(dest_li.fmri),
@@ -1080,7 +1082,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
             "create-new-be": new_be_created,
             "image-name": None,
             "item-messages": item_messages,
-            "licenses": sorted(licenses, key=lambda x: x[0]),
+            "licenses": sorted(licenses, key=lambda x: (x[0], x[1], x[2])),
             "release-notes": release_notes,
             "remove-packages": sorted(removed_fmris),
             "space-available": space_available,
@@ -1481,7 +1483,10 @@ def __api_execute_plan(operation, api_inst):
                                 raise
 
                 if exc_value or exc_tb:
-                        six.reraise(exc_value, None, exc_tb)
+                        if six.PY2:
+                                six.reraise(exc_value, None, exc_tb)
+                        else:
+                                raise exc_value
 
         return rval
 
@@ -1731,7 +1736,7 @@ def __api_plan_save(api_inst):
         oflags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
         try:
                 fd = os.open(path, oflags, 0o644)
-                with os.fdopen(fd, "wb") as fobj:
+                with os.fdopen(fd, "w") as fobj:
                         plan._save(fobj)
 
                 # cleanup any old style imageplan save files
@@ -4307,7 +4312,7 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
     li_pkg_updates, li_target_all, li_target_list, new_be, noexecute, origins,
     parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
     stage, update_index, verbose):
-        """pkg audit-linked [-a|-l <li-name>]
+        """pkg sync-linked [-a|-l <li-name>]
             [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-parent-sync] [--no-pkg-updates]
             [--linked-md-only] [-a|-l <name>]
@@ -4766,9 +4771,9 @@ def history_list(api_inst, args):
                         else:
                                 fmt = history_cols[col][1]
                         if history_fmt:
-                                history_fmt += "{{{0:d}:{1}}}".format(i, fmt)
+                                history_fmt += "{{{0:d}!s:{1}}}".format(i, fmt)
                         else:
-                                history_fmt = "{{0:{0}}}".format(fmt)
+                                history_fmt = "{{0!s:{0}}}".format(fmt)
                         headers.append(history_cols[col][0])
                 if not omit_headers:
                         msg(history_fmt.format(*headers))
@@ -4890,11 +4895,9 @@ def history_list(api_inst, args):
                 if long_format:
                         data = __get_long_history_data(he, output)
                         for field, value in data:
-                                if isinstance(field, six.text_type):
-                                        field = field.encode(enc)
-                                if isinstance(value, six.text_type):
-                                        value = value.encode(enc)
-                                msg("{0:>18}: {1}".format(field, value))
+                                field = misc.force_str(field, encoding=enc)
+                                value = misc.force_str(value, encoding=enc)
+                                msg("{0!s:>18}: {1!s}".format(field, value))
 
                         # Separate log entries with a blank line.
                         msg("")
@@ -4902,8 +4905,7 @@ def history_list(api_inst, args):
                         items = []
                         for col in columns:
                                 item = output[col]
-                                if isinstance(item, six.text_type):
-                                        item = item.encode(enc)
+                                item = misc.force_str(item, encoding=enc)
                                 items.append(item)
                         msg(history_fmt.format(*items))
         return EXIT_OK
@@ -5684,6 +5686,9 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
         except api_errors.InvalidConfigFile as __e:
                 error("\n" + str(__e))
                 __ret = EXIT_OOPS
+        except (api_errors.PkgUnicodeDecodeError, UnicodeEncodeError) as __e:
+                error("\n" + str(__e))
+                __ret = EXIT_OOPS
         except:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
@@ -5719,6 +5724,9 @@ if __name__ == "__main__":
         # Make all warnings be errors.
         import warnings
         warnings.simplefilter('error')
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         # Attempt to handle SIGHUP/SIGTERM gracefully.
         import signal

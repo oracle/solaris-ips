@@ -22,7 +22,7 @@
 
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -187,7 +187,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # Test parsable output.
                 self.pkg("fix --parsable 0 amber", exit=4)
                 out_json = json.loads(self.output)
-                item_id = out_json["item-messages"].keys()[0]
+                item_id = list(out_json["item-messages"].keys())[0]
                 self.assertTrue(
                     out_json["item-messages"][item_id]["messages"][0]["msg_level"]
                     == "info")
@@ -196,7 +196,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix --unpackaged", exit=4)
                 self.pkg("fix --parsable 0 --unpackaged", exit=4)
                 out_json = json.loads(self.output)
-                subitem_id = out_json["item-messages"]["unpackaged"].keys()[0]
+                subitem_id = list(out_json["item-messages"]["unpackaged"].keys())[0]
                 self.assertTrue(
                     out_json["item-messages"]["unpackaged"][subitem_id][0]["msg_level"]
                     == "info")
@@ -359,9 +359,9 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         # missing already.
                         preserve = a.attrs.get("preserve")
                         if preserve == "renamenew":
-                                self.assert_(not os.path.exists(fpath + ".new"))
+                                self.assertTrue(not os.path.exists(fpath + ".new"))
                         elif preserve == "renameold":
-                                self.assert_(not os.path.exists(fpath + ".old"))
+                                self.assertTrue(not os.path.exists(fpath + ".old"))
 
                         if preserve:
                                 editables.append("{0}".format(a.attrs["path"]))
@@ -424,7 +424,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install drv")
 
                 fh = open(os.path.join(self.get_img_path(), "etc",
-                    "driver_aliases"), "wb")
+                    "driver_aliases"), "w")
                 # Change the entry from whee to wqee.
                 fh.write('wqee "pci8186,4321"\n')
                 fh.close()

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -2795,6 +2795,15 @@ class LinkedImageChild(object):
                                 new_data = load_data(path_tmp,
                                     root=root, decode=False,
                                     catch_exception=False)
+                                # We regard every combination of the same
+                                # elements in a list being the same data, for
+                                # example, ["a", "b"] equals ["b", "a"], so we
+                                # need to sort the list first before comparison
+                                # because ["a", "b"] != ["b", "a"] in Python.
+                                if isinstance(old_data, list) and \
+                                     isinstance(new_data, list):
+                                        old_data = sorted(old_data)
+                                        new_data = sorted(new_data)
                                 if old_data == new_data:
                                         updated = False
 
@@ -3645,11 +3654,8 @@ def PkgDecoder(dct):
         rvdct = {}
         for k, v in six.iteritems(dct):
 
-                # unicode must die
-                if type(k) == six.text_type:
-                        k = k.encode("utf-8")
-                if type(v) == six.text_type:
-                        v = v.encode("utf-8")
+                k = misc.force_str(k)
+                v = misc.force_str(v)
 
                 # convert boolean strings values back into booleans
                 if type(v) == str:

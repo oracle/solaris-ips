@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -46,13 +46,9 @@ property sections or property objects can be used as well if advanced access or
 manipulation of configuration data is needed.
 """
 
+from __future__ import print_function
 import ast
 import codecs
-# 'commands' is deprecated in Python 3, use 'subprocess' instead.
-try:
-        import commands
-except ImportError:
-        import subprocess as commands
 import copy
 import errno
 import os
@@ -60,8 +56,10 @@ import re
 import shlex
 import six
 import stat
+import subprocess
 import tempfile
 import uuid
+from collections import OrderedDict
 from six import python_2_unicode_compatible
 from six.moves import configparser
 
@@ -278,10 +276,8 @@ class Property(object):
                     value_map=self._value_map)
 
         def __str__(self):
-                if isinstance(self.value, six.text_type):
-                        return self.value
                 # Assume that value can be represented in utf-8.
-                return six.text_type(str(self.value), "utf-8")
+                return misc.force_text(self.value)
 
         def _is_allowed(self, value):
                 """Raises an InvalidPropertyValueError if 'value' is not allowed
@@ -294,7 +290,7 @@ class Property(object):
 
         def _transform_string(self, value):
                 # Transform encoded UTF-8 data into unicode objects if needed.
-                if isinstance(value, str):
+                if isinstance(value, bytes):
                         # Automatically transform encoded UTF-8 data into
                         # unicode objects if needed.
                         try:
@@ -563,11 +559,12 @@ class PropList(PropDefined):
 
         @PropDefined.value.setter
         def value(self, value):
-                if isinstance(value, six.string_types):
+                # the value can be arbitrary 8-bit data, so we allow bytes here
+                if isinstance(value, (six.string_types, bytes)):
                         value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = []
-                elif isinstance(value, six.string_types):
+                elif isinstance(value, (six.string_types, bytes)):
                         value = self._parse_str(value)
                         if not isinstance(value, list):
                                 # Only accept lists for literal string form.
@@ -694,7 +691,7 @@ class PropSimpleList(PropList):
                 # Enforce base class rules.
                 PropList._is_allowed(self, value)
 
-                if isinstance(value, str):
+                if isinstance(value, bytes):
                         try:
                                 value.decode("utf-8")
                         except ValueError:
@@ -708,11 +705,19 @@ class PropSimpleList(PropList):
                 # Automatically transform encoded UTF-8 data into Unicode
                 # objects if needed.  This results in ASCII data being
                 # stored using str() objects, and UTF-8 data using
-                # unicode() objects.
+                # unicode() objects. In Python 3, we just want UTF-8 data
+                # using str(unicode) objects.
                 result = []
-                for v in value.split(","):
+                if isinstance(value, bytes):
+                        value = value.split(b",")
+                else:
+                        value = value.split(",")
+                for v in value:
                         try:
-                                v = v.encode("ascii")
+                                if six.PY2:
+                                        v = v.encode("ascii")
+                                else:
+                                        v= misc.force_str(v)
                         except ValueError:
                                 if not isinstance(v, six.text_type):
                                         try:
@@ -896,7 +901,9 @@ class PropertySection(object):
                 self.__name = name
 
                 # Should be set last.
-                self.__properties = dict((p.name, p) for p in properties)
+                # Dict is in arbitrary order, sort it first to ensure the
+                # order is same in Python 2 and 3.
+                self.__properties = OrderedDict((p.name, p) for p in properties)
 
         def __lt__(self, other):
                 if not isinstance(other, PropertySection):
@@ -938,6 +945,7 @@ class PropertySection(object):
                 return dict(
                     (pname, p.value)
                     for pname, p in six.iteritems(self.__properties)
+                    if hasattr(p, "value")
                 )
 
         def get_property(self, name):
@@ -1047,7 +1055,7 @@ class Config(object):
 
                 assert version is None or isinstance(version, int)
 
-                self.__sections = {}
+                self.__sections = OrderedDict()
                 self._defs = definitions
                 if version is None:
                         if definitions:
@@ -1093,7 +1101,8 @@ class Config(object):
                             p.name for p in secobj.get_properties()
                             if not isinstance(p, Property)
                         ]
-                        map(secobj.remove_property, elide)
+                        # force map() to process elements
+                        list(map(secobj.remove_property, elide))
                         self.add_section(secobj)
 
                 try:
@@ -1174,7 +1183,7 @@ class Config(object):
 
         def __reset(self, overrides=misc.EmptyDict):
                 """Returns the configuration object to its default state."""
-                self.__sections = {}
+                self.__sections = OrderedDict()
                 for s in self._defs.get(self._version, misc.EmptyDict):
                         if not isinstance(s, PropertySection):
                                 # Templates should be skipped during reset.
@@ -1187,7 +1196,7 @@ class Config(object):
                             p.name for p in secobj.get_properties()
                             if not isinstance(p, Property)
                         ]
-                        map(secobj.remove_property, elide)
+                        list(map(secobj.remove_property, elide))
                         self.add_section(secobj)
 
                 for sname, props in six.iteritems(overrides):
@@ -1400,7 +1409,11 @@ class Config(object):
                     }
                 """
 
+                # Dict is in arbitrary order, sort it first to ensure the
+                # order is same in Python 2 and 3.
+                properties = OrderedDict(sorted(properties.items()))
                 for section, props in six.iteritems(properties):
+                        props = OrderedDict(sorted(props.items()))
                         for pname, pval in six.iteritems(props):
                                 self.set_property(section, pname, pval)
 
@@ -1503,9 +1516,14 @@ class FileConfig(Config):
                                 raise
                 else:
                         try:
-                                cp.readfp(efile)
-                        except (ConfigParser.ParsingError,
-                            ConfigParser.MissingSectionHeaderError) as e:
+                                # readfp() will be removed in futher Python
+                                # versions, use read_file() instead.
+                                if six.PY2:
+                                        cp.readfp(efile)
+                                else:
+                                        cp.read_file(efile)
+                        except (configparser.ParsingError,
+                            configparser.MissingSectionHeaderError) as e:
                                 raise api_errors.InvalidConfigFile(
                                     self._target)
                         # Attempt to determine version from contents.
@@ -1516,6 +1534,7 @@ class FileConfig(Config):
                             configparser.NoOptionError, ValueError):
                                 # Assume current version.
                                 pass
+                        efile.close()
 
                 # Reset to initial state to ensure the default set of properties
                 # and values exists so that any values not specified by the
@@ -1593,7 +1612,7 @@ class FileConfig(Config):
                         cp.add_section(section.name)
                         for p in props:
                                 assert isinstance(p, Property)
-                                cp.set(section.name, p.name, str(p))
+                                cp.set(section.name, p.name, misc.force_str(p))
 
                 # Used to track configuration management information.
                 cp.add_section("CONFIGURATION")
@@ -1621,9 +1640,14 @@ class FileConfig(Config):
                         else:
                                 os.fchmod(fd, misc.PKG_FILE_MODE)
 
-                        with os.fdopen(fd, "wb") as f:
-                                with codecs.EncodedFile(f, "utf-8") as ef:
-                                        cp.write(ef)
+                        if six.PY2:
+                                with os.fdopen(fd, "wb") as f:
+                                        with codecs.EncodedFile(f, "utf-8") as ef:
+                                                cp.write(ef)
+                        else:
+                                # it becomes easier to open the file
+                                with open(fd, "w", encoding="utf-8") as f:
+                                        cp.write(f)
                         portable.rename(fn, self._target)
                         self._dirty = False
                 except EnvironmentError as e:
@@ -1774,7 +1798,10 @@ class SMFConfig(Config):
 
                 cmd = "{0}/usr/bin/svcprop -c -t {1}".format(doorpath,
                     self._target)
-                status, result = commands.getstatusoutput(cmd)
+                p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+                out, err = p.communicate()
+                status, result = p.returncode, misc.force_str(out)
                 if status:
                         raise SMFReadError(self._target,
                             "{cmd}: {result}".format(**locals()))
@@ -1795,6 +1822,8 @@ class SMFConfig(Config):
                                 prop += "\n"
                                 continue
 
+                        if len(prop) < 2:
+                                continue
                         n, t, v = prop.split(' ', 2)
                         pg, pn = n.split('/', 1)
                         if pg in self.__reserved_sections:
@@ -1833,7 +1862,12 @@ class SMFConfig(Config):
                                         nvalue = []
                                         for v in shlex.split(value):
                                                 try:
-                                                        v = v.encode("ascii")
+                                                        if six.PY2:
+                                                                v = v.encode(
+                                                                    "ascii")
+                                                        else:
+                                                                v = misc.force_str(
+                                                                    v, "ascii")
                                                 except ValueError:
                                                         try:
                                                                 v = v.decode(

@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -47,21 +47,21 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 vct_1 = variant.VariantCombinationTemplate(
                     dict([(1, ["a", "b", "c"]), (2, ["z", "y", "x"])]))
                 self.assertEqual(vct_1[1], set(["a", "b", "c"]))
-                self.assert_(vct_1.issubset(vct_1))
+                self.assertTrue(vct_1.issubset(vct_1))
                 self.assertEqual(str(vct_1), ' 1="a","b","c" 2="x","y","z"')
 
                 vct_2 = variant.VariantCombinationTemplate(
                     dict([(1, ["a", "b"]), (2, ["z", "y"])]))
-                self.assert_(vct_2.issubset(vct_1))
-                self.assert_(not vct_1.issubset(vct_2))
+                self.assertTrue(vct_2.issubset(vct_1))
+                self.assertTrue(not vct_1.issubset(vct_2))
                 vct_2.merge_unknown(vct_1)
                 self.assertEqual(vct_2[1], set(["a", "b"]))
                 self.assertEqual(vct_2[2], set(["z", "y"]))
 
                 vct_3 = variant.VariantCombinationTemplate(
                     dict([(1, ["a", "b", "c"])]))
-                self.assert_(vct_3.issubset(vct_1))
-                self.assert_(not vct_1.issubset(vct_3))
+                self.assertTrue(vct_3.issubset(vct_1))
+                self.assertTrue(not vct_1.issubset(vct_3))
                 vct_3.merge_unknown(vct_1)
                 self.assertEqual(vct_1, vct_3)
 
@@ -74,7 +74,7 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(vct_m[1], set(["a", "b", "c"]))
                 self.assertEqual(vct_m[2], set(["z", "y"]))
                 self.assertEqual(vct_3[1], set(["a", "b", "c"]))
-                self.assert_(2 not in vct_3)
+                self.assertTrue(2 not in vct_3)
                 vct_m.merge_values(vct_1)
                 self.assertEqual(str(vct_m), ' 1="a","b","c" 2="x","y","z"')
                 self.assertEqual(vct_2[1], set(["a", "b"]))
@@ -106,44 +106,44 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 vc1_s = variant.VariantCombinations(vct_1, True)
                 self.assertEqual(vc1_s.sat_set, set_combo)
                 self.assertEqual(vc1_s.not_sat_set, set())
-                self.assert_(not vc1_s.is_empty())
+                self.assertTrue(not vc1_s.is_empty())
                 
                 vc1_ns = variant.VariantCombinations(vct_1, False)
                 self.assertEqual(vc1_ns.not_sat_set, set_combo)
                 self.assertEqual(vc1_ns.sat_set, set())
-                self.assert_(not vc1_ns.is_empty())
+                self.assertTrue(not vc1_ns.is_empty())
 
                 self.assertRaises(AssertionError, vc1_ns.simplify, vct_2)
                 self.assertEqual(vc1_ns.not_sat_set, set_combo)
                 self.assertEqual(vc1_ns.sat_set, set())
-                self.assert_(not vc1_ns.is_empty())
+                self.assertTrue(not vc1_ns.is_empty())
 
                 self.assertRaises(AssertionError, vc1_ns.simplify, vct_4)
                 self.assertEqual(vc1_ns.not_sat_set, set_combo)
                 self.assertEqual(vc1_ns.sat_set, set())
-                self.assert_(not vc1_ns.is_empty())
+                self.assertTrue(not vc1_ns.is_empty())
 
                 vc1_tmp = copy.copy(vc1_ns)
-                self.assert_(not vc1_tmp.is_satisfied())
+                self.assertTrue(not vc1_tmp.is_satisfied())
                 vc1_tmp.mark_all_as_satisfied()
-                self.assert_(vc1_tmp.is_satisfied())
+                self.assertTrue(vc1_tmp.is_satisfied())
                 self.assertEqual(vc1_tmp.sat_set, set_combo)
 
                 vct3_set_combo = set([frozenset([(1, "a"), (2, "z")])])
                 vc3_ns = variant.VariantCombinations(vct_3, False)
                 self.assertEqual(vc3_ns.not_sat_set, vct3_set_combo)
-                self.assert_(vc3_ns.issubset(vc1_ns, False))
-                self.assert_(not vc1_ns.issubset(vc3_ns, False))
-                self.assert_(vc1_ns.issubset(vc3_ns, True))
-                self.assert_(not vc1_s.issubset(vc3_ns, True))
+                self.assertTrue(vc3_ns.issubset(vc1_ns, False))
+                self.assertTrue(not vc1_ns.issubset(vc3_ns, False))
+                self.assertTrue(vc1_ns.issubset(vc3_ns, True))
+                self.assertTrue(not vc1_s.issubset(vc3_ns, True))
 
                 vc3_s = variant.VariantCombinations(vct_3, True)
                 vc2_s = variant.VariantCombinations(vct_2, True)
-                self.assert_(vc3_s.intersects(vc1_s))
-                self.assert_(vc3_ns.intersects(vc1_s))
-                self.assert_(not vc3_ns.intersects(vc2_s))
-                self.assert_(not vc3_s.intersects(vc2_s))
-                self.assert_(vc1_s.intersects(vc3_s))
+                self.assertTrue(vc3_s.intersects(vc1_s))
+                self.assertTrue(vc3_ns.intersects(vc1_s))
+                self.assertTrue(not vc3_ns.intersects(vc2_s))
+                self.assertTrue(not vc3_s.intersects(vc2_s))
+                self.assertTrue(vc1_s.intersects(vc3_s))
                 intersect = vc3_s.intersection(vc1_s)
                 self.assertEqual(intersect.sat_set, vct3_set_combo)
                 self.assertEqual(intersect.not_sat_set, set())
@@ -157,9 +157,9 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 
                 vct_empty = variant.VariantCombinationTemplate(dict([]))
                 vc_empty = variant.VariantCombinations(vct_empty, True)
-                self.assert_(vc_empty.is_empty())
-                self.assert_(vc_empty.intersects(vc1_ns))
-                self.assert_(vc1_ns.intersects(vc_empty))
+                self.assertTrue(vc_empty.is_empty())
+                self.assertTrue(vc_empty.intersects(vc1_ns))
+                self.assertTrue(vc1_ns.intersects(vc_empty))
 
                 vc1_ns.mark_as_satisfied(vc3_s)
                 self.assertEqual(vc1_ns.sat_set, vct3_set_combo)

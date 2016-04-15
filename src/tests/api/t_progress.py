@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -30,12 +30,12 @@ import pkg5unittest
 import os
 import pty
 import shutil
+import six
 import sys
 import tempfile
 import threading
 import time
 import unittest
-import StringIO
 
 import pkg.fmri as fmri
 import pkg.client.progress as progress
@@ -48,7 +48,7 @@ class TestTrackerItem(pkg5unittest.Pkg5TestCase):
                 pi = progress.TrackerItem("testitem")
                 pi.items = 10
                 pi.reset()
-                self.assert_(pi.items == 0)
+                self.assertTrue(pi.items == 0)
 
         def test_str(self):
                 """Test str() of a TrackerItem."""
@@ -60,14 +60,14 @@ class TestTrackerItem(pkg5unittest.Pkg5TestCase):
                 """Test TrackerItem elapsed() functionality."""
                 pi = progress.TrackerItem("testitem")
                 # special case before items is set
-                self.assert_(pi.elapsed() == 0.0)
+                self.assertTrue(pi.elapsed() == 0.0)
                 pi.items = 100
                 time.sleep(0.20)
                 # should work before done()
-                self.assert_(pi.elapsed() >= 0.10)
+                self.assertTrue(pi.elapsed() >= 0.10)
                 pi.done()
                 # should work after done()
-                self.assert_(pi.elapsed() >= 0.10)
+                self.assertTrue(pi.elapsed() >= 0.10)
 
 
 class TestGoalTrackerItem(pkg5unittest.Pkg5TestCase):
@@ -87,16 +87,16 @@ class TestGoalTrackerItem(pkg5unittest.Pkg5TestCase):
                 """Test GoalTrackerItem elapsed() functionality."""
                 pi = progress.GoalTrackerItem("testitem")
                 # special case before goal is set
-                self.assert_(pi.elapsed() == 0.0)
+                self.assertTrue(pi.elapsed() == 0.0)
                 pi.goalitems = 100
-                self.assert_(pi.elapsed() == 0.0)
+                self.assertTrue(pi.elapsed() == 0.0)
                 pi.items = 100
                 time.sleep(0.20)
                 # should work before done()
-                self.assert_(pi.elapsed() >= 0.10)
+                self.assertTrue(pi.elapsed() >= 0.10)
                 pi.done()
                 # should work after done()
-                self.assert_(pi.elapsed() >= 0.10)
+                self.assertTrue(pi.elapsed() >= 0.10)
 
         def test_pair(self):
                 """Test that pair() gives proper results."""
@@ -176,9 +176,9 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
                 # Test that estimator won't give out estimates when constructed
                 #
                 sp = progress.SpeedEstimator(goalbytes)
-                self.assert_(sp.get_speed_estimate() == None)
-                self.assert_(sp.elapsed() == None)
-                self.assert_(sp.get_final_speed() == None)
+                self.assertTrue(sp.get_speed_estimate() == None)
+                self.assertTrue(sp.elapsed() == None)
+                self.assertTrue(sp.get_final_speed() == None)
 
                 timestamp = 1000.0
 
@@ -186,9 +186,9 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
                 # Test again after starting, but before adding data
                 #
                 sp.start(timestamp)
-                self.assert_(sp.get_speed_estimate() == None)
-                self.assert_(sp.elapsed() == None)
-                self.assert_(sp.get_final_speed() == None)
+                self.assertTrue(sp.get_speed_estimate() == None)
+                self.assertTrue(sp.elapsed() == None)
+                self.assertTrue(sp.get_final_speed() == None)
 
                 #
                 # We record transactions of one hunk each until there
@@ -198,17 +198,17 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
                 #
                 while goalbytes > 0:
                         est = sp.get_speed_estimate()
-                        self.assert_(est is None or est > 0)
+                        self.assertTrue(est is None or est > 0)
                         sp.newdata(hunk, timestamp)
                         goalbytes -= hunk
                         timestamp += hunktime
 
-                self.assert_(sp.get_final_speed() is None)
+                self.assertTrue(sp.get_final_speed() is None)
                 sp.done(timestamp)
                 self.debug("-- final speed: {0:f}".format(sp.get_final_speed()))
                 self.debug("-- expected final speed: {0:f}".format(hunk * hunkspersec))
                 self.debug(str(sp))
-                self.assert_(int(sp.get_final_speed()) == hunk * hunkspersec)
+                self.assertTrue(int(sp.get_final_speed()) == hunk * hunkspersec)
 
         def test_stall(self):
                 """Test that the ProgressTracker correctly diagnoses a
@@ -234,7 +234,7 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
                 #
                 timestamp = 2000.0
                 sp.newdata(hunk, timestamp)
-                self.assert_(sp.get_speed_estimate() == None)
+                self.assertTrue(sp.get_speed_estimate() == None)
 
         def test_format_speed(self):
                 """Test that format_speed works as expected."""
@@ -255,8 +255,8 @@ class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
 
                 for (val, expected) in testdata.items():
                         str = sp.format_speed(val)
-                        self.assert_(len(str) <= 7)
-                        self.assert_(str == expected)
+                        self.assertTrue(len(str) <= 7)
+                        self.assertTrue(str == expected)
 
 
 class TestFormatPair(pkg5unittest.Pkg5TestCase):
@@ -298,10 +298,10 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
 
         def test_basic_trackers(self):
                 """Basic testing of all trackers; reset, and then retest."""
-                sio_c = StringIO.StringIO()
-                sio_c2 = StringIO.StringIO()
-                sio_f = StringIO.StringIO()
-                sio_d = StringIO.StringIO()
+                sio_c = six.StringIO()
+                sio_c2 = six.StringIO()
+                sio_f = six.StringIO()
+                sio_d = six.StringIO()
 
                 tc = progress.CommandLineProgressTracker(output_file=sio_c)
                 tc2 = progress.CommandLineProgressTracker(output_file=sio_c2,
@@ -317,12 +317,12 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
                 for x in [1, 2]:
                         progress.test_progress_tracker(mt, gofast=True)
 
-                        self.assert_(len(sio_c.getvalue()) > 100)
-                        self.assert_(len(sio_c2.getvalue()) > 100)
-                        self.assert_(len(sio_f.getvalue()) > 100)
-                        self.assert_(len(sio_d.getvalue()) > 1)
+                        self.assertTrue(len(sio_c.getvalue()) > 100)
+                        self.assertTrue(len(sio_c2.getvalue()) > 100)
+                        self.assertTrue(len(sio_f.getvalue()) > 100)
+                        self.assertTrue(len(sio_d.getvalue()) > 1)
                         # check that dot only printed dots
-                        self.assert_(
+                        self.assertTrue(
                             len(sio_d.getvalue()) * "." == sio_d.getvalue())
 
                         for f in [sio_c, sio_c2, sio_f, sio_d]:
@@ -351,7 +351,7 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
                 #
                 (master, slave) = pty.openpty()
                 slavef = os.fdopen(slave, "w")
-                masterf = os.fdopen(master, "r")
+                masterf = os.fdopen(master, "rb")
 
                 t = threading.Thread(target=__drain, args=(masterf,))
                 t.start()
@@ -369,7 +369,7 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
 
         def test_fancy_unix_tracker_bad_tty(self):
                 """Try to make a terminal-based tracker on non-terminals."""
-                f = StringIO.StringIO()
+                f = six.StringIO()
                 self.assertRaises(progress.ProgressTrackerException,
                     progress.FancyUNIXProgressTracker, f)
 
@@ -377,6 +377,7 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
                 f = open(tpath[0], "w")
                 self.assertRaises(progress.ProgressTrackerException,
                     progress.FancyUNIXProgressTracker, f)
+                f.close()
 
         def test_fancy_unix_tracker_termdelay(self):
                 """Test the fancy tracker with term_delay customized."""
@@ -387,8 +388,8 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
 class TestMultiProgressTracker(pkg5unittest.Pkg5TestCase):
         def test_multi(self):
                 """Test basic multi functionality."""
-                sio1 = StringIO.StringIO()
-                sio2 = StringIO.StringIO()
+                sio1 = six.StringIO()
+                sio2 = six.StringIO()
 
                 #
                 # The FunctionProgressTracker is used here because its
@@ -401,8 +402,8 @@ class TestMultiProgressTracker(pkg5unittest.Pkg5TestCase):
                 mt = progress.MultiProgressTracker([t1, t2])
                 progress.test_progress_tracker(mt, gofast=True)
 
-                self.assert_(len(sio1.getvalue()) > 100)
-                self.assert_(len(sio2.getvalue()) > 100)
+                self.assertTrue(len(sio1.getvalue()) > 100)
+                self.assertTrue(len(sio2.getvalue()) > 100)
                 self.assertEqual(sio1.getvalue(), sio2.getvalue())
 
         def test_multi_init(self):

@@ -76,7 +76,9 @@ class Firmware(object):
                                     args,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
-                                buf = proc.stdout.readlines()
+                                # output from proc is bytes
+                                buf = [misc.force_str(l) for l in
+                                    proc.stdout.readlines()]
                                 ret = proc.wait()
 
                         except OSError as e:
@@ -123,12 +125,12 @@ class Cpu(Firmware):
                         try:
                             innit = checkargs["check.include"] or None
                             mesg = "include: {0}".format(innit)
-                        except KeyError, ke:
+                        except KeyError as ke:
                             pass
                         try:
                             notit = checkargs["check.exclude"] or None
                             mesg = "exclude: {0}".format(notit)
-                        except KeyError, ke:
+                        except KeyError as ke:
                             pass
 
                         ans = (False,

@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
@@ -31,6 +31,9 @@ import six
 import pkg5unittest
 import unittest
 import stat
+from io import open
+from pkg.misc import force_text
+
 class TestPkgSMFActuators(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -427,9 +430,15 @@ stop/type astring method
                 # Test with multi-valued actuators
                 self.pkg("install basics@1.8")
                 self.pkg("verify")
-                self.file_contains(svcadm_output,
-                    "svcadm restart svc:/system/test_multi_svc1:default "
-                    "svc:/system/test_multi_svc2:default")
+                if six.PY2:
+                        self.file_contains(svcadm_output,
+                            "svcadm restart svc:/system/test_multi_svc1:default "
+                            "svc:/system/test_multi_svc2:default")
+                else:
+                        # output order is not stable in Python 3
+                        self.file_contains(svcadm_output, "svcadm restart")
+                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc1:default")
+                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc2:default")
 
                 # Test synchronous options
                 # synchronous restart
@@ -474,9 +483,15 @@ stop/type astring method
                 self.pkg("install basics@1.9")
                 self.pkg("verify")
                 self.pkg("uninstall basics")
-                self.file_contains(svcadm_output,
-                    "svcadm disable -s svc:/system/test_multi_svc1:default "
-                    "svc:/system/test_multi_svc2:default")
+                if six.PY2:
+                        self.file_contains(svcadm_output,
+                            "svcadm disable -s svc:/system/test_multi_svc1:default "
+                            "svc:/system/test_multi_svc2:default")
+                else:
+                        # output order is not stable in Python 3
+                        self.file_contains(svcadm_output, "svcadm disable -s")
+                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc1:default")
+                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc2:default")
                 os.unlink(svcadm_output)
 
         def __create_zone(self, zname, rurl):
@@ -668,26 +683,26 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         def test_release_note_5(self):
                 # test unicode character in release notes
                 self.pkg("install -n hovercraft@1.0")
-                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
+                force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                force_text(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("install -v hovercraft@1.0")
-                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
+                force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                force_text(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("uninstall '*'")
 
         def test_release_note_6(self):
                 # test parsable unicode
                 self.pkg("install --parsable 0 hovercraft@1.0")
                 self.pkg("history -n 1 -N")
-                six.text_type(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-                six.text_type(self.output, "utf-8").index(u"Eels are best smoked")
+                force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                force_text(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("uninstall '*'")
 
         def test_release_note_7(self):
                 # check that multiple release notes are composited properly
                 self.pkg("install bar@1.0")
                 self.pkg("install -v hovercraft@1.0 baz@1.0")
-                uni_out = six.text_type(self.output, "utf-8")
+                uni_out = force_text(self.output, "utf-8")
                 # we indent the release notes for readability, so a strict
                 # index or compare won't work unless we remove indenting
                 # this works for our test cases since they have no leading
@@ -703,7 +718,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # do as unpriv. user
 
                 self.pkg("history -n 1 -HN", su_wrap=True)
-                uni_out = six.text_type(self.output, "utf-8")
+                uni_out = force_text(self.output, "utf-8")
                 # we indent the release notes for readability, so a strict
                 # index or compare won't work unless we remove indenting
                 # this works for our test cases since they have no leading
@@ -721,7 +736,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # verify that temporary file is correctly written with /n characters
                 self.pkg("-D GenerateNotesFile=1 install hovercraft@1.0")
                 # find name of file containing release notes in output.
-                for field in six.text_type(self.output, "utf-8").split(u" "):
+                for field in force_text(self.output, "utf-8").split(u" "):
                         try:
                                 if field.index(u"release-note"):
                                         break
@@ -735,7 +750,8 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
 
                 # read release note file and check to make sure
                 # entire contents are there verbatim
-                release_note = six.text_type(open(field).read(), "utf-8")
+                with open(field, encoding="utf-8") as f:
+                        release_note = force_text(f.read())
                 assert self.multi_unicode == release_note
                 self.pkg("uninstall '*'")
 

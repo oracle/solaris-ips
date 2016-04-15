@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -42,7 +42,7 @@ import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.actions as actions
 from pkg.choose import choose
-from pkg.misc import EmptyI
+from pkg.misc import EmptyI, force_str
 
 FILE_OPEN_TIMEOUT_SECS = 1
 MAX_TOKEN_COUNT = 100
@@ -850,10 +850,10 @@ class PhraseQuery(object):
 
                 it = (
                     (at, st, pfmri, self.combine(self.compare_str, fv, at,
-                    self._case_sensitive), l)
+                    self._case_sensitive), force_str(l))
                     for at, st, pfmri, fv, l
                     in self.query.search(restriction, *args)
-                    if self.filter_res(l)
+                    if self.filter_res(force_str(l))
                 )
                 return it
 
@@ -961,7 +961,7 @@ class TopQuery(object):
                 if self.query.return_type == Query.RETURN_ACTIONS:
                         return (
                             (1, Query.RETURN_ACTIONS,
-                            (fmri.PkgFmri(pfmri), fv, l))
+                            (fmri.PkgFmri(pfmri), fv, force_str(l)))
                             for x, (at, st, pfmri, fv, l)
                             in enumerate(it)
                             if self.__keep(x)

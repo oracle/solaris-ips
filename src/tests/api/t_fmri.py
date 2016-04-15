@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -66,65 +66,65 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                     "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
 
         def testfmricmp1(self):
-                self.assert_(self.n3.__eq__(self.n3))
+                self.assertTrue(self.n3.__eq__(self.n3))
 
         def testfmricmp2(self):
-                self.assert_(self.n3.__lt__(self.n4))
+                self.assertTrue(self.n3.__lt__(self.n4))
 
         def testfmricmp3(self):
-                self.assert_(self.n5.__gt__(self.n3))
+                self.assertTrue(self.n5.__gt__(self.n3))
 
         def testfmrisuccessor1(self):
-                self.assert_(self.n8.is_successor(self.n7))
+                self.assertTrue(self.n8.is_successor(self.n7))
 
         def testfmrisuccessor2(self):
-                self.assert_(self.n1.is_successor(self.n2))
+                self.assertTrue(self.n1.is_successor(self.n2))
 
         def testfmrisuccessor3(self):
-                self.assert_(self.n4.is_successor(self.n3))
+                self.assertTrue(self.n4.is_successor(self.n3))
 
         def testfmrisuccessor4(self):
-                self.assert_(not self.n5.is_successor(self.n4))
+                self.assertTrue(not self.n5.is_successor(self.n4))
 
         def testfmrisuccessor5(self):
                 """is_successor should return true on equality"""
-                self.assert_(self.n5.is_successor(self.n5))
+                self.assertTrue(self.n5.is_successor(self.n5))
 
         def testfmrisuccessor6(self):
                 """fmris have different versions and different authorities"""
-                self.assert_(self.n10.is_successor(self.n7))
+                self.assertTrue(self.n10.is_successor(self.n7))
 
         def testfmrisimilar1(self):
-                self.assert_(self.n4.is_similar(self.n2))
+                self.assertTrue(self.n4.is_similar(self.n2))
 
         def testfmrisimilar2(self):
-                self.assert_(self.n1.is_similar(self.n2))
+                self.assertTrue(self.n1.is_similar(self.n2))
 
         def testfmrisimilar3(self):
-                self.assert_(not self.n1.is_similar(self.n6))
+                self.assertTrue(not self.n1.is_similar(self.n6))
 
         def testfmrihaspublisher(self):
-                self.assert_(self.n1.has_publisher() == True)
-                self.assert_(self.n2.has_publisher() == False)
-                self.assert_(self.n3.has_publisher() == False)
-                self.assert_(self.n4.has_publisher() == False)
-                self.assert_(self.n5.has_publisher() == False)
-                self.assert_(self.n6.has_publisher() == False)
-                self.assert_(self.n7.has_publisher() == True)
-                self.assert_(self.n8.has_publisher() == True)
+                self.assertTrue(self.n1.has_publisher() == True)
+                self.assertTrue(self.n2.has_publisher() == False)
+                self.assertTrue(self.n3.has_publisher() == False)
+                self.assertTrue(self.n4.has_publisher() == False)
+                self.assertTrue(self.n5.has_publisher() == False)
+                self.assertTrue(self.n6.has_publisher() == False)
+                self.assertTrue(self.n7.has_publisher() == True)
+                self.assertTrue(self.n8.has_publisher() == True)
 
         def testfmrihasversion(self):
-                self.assert_(self.n1.has_version() == False)
-                self.assert_(self.n2.has_version() == False)
-                self.assert_(self.n3.has_version() == True)
-                self.assert_(self.n4.has_version() == True)
-                self.assert_(self.n5.has_version() == True)
-                self.assert_(self.n6.has_version() == False)
+                self.assertTrue(self.n1.has_version() == False)
+                self.assertTrue(self.n2.has_version() == False)
+                self.assertTrue(self.n3.has_version() == True)
+                self.assertTrue(self.n4.has_version() == True)
+                self.assertTrue(self.n5.has_version() == True)
+                self.assertTrue(self.n6.has_version() == False)
 
         def testfmriissamepkg(self):
-                self.assert_(self.n7.is_same_pkg(self.n8))
-                self.assert_(self.n7.is_same_pkg(self.n10))
-                self.assert_(not self.n7.is_same_pkg(self.n6))
+                self.assertTrue(self.n7.is_same_pkg(self.n8))
+                self.assertTrue(self.n7.is_same_pkg(self.n10))
+                self.assertTrue(not self.n7.is_same_pkg(self.n6))
 
         def testbadfmri1(self):
                 # no 31st day in february
@@ -262,7 +262,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 properly."""
                 a = {}
                 a[self.n10] = 1
-                self.assert_(a[self.n11] == 1)
+                self.assertTrue(a[self.n11] == 1)
 
         def testpartial(self):
                 """Verify that supported operations on a partial FMRI

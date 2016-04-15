@@ -24,7 +24,7 @@
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -74,10 +74,10 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
         def __check_qoutput(self, errout=False):
                 self.assertEqualDiff(self.output, "")
                 if errout:
-                        self.assert_(self.errout != "",
+                        self.assertTrue(self.errout != "",
                             "-q must print fatal errors!")
                 else:
-                        self.assert_(self.errout == "",
+                        self.assertTrue(self.errout == "",
                             "-q should only print fatal errors!")
 
         def setUp(self):
@@ -520,7 +520,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                         self.pkg("list -a {0}".format(pat), exit=ecode)
 
                 self.pkg("list junk_pkg_name", exit=1)
-                self.assert_("junk_pkg_name" in self.errout)
+                self.assertTrue("junk_pkg_name" in self.errout)
 
         def test_13_multi_name(self):
                 """Test for multiple name match listing."""
@@ -553,13 +553,13 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # First, test individually.
                 for val in pats:
                         self.pkg("list {0}".format(val), exit=1)
-                        self.assert_(self.errout)
+                        self.assertTrue(self.errout)
 
                 # Next, test invalid input but with options.  The option
                 # should not be in the error output. (If it is, the FMRI
                 # parsing has parsed the option too.)
                 self.pkg("list -a bar@a", exit=1)
-                self.assert_(self.output.find("FMRI '-a'") == -1)
+                self.assertTrue(self.output.find("FMRI '-a'") == -1)
                 # Should only print fatal errors when using -q.
                 self.pkg("list -aq bar@a", exit=1)
                 self.__check_qoutput(errout=True)
@@ -643,7 +643,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Should return error as newest version is now installed.
                 self.pkg("list -Hu foo", exit=1)
                 self.assertEqualDiff(self.output, "")
-                self.assert_(self.errout != "")
+                self.assertTrue(self.errout != "")
                 # Should not print anything if using -q.
                 self.pkg("list -Hqu foo", exit=1)
                 self.__check_qoutput(errout=False)
@@ -677,10 +677,10 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
         def __check_qoutput(self, errout=False):
                 self.assertEqualDiff(self.output, "")
                 if errout:
-                        self.assert_(self.errout != "",
+                        self.assertTrue(self.errout != "",
                             "-q must print fatal errors!")
                 else:
-                        self.assert_(self.errout == "",
+                        self.assertTrue(self.errout == "",
                             "-q should only print fatal errors!")
 
         def test_01_empty_image(self):
@@ -688,7 +688,7 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
                 self.pkg("list", exit=1)
-                self.assert_(self.errout)
+                self.assertTrue(self.errout)
 
                 # Should not print anything if using -q.
                 self.pkg("list -q", exit=1)
@@ -702,11 +702,11 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 repo = self.get_repo(self.dcs[1].get_repodir())
                 mpath = repo.manifest(pfmri)
 
-                with open(mpath, "ab+") as mfile:
+                with open(mpath, "a+") as mfile:
                         mfile.write(unsupp_content + "\n")
 
                 mcontent = None
-                with open(mpath, "rb") as mfile:
+                with open(mpath, "r") as mfile:
                         mcontent = mfile.read()
 
                 cat = repo.get_catalog("test")

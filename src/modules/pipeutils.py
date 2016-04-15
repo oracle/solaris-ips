@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -81,6 +81,8 @@ import tempfile
 import threading
 import traceback
 
+from pkg.misc import force_bytes, force_str
+
 # import JSON RPC libraries and objects
 import jsonrpclib as rpclib
 import jsonrpclib.jsonrpc as rpc
@@ -129,10 +131,12 @@ class PipeFile(object):
         This class also support additional non-file special operations like
         sendfd() and recvfd()."""
 
-        def __init__(self, fd, debug_label, debug=pipeutils_debug):
+        def __init__(self, fd, debug_label, debug=pipeutils_debug,
+            http_enc=True):
                 self.__pipefd = fd
                 self.__readfh = None
                 self.closed = False
+                self.__http_enc = http_enc
 
                 # Pipes related objects should never live past an exec
                 flags = fcntl.fcntl(self.__pipefd, fcntl.F_GETFD)
@@ -196,14 +200,19 @@ class PipeFile(object):
                         # read from the fd that we received over the pipe
                         data = self.__readfh.readline(*args)
                         if data != "":
-                                return data
+                                if self.__http_enc:
+                                # Python 3`http.client`HTTPReponse`_read_status:
+                                # requires a bytes input.
+                                        return force_bytes(data, "iso-8859-1")
+                                else:
+                                        return data
                         # the fd we received over the pipe is empty
                         self.__readfh = None
 
                 # recieve a file descriptor from the pipe
                 fd = self.recvfd()
                 if fd == -1:
-                        return ""
+                        return b"" if self.__http_enc else ""
                 self.__readfh = os.fdopen(fd)
                 # return data from the received fd
                 return self.readline(*args)
@@ -228,10 +237,20 @@ class PipeFile(object):
                 # return data from the received fd
                 return self.read(size)
 
+        # For Python 3: self.fp requires a readinto method.
+        def readinto(self, b):
+                """Read up to len(b) bytes into the writable buffer *b* and
+                return the numbers of bytes read."""
+                with memoryview(b) as view:
+                        data = self.read(len(view))
+                        view[:len(data)] = force_bytes(data)
+                return len(data)
+
         def write(self, msg):
                 """Write a string to the pipe."""
-                mf = tempfile.TemporaryFile()
-                mf.write(msg)
+                # JSON object must be str to be used in jsonrpclib
+                mf = tempfile.TemporaryFile(mode="w+")
+                mf.write(force_str(msg))
                 mf.flush()
                 self.sendfd(mf.fileno())
                 mf.close()
@@ -301,8 +320,11 @@ class PipeFile(object):
 class PipeSocket(PipeFile):
         """Object which makes a pipe look like a "socket" object."""
 
-        def __init__(self, fd, debug_label, debug=pipeutils_debug):
-                PipeFile.__init__(self, fd, debug_label, debug=debug)
+        def __init__(self, fd, debug_label, debug=pipeutils_debug,
+            http_enc=True):
+                self.__http_enc = http_enc
+                PipeFile.__init__(self, fd, debug_label, debug=debug,
+                    http_enc=http_enc)
 
         def makefile(self, mode='r', bufsize=-1):
                 """Return a file-like object associated with this pipe.
@@ -312,7 +334,8 @@ class PipeSocket(PipeFile):
 
                 dup_fd = os.dup(self.fileno())
                 self.debug_msg("makefile", "dup fd={0:d}".format(dup_fd))
-                return PipeFile(dup_fd, self.debug_label, debug=self.debug)
+                return PipeFile(dup_fd, self.debug_label, debug=self.debug,
+                    http_enc=self.__http_enc)
 
         def recv(self, bufsize, flags=0):
                 """Receive data from the pipe.
@@ -367,12 +390,11 @@ class PipedHTTPConnection(http_client.HTTPConnection):
         # we use PipedHTTPResponse in place of httplib.HTTPResponse
         response_class = PipedHTTPResponse
 
-        def __init__(self, fd, port=None, strict=None):
+        def __init__(self, fd, port=None):
                 assert port is None
 
                 # invoke parent constructor
-                http_client.HTTPConnection.__init__(self, "localhost",
-                    strict=strict)
+                http_client.HTTPConnection.__init__(self, "localhost")
 
                 # self.sock was initialized by httplib.HTTPConnection
                 # to point to a socket, overwrite it with a pipe.
@@ -443,7 +465,8 @@ class _PipedTransport(rpc.Transport):
 
                 # we're not using http encapsulation so return a
                 # PipeSocket object
-                return PipeSocket(client_pipefd, "client-connection")
+                return PipeSocket(client_pipefd, "client-connection",
+                    http_enc=self.__http_enc)
 
         def request(self, host, handler, request_body, verbose=0):
                 """Send a request to the server."""
@@ -462,9 +485,10 @@ class _PipedTransport(rpc.Transport):
 class _PipedServer(socketserver.BaseServer):
         """Modeled after SocketServer.TCPServer."""
 
-        def __init__(self, fd, RequestHandlerClass):
+        def __init__(self, fd, RequestHandlerClass, http_enc=True):
                 self.__pipe_file = PipeFile(fd, "server-transport")
                 self.__shutdown_initiated = False
+                self.__http_enc = http_enc
 
                 socketserver.BaseServer.__init__(self,
                     server_address="localhost",
@@ -501,8 +525,8 @@ class _PipedServer(socketserver.BaseServer):
                         self.initiate_shutdown()
                         raise socket.error()
 
-                return (PipeSocket(fd, "server-connection"),
-                    ("localhost", None))
+                return (PipeSocket(fd, "server-connection",
+                    http_enc=self.__http_enc), ("localhost", None))
 
 
 class _PipedHTTPRequestHandler(SimpleRPCRequestHandler):
@@ -566,7 +590,8 @@ class PipedRPCServer(_PipedServer, SimpleRPCDispatcher):
                 if not http_enc:
                         requestHandler = _PipedRequestHandler
 
-                _PipedServer.__init__(self, addr, requestHandler)
+                _PipedServer.__init__(self, addr, requestHandler,
+                    http_enc=http_enc)
 
         def  __check_for_server_errors(self, response):
                 """Check if a response is actually a fault object.  If so

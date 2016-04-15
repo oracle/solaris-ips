@@ -21,19 +21,19 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import logging
 import os
+import six
 import sys
 import unittest
-import StringIO
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -51,8 +51,8 @@ class TestSettings(pkg5unittest.Pkg5TestCase):
         def test_logging(self):
                 global_settings.client_name = "TestSettings"
 
-                info_out = StringIO.StringIO()
-                error_out = StringIO.StringIO()
+                info_out = six.StringIO()
+                error_out = six.StringIO()
 
                 log_fmt = logging.Formatter()
 
@@ -85,7 +85,7 @@ class TestSettings(pkg5unittest.Pkg5TestCase):
                     "WARNING\nERROR\nCRITICAL\n")
 
                 # DEBUG should now be present in the info output.
-                info_out.truncate(0)
+                info_out.seek(0)
                 info_h.setLevel(logging.DEBUG)
                 logger.debug("DEBUG")
                 self.assertEqual(info_out.getvalue(), "DEBUG\n")

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -127,8 +127,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     frozenset([api.PackageInfo.LICENSES]))
                 
                 ret = api_obj.info(["jade"], local, info_needed)
-                self.assert_(not ret[api.ImageInterface.INFO_FOUND])
-                self.assert_(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
+                self.assertTrue(not ret[api.ImageInterface.INFO_FOUND])
+                self.assertTrue(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
                 
                 for pd in api_obj.gen_plan_install(["jade"]):
                         continue
@@ -142,24 +142,24 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
-                self.assert_(api.PackageInfo.INSTALLED in pis[0].states)
-                self.assert_(pis[0].pkg_stem == 'jade')
-                self.assert_(len(notfound) == 2)
-                self.assert_(len(illegals) == 0)
-                self.assert_(len(pis[0].category_info_list) == 1)
+                self.assertTrue(len(pis) == 1)
+                self.assertTrue(api.PackageInfo.INSTALLED in pis[0].states)
+                self.assertTrue(pis[0].pkg_stem == 'jade')
+                self.assertTrue(len(notfound) == 2)
+                self.assertTrue(len(illegals) == 0)
+                self.assertTrue(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["j*"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis))
+                self.assertTrue(len(pis))
 
                 ret = api_obj.info(["*a*"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis))
+                self.assertTrue(len(pis))
 
                 local = False
 
@@ -167,10 +167,10 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(api.PackageInfo.INSTALLED in res.states)
-                self.assert_(len(res.category_info_list) == 1)
+                self.assertTrue(api.PackageInfo.INSTALLED in res.states)
+                self.assertTrue(len(res.category_info_list) == 1)
                 self.assertEqual(res.summary, "Ye Olde Summary")
                 self.assertEqual(res.description, None)
 
@@ -178,10 +178,10 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(api.PackageInfo.INSTALLED not in res.states)
-                self.assert_(len(res.category_info_list) == 0)
+                self.assertTrue(api.PackageInfo.INSTALLED not in res.states)
+                self.assertTrue(len(res.category_info_list) == 0)
                 self.assertEqual(res.summary, "Amber's Actual Summary")
                 self.assertEqual(res.description, None)
 
@@ -189,39 +189,39 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(api.PackageInfo.INSTALLED not in res.states)
-                self.assert_(len(res.category_info_list) == 1)
+                self.assertTrue(api.PackageInfo.INSTALLED not in res.states)
+                self.assertTrue(len(res.category_info_list) == 1)
                 self.assertEqual(res.summary, "")
                 self.assertEqual(res.description, None)
 
                 ret = api_obj.info(["example_pkg"], local,
                     api.PackageInfo.ALL_OPTIONS)
                 pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(api.PackageInfo.INSTALLED not in res.states)
-                self.assert_(len(res.category_info_list) == 1)
+                self.assertTrue(api.PackageInfo.INSTALLED not in res.states)
+                self.assertTrue(len(res.category_info_list) == 1)
 
-                self.assert_(res.pkg_stem is not None)
-                self.assert_(res.summary is not None)
-                self.assert_(res.publisher is not None)
-                self.assert_(res.version is not None)
-                self.assert_(res.build_release is not None)
-                self.assert_(res.branch is not None)
-                self.assert_(res.packaging_date is not None)
+                self.assertTrue(res.pkg_stem is not None)
+                self.assertTrue(res.summary is not None)
+                self.assertTrue(res.publisher is not None)
+                self.assertTrue(res.version is not None)
+                self.assertTrue(res.build_release is not None)
+                self.assertTrue(res.branch is not None)
+                self.assertTrue(res.packaging_date is not None)
                 total_size = 0
                 for p in misc_files:
                         total_size += \
                             os.stat(os.path.join(self.test_root, p)).st_size
                 self.assertEqual(res.size, total_size)
-                self.assert_(res.licenses is not None)
-                self.assert_(res.links is not None)
-                self.assert_(res.hardlinks is not None)
-                self.assert_(res.files is not None)
-                self.assert_(res.dirs is not None)
-                self.assert_(res.dependencies is not None)
+                self.assertTrue(res.licenses is not None)
+                self.assertTrue(res.links is not None)
+                self.assertTrue(res.hardlinks is not None)
+                self.assertTrue(res.files is not None)
+                self.assertTrue(res.dirs is not None)
+                self.assertTrue(res.dependencies is not None)
                 # A test for bug 8868 which ensures the pkg.description field
                 # is as exected.
                 self.assertEqual(res.description, "DESCRIPTION 1")
@@ -234,7 +234,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(notfound) == 1)
+                self.assertTrue(len(notfound) == 1)
 
                 local = True
                 get_license = False
@@ -248,28 +248,28 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
-                self.assert_(len(pis[0].dirs) == 1)
+                self.assertTrue(len(pis) == 1)
+                self.assertTrue(len(pis[0].dirs) == 1)
                 
                 ret = api_obj.info(["jade"], local, set())
                 pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(res.pkg_stem is None)
-                self.assert_(res.summary is None)
+                self.assertTrue(res.pkg_stem is None)
+                self.assertTrue(res.summary is None)
                 self.assertEqual(res.category_info_list, [])
                 self.assertEqual(res.states, tuple())
-                self.assert_(res.publisher is None)
-                self.assert_(res.version is None)
-                self.assert_(res.build_release is None)
-                self.assert_(res.branch is None)
-                self.assert_(res.packaging_date is None)
-                self.assert_(res.size is None)
-                self.assert_(res.licenses is None)
-                self.assert_(res.links is None)
-                self.assert_(res.hardlinks is None)
-                self.assert_(res.files is None)
-                self.assert_(res.dirs is None)
+                self.assertTrue(res.publisher is None)
+                self.assertTrue(res.version is None)
+                self.assertTrue(res.build_release is None)
+                self.assertTrue(res.branch is None)
+                self.assertTrue(res.packaging_date is None)
+                self.assertTrue(res.size is None)
+                self.assertTrue(res.licenses is None)
+                self.assertTrue(res.links is None)
+                self.assertTrue(res.hardlinks is None)
+                self.assertTrue(res.files is None)
+                self.assertTrue(res.dirs is None)
                 self.assertEqual(res.dependencies, ())
                 
                 local = False
@@ -279,8 +279,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(pis) == 1)
-                self.assert_(len(pis[0].dirs) == 1)
+                self.assertTrue(len(pis) == 1)
+                self.assertTrue(len(pis[0].dirs) == 1)
 
                 self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
                     api_obj.info, ["jade"], local, set([-1]))
@@ -298,9 +298,9 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 ret = api_obj.info(["example_pkg5"], local,
                     api.PackageInfo.ALL_OPTIONS)
                 pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(res.summary == "SUMMARY: Example Package 5")
+                self.assertTrue(res.summary == "SUMMARY: Example Package 5")
                 # A test for bug 8868 which ensures the pkg.description field
                 # is as exected.
                 self.assertEqual(res.description, "DESCRIPTION 2")
@@ -311,9 +311,9 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 ret = api_obj.info(["example_pkg6"], local,
                     api.PackageInfo.ALL_OPTIONS)
                 pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
+                self.assertTrue(len(pis) == 1)
                 res = pis[0]
-                self.assert_(res.summary == "SUMMARY: Example Package 6")
+                self.assertTrue(res.summary == "SUMMARY: Example Package 6")
                 # A test for bug 8868 which ensures the pkg.description field
                 # is as exected.
                 self.assertEqual(res.description, "DESCRIPTION 3")
@@ -435,7 +435,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # with the correct dependencies will provide the expected info.
                 ret = api_obj.info(["ren_correct"], False, info_needed)
                 pi = ret[api.ImageInterface.INFO_FOUND][0]
-                self.assert_(api.PackageInfo.RENAMED in pi.states)
+                self.assertTrue(api.PackageInfo.RENAMED in pi.states)
                 self.assertEqual(pi.dependencies, ["target@1.0"])
 
                 # Next, verify that a renamed package (for a variant not
@@ -444,7 +444,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # info.
                 ret = api_obj.info(["ren_op_variant"], False, info_needed)
                 pi = ret[api.ImageInterface.INFO_FOUND][0]
-                self.assert_(api.PackageInfo.RENAMED not in pi.states)
+                self.assertTrue(api.PackageInfo.RENAMED not in pi.states)
 
                 # No dependencies expected; existing don't apply to image.
                 self.assertEqual(pi.dependencies, [])
@@ -456,7 +456,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 pi = ret[api.ImageInterface.INFO_FOUND][0]
 
                 # Ensure package isn't seen as renamed for current variant.
-                self.assert_(api.PackageInfo.RENAMED in pi.states)
+                self.assertTrue(api.PackageInfo.RENAMED in pi.states)
 
                 # No dependencies expected; existing don't apply to image.
                 self.assertEqual(pi.dependencies, [])
@@ -466,7 +466,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # will provide the expected info.
                 ret = api_obj.info(["ren_partial_variant"], False, info_needed)
                 pi = ret[api.ImageInterface.INFO_FOUND][0]
-                self.assert_(api.PackageInfo.RENAMED in pi.states)
+                self.assertTrue(api.PackageInfo.RENAMED in pi.states)
                 self.assertEqual(pi.dependencies, [])
 
 

@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -141,16 +141,16 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 uobj = publisher.RepositoryURI("https://example.com",
                     proxies=[publisher.ProxyURI("http://foo.com")])
 
-                self.assert_(uobj.proxies == [publisher.ProxyURI(
+                self.assertTrue(uobj.proxies == [publisher.ProxyURI(
                     "http://foo.com")])
                 uobj.proxies = []
-                self.assert_(uobj.proxies == [])
+                self.assertTrue(uobj.proxies == [])
 
                 # Verify that proxies and proxy are linked
                 uobj.proxies = [publisher.ProxyURI("http://foo.com")]
-                self.assert_(uobj.proxy == "http://foo.com")
+                self.assertTrue(uobj.proxy == "http://foo.com")
                 uobj.proxy = "http://bar"
-                self.assert_(uobj.proxies == [publisher.ProxyURI("http://bar")])
+                self.assertTrue(uobj.proxies == [publisher.ProxyURI("http://bar")])
 
                 try:
                         raised = False
@@ -160,7 +160,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 except api_errors.PublisherError:
                         raised = True
                 finally:
-                        self.assert_(raised, "No exception raised when "
+                        self.assertTrue(raised, "No exception raised when "
                             "creating a RepositoryURI obj with proxies & proxy")
 
                 # Check that we detect bad values for proxies
@@ -443,7 +443,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 modified, and used as expected."""
 
                 pobj = publisher.ProxyURI("http://example.com")
-                self.assert_(pobj.uri == "http://example.com")
+                self.assertTrue(pobj.uri == "http://example.com")
 
                 tcert = os.path.join(self.test_root, "test.cert")
                 tkey = os.path.join(self.test_root, "test.key")
@@ -470,17 +470,17 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 # choke on
                 uri = "http://user:pass@server"
                 pobj.uri = uri
-                self.assert_(pobj.uri == uri)
+                self.assertTrue(pobj.uri == uri)
 
                 # check that setting system results in uri being overridden
                 pobj.system = True
-                self.assert_(pobj.system == True)
-                self.assert_(pobj.uri == publisher.SYSREPO_PROXY)
+                self.assertTrue(pobj.system == True)
+                self.assertTrue(pobj.uri == publisher.SYSREPO_PROXY)
 
                 # check that clearing system also clears uri
                 pobj.system = False
-                self.assert_(pobj.system == False)
-                self.assert_(pobj.uri == None)
+                self.assertTrue(pobj.system == False)
+                self.assertTrue(pobj.uri == None)
 
 
 if __name__ == "__main__":

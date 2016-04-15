@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -56,7 +56,7 @@ class TestFileManager(pkg5unittest.CliTestCase):
                 p = os.path.join(self.base_dir, self.old_hash(s))
                 if not os.path.exists(os.path.dirname(p)):
                         os.makedirs(os.path.dirname(p))
-                fh = open(p, "wb")
+                fh = open(p, "w")
                 fh.write(s)
                 fh.close()
                 return p

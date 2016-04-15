@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -32,7 +32,7 @@ packaging object.
 
 from __future__ import print_function
 import os
-import generic
+from . import generic
 import six
 
 from tempfile import mkstemp

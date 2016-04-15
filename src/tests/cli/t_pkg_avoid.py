@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -209,16 +209,16 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 # on avoid list
                 self.pkg("install --reject A F@1.0")
                 self.pkg("avoid")
-                self.assert_("A" in self.output)
+                self.assertTrue("A" in self.output)
                 # install A and see it removed from avoid list
                 self.pkg("install A")
                 self.pkg("avoid")
-                self.assert_(self.output == "")
+                self.assertTrue(self.output == "")
                 self.pkg("verify F@1.0 A")
                 # remove A and see it added to avoid list
                 self.pkg("uninstall A")
                 self.pkg("avoid")
-                self.assert_("A" in self.output)
+                self.assertTrue("A" in self.output)
                 # update F and see A kept out, but B added
                 self.pkg("update F@2")
                 self.pkg("verify F@2.0 B")

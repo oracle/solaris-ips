@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -44,7 +44,7 @@ import pkg.pkgsubprocess
 from pkg.client.debugvalues import DebugValues
 
 # import linked image common code
-import common as li # Relative import; pylint: disable=W0403
+from . import common as li # Relative import; pylint: disable=W0403
 
 # W0511 XXX / FIXME Comments; pylint: disable=W0511
 # XXX: should be defined by libzonecfg python wrapper
@@ -395,20 +395,23 @@ def _zonename():
         if not li.path_exists(cmd[0]):
                 return
 
-        fout = tempfile.TemporaryFile()
-        ferrout = tempfile.TemporaryFile()
+        # open a temporary file in text mode for compatible string handling
+        fout = tempfile.TemporaryFile(mode="w+")
+        ferrout = tempfile.TemporaryFile(mode="w+")
         p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
         if p.returncode != 0:
                 cmd = " ".join(cmd)
                 ferrout.seek(0)
                 errout = "".join(ferrout.readlines())
+                ferrout.close()
                 raise apx.LinkedImageException(
                     cmd_failed=(p.returncode, cmd, errout))
 
         # parse the command output
         fout.seek(0)
         l = fout.readlines()[0].rstrip()
+        fout.close()
         return l
 
 def _zoneadm_list_parse(line, cmd, output):
@@ -462,20 +465,23 @@ def _list_zones(root, path_transform):
         cmd.extend(["-R", str(root), "list", "-cp"])
 
         # execute zoneadm and save its output to a file
-        fout = tempfile.TemporaryFile()
-        ferrout = tempfile.TemporaryFile()
+        # open a temporary file in text mode for compatible string handling
+        fout = tempfile.TemporaryFile(mode="w+")
+        ferrout = tempfile.TemporaryFile(mode="w+")
         p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
         if p.returncode != 0:
                 cmd = " ".join(cmd)
                 ferrout.seek(0)
                 errout = "".join(ferrout.readlines())
+                ferrout.close()
                 raise apx.LinkedImageException(
                     cmd_failed=(p.returncode, cmd, errout))
 
         # parse the command output
         fout.seek(0)
         output = fout.readlines()
+        fout.close()
         for l in output:
                 l = l.rstrip()
 

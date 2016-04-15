@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -40,7 +40,7 @@ import shutil
 import stat
 import sys
 import tempfile
-import util as os_util
+from . import util as os_util
 # used to cache contents of passwd and group files
 users = {}
 uids = {}

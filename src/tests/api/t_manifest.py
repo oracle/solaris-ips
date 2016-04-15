@@ -138,15 +138,17 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 m.set_content(bstr)
                 output = list(m.as_lines())[0].rstrip()
                 self.assertEqual(bstr, output)
-                self.assert_(isinstance(output, str))
+                self.assertTrue(isinstance(output, str))
 
-                # Verify set_content with a Unicode string results in a
-                # byte string (for now).
+                # Verify set_content with a Unicode string works.
                 m = manifest.Manifest()
-                m.set_content(six.text_type(bstr, "utf-8"))
+                if six.PY2:
+                        m.set_content(six.text_type(bstr, "utf-8"))
+                else:
+                        m.set_content(bstr)
                 output = list(m.as_lines())[0].rstrip()
                 self.assertEqual(bstr, output)
-                self.assert_(isinstance(output, str))
+                self.assertTrue(isinstance(output, str))
 
                 # Verify Manifests using line continuation '\' are parsed as
                 # expected.
@@ -403,7 +405,10 @@ dir mode=0755 owner=bin group=sys path=usr
                 output1 = "".join(m1.as_lines())
 
                 m2 = manifest.Manifest()
-                m2.set_content(six.text_type(bstr, "utf-8"), signatures=True)
+                if six.PY2:
+                        m2.set_content(six.text_type(bstr, "utf-8"), signatures=True)
+                else:
+                        m2.set_content(bstr, signatures=True)
                 output2 = "".join(m2.as_lines())
                 self.assertEqualDiff(output1, output2)
                 self.assertEqualDiff(m1.signatures, m2.signatures)
@@ -416,7 +421,7 @@ set name=pkg.fmri value=pkg:/foo-content@1.0
 dir owner=root path=usr/bin group=bin mode=0755 variant.arch=i386
 dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
 dir owner=root path="opt/dir with " \\
-    "whitespaces	" \\
+    "whitespaces   " \\
     "in value" group=bin mode=0755 variant.debug.osnet=true
 """
 
@@ -472,7 +477,7 @@ dir owner=root path="opt/dir with " \\
                     "opt/dir with spaces in value",
                     "opt",
                     "usr/bin",
-                    "opt/dir with whitespaces	in value",
+                    "opt/dir with whitespaces   in value",
                     "usr"
                 ]
 
@@ -483,17 +488,17 @@ dir owner=root path="opt/dir with " \\
 
                 def do_get_dirs():
                         actual = m1.get_directories([])
-                        self.assertEqualDiff(all_expected, actual)
+                        self.assertEqualDiff(sorted(all_expected), sorted(actual))
 
                         actual = m1.get_directories(excludes)
-                        self.assertEqualDiff(var_expected, actual)
+                        self.assertEqualDiff(sorted(var_expected), sorted(actual))
 
                 # Verify get_directories works for initial load.
                 do_get_dirs()
 
                 # Now repeat experiment using "cached" FactoredManifest.
                 cfile_path = os.path.join(self.cache_dir, "manifest.dircache")
-                self.assert_(os.path.isfile(cfile_path))
+                self.assertTrue(os.path.isfile(cfile_path))
                 m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
                     pathname=self.foo_content_p5m)
 
@@ -506,7 +511,7 @@ dir owner=root path="opt/dir with " \\
                 m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
                     pathname=self.foo_content_p5m)
 
-                with open(cfile_path, "wb") as f:
+                with open(cfile_path, "w") as f:
                         for a in m1.gen_actions_by_type("dir"):
                                 f.write(
                                     "dir path={0} {1}\n".format(a.attrs["path"],
@@ -522,13 +527,13 @@ dir owner=root path="opt/dir with " \\
 
                 # Verify cache file was removed (presumably because we
                 # detected it was malformed).
-                self.assert_(not os.path.exists(cfile_path))
+                self.assertTrue(not os.path.exists(cfile_path))
 
                 # Repeat tests again, verifying cache file is recreated.
                 m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
                     pathname=self.foo_content_p5m)
                 do_get_dirs()
-                self.assert_(os.path.isfile(cfile_path))
+                self.assertTrue(os.path.isfile(cfile_path))
 
         def test_clear_cache(self):
                 """Verify that FactoredManifest.clear_cache() works as
@@ -541,7 +546,7 @@ dir owner=root path="opt/dir with " \\
 
                 # Verify cache was created.
                 cfile_path = os.path.join(cache_dir, "manifest.dircache")
-                self.assert_(os.path.isfile(cfile_path))
+                self.assertTrue(os.path.isfile(cfile_path))
 
                 # Create random file in cache_dir.
                 rfile_path = os.path.join(cache_dir, "junk")
@@ -557,7 +562,7 @@ dir owner=root path="opt/dir with " \\
                 # Verify that clear_cache() removes cache_dir if empty.
                 portable.remove(rfile_path)
                 m1.clear_cache(cache_dir)
-                self.assert_(not os.path.exists(cache_dir))
+                self.assertTrue(not os.path.exists(cache_dir))
 
 
 if __name__ == "__main__":

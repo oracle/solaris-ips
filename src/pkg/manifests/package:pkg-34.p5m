@@ -1,0 +1,230 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg-34@$(PKGVERS)
+set name=pkg.summary \
+    value="Python 3.4 support modules for the Image Packaging System"
+set name=pkg.description \
+    value="Python 3.4 support modules for the Image Packaging System. The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=$(PY34DIR)
+dir  path=$(PY34DIRVP)
+dir  path=$(PY34DIRVP)/pkg
+file path=$(PY34DIRVP)/pkg-0.1-py3.4.egg-info
+dir  path=$(PY34DIRVP)/pkg/64
+file path=$(PY34DIRVP)/pkg/64/_arch.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/_pspawn.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/_sha512_t.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/_sysattr.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/_syscallat.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/_varcet.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/elf.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/64/solver.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/__init__.py
+dir  path=$(PY34DIRVP)/pkg/actions
+dir  path=$(PY34DIRVP)/pkg/actions/64
+file path=$(PY34DIRVP)/pkg/actions/64/_actions.cpython-34m.so
+file path=$(PY34DIRVP)/pkg/actions/64/_common.cpython-34m.so
+# pkgdepend doesn't understand the relative import syntax "from .x import y",
+# so we have to bypass generating dependencies on those files.
+file path=$(PY34DIRVP)/pkg/actions/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/attribute.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/depend.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/directory.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/driver.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/file.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/generic.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/group.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/hardlink.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/legacy.py pkg.depend.bypass-generate=.*
+#
+# Don't worry about the "from x.y.z" six imports since pkgdepend has some issues
+# with the python importer. Instead, we force a dependency on the six package.
+#
+file path=$(PY34DIRVP)/pkg/actions/license.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/link.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/signature.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/unknown.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/actions/user.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/altroot.py
+file path=$(PY34DIRVP)/pkg/api_common.py
+file path=$(PY34DIRVP)/pkg/arch.py
+dir  path=$(PY34DIRVP)/pkg/bundle
+file path=$(PY34DIRVP)/pkg/bundle/DirectoryBundle.py
+file path=$(PY34DIRVP)/pkg/bundle/SolarisPackageDatastreamBundle.py
+file path=$(PY34DIRVP)/pkg/bundle/SolarisPackageDirBundle.py
+file path=$(PY34DIRVP)/pkg/bundle/TarBundle.py
+file path=$(PY34DIRVP)/pkg/bundle/__init__.py
+file path=$(PY34DIRVP)/pkg/catalog.py
+file path=$(PY34DIRVP)/pkg/cfgfiles.py
+file path=$(PY34DIRVP)/pkg/choose.py
+dir  path=$(PY34DIRVP)/pkg/client
+file path=$(PY34DIRVP)/pkg/client/__init__.py
+file path=$(PY34DIRVP)/pkg/client/actuator.py
+file path=$(PY34DIRVP)/pkg/client/api.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/api_errors.py \
+    pkg.depend.bypass-generate=.*six.*
+#
+# Don't worry about the libbe import; the python code looks for it in case
+# it can't import libbe_py, and is graceful in the face of its absence.
+#
+file path=$(PY34DIRVP)/pkg/client/bootenv.py \
+    pkg.depend.bypass-generate=.*libbe.*
+file path=$(PY34DIRVP)/pkg/client/client_api.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/debugvalues.py
+file path=$(PY34DIRVP)/pkg/client/firmware.py
+file path=$(PY34DIRVP)/pkg/client/history.py
+file path=$(PY34DIRVP)/pkg/client/image.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/imageconfig.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/imageplan.py
+file path=$(PY34DIRVP)/pkg/client/imagetypes.py
+file path=$(PY34DIRVP)/pkg/client/indexer.py
+dir  path=$(PY34DIRVP)/pkg/client/linkedimage
+file path=$(PY34DIRVP)/pkg/client/linkedimage/__init__.py
+file path=$(PY34DIRVP)/pkg/client/linkedimage/common.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/linkedimage/system.py \
+    pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/client/linkedimage/zone.py \
+    pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/client/options.py
+file path=$(PY34DIRVP)/pkg/client/pkg_solver.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/pkgdefs.py
+file path=$(PY34DIRVP)/pkg/client/pkgplan.py
+file path=$(PY34DIRVP)/pkg/client/pkgremote.py
+file path=$(PY34DIRVP)/pkg/client/plandesc.py
+file path=$(PY34DIRVP)/pkg/client/printengine.py
+file path=$(PY34DIRVP)/pkg/client/progress.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/publisher.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/query_parser.py
+file path=$(PY34DIRVP)/pkg/client/rad_pkg.py
+file path=$(PY34DIRVP)/pkg/client/sigpolicy.py
+dir  path=$(PY34DIRVP)/pkg/client/transport
+file path=$(PY34DIRVP)/pkg/client/transport/__init__.py
+file path=$(PY34DIRVP)/pkg/client/transport/engine.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/transport/exception.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/transport/fileobj.py
+file path=$(PY34DIRVP)/pkg/client/transport/mdetect.py \
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/transport/repo.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/transport/stats.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/client/transport/transport.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/config.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/cpiofile.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/dependency.py
+file path=$(PY34DIRVP)/pkg/depotcontroller.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/digest.py
+file path=$(PY34DIRVP)/pkg/facet.py
+dir  path=$(PY34DIRVP)/pkg/file_layout
+file path=$(PY34DIRVP)/pkg/file_layout/__init__.py
+file path=$(PY34DIRVP)/pkg/file_layout/file_manager.py
+file path=$(PY34DIRVP)/pkg/file_layout/layout.py
+dir  path=$(PY34DIRVP)/pkg/flavor
+file path=$(PY34DIRVP)/pkg/flavor/__init__.py
+file path=$(PY34DIRVP)/pkg/flavor/base.py
+# importlib is specific to Python 3 and part of its standard library.
+file path=$(PY34DIRVP)/pkg/flavor/depthlimitedmf.py \
+    pkg.depend.bypass-generate=.*importlib.*
+file path=$(PY34DIRVP)/pkg/flavor/elf.py
+file path=$(PY34DIRVP)/pkg/flavor/hardlink.py
+file path=$(PY34DIRVP)/pkg/flavor/python.py
+file path=$(PY34DIRVP)/pkg/flavor/script.py
+file path=$(PY34DIRVP)/pkg/flavor/smf_manifest.py
+file path=$(PY34DIRVP)/pkg/fmri.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/indexer.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PY34DIRVP)/pkg/lint
+file path=$(PY34DIRVP)/pkg/lint/__init__.py
+file path=$(PY34DIRVP)/pkg/lint/base.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/lint/config.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/lint/engine.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/lint/log.py
+file path=$(PY34DIRVP)/pkg/lint/opensolaris.py
+file path=$(PY34DIRVP)/pkg/lint/pkglint_action.py
+file path=$(PY34DIRVP)/pkg/lint/pkglint_manifest.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/lockfile.py
+file path=$(PY34DIRVP)/pkg/manifest.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/mediator.py
+file path=$(PY34DIRVP)/pkg/misc.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/mogrify.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/nrlock.py
+file path=$(PY34DIRVP)/pkg/p5i.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/p5p.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/p5s.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/pipeutils.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/pkggzip.py
+file path=$(PY34DIRVP)/pkg/pkgsubprocess.py
+file path=$(PY34DIRVP)/pkg/pkgtarfile.py
+dir  path=$(PY34DIRVP)/pkg/portable
+file path=$(PY34DIRVP)/pkg/portable/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/portable/os_aix.py pkg.depend.bypass-generate=.*
+# Python on Solaris doesn't deliver the macostools module.
+file path=$(PY34DIRVP)/pkg/portable/os_darwin.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/portable/os_sunos.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/portable/os_unix.py pkg.depend.bypass-generate=.*
+# Python on Solaris doesn't deliver the win32api module.
+file path=$(PY34DIRVP)/pkg/portable/os_windows.py pkg.depend.bypass-generate=.*
+file path=$(PY34DIRVP)/pkg/portable/util.py
+file path=$(PY34DIRVP)/pkg/pspawn.py
+dir  path=$(PY34DIRVP)/pkg/publish
+file path=$(PY34DIRVP)/pkg/publish/__init__.py
+file path=$(PY34DIRVP)/pkg/publish/dependencies.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/publish/transaction.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/query_parser.py
+file path=$(PY34DIRVP)/pkg/search_errors.py
+file path=$(PY34DIRVP)/pkg/search_storage.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PY34DIRVP)/pkg/server
+file path=$(PY34DIRVP)/pkg/server/__init__.py
+file path=$(PY34DIRVP)/pkg/server/api.py
+file path=$(PY34DIRVP)/pkg/server/api_errors.py
+file path=$(PY34DIRVP)/pkg/server/depot.py \
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/server/face.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/server/feed.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/server/query_parser.py
+file path=$(PY34DIRVP)/pkg/server/repository.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/server/transaction.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/sha512_t.py
+file path=$(PY34DIRVP)/pkg/smf.py pkg.depend.bypass-generate=.*six.*
+file path=$(PY34DIRVP)/pkg/sysattr.py
+file path=$(PY34DIRVP)/pkg/syscallat.py
+file path=$(PY34DIRVP)/pkg/sysvpkg.py
+file path=$(PY34DIRVP)/pkg/variant.py
+file path=$(PY34DIRVP)/pkg/version.py pkg.depend.bypass-generate=.*six.*
+# CFFI import is done in C code, so it isn't picked up by pkgdepend
+depend type=require fmri=library/python/cffi-34@1.4.2

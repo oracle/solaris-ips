@@ -30,7 +30,7 @@ This module contains the FileAction class, which represents a file-type
 packaging object."""
 
 import errno
-import generic
+from . import generic
 import os
 import six
 import stat
@@ -38,7 +38,7 @@ import tempfile
 import types
 import zlib
 
-import _common
+from . import _common
 import pkg.actions
 import pkg.client.api_errors as api_errors
 import pkg.digest as digest
@@ -836,4 +836,9 @@ class FileAction(generic.Action):
                         raise pkg.actions.InvalidActionAttributesError(self,
                             errors, fmri=fmri)
 
-FileAction.__init__ = types.MethodType(_common._file_init, None, FileAction)
+        if six.PY3:
+                def __init__(self, data, **attrs):
+                        _common._file_init(self, data, **attrs)
+
+if six.PY2:
+        FileAction.__init__ = types.MethodType(_common._file_init, None, FileAction)

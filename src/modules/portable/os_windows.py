@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -39,7 +39,7 @@ import errno
 import stat
 import tempfile
 import threading
-import util as os_util
+from . import util as os_util
 
 def get_isainfo():
         """ TODO: Detect Windows 64-bit"""

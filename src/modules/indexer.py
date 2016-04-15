@@ -1,4 +1,4 @@
-#!eusr/bin/python
+#!usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -31,6 +31,7 @@ import shutil
 from six.moves.urllib.parse import unquote
 
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.lockfile as lockfile
 import pkg.manifest as manifest
 import pkg.portable as portable
@@ -226,7 +227,7 @@ class Indexer(object):
                 self._sort_file_bytes = 0
                 tmp_file_name = os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(self._sort_file_num - 1))
-                tmp_fh = open(tmp_file_name, "rb", buffering=PKG_FILE_BUFSIZ)
+                tmp_fh = open(tmp_file_name, "r", buffering=PKG_FILE_BUFSIZ)
                 l = [
                     (ss.IndexStoreMainDict.parse_main_dict_line_for_token(line),
                     line)
@@ -234,7 +235,7 @@ class Indexer(object):
                 ]
                 tmp_fh.close()
                 l.sort()
-                tmp_fh = open(tmp_file_name, "wb", buffering=PKG_FILE_BUFSIZ)
+                tmp_fh = open(tmp_file_name, "w", buffering=PKG_FILE_BUFSIZ)
                 tmp_fh.writelines((line for tok, line in l))
                 tmp_fh.close()
 
@@ -262,7 +263,7 @@ class Indexer(object):
                                 self.__close_sort_fh()
                                 self._sort_fh = open(os.path.join(self._tmp_dir,
                                     SORT_FILE_PREFIX +
-                                    str(self._sort_file_num)), "wb",
+                                    str(self._sort_file_num)), "w",
                                     buffering=PKG_FILE_BUFSIZ)
                                 self._sort_file_num += 1
                         self._sort_fh.write(s)
@@ -414,13 +415,13 @@ class Indexer(object):
                             self._progtrack.JOB_REBUILD_SEARCH, nitems=0)
                         if at not in self.at_fh:
                                 self.at_fh[at] = open(os.path.join(out_dir,
-                                    "__at_" + at), "wb")
+                                    "__at_" + at), "w")
                         self.at_fh[at].write(cur_location + "\n")
                         for st, fv_list in st_list:
                                 if st not in self.st_fh:
                                         self.st_fh[st] = \
                                             open(os.path.join(out_dir,
-                                            "__st_" + st), "wb")
+                                            "__st_" + st), "w")
                                 self.st_fh[st].write(cur_location + "\n")
                                 for fv, p_list in fv_list:
                                         for p_id, m_off_set in p_list:
@@ -475,7 +476,7 @@ class Indexer(object):
                 # temporary sort file with that number.
                 fh_dict = dict([
                     (i, open(os.path.join(self._tmp_dir,
-                    SORT_FILE_PREFIX + str(i)), "rb",
+                    SORT_FILE_PREFIX + str(i)), "r",
                     buffering=PKG_FILE_BUFSIZ))
                     for i in range(self._sort_file_num)
                 ])
@@ -484,7 +485,7 @@ class Indexer(object):
                 # Seed cur_toks with the first token from each temporary file.
                 # The line may not exist since, for a empty repo, an empty file
                 # is created.
-                for i in fh_dict.keys():
+                for i in list(fh_dict.keys()):
                         line = get_line(fh_dict[i])
                         if line is None:
                                 del fh_dict[i]
@@ -577,7 +578,7 @@ class Indexer(object):
                 # the version information the search storage class added.
                 out_main_dict_handle = \
                     open(os.path.join(out_dir,
-                        self._data_main_dict.get_file_name()), "ab",
+                        self._data_main_dict.get_file_name()), "a",
                         buffering=PKG_FILE_BUFSIZ)
 
                 self._data_token_offset.open_out_file(out_dir,
@@ -769,7 +770,7 @@ class Indexer(object):
                                 assert not self._sort_fh
                                 self._sort_fh = open(os.path.join(self._tmp_dir,
                                     SORT_FILE_PREFIX +
-                                    str(self._sort_file_num)), "wb")
+                                    str(self._sort_file_num)), "w")
                                 self._sort_file_num += 1
 
                                 self._progtrack.job_start(

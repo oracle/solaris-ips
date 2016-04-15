@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -568,7 +568,8 @@ class WsgiDepot(object):
 
                 dh = self.__build_depot_http()
                 tokens = self.__strip_pub(tokens, dh.repo)
-                return dh.info_0(*tokens[3:])
+                # In Python 3, a WSGI application must return bytes as its output
+                return misc.force_bytes(dh.info_0(*tokens[3:]))
 
         def p5i(self, *tokens):
                 """Use a DepotHTTP to return a p5i response."""
@@ -662,7 +663,8 @@ class WsgiDepot(object):
                                             request.path_info))
                 finally:
                         repository_lock.release()
-                return ""
+                # In Python 3, a WSGI application must return bytes as its output
+                return b""
 
         def wait_refresh(self, *tokens, **params):
                 """Not a pkg(5) operation, this allows clients to wait until any
@@ -674,7 +676,7 @@ class WsgiDepot(object):
                 """
                 self.setup(cherrypy.request)
                 self.bgtask.join()
-                return ""
+                return b""
 
 
 class Pkg5Dispatch(object):
@@ -765,10 +767,10 @@ class Pkg5Dispatch(object):
                                 cherrypy.response.body = self.app.admin(*toks,
                                     **params)
                         elif "/depot-keepalive" in path_info:
-                                return ""
+                                return b""
                         elif "/depot-wait-refresh" in path_info:
                                 self.app.wait_refresh(*toks, **params)
-                                return ""
+                                return b""
                         elif path_info == "/" or path_info == "/repos.shtml":
                                 cherrypy.response.body = self.app.repo_index(
                                     *toks, **params)

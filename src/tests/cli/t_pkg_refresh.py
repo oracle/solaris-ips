@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -142,7 +142,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                     self.reduce_spaces(expected).splitlines().sort(),
                     self.reduce_spaces(actual).splitlines().sort())
 
- 	def test_refresh_cli_options(self):
+        def test_refresh_cli_options(self):
                 """Test refresh and options."""
 
                 durl = self.dcs[1].get_depot_url()
@@ -353,6 +353,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                                         self.debug("l: {0}".format(l))
                                         if l:
                                                 entries.append({ hdr: l })
+                        logfile.close()
                 return entries
 
         def test_catalog_v1(self):
@@ -614,7 +615,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # Next, purposefully corrupt the catalog.attrs file in the
                 # repository and attempt a refresh.  The client should fail
                 # gracefully.
-                f = open(os.path.join(v1_cat.meta_root, "catalog.attrs"), "wb")
+                f = open(os.path.join(v1_cat.meta_root, "catalog.attrs"), "w")
                 f.write("INVALID")
                 f.close()
                 self.pkg("refresh", exit=1)

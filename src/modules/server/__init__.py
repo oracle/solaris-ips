@@ -21,8 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
+
+from __future__ import unicode_literals
 
 __all__ = ["catalog", "config", "depot", "face", "feed", "repository",
     "transaction"]

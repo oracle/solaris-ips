@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -47,7 +47,7 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
 
                 ind._sort_fh = open(os.path.join(ind._tmp_dir,
                         indexer.SORT_FILE_PREFIX +
-                        str(ind._sort_file_num)), "wb")
+                        str(ind._sort_file_num)), "w")
 
                 ind._sort_file_num += 1
 
@@ -89,7 +89,7 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
                 # Each file should be under the limit.
                 for file in os.listdir(ind._tmp_dir):
                         fs = os.stat(os.path.join(ind._tmp_dir, file))
-                        self.assert_(fs.st_size <= 200)
+                        self.assertTrue(fs.st_size <= 200)
                 shutil.rmtree(ind._tmp_dir)
 
                 # ...and that a number that matches the smallest atomic unit
@@ -99,13 +99,13 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
                 # The first file is already opened by us, so it will fail the
                 # <= 0 test by indexer, and indexer will create a new one.
                 # Hence, sort.0 will be of size 0
-                self.assert_(os.stat(os.path.join(ind._tmp_dir , "sort.0")).st_size == 0)
+                self.assertTrue(os.stat(os.path.join(ind._tmp_dir , "sort.0")).st_size == 0)
 
                 # Since sort_file_max_size is a soft limit, the indexer can't
                 # actually limit each file to 1 byte, but there should be at
                 # most one line in each file.
                 for file in os.listdir(ind._tmp_dir):
-                        self.assert_(len(open(os.path.join(ind._tmp_dir,
+                        self.assertTrue(len(open(os.path.join(ind._tmp_dir,
                             file)).readlines()) <= 1)
 
 if __name__ == "__main__":

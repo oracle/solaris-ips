@@ -20,10 +20,10 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -1293,11 +1293,11 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                 pkg5unittest.CliTestCase.setUp(self)
 
                 with open(os.path.join(self.test_root, "source_file"),
-                    "wb") as f:
+                    "w") as f:
                         f.write(self.pkgcontents)
 
                 with open(os.path.join(self.test_root, "needs_fmt_file"),
-                    "wb") as f:
+                    "w") as f:
                         f.write(self.needs_formatting)
 
         def test_0_checkfmt(self):
@@ -1315,7 +1315,7 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                 # needs formatting (both from a file and from stdin).
                 self.pkgfmt("-c {0}".format(man), exit=1)
                 # Ensure "error:" is in output (for the benefit of ON nightly).
-                self.assert_("pkgfmt: error:" in self.errout)
+                self.assertTrue("pkgfmt: error:" in self.errout)
                 self.pkgfmt("-c < {0}".format(man), exit=1)
 
                 # Verify pkgfmt exits 1 when checking format for multiple
@@ -1326,7 +1326,7 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                 for pfmt, mfmt in (("v1", self.v1_fmt), ("v2", self.v2_fmt)):
                         portable.copyfile(original, man)
                         self.pkgfmt("-f {0} {1}".format(pfmt, man))
-                        with open(man, "rb") as f:
+                        with open(man, "r") as f:
                                 actual = f.read()
                                 self.assertEqualDiff(mfmt, actual,
                                     msg="{0} format".format(pfmt))
@@ -1335,7 +1335,7 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                         portable.copyfile(original, man)
                         os.environ["PKGFMT_OUTPUT"] = pfmt
                         self.pkgfmt(man)
-                        with open(man, "rb") as f:
+                        with open(man, "r") as f:
                                 actual = f.read()
                                 self.assertEqualDiff(mfmt, actual,
                                     msg="{0} format".format(pfmt))
@@ -1359,15 +1359,15 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                 # Verify pkgfmt -c accepts a manifest in v1 or v2 format, and
                 # that the output for each version matches expected.
                 for contents in (self.v1_fmt, self.v2_fmt):
-                        with open(man, "wb") as f:
+                        with open(man, "w") as f:
                                 f.write(contents)
                         self.pkgfmt("-c {0}".format(man))
 
                 # Verify pkgfmt -c accepts both a v1 and v2 format manifest
                 # at the same time.
-                with open(man, "wb") as f:
+                with open(man, "w") as f:
                         f.write(self.v1_fmt)
-                with open(man2, "wb") as f:
+                with open(man2, "w") as f:
                         f.write(self.v2_fmt)
                 self.pkgfmt("-c {0} {1}".format(man, man2))
 

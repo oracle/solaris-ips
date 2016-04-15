@@ -21,17 +21,16 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import errno
 import unittest
-import cStringIO
 import os
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
@@ -42,6 +41,7 @@ import shutil
 import sys
 import tempfile
 
+from six.moves import cStringIO
 from six.moves.urllib.parse import urlparse, urlunparse
 from six.moves.urllib.request import pathname2url
 
@@ -121,11 +121,13 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 }
 
                 # Dump the p5i data.
-                fobj = cStringIO.StringIO()
+                fobj = cStringIO()
                 p5i.write(fobj, [pub], pkg_names=pnames)
 
                 # Verify that the p5i data ends with a terminating newline.
-                fobj.seek(-1, 2)
+                # In Python 3, StringIO doesn't support non-zero relative seek.
+                fobj.seek(0, os.SEEK_END)
+                fobj.seek(fobj.tell() - 1)
                 self.assertEqual(fobj.read(), "\n")
 
                 # Verify that output matches expected output.
@@ -164,7 +166,8 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # when provided a file path.
                 fobj.seek(0)
                 (fd1, path1) = tempfile.mkstemp(dir=self.test_root)
-                os.write(fd1, fobj.read())
+                # tempfile.mkstemp open the file in binary mode
+                os.write(fd1, misc.force_bytes(fobj.read()))
                 os.close(fd1)
                 validate_results(p5i.parse(location=path1))
 
@@ -224,7 +227,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 pub = self.__get_bobcat_pub(omit_repo=True)
 
                 # Dump the p5i data.
-                fobj = cStringIO.StringIO()
+                fobj = cStringIO()
                 p5i.write(fobj, [pub])
 
                 # Verify that output matches expected output.
@@ -234,7 +237,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 
                 # Now parse the result and verify no repositories are defined.
                 pub, pkg_names = p5i.parse(data=output)[0]
-                self.assert_(not pub.repository)
+                self.assertTrue(not pub.repository)
 
                 # Next, test the partial repository configuration case.  No
                 # origin is provided, but everything else is.
@@ -271,7 +274,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 pub.repository.reset_origins()
 
                 # Dump the p5i data.
-                fobj = cStringIO.StringIO()
+                fobj = cStringIO()
                 p5i.write(fobj, [pub])
 
                 # Verify that output matches expected output.

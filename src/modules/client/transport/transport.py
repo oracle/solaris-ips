@@ -24,7 +24,7 @@
 # Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import cStringIO
+from __future__ import  print_function
 import copy
 import errno
 import os
@@ -33,6 +33,7 @@ import six
 import tempfile
 import zlib
 from functools import cmp_to_key
+from io import BytesIO
 from six.moves import http_client, range
 
 import pkg.catalog as catalog
@@ -248,7 +249,7 @@ class TransportCfg(object):
                 # Caches fully set at least once.
                 self.__caches_set = True
 
-                for pub in self.__caches.keys():
+                for pub in list(self.__caches.keys()):
                         if shared or pub != "__all":
                                 # Remove any publisher specific caches so that
                                 # the most current publisher information can be
@@ -1072,7 +1073,7 @@ class Transport(object):
                         try:
                                 resp = d.get_datastream(fhash, v, header,
                                     ccancel=ccancel, pub=pub)
-                                s = cStringIO.StringIO()
+                                s = BytesIO()
                                 hash_val = misc.gunzip_from_stream(resp, s,
                                     hash_func=hash_func)
 
@@ -1088,7 +1089,8 @@ class Transport(object):
                                 content = s.getvalue()
                                 s.close()
 
-                                return content
+                                # we want str internally
+                                return misc.force_str(content)
 
                         except tx.ExcessiveTransientFailure as e:
                                 # If an endpoint experienced so many failures
@@ -1261,7 +1263,11 @@ class Transport(object):
                         try:
                                 resp = d.get_manifest(fmri, header,
                                     ccancel=ccancel, pub=pub)
-                                mcontent = resp.read()
+                                # If resp is a StreamingFileObj obj, its read()
+                                # methods will return bytes. We need str for
+                                # manifest and here's the earliest point that
+                                # we can convert it to str.
+                                mcontent = misc.force_str(resp.read())
 
                                 verified = self._verify_manifest(fmri,
                                     content=mcontent, pub=pub)
@@ -3263,7 +3269,7 @@ class MultiFileNI(MultiFile):
                 else:
                         while True:
                                 buf = src.read(64 * 1024)
-                                if buf == "":
+                                if buf == b"":
                                         break
                                 outfile.write(buf)
                 outfile.close()

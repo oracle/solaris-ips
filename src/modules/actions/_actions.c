@@ -28,6 +28,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#if PY_MAJOR_VERSION >= 3
+	#define PyBytes_AsString PyUnicode_AsUTF8
+#endif
+
 static PyObject *MalformedActionError;
 static PyObject *InvalidActionError;
 static PyObject *UnknownActionError;
@@ -76,7 +80,11 @@ add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr, bool concat)
 			oldstr = str = PyList_GET_ITEM(av, len - 1);
 			Py_INCREF(oldstr);
 			/* decrefing "attr" is handled by caller */
+#if PY_MAJOR_VERSION >= 3
+			str = PyUnicode_Concat(str, attr);
+#else
 			PyString_Concat(&str, attr);
+#endif
 			if (str == NULL)
 				return (-1);
 			return (PyList_SetItem(av, len - 1, str));
@@ -86,7 +94,11 @@ add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr, bool concat)
 	} else if (concat) {
 		Py_INCREF(av);
 		/* decrefing "attr" is handled by caller */
+#if PY_MAJOR_VERSION >= 3
+		av = PyUnicode_Concat(av, attr);
+#else
 		PyString_Concat(&av, attr);
+#endif
 		if (av == NULL)
 			return (-1);
 		ret = PyDict_SetItem(attrs, key, av);

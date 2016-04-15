@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -30,8 +30,7 @@ This module contains the UserAction class, which represents a user
 packaging object.  This contains the attributes necessary to create
 a new user."""
 
-import generic
-import six
+from . import generic
 try:
         from pkg.cfgfiles import *
         have_cfgfiles = True

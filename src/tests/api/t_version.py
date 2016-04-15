@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -78,47 +78,47 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                     version.DotSequence, "1.@")
 
         def testdotsequencecomparison(self):
-                self.assert_(self.d3 < self.d4)
-                self.assert_(self.d4 > self.d3)
-                self.assert_(not self.d1 < self.d2)
-                self.assert_(not self.d1 > self.d2)
-                self.assert_(not None == self.d1)
-                self.assert_(None != self.d1)
-                self.assert_(self.d1 != self.d3)
-                self.assert_(self.d1 == self.d2)
-                self.assert_(self.d1.is_same_major(self.d2))
-                self.assert_(self.d3.is_same_major(self.d4))
-                self.assert_(self.d1.is_same_minor(self.d2))
-                self.assert_(not self.d1.is_same_minor(self.d5))
-                self.assert_(not self.d3.is_same_minor(self.d4))
-                self.assert_(not self.d6.is_same_minor(self.d7))
-                self.assert_(self.d3.is_subsequence(self.d5))
-                self.assert_(not self.d3.is_subsequence(self.d6))
-                self.assert_(not self.d1.is_subsequence(self.d6))
-                self.assert_(not self.d6.is_subsequence(self.d1))
-                self.assert_(not self.d5.is_subsequence(self.d3))
+                self.assertTrue(self.d3 < self.d4)
+                self.assertTrue(self.d4 > self.d3)
+                self.assertTrue(not self.d1 < self.d2)
+                self.assertTrue(not self.d1 > self.d2)
+                self.assertTrue(not None == self.d1)
+                self.assertTrue(None != self.d1)
+                self.assertTrue(self.d1 != self.d3)
+                self.assertTrue(self.d1 == self.d2)
+                self.assertTrue(self.d1.is_same_major(self.d2))
+                self.assertTrue(self.d3.is_same_major(self.d4))
+                self.assertTrue(self.d1.is_same_minor(self.d2))
+                self.assertTrue(not self.d1.is_same_minor(self.d5))
+                self.assertTrue(not self.d3.is_same_minor(self.d4))
+                self.assertTrue(not self.d6.is_same_minor(self.d7))
+                self.assertTrue(self.d3.is_subsequence(self.d5))
+                self.assertTrue(not self.d3.is_subsequence(self.d6))
+                self.assertTrue(not self.d1.is_subsequence(self.d6))
+                self.assertTrue(not self.d6.is_subsequence(self.d1))
+                self.assertTrue(not self.d5.is_subsequence(self.d3))
 
         def teststr(self):
-                self.assert_(str(self.v1) == "5.5.1,5.5.1-10:20051122T000000Z")
-                self.assert_(str(self.v2) == "5.5.1,5.5.1-10:20070318T123456Z")
-                self.assert_(str(self.v3) == "5.5.1,5.5-10")
-                self.assert_(str(self.v4) == "5.5.1,5.4-6")
-                self.assert_(str(self.v5) == "5.6,1")
-                self.assert_(str(self.v6) == "5.7,5.4")
-                self.assert_(str(self.v7) == "5.10,5.5.1")
-                self.assert_(str(self.v8) == "5.10.1,5.5.1")
-                self.assert_(str(self.v9) == "5.11,5.5.1")
-                self.assert_(str(self.v10) == "0.1,5.11-1")
-                self.assert_(str(self.v11) == "0.1,5.11-1:20070710T120000Z")
-                self.assert_(
+                self.assertTrue(str(self.v1) == "5.5.1,5.5.1-10:20051122T000000Z")
+                self.assertTrue(str(self.v2) == "5.5.1,5.5.1-10:20070318T123456Z")
+                self.assertTrue(str(self.v3) == "5.5.1,5.5-10")
+                self.assertTrue(str(self.v4) == "5.5.1,5.4-6")
+                self.assertTrue(str(self.v5) == "5.6,1")
+                self.assertTrue(str(self.v6) == "5.7,5.4")
+                self.assertTrue(str(self.v7) == "5.10,5.5.1")
+                self.assertTrue(str(self.v8) == "5.10.1,5.5.1")
+                self.assertTrue(str(self.v9) == "5.11,5.5.1")
+                self.assertTrue(str(self.v10) == "0.1,5.11-1")
+                self.assertTrue(str(self.v11) == "0.1,5.11-1:20070710T120000Z")
+                self.assertTrue(
                     str(self.v12) == "5.11,0.5.11-0.72:20070921T211008Z")
-                self.assert_(
+                self.assertTrue(
                     str(self.v13) == "5.11,0.5.11-0.72:20070922T160226Z")
-                self.assert_(str(self.v14) == "0.1,5.11")
-                self.assert_(str(self.v15) == "0.1,5.11:20071014T234545Z")
-                self.assert_(str(self.v16) == "0.2,5.11")
-                self.assert_(str(self.v17) == "0.2,5.11-1:20071029T131519Z")
-                self.assert_(str(self.v18) == "5,5")
+                self.assertTrue(str(self.v14) == "0.1,5.11")
+                self.assertTrue(str(self.v15) == "0.1,5.11:20071014T234545Z")
+                self.assertTrue(str(self.v16) == "0.2,5.11")
+                self.assertTrue(str(self.v17) == "0.2,5.11-1:20071029T131519Z")
+                self.assertTrue(str(self.v18) == "5,5")
 
         def testbogusversion1(self):
                 """ Test empty elements """
@@ -211,87 +211,87 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                                     version.Version, vv, "5.11")
 
         def testversionlt(self):
-                self.assert_(self.v1 < self.v2)
+                self.assertTrue(self.v1 < self.v2)
 
         def testversionlt2(self):
-                self.assert_(self.v4 < self.v3)
+                self.assertTrue(self.v4 < self.v3)
 
         def testversionlt3(self):
-                self.assert_(self.v4 < self.v5)
+                self.assertTrue(self.v4 < self.v5)
 
         def testversionlt4(self):
-                self.assert_(self.v7 < self.v8)
+                self.assertTrue(self.v7 < self.v8)
 
         def testversionlt5(self):
-                self.assert_(not self.v7 < None)
+                self.assertTrue(not self.v7 < None)
 
         def testversionlt6(self):
-                self.assert_(not self.v7 < self.v7)
+                self.assertTrue(not self.v7 < self.v7)
 
         def testversiongt1(self):
-                self.assert_(self.v6 > self.v5)
+                self.assertTrue(self.v6 > self.v5)
 
         def testversiongt2(self):
-                self.assert_(self.v9 > self.v8)
+                self.assertTrue(self.v9 > self.v8)
 
         def testversiongt3(self):
-                self.assert_(self.v11 > self.v10)
+                self.assertTrue(self.v11 > self.v10)
 
         def testversiongt4(self):
-                self.assert_(self.v13 > self.v12)
+                self.assertTrue(self.v13 > self.v12)
 
         def testversiongt5(self):
-                self.assert_(self.v7 > None)
+                self.assertTrue(self.v7 > None)
 
         def testversiongt6(self):
-                self.assert_(not self.v7 > self.v7)
+                self.assertTrue(not self.v7 > self.v7)
 
         def testversioneq(self):
-                self.assert_(not self.v9 == self.v8)
-                self.assert_(not self.v9 == None)
-                self.assert_(not None == self.v9)
-                self.assert_(self.v9 == self.v9same)
+                self.assertTrue(not self.v9 == self.v8)
+                self.assertTrue(not self.v9 == None)
+                self.assertTrue(not None == self.v9)
+                self.assertTrue(self.v9 == self.v9same)
 
         def testversionne(self):
-                self.assert_(self.v9 != self.v8)
-                self.assert_(self.v9 != None)
-                self.assert_(None != self.v9)
-                self.assert_(not self.v9 != self.v9same)
+                self.assertTrue(self.v9 != self.v8)
+                self.assertTrue(self.v9 != None)
+                self.assertTrue(None != self.v9)
+                self.assertTrue(not self.v9 != self.v9same)
 
         def testversionsuccessor1(self):
-                self.assert_(self.v13.is_successor(self.v12,
+                self.assertTrue(self.v13.is_successor(self.v12,
                     version.CONSTRAINT_BRANCH))
 
         def testversionsuccessor2(self):
-                self.assert_(self.v2.is_successor(self.v1,
+                self.assertTrue(self.v2.is_successor(self.v1,
                     version.CONSTRAINT_BRANCH))
 
         def testversionsuccessor3(self):
-                self.assert_(self.v4.is_successor(self.v2,
+                self.assertTrue(self.v4.is_successor(self.v2,
                     version.CONSTRAINT_RELEASE))
 
         def testversionsuccessor4(self):
-                self.assert_(self.v6.is_successor(self.v5,
+                self.assertTrue(self.v6.is_successor(self.v5,
                     version.CONSTRAINT_RELEASE_MAJOR))
 
         def testversionsuccessor5(self):
-                self.assert_(self.v8.is_successor(self.v7,
+                self.assertTrue(self.v8.is_successor(self.v7,
                     version.CONSTRAINT_RELEASE_MAJOR))
 
         def testversionsuccessor6(self):
-                self.assert_(self.v10.is_successor(self.v14,
+                self.assertTrue(self.v10.is_successor(self.v14,
                     version.CONSTRAINT_AUTO))
 
         def testversionsuccessor7(self):
-                self.assert_(self.v15.is_successor(self.v14,
+                self.assertTrue(self.v15.is_successor(self.v14,
                     version.CONSTRAINT_AUTO))
 
         def testversionsuccessor8(self):
-                self.assert_(not self.v16.is_successor(self.v14,
+                self.assertTrue(not self.v16.is_successor(self.v14,
                     version.CONSTRAINT_AUTO))
 
         def testversionsuccessor9(self):
-                self.assert_(not self.v17.is_successor(self.v14,
+                self.assertTrue(not self.v17.is_successor(self.v14,
                     version.CONSTRAINT_AUTO))
 
         def testversionbadversion(self):
@@ -330,18 +330,18 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                     version.Version, "0.2,5.11-1:20070113T131672Z", None)
 
         def testversiongettime(self):
-                self.assert_(self.v1.get_timestamp().year == 2005)
-                self.assert_(self.v1.get_timestamp().hour == 0)
-                self.assert_(self.v1.get_timestamp().hour == 0)
-                self.assert_(self.v1.get_timestamp().tzname() == None)
-                self.assert_(self.v3.get_timestamp() == None)
+                self.assertTrue(self.v1.get_timestamp().year == 2005)
+                self.assertTrue(self.v1.get_timestamp().hour == 0)
+                self.assertTrue(self.v1.get_timestamp().hour == 0)
+                self.assertTrue(self.v1.get_timestamp().tzname() == None)
+                self.assertTrue(self.v3.get_timestamp() == None)
 
         def testversionsettime(self):
                 d = datetime.datetime.utcnow()
                 # 'd' includes microseconds, so we trim those off.
                 d = d.replace(microsecond=0)
                 self.v1.set_timestamp(d)
-                self.assert_(self.v1.get_timestamp() == d)
+                self.assertTrue(self.v1.get_timestamp() == d)
 
         def testsplit(self):
                 """Verify that split() works as expected."""

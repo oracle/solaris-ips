@@ -22,7 +22,7 @@
 
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -126,7 +126,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 # A destination repository must be specified.
                 self.pkgsend("", "close", exit=2)
                 self.pkgsend("", "publish", exit=2)
-                self.assert_("pkgsend publish:" in self.errout)
+                self.assertTrue("pkgsend publish:" in self.errout)
 
         def test_1_pkgsend_abandon(self):
                 """Verify that an abandoned tranasaction is not published."""
@@ -310,9 +310,10 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         urlopen(req)
                 except HTTPError as e:
                         err_txt = e.read()
-                        self.assert_("The specified Action attribute "
-                            "value" in err_txt)
-                        self.assert_("is not valid." in err_txt)
+                        # err_txt is bytes
+                        self.assertTrue(b"The specified Action attribute "
+                            b"value" in err_txt)
+                        self.assertTrue(b"is not valid." in err_txt)
                 else:
                         raise RuntimeError("Test failed!")
 
@@ -394,7 +395,7 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                 # First create our dummy data file.
                 fd, fpath = tempfile.mkstemp(dir=self.test_root)
-                fp = os.fdopen(fd, "wb")
+                fp = os.fdopen(fd, "w")
                 fp.write("foo")
                 fp.close()
 
@@ -425,10 +426,10 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 dir_2 = os.path.join(rootdir, "dir_2")
                 os.mkdir(dir_1)
                 os.mkdir(dir_2)
-                open(os.path.join(dir_1, "A"), "wb").close()
-                open(os.path.join(dir_2, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "w").close()
+                open(os.path.join(dir_2, "B"), "w").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
                             file NOHASH mode=0755 owner=root group=bin path=/B
                             set name=pkg.fmri value=testmultipledirs@1.0
@@ -699,7 +700,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                         if err.errno != os.errno.EEXIST:
                                                 raise
                                 fpath = os.path.join(pkgroot, entry)
-                                f = open(fpath, "wb")
+                                f = open(fpath, "w")
                                 f.write("test" + entry)
                                 f.close()
                                 # compute a digest of the file we just created,
@@ -1148,9 +1149,9 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 url = self.dc.get_depot_url()
 
                 def check_errors(err):
-                        self.assert_('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
-                        self.assert_("ERROR: script present in nopkg: myclass" in err)
-                        self.assert_("ERROR: script present in nopkg: postinstall" in err)
+                        self.assertTrue('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
+                        self.assertTrue("ERROR: script present in nopkg: myclass" in err)
+                        self.assertTrue("ERROR: script present in nopkg: postinstall" in err)
 
                 self.pkgsend(url, "open nopkg@1.0")
                 self.pkgsend(url, "import {0}".format(os.path.join(rootdir, "nopkg.pkg")),
@@ -1164,22 +1165,22 @@ dir path=foo/bar mode=0755 owner=root group=bin
 
         def check_sysv_scripting(self, err):
                 """Verify we've reported any class action or install scripts"""
-                self.assert_('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
-                self.assert_("ERROR: script present in nopkg: myclass" in err)
-                self.assert_("ERROR: script present in nopkg: postinstall" in err)
+                self.assertTrue('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
+                self.assertTrue("ERROR: script present in nopkg: myclass" in err)
+                self.assertTrue("ERROR: script present in nopkg: postinstall" in err)
 
         def check_sysv_parameters(self, output):
                 """Verify we've automatically converted some pkginfo parameters
                 """
-                self.assert_(
+                self.assertTrue(
                     "set name=pkg.description value=\"This is a sample package\""
                     in output)
-                self.assert_("set name=pkg.summary value=\"No package\""
+                self.assertTrue("set name=pkg.summary value=\"No package\""
                     in output)
-                self.assert_("set name=pkg.send.convert.pkg-contents value=bobcat"
+                self.assertTrue("set name=pkg.send.convert.pkg-contents value=bobcat"
                     in output)
                 # this pkginfo parameter should be ignored
-                self.assert_("rstate" not in output)
+                self.assertTrue("rstate" not in output)
 
         def test_20_multi_pkg_bundle(self):
                 """Verify we return an error for a multi-package datastream."""
@@ -1195,7 +1196,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                     os.path.join(rootdir, "nopkg.pkg")), coverage=False)
                 self.pkgsend(url, "generate {0}".format(os.path.join(rootdir,
                     "nopkg.pkg")), exit=1)
-                self.assert_("Multi-package datastreams are not supported." in
+                self.assertTrue("Multi-package datastreams are not supported." in
                     self.errout)
 
         def test_21_uri_paths(self):
@@ -1222,10 +1223,10 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 dir_2 = os.path.join(rootdir, "dir_2")
                 os.mkdir(dir_1)
                 os.mkdir(dir_2)
-                open(os.path.join(dir_1, "A"), "wb").close()
-                open(os.path.join(dir_2, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "w").close()
+                open(os.path.join(dir_2, "B"), "w").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
                             file NOHASH mode=0755 owner=root group=bin path=/B
                             set name=pkg.fmri value=testmultipledirs@1.0,5.10
@@ -1240,7 +1241,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.image_create(dhurl)
                 self.pkg("install testmultipledirs")
                 self.pkg("list -vH testmultipledirs@1.0")
-                self.assert_("testmultipledirs@1.0" in self.output)
+                self.assertTrue("testmultipledirs@1.0" in self.output)
 
                 self.pkg("verify")
                 self.image_destroy()
@@ -1259,9 +1260,9 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 os.mkdir(dir_1)
-                open(os.path.join(dir_1, "A"), "wb").close()
+                open(os.path.join(dir_1, "A"), "w").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
                             set name=pkg.fmri value=testnoversion
                             """)
@@ -1275,14 +1276,14 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 doesn't traceback."""
 
                 mfpath = os.path.join(self.test_root, "foo.p5m")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""set name=pkg.fmri value=foo@1
 link payload-pathname path=/usr/bin/foo target=bar""")
                 self.pkgsend("", "-s {0} publish {1}".format(
                     self.dc.get_depot_url(), mfpath), exit=1)
                 self.pkgsend("", "-s {0} publish {1}".format(
                     self.dc.get_repo_url(), mfpath), exit=1)
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""set name=pkg.fmri value=foo@1
 dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 self.pkgsend("", "-s {0} publish {1}".format(
@@ -1320,7 +1321,7 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 mfpath = os.path.join(self.test_root, "pkgsend_multihash.mf")
                 payload = self.make_misc_files(["pkgsend_multihash"])[0]
 
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""
 set name=pkg.fmri value=pkg:/multihash@1.0
 file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
@@ -1329,16 +1330,16 @@ file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath))
                 self.image_create(furi)
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.{0}=spaghetti".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}=spaghetti".format(hash_alg in self.output))
 
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath),
                     debug_hash="sha1+{0}".format(hash_alg))
                 self.pkg("refresh")
 
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.{0}=spaghetti".format(hash_alg)
+                self.assertTrue("pkg.hash.{0}=spaghetti".format(hash_alg)
                     not in self.output)
-                self.assert_("pkg.hash.rot13=caesar" in self.output)
+                self.assertTrue("pkg.hash.rot13=caesar" in self.output)
 
         def test_27_ownership(self):
                 """Test whether the ownership of the file will change if the
@@ -1414,7 +1415,7 @@ path=dir-foo/subdir-foo/subdirfile-foo\n""".format(
                 'pgksend publish'."""
 
                 mfpath = os.path.join(self.test_root, "content-attrs.p5m")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""\
 set name=pkg.fmri value=pkg://test/content-attrs@1.0
 file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored pkg.csize=ignored elfhash=ignored elfbits=ignored elfarch=ignored
@@ -1607,10 +1608,10 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 os.mkdir(dir_1)
-                open(os.path.join(dir_1, "A"), "wb").close()
-                open(os.path.join(dir_1, "B"), "wb").close()
+                open(os.path.join(dir_1, "A"), "w").close()
+                open(os.path.join(dir_1, "B"), "w").close()
                 mfpath = os.path.join(rootdir, "manifest_test")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
                             file NOHASH mode=0755 owner=root group=bin path=/B
                             set name=pkg.fmri value=httpstest@1.0,5.10

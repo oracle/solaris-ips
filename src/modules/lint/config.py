@@ -22,12 +22,14 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # aspects of pkglint configuration
 
 import os
+import six
+from collections import OrderedDict
 
 from six.moves import configparser
 
@@ -44,6 +46,9 @@ defaults = {
     "pkglint.exclude": None,
     "version.pattern": "*,5.11-0."
     }
+
+# Ensure the order of the items is the same.
+defaults = OrderedDict(sorted(defaults.items(), key=lambda t: t[0]))
 
 class PkglintConfigException(Exception):
         """An exception thrown when something fatal happens while reading the
@@ -65,10 +70,21 @@ class PkglintConfig(object):
                                     _("unable to read config file: {0} ").format(
                                     err))
                 try:
-                        self.config = configparser.SafeConfigParser(defaults)
+                        if six.PY2:
+                                self.config = configparser.SafeConfigParser(
+                                    defaults)
+                        else:
+                                # SafeConfigParser has been renamed to
+                                # ConfigParser in Python 3.2.
+                                self.config = configparser.ConfigParser(
+                                    defaults)
                         if not config_file:
-                                self.config.readfp(
-                                    open("/usr/share/lib/pkg/pkglintrc"))
+                                if six.PY2:
+                                        self.config.readfp(
+                                            open("/usr/share/lib/pkg/pkglintrc"))
+                                else:
+                                        self.config.read_file(
+                                            open("/usr/share/lib/pkg/pkglintrc"))
                                 self.config.read(
                                     [os.path.expanduser("~/.pkglintrc")])
                         else:

@@ -35,7 +35,10 @@ import sys
 import traceback
 import warnings
 import errno
-from imp import reload
+if sys.version_info[:2] >= (3, 4):
+        from importlib import reload
+else:
+        from imp import reload
 
 import pkg.actions
 import pkg.bundle
@@ -364,6 +367,7 @@ def trans_publish(repo_uri, fargs):
                 linecnt = len(data.splitlines())
                 linecnts.append((linecounter, linecounter + linecnt))
                 linecounter += linecnt
+                f.close()
 
         m = pkg.manifest.Manifest()
         try:
@@ -841,6 +845,9 @@ if __name__ == "__main__":
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         try:
                 __ret = main_func()

@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -358,7 +358,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                         "cs1_{0}_key.pem".format(pc.server_ta)),
                })
                 conf_path = os.path.join(instance_dir, "https.conf")
-                with open(conf_path, "wb") as fh:
+                with open(conf_path, "w") as fh:
                         fh.write(self.https_conf.format(**cd))
 
                 ac = pkg5unittest.ApacheController(conf_path, https_port,
@@ -564,7 +564,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 api_obj = self.image_create(props={"use-system-repo": True})
                 # Make sure that the publisher catalogs were created.
                 for n in ("test1", "test12", "test3"):
-                        self.assert_(os.path.isdir(os.path.join(self.img_path(),
+                        self.assertTrue(os.path.isdir(os.path.join(self.img_path(),
                             "var/pkg/publisher/{0}".format(n))))
                 expected = self.expected_all_access.format(
                     durl1=self.durl1, durl2=self.durl2,
@@ -590,19 +590,19 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                         count += 1
                         # publisher 4 does not have any origins set
                         if not line.startswith("test4") and line:
-                                self.assert_("<system-repository>" in line,
+                                self.assertTrue("<system-repository>" in line,
                                     "line {0} does not contain "
                                     "'<system-repository>'".format(line))
-                self.assert_(count == 5,
+                self.assertTrue(count == 5,
                     "expected 5 lines of output in \n{0}\n, got {1}".format(
                     self.output, count))
 
                 self.pkg("publisher")
                 self.pkg("publisher test1")
                 self.pkg("publisher test12")
-                self.assert_("Proxy: http://localhost:{0}".format(self.sysrepo_port)
+                self.assertTrue("Proxy: http://localhost:{0}".format(self.sysrepo_port)
                     in self.output)
-                self.assert_("<system-repository>" not in self.output)
+                self.assertTrue("<system-repository>" not in self.output)
                 self.debug("looking for {0}".format(self.durl1))
 
                 # Test that the publishers have the right uris and appear in
@@ -629,11 +629,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # Test that we can install a multi-hash package
                 self.pkg("install baz")
                 self.pkg("contents -m baz")
-                self.assert_("pkg.hash.sha256" in self.output)
+                self.assertTrue("pkg.hash.sha256" in self.output)
                 if sha512_supported:
                         self.pkg("install caz")
                         self.pkg("contents -m caz")
-                        self.assert_("pkg.hash.sha512_256" in self.output)
+                        self.assertTrue("pkg.hash.sha512_256" in self.output)
 
         def test_02_communication(self):
                 """Test that the transport for communicating with the depots is
@@ -722,7 +722,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 expected =  self.expected_all_access.format(
                     durl1=self.durl1, durl2=self.durl2,
                     durl3=self.durl3, port=self.sysrepo_port)
-                self.__check_publisher_info(expected, env_arg=env)
+                self.__check_publisher_info(expected)
                 self.pkg("install example_pkg", env_arg=env)
 
                 env = {"no_proxy": "localhost"}
@@ -786,11 +786,11 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
                 # for both origins, and that we only have one occurrence of
                 # "Proxy:"
                 self.pkg("publisher test1")
-                self.assert_(self.rurl1 in self.output)
-                self.assert_(self.durl1 in self.output)
-                self.assert_("http://localhost:{0}\n".format(self.sysrepo_port)
+                self.assertTrue(self.rurl1 in self.output)
+                self.assertTrue(self.durl1 in self.output)
+                self.assertTrue("http://localhost:{0}\n".format(self.sysrepo_port)
                     in self.output)
-                self.assert_(self.output.count("Proxy:") == 1)
+                self.assertTrue(self.output.count("Proxy:") == 1)
 
                 # Change the proxy configuration so that the image can't use it
                 # to communicate with the depot. This forces communication to
@@ -831,10 +831,10 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t{rurl1}/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[3].get_repodir().rstrip("/")).hexdigest()
+                hash1 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[1].get_repodir().rstrip("/"))).hexdigest()
+                hash3 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[3].get_repodir().rstrip("/"))).hexdigest()
 
                 # Check that a user can add and remove mirrors,
                 # but can't remove repo-provided mirrors
@@ -1340,12 +1340,13 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t{2}/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[3].get_repodir().rstrip("/")).hexdigest()
+                # Unicode-objects must be encoded before hashing.
+                hash1 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[1].get_repodir().rstrip("/"))).hexdigest()
+                hash2 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[2].get_repodir().rstrip("/"))).hexdigest()
+                hash3 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[3].get_repodir().rstrip("/"))).hexdigest()
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
@@ -1398,12 +1399,13 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t{rurl1}/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[3].get_repodir().rstrip("/")).hexdigest()
+                # Unicode-objects must be encoded before hashing.
+                hash1 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[1].get_repodir().rstrip("/"))).hexdigest()
+                hash2 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[2].get_repodir().rstrip("/"))).hexdigest()
+                hash3 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[3].get_repodir().rstrip("/"))).hexdigest()
 
                 self.__set_responses("all-access-f")
                 expected = """\
@@ -1438,12 +1440,12 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:{port}/test3/{hash3}/\
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
-                    self.dcs[3].get_repodir().rstrip("/")).hexdigest()
+                hash1 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[1].get_repodir().rstrip("/"))).hexdigest()
+                hash2 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[2].get_repodir().rstrip("/"))).hexdigest()
+                hash3 = digest.DEFAULT_HASH_FUNC(misc.force_bytes("file://" +
+                    self.dcs[3].get_repodir().rstrip("/"))).hexdigest()
 
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
@@ -1804,7 +1806,7 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 api_obj = self.image_create(props={"use-system-repo": True})
 
                 self.pkg("publisher test1", su_wrap=True)
-                self.assert_("signature-policy = ignore" in self.output)
+                self.assertTrue("signature-policy = ignore" in self.output)
                 pubs = api_obj.get_publishers()
                 for p in pubs:
                         self.assertEqualDiff(
@@ -1848,13 +1850,11 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
 
                 pubs = api_obj.get_publishers()
                 for p in pubs:
-                        self.assertEqualDiff(
-                            p.prefix + ":" + p.properties["signature-policy"],
-                            p.prefix + ":" + "require-names")
-                        self.assertEqualDiff(
+                        self.assertEqualDiff(p.prefix + ":" + "require-names",
+                            p.prefix + ":" + p.properties["signature-policy"])
+                        self.assertEqualDiff(p.prefix + ":" + "cs1_ch1_ta3",
                             p.prefix + ":" +
-                            " ".join(p.properties["signature-required-names"]),
-                            p.prefix + ":" + "cs1_ch1_ta3")
+                            " ".join(p.properties["signature-required-names"]))
 
         def test_signature_policy_7(self):
                 """Test that a mixture of publisher signature policies are
@@ -1878,7 +1878,7 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                                     p.properties["signature-policy"],
                                     p.prefix + ":" + "require-signatures")
                         elif p.prefix == "test12":
-                                self.assert_("signature-policy" not in
+                                self.assertTrue("signature-policy" not in
                                     p.properties)
                         else:
                                 self.assertEqualDiff(

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -182,7 +182,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                                         # Not in this repository, check next.
                                         continue
 
-                                m = open(mpath, "rb")
+                                m = open(mpath, "r")
                                 for l in m:
                                         if l.find("name=pkg.fmri") > -1:
                                                 continue
@@ -207,7 +207,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                         mpath = os.path.join(self.merge_dir, "publisher",
                             "os.org", "pkg", f.get_dir_path())
 
-                        m = open(mpath, "rb")
+                        m = open(mpath, "r")
                         returned = "".join(sorted(l for l in m))
                         returned = returned.strip()
                         m.close()

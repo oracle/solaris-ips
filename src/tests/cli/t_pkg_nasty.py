@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -245,7 +245,7 @@ class TestNastyInstall(TestPkgNasty):
 
                 # Change a file in the image and then revert it.
                 path = os.path.join(self.img_path(), "A", "f1")
-                self.assert_(os.path.exists(path))
+                self.assertTrue(os.path.exists(path))
                 f = open(path, "w")
                 print("I LIKE COCONUTS!", file=f)
                 f.close()
@@ -382,10 +382,10 @@ class TestNastySig(pkg5unittest.SingleDepotTestCase):
                         self.pkg_image_create(self.rurl)
 
                         imgdir = os.path.join(self.img_path(), "var", "pkg")
-                        self.assert_(os.path.exists(imgdir))
+                        self.assertTrue(os.path.exists(imgdir))
 
                         hfile = os.path.join(imgdir, "pkg5.hang")
-                        self.assert_(not os.path.exists(hfile))
+                        self.assertTrue(not os.path.exists(hfile))
 
                         self.pkg("purge-history")
 
@@ -406,8 +406,8 @@ class TestNastySig(pkg5unittest.SingleDepotTestCase):
                         # Verify that history records operation as canceled.
                         self.pkg(["history", "-H"])
                         hentry = self.output.splitlines()[-1]
-                        self.assert_("install" in hentry)
-                        self.assert_("Canceled" in hentry)
+                        self.assertTrue("install" in hentry)
+                        self.assertTrue("Canceled" in hentry)
 
 
 if __name__ == "__main__":

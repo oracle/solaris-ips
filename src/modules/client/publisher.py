@@ -34,10 +34,11 @@
 # modules/client/api.py:__init__.
 #
 
+from __future__ import print_function
+
 import calendar
 import collections
 import copy
-import cStringIO
 import datetime as dt
 import errno
 import hashlib
@@ -53,6 +54,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from io import BytesIO
 from six.moves.urllib.parse import quote, urlsplit, urlparse, urlunparse, \
     ParseResult
 from six.moves.urllib.request import url2pathname
@@ -1388,9 +1390,9 @@ class Publisher(object):
                                 # exception and do not update the file.
                                 fd = os.open(lcfile,
                                     os.O_WRONLY|os.O_NOFOLLOW|os.O_CREAT)
-                                os.write(fd, "{0}\n".format(
+                                os.write(fd, misc.force_bytes("{0}\n".format(
                                     misc.time_to_timestamp(
-                                    calendar.timegm(value.utctimetuple()))))
+                                    calendar.timegm(value.utctimetuple())))))
                                 os.close(fd)
                         except EnvironmentError as e:
                                 if e.errno == errno.ELOOP:
@@ -1696,7 +1698,7 @@ pkg unset-publisher {0}
                 # path length problems. In order for this image to interoperate
                 # with older clients, we must use sha-1 here.
                 return os.path.join(self.__origin_root,
-                    hashlib.sha1(origin.uri).hexdigest())
+                    hashlib.sha1(misc.force_bytes(origin.uri)).hexdigest())
 
         def __gen_origin_paths(self):
                 if not os.path.exists(self.__origin_root):
@@ -1712,7 +1714,7 @@ pkg unset-publisher {0}
                 # We must interoperate with older clients, so force the use of
                 # sha-1 here.
                 ohashes = [
-                    hashlib.sha1(o.uri).hexdigest()
+                    hashlib.sha1(misc.force_bytes(o.uri)).hexdigest()
                     for o in self.repository.origins
                 ]
 
@@ -2385,7 +2387,7 @@ pkg unset-publisher {0}
                         return None
 
                 if verify_hash:
-                        h = misc.get_data_digest(cStringIO.StringIO(s),
+                        h = misc.get_data_digest(BytesIO(misc.force_bytes(s)),
                             length=len(s), hash_func=hash_func)[0]
                         if h != pkg_hash:
                                 raise api_errors.ModifiedCertificateException(c,
@@ -2441,8 +2443,8 @@ pkg unset-publisher {0}
                                 self.__rebuild_subj_root()
                                 try:
                                         res.append(load_cert(pth))
-                                except EnvironmentError as e:
-                                        if e.errno != errno.ENOENT:
+                                except EnvironmentError as ex:
+                                        if ex.errno != errno.ENOENT:
                                                 raise
 
                         t = api_errors._convert_error(e,
@@ -3048,7 +3050,7 @@ pkg unset-publisher {0}
                 """Take a list in string representation and convert it back
                 to a Python list."""
 
-                list_str = list_str.encode("utf-8")
+                list_str = misc.force_str(list_str)
                 # Strip brackets and any whitespace
                 list_str = list_str.strip("][ ")
                 # Strip comma and any whitespeace
@@ -3146,7 +3148,11 @@ pkg unset-publisher {0}
         def __prop_update(self, d):
                 """Support update() on properties"""
 
-                for k, v in six.iteritems(d):
+                # The logic in __set_prop requires that the item with key
+                # 'SIGNATURE_POLICY' comes before the item with key
+                # 'signature-required-names'.
+                od = collections.OrderedDict(sorted(six.iteritems(d)))
+                for k, v in six.iteritems(od):
                         # Must iterate through each value and
                         # set it this way so that the logic
                         # in __set_prop is used.

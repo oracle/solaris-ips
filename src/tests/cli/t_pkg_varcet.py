@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -108,7 +108,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
                     exit=exit, su_wrap=su_wrap)
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
                 if errout:
-                        self.assert_(self.errout != "")
+                        self.assertTrue(self.errout != "")
                 else:
                         self.assertEqualDiff("", self.errout)
 
@@ -122,7 +122,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
                 )
                 self.assertEqualDiff(expected, self.output)
                 if errout:
-                        self.assert_(self.errout != "")
+                        self.assertTrue(self.errout != "")
                 else:
                         self.assertEqualDiff("", self.errout)
 
@@ -130,7 +130,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
             su_wrap=False):
                 self.pkg("{0} {1}".format(cmd, operands), exit=exit, su_wrap=su_wrap) 
                 if errout:
-                        self.assert_(self.errout != "")
+                        self.assertTrue(self.errout != "")
                 else:
                         self.assertEqualDiff("", self.errout)
 

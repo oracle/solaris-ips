@@ -22,7 +22,7 @@
 
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -106,7 +106,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
                 # Should fail since foo is not installed.
                 self.pkg_verify("foo", exit=1)
-                self.assert_("Unexpected Exception" not in self.output)
+                self.assertTrue("Unexpected Exception" not in self.output)
 
                 # Now install package.
                 self.pkg("install foo")
@@ -117,7 +117,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # Unprivileged users don't cause a traceback.
                 retcode, output = self.pkg_verify("foo", su_wrap=True, out=True,
                     exit=1)
-                self.assert_("Traceback" not in output)
+                self.assertTrue("Traceback" not in output)
 
                 # Should not output anything when using -q.
                 self.pkg_verify("-q foo")
@@ -136,12 +136,12 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 portable.remove(os.path.join(self.get_img_path(), "usr", "bin",
                     "bobcat"))
                 self.pkg_verify("foo", exit=1)
-                self.assert_("Unexpected Exception" not in self.output)
-                self.assert_("PACKAGE" in self.output and "STATUS" in self.output)
+                self.assertTrue("Unexpected Exception" not in self.output)
+                self.assertTrue("PACKAGE" in self.output and "STATUS" in self.output)
 
                 # Test that "-H" works as expected.
                 self.pkg_verify("foo -H", exit=1)
-                self.assert_("PACKAGE" not in self.output and
+                self.assertTrue("PACKAGE" not in self.output and
                     "STATUS" not in self.output)
 
                 # Should not output anything when using -q.
@@ -176,28 +176,28 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 fpath = os.path.join(self.get_img_path(), "etc",
                     "driver_aliases")
 
-                with open(fpath, "ab+") as f:
+                with open(fpath, "r+") as f:
                         out = ""
                         for l in f:
                                 if l.find("zigit") != -1:
                                         nl = l.replace("1234", "4321")
                                         out += nl
                                 out += l
-                        f.truncate(0)
+                        f.seek(0)
                         f.write(out)
 
                 # Verify should find the extra alias and it should be treated
                 # as a warning.
                 self.pkg_verify("-v foo")
-                self.assert_("4321" in self.output and "WARNING" in self.output)
+                self.assertTrue("4321" in self.output and "WARNING" in self.output)
 
                 # Test that warnings are displayed by default.
                 self.pkg_verify("foo")
-                self.assert_("4321" in self.output and "WARNING" in self.output)
+                self.assertTrue("4321" in self.output and "WARNING" in self.output)
 
                 # Verify on system wide should also find the extra alias.
                 self.pkg_verify("")
-                self.assert_("4321" in self.output and "WARNING" in self.output)
+                self.assertTrue("4321" in self.output and "WARNING" in self.output)
 
         def test_02_installed(self):
                 """When multiple FMRIs are given to pkg verify, if any of them
@@ -408,11 +408,11 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue("unpackaged" in out_json["item-messages"]
                     and out_json["item-messages"]["unpackaged"])
                 out_entry = out_json["item-messages"]["unpackaged"]
-                self.assertTrue("dir" in out_entry.keys()[0] or "file" in
-                    out_entry.keys()[0])
-                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_level"]
+                self.assertTrue("dir" in list(out_entry.keys())[0] or "file" in
+                    list(out_entry.keys())[0])
+                self.assertTrue(out_entry[list(out_entry.keys())[0]][0]["msg_level"]
                     == "info")
-                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_type"]
+                self.assertTrue(out_entry[list(out_entry.keys())[0]][0]["msg_type"]
                     == "unpackaged")
                 self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
                     in out_json["item-messages"])
@@ -428,11 +428,11 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue("unpackaged" in out_json["item-messages"]
                     and out_json["item-messages"]["unpackaged"])
                 out_entry = out_json["item-messages"]["unpackaged"]
-                self.assertTrue("dir" in out_entry.keys()[0] or "file" in
-                    out_entry.keys()[0])
-                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_level"]
+                self.assertTrue("dir" in list(out_entry.keys())[0] or "file" in
+                    list(out_entry.keys())[0])
+                self.assertTrue(out_entry[list(out_entry.keys())[0]][0]["msg_level"]
                     == "info")
-                self.assertTrue(out_entry[out_entry.keys()[0]][0]["msg_type"]
+                self.assertTrue(out_entry[list(out_entry.keys())[0]][0]["msg_type"]
                     == "unpackaged")
                 self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
                     not in out_json["item-messages"])

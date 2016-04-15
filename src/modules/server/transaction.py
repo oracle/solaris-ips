@@ -246,7 +246,7 @@ class Transaction(object):
                 # always create a minimal manifest
                 #
                 tfpath = os.path.join(self.dir, "manifest")
-                tfile = open(tfpath, "ab+")
+                tfile = open(tfpath, "a+")
 
                 # Build a set action containing the fully qualified FMRI and add
                 # it to the manifest.  While it may seem inefficient to create
@@ -343,8 +343,7 @@ class Transaction(object):
 
                 # Record that this is an append operation so that it can be
                 # reopened correctly.
-                with open(os.path.join(self.dir, "append"), "wb") as fh:
-                        pass
+                open(os.path.join(self.dir, "append"), "wb").close()
 
                 # copy in existing manifest, then open it for appending.
                 portable.copyfile(rstore.manifest(self.fmri),
@@ -391,7 +390,11 @@ class Transaction(object):
                                 return
                         raise
                 m = pkg.manifest.Manifest()
-                m.set_content(content=tfile.read())
+                # If tfile is a StreamingFileObj obj, its read()
+                # methods will return bytes. We need str for
+                # manifest and here's an earlisest point that
+                # we can convert it to str.
+                m.set_content(content=misc.force_str(tfile.read()))
                 tfile.close()
                 if os.path.exists(os.path.join(self.dir, "append")):
                         self.append_trans = True
@@ -485,7 +488,7 @@ class Transaction(object):
 
                         # Extract ELF information if not already provided.
                         # XXX This needs to be modularized.
-                        if haveelf and data[:4] == "\x7fELF" and (
+                        if haveelf and data[:4] == b"\x7fELF" and (
                             "elfarch" not in action.attrs or
                             "elfbits" not in action.attrs or
                             "elfhash" not in action.attrs):
@@ -604,7 +607,7 @@ class Transaction(object):
                 # Now that the action is known to be sane, we can add it to the
                 # manifest.
                 tfpath = os.path.join(self.dir, "manifest")
-                tfile = open(tfpath, "ab+")
+                tfile = open(tfpath, "a+")
                 print(action, file=tfile)
                 tfile.close()
 

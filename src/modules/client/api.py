@@ -1542,11 +1542,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # this regressions tests the plan save/load code.
                         pd_json1 = self.__plan_desc.getstate(self.__plan_desc,
                             reset_volatiles=True)
-                        fobj = tempfile.TemporaryFile()
+                        fobj = tempfile.TemporaryFile(mode="w+")
                         json.dump(pd_json1, fobj, encoding="utf-8")
                         pd_new = plandesc.PlanDescription(_op)
                         pd_new._load(fobj)
                         pd_json2 = pd_new.getstate(pd_new, reset_volatiles=True)
+                        fobj.close()
                         del fobj, pd_new
                         pkg.misc.json_diff("PlanDescription", \
                             pd_json1, pd_json2, pd_json1, pd_json2)
@@ -3599,10 +3600,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                         # repository for this
                                                         # unique set of origins.
                                                         origins = []
-                                                        map(origins.extend, [
+                                                        list(map(origins.extend, [
                                                            pkg_repos.get(rid).origins
                                                            for rid in rids
-                                                        ])
+                                                        ]))
                                                         npub = \
                                                             copy.copy(pub_map[pub])
                                                         nrepo = npub.repository
@@ -5576,7 +5577,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 ]
                 fd, fp = tempfile.mkstemp()
                 try:
-                        fh = os.fdopen(fd, "wb")
+                        fh = os.fdopen(fd, "w")
                         p5s.write(fh, pubs, self._img.cfg)
                         fh.close()
                         portable.rename(fp, path)

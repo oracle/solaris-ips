@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a package attribute
@@ -30,7 +30,7 @@ This module contains the AttributeAction class, which represents a single
 attribute of a package (package metadata).  Attributes are typed, and the
 possible types are: XXX."""
 
-import generic
+from . import generic
 import pkg.fmri
 import pkg.actions
 import six

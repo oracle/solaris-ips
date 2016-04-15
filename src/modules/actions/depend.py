@@ -31,7 +31,7 @@ This module contains the DependencyAction class, which represents a
 relationship between the package containing the action and another package.
 """
 
-import generic
+from . import generic
 import re
 import six
 

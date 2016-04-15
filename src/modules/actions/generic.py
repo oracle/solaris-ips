@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -29,7 +29,6 @@
 This module contains the Action class, which represents a generic packaging
 object."""
 
-from cStringIO import StringIO
 import errno
 import os
 
@@ -41,15 +40,16 @@ except AttributeError:
 import six
 import stat
 import types
+from io import BytesIO
 
-import _common
 import pkg.actions
 import pkg.client.api_errors as apx
 import pkg.digest as digest
 import pkg.portable as portable
 import pkg.variant as variant
 
-from pkg.misc import EmptyDict
+from . import _common
+from pkg.misc import EmptyDict, force_str
 
 # Directories must precede all filesystem object actions; hardlinks must follow
 # all filesystem object actions (except links).  Note that user and group
@@ -248,12 +248,12 @@ class Action(six.with_metaclass(NSG, object)):
                                                     TypeError):
                                                         d = data.read()
                                                         sz = len(d)
-                                                        data = StringIO(d)
+                                                        data = BytesIO(d)
                                         except (AttributeError, TypeError):
                                                 # Raw data was provided; fake a
                                                 # file object.
                                                 sz = len(data)
-                                                data = StringIO(data)
+                                                data = BytesIO(data)
                         except EnvironmentError as e:
                                 raise pkg.actions.ActionDataError(e)
 
@@ -295,6 +295,11 @@ class Action(six.with_metaclass(NSG, object)):
                 sattrs.sort()
 
                 for k in sattrs:
+                        # Octal literal in Python 3 begins with "0o", such as
+                        # "0o755", but we want to keep "0755" in the output.
+                        if k == "mode" and isinstance(self.attrs[k], str) and \
+                            self.attrs[k].startswith("0o"):
+                                self.attrs[k] = "0" + self.attrs[k][2:]
                         try:
                                v = self.attrs[k]
                         except KeyError:
@@ -361,6 +366,10 @@ class Action(six.with_metaclass(NSG, object)):
                 # We pay a performance penalty to do so, but it seems worth it.
                 for k in sorted(self.attrs.keys()):
                         v = self.attrs[k]
+                        # Octal literal in Python 3 begins with "0o", such as
+                        # "0o755", but we want to keep "0755" in the output.
+                        if k == "mode" and v.startswith("0o"):
+                                self.attrs[k] = "0" + v[2:]
                         if type(v) is list:
                                 out += " " + " ".join([
                                     "{0}={1}".format(k, q(lmt)) for lmt in sorted(v)
@@ -674,7 +683,7 @@ class Action(six.with_metaclass(NSG, object)):
                 for conflicting actions checks during image planning
                 operations."""
 
-                for key in self.attrs.keys():
+                for key in list(self.attrs.keys()):
                         # strip out variant and facet information
                         if key[:8] == "variant." or key[:6] == "facet.":
                                 del self.attrs[key]
@@ -697,7 +706,7 @@ class Action(six.with_metaclass(NSG, object)):
         def strip_variants(self):
                 """Remove all variant tags from the attrs dictionary."""
 
-                for k in self.attrs.keys():
+                for k in list(self.attrs.keys()):
                         if k.startswith("variant."):
                                 del self.attrs[k]
 
@@ -1187,4 +1196,11 @@ class Action(six.with_metaclass(NSG, object)):
                 raise apx.ActionExecutionError(self, details=err_txt,
                     fmri=fmri)
 
-Action.__init__ = types.MethodType(_common._generic_init, None, Action)
+        if six.PY3:
+                def __init__(self, data=None, **attrs):
+                        # create a bound method (no unbound method in Python 3)
+                        _common._generic_init(self, data, **attrs)
+
+if six.PY2:
+        # create an unbound method
+        Action.__init__ = types.MethodType(_common._generic_init, None, Action)

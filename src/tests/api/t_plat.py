@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -48,9 +48,9 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
 
         def testAdmin(self):
                 if os.name == 'posix' and os.getuid() == 0:
-                        self.assert_(portable.is_admin())
+                        self.assertTrue(portable.is_admin())
                 if os.name == 'posix' and os.getuid() != 0:
-                        self.assert_(not portable.is_admin())
+                        self.assertTrue(not portable.is_admin())
 
         def testUtils(self):
                 self.assertNotEqual("unknown", util.get_canonical_os_type())
@@ -64,16 +64,16 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
         def testForcibleRename(self):
                 # rename a file on top of another file which already exists
                 (fd1, path1) = tempfile.mkstemp()
-                os.write(fd1, "foo")
+                os.write(fd1, b"foo")
                 (fd2, path2) = tempfile.mkstemp()
-                os.write(fd2, "bar")
+                os.write(fd2, b"bar")
                 os.close(fd1)
                 os.close(fd2)
                 portable.rename(path1, path2)
                 self.assertFalse(os.path.exists(path1))
                 self.assertTrue(os.path.exists(path2))
                 fd2 = os.open(path2, os.O_RDONLY)
-                self.assertEquals(os.read(fd2, 3), "foo")
+                self.assertEqual(os.read(fd2, 3), b"foo")
                 os.close(fd2)
                 os.unlink(path2)
 
@@ -83,7 +83,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 import pkg.portable.os_windows as os_windows
                 cwd = os.getcwdu()
                 exefilesrc = 'C:\\Windows\\system32\\more.com'
-                self.assert_(os.path.exists(exefilesrc))
+                self.assertTrue(os.path.exists(exefilesrc))
 
                 # create an image, copy an executable into it, 
                 # run the executable, replace the executable
@@ -98,11 +98,11 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
                 self.assertRaises(OSError, os.unlink, exefile)
                 fd1, path1 = tempfile.mkstemp(dir = tdir1)
-                os.write(fd1, "foo")
+                os.write(fd1, b"foo")
                 os.close(fd1)
                 portable.rename(path1, exefile)
                 fd2 = os.open(exefile, os.O_RDONLY)
-                self.assertEquals(os.read(fd2, 3), "foo")
+                self.assertEqual(os.read(fd2, 3), "foo")
                 os.close(fd2)
                 proc.communicate()
 
@@ -113,7 +113,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # to the trash.
                 os_windows.cached_image_info = []
                 os_windows.get_trashdir(exefile)
-                self.assert_(not os.path.exists(os.path.join(img1.imgdir, 
+                self.assertTrue(not os.path.exists(os.path.join(img1.imgdir, 
                     os_windows.trashname)))
 
                 # cleanup
@@ -126,7 +126,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 import pkg.portable.os_windows as os_windows
                 cwd = os.getcwdu()
                 exefilesrc = 'C:\\Windows\\system32\\more.com'
-                self.assert_(os.path.exists(exefilesrc))
+                self.assertTrue(os.path.exists(exefilesrc))
 
                 # create an image, copy an executable into it, 
                 # run the executable, remove the executable
@@ -141,7 +141,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
                 self.assertRaises(OSError, os.unlink, exefile)
                 portable.remove(exefile)
-                self.assert_(not os.path.exists(exefile))
+                self.assertTrue(not os.path.exists(exefile))
                 proc.communicate()
 
                 # Make sure that the moved executable gets deleted
@@ -151,7 +151,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # to the trash.
                 os_windows.cached_image_info = []
                 os_windows.get_trashdir(exefile)
-                self.assert_(not os.path.exists(os.path.join(img1.imgdir,
+                self.assertTrue(not os.path.exists(os.path.join(img1.imgdir,
                     os_windows.trashname)))
 
                 # cleanup

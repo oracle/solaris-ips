@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -169,9 +169,9 @@ class TestApiRefresh(pkg5unittest.ManyDepotTestCase):
                 # trick the image into thinking that an update was interrupted
                 pathname = os.path.join(api_obj._img._statedir,
                      "state_updating")
-                open(pathname, "w")
-                os.chmod(pathname,
-                    stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
+                with open(pathname, "w"):
+                        os.chmod(pathname,
+                            stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
 
                 # make sure we see don't see the new package
                 res = api_obj.get_pkg_list(LIST_ALL)

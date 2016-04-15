@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -600,7 +600,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
 
         m = manifest.Manifest()
         try:
-                fh = open(fp, "rb")
+                fh = open(fp, "r")
         except EnvironmentError as e:
                 raise apx._convert_error(e)
         acts = []
@@ -1218,6 +1218,7 @@ def __collapse_conditionals(deps):
                                     **ds[0].attrs)
                                 for d in ds[1:]:
                                         merge_deps(res_dep, d)
+                                d = ds[-1]
                                 res_dep.attrs["fmri"] = list(set(
                                     res_dep.attrlist("fmri")))
                                 if len(res_dep.attrlist("fmri")) > 1:

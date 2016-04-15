@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic facet support
@@ -374,7 +374,7 @@ class Facets(dict):
 
         def _clear_inherited(self):
                 """Clear all inherited facet."""
-                for k in self.__inherited.keys():
+                for k in list(self.__inherited.keys()):
                         self.__delitem_internal(k, inherited=True)
 
         def _action_match(self, act):
@@ -480,7 +480,7 @@ class Facets(dict):
                 return rv
 
         def items(self):
-                return [a for a in six.iteritems(self)]
+                return [a for a in self.iteritems()]
 
         def iteritems(self): # return in sorted order for display
                 for k in self.__keylist:
@@ -525,4 +525,9 @@ class Facets(dict):
                 return self.__inherited_ro
 
 
-Facets.allow_action = types.MethodType(_allow_facet, None, Facets)
+        if six.PY3:
+                def allow_action(self, action, publisher=None):
+                        return _allow_facet(self, action, publisher=publisher)
+
+if six.PY2:
+        Facets.allow_action = types.MethodType(_allow_facet, None, Facets)

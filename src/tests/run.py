@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -u
+#!/usr/bin/python -u
 #
 # CDDL HEADER START
 #
@@ -53,6 +53,7 @@ sys.path.insert(0, ".")
 import tempfile
 covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
 
+import six
 import getopt
 import pkg5testenv
 import warnings
@@ -105,6 +106,10 @@ if __name__ == "__main__":
         warnings.filterwarnings('ignore', message='CRLExtensionOID has been '
             'renamed to CRLEntryExtensionOID',
             category=PendingDeprecationWarning)
+
+        if six.PY3:
+                # Suppress ResourceWarning: unclosed file.
+                warnings.filterwarnings("ignore", category=ResourceWarning)
 
         try:
                 #
@@ -226,13 +231,17 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
         seen = False
 
         def _istest(obj):
-                if (isinstance(obj, type) and 
+                if (isinstance(obj, type) and
                     issubclass(obj, unittest.TestCase)):
                         return True
                 return False
         def _istestmethod(name, obj):
-                if name.startswith("test") and \
-                    isinstance(obj, types.MethodType):
+                if name.startswith("test"):
+                    if six.PY2 and isinstance(obj, types.MethodType):
+                        return True
+                    # There is no unbound methods in Python 3, instead they
+                    # simply become functions.
+                    elif six.PY3 and isinstance(obj, types.FunctionType):
                         return True
                 return False
 
@@ -288,6 +297,13 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                                 methobj = getattr(classobj, attrname)
                                 # Make sure its a test method
                                 if not _istestmethod(attrname, methobj):
+                                        continue
+                                # Skip some test cases for Python 3.
+                                # test_bootenv requires boot-environment-utilities
+                                # Python 3.x package
+                                if six.PY3 and (
+                                    attrname in ["test_bootenv"]):
+                                        delattr(classobj, attrname)
                                         continue
                                 full = "{0}.{1}.{2}.{3}".format(testdir,
                                     filename, cname, attrname)
@@ -420,7 +436,7 @@ if __name__ == "__main__":
         time_estimates = {}
         timing_history = os.path.join(os.getcwd(), ".timing_history.txt")
         if os.path.exists(timing_history):
-                with open(timing_history, "rb") as fh:
+                with open(timing_history, "r") as fh:
                         ver, time_estimates = json.load(fh)
 
         api_suite = find_tests("api", onlyval, startattest, output,

@@ -22,7 +22,7 @@
 
 # Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -32,6 +32,7 @@ import os
 import re
 import six
 import unittest
+from pkg.misc import force_text
 
 class TestPkgHelp(pkg5unittest.CliTestCase):
         # Tests in this suite use the read only data directory.
@@ -48,11 +49,11 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
 
                         for str in expected:
                                 if str not in msg:
-                                        self.assert_(False, "{0} not in {1}".format(
+                                        self.assertTrue(False, "{0} not in {1}".format(
                                             str, msg))
                         for str in unexpected:
                                 if str in msg:
-                                        self.assert_(False, "{0} in {1}".format(
+                                        self.assertTrue(False, "{0} in {1}".format(
                                             str, msg))
 
                 # Full list of subcommands, ensuring we exit 0
@@ -124,7 +125,7 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 locale_env = { "LC_ALL": "ja_JP.eucJP" }
                 ret, out, err = self.pkg("help -v", env_arg=locale_env,
                     out=True, stderr=True)
-                cmd_out = six.text_type(err, encoding="eucJP")
+                cmd_out = force_text(err, encoding="eucJP")
                 # Take only 4 lines from "pkg --help" command output.
                 u_out = cmd_out.splitlines()[:4]
 

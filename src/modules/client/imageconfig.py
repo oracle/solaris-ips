@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
+import collections
 import errno
 import os.path
 import platform
@@ -461,9 +462,14 @@ class ImageConfig(cfg.FileConfig):
                         # Get updated configuration index.
                         idx = self.get_index()
 
-                for s, v in six.iteritems(idx):
+                # Sort the index so that the prefixes are added to the list
+                # "publisher-search-order" in alphabetic order.
+                for s, v in collections.OrderedDict(
+                    sorted(six.iteritems(idx))).items():
                         if re.match("authority_.*", s):
                                 k, a = self.read_publisher(s, v)
+                                # this will call __set_publisher and add the
+                                # prefix to "publisher-search-order".
                                 self.publishers[k] = a
 
                 # Move any properties found in policy section (from older
@@ -478,7 +484,6 @@ class ImageConfig(cfg.FileConfig):
                             default_properties[CA_PATH])
 
                 pso = self.get_property("property", "publisher-search-order")
-
                 # Ensure that all configured publishers are present in
                 # search order (add them in alpha order to the end).
                 # Also ensure that all publishers in search order that
@@ -723,7 +728,7 @@ class ImageConfig(cfg.FileConfig):
                                         # the existing configuration.
                                         secobj.remove_property(pname)
 
-                        for key, val in six.iteritems(pub.properties):
+                        for key, val in pub.properties.iteritems():
                                 if val == DEF_TOKEN:
                                         continue
                                 self.set_property(section,
@@ -752,8 +757,8 @@ class ImageConfig(cfg.FileConfig):
                         # changed later, clients will automatically get that
                         # value instead of the previous one.
                         default = []
-                        for name in (default_properties.keys() +
-                            default_policies.keys()):
+                        for name in (list(default_properties.keys()) +
+                            list(default_policies.keys())):
                                 # The actual class method must be called here as
                                 # ImageConfig's set_property can return the
                                 # value that maps to 'DEFAULT' instead.

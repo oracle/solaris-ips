@@ -36,14 +36,14 @@ class CertGenerator(object):
 
                 conf_dict = {"base_dir": self.base_dir}
                 self.cnf_file = os.path.join(self.base_dir, "openssl.cnf")
-                with open(self.cnf_file, "wb") as fh:
+                with open(self.cnf_file, "w") as fh:
                         fh.write(self.openssl_conf.format(**conf_dict))
 
                 # Set up the needed files.
-                fh = open(os.path.join(self.base_dir, "index"), "wb")
+                fh = open(os.path.join(self.base_dir, "index"), "w")
                 fh.close()
 
-                fh = open(os.path.join(self.base_dir, "serial"), "wb")
+                fh = open(os.path.join(self.base_dir, "serial"), "w")
                 fh.write("01\n")
                 fh.close()
 
@@ -77,7 +77,7 @@ class CertGenerator(object):
                 cmd = ["openssl", kind, "-in", tmp_pth,
                     "-text"]
 
-                fh = open(out_pth, "wb")
+                fh = open(out_pth, "w")
                 p = subprocess.Popen(cmd, stdout=fh)
                 assert p.wait() == 0
                 fh.close()

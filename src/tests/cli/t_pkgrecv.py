@@ -24,7 +24,7 @@
 # Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-import testutils
+from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
@@ -237,7 +237,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # transform contents to embed those pathnames, and write the
                 # transform files out.
                 for name, path in six.iteritems(xformpaths):
-                        f = open(path, "wb")
+                        f = open(path, "w")
                         self.transforms[name] = self.transforms[name].format(**xformpaths)
                         f.write(self.transforms[name])
                         f.close()
@@ -349,13 +349,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 mpath = os.path.join(basedir, "manifest")
 
                 m = manifest.Manifest()
-                raw = open(mpath, "rb").read()
+                raw = open(mpath, "r").read()
                 m.set_content(raw)
 
                 # Verify that the files aren't compressed since -k wasn't used.
                 # This is also the format pkgsend will expect for correct
                 # republishing.
-                ofile = open(os.devnull, "rb")
+                ofile = open(os.devnull, "r")
                 for atype in ("file", "license"):
                         for a in m.gen_actions_by_type(atype):
                                 if not hasattr(a, "hash"):
@@ -399,7 +399,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
-                raw = open(new, "rb").read()
+                raw = open(new, "r").read()
                 m.set_content(raw)
 
                 # Next, compare the package actions that have data.
@@ -437,7 +437,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
-                raw = open(new, "rb").read()
+                raw = open(new, "r").read()
                 m.set_content(raw)
 
                 # Next, compare the package actions that have data.
@@ -472,7 +472,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
-                raw = open(new, "rb").read()
+                raw = open(new, "r").read()
                 m.set_content(raw)
 
                 # Next, compare the package actions that have data.
@@ -547,11 +547,11 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrepo("-s {0} list -F json".format(npath))
                 out_json = json.loads(self.output)
                 for elem in out_json:
-                        self.assert_(elem["publisher"] == "testpub" and
+                        self.assertTrue(elem["publisher"] == "testpub" and
                             "testpub" in elem["pkg.fmri"])
                         ma = self.__get_manifest_contents(elem["pkg.fmri"], 0,
                             pub="testpub", repo_path=npath)
-                        self.assert_("pkg://testpub/" in ma)
+                        self.assertTrue("pkg://testpub/" in ma)
 
                 # Verify again with --raw option.
                 self.pkgrecv(self.durl1, "-r --raw --mog-file {0} -d {1} -v "
@@ -562,19 +562,19 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 pkgdir = xport_cfg.get_pkg_dir(bronze)
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("testpub" in mcontent)
+                self.assertTrue("testpub" in mcontent)
                 with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
                     as f:
                         ms = f.read()
-                self.assert_("testpub" in ms)
+                self.assertTrue("testpub" in ms)
                 pkgdir = xport_cfg.get_pkg_dir(amber)
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("testpub" in mcontent)
+                self.assertTrue("testpub" in mcontent)
                 with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
                     as f:
                         ms = f.read()
-                self.assert_("testpub" in ms)
+                self.assertTrue("testpub" in ms)
 
                 # Verify changing package name works.
                 npath2 = tempfile.mkdtemp(dir=self.test_root)
@@ -586,34 +586,34 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 bronze = self.published[4]
                 # Assert old path does not exist
                 oldpath = xport_cfg.get_pkg_dir(fmri.PkgFmri(bronze))
-                self.assert_(not os.path.exists(oldpath))
-                self.assert_(not os.path.exists(os.path.dirname(oldpath)))
+                self.assertTrue(not os.path.exists(oldpath))
+                self.assertTrue(not os.path.exists(os.path.dirname(oldpath)))
                 bronze = bronze.replace("bronze", "testname")
                 bronze = fmri.PkgFmri(bronze, None)
                 pkgdir = xport_cfg.get_pkg_dir(bronze)
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("testname" in mcontent)
+                self.assertTrue("testname" in mcontent)
                 with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
                     as f:
                         ms = f.read()
-                self.assert_("testname" in ms)
+                self.assertTrue("testname" in ms)
 
                 amber = self.published[1]
                 # Assert old path does not exist
                 oldpath = xport_cfg.get_pkg_dir(fmri.PkgFmri(amber))
-                self.assert_(not os.path.exists(oldpath))
-                self.assert_(not os.path.exists(os.path.dirname(oldpath)))
+                self.assertTrue(not os.path.exists(oldpath))
+                self.assertTrue(not os.path.exists(os.path.dirname(oldpath)))
                 amber = amber.replace("amber", "testname")
                 amber = fmri.PkgFmri(amber, None)
                 pkgdir = xport_cfg.get_pkg_dir(amber)
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("testname" in mcontent)
+                self.assertTrue("testname" in mcontent)
                 with open(os.path.join(os.path.join(pkgdir, "manifest.set"))) \
                     as f:
                         ms = f.read()
-                self.assert_("testname" in ms)
+                self.assertTrue("testname" in ms)
 
         def test_4_timever(self):
                 """Verify that receiving with -m options work as expected."""
@@ -741,12 +741,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 mpath = os.path.join(basedir, "manifest")
 
                 m = manifest.Manifest()
-                raw = open(mpath, "rb").read()
+                raw = open(mpath, "r").read()
                 m.set_content(raw)
 
                 # This is also the format pkgsend will expect for correct
                 # republishing.
-                ofile = open(os.devnull, "rb")
+                ofile = open(os.devnull, "r")
                 for atype in ("file", "license"):
                         for a in m.gen_actions_by_type(atype):
                                 if not hasattr(a, "hash"):
@@ -824,11 +824,11 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrepo("-s {0} list -F json".format(npath))
                 out_json = json.loads(self.output)
                 for elem in out_json:
-                        self.assert_(elem["publisher"] == "testpub" and
+                        self.assertTrue(elem["publisher"] == "testpub" and
                             "testpub" in elem["pkg.fmri"])
                         ma = self.__get_manifest_contents(elem["pkg.fmri"], 0,
                             pub="testpub", repo_path=npath)
-                        self.assert_("pkg://testpub/" in ma)
+                        self.assertTrue("pkg://testpub/" in ma)
 
                 # Verify attempting to retrieve a non-existent package fails
                 # for a multi-publisher repository.
@@ -857,8 +857,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 arc = p5p.Archive(arc_path, mode="r")
 
                 # Check for expected publishers.
-                expected = set(["test1", "test2"])
-                pubs = set(p.prefix for p in arc.get_publishers())
+                expected = ["test1", "test2"]
+                pubs = sorted(set(p.prefix for p in arc.get_publishers()))
                 self.assertEqualDiff(expected, pubs)
 
                 # Check for expected package FMRIs.
@@ -923,8 +923,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(repo.root, "--newest")
 
                 # Check for expected publishers.
-                expected = set(["test1", "test2"])
-                pubs = repo.publishers
+                expected = ["test1", "test2"]
+                pubs = sorted(repo.publishers)
                 self.assertEqualDiff(expected, pubs)
 
                 # Check for expected package FMRIs.
@@ -979,9 +979,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                         allcontents += str(tarf.readlines())
                         # 3 files + 1 license + 1 manifest +
                         # 1 repo configuration.
-                        self.assert_(len(fileObjs) == 6)
+                        self.assertTrue(len(fileObjs) == 6)
                         # etc/bronze1 has been dropped.
-                        self.assert_("etc/bronze1" not in allcontents)
+                        self.assertTrue("etc/bronze1" not in allcontents)
                 self.assertEqualDiff(expected, set(returned))
                 arc.close()
 
@@ -1004,7 +1004,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 arc_path = os.path.join(self.test_root, "test.p5p")
                 self.pkgrecv(self.durl1, "-a -n -d {0} \*".format(arc_path))
-                self.assert_(not os.path.exists(arc_path))
+                self.assertTrue(not os.path.exists(arc_path))
 
                 # --raw actually populates the destination with manifests even
                 # with -n, so just check that it exits 0.
@@ -1028,7 +1028,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 def __check_errout(pfmri):
                         s1 = "invalid action in package {0}".format(pfmri)
                         s2 = "Malformed action in package '{0}'".format(pfmri)
-                        self.assert_(s1 in self.errout or s2 in self.errout,
+                        self.assertTrue(s1 in self.errout or s2 in self.errout,
                             "{0} not in error".format(pfmri))
 
                 def __empty_repo(uri, arg_string):
@@ -1098,10 +1098,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 pfmri = fmri.PkgFmri(self.published[4])
                 mp = rd.manifest(pfmri)
 
-                with open(mp, "rb") as fh:
+                with open(mp, "r") as fh:
                         original_txt = fh.read()
                 txt = original_txt.replace("type=require", "type=foo")
-                with open(mp, "wb") as fh:
+                with open(mp, "w") as fh:
                         fh.write(txt)
 
                 rpth = tempfile.mkdtemp(dir=self.test_root)
@@ -1119,10 +1119,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 for i in range(5, 7):
                         pfmri = fmri.PkgFmri(self.published[i])
                         mp = rd.manifest(pfmri)
-                        with open(mp, "rb") as fh:
+                        with open(mp, "r") as fh:
                                 original_txt = fh.read()
                         txt = "foop\n" + original_txt
-                        with open(mp, "wb") as fh:
+                        with open(mp, "w") as fh:
                                 fh.write(txt)
 
                 for duri, arg_string, in dest_uris:
@@ -1211,7 +1211,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # First, recv the package and verify it has no extended hashes
                 self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
-                self.assert_("pkg.hash.{0}".format(hash_alg not in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg not in self.output))
 
                 # Now stop and start the repository as multi-hash aware, and
                 # recv it again, making sure that we do not get multiple hashes
@@ -1221,24 +1221,24 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.dcs[3].start()
                 self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
-                self.assert_("pkg.hash.{0}".format(hash_alg not in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg not in self.output))
 
                 # Now check the reverse - that a package with multiple hashes
                 # can be received into a repository that is not multi-hash aware
                 b = "bronze@1.0,5.11-0"
                 self.pkgsend_bulk(self.durl3, self.bronze10)
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, b))
-                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
                 self.pkgrecv(self.durl3, "-d {0} {1}".format(self.durl4, b))
                 self.pkg("contents -g {0} -m {1}".format(self.durl4, b))
-                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
 
                 # Ensure that we can recv multi-hash packages into p5p files
                 p5p_path = os.path.join(self.test_root,
                     "multi-hash-{0}.p5p".format(hash_alg))
                 self.pkgrecv(self.durl3, "-ad {0} {1}".format(p5p_path, b))
                 self.pkg("contents -g {0} -m {1}".format(p5p_path, b))
-                self.assert_("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
 
                 # Finally, stop and start our scratch repository to clear the
                 # debug feature. If this doesn't happen because we've failed
@@ -1259,9 +1259,9 @@ Retrieving packages (dry-run) ...
       Files to retrieve:      19
 Estimated transfer size: 3.17 kB
 """
-                self.assert_(expected in self.output, self.output)
+                self.assertTrue(expected in self.output, self.output)
                 for s in self.published:
-                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                        self.assertTrue(fmri.PkgFmri(s).get_fmri(anarchy=True,
                             include_scheme=False) in self.output)
 
                 # Clean up for next test.
@@ -1275,9 +1275,9 @@ Archiving packages (dry-run) ...
       Files to retrieve:      19
 Estimated transfer size: 3.17 kB
 """
-                self.assert_(expected in self.output, self.output)
+                self.assertTrue(expected in self.output, self.output)
                 for s in self.published:
-                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                        self.assertTrue(fmri.PkgFmri(s).get_fmri(anarchy=True,
                             include_scheme=False) in self.output)
 
                 # Now attempt to clone a repository.
@@ -1290,21 +1290,21 @@ Retrieving packages (dry-run) ...
       Files to retrieve:      19
 Estimated transfer size: 3.17 kB
 """
-                self.assert_(expected in self.output, self.output)
+                self.assertTrue(expected in self.output, self.output)
                 for s in self.published:
-                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                        self.assertTrue(fmri.PkgFmri(s).get_fmri(anarchy=True,
                             include_scheme=False) in self.output)
 
                 # Verify mogrify works by retrieving mogrified pkgs from the
                 # new target catalog.
                 self.pkgrecv(self.dpath1, "--mog-file {0} -d {1} -v \*".format(
                     self.transforms["pub_change"], self.tempdir))
-                self.assert_("target catalog 'testpub'" in self.output)
+                self.assertTrue("target catalog 'testpub'" in self.output)
                 self.pkgrepo("verify -s {0}".format(self.tempdir))
 
                 # Test that output is correct if -n is not specified.
                 self.pkgrecv(self.dpath1, "-d {0} -v \*".format(self.tempdir))
-                self.assert_("dry-run" not in self.output)
+                self.assertTrue("dry-run" not in self.output)
 
         def test_14_mog_manifest(self):
                 """Mogrify some contents in the manifest, and verify
@@ -1343,13 +1343,13 @@ Estimated transfer size: 3.17 kB
                 self.pkgrecv(self.durl5, "--raw --mog-file {0} -d {1} -v "
                     "filetrans1".format(self.transforms["add_none_file"],
                     rpth), exit=1)
-                self.assert_("not allowed" in self.errout)
+                self.assertTrue("not allowed" in self.errout)
 
                 # Test with adding an additional existing file
                 # (hashable content) should fail.
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
                     .format(self.transforms["add_file"], self.durl6), exit=1)
-                self.assert_("not allowed" in self.errout)
+                self.assertTrue("not allowed" in self.errout)
 
                 # Test with adding an depend action should succeed.
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans1"
@@ -1363,8 +1363,8 @@ Estimated transfer size: 3.17 kB
                     self.test_mog[0]))
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("depend" in mcontent)
-                self.assert_(os.path.exists(os.path.join(pkgdir,
+                self.assertTrue("depend" in mcontent)
+                self.assertTrue(os.path.exists(os.path.join(pkgdir,
                     "manifest.depend")))
 
                 # Drop the file.
@@ -1377,8 +1377,8 @@ Estimated transfer size: 3.17 kB
                     self.test_mog[3]))
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("path" not in mcontent)
-                self.assert_(not os.path.exists(os.path.join(pkgdir,
+                self.assertTrue("path" not in mcontent)
+                self.assertTrue(not os.path.exists(os.path.join(pkgdir,
                     "manifest.file")))
 
                 # With -v.
@@ -1390,7 +1390,7 @@ Estimated transfer size: 3.17 kB
                 elem = out_json[0]
                 ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
                     pub="test1")
-                self.assert_("etc/bronze1" not in ma)
+                self.assertTrue("etc/bronze1" not in ma)
 
                 # Change file path attribute.
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v filetrans3"
@@ -1401,7 +1401,7 @@ Estimated transfer size: 3.17 kB
                 elem = out_json[0]
                 ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
                     pub="test1")
-                self.assert_("opt/bronze2" in ma)
+                self.assertTrue("opt/bronze2" in ma)
                 self.pkgrepo("verify -s {0} --disable dependency"
                     .format(self.dpath6))
 
@@ -1412,18 +1412,18 @@ Estimated transfer size: 3.17 kB
                     self.test_mog[2]))
                 with open(os.path.join(pkgdir, "manifest")) as f:
                         mcontent = f.read()
-                self.assert_("opt/bronze2" in mcontent)
-                self.assert_(os.path.exists(os.path.join(pkgdir,
+                self.assertTrue("opt/bronze2" in mcontent)
+                self.assertTrue(os.path.exists(os.path.join(pkgdir,
                     "manifest.file")))
                 with open(os.path.join(pkgdir, "manifest.file")) as f:
                         mf = f.read()
-                self.assert_("opt/bronze2" in mf)
+                self.assertTrue("opt/bronze2" in mf)
 
                 self.pkgrecv(self.durl5, "--mog-file {0} -d {1} -v signature"
                     .format(self.transforms["pub_change"], self.durl6))
                 ma = self.__get_manifest_contents(elem["pkg.fmri"], 6,
                     pub="test1")
-                self.assert_("signature" not in ma)
+                self.assertTrue("signature" not in ma)
                 self.pkgrepo("verify -s {0} --disable dependency"
                     .format(self.dpath6))
 
@@ -1437,7 +1437,7 @@ Estimated transfer size: 3.17 kB
                 # For now, this only needs to test 'elfhash'.
                 #
                 mfpath = os.path.join(self.test_root, "content-attrs.p5m")
-                with open(mfpath, "wb") as mf:
+                with open(mfpath, "w") as mf:
                         mf.write("""\
 set name=pkg.fmri value=pkg://test/content-attrs@1.0
 file elftest.so.1 mode=0755 owner=root group=bin path=bin/true

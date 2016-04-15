@@ -78,17 +78,18 @@ SYSREPO_HIDDEN_URI = "<system-repository>"
 PROG_DELAY = 5.0
 
 
-def _byteify(input):
-        """Convert unicode string into byte string. This will be used by json
+def _strify(input):
+        """Convert unicode string into byte string in Python 2 and convert
+        bytes string into unicode string in Python 3. This will be used by json
         loads function."""
 
         if isinstance(input, dict):
-                return dict([(_byteify(key), _byteify(value)) for key, value in
+                return dict([(_strify(key), _strify(value)) for key, value in
                     six.iteritems(input)])
         elif isinstance(input, list):
-                return [_byteify(element) for element in input]
-        elif isinstance(input, six.text_type):
-                return input.encode('utf-8')
+                return [_strify(element) for element in input]
+        elif isinstance(input, (six.string_types, bytes)):
+                return misc.force_str(input, "utf-8")
         else:
                 return input
 
@@ -1059,7 +1060,10 @@ def __api_execute_plan(operation, api_inst):
                                 raise
 
                 if exc_value or exc_tb:
-                        six.reraise(exc_value, None, exc_tb)
+                        if six.PY2:
+                                six.reraise(exc_value, None, exc_tb)
+                        else:
+                                raise exc_value
 
         return rval
 
@@ -1318,7 +1322,7 @@ def __api_plan_save(api_inst, logger=None):
         oflags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
         try:
                 fd = os.open(path, oflags, 0o644)
-                with os.fdopen(fd, "wb") as fobj:
+                with os.fdopen(fd, "w") as fobj:
                         plan._save(fobj)
 
                 # cleanup any old style imageplan save files
@@ -1948,13 +1952,16 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 c["valid"] = False
                         else:
                                 nb = cert.get_notBefore()
-                                t = time.strptime(nb, "%Y%m%d%H%M%SZ")
+                                # strptime's first argument must be str
+                                t = time.strptime(misc.force_str(nb),
+                                    "%Y%m%d%H%M%SZ")
                                 nb = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
                                 times["effective"] = nb.strftime("%c")
 
                                 na = cert.get_notAfter()
-                                t = time.strptime(na, "%Y%m%d%H%M%SZ")
+                                t = time.strptime(misc.force_str(na),
+                                    "%Y%m%d%H%M%SZ")
                                 na = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
                                 times["expiration"] = na.strftime("%c")
@@ -2795,13 +2802,11 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
                                 errors_json.append(err)
                                 return None, __prepare_json(EXIT_OOPS,
                                     errors=errors_json)
-                        if isinstance(pargs, six.text_type):
-                                pargs = pargs.encode("utf-8")
+                        misc.force_str(pargs)
                         pargs = [pargs]
                 else:
                         for idx in range(len(pargs)):
-                                if isinstance(pargs[idx], six.text_type):
-                                        pargs[idx] = pargs[idx].encode("utf-8")
+                                misc.force_str(pargs[idx])
         except Exception as e:
                 err = {"reason": "{0} is invalid.".format(
                     arg_name)}
@@ -2815,7 +2820,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
                 elif isinstance(opts_json, dict):
                         opts = opts_json
                 else:
-                        opts = json.loads(opts_json, object_hook=_byteify)
+                        opts = json.loads(opts_json, object_hook=_strify)
                 if not isinstance(opts, dict):
                         err = {"reason": "opts_json is invalid."}
                         errors_json.append(err)
@@ -3100,6 +3105,9 @@ def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
                 _error_json(str(__e), errors_json=errors_json)
                 ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
         except api_errors.InvalidConfigFile as __e:
+                _error_json(str(__e), errors_json=errors_json)
+                ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
+        except (api_errors.PkgUnicodeDecodeError, UnicodeEncodeError) as __e:
                 _error_json(str(__e), errors_json=errors_json)
                 ret_json = __prepare_json(EXIT_OOPS, errors=errors_json)
         except:

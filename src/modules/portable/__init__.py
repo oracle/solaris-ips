@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -256,7 +256,7 @@ PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
 PD_BYPASS_GENERATE = "pkg.depend.bypass-generate"
 
 import platform
-import util as os_util
+from . import util as os_util
 
 osname = os_util.get_canonical_os_name()
 ostype = os_util.get_canonical_os_type()
@@ -270,7 +270,7 @@ for fragment in fragments:
         # then try the more generic OS Name module (e.g. os_linux),
         # then the OS type module (e.g. os_unix)        
         try:
-                exec('from {0} import *'.format(modname))
+                exec('from .{0} import *'.format(modname))
                 break
         except ImportError:
                 pass

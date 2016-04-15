@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_COMPONENT = 5.12
@@ -65,8 +65,7 @@ ALL_MANIFESTS:sh  = \
 	exit 0
 $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 PKGCMDENV         = \
-	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-	    PYTHONPATH=$(PKGROOT)/usr/lib/python2.7/vendor-packages
+	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin
 PKG               = $(PKGCMDENV) pkg
 PKGDEPEND         = $(PKGCMDENV) pkgdepend
 PKGFMT            = $(PKGCMDENV) pkgfmt
@@ -100,7 +99,9 @@ PKGMOG_DEFVALS    = \
 	PKGVERS=$(PKGVERS) \
 	REV=$(REV) \
 	PYDIR=usr/lib/python2.7 \
+	PY34DIR=usr/lib/python3.4 \
 	PYDIRVP=usr/lib/python2.7/vendor-packages \
+	PY34DIRVP=usr/lib/python3.4/vendor-packages \
 	CHANGESET=$(CHANGESET) \
 	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)

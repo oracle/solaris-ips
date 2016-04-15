@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division, unicode_literals
@@ -34,8 +34,10 @@ SHA512/224.
 The default hash function is SHA512/256. Change your hash function to
 SHA512/224 with the argument t=224 when you create a hash object.
 
-Hash objects have methods update(arg), digest() and hexdigest(), and an
-attribute hash_size.
+It mimics the behavior of hashlib.sha1 or hashlib.sha256. Hash objects have
+methods update(arg), digest() and hexdigest(), and an attribute hash_size.
+Also, the accepted input types, error messages and output types are similar
+to what hashlib does.
 
 For example:
 
@@ -58,22 +60,21 @@ For example:
 class SHA512_t(object):
 
     def __init__(self, message=None, t=256):
-        if message and not isinstance(message, six.string_types):
-            raise TypeError("Message should be string type.")
         if t != 256 and t != 224:
             raise ValueError("The module only supports "
                              "SHA512/256 or SHA512/224.")
-
         self.ctx = ffi.new("SHA512_CTX *")
         self.hash_size = t
         lib.SHA512_t_Init(self.hash_size, self.ctx)
         if message:
-            if isinstance(message, six.text_type):
-                message = message.encode("utf-8")
-            lib.SHA512_t_Update(self.ctx, message, len(message))
+            self.update(message)
 
     def update(self, message):
         """Update the hash object with the string arguments."""
+        if six.PY3 and isinstance(message, str):
+            raise TypeError("Unicode-objects must be encoded before hashing")
+        if not isinstance(message, (six.string_types, bytes)):
+            raise TypeError("Message must be string or buffer.")
         if isinstance(message, six.text_type):
             message = message.encode("utf-8")
         lib.SHA512_t_Update(self.ctx, message, len(message))
@@ -89,7 +90,7 @@ class SHA512_t(object):
         lib.memcpy(shc, self.ctx, ffi.sizeof("SHA512_CTX"))
         lib.SHA512_t_Final(digest, shc)
 
-        return "".join(six.unichr(i) for i in digest)
+        return b"".join(six.int2byte(i) for i in digest)
 
     def hexdigest(self):
         """Return hexadecimal digest of the strings passed to the update()

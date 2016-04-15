@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -256,8 +256,9 @@ def main_func():
                         variants.add(v)
                         vcombos[v].add((v, vval))
 
-        # merge_fmris() expects this to be a list.
-        variants = list(variants)
+        # merge_fmris() expects this to be a list. Sort it to make sure
+        # combo is determinstic in the later construction.
+        variants = sorted(variants, reverse=True)
 
         # Require that the user specified the same variants for all sources.
         for i, src_vars in enumerate(variant_list):
@@ -979,7 +980,9 @@ if __name__ == "__main__":
         # Make all warnings be errors.
         import warnings
         warnings.simplefilter('error')
-
+        if six.PY3:
+                # disable ResourceWarning: unclosed file
+                warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,

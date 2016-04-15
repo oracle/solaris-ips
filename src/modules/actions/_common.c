@@ -31,6 +31,13 @@
 
 static PyObject *nohash;
 
+#if PY_MAJOR_VERSION >= 3
+	#define PyBytes_AS_STRING PyUnicode_AsUTF8
+	#define PyBytes_AsString PyUnicode_AsUTF8
+	#define PyBytes_GET_SIZE PyUnicode_GET_LENGTH
+	#define PyBytes_FromStringAndSize PyUnicode_FromStringAndSize
+#endif
+
 static void
 set_invalid_action_error(const char *name, PyObject *action,
     PyObject *key_aname)
@@ -39,6 +46,10 @@ set_invalid_action_error(const char *name, PyObject *action,
 	PyObject *val = NULL;
 	PyObject *pkg_actions = NULL;
 
+	/*
+	 * TODO: unknown issue: importing pkg.actions can fail in Python 3, see
+	 * one test case in api/t_action.py`test_action_errors.
+	 */
 	if ((pkg_actions = PyImport_ImportModule("pkg.actions")) == NULL) {
 		/* No exception is set */
 		PyErr_SetString(PyExc_KeyError, "pkg.actions");

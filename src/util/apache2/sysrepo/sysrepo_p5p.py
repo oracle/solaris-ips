@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 import pkg.p5p
@@ -32,6 +32,7 @@ import sys
 import threading
 import traceback
 from six.moves import http_client
+from pkg.misc import force_str
 
 # redirecting stdout for proper WSGI portability
 sys.stdout = sys.stderr
@@ -317,6 +318,12 @@ class SysrepoP5p(object):
                 try:
                         pub, hsh, path = self._parse_query()
                         self.p5p_path = self.environ[hsh]
+                        if six.PY3:
+                                # The pathname return from environ contains
+                                # hex escaped sequences, but we need its unicode
+                                # character to be able to find the file.
+                                self.p5p_path = self.p5p_path.encode(
+                                        "iso-8859-1").decode("utf-8")
                         # In order to keep only one copy of the p5p index in
                         # memory, we cache it locally, and reuse it any time
                         # we're opening the same p5p file.  Before doing

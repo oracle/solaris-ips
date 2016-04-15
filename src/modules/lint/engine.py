@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -359,7 +359,9 @@ class LintEngine(object):
 
                 try:
                         self.logger.debug("Loading module {0}".format(name))
-                        __import__(name, None, None, [], -1)
+                        # the fifth parameter is 'level', which defautls to -1
+                        # in Python 2 and 0 in Python 3.
+                        __import__(name, None, None, [])
                         (checkers, excluded) = \
                             base.get_checkers(sys.modules[name], config)
                         return (checkers, excluded)

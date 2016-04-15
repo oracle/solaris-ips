@@ -9,21 +9,34 @@
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/library/python/cffi-27
-    pkg:/library/python/cherrypy-27
+    pkg:/library/python/cffi-34
     pkg:/library/python/cryptography-27
+    pkg:/library/python/cryptography-34
+    pkg:/library/python/cherrypy-27
+    pkg:/library/python/cherrypy-34
     pkg:/library/python/coverage-27
+    pkg:/library/python/coverage-34
     pkg:/library/python/jsonrpclib-27
+    pkg:/library/python/jsonrpclib-34
     pkg:/library/python/jsonschema-27
+    pkg:/library/python/jsonschema-34
     pkg:/library/python/locale-services
     pkg:/library/python/mako-27
+    pkg:/library/python/mako-34
     pkg:/library/python/pep8
     pkg:/library/python/ply-27
+    pkg:/library/python/ply-34
     pkg:/library/python/prettytable-27
+    pkg:/library/python/prettytable-34
     pkg:/library/python/pybonjour-27
     pkg:/library/python/pycurl-27
+    pkg:/library/python/pycurl-34
     pkg:/library/python/pyopenssl-27
+    pkg:/library/python/pyopenssl-34
     pkg:/library/python/simplejson-27
+    pkg:/library/python/simplejson-34
     pkg:/library/python/six-27
+    pkg:/library/python/six-34
     pkg:/package/svr4
     pkg:/runtime/python-27
     pkg:/runtime/python-34
@@ -36,6 +49,7 @@
     pkg:/system/library/math
     pkg:/system/library/security/crypto
     pkg:/system/linker
+    pkg:/system/locale
     pkg:/system/locale/extra
     pkg:/system/network
     pkg:/text/gnu-diffutils
@@ -46,3 +60,4 @@
     pkg:/web/server/apache-24
     pkg:/web/server/apache-24/module/apache-ssl
     pkg:/web/server/apache-24/module/apache-wsgi-27
+    pkg:/web/server/apache-24/module/apache-wsgi-34
