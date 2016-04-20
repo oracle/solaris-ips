@@ -3205,8 +3205,8 @@ close
                 self.pkgrecv(self.rurl2, "-d {0} renamed obs".format(self.rurl1))
 
         def test_bug_18463(self):
-                """Check that the crl host is only contacted once, instead of
-                once per package."""
+                """Check that the crl host is only contacted twice, instead of
+                twice per package."""
 
                 self.dcs[3].start()
 
@@ -3234,7 +3234,7 @@ close
                         for l in fh:
                                 if "ch1.1_ta4_crl.pem" in l:
                                         cnt += 1
-                self.assertEqual(cnt, 1)
+                self.assertEqual(cnt, 2)
 
 
 if __name__ == "__main__":

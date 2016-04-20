@@ -70,8 +70,7 @@ import pkg.portable as portable
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 logger = global_settings.logger
-from pkg.misc import EmptyDict, EmptyI, SIGNATURE_POLICY, DictProperty, \
-    PKG_RO_FILE_MODE
+from pkg.misc import EmptyDict, EmptyI, SIGNATURE_POLICY, DictProperty
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -1166,9 +1165,6 @@ class Publisher(object):
         # from during __copy__.
         _source_object_id = None
 
-        # Used to record those CRLs which are unreachable during the current
-        # operation.
-        __bad_crls = set()
 
         def __init__(self, prefix, alias=None, catalog=None, client_uuid=None,
             disabled=False, meta_root=None, repository=None,
@@ -1206,7 +1202,6 @@ class Publisher(object):
                 self.__delay_validation = False
 
                 self.__properties = {}
-                self.__tmp_crls = {}
 
                 # Writing out an EmptyI to a config file and reading it back
                 # in doesn't work correctly at the moment, but reading and
@@ -2537,122 +2532,6 @@ pkg unset-publisher {0}
                                     "At least one name must be provided for "
                                     "the signature-required-names policy."))
 
-        def __format_safe_read_crl(self, pth):
-                """CRLs seem to frequently come in DER format, so try reading
-                the CRL using both of the formats before giving up."""
-
-                with open(pth, "rb") as f:
-                        raw = f.read()
-
-                try:
-                        return x509.load_pem_x509_crl(raw, default_backend())
-                except ValueError:
-                        try:
-                                return x509.load_der_x509_crl(raw,
-                                    default_backend())
-                        except ValueError:
-                                raise api_errors.BadFileFormat(_("The CRL file "
-                                    "{0} is not in a recognized "
-                                    "format.").format(pth))
-
-        def __get_crl(self, uri):
-                """Given a URI (for now only http URIs are supported), return
-                the CRL object created from the file stored at that uri."""
-
-                uri = uri.strip()
-                if uri.startswith("Full Name:"):
-                        uri = uri[len("Full Name:"):]
-                        uri = uri.strip()
-                if uri.startswith("URI:"):
-                        uri = uri[4:]
-                if not uri.startswith("http://") and \
-                    not uri.startswith("file://"):
-                        raise api_errors.InvalidResourceLocation(uri.strip())
-                crl_host = DebugValues.get_value("crl_host")
-                if crl_host:
-                        orig = urlparse(uri)
-                        crl = urlparse(crl_host)
-                        uri = urlunparse(ParseResult(
-                            scheme=crl.scheme, netloc=crl.netloc,
-                            path=orig.path,
-                            params=orig.params, query=orig.params,
-                            fragment=orig.fragment))
-                # If we've already read the CRL, use the previously created
-                # object.
-                if uri in self.__tmp_crls:
-                        return self.__tmp_crls[uri]
-                fn = quote(uri, "")
-                assert os.path.isdir(self.__crl_root)
-                fpath = os.path.join(self.__crl_root, fn)
-                crl = None
-                # Check if we already have a CRL for this URI.
-                if os.path.exists(fpath):
-                        # If we already have a CRL that we can read, check
-                        # whether it's time to retrieve a new one from the
-                        # location.
-                        try:
-                                crl = self.__format_safe_read_crl(fpath)
-                        except EnvironmentError:
-                                pass
-                        else:
-                                nu = crl.next_update
-                                cur_time = dt.datetime.utcnow()
-
-                                if cur_time < nu:
-                                        self.__tmp_crls[uri] = crl
-                                        return crl
-                # If the CRL is already known to be unavailable, don't try
-                # connecting to it again.
-                if uri in Publisher.__bad_crls:
-                        return crl
-                # If no CRL already exists or it's time to try to get a new one,
-                # try to retrieve it from the server.
-                try:
-                        tmp_fd, tmp_pth = tempfile.mkstemp(dir=self.__crl_root)
-                except EnvironmentError as e:
-                        if e.errno in (errno.EACCES, errno.EPERM):
-                                tmp_fd, tmp_pth = tempfile.mkstemp()
-                        else:
-                                raise apx._convert_error(e)
-                with os.fdopen(tmp_fd, "wb") as fh:
-                        hdl = pycurl.Curl()
-                        hdl.setopt(pycurl.URL, uri)
-                        hdl.setopt(pycurl.WRITEDATA, fh)
-                        hdl.setopt(pycurl.FAILONERROR, 1)
-                        hdl.setopt(pycurl.CONNECTTIMEOUT,
-                            global_settings.PKG_CLIENT_CONNECT_TIMEOUT)
-                        try:
-                                hdl.perform()
-                        except pycurl.error:
-                                # If the CRL is unavailable, add it to the list
-                                # of bad crls.
-                                Publisher.__bad_crls.add(uri)
-                                # If we should treat failure to get a new CRL
-                                # as a failure, raise an exception here. If not,
-                                # if we should use an old CRL if it exists,
-                                # return that here. If none is available and
-                                # that means the cert should not be treated as
-                                # revoked, return None here.
-                                return crl
-                try:
-                        ncrl = self.__format_safe_read_crl(tmp_pth)
-                except api_errors.BadFileFormat:
-                        portable.remove(tmp_pth)
-                        return crl
-                try:
-                        portable.rename(tmp_pth, fpath)
-                        # Because the file was made using mkstemp, we need to
-                        # chmod it to match the other files in var/pkg.
-                        os.chmod(fpath, PKG_RO_FILE_MODE)
-                except EnvironmentError:
-                        self.__tmp_crls[uri] = ncrl
-                        try:
-                                portable.remove(tmp_pth)
-                        except EnvironmentError:
-                                pass
-                return ncrl
-
-
         def __verify_x509_signature(self, c, key):
                 """Verify the signature of a certificate or CRL 'c' against a
                 provided public key 'key'."""
@@ -2676,7 +2555,7 @@ pkg unset-publisher {0}
                 except Exception:
                         return False
 
-        def __check_crl(self, cert, ca_dict, crl_uri):
+        def __check_crl(self, cert, ca_dict, crl_uri, more_uris=False):
                 """Determines whether the certificate has been revoked by the
                 CRL located at 'crl_uri'.
 
@@ -2685,7 +2564,10 @@ pkg unset-publisher {0}
                 The 'ca_dict' is a dictionary which maps subject hashes to
                 certs treated as trust anchors."""
 
-                crl = self.__get_crl(crl_uri)
+                crl = None
+                if self.transport:
+                        crl = self.transport.get_crl(crl_uri, self.__crl_root,
+                            more_uris=more_uris)
 
                 # If we couldn't retrieve a CRL from the distribution point
                 # and no CRL is cached on disk, assume the cert has not been
@@ -2782,6 +2664,7 @@ pkg unset-publisher {0}
                 except x509.ExtensionNotFound:
                         return
 
+                crl_uris = []
                 for dp in dps:
                         if not dp.full_name:
                                 # we don't support relative names
@@ -2791,7 +2674,12 @@ pkg unset-publisher {0}
                                     x509.UniformResourceIdentifier):
                                         # we only support URIs
                                         continue
-                                self.__check_crl(cert, ca_dict, str(uri.value))
+                                crl_uris.append(str(uri.value))
+
+                for i, uri in enumerate(crl_uris):
+                        more_uris = i < len(crl_uris) - 1
+                        self.__check_crl(cert, ca_dict, uri,
+                            more_uris=more_uris)
 
         def __check_revocation(self, cert, ca_dict, use_crls):
                 hsh = self.__hash_cert(cert)

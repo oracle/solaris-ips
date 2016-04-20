@@ -26,6 +26,7 @@
 
 from __future__ import  print_function
 import copy
+import datetime as dt
 import errno
 import os
 import simplejson as json
@@ -35,6 +36,10 @@ import zlib
 from functools import cmp_to_key
 from io import BytesIO
 from six.moves import http_client, range
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from six.moves.urllib.parse import quote, urlsplit, urlparse, urlunparse, \
+    ParseResult
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -60,6 +65,7 @@ import pkg.server.repository as sr
 from pkg.actions import ActionError
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
+from pkg.misc import PKG_RO_FILE_MODE
 logger = global_settings.logger
 
 class TransportCfg(object):
@@ -559,6 +565,10 @@ class Transport(object):
                 self.cfg = tcfg
                 self.stats = tstats.RepoChooser()
                 self.repo_status = {}
+                self.__tmp_crls = {}
+                # Used to record those CRLs which are unreachable during the
+                # current operation.
+                self.__bad_crls = set()
 
         def __setup(self):
                 self.__engine = engine.CurlTransportEngine(self)
@@ -1855,6 +1865,174 @@ class Transport(object):
                                 filelist.append(v)
 
                         self._get_files_list(mfile, filelist)
+
+        def __format_safe_read_crl(self, pth):
+                """CRLs seem to frequently come in DER format, so try reading
+                the CRL using both of the formats before giving up."""
+
+                with open(pth, "rb") as f:
+                        raw = f.read()
+
+                try:
+                        return x509.load_pem_x509_crl(raw, default_backend())
+                except ValueError:
+                        try:
+                                return x509.load_der_x509_crl(raw,
+                                    default_backend())
+                        except ValueError:
+                                raise apx.BadFileFormat(_("The CRL file "
+                                    "{0} is not in a recognized "
+                                    "format.").format(pth))
+
+        @LockedTransport()
+        def get_crl(self, uri, crl_root, more_uris=False):
+                """Given a URI (for now only http URIs are supported), return
+                the CRL object created from the file stored at that uri.
+
+                uri: URI for a CRL.
+
+                crl_root: file-system based crl root directory for storing
+                retrieved the CRL.
+                """
+
+                uri = uri.strip()
+                if uri.startswith("Full Name:"):
+                        uri = uri[len("Full Name:"):]
+                        uri = uri.strip()
+                if uri.startswith("URI:"):
+                        uri = uri[4:]
+                if not uri.startswith("http://") and \
+                    not uri.startswith("file://"):
+                        raise apx.InvalidResourceLocation(uri.strip())
+                crl_host = DebugValues.get_value("crl_host")
+                if crl_host:
+                        orig = urlparse(uri)
+                        crl = urlparse(crl_host)
+                        uri = urlunparse(ParseResult(
+                            scheme=crl.scheme, netloc=crl.netloc,
+                            path=orig.path,
+                            params=orig.params, query=orig.params,
+                            fragment=orig.fragment))
+                # If we've already read the CRL, use the previously created
+                # object.
+                if uri in self.__tmp_crls:
+                        return self.__tmp_crls[uri]
+                fn = quote(uri, "")
+                if not os.path.isdir(crl_root):
+                        raise apx.InvalidResourceLocation(_("CRL root: {0}"
+                            ).format(crl_root))
+
+                fpath = os.path.join(crl_root, fn)
+                crl = None
+                # Check if we already have a CRL for this URI.
+                if os.path.exists(fpath):
+                        # If we already have a CRL that we can read, check
+                        # whether it's time to retrieve a new one from the
+                        # location.
+                        try:
+                                crl = self.__format_safe_read_crl(fpath)
+                        except EnvironmentError:
+                                pass
+                        else:
+                                nu = crl.next_update
+                                cur_time = dt.datetime.utcnow()
+
+                                if cur_time < nu:
+                                        self.__tmp_crls[uri] = crl
+                                        return crl
+
+                # If the CRL is already known to be unavailable, don't try
+                # connecting to it again.
+                if uri in self.__bad_crls:
+                        return crl
+
+                # If no CRL already exists or it's time to try to get a new one,
+                # try to retrieve it from the server.
+                try:
+                        tmp_fd, tmp_pth = tempfile.mkstemp(dir=crl_root)
+                except EnvironmentError as e:
+                        if e.errno in (errno.EACCES, errno.EPERM):
+                                tmp_fd, tmp_pth = tempfile.mkstemp()
+                        else:
+                                raise apx._convert_error(e)
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                orig = urlparse(uri)
+                # To utilize the transport engine, we need to pretend uri for
+                # a crl is like a repo, because the transport engine has some
+                # specific bookkeeping stats keyed by repouri and proxy.
+                # We did this to utilize it as much as possible.
+                repouri = urlunparse(ParseResult(scheme=orig.scheme,
+                    netloc=orig.netloc, path="", params="", query="",
+                    fragment=""))
+                proxy = misc.get_runtime_proxy(None, uri)
+                t_repouris = _convert_repouris([publisher.RepositoryURI(repouri,
+                    proxy=proxy)])
+
+                retries = 2
+                # We need to call get_repostats to establish the initial
+                # stats.
+                self.stats.get_repostats(t_repouris)
+                for i in range(retries):
+                        self.__engine.add_url(uri, filepath=tmp_pth,
+                            repourl=repouri, proxy=proxy)
+                        try:
+                                while self.__engine.pending:
+                                        self.__engine.run()
+                                rf = self.__engine.check_status()
+                                if rf:
+                                        # If there are non-retryable failure
+                                        # cases or more uris available, do not
+                                        # retry this one and add it to bad crl
+                                        # list.
+                                        if any(not f.retryable for f in rf) or \
+                                            more_uris:
+                                                self.__bad_crls.add(uri)
+                                                return crl
+                                        # Last retry failed, also consider it as
+                                        # a bad crl.
+                                        elif i >= retries - 1:
+                                                self.__bad_crls.add(uri)
+                                                return crl
+                                else:
+                                        break
+                        except tx.ExcessiveTransientFailure as e:
+                                # Since there are too many consecutive errors,
+                                # we probably just consider it as a bad crl.
+                                self.__bad_crls.add(uri)
+                                # Reset the engine.
+                                self.__engine.reset()
+                                return crl
+
+                try:
+                        ncrl = self.__format_safe_read_crl(tmp_pth)
+                except apx.BadFileFormat:
+                        portable.remove(tmp_pth)
+                        return crl
+                except EnvironmentError:
+                        # If the tmp_pth was deleted by transport engine or
+                        # anything else about opening files, do the following.
+                        try:
+                                portable.remove(tmp_pth)
+                        except EnvironmentError:
+                                pass
+                        return crl
+
+                try:
+                        portable.rename(tmp_pth, fpath)
+                        # Because the file was made using mkstemp, we need to
+                        # chmod it to match the other files in var/pkg.
+                        os.chmod(fpath, PKG_RO_FILE_MODE)
+                except EnvironmentError:
+                        self.__tmp_crls[uri] = ncrl
+                        try:
+                                portable.remove(tmp_pth)
+                        except EnvironmentError:
+                                pass
+                return ncrl
 
         def get_versions(self, pub, ccancel=None, alt_repo=None):
                 """Query the publisher's origin servers for versions

@@ -38,6 +38,7 @@ modules/client/progress.py
 modules/client/publisher.py
 modules/client/rad_pkg.py
 modules/client/transport/repo.py
+modules/client/transport/transport.py
 modules/config.py
 modules/file_layout/file_manager.py
 modules/flavor/base.py
