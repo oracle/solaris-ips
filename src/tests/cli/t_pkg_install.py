@@ -3147,10 +3147,10 @@ adm
                         """
 
                 # Send all pkgs
-                self.pkgsend_bulk(self.rurl, (self.incorp10, self.incorp20,
-                    self.incorp30, self.iridium10, self.concorp10, self.amber10,
-                    self.amber20, self.bronze10, self.bronze20, self.bronze30,
-                    self.brass10))
+                plist = self.pkgsend_bulk(self.rurl, (self.incorp10,
+                    self.incorp20, self.incorp30, self.iridium10,
+                    self.concorp10, self.amber10, self.amber20, self.bronze10,
+                    self.bronze20, self.bronze30, self.brass10))
 
                 self.image_create(self.rurl)
 
@@ -3172,9 +3172,24 @@ adm
                 self.pkg("install incorp@1.0")
 
                 # upgrade pkg that loses incorp. deps. in new version
-                self.pkg("install incorp@2.0")
-                self.pkg("update")
-                self.pkg("list bronze@3.0")
+                self.pkg("install -vvv incorp@2.0")
+
+                # perform explicit update of incorp; should not update bronze
+                self.pkg("update --parsable=0 -n incorp@3")
+                self.assertEqualParsable(self.output, change_packages=[
+                    [plist[1], plist[2]] # incorp 2.0 -> 3.0
+                ])
+                self.pkg("update --parsable=0 -n incorp")
+                self.assertEqualParsable(self.output, change_packages=[
+                    [plist[1], plist[2]] # incorp 2.0 -> 3.0
+                ])
+
+                # perform a general update; should upgrade incorp and bronze
+                self.pkg("update --parsable=0 -n")
+                self.assertEqualParsable(self.output, change_packages=[
+                    [plist[8], plist[9]],  # bronze 2.0 -> 3.0
+                    [plist[1], plist[2]] # incorp 2.0 -> 3.0
+                ])
 
         def test_upgrade3(self):
                 """Test for editable files moving between packages or locations
@@ -11395,6 +11410,110 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+
+class TestPkgOSDowngrade(pkg5unittest.ManyDepotTestCase):
+        persistent_setup = True
+
+        pkgs = (
+            """
+                open entire@5.12-5.12.0.0.0.96.0
+                add set name=pkg.depend.install-hold value=core-os
+                add depend fmri=consolidation/osnet/osnet-incorporation type=require
+                add depend fmri=consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.96.1 facet.version-lock.consolidation/osnet/osnet-incorporation=true type=incorporate
+                add depend fmri=consolidation/osnet/osnet-incorporation@5.12-5.12.0 type=incorporate
+                add depend fmri=consolidation/install/install-incorporation type=require
+                add depend fmri=consolidation/install/install-incorporation@5.12-5.12.0.0.0.4.0 facet.version-lock.consolidation/install/install-incorporation=true type=incorporate
+                close
+            """
+            """
+                open consolidation/install/install-incorporation@5.12-5.12.0.0.0.4.0
+                add depend fmri=consolidation/osnet/osnet-incorporation type=require
+                close
+            """
+            """
+                open consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.96.1
+                add set name=pkg.depend.install-hold value=core-os.osnet
+                add depend fmri=pkg:/system/data/terminfo/terminfo-core@5.12,5.12-5.12.0.0.0.96.1 type=incorporate
+                close
+            """
+            """
+                open system/data/terminfo/terminfo-core@5.12-5.12.0.0.0.96.1
+                add depend fmri=consolidation/osnet/osnet-incorporation type=require
+                close
+            """
+        )
+
+        nightly_pkgs = (
+            """
+                open consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.97.32830
+                add set name=pkg.depend.install-hold value=core-os.osnet
+                add depend fmri=pkg:/system/data/terminfo/terminfo-core@5.12-5.12.0.0.0.95.32487 type=incorporate
+                close
+            """
+            """
+                open consolidation/install/install-incorporation@5.12-5.12.0.0.0.4.0
+                add depend fmri=consolidation/osnet/osnet-incorporation type=require
+                close
+            """
+            """
+                open system/data/terminfo/terminfo-core@5.12-5.12.0.0.0.95.32487
+                add depend fmri=consolidation/osnet/osnet-incorporation type=require
+                close
+            """
+        )
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["solaris", "nightly"])
+                self.rurl = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+
+                self.__pkgs = self.pkgsend_bulk(self.rurl, self.pkgs)
+                self.__nightly_pkgs = self.pkgsend_bulk(self.rurl2, self.nightly_pkgs)
+
+        def test_downgrade_update(self):
+                """Verify that incorporated packages not affected by install-holds
+                will be downgraded if the incorporating package is requested by
+                the user or will be updated as part of a general update
+                operation."""
+
+                self.image_create(self.rurl, prefix="")
+                self.pkg("install --parsable=0 entire terminfo-core")
+                self.assertEqualParsable(self.output,
+                    add_packages=[self.__pkgs[1], self.__pkgs[2],
+                        self.__pkgs[0], self.__pkgs[3]]
+                )
+
+                self.pkg("set-publisher --non-sticky solaris")
+                self.pkg("change-facet "
+                    "version-lock.consolidation/osnet/osnet-incorporation=false")
+                self.pkg("set-publisher -P -p {0}".format(self.rurl2))
+                self.pkg("publisher")
+                self.pkg("facet")
+                self.pkg("list -afv")
+
+                # In this case, we expect osnet-incorporation to be upgraded and
+                # terminfo-core to be downgraded; install-incorporation should
+                # not be modified since it was not named on the command-line.
+                self.pkg("update --parsable=0 -n osnet-incorporation")
+                self.assertEqualParsable(self.output,
+                    change_packages=[
+                        [self.__pkgs[2], self.__nightly_pkgs[0]],
+                        [self.__pkgs[3], self.__nightly_pkgs[2]]
+                    ]
+                )
+
+                # In this case, we expect osnet-incorporation and
+                # install-incorporation to be upgraded, and terminfo-core to be
+                # downgraded.
+                self.pkg("update --parsable=0 -n")
+                self.assertEqualParsable(self.output,
+                    change_packages=[
+                        [self.__pkgs[1], self.__nightly_pkgs[1]],
+                        [self.__pkgs[2], self.__nightly_pkgs[0]],
+                        [self.__pkgs[3], self.__nightly_pkgs[2]]
+                    ]
+                )
 
 
 class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):

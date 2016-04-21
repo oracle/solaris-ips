@@ -1533,13 +1533,20 @@ class PkgSolver(object):
                         if not solution_vector:
                                 break
 
-                        # prevent the selection of any older pkgs
+                        # prevent the selection of any older pkgs except for
+                        # those that are part of the set of allowed downgrades;
                         for fid in solution_vector:
                                 pfmri = self.__getfmri(fid)
                                 matching, remaining = \
                                     self.__comb_newer_fmris(pfmri)
                                 if not older:
-                                        remove = remaining
+                                        # without subtraction of allowed
+                                        # downgrades, an initial solution will
+                                        # exclude any solutions containing
+                                        # earlier versions of downgradeable
+                                        # packages
+                                        remove = remaining - \
+                                            self.__allowed_downgrades
                                 else:
                                         remove = matching - set([pfmri]) - \
                                             eliminated
@@ -3193,58 +3200,78 @@ class PkgSolver(object):
                 self.__dg_incorp_cache[fmri] = set()
                 self.__progress()
 
-                # Get all incorporated packages for this fmri.
-                matching_incorp_sets = [
-                    m[0]
-                    for m in
-                    self.__get_incorp_nonmatch_dict(fmri,excludes).values()
-                ]
-
-                for df in chain.from_iterable(matching_incorp_sets):
-                        if df.pkg_name not in self.__installed_dict:
+                # Get all matching incorporated packages for this fmri; this is
+                # a list of sets, where each set represents all of the fmris
+                # matching the incorporate dependency for a single package stem.
+                # 
+                # Only add potential FMRIs to the list of allowed downgrades if
+                # the currently installed version is not allowed by the related
+                # incorporate dependency.  This prevents two undesirable
+                # behaviours:
+                #
+                # - downgrades when a package is no longer incorporated in
+                #   a newer version of an incorporating package and an older
+                #   version is otherwise allowed
+                # - upgrades of packages that are no longer incorporated
+                #   in a newer version of an incorporating package and a newer
+                #   version is otherwise allowed
+                for matchdg, nonmatchdg in six.itervalues(self.__get_incorp_nonmatch_dict(fmri,
+                    excludes)):
+                        match = next(iter(matchdg), None)
+                        if (not match or
+                            match.pkg_name not in self.__installed_dict):
                                 continue
 
-                        # Ignore pkgs which are incorporated at a higher or
-                        # the same version.
-                        inst_ver = self.__installed_dict[df.pkg_name].version
-                        if df.version.is_successor(inst_ver, None) or \
-                            df.version == inst_ver:
+                        inst_fmri = self.__installed_dict[match.pkg_name]
+                        if inst_fmri in matchdg:
                                 continue
 
-                        # Do not allow implicit publisher switches
-                        if df.get_publisher() != fmri.get_publisher():
-                                continue
+                        inst_ver = inst_fmri.version
+                        for df in matchdg:
+                                # Ignore pkgs incorporated at a higher or same
+                                # version.
+                                if (df.version.is_successor(inst_ver, None) or
+                                    df.version == inst_ver):
+                                        continue
 
-                        # Do not allow pkgs which are marked for removal.
-                        if fmri in self.__removal_fmris:
-                                continue
+                                # Do not allow implicit publisher switches.
+                                if df.publisher != fmri.publisher:
+                                        continue
 
-                        # Do not allow pkgs with install-holds but filter out
-                        # child holds
-                        install_hold = False
-                        for ha in [
-                            sa
-                            for sa in self.__get_actions(df, "set")
-                            if sa.attrs["name"] == "pkg.depend.install-hold"
-                        ]:
-                                install_hold = True
-                                for h in install_holds:
-                                        if ha.attrs["value"].startswith(h):
-                                                # This is a child hold of an
-                                                # incorporating pkg, ignore.
-                                                install_hold = False
+                                # Do not allow pkgs marked for removal.
+                                if fmri in self.__removal_fmris:
+                                        continue
+
+                                # Do not allow pkgs with install-holds but filter out
+                                # child holds
+                                install_hold = False
+                                for ha in [
+                                    sa
+                                    for sa in self.__get_actions(df, "set")
+                                    if sa.attrs["name"] ==
+                                        "pkg.depend.install-hold"
+                                ]:
+                                        install_hold = True
+                                        for h in install_holds:
+                                                if ha.attrs["value"].startswith(
+                                                    h):
+                                                        # This is a child hold
+                                                        # of an incorporating
+                                                        # pkg, ignore.
+                                                        install_hold = False
+                                                        break
+                                        if not install_hold:
                                                 break
-                                if not install_hold:
-                                        break
-                        if install_hold:
-                                continue
+                                if install_hold:
+                                        continue
 
-                        self.__dg_incorp_cache[fmri].add(df)
-                        candidates.add(df)
+                                self.__dg_incorp_cache[fmri].add(df)
+                                candidates.add(df)
 
-                        # Check if this pkgs has incorporate deps of its own.
-                        self.__get_older_incorp_pkgs(df, install_holds,
-                            excludes, candidates, depth+1)
+                                # Check if this pkgs has incorporate deps of its
+                                # own.
+                                self.__get_older_incorp_pkgs(df, install_holds,
+                                    excludes, candidates, depth + 1)
 
                 return candidates
 
