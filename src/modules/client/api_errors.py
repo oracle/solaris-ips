@@ -745,9 +745,9 @@ class DuplicateActionError(ConflictingActionError):
                             "actions to {kv}:\n").format(**locals())
                         for a, p in self._data:
                                 s += "\n  {0}".format(p)
-                        s += _("\n\nThese packages may not be installed together. "
-                            "Any non-conflicting set may\nbe, or the packages "
-                            "must be corrected before they can be installed.")
+                        s += _("\n\nThese packages cannot be installed "
+                            "together. Any non-conflicting subset\nof "
+                            "the above packages can be installed.")
                 else:
                         pfmri = pfmris.pop()
                         s = _("The package {pfmri} delivers multiple copies "
@@ -776,9 +776,9 @@ class InconsistentActionTypeError(ConflictingActionError):
                         for name, pl in six.iteritems(ad):
                                 s += "\n  {0}:".format(name)
                                 s += "".join("\n    {0}".format(p) for p in pl)
-                        s += _("\n\nThese packages may not be installed together. "
-                            "Any non-conflicting set may\nbe, or the packages "
-                            "must be corrected before they can be installed.")
+                        s += _("\n\nThese packages cannot be installed "
+                            "together. Any non-conflicting subset\nof "
+                            "the above packages can be installed.")
                 else:
                         pfmri = pfmris.pop()
                         types = list_to_lang(list(ad.keys()))
@@ -846,9 +846,9 @@ class InconsistentActionAttributeError(ConflictingActionError):
                         s += _("\nThis package must be corrected before it "
                             "can be installed.")
                 else:
-                        s += _("\nThese packages may not be installed together."
-                            "  Any non-conflicting set may\nbe, or the packages "
-                            "must be corrected before they can be installed.")
+                        s += _("\n\nThese packages cannot be installed "
+                            "together. Any non-conflicting subset\nof "
+                            "the above packages can be installed.")
 
                 return s
 
