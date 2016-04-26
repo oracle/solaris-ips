@@ -98,10 +98,11 @@ file path=$(PYDIRVP)/pkg/client/actuator.py
 file path=$(PYDIRVP)/pkg/client/api.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/api_errors.py pkg.depend.bypass-generate=.*six.*
 #
-# Don't worry about the libbe import; the python code looks for it in case
-# it can't import libbe_py, and is graceful in the face of its absence.
+# Don't worry about the libbe or bemgmt import; the python code is graceful
+# in the face of their absence.
 #
-file path=$(PYDIRVP)/pkg/client/bootenv.py pkg.depend.bypass-generate=.*libbe.*
+file path=$(PYDIRVP)/pkg/client/bootenv.py \
+    pkg.depend.bypass-generate=.*bemgmt.* pkg.depend.bypass-generate=.*libbe.*
 file path=$(PYDIRVP)/pkg/client/client_api.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/client/debugvalues.py
 file path=$(PYDIRVP)/pkg/client/firmware.py
