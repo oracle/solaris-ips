@@ -44,7 +44,6 @@ import pkg.version           as version
 from collections import defaultdict
 # Redefining built-in; pylint: disable=W0622
 from functools import reduce
-from itertools import chain
 from pkg.client.debugvalues import DebugValues
 from pkg.client.firmware import Driver, Cpu
 from pkg.client.pkgdefs import PKG_OP_UNINSTALL, PKG_OP_UPDATE
@@ -3203,7 +3202,7 @@ class PkgSolver(object):
                 # Get all matching incorporated packages for this fmri; this is
                 # a list of sets, where each set represents all of the fmris
                 # matching the incorporate dependency for a single package stem.
-                # 
+                #
                 # Only add potential FMRIs to the list of allowed downgrades if
                 # the currently installed version is not allowed by the related
                 # incorporate dependency.  This prevents two undesirable
@@ -3215,8 +3214,8 @@ class PkgSolver(object):
                 # - upgrades of packages that are no longer incorporated
                 #   in a newer version of an incorporating package and a newer
                 #   version is otherwise allowed
-                for matchdg, nonmatchdg in six.itervalues(self.__get_incorp_nonmatch_dict(fmri,
-                    excludes)):
+                for matchdg, _ in six.itervalues(
+                    self.__get_incorp_nonmatch_dict(fmri, excludes)):
                         match = next(iter(matchdg), None)
                         if (not match or
                             match.pkg_name not in self.__installed_dict):
@@ -3242,8 +3241,8 @@ class PkgSolver(object):
                                 if fmri in self.__removal_fmris:
                                         continue
 
-                                # Do not allow pkgs with install-holds but filter out
-                                # child holds
+                                # Do not allow pkgs with install-holds but
+                                # filter out child holds
                                 install_hold = False
                                 for ha in [
                                     sa
