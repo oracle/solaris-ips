@@ -79,7 +79,7 @@
 			type='method'
 			name='start'
 			exec='/lib/svc/method/svc-pkg-sysrepo start'
-			timeout_seconds='60'>
+			timeout_seconds='300'>
 			<method_context>
 				<method_credential user='pkg5srv'
 				group='pkg5srv'
