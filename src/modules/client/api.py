@@ -4814,9 +4814,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # Must be a publisher object.
                         osets = entry.get_origin_sets()
                         if not osets:
-                                unsupported.append((entry.prefix,
-                                    apx.NoPublisherRepositories(
-                                    entry.prefix)))
                                 continue
                         for repo in osets:
                                 slist.append((entry, repo, entry.prefix))

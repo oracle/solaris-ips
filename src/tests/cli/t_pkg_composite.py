@@ -561,10 +561,10 @@ Last Install Time: {pkg_install}
                 self.assertEqualDiff(expected, output)
 
                 # Add a publisher with no origins and verify output still
-                # matches expected (although it will currently exit 3).
+                # matches expected.
                 self.pkg("set-publisher no-origins")
                 self.pkg("search -Hpr -o pkg.shortfmri /usr/bin/foo OR "
-                    "/usr/bin/quark OR Incorporation", exit=3)
+                    "/usr/bin/quark OR Incorporation")
                 output = self.reduceSpaces(self.output)
 
                 # Elide error output from client to verify that search

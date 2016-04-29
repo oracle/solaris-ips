@@ -1198,6 +1198,15 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 self.pkg("search -s {0} {1}".format(self.durl1, sha1_hash))
                 self.pkg("search -s {0} {1}".format(self.durl1, sha2_hash), exit=1)
 
+        def test_search_ignore_publisher_with_no_origin(self):
+            """ Check that if pkg search will ignore the publisher with no
+            origin."""
+            self.pkgsend_bulk(self.durl1, self.example_pkg11,
+                    refresh_index=True)
+            self.image_create(self.durl1)
+            self.pkg("set-publisher somepub")
+            self.pkg("search example_pkg")
+
 
 if __name__ == "__main__":
         unittest.main()
