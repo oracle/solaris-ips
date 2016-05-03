@@ -7,7 +7,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">22 Apr 2015</refmiscinfo>
+<refmiscinfo class="date">2 May 2016</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -205,6 +205,13 @@ do not provide a complete system on their own; and user images.</para>
 <listitem><para>Operate on the image rooted at <replaceable>dir</replaceable>.
 If no directory was specified or determined based on environment, the default
 is /. See the &ldquo;Environment Variables&rdquo; section for more information.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-network-cache</option></term>
+<listitem><para>Request that any network servers (such as proxies) used during
+the operation ignore cached data. Use this option to troubleshoot problems that
+may be caused by caching proxies between the package client and network-based
+package repositories.</para>
 </listitem>
 </varlistentry>
 </variablelist>

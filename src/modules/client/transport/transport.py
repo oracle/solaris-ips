@@ -741,6 +741,28 @@ class Transport(object):
                 return self.__cadir
 
         @staticmethod
+        def __ignore_network_cache():
+                """Check if transport should ignore network cache."""
+
+                inc_debug = False
+                inc_global = global_settings.client_no_network_cache
+                # Try to read from DebugValues.
+                if DebugValues.get("no_network_cache", False):
+                        inc_debug = True
+
+                return inc_debug or inc_global
+
+        @staticmethod
+        def __get_request_header(header, repostats, retries, repo):
+                """Get request header based on repository status and client
+                specified network cache option."""
+
+                if (repostats.content_errors and retries > 1) or \
+                    Transport.__ignore_network_cache():
+                        return repo.build_refetch_header(header)
+                return header
+
+        @staticmethod
         def _verify_catalog(filename, dirname):
                 """A wrapper for catalog.verify() that catches
                 CatalogErrors and translates them to the appropriate
@@ -856,8 +878,8 @@ class Transport(object):
                         failedreqs = []
                         repostats = self.stats[d.get_repouri_key()]
                         gave_up = False
-                        if repostats.content_errors and retries > 1:
-                                header = d.build_refetch_header(header)
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
 
                         # This returns a list of transient errors
                         # that occurred during the transport operation.
@@ -1078,8 +1100,8 @@ class Transport(object):
 
                         repouri_key = d.get_repouri_key()
                         repostats = self.stats[repouri_key]
-                        if repostats.content_errors and retries > 1:
-                                header = d.build_refetch_header(header)
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
                         try:
                                 resp = d.get_datastream(fhash, v, header,
                                     ccancel=ccancel, pub=pub)
@@ -1145,8 +1167,8 @@ class Transport(object):
                         try:
                                 repouri_key = d.get_repouri_key()
                                 repostats = self.stats[repouri_key]
-                                if repostats.content_errors and retries > 1:
-                                        header = d.build_refetch_header(header)
+                                header = Transport.__get_request_header(header,
+                                    repostats, retries, d)
                                 resp = d.get_status(header, ccancel=ccancel)
                                 infostr = resp.read()
 
@@ -1268,8 +1290,8 @@ class Transport(object):
                         repouri_key = d.get_repouri_key()
                         repostats = self.stats[repouri_key]
                         verified = False
-                        if repostats.content_errors and retries > 1:
-                                header = d.build_refetch_header(header)
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
                         try:
                                 resp = d.get_manifest(fmri, header,
                                     ccancel=ccancel, pub=pub)
@@ -1464,8 +1486,10 @@ class Transport(object):
 
                         # Possibly overkill, if any content errors were seen
                         # we modify the headers of all requests, not just the
-                        # ones that failed before.
-                        if repostats.content_errors and retries > 1:
+                        # ones that failed before. Also do this if we force
+                        # cache validation.
+                        if (repostats.content_errors and retries > 1) or \
+                            Transport.__ignore_network_cache():
                                 mfstlist = [(fmri, d.build_refetch_header(h))
                                     for fmri, h in mfstlist]
 
@@ -1724,8 +1748,8 @@ class Transport(object):
 
                         failedreqs = []
                         repostats = self.stats[d.get_repouri_key()]
-                        if repostats.content_errors and retries > 1:
-                                header = d.build_refetch_header(header)
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
 
                         gave_up = False
 
@@ -2066,8 +2090,8 @@ class Transport(object):
                     origin_only=True, alt_repo=alt_repo):
 
                         repostats = self.stats[d.get_repouri_key()]
-                        if repostats.content_errors and retries > 1:
-                                header = d.build_refetch_header(header)
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
 
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise

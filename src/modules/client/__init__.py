@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Missing docstring; pylint: disable=C0111
@@ -69,6 +69,7 @@ class GlobalSettings(object):
                 self.client_output_verbose = 0
                 self.client_output_quiet = False
                 self.client_output_parsable_version = None
+                self.client_no_network_cache = False
 
                 # runid, used by the pkg.1 client and the linked image
                 # subsystem when when generating temporary files.
