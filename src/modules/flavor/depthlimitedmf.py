@@ -90,12 +90,16 @@ class ModuleInfo(object):
 
 
 if __name__ == "__main__":
-        import pkg.misc as misc
-        import gettext
-        import locale
-        misc.setlocale(locale.LC_ALL, "")
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
+        try:
+                import pkg.misc as misc
+                import gettext
+                import locale
+                misc.setlocale(locale.LC_ALL, "")
+                gettext.install("pkg", "/usr/share/locale",
+                    codeset=locale.getpreferredencoding())
+        except ImportError:
+                pass
+
         class MultipleDefaultRunPaths(Exception):
 
                 def __str__(self):
