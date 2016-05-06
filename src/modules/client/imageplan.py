@@ -4770,9 +4770,9 @@ class ImagePlan(object):
 
                 # check for available space
                 self.__update_avail_space()
-                if self.pd._bytes_added > self.pd._bytes_avail:
+                if (self.pd._bytes_added - self.pd._cbytes_added) > self.pd._bytes_avail:
                         raise api_errors.ImageInsufficentSpace(
-                            self.pd._bytes_added,
+                            self.pd._bytes_added - self.pd._cbytes_added,
                             self.pd._bytes_avail,
                             _("Root filesystem"))
 
