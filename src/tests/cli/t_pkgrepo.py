@@ -3097,6 +3097,36 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
                     exit1=1, exit2=1)
 
+        def test_verify_ignore_non_certificate_file_or_directory(self):
+                """Ensure that invalid certificate files and directories
+                are ignored."""
+                repo_path = self.dc.get_repodir()
+                repo = self.dc.get_repo()
+                trust_anchor_dir = repo.cfg.get_property("repository",
+                    "trust-anchor-directory")
+                cert_path = os.path.join(trust_anchor_dir, "foo.pem")
+                cert_dir = os.path.join(trust_anchor_dir, "foo")
+                file_created = False
+                dir_created = False
+
+                # Test certificate load will not fail with a directoy in
+                # the trust anchor directory
+                if not os.path.exists(cert_dir):
+                        dir_created = True
+                        os.makedirs(cert_dir)
+                self.pkgrepo("-s {0} verify".format(repo_path))
+                if dir_created:
+                        os.rmdir(cert_dir)
+
+                # Test certificate load will not fail with an invalid 
+                # certificate file in the trust anchor directory
+                if not os.path.exists(cert_path):
+                        file_created = True
+                        open(cert_path, 'w').close()
+                self.pkgrepo("-s {0} verify".format(repo_path))
+                if file_created:
+                        os.remove(cert_path)
+
         def __get_fhashes(self, repodir, pub):
                 """Returns a list of file hashes for the publisher
                 pub in a given repository."""

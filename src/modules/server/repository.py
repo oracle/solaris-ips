@@ -2327,11 +2327,15 @@ class _RepoStore(object):
 
                 for fn in os.listdir(trust_anchor_dir):
                         pth = os.path.join(trust_anchor_dir, fn)
-                        if os.path.islink(pth):
+                        if not os.path.isfile(pth) or os.path.islink(pth):
                                 continue
                         with open(pth, "rb") as f:
-                                trusted_ca = x509.load_pem_x509_certificate(
-                                    f.read(), default_backend())
+                                try:
+                                        trusted_ca = \
+                                            x509.load_pem_x509_certificate(
+                                                f.read(), default_backend())
+                                except ValueError as e:
+                                        pass
 
                         # Note that while we store certs by their subject
                         # hashes, we use our own hashing since cryptography has
