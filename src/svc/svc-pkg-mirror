@@ -249,7 +249,7 @@ function update_repository {
 
 	typeset SMF_FMRI=$1
 	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
-	typeset lockfile=/var/log/pkg/mirror/mirror.$instance.lock
+	typeset lockfile=/system/volatile/pkg/mirror.$instance.lock
 
 	if [ -f $lockfile ]; then
 		pid=$(<$lockfile)
@@ -517,9 +517,11 @@ case "$1" in
 	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
 	typeset LOG=/var/log/pkg/mirror/mirror.$instance.log
 	typeset debug_flag=$($SVCPROP -p config/debug $SMF_FMRI)
+	typeset pkg_dir=/system/volatile/pkg
 
 	# Most output should get captured by update_repository, but we
 	# capture any remaining output.
+	mkdir -p $pkg_dir
 	update_repository $SMF_FMRI > $LOG.run.$$ 2>&1
 	RET=$?
 
