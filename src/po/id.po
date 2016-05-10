@@ -318,12 +318,12 @@ msgstr ""
 #: ../client.py:770
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %s.  Please update pkg(5) using 'pfexec pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
 "SUNWipkg' and then retry the %s."
 msgstr ""
-       "PERINGATAN: pkg(5) tampaknya menjadi ketinggalan zaman, dan harus diperbarui sebelum \n"
-       "menjalankan %s. Silahkan perbarui pkg(5) menggunakan 'pfexec pkg install \n SUNWipkg'"
+       "PERINGATAN: pkg(7) tampaknya menjadi ketinggalan zaman, dan harus diperbarui sebelum \n"
+       "menjalankan %s. Silahkan perbarui pkg(7) menggunakan 'pfexec pkg install \n SUNWipkg'"
        "dan kemudian mencoba ulang %s."
 
 #: ../client.py:777
@@ -917,13 +917,13 @@ msgid ""
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
 "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
+"above traceback and this message.  The version of pkg(7) is '%s'."
 msgstr ""
        "\n"
        "\n"
        "Ini adalah kesalahan internal.  Harap pengembang tahu tentang kesalahan ini\n"
        "dengan mengisi bug pada http://defect.opensolaris.org dan termasuk\n"
-       "diatas traceback dan pesan ini.  Versi pkg(5) adalah '%s'."
+       "diatas traceback dan pesan ini.  Versi pkg(7) adalah '%s'."
 
 #: ../client.py:3306
 msgid ""
@@ -2382,10 +2382,10 @@ msgstr ""
 
 #: ../gui/modules/installupdate.py:510
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update SUNWipkg package"
 msgstr ""
-       "nampaknya pkg(5) harus diperbaharui.\n"
+       "nampaknya pkg(7) harus diperbaharui.\n"
        "Harap perbarui paket SUNWipkg. "
 
 #: ../gui/modules/installupdate.py:516
@@ -3471,8 +3471,8 @@ msgstr ""
        "Berkas yang ditentukan adalah format yang tidak diakui atau tidak berisi informasi penerbit yang valid."
 
 #: ../modules/client/api_errors.py:805
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Format data informasi penerbit pkg(5) tidak didukung."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Format data informasi penerbit pkg(7) tidak didukung."
 
 #: ../modules/client/api_errors.py:831
 #, python-format
@@ -5592,7 +5592,7 @@ msgid ""
 "        -r              Recursively evaluates all dependencies for the "
 "provided\n"
 "                        list of packages and adds them to the list.\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "Environment:\n"

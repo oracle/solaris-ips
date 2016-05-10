@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-"""Provides a set of publishing interfaces for interacting with a pkg(5)
+"""Provides a set of publishing interfaces for interacting with a pkg(7)
 repository.  Note that only the Transaction class should be used directly,
 though the other classes can be referred to for documentation purposes."""
 
@@ -389,7 +389,7 @@ class TransportTransaction(object):
 
 class Transaction(object):
         """Returns an object representing a publishing "transaction" interface
-        to a pkg(5) repository.
+        to a pkg(7) repository.
 
         The class of the object returned will depend upon the scheme of
         'origin_url', and the value of the 'noexecute' parameter.

@@ -520,7 +520,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # For one of the tests we need a repository with at least one
                 # package with the same publisher as the package we're testing
                 # with.  This is to trigger the package composition code in
-                # pkg(5) which will cause it to record the source each package
+                # pkg(7) which will cause it to record the source each package
                 # is available from.
                 repodir = os.path.join(self.test_root,
                     "repo_contents_test_06_download")

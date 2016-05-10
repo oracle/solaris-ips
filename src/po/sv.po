@@ -502,12 +502,12 @@ msgstr ""
 #: ../client.py:1059
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) using 'pfexec pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) using 'pfexec pkg install\n"
 "pkg:/package/pkg' and then retry the %(op)s."
 msgstr ""
-       "VARNING: pkg(5) verkar vara föråldrad och bör uppdateras innan\n"
-       "%(op)s körs.  Uppdatera pkt(5) med: 'pfexec pkg install\n"
+       "VARNING: pkg(7) verkar vara föråldrad och bör uppdateras innan\n"
+       "%(op)s körs.  Uppdatera pkg(7) med: 'pfexec pkg install\n"
        "pkg:/package/pkg' och kör sedan %(op)s igen."
 
 #: ../client.py:1066
@@ -1299,13 +1299,13 @@ msgid ""
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
 "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
+"above traceback and this message.  The version of pkg(7) is '%s'."
 msgstr ""
        "\n"
        "\n"
        "Det här är ett internt fel. Det vore bra om utvecklarna fick information om det\n"
        "här problemet. Fyll i en buggrapport på http://defect.opensolaris.org och inkludera\n"
-       "traceback ovan samt det här meddelandet. Pkg(5)-versionen är '%s'."
+       "traceback ovan samt det här meddelandet. Pkg(7)-versionen är '%s'."
 
 #: ../client.py:4279
 msgid ""
@@ -2297,10 +2297,10 @@ msgstr ""
 #: ../gui/modules/installupdate.py:727
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
 msgstr ""
-       "pkg(5) verkar vara föråldrad och bör uppdateras.\n"
+       "pkg(7) verkar vara föråldrad och bör uppdateras.\n"
        "Uppdatera %s paketet"
 
 #: ../gui/modules/installupdate.py:734
@@ -4280,8 +4280,8 @@ msgstr ""
        "Formatet på den angivna p5i data känns inte igen eller innehåller inte giltig utgivarinformation."
 
 #: ../modules/client/api_errors.py:926
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Det saknas stöd för dataformatet för pkg(5)-utgivarinformationen."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Det saknas stöd för dataformatet för pkg(7)-utgivarinformationen."
 
 #: ../modules/client/api_errors.py:952
 #, python-format
@@ -4611,9 +4611,9 @@ msgstr "Den relevanta signaturens åtgärds värdesattribut är %s"
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
+"of pkg(7) doesn't understand."
 msgstr ""
-       "Signaturåtgärden %(act)s skapades med en version (%(ver)s) som denna version av pkg(5) inte förstår."
+       "Signaturåtgärden %(act)s skapades med en version (%(ver)s) som denna version av pkg(7) inte förstår."
 
 #: ../modules/client/api_errors.py:1477
 #, python-format
@@ -5075,8 +5075,8 @@ msgid "Image State Update Phase"
 msgstr "Bildstatus Uppdateringsfas"
 
 #: ../modules/client/image.py:2640
-msgid "pkg(5) update check failed."
-msgstr "pkg(5) uppdateringskontroll misslyckades."
+msgid "pkg(7) update check failed."
+msgstr "pkg(7) uppdateringskontroll misslyckades."
 
 #: ../modules/client/imageconfig.py:765 ../modules/client/publisher.py:2078
 msgid ""
@@ -7170,7 +7170,7 @@ msgid ""
 "        -r              Recursively evaluates all dependencies for the "
 "provided\n"
 "                        list of packages and adds them to the list.\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "Environment:\n"
@@ -7218,7 +7218,7 @@ msgstr ""
        "        -r              Recursively evaluates all dependencies for the "
        "provided\n"
        "                        list of packages and adds them to the list.\n"
-       "        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+       "        -s src_repo_uri A URI representing the location of a pkg(7)\n"
        "                        repository to retrieve package data from.\n"
        "\n"
        "Environment:\n"

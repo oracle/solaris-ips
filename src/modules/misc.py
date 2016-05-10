@@ -105,7 +105,7 @@ def get_traceback_message():
         setup."""
 
         return _("""\n
-This is an internal error in pkg(5) version {version}.  Please log a
+This is an internal error in pkg(7) version {version}.  Please log a
 Service Request about this issue including the information above and this
 message.""").format(version=VERSION)
 
@@ -484,7 +484,7 @@ def setlocale(category, loc=None, printer=None):
                 # Because of Python bug 813449, getdefaultlocale may fail
                 # with a ValueError even if setlocale succeeds. So we call
                 # it here to prevent having this error raised if it is
-                # called later by other non-pkg(5) code.
+                # called later by other non-pkg(7) code.
                 locale.getdefaultlocale()
         except (locale.Error, ValueError):
                 try:

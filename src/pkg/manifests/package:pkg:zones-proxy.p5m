@@ -18,12 +18,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 set name=pkg.fmri value=pkg:/package/pkg/zones-proxy@$(PKGVERS)
 set name=pkg.summary value="System Repository Zone support"
 set name=pkg.description \
-    value="A service that provides zones proxy support for the pkg(5) system repository"
+    value="A service that provides zones proxy support for the pkg(7) system repository"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)

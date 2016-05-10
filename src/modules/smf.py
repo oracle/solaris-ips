@@ -122,7 +122,7 @@ def check_fmris(attr, fmris, zone=None):
         """ Walk a set of fmris checking that each is fully specifed with
         an instance.
         If an FMRI is not fully specified and does not contain at least
-        one special match character from fnmatch(5) the fmri is dropped
+        one special match character from fnmatch(7) the fmri is dropped
         from the set that is returned and an error message is logged.
         """
 

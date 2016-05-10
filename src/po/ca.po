@@ -316,12 +316,12 @@ msgstr ""
 #: ../client.py:770
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %s.  Please update pkg(5) using 'pfexec pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
 "SUNWipkg' and then retry the %s."
 msgstr ""
-       "AVÍS: pkg(5) sembla que estigui des-actualitzat, i hauria de ser actualitzat\n"
-       "abans d'executar %s.  Actualitzeu pkg(5) utilitzant 'pfexec pkg install\n"
+       "AVÍS: pkg(7) sembla que estigui des-actualitzat, i hauria de ser actualitzat\n"
+       "abans d'executar %s.  Actualitzeu pkg(7) utilitzant 'pfexec pkg install\n"
        "SUNWipkg' i després torneu-ho a intentar %s."
 
 #: ../client.py:777
@@ -914,13 +914,13 @@ msgid ""
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
 "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
+"above traceback and this message.  The version of pkg(7) is '%s'."
 msgstr ""
        "\n"
        "\n"
        "Aquest és un error intern.  Si us plau permeteu als desenvolupadors conèixer quan a aquest\n"
        "problema tot omplit l'error a http://defect.opensolaris.org i incloent el següent\n"
-       "missatge de traçabilitat i aquest missatge.  La versió de pkg(5) és '%s'."
+       "missatge de traçabilitat i aquest missatge.  La versió de pkg(7) és '%s'."
 
 #: ../client.py:3306
 msgid ""
@@ -2378,10 +2378,10 @@ msgstr ""
 
 #: ../gui/modules/installupdate.py:510
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update SUNWipkg package"
 msgstr ""
-       "pkg(5) sembla que estigui desfasat i ha de ser actualitzat.\n"
+       "pkg(7) sembla que estigui desfasat i ha de ser actualitzat.\n"
        "Actualitzeu el paquet SUNWipkg"
 
 #: ../gui/modules/installupdate.py:516
@@ -3488,8 +3488,8 @@ msgstr ""
        "quant al publicador."
 
 #: ../modules/client/api_errors.py:805
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Format de dades de l'informació del publicador no suporades pkg(5)."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Format de dades de l'informació del publicador no suporades pkg(7)."
 
 #: ../modules/client/api_errors.py:831
 #, python-format
@@ -5600,7 +5600,7 @@ msgid ""
 "        -r              Recursively evaluates all dependencies for the "
 "provided\n"
 "                        list of packages and adds them to the list.\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "Environment:\n"
@@ -5650,7 +5650,7 @@ msgstr ""
        "        -r              Recursively evaluates all dependencies for the "
        "provided\n"
        "                        list of packages and adds them to the list.\n"
-       "        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+       "        -s src_repo_uri A URI representing the location of a pkg(7)\n"
        "                        repository to retrieve package data from.\n"
        "\n"
        "Environment:\n"

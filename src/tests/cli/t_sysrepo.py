@@ -548,7 +548,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
         def test_13_changing_p5p(self):
                 """Ensure that when a p5p file changes from beneath us, or
-                disappears, the system repository and any pkg(5) clients
+                disappears, the system repository and any pkg(7) clients
                 react correctly."""
 
                 # create a p5p archive

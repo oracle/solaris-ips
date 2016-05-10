@@ -5,19 +5,19 @@
 %ent;
 ]>
 
-<refentry id="pkg-5">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum>
+<refentry id="pkg-7">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
 <refmiscinfo class="date">10 Mar 2015</refmiscinfo>
-<refmiscinfo class="sectdesc">&man5;</refmiscinfo>
+<refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
 </refnamediv>
 <refsect1 id="GLHDA" role="description"><title></title>
-<para>The image packaging system, <literal>pkg</literal>(5), is a framework
+<para>The image packaging system, <literal>pkg</literal>(7), is a framework
 that provides for software lifecycle management (installation, upgrade, and
 removal). Image packaging manages software in units of packages, which are
 collections of actions, defined by a set of key/value pairs and possibly a
@@ -474,7 +474,7 @@ is not required.</para>
 <listitem><para>Specifies the implementation of the mediator for use in addition
 to or instead of the <literal>mediator-version</literal>. Implementation strings
 are not considered to be ordered and a string is arbitrary selected by <literal>pkg
-</literal>(5) if not explicitly specified by a system administrator.</para>
+</literal>(7) if not explicitly specified by a system administrator.</para>
 <para>The value can be a string of arbitrary length composed of alphanumeric
 characters and spaces. If the implementation itself can be versioned or is
 versioned, then the version should be specified at the end of the string,
@@ -488,7 +488,7 @@ site, or local override applies, or if one of the links is version mediated.</pa
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-priority</literal></term>
-<listitem><para>When resolving conflicts in mediated links, <literal>pkg</literal>(5)
+<listitem><para>When resolving conflicts in mediated links, <literal>pkg</literal>(7)
 normally chooses the link with the greatest value of <literal>mediator-version</literal> or
 based on <literal>mediator-implementation</literal> if that is not possible.
 This attribute is used to specify an override for the normal conflict resolution
@@ -515,7 +515,7 @@ also its key attribute.</para>
 <para>The <literal>driver</literal> action represents a device driver. The <literal>
 driver</literal> action does not reference a payload. The driver files themselves
 must be installed as <literal>file</literal> actions. The following attributes
-are recognized (see <command>add_drv</command>(1M) for more information):</para>
+are recognized (see <command>add_drv</command>(8) for more information):</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>The name of the driver. This is usually, but not always, the
@@ -556,7 +556,7 @@ can have more than one <literal>privs</literal> attribute.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>This specifies an entry in <filename>/etc/devlink.tab</filename>. The value is the exact line to go into the file, with tabs denoted by <literal>&bsol;t</literal>. See <literal>devlinks</literal>(1M) for more information. A given driver can have more than one <literal>devlink</literal> attribute.</para>
+<listitem><para>This specifies an entry in <filename>/etc/devlink.tab</filename>. The value is the exact line to go into the file, with tabs denoted by <literal>&bsol;t</literal>. See <literal>devlinks</literal>(8) for more information. A given driver can have more than one <literal>devlink</literal> attribute.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -781,7 +781,7 @@ author chooses. However, there are a number of well defined attribute names
 that have specific meaning to the packaging system.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>info.classification</literal></term>
-<listitem><para>One or more tokens that a <literal>pkg</literal>(5) client
+<listitem><para>One or more tokens that a <literal>pkg</literal>(7) client
 can use to classify the package. The value should have a scheme (such as &ldquo;org.opensolaris.category.2008&rdquo;
 or &ldquo;org.acm.class.1998&rdquo;) and the actual classification, such as &ldquo;Applications/Games&rdquo;,
 separated by a colon (:).</para>
@@ -973,10 +973,10 @@ restart_fmri</literal>, <literal>suspend_fmri</literal></term>
 <listitem><para>Each of these actuators takes the value of an FMRI of a service
 instance to operate on during the package installation or removal. <literal>disable_fmri
 </literal> causes the given FMRI to be disabled prior to action removal, per
-the <literal>disable</literal> subcommand to <literal>svcadm</literal>(1M). <literal>
+the <literal>disable</literal> subcommand to <literal>svcadm</literal>(8). <literal>
 refresh_fmri</literal> and <literal>restart_fmri</literal> cause the given
 FMRI to be refreshed or restarted after action installation, update, or removal
-per the respective subcommands of <literal>svcadm</literal>(1M). Finally, <literal>
+per the respective subcommands of <literal>svcadm</literal>(8). Finally, <literal>
 suspend_fmri</literal> causes the given FMRI to be disabled temporarily prior
 to the action install phase, and then enabled after the completion of that
 phase.</para>
@@ -1067,7 +1067,7 @@ content retrieval and attempts to choose the best one to retrieve package
 content from. If the mirror is unreachable, does not have the required content,
 or is slower, the client API retrieves the content from any configured origin
 repositories. Mirrors are intended for content sharing among a trusted set
-of clients using the dynamic mirror functionality of <command>pkg.depotd</command>(1M).
+of clients using the dynamic mirror functionality of <command>pkg.depotd</command>(8).
 Mirrors are also intended to be used to authenticate access to package metadata,
 but distribute the package content without authentication. For example, a
 client might be configured with an <literal>https</literal> origin that requires
@@ -1077,7 +1077,7 @@ install or update the packages, while the overhead of authentication for package
 content retrieval is avoided. A mirror can be created by removing all subdirectories
 of a repository except those named <filename>file</filename> and their parents.
 An origin repository can be also be provisioned as a mirror by using the mirror
-mode of <command>pkg.depotd</command>(1M).</para>
+mode of <command>pkg.depotd</command>(8).</para>
 </refsect1>
 <refsect1 role="other"><title>Global and Non-Global Zone Update</title>
 <para>The <literal>pkg</literal> system forces non-global zones to be kept
@@ -1090,7 +1090,7 @@ above for more information about <literal>parent</literal> dependencies.</para>
 the non-global zones must have access to the packages of the global zone and
 must have a similar publisher configuration. Both of these objectives are
 achieved by using a <emphasis role="strong">system repository</emphasis> (see
-the <literal>pkg.sysrepo</literal>(1M) man page). The system repository provides
+the <literal>pkg.sysrepo</literal>(8) man page). The system repository provides
 access to the publishers configured in the global zone and information about
 how those publishers are configured. To prevent non-global zones from choosing
 different packages during installation or update, system publishers are ranked
@@ -1278,7 +1278,7 @@ send-uuid</literal> properties and information about how to view and modify
 their values.</para>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para>Since <literal>pkg</literal>(5) images can be located arbitrarily within
+<para>Since <literal>pkg</literal>(7) images can be located arbitrarily within
 a larger file system, the token <literal>$IMAGE_ROOT</literal> is used to
 distinguish relative paths. For a typical system installation, <literal>$IMAGE_ROOT
 </literal> is equivalent to /.</para>
@@ -1312,7 +1312,7 @@ publisher-specific metadata.</para>
 are Private, and are subject to change.</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(5) for descriptions of the following
+<para>See <literal>attributes</literal>(7) for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
@@ -1349,10 +1349,10 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
-<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>,
-<olink targetdoc="refman" targetptr="pkg.sysrepo-1m"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
-<olink targetdoc="refman" targetptr="svcadm-1m"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink></para>
+<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
 <para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>

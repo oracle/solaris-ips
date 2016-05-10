@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -57,7 +57,7 @@ RESULT_FAILED_BAD_REQUEST = ["Failed", "Bad Request"]
 # invalid SSL Certificate, etc.).
 RESULT_FAILED_CONFIGURATION = ["Failed", "Configuration"]
 # Indicates that the operation failed due to package constraints or because of
-# a restriction enforced by the client (e.g. pkg(5) out of date).
+# a restriction enforced by the client (e.g. pkg(7) out of date).
 RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
 # Indicates an operation failed because the image was already in use.
 RESULT_FAILED_LOCKED = ["Failed", "Locked"]
@@ -105,7 +105,7 @@ error_results = {
 
 class _HistoryOperation(object):
         """A _HistoryOperation object is a representation of data about an
-        operation that a pkg(5) client has performed.  This class is private
+        operation that a pkg(7) client has performed.  This class is private
         and not intended for use by classes other than History.
 
         This class provides an abstraction layer between the stack of
@@ -243,7 +243,7 @@ Operation Errors:
 
 
 class History(object):
-        """A History object is a representation of data about a pkg(5) client
+        """A History object is a representation of data about a pkg(7) client
         and about operations that the client is executing or has executed.  It
         uses the _HistoryOperation class to represent the data about an
         operation.

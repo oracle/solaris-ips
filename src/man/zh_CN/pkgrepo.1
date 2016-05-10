@@ -47,7 +47,7 @@
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
-<para>通过 <command>pkgrepo</command> 可以创建和管理 <literal> pkg</literal>(5) 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 <command>pkg</command> 和发布客户机（例如 <command>pkgsend </command> 或 <command>pkgrecv</command>）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，<command>pkg.depotd</command> 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。</para>
+<para>通过 <command>pkgrepo</command> 可以创建和管理 <literal> pkg</literal>(7) 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 <command>pkg</command> 和发布客户机（例如 <command>pkgsend </command> 或 <command>pkgrecv</command>）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，<command>pkg.depotd</command> 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>支持以下选项：</para>
@@ -62,7 +62,7 @@
 <para>支持以下子命令：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>在指定的位置创建 <literal>pkg</literal>(5) 系统信息库。</para>
+<listitem><para>在指定的位置创建 <literal>pkg</literal>(7) 系统信息库。</para>
 <para>该子命令仅可以与基于文件系统的系统信息库一起使用。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-version</option></term>
@@ -162,7 +162,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>列出 <replaceable>repo_uri_or_path</replaceable> 系统信息库中与指定 <replaceable>pkg_fmri_pattern</replaceable> 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
-<para>在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 <literal>o</literal> 值表示软件包已过时。状态列中的 <literal>r</literal> 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 <literal>pkg</literal>(5)。</para>
+<para>在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 <literal>o</literal> 值表示软件包已过时。状态列中的 <literal>r</literal> 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 <literal>pkg</literal>(7)。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>仅显示给定发布者的软件包。如果没有提供该选项，将列出所有发布者的软件包。可以多次指定此选项。</para>
@@ -180,7 +180,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>仅显示指定软件包中的指定操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。<replaceable>action_name</replaceable> 的值是 <literal>pkg</literal>(5) 手册页的“操作”中列出的操作之一，例如 <literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal> 或 <literal>set</literal>。</para>
+<listitem><para>仅显示指定软件包中的指定操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。<replaceable>action_name</replaceable> 的值是 <literal>pkg</literal>(7) 手册页的“操作”中列出的操作之一，例如 <literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal> 或 <literal>set</literal>。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -398,7 +398,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para>显示一个用于唯一标识 <literal>pkg</literal>(5) 系统版本的字符串。由 <command>version</command> 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。</para>
+<listitem><para>显示一个用于唯一标识 <literal>pkg</literal>(7) 系统版本的字符串。由 <command>version</command> 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -497,7 +497,7 @@ solaris   repository related-uris     ()</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -530,7 +530,7 @@ solaris   repository related-uris     ()</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>

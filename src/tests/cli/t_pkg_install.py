@@ -3417,7 +3417,7 @@ adm
                 with open(os.path.join(self.get_img_path(),
                     "etc/driver_aliases")) as f:
                         da_contents = f.readlines()
-                self.assertTrue("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
+                self.assertTrue("# pkg(7): wigit \"pci8086,1234\"\n" in da_contents)
                 self.assertTrue("wigit \"pci8086,1234\"\n" not in da_contents)
                 self.assertTrue("wigit \"pci8086,4321\"\n" in da_contents)
                 self.assertTrue("zigit \"pci8086,1234\"\n" in da_contents)

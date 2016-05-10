@@ -28,8 +28,8 @@ msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creatio
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
-"unusable with older versions of the pkg(5) system."
-msgstr "Per continuare, eseguire 'pkg update-format' come utente privilegiato, quindi riprovare. L'aggiornamento del formato renderà l'immagine inutilizzabile con versioni precedenti del sistema pkg(5)."
+"unusable with older versions of the pkg(7) system."
+msgstr "Per continuare, eseguire 'pkg update-format' come utente privilegiato, quindi riprovare. L'aggiornamento del formato renderà l'immagine inutilizzabile con versioni precedenti del sistema pkg(7)."
 
 #: ../client.py:157
 msgid ""
@@ -627,10 +627,10 @@ msgstr "%s non riuscito (eccezione inventario):\n%s"
 #: ../client.py:1495
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) by executing 'pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) by executing 'pkg install\n"
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
-msgstr "ATTENZIONE: pkg(5) è obsoleto e deve essere aggiornato prima\ndi eseguire %(op)s. Aggiornare pkg(5) eseguendo 'pkg install\npkg:/package/pkg' come utente privilegiato, quindi riprovare ad eseguire %(op)s."
+msgstr "ATTENZIONE: pkg(7) è obsoleto e deve essere aggiornato prima\ndi eseguire %(op)s. Aggiornare pkg(7) eseguendo 'pkg install\npkg:/package/pkg' come utente privilegiato, quindi riprovare ad eseguire %(op)s."
 
 #: ../client.py:1502
 #, python-format
@@ -4111,12 +4111,12 @@ msgid ""
 msgstr "I dati p5s forniti sono in un formato non riconosciuto o non contengono informazioni valide del publisher."
 
 #: ../modules/client/api_errors.py:1405
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Formato delle informazioni sul publisher pkg(5) non supportato."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Formato delle informazioni sul publisher pkg(7) non supportato."
 
 #: ../modules/client/api_errors.py:1414
-msgid "Unsupported pkg(5) publisher and image information data format."
-msgstr "Formato dati non supportato relativo alle informazioni di immagine e publisher pkg(5)."
+msgid "Unsupported pkg(7) publisher and image information data format."
+msgstr "Formato dati non supportato relativo alle informazioni di immagine e publisher pkg(7)."
 
 #: ../modules/client/api_errors.py:1426
 #, python-format
@@ -4459,8 +4459,8 @@ msgstr "L'attributo del valore dell'azione di firma rilevante è %s"
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
-msgstr "L'azione di firma %(act)s è stata eseguita con una versione (%(ver)s); questa versione di pkg(5) non capisce."
+"of pkg(7) doesn't understand."
+msgstr "L'azione di firma %(act)s è stata eseguita con una versione (%(ver)s); questa versione di pkg(7) non capisce."
 
 #: ../modules/client/api_errors.py:2047
 #, python-format
@@ -4552,10 +4552,10 @@ msgstr "Impossibile verificare il certificato il cui oggetto è %(cert)s perché
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
-"has an extension with a value that pkg(5) does not understand.\n"
+"has an extension with a value that pkg(7) does not understand.\n"
 "Extension name:%(name)s\n"
 "Extension value:%(val)s"
-msgstr "Non è stato possibile verificare il certificato con oggetto %(cert)s in quanto la sua estensione presenta un valore che pkg(5) non riconosce.\nNome estensione:%(name)s\nValore estensione:%(val)s"
+msgstr "Non è stato possibile verificare il certificato con oggetto %(cert)s in quanto la sua estensione presenta un valore che pkg(7) non riconosce.\nNome estensione:%(name)s\nValore estensione:%(val)s"
 
 #: ../modules/client/api_errors.py:2194
 #, python-format
@@ -5219,8 +5219,8 @@ msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "Il publisher '%s' è un publisher di sistema e non può essere spostato."
 
 #: ../modules/client/image.py:4401
-msgid "pkg(5) update check failed."
-msgstr "Verifica dell'aggiornamento pkg(5) non riuscita."
+msgid "pkg(7) update check failed."
+msgstr "Verifica dell'aggiornamento pkg(7) non riuscita."
 
 #: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
 #: ../modules/client/publisher.py:2525
@@ -5661,8 +5661,8 @@ msgid "Done (%(elapsed).3fs)"
 msgstr "Fatto (%(elapsed).3fs)"
 
 #: ../modules/client/progress.py:1796
-msgid "Checking that pkg(5) is up to date ..."
-msgstr "Verifica dell'aggiornamento di pkg(5) in corso..."
+msgid "Checking that pkg(7) is up to date ..."
+msgstr "Verifica dell'aggiornamento di pkg(7) in corso..."
 
 #: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
 #: ../modules/gui/progress.py:50
@@ -5759,8 +5759,8 @@ msgstr "Immagini collegate: %s completato; %d in corso: %s"
 
 #: ../modules/client/progress.py:2151
 #, python-format
-msgid "Checking that pkg(5) is up to date %c"
-msgstr "Verifica dell'aggiornamento di pkg(5) in corso %c"
+msgid "Checking that pkg(7) is up to date %c"
+msgstr "Verifica dell'aggiornamento di pkg(7) in corso %c"
 
 #: ../modules/client/progress.py:2188
 msgid "Retrieving target catalog"
@@ -6690,9 +6690,9 @@ msgstr "\nImpossibile collegarsi a un archivio di pacchetti valido. Verificare l
 #: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
-msgstr "pkg(5) potrebbe essere obsoleto e dovrebbe essere aggiornato.\nAggiornare il pacchetto %s"
+msgstr "pkg(7) potrebbe essere obsoleto e dovrebbe essere aggiornato.\nAggiornare il pacchetto %s"
 
 #: ../modules/gui/installupdate.py:750
 #, python-format
@@ -8556,8 +8556,8 @@ msgid "Packages should not have dependencies on obsolete packages."
 msgstr "I pacchetti non devono avere dipendenze in pacchetti obsoleti."
 
 #: ../modules/lint/pkglint_action.py:1333
-msgid "pkg(5) FMRIs should be valid."
-msgstr "I FMRI pkg(5) devono essere validi."
+msgid "pkg(7) FMRIs should be valid."
+msgstr "I FMRI pkg(7) devono essere validi."
 
 #: ../modules/lint/pkglint_action.py:1340
 #, python-format
@@ -8768,10 +8768,10 @@ msgstr "'%s' non è un valore mediator-priority valido; valori validi sono 'site
 msgid ""
 "\n"
 "\n"
-"This is an internal error in pkg(5) version %(version)s.  Please log a\n"
+"This is an internal error in pkg(7) version %(version)s.  Please log a\n"
 "Service Request about this issue including the information above and this\n"
 "message."
-msgstr "\n\nSi è verificato un errore interno in pkg(5), versione %(version)s. Registrare una\nrichiesta di servizio in merito a questo problema includendo le informazioni sopra riportate e questo\nmessaggio."
+msgstr "\n\nSi è verificato un errore interno in pkg(7), versione %(version)s. Registrare una\nrichiesta di servizio in merito a questo problema includendo le informazioni sopra riportate e questo\nmessaggio."
 
 #: ../modules/misc.py:437
 msgid "B"
@@ -8931,14 +8931,14 @@ msgstr "Il pacchetto '%(pkg)s' include dipendenze specificate manualmente\n dota
 #: ../modules/publish/dependencies.py:195
 msgid ""
 "pkgdepend has inferred conditional dependencies with different targets but\n"
-"which share a predicate.  pkg(5) can not represent these dependencies.  "
+"which share a predicate.  pkg(7) can not represent these dependencies.  "
 "This\n"
 "issue can be resolved by changing the packaging of the links which generated "
 "the\n"
 "conditional dependencies so that they have different predicates or share "
 "the\n"
 "same FMRI.  Each pair of problematic conditional dependencies follows: \n"
-msgstr "pkgdepend ha dedotto dipendenze condizionali con target differenti ma\nche condividono un predicato. pkg(5) non può rappresentare queste dipendenze. Questo\nproblema può essere risolto modificando il packaging dei collegamenti che generano le\ndipendenze condizionali in modo che queste dispongano di predicati differenti o condividano lo\nstesso FMRI. Di seguito è riportato un elenco delle coppie di dipendenze condizionali problematiche: \n"
+msgstr "pkgdepend ha dedotto dipendenze condizionali con target differenti ma\nche condividono un predicato. pkg(7) non può rappresentare queste dipendenze. Questo\nproblema può essere risolto modificando il packaging dei collegamenti che generano le\ndipendenze condizionali in modo che queste dispongano di predicati differenti o condividano lo\nstesso FMRI. Di seguito è riportato un elenco delle coppie di dipendenze condizionali problematiche: \n"
 
 #: ../modules/publish/dependencies.py:206
 #, python-format
@@ -9996,7 +9996,7 @@ msgid ""
 "        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
-"        -a              Store the retrieved package data in a pkg(5) "
+"        -a              Store the retrieved package data in a pkg(7) "
 "archive\n"
 "                        at the location specified by -d.  The file may not\n"
 "                        already exist, and this option may only be used "
@@ -10038,7 +10038,7 @@ msgid ""
 "provided\n"
 "                        list of packages and adds them to the list.\n"
 "\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "        --newest        List the most recent versions of the packages "
@@ -10067,7 +10067,7 @@ msgid ""
 "Environment:\n"
 "        PKG_DEST        Destination directory or URI\n"
 "        PKG_SRC         Source URI or path"
-msgstr "Sintassi:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]\n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest\n\nOpzioni:\n        -a              Archiviare i dati del pacchetto recuperati in un archivio pkg(5)\n                        nella posizione specificata da -d.  Il file potrebbe non\n                        esistere ancora e questa opzione potrebbe essere utilizzata solo con\n                        destinazioni basate su filesystem.\n\n        -c cache_dir    Percorso di una directory che verrà utilizzato per memorizzare nella cache\n                        i contenuti scaricati.  Se non viene fornito alcun percorso, il\n                        client selezionerà automaticamente una directory della cache.\n                        Nel caso in cui venga interrotto il download e venga\n                        selezionata automaticamente una directory di cache,\n                        utilizzare questa opzione per riprendere il download.\n\n        -d path_or_uri  Percorso del filesystem o URI del repository di destinazione in cui\n                        ripubblicare i pacchetti.  La destinazione deve esistere già.\n                        È possibile creare nuovi repository utilizzando pkgrepo(1).\n\n        -h              Visualizzare questo messaggio di utilizzo.\n\n        -k              Mantenere il contenuto del pacchetto recuperato compresso e ignorarlo\n                        durante la ripubblicazione.  Non deve essere utilizzato con pkgsend.\n\n        -m match        Controlla i comportamenti corrispondenti utilizzando i seguenti valori:\n                            all-timestamps\n                                include tutti i valori data/ora corrispondenti, non solo\n                                i più recenti (implica all-versions)\n                            all-versions\n                                include tutte le versioni corrispondenti, non solo le più recenti\n\n        -n              Eseguire una prova senza apportare alcuna modifica.\n\n        -r              Valuta ricorsivamente tutte le dipendenze per l'elenco fornito\n                        di pacchetti e le aggiunge all'elenco.\n\n        -s src_repo_uri URI che rappresenta la posizione di un repository di pkg(5)\n                        da cui recuperare i dati del pacchetto.\n\n        --newest        Elencare le versioni più recenti dei pacchetti disponibili\n                        dal repository specificato e uscire.  (Tutte le altre\n                        opzioni a eccezione di -s verranno ignorate.)\n\n        --raw           Recuperare e archiviare i dati del pacchetto raw in un set di\n                        strutture di directory in base a directory e versione, nella posizione\n                        specificata da -d.  È possibile utilizzare questa opzione solo con-\n                        destinazioni basate su filesystem.  Può inoltre essere utilizzata con pkgsend(1)\n                        include per modificare in modo appropriato e ripubblicare i pacchetti,\n                        eventualmente correggendo i contenuti del file o fornendo\n                        ulteriori metadati del pacchetto.\n\n        --key keyfile   Specificare un file chiave del client SSL key da utilizzare per il recupero del pacchetto.\n\n        --cert certfile Specificare un file di certificato del client SSL da utilizzare per\n                        il recupero del pacchetto.\n\nAmbiente:\n        PKG_DEST        Directory di destinazione o URI\n        PKG_SRC         URI o percorso di origine"
+msgstr "Sintassi:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]\n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest\n\nOpzioni:\n        -a              Archiviare i dati del pacchetto recuperati in un archivio pkg(7)\n                        nella posizione specificata da -d.  Il file potrebbe non\n                        esistere ancora e questa opzione potrebbe essere utilizzata solo con\n                        destinazioni basate su filesystem.\n\n        -c cache_dir    Percorso di una directory che verrà utilizzato per memorizzare nella cache\n                        i contenuti scaricati.  Se non viene fornito alcun percorso, il\n                        client selezionerà automaticamente una directory della cache.\n                        Nel caso in cui venga interrotto il download e venga\n                        selezionata automaticamente una directory di cache,\n                        utilizzare questa opzione per riprendere il download.\n\n        -d path_or_uri  Percorso del filesystem o URI del repository di destinazione in cui\n                        ripubblicare i pacchetti.  La destinazione deve esistere già.\n                        È possibile creare nuovi repository utilizzando pkgrepo(1).\n\n        -h              Visualizzare questo messaggio di utilizzo.\n\n        -k              Mantenere il contenuto del pacchetto recuperato compresso e ignorarlo\n                        durante la ripubblicazione.  Non deve essere utilizzato con pkgsend.\n\n        -m match        Controlla i comportamenti corrispondenti utilizzando i seguenti valori:\n                            all-timestamps\n                                include tutti i valori data/ora corrispondenti, non solo\n                                i più recenti (implica all-versions)\n                            all-versions\n                                include tutte le versioni corrispondenti, non solo le più recenti\n\n        -n              Eseguire una prova senza apportare alcuna modifica.\n\n        -r              Valuta ricorsivamente tutte le dipendenze per l'elenco fornito\n                        di pacchetti e le aggiunge all'elenco.\n\n        -s src_repo_uri URI che rappresenta la posizione di un repository di pkg(7)\n                        da cui recuperare i dati del pacchetto.\n\n        --newest        Elencare le versioni più recenti dei pacchetti disponibili\n                        dal repository specificato e uscire.  (Tutte le altre\n                        opzioni a eccezione di -s verranno ignorate.)\n\n        --raw           Recuperare e archiviare i dati del pacchetto raw in un set di\n                        strutture di directory in base a directory e versione, nella posizione\n                        specificata da -d.  È possibile utilizzare questa opzione solo con-\n                        destinazioni basate su filesystem.  Può inoltre essere utilizzata con pkgsend(1)\n                        include per modificare in modo appropriato e ripubblicare i pacchetti,\n                        eventualmente correggendo i contenuti del file o fornendo\n                        ulteriori metadati del pacchetto.\n\n        --key keyfile   Specificare un file chiave del client SSL key da utilizzare per il recupero del pacchetto.\n\n        --cert certfile Specificare un file di certificato del client SSL da utilizzare per\n                        il recupero del pacchetto.\n\nAmbiente:\n        PKG_DEST        Directory di destinazione o URI\n        PKG_SRC         URI o percorso di origine"
 
 #: ../pull.py:165
 #, python-format

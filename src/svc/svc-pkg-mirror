@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -32,7 +32,7 @@
 
 #
 # When called using the 'refresh' method, it runs pkgrecv(1) to update a
-# pkg(5) repository using configuration stored in the SMF instance.
+# pkg(7) repository using configuration stored in the SMF instance.
 #
 # The following SMF properties are used to configure the service:
 #

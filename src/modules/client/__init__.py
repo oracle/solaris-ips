@@ -115,7 +115,7 @@ class GlobalSettings(object):
                 # endpoint.
                 self.pkg_client_max_consecutive_error_default = 4
 
-                # The location within the image of the cache for pkg.sysrepo(1M)
+                # The location within the image of the cache for pkg.sysrepo(8)
                 self.sysrepo_pub_cache_path = \
                     "var/cache/pkg/sysrepo_pub_cache.dat"
 

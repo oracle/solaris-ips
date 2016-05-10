@@ -25,7 +25,7 @@
 #
 
 """This module provides the supported, documented interface for clients to
-interface with the pkg(5) system.
+interface with the pkg(7) system.
 
 Refer to pkg.api_common and pkg.plandesc for additional core class
 documentation.
@@ -1154,7 +1154,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         def solaris_image(self):
                 """Returns True if the current image is a solaris image, or an
-                image which contains the pkg(5) packaging system."""
+                image which contains the pkg(7) packaging system."""
 
                 # First check to see if the special package "release/name"
                 # exists and contains metadata saying this is Solaris.
@@ -1182,8 +1182,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         def __ipkg_require_latest(self, noexecute):
                 """Raises an IpkgOutOfDateException if the current image
-                contains the pkg(5) packaging system and a newer version
-                of the pkg(5) packaging system is installable."""
+                contains the pkg(7) packaging system and a newer version
+                of the pkg(7) packaging system is installable."""
 
                 if not self.solaris_image():
                         return
@@ -1360,7 +1360,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 linked image attach/detach interfaces.
 
                 '_ipkg_require_latest' enables a check to verify that the
-                latest installable version of the pkg(5) packaging system is
+                latest installable version of the pkg(7) packaging system is
                 installed before we proceed with the requested operation.
 
                 For all other '_' prefixed parameters, please refer to the
@@ -5409,7 +5409,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 return self._img.linked.parse_name(name, unknown_ok=unknown_ok)
 
         def parse_p5i(self, data=None, fileobj=None, location=None):
-                """Reads the pkg(5) publisher JSON formatted data at 'location'
+                """Reads the pkg(7) publisher JSON formatted data at 'location'
                 or from the provided file-like object 'fileobj' and returns a
                 list of tuples of the format (publisher object, pkg_names).
                 pkg_names is a list of strings representing package names or

@@ -2529,7 +2529,7 @@ class _RepoStore(object):
 
 class Repository(object):
         """A Repository object is a representation of data contained within a
-        pkg(5) repository and an interface to manipulate it."""
+        pkg(7) repository and an interface to manipulate it."""
 
         def __init__(self, allow_invalid=False, cfgpathname=None, create=False,
             file_root=None, log_obj=None, mirror=False,
@@ -4106,7 +4106,7 @@ class Repository(object):
 
 class RepositoryConfig(object):
         """Returns an object representing a configuration interface for a
-        a pkg(5) repository.
+        a pkg(7) repository.
 
         The class of the object returned will depend upon the specified
         configuration target (which is used as to retrieve and store

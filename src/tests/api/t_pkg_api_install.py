@@ -590,7 +590,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 for pd in api_obj.gen_plan_update():
                         continue
 
-                # We should run into a problem if pkg(5) is out of date.
+                # We should run into a problem if pkg(7) is out of date.
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["*"])
                 api_obj.reset()

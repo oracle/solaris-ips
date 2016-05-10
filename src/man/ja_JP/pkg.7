@@ -5,14 +5,14 @@
 %ent;
 ]>
 
-<refentry lang="ja" id="pkg-5">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum> <refmiscinfo class="date">2014 年 4 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man5;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refentry lang="ja" id="pkg-7">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2014 年 4 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man5;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
 </refnamediv>
 <refsect1 id="GLHDA" role="description"><title></title>
-<para>Image Packaging System、<literal>pkg</literal>(5) は、ソフトウェアのライフサイクル管理 (インストール、アップグレード、および削除) のために提供されるフレームワークです。Image Packaging System は、一連のキーと値のペアおよび (場合によっては) データペイロードで定義されたアクションのコレクションである、パッケージの単位でソフトウェアを管理します。多くの場合、アクションはファイルシステム内に存在するファイルですが、ドライバ、サービス、ユーザーなどのその他のインストール可能オブジェクトも表します。</para>
+<para>Image Packaging System、<literal>pkg</literal>(7) は、ソフトウェアのライフサイクル管理 (インストール、アップグレード、および削除) のために提供されるフレームワークです。Image Packaging System は、一連のキーと値のペアおよび (場合によっては) データペイロードで定義されたアクションのコレクションである、パッケージの単位でソフトウェアを管理します。多くの場合、アクションはファイルシステム内に存在するファイルですが、ドライバ、サービス、ユーザーなどのその他のインストール可能オブジェクトも表します。</para>
 </refsect1>
 <refsect1 role="other"><title>パッケージの FMRI とバージョン</title>
 <para>各パッケージは、スキーム <literal>pkg:</literal> を使用して、障害管理リソース識別子 (FMRI) によって表されます。パッケージの完全な FMRI は、次の形式のスキーム、パブリッシャー、パッケージ名、およびバージョン文字列で構成されます。</para>
@@ -216,13 +216,13 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
-<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<literal>pkg </literal>(5) によって文字列が任意に選択されます。</para>
+<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<literal>pkg </literal>(7) によって文字列が任意に選択されます。</para>
 <para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後の @ のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
 <para>特定のパスにある実装メディエーションリンクの 1 つのインスタンスだけがシステムにインストールされている場合は、その 1 つのインスタンスが自動的に選択されます。このパスにある将来のリンクがインストールされても、ベンダー、サイト、またはローカルのオーバーライドが適用されないかぎり、またはいずれかのリンクのバージョンがメディエートされた場合、このリンクは切り替えられません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-priority</literal></term>
-<listitem><para>メディエートされたリンクの競合を解決する場合、<literal>pkg</literal>(5) は通常、<literal>mediator-version</literal> の最大の値を持つリンクを選択するか、またはそれが不可能な場合は <literal>mediator-implementation</literal> に基づいて選択します。この属性は、正常な競合解決処理のためのオーバーライドを指定するために使用されます。</para>
+<listitem><para>メディエートされたリンクの競合を解決する場合、<literal>pkg</literal>(7) は通常、<literal>mediator-version</literal> の最大の値を持つリンクを選択するか、またはそれが不可能な場合は <literal>mediator-implementation</literal> に基づいて選択します。この属性は、正常な競合解決処理のためのオーバーライドを指定するために使用されます。</para>
 <para>この属性が指定されていない場合は、デフォルトのメディエータ選択ロジックが適用されます。</para>
 <para>この値が <literal>vendor</literal> である場合は、このリンクが、<literal>mediator-priority</literal> が指定されていないリンクより優先されます。</para>
 <para>この値が <literal>site</literal> である場合は、このリンクが、<literal>vendor</literal> の値を持つリンクや、<literal>mediator-priority</literal> が指定されていないリンクより優先されます。</para>
@@ -235,7 +235,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>hardlink</literal> アクションは、ハードリンクを表します。このアクションは <literal>link</literal> アクションと同じ属性を持ち、そのキー属性も同じく <literal>path</literal> です。</para>
 </refsect2>
 <refsect2><title>ドライバアクション</title>
-<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <command>add_drv</command>(1M) を参照)。</para>
+<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <command>add_drv</command>(8) を参照)。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>ドライバの名前。多くの場合はドライババイナリのファイル名ですが、必ずしもそうとは限りません。これは <literal>driver</literal> アクションのキー属性です。</para>
@@ -266,7 +266,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>これは <filename>/etc/devlink.tab</filename> 内のエントリを指定します。この値はファイルに書き込まれる行そのものであり、タブは <literal>\t</literal> で示されます。詳細は、<literal>devlinks</literal>(1M) を参照してください。特定のドライバが複数の <literal>devlink</literal> 属性を持つことができます。</para>
+<listitem><para>これは <filename>/etc/devlink.tab</filename> 内のエントリを指定します。この値はファイルに書き込まれる行そのものであり、タブは <literal>\t</literal> で示されます。詳細は、<literal>devlinks</literal>(8) を参照してください。特定のドライバが複数の <literal>devlink</literal> 属性を持つことができます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -413,7 +413,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>set</literal> アクションは、パッケージ作成者が選択した任意のメタデータを提供できます。ただし、パッケージシステムにとって特別な意味を持つ、適切に定義された属性名がいくつか存在します。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>info.classification</literal></term>
-<listitem><para><literal>pkg</literal>(5) クライアントがパッケージを分類するために使用できる 1 つ以上のトークン。この値には、スキーム (「org.opensolaris.category.2008」や「org.acm.class.1998」など) と実際の分類 (「アプリケーション/ゲーム」など) がコロン (:) で区切られて含まれています。</para>
+<listitem><para><literal>pkg</literal>(7) クライアントがパッケージを分類するために使用できる 1 つ以上のトークン。この値には、スキーム (「org.opensolaris.category.2008」や「org.acm.class.1998」など) と実際の分類 (「アプリケーション/ゲーム」など) がコロン (:) で区切られて含まれています。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg.description</literal></term>
@@ -540,7 +540,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
-<listitem><para>これらの各アクチュエータは、パッケージのインストールまたは削除中に操作するサービスインスタンスの FMRI の値を取ります。<literal>disable_fmri</literal> を指定すると、<literal>svcadm</literal>(1M) の <literal>disable</literal> サブコマンドに従って、アクションの削除の前に特定の FMRI が無効になります。<literal>refresh_fmri</literal> および <literal>restart_fmri</literal> を指定すると、<literal>svcadm</literal>(1M) の対応するサブコマンドに従って、アクションのインストール、更新、または削除のあとに特定の FMRI が更新または再起動されます。最後に、<literal>suspend_fmri</literal> を指定すると、アクションのインストールフェーズの前に特定の FMRI が一時的に無効になり、そのフェーズが完了したあとに有効になります。</para>
+<listitem><para>これらの各アクチュエータは、パッケージのインストールまたは削除中に操作するサービスインスタンスの FMRI の値を取ります。<literal>disable_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の <literal>disable</literal> サブコマンドに従って、アクションの削除の前に特定の FMRI が無効になります。<literal>refresh_fmri</literal> および <literal>restart_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の対応するサブコマンドに従って、アクションのインストール、更新、または削除のあとに特定の FMRI が更新または再起動されます。最後に、<literal>suspend_fmri</literal> を指定すると、アクションのインストールフェーズの前に特定の FMRI が一時的に無効になり、そのフェーズが完了したあとに有効になります。</para>
 <para>この値には、複数のサービスインスタンスに一致するパターンを含めることができます。ただし、それをインスタンスを示さずに暗黙的に行うのではなく、<literal>svcs</literal>(1) によって受け入れられた glob を使用して明示的に行う必要があります。</para>
 </listitem>
 </varlistentry>
@@ -567,11 +567,11 @@ link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</pr
 <refsect1 role="other"><title>発行元とリポジトリ</title>
 <para>上で詳細に説明したように、パブリッシャーとは単に、パッケージクライアントがパッケージのプロバイダを識別するために使用する名前です。パブリッシャーは、パッケージリポジトリまたはパッケージアーカイブ、あるいはその両方を使用してパッケージを配布できます。現在パッケージシステムでサポートされているリポジトリのタイプには、起点リポジトリとミラーリポジトリの 2 つがあります。</para>
 <para><emphasis>起点</emphasis>は、1 つ以上のパッケージのすべてのメタデータ (カタログ、マニフェスト、検索インデックスなど) と内容 (ファイル) を含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して複数の起点が構成されている場合、パッケージクライアント API は、パッケージデータの取得元として最適な起点を選択しようとします。これはもっとも一般的なタイプのリポジトリであり、パッケージリポジトリ上で <command>pkgsend</command> または <command>pkgrecv</command> が使用された場合は常に、暗黙的に作成されます。</para>
-<para><emphasis>ミラー</emphasis>は、パッケージの内容 (ファイル) のみを含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して 1 つ以上のミラーが構成されている場合、クライアント API はパッケージ内容の取得のためのミラーを優先し、パッケージの内容の取得元として最適なミラーを選択しようとします。ミラーが到達不可能か、必要な内容が含まれていないか、またはより低速な場合、クライアント API は、構成されているいずれかの起点リポジトリから内容を取得します。ミラーは、<command>pkg.depotd</command>(1M) の動的ミラー機能を使用している、信頼できる一連のクライアント間の内容共有に使用されることを目的にしています。ミラーはまた、パッケージのメタデータへのアクセスを認証するために使用されることも目的にしています。ただし、パッケージの内容は認証なしで配布します。たとえば、あるクライアントが、アクセスするには SSL キーと証明書のペアが必要な <literal>https</literal> 起点と、パッケージの内容を提供する <literal>http</literal> ミラーを使用して構成される可能性があります。このようにして、認可クライアントだけがパッケージをインストールまたは更新できるようにしながら、パッケージ内容の取得のための認証のオーバーヘッドが回避されます。ミラーは、<filename>file</filename> という名前のサブディレクトリとその親を除く、リポジトリのすべてのサブディレクトリを削除することによって作成できます。また、<command>pkg.depotd</command>(1M) のミラーモードを使用すると、起点リポジトリもミラーとしてプロビジョニングできます。</para>
+<para><emphasis>ミラー</emphasis>は、パッケージの内容 (ファイル) のみを含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して 1 つ以上のミラーが構成されている場合、クライアント API はパッケージ内容の取得のためのミラーを優先し、パッケージの内容の取得元として最適なミラーを選択しようとします。ミラーが到達不可能か、必要な内容が含まれていないか、またはより低速な場合、クライアント API は、構成されているいずれかの起点リポジトリから内容を取得します。ミラーは、<command>pkg.depotd</command>(8) の動的ミラー機能を使用している、信頼できる一連のクライアント間の内容共有に使用されることを目的にしています。ミラーはまた、パッケージのメタデータへのアクセスを認証するために使用されることも目的にしています。ただし、パッケージの内容は認証なしで配布します。たとえば、あるクライアントが、アクセスするには SSL キーと証明書のペアが必要な <literal>https</literal> 起点と、パッケージの内容を提供する <literal>http</literal> ミラーを使用して構成される可能性があります。このようにして、認可クライアントだけがパッケージをインストールまたは更新できるようにしながら、パッケージ内容の取得のための認証のオーバーヘッドが回避されます。ミラーは、<filename>file</filename> という名前のサブディレクトリとその親を除く、リポジトリのすべてのサブディレクトリを削除することによって作成できます。また、<command>pkg.depotd</command>(8) のミラーモードを使用すると、起点リポジトリもミラーとしてプロビジョニングできます。</para>
 </refsect1>
 <refsect1 role="other"><title>大域ゾーンと非大域ゾーンの更新</title>
 <para><literal>pkg</literal> システムは、非大域ゾーンを強制的に大域ゾーンと同期された状態に保持します。つまり、同じカーネルが確実に実行されるようにするために、特定のパッケージを大域ゾーンとすべての非大域ゾーンで同じバージョンにする必要があります。このために、<literal>pkg</literal> は <literal>parent</literal> 依存関係を使用して、非大域ゾーンに特定の制約を課します。<literal>parent</literal> 依存関係についての詳細は、上の「依存アクション」を参照してください。</para>
-<para>大域ゾーンが非大域ゾーンに課す制限のため、非大域ゾーンは大域ゾーンのパッケージにアクセスできる必要があり、かつ同様の発行元構成にする必要があります。これらの目的はどちらも、<emphasis role="strong">システムリポジトリ</emphasis> を使用して実現されます (<literal>pkg.sysrepo</literal>(1M) のマニュアルページを参照)。システムリポジトリは、大域ゾーン内で構成された発行元へのアクセスと、これらの発行元が構成されている方法に関する情報を提供します。インストールまたは更新中に非大域ゾーンで別のパッケージが選択されないようにするために、発行元の検索順序で、システム発行元には非大域ゾーン内で構成された発行元より高くランク付けされます。発行元の検索順序については、<literal>pkg</literal>(1) のマニュアルページの <command>pkg set-publisher</command> コマンドを参照してください。</para>
+<para>大域ゾーンが非大域ゾーンに課す制限のため、非大域ゾーンは大域ゾーンのパッケージにアクセスできる必要があり、かつ同様の発行元構成にする必要があります。これらの目的はどちらも、<emphasis role="strong">システムリポジトリ</emphasis> を使用して実現されます (<literal>pkg.sysrepo</literal>(8) のマニュアルページを参照)。システムリポジトリは、大域ゾーン内で構成された発行元へのアクセスと、これらの発行元が構成されている方法に関する情報を提供します。インストールまたは更新中に非大域ゾーンで別のパッケージが選択されないようにするために、発行元の検索順序で、システム発行元には非大域ゾーン内で構成された発行元より高くランク付けされます。発行元の検索順序については、<literal>pkg</literal>(1) のマニュアルページの <command>pkg set-publisher</command> コマンドを参照してください。</para>
 <para>システム上のすべての非大域ゾーンを更新するには、大域ゾーン内で <command>pkg update</command> コマンドを引数なしで使用します。このコマンドは大域ゾーンに対して、また各非大域ゾーンに対して再帰的に動作します。非大域ゾーンを大域ゾーン内で行われた変更と同期された状態にするために、非大域ゾーンに対して必要な最小の変更が加えられます。たとえば、パッケージ <literal>foo</literal> が大域ゾーンと非大域ゾーンの両方にバージョン 1 でインストールされており、システムリポジトリ内でバージョン 2 が使用可能であると想定します。<literal>foo</literal> に親の依存関係が存在する場合、<literal>parent</literal> 依存関係によってパッケージは強制的に同期された状態に保持されるため、<command>pkg update foo</command> は <literal>foo</literal> を大域ゾーンと非大域ゾーンの両方でバージョン 2 に更新します。<literal>foo</literal> に親の依存関係が存在しない場合、<literal>foo</literal> は大域ゾーンでバージョン 2 に更新されますが、非大域ゾーンではバージョン 1 のままになります。</para>
 </refsect1>
 <refsect1 role="other"><title>ファセットとバリアント</title>
@@ -669,7 +669,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para>イメージポリシーはブール値を持つイメージプロパティーによって定義されます。<literal>flush-content-cache-on-success</literal> および <literal>send-uuid</literal> プロパティーについてとそれらの値の表示および変更方法については、<literal>pkg</literal>(1) のマニュアルページのイメージプロパティーに関する項目を参照してください。</para>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para><literal>pkg</literal>(5) イメージはより大きなファイルシステム内に任意に配置できるため、トークン <literal>$IMAGE_ROOT</literal> を使用して相対パスが区別されます。標準的なシステムインストールでは、<literal>$IMAGE_ROOT</literal> は / と同等です。</para>
+<para><literal>pkg</literal>(7) イメージはより大きなファイルシステム内に任意に配置できるため、トークン <literal>$IMAGE_ROOT</literal> を使用して相対パスが区別されます。標準的なシステムインストールでは、<literal>$IMAGE_ROOT</literal> は / と同等です。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
 <listitem><para>完全または部分的なイメージのメタデータディレクトリ。</para>
@@ -694,7 +694,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para><literal>$IMAGE_META</literal> ディレクトリ階層内のその他のパスは非公開であり、変更される可能性があります。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -727,7 +727,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-1m"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcadm-1m"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2 </citetitle></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2 </citetitle></olink></para>
 <para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2 </citetitle></olink></para>

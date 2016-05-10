@@ -11,7 +11,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System repository management utility</refpurpose></refnamediv>
@@ -57,7 +57,7 @@
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
 <para><command>pkgrepo</command> provides the ability to create and manage
-<literal>pkg</literal>(5) package repositories. Package repositories are a
+<literal>pkg</literal>(7) package repositories. Package repositories are a
 predefined set of directories and files that permit the storage and retrieval of
 package data by <command>pkg</command> and publication clients such as
 <command>pkgsend</command> or <command>pkgrecv</command>. In addition, when
@@ -78,7 +78,7 @@ store and/or retrieve package data.</para>
 <para>The following subcommands are supported:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>Create a <literal>pkg</literal>(5) repository at the specified
+<listitem><para>Create a <literal>pkg</literal>(7) repository at the specified
 location.</para>
 <para>This subcommand can be used only with file system based repositories.</para>
 <variablelist termlength="wholeline">
@@ -229,7 +229,7 @@ column is a flag that shows the status of the package. A value of <literal>o</li
 the status column indicates the package is obsolete. A value of <literal>r</literal> in
 the status column indicates the package has been renamed, which is a form
 of obsoletion. The fourth column contains the release and branch versions
-of the package. See <literal>pkg</literal>(5) for information about release
+of the package. See <literal>pkg</literal>(7) for information about release
 and branch versions.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
@@ -259,7 +259,7 @@ The <option>t</option> option can be specified multiple times, or multiple
 actions can be specified as the argument to one <option>t</option> option by
 separating the action names with commas. The value of
 <replaceable>action_name</replaceable> is one of the actions listed in 
-&ldquo;Actions&rdquo; in the <literal>pkg</literal>(5) man page, such as
+&ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page, such as
 <literal>file</literal>, <literal>dir</literal>, <literal>driver</literal>, <literal>depend</literal>, or <literal>set</literal>.</para>
 </listitem>
 </varlistentry>
@@ -645,7 +645,7 @@ repository.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para>Display a unique string that identifies the version of the <literal>pkg</literal>(5) system. The values produced by the <command>version</command> operation are not sortable and are not safe for comparison beyond equality.</para>
+<listitem><para>Display a unique string that identifies the version of the <literal>pkg</literal>(7) system. The values produced by the <command>version</command> operation are not sortable and are not safe for comparison beyond equality.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -750,7 +750,7 @@ succeeded.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(5) for descriptions of the following
+<para>See <literal>attributes</literal>(7) for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
@@ -785,7 +785,7 @@ align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>

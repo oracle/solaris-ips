@@ -352,7 +352,7 @@ class FileAction(generic.Action):
 
                 #
                 # Check file contents. At the moment, the only content-hash
-                # supported in pkg(5) is for ELF files, so this will need work
+                # supported in pkg(7) is for ELF files, so this will need work
                 # when additional content-hashes are added.
                 #
                 try:

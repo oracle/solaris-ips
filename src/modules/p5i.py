@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -39,7 +39,7 @@ CURRENT_VERSION = 1
 MIME_TYPE = "application/vnd.pkg5.info"
 
 def parse(data=None, fileobj=None, location=None):
-        """Reads the pkg(5) publisher JSON formatted data at 'location'
+        """Reads the pkg(7) publisher JSON formatted data at 'location'
         or from the provided file-like object 'fileobj' and returns a
         list of tuples of the format (publisher object, pkg_names).
         pkg_names is a list of strings representing package names or

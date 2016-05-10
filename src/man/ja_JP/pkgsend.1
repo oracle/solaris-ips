@@ -21,7 +21,7 @@
     [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgsend-1-desc" role="description"><title></title>
-<para><command>pkgsend</command> では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに公開できます。リポジトリを作成または管理するには、<command>pkgrepo</command>(1) を参照してください。既存のリポジトリ内でパッケージからパッケージアーカイブを作成するには、<command>pkgrecv</command>(1) を参照してください。パッケージのマニフェストの詳細は、<literal>pkg</literal>(5) を参照してください。</para>
+<para><command>pkgsend</command> では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに公開できます。リポジトリを作成または管理するには、<command>pkgrepo</command>(1) を参照してください。既存のリポジトリ内でパッケージからパッケージアーカイブを作成するには、<command>pkgrecv</command>(1) を参照してください。パッケージのマニフェストの詳細は、<literal>pkg</literal>(7) を参照してください。</para>
 <para><command>pkgsend publish</command> 操作のあとで、<replaceable>repo_uri_or_path</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、リポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -74,7 +74,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
 <listitem><para>指定されたパッケージマニフェストを使用するパッケージをターゲットパッケージリポジトリに公開します。これにより、指定されたソースからそのパッケージ用のファイルが取得されます。複数のマニフェストが指定されている場合、それらのマニフェストは指定された順序で追加されます。マニフェストが指定されていない場合は、<literal>stdin</literal> からマニフェストが読み取られます。</para>
-<para>指定しない場合、<command>pkgsend publish</command> はビルドバージョンをパッケージ FMRI に追加します。<command>publish</command> ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。パッケージ FMRI のバージョン文字列については、<literal>pkg </literal>(5) のマニュアルページを参照してください。</para>
+<para>指定しない場合、<command>pkgsend publish</command> はビルドバージョンをパッケージ FMRI に追加します。<command>publish</command> ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。パッケージ FMRI のバージョン文字列については、<literal>pkg </literal>(7) のマニュアルページを参照してください。</para>
 <para>複数の <command>pkgsend publish</command> プロセスが同じ <option>s</option> リポジトリに同時に公開する場合は、<option>-no-catalog</option> オプションを指定することをお勧めします。下記の <option>-no-catalog</option> オプションの説明を参照してください。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
@@ -160,7 +160,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -193,13 +193,13 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2 </citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
 <para>公開プロトコルの制限事項により、サイズが 128MB を超えるパッケージファイルを個別に公開する場合には、ファイルシステムベースの公開を使用する必要があります。ファイルシステムベースの公開は、リポジトリのアクセス制御が必要な場合にも推奨されます。</para>
-<para>ファイルシステムベースの公開を使用する場合、公開が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、公開先リポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(1M) を参照してください。</para>
+<para>ファイルシステムベースの公開を使用する場合、公開が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、公開先リポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(8) を参照してください。</para>
 </refsect1>
 </refentry>
 

@@ -5,8 +5,8 @@
 %ent;
 ]>
 
-<refentry lang="zh" id="pkg.sysrepo-1m">
-<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1m;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refentry lang="zh" id="pkg.sysrepo-8">
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
 </refmeta>
 <refnamediv>
 <refname>pkg.sysrepo</refname><refpurpose>映像包管理系统的系统信息库配置</refpurpose></refnamediv>
@@ -16,10 +16,10 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
     [-w <replaceable>http_proxy</replaceable>] [-W <replaceable>https_proxy</replaceable>]
 </synopsis>
 </refsynopsisdiv>
-<refsect1 id="pkgsysrepo-1m-desc" role="description"><title></title>
+<refsect1 id="pkgsysrepo-8-desc" role="description"><title></title>
 <para><command>pkg.sysrepo</command> 用于生成映像包管理系统 (Image Packaging System, IPS) 系统信息库的配置文件。<command>pkg.sysrepo </command> 由 <literal>svc:/application/pkg/system-repository</literal> 服务管理工具 (Service Management Facility, SMF) 服务调用。应对 SMF 服务中的属性进行配置更改。</para>
 <para>系统信息库负责提供对通过集中代理在参考映像中配置的软件包系统信息库的访问权限。配置为使用系统信息库的任何客户机可立即看到对该参考映像所做的发布者配置更改。</para>
-<para>系统信息库主要用于全局区域，以允许非全局区域访问在全局区域中配置的系统信息库。SMF 服务 <literal>svc:/application/pkg/zones-proxyd</literal> 和 <literal> svc:/application/pkg/zones-proxy-client</literal> 负责提供非全局区域和全局区域之间的传输。只有 <literal>pkg</literal>(5) 使用该传输。</para>
+<para>系统信息库主要用于全局区域，以允许非全局区域访问在全局区域中配置的系统信息库。SMF 服务 <literal>svc:/application/pkg/zones-proxyd</literal> 和 <literal> svc:/application/pkg/zones-proxy-client</literal> 负责提供非全局区域和全局区域之间的传输。只有 <literal>pkg</literal>(7) 使用该传输。</para>
 <para>请注意，只有 <literal>http</literal>、<literal>https</literal> 和 <literal>v4</literal> 文件系统信息库以及 <literal>p5p</literal> 归档受支持。较旧的文件系统信息库格式不受支持。有关系统信息库版本的更多信息，请参见 <command>pkgrepo</command>(1)。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -75,7 +75,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -108,7 +108,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
-# Some pkg(5) specific lint manifest checks
+# Some pkg(7) specific lint manifest checks
 
 import os.path
 import six

@@ -718,11 +718,11 @@ set name=pkg.description value="core kernel software for a specific instruction-
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
-user gcos-field="pkg(5) server UID" group=pkg5srv uid=97 username=""
-user gcos-field="pkg(5) server UID" group=pkg5srv uid=98 username=1pkg5srv
-user gcos-field="pkg(5) server UID" group=pkg5srv uid=99 username=pkg5srv_giant_pacific_octopus_arm
-user gcos-field="pkg(5) server UID" group=pkg5srv uid=100 username=pkg5s:v
-user gcos-field="pkg(5) server UID" group=pkg5srv uid=101 username=pkg5-_.
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=97 username=""
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=98 username=1pkg5srv
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=99 username=pkg5srv_giant_pacific_octopus_arm
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=100 username=pkg5s:v
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=101 username=pkg5-_.
 """
 
 expected_failures["license-has-path.mf"] = ["pkglint.action007"]

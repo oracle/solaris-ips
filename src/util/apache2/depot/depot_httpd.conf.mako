@@ -23,7 +23,7 @@
 #
 
 #
-# This file is the template for the Apache configuration that serves pkg(5)
+# This file is the template for the Apache configuration that serves pkg(7)
 # repositories.
 #
 </%doc>

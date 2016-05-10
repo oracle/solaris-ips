@@ -28,8 +28,8 @@ msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creatio
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
-"unusable with older versions of the pkg(5) system."
-msgstr "続行するには、特権ユーザーとして 'pkg update-format' を実行してから再試行します。イメージの形式を更新すると、古いバージョンの pkg(5) システムでは使用できない形式になります。"
+"unusable with older versions of the pkg(7) system."
+msgstr "続行するには、特権ユーザーとして 'pkg update-format' を実行してから再試行します。イメージの形式を更新すると、古いバージョンの pkg(7) システムでは使用できない形式になります。"
 
 #: ../client.py:157
 msgid ""
@@ -627,10 +627,10 @@ msgstr "%s が失敗しました (目録の例外):\n %s"
 #: ../client.py:1495
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) by executing 'pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) by executing 'pkg install\n"
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
-msgstr "警告: pkg(5) が古いようなので、%(op)s を実行する前に更新してください。\n特権ユーザーとして 'pkg install pkg:/package/pkg' を実行して\n pkg(5) を更新したあとで、%(op)s を再試行してください。"
+msgstr "警告: pkg(7) が古いようなので、%(op)s を実行する前に更新してください。\n特権ユーザーとして 'pkg install pkg:/package/pkg' を実行して\n pkg(7) を更新したあとで、%(op)s を再試行してください。"
 
 #: ../client.py:1502
 #, python-format
@@ -4111,12 +4111,12 @@ msgid ""
 msgstr "指定された p5s データは、認識できない形式であるか、有効な発行元情報を含んでいません。"
 
 #: ../modules/client/api_errors.py:1405
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "pkg(5) 発行元情報としてサポートされていないデータ形式です。"
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "pkg(7) 発行元情報としてサポートされていないデータ形式です。"
 
 #: ../modules/client/api_errors.py:1414
-msgid "Unsupported pkg(5) publisher and image information data format."
-msgstr "pkg(5) の発行元およびイメージ情報としてサポートされていないデータ形式です。"
+msgid "Unsupported pkg(7) publisher and image information data format."
+msgstr "pkg(7) の発行元およびイメージ情報としてサポートされていないデータ形式です。"
 
 #: ../modules/client/api_errors.py:1426
 #, python-format
@@ -4459,8 +4459,8 @@ msgstr "関連する署名アクションの値属性は %s です"
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
-msgstr "署名アクション %(act)s は、このバージョンの pkg(5) では認識できないバージョン (%(ver)s) を使用して作成されました。"
+"of pkg(7) doesn't understand."
+msgstr "署名アクション %(act)s は、このバージョンの pkg(7) では認識できないバージョン (%(ver)s) を使用して作成されました。"
 
 #: ../modules/client/api_errors.py:2047
 #, python-format
@@ -4552,10 +4552,10 @@ msgstr "%(cert)s を被認証者とする証明書は、pkg5 ではまだ処理�
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
-"has an extension with a value that pkg(5) does not understand.\n"
+"has an extension with a value that pkg(7) does not understand.\n"
 "Extension name:%(name)s\n"
 "Extension value:%(val)s"
-msgstr "%(cert)s を被認証者とする証明書は、pkg(5) では認識できない値を持つ拡張機能があるため、検証できませんでした。\n拡張機能の名前: %(name)s\n拡張機能の値: %(val)s"
+msgstr "%(cert)s を被認証者とする証明書は、pkg(7) では認識できない値を持つ拡張機能があるため、検証できませんでした。\n拡張機能の名前: %(name)s\n拡張機能の値: %(val)s"
 
 #: ../modules/client/api_errors.py:2194
 #, python-format
@@ -5219,8 +5219,8 @@ msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "発行元 '%s' はシステム発行元であり、移動できません。"
 
 #: ../modules/client/image.py:4401
-msgid "pkg(5) update check failed."
-msgstr "pkg(5) の更新チェックに失敗しました。"
+msgid "pkg(7) update check failed."
+msgstr "pkg(7) の更新チェックに失敗しました。"
 
 #: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
 #: ../modules/client/publisher.py:2525
@@ -5661,8 +5661,8 @@ msgid "Done (%(elapsed).3fs)"
 msgstr "完了 (%(elapsed).3fs)"
 
 #: ../modules/client/progress.py:1796
-msgid "Checking that pkg(5) is up to date ..."
-msgstr "pkg(5) が最新であることを確認しています..."
+msgid "Checking that pkg(7) is up to date ..."
+msgstr "pkg(7) が最新であることを確認しています..."
 
 #: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
 #: ../modules/gui/progress.py:50
@@ -5759,8 +5759,8 @@ msgstr "リンクされたイメージ: %s 完了; %d 処理中: %s"
 
 #: ../modules/client/progress.py:2151
 #, python-format
-msgid "Checking that pkg(5) is up to date %c"
-msgstr "pkg(5) が最新であることを確認しています %c"
+msgid "Checking that pkg(7) is up to date %c"
+msgstr "pkg(7) が最新であることを確認しています %c"
 
 #: ../modules/client/progress.py:2188
 msgid "Retrieving target catalog"
@@ -6690,9 +6690,9 @@ msgstr "\n有効なパッケージデポに接続できません。ネットワ�
 #: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
-msgstr "pkg(5) は古くなっているため更新することをお勧めします。\n%s パッケージを更新してください"
+msgstr "pkg(7) は古くなっているため更新することをお勧めします。\n%s パッケージを更新してください"
 
 #: ../modules/gui/installupdate.py:750
 #, python-format
@@ -8556,8 +8556,8 @@ msgid "Packages should not have dependencies on obsolete packages."
 msgstr "パッケージは廃止されたパッケージに依存しているべきではありません。"
 
 #: ../modules/lint/pkglint_action.py:1333
-msgid "pkg(5) FMRIs should be valid."
-msgstr "pkg(5) FMRI は有効であるべきです。"
+msgid "pkg(7) FMRIs should be valid."
+msgstr "pkg(7) FMRI は有効であるべきです。"
 
 #: ../modules/lint/pkglint_action.py:1340
 #, python-format
@@ -8768,10 +8768,10 @@ msgstr "'%s' は有効な mediator-priority ではありません。有効な値
 msgid ""
 "\n"
 "\n"
-"This is an internal error in pkg(5) version %(version)s.  Please log a\n"
+"This is an internal error in pkg(7) version %(version)s.  Please log a\n"
 "Service Request about this issue including the information above and this\n"
 "message."
-msgstr "\n\nこれは pkg(5) バージョン %(version)s の内部エラーです。上の情報\nとこのメッセージを含め、この問題に関するサービス要求を記録\nしてください。"
+msgstr "\n\nこれは pkg(7) バージョン %(version)s の内部エラーです。上の情報\nとこのメッセージを含め、この問題に関するサービス要求を記録\nしてください。"
 
 #: ../modules/misc.py:437
 msgid "B"
@@ -8931,14 +8931,14 @@ msgstr "パッケージ '%(pkg)s' では、パッケージには設定されて�
 #: ../modules/publish/dependencies.py:195
 msgid ""
 "pkgdepend has inferred conditional dependencies with different targets but\n"
-"which share a predicate.  pkg(5) can not represent these dependencies.  "
+"which share a predicate.  pkg(7) can not represent these dependencies.  "
 "This\n"
 "issue can be resolved by changing the packaging of the links which generated "
 "the\n"
 "conditional dependencies so that they have different predicates or share "
 "the\n"
 "same FMRI.  Each pair of problematic conditional dependencies follows: \n"
-msgstr "pkgdepend によって、述語を共有する異なるターゲットとの条件付き依存性\nが推測されました。pkg(5) はこれらの依存性を表現できません。この\n問題を解決するには、条件付き依存性を生成したリンクのパッケージ化の方法を変更することで\n、それらが異なる述語を持つようにするか\n同じ FMRI を共有するようにします。問題のある条件付き依存性の各ペアを次に示します: \n"
+msgstr "pkgdepend によって、述語を共有する異なるターゲットとの条件付き依存性\nが推測されました。pkg(7) はこれらの依存性を表現できません。この\n問題を解決するには、条件付き依存性を生成したリンクのパッケージ化の方法を変更することで\n、それらが異なる述語を持つようにするか\n同じ FMRI を共有するようにします。問題のある条件付き依存性の各ペアを次に示します: \n"
 
 #: ../modules/publish/dependencies.py:206
 #, python-format
@@ -9996,7 +9996,7 @@ msgid ""
 "        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
-"        -a              Store the retrieved package data in a pkg(5) "
+"        -a              Store the retrieved package data in a pkg(7) "
 "archive\n"
 "                        at the location specified by -d.  The file may not\n"
 "                        already exist, and this option may only be used "
@@ -10038,7 +10038,7 @@ msgid ""
 "provided\n"
 "                        list of packages and adds them to the list.\n"
 "\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "        --newest        List the most recent versions of the packages "
@@ -10067,7 +10067,7 @@ msgid ""
 "Environment:\n"
 "        PKG_DEST        Destination directory or URI\n"
 "        PKG_SRC         Source URI or path"
-msgstr "使用方法:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\nオプション:\n        -a              取得したパッケージデータを -d によって指定された場所に\n                        ある pkg(5) アーカイブに格納します。ファイルはまだ存在\n                        していない可能性があります。このオプションは保存先が\n                        ファイルシステムベースの場合のみ使用できます。\n\n        -c cache_dir    ダウンロードした内容をキャッシュするためのディレクトリ\n                        のパス。指定されていない場合、クライアントは自動的に\n                        キャッシュディレクトリを選択します。ダウンロードが中断\n                        された場合に、キャッシュディレクトリが自動的に選択され\n                        ていたときは、このオプションを使用してダウンロードを\n                        再開します。\n\n        -d path_or_uri  パッケージを再公開する先のターゲットリポジトリの\n                        ファイルシステムパスまたは URI。ターゲットはすでに存在\n                        している必要があります。新しいリポジトリを作成するには、pkgrepo(1) を使用します。\n\n        -h              この使用方法のメッセージを表示します。\n\n        -k              取得した圧縮されたパッケージコンテンツを保持します。再公開\n                        する場合は、無視されます。pkgsend と一緒に使用しないようにしてください。\n\n        -m match        次の値を使用して、一致動作を制御します:\n                            all-timestamps\n                                最新のタイムスタンプだけではなく、一致するすべ\n                                てのタイムスタンプを含む (つまり、all-versions)\n                            all-versions\n                                最新のバージョンだけではなく、一致するすべてのバージョンを含む\n\n        -n              変更を加えずに、試験実行を行います。\n\n        -r              指定したパッケージのリストのすべての依存関係を再帰的に\n                        検証して、リストに追加します。\n\n        -s src_repo_uri パッケージデータを取得する pkg(5) のリポジトリの場所を\n                        表す URI。\n\n        --newest        指定したリポジトリから入手できるパッケージの最新の\n                        バージョンを一覧表示して終了します (-s を除くほかの\n                        すべてのオプションは無視されます)。\n\n        --raw           -d によって指定された場所の語幹およびバージョンごとに\n                        raw パッケージデータを取得して、一連のディレクトリ構造\n                        に格納します。保存先がファイルシステムベースの場合のみ\n                        使用できます。pkgsend(1) include と一緒に使用すると、\n                        ファイルの内容を修正するか、追加のパッケージメタデータ\n                        を指定することにより、パッケージを容易に変更および\n                        再公開できます。\n\n        --key keyfile   pkg の取得に使用するクライアント SSL キーファイルを指定します。\n\n        --cert certfile pkg の取得に使用するクライアント SSL 証明書ファイルを\n                        指定します。\n\n環境:\n        PKG_DEST        保存先のディレクトリ、または URI\n        PKG_SRC         取得元の URI またはパス"
+msgstr "使用方法:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\nオプション:\n        -a              取得したパッケージデータを -d によって指定された場所に\n                        ある pkg(7) アーカイブに格納します。ファイルはまだ存在\n                        していない可能性があります。このオプションは保存先が\n                        ファイルシステムベースの場合のみ使用できます。\n\n        -c cache_dir    ダウンロードした内容をキャッシュするためのディレクトリ\n                        のパス。指定されていない場合、クライアントは自動的に\n                        キャッシュディレクトリを選択します。ダウンロードが中断\n                        された場合に、キャッシュディレクトリが自動的に選択され\n                        ていたときは、このオプションを使用してダウンロードを\n                        再開します。\n\n        -d path_or_uri  パッケージを再公開する先のターゲットリポジトリの\n                        ファイルシステムパスまたは URI。ターゲットはすでに存在\n                        している必要があります。新しいリポジトリを作成するには、pkgrepo(1) を使用します。\n\n        -h              この使用方法のメッセージを表示します。\n\n        -k              取得した圧縮されたパッケージコンテンツを保持します。再公開\n                        する場合は、無視されます。pkgsend と一緒に使用しないようにしてください。\n\n        -m match        次の値を使用して、一致動作を制御します:\n                            all-timestamps\n                                最新のタイムスタンプだけではなく、一致するすべ\n                                てのタイムスタンプを含む (つまり、all-versions)\n                            all-versions\n                                最新のバージョンだけではなく、一致するすべてのバージョンを含む\n\n        -n              変更を加えずに、試験実行を行います。\n\n        -r              指定したパッケージのリストのすべての依存関係を再帰的に\n                        検証して、リストに追加します。\n\n        -s src_repo_uri パッケージデータを取得する pkg(7) のリポジトリの場所を\n                        表す URI。\n\n        --newest        指定したリポジトリから入手できるパッケージの最新の\n                        バージョンを一覧表示して終了します (-s を除くほかの\n                        すべてのオプションは無視されます)。\n\n        --raw           -d によって指定された場所の語幹およびバージョンごとに\n                        raw パッケージデータを取得して、一連のディレクトリ構造\n                        に格納します。保存先がファイルシステムベースの場合のみ\n                        使用できます。pkgsend(1) include と一緒に使用すると、\n                        ファイルの内容を修正するか、追加のパッケージメタデータ\n                        を指定することにより、パッケージを容易に変更および\n                        再公開できます。\n\n        --key keyfile   pkg の取得に使用するクライアント SSL キーファイルを指定します。\n\n        --cert certfile pkg の取得に使用するクライアント SSL 証明書ファイルを\n                        指定します。\n\n環境:\n        PKG_DEST        保存先のディレクトリ、または URI\n        PKG_SRC         取得元の URI またはパス"
 
 #: ../pull.py:165
 #, python-format

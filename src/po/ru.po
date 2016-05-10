@@ -504,12 +504,12 @@ msgstr ""
 #: ../client.py:1059
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) using 'pfexec pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) using 'pfexec pkg install\n"
 "pkg:/package/pkg' and then retry the %(op)s."
 msgstr ""
-       "ПРЕДУПРЕЖДЕНИЕ: pkg(5) является устаревшим и должен быть обновлен до\n"
-       "выполнения %(op)s. Обновите pkg(5) при помощи команды 'pfexec pkg install\n"
+       "ПРЕДУПРЕЖДЕНИЕ: pkg(7) является устаревшим и должен быть обновлен до\n"
+       "выполнения %(op)s. Обновите pkg(7) при помощи команды 'pfexec pkg install\n"
        "pkg:/package/pkg', а затем снова выполните %(op)s."
 
 #: ../client.py:1066
@@ -1307,13 +1307,13 @@ msgid ""
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
 "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
+"above traceback and this message.  The version of pkg(7) is '%s'."
 msgstr ""
        "\n"
        "\n"
        "Это внутренняя ошибка. Сообщите разработчикам об этой неполадке\n"
        "заполнив отчет по адресу http://defect.opensolaris.org и включив\n"
-       "результат отслеживания причины неполадки и данное сообщение. Версия pkg(5): '%s'."
+       "результат отслеживания причины неполадки и данное сообщение. Версия pkg(7): '%s'."
 
 #: ../client.py:4279
 msgid ""
@@ -2308,10 +2308,10 @@ msgstr ""
 #: ../gui/modules/installupdate.py:727
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
 msgstr ""
-       "pkg(5) устарел, его необходимо обновить.\n"
+       "pkg(7) устарел, его необходимо обновить.\n"
        "Обновите пакет %s"
 
 #: ../gui/modules/installupdate.py:734
@@ -4310,8 +4310,8 @@ msgstr ""
        "сведения об издателе."
 
 #: ../modules/client/api_errors.py:926
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Неподдерживаемый формат данных об издателе pkg(5)."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Неподдерживаемый формат данных об издателе pkg(7)."
 
 #: ../modules/client/api_errors.py:952
 #, python-format
@@ -4646,9 +4646,9 @@ msgstr "Атрибут значения релевантного действи�
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
+"of pkg(7) doesn't understand."
 msgstr ""
-       "Действие подписи %(act)s выполнялось с использованием версии (%(ver)s), не распознаваемой данной версией pkg(5)."
+       "Действие подписи %(act)s выполнялось с использованием версии (%(ver)s), не распознаваемой данной версией pkg(7)."
 
 #: ../modules/client/api_errors.py:1477
 #, python-format
@@ -5114,8 +5114,8 @@ msgid "Image State Update Phase"
 msgstr "Фаза обновления состояния образа"
 
 #: ../modules/client/image.py:2640
-msgid "pkg(5) update check failed."
-msgstr "Сбой при проверке обновления pkg(5)."
+msgid "pkg(7) update check failed."
+msgstr "Сбой при проверке обновления pkg(7)."
 
 #: ../modules/client/imageconfig.py:765 ../modules/client/publisher.py:2078
 msgid ""
@@ -7220,7 +7220,7 @@ msgid ""
 "        -r              Recursively evaluates all dependencies for the "
 "provided\n"
 "                        list of packages and adds them to the list.\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "Environment:\n"
@@ -7272,7 +7272,7 @@ msgstr ""
        "        -r              Рекурсивно оценивает все зависимости для "
        "предоставленного\n"
        "                        списка пакетов и добавляет их в список.\n"
-       "        -s src_repo_uri Идентификатор URI, предоставляющий путь к каталогу pkg(5)\n"
+       "        -s src_repo_uri Идентификатор URI, предоставляющий путь к каталогу pkg(7)\n"
        "                        для возврата данных пакета.\n"
        "\n"
        "Среда:\n"

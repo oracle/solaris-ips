@@ -461,7 +461,7 @@ class Foo(object):
 		<service_fmri value="svc:/application/pkg5test/foreign-many" />
 	</dependency>
 
-	<!-- pkg(5) shouldn't see this as a dependency -->
+	<!-- pkg(7) shouldn't see this as a dependency -->
         <dependency
                 name="optional-service"
                 grouping="optional_all"
@@ -553,7 +553,7 @@ class Foo(object):
 	</dependency>
 
 
-        <!-- pkg(5) should throw an error here, as we don't deliver this
+        <!-- pkg(7) should throw an error here, as we don't deliver this
              service, nor does any other package in our test suite -->
         <dependency
                 name="unknown-service"
@@ -587,7 +587,7 @@ class Foo(object):
 
         <instance name='one' enabled='false' >
 
-    	    <!-- pkg(5) should throw an error being unable to resolve this -->
+    	    <!-- pkg(7) should throw an error being unable to resolve this -->
             <dependency
                 name="another"
                 grouping="require_all"

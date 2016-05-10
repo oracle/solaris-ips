@@ -218,7 +218,7 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         <sroot>/<repo_prefix>/<file, catalog etc.>/<version>/
 
         'sroot' is only used when the Apache server is serving other content
-        and we want to separate pkg(5) resources from the other resources
+        and we want to separate pkg(7) resources from the other resources
         provided.
 
         'repo_prefix' exists so that we can disambiguate between multiple

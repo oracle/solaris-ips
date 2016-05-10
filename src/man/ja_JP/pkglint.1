@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 1 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 1 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -23,7 +23,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <para><command>pkglint</command> は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。</para>
 <para><command>pkglint</command> は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
 <para>lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。</para>
-<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <literal>pkg</literal>(5) ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
+<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <literal>pkg</literal>(7) ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
 <para><command>pkglint</command> の以降の呼び出しではキャッシュディレクトリを再利用できるため、<option>r</option> または <option>l</option> 引数はすべて省略できます。</para>
 <para><command>pkglint</command> では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、<command>pkg</command> を使用します。</para>
 <para><command>pkglint</command> では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。<literal>True</literal> に設定された属性 <literal>pkg.linted</literal> を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。</para>
@@ -164,7 +164,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -197,7 +197,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

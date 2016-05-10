@@ -47,7 +47,7 @@
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
-<para><command>pkgrepo</command> を使用すると、<literal>pkg</literal>(5) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
+<para><command>pkgrepo</command> を使用すると、<literal>pkg</literal>(7) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>サポートしているオプションは、次のとおりです。</para>
@@ -62,7 +62,7 @@
 <para>サポートされているサブコマンドは次のとおりです。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>指定された場所に <literal>pkg</literal>(5) リポジトリを作成します。</para>
+<listitem><para>指定された場所に <literal>pkg</literal>(7) リポジトリを作成します。</para>
 <para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-version</option></term>
@@ -162,7 +162,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>指定された <replaceable>pkg_fmri_pattern</replaceable> にマッチする <replaceable>repo_uri_or_path</replaceable> リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
-<para>デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の <literal>o</literal> の値は、パッケージが廃止されていることを示します。ステータス列の <literal>r</literal> の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、<literal>pkg</literal>(5) を参照してください。</para>
+<para>デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の <literal>o</literal> の値は、パッケージが廃止されていることを示します。ステータス列の <literal>r</literal> の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、<literal>pkg</literal>(7) を参照してください。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが一覧表示されます。このオプションは複数回指定できます。</para>
@@ -180,7 +180,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>指定されたパッケージ内の指定されたアクションのみを表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(5) のマニュアルページの「アクション」に一覧表示されているアクションのいずれか (<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> など) です。</para>
+<listitem><para>指定されたパッケージ内の指定されたアクションのみを表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(7) のマニュアルページの「アクション」に一覧表示されているアクションのいずれか (<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> など) です。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -398,7 +398,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para><literal>pkg</literal>(5) システムのバージョンを識別する一意の文字列を表示します。<command>version</command> 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。</para>
+<listitem><para><literal>pkg</literal>(7) システムのバージョンを識別する一意の文字列を表示します。<command>version</command> 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -497,7 +497,7 @@ solaris   repository related-uris     ()</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -530,7 +530,7 @@ solaris   repository related-uris     ()</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2 </citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>

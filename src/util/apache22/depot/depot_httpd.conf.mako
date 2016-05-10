@@ -19,11 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
-# This file is the template for the Apache configuration that serves pkg(5)
+# This file is the template for the Apache configuration that serves pkg(7)
 # repositories.
 #
 </%doc>

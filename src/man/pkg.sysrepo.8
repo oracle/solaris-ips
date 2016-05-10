@@ -5,13 +5,13 @@
 %ent;
 ]>
 
-<refentry id="pkg.sysrepo-1m">
-<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum>
+<refentry id="pkg.sysrepo-8">
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum>
 <refmiscinfo class="date">21 May 2013</refmiscinfo>
-<refmiscinfo class="sectdesc">&man1m;</refmiscinfo>
+<refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.sysrepo</refname><refpurpose>Image Packaging System system repository configuration</refpurpose></refnamediv>
@@ -21,7 +21,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
     [-w <replaceable>http_proxy</replaceable>] [-W <replaceable>https_proxy</replaceable>]
 </synopsis>
 </refsynopsisdiv>
-<refsect1 id="pkgsysrepo-1m-desc" role="description"><title></title>
+<refsect1 id="pkgsysrepo-8-desc" role="description"><title></title>
 <para><command>pkg.sysrepo</command> is used to generate the configuration
 files for the Image Packaging System (IPS) system repository. <command>pkg.sysrepo
 </command> is called by the <literal>svc:/application/pkg/system-repository</literal> Service
@@ -36,7 +36,7 @@ non-global zones to access the repositories configured in the global zone.
 The SMF services <literal>svc:/application/pkg/zones-proxyd</literal> and <literal>
 svc:/application/pkg/zones-proxy-client</literal> are responsible for providing
 the transport between non-global zones and the global zone. This transport
-is only used by <literal>pkg</literal>(5).</para>
+is only used by <literal>pkg</literal>(7).</para>
 <para>Note that only <literal>http</literal>, <literal>https</literal>, and <literal>
 v4</literal> file repositories and <literal>p5p</literal> archives are supported.
 Older file repository formats are not supported. See <command>pkgrepo</command>(1)
@@ -112,7 +112,7 @@ repositories. This setting can be configured using the <literal>config/https_pro
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(5) for descriptions of the following
+<para>See <literal>attributes</literal>(7) for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
@@ -148,8 +148,8 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
-<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>,
-<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

@@ -12,7 +12,7 @@
 <refname>pkg</refname><refpurpose>映像包管理系统</refpurpose>
 </refnamediv>
 <refsect1 id="GLHDA" role="description"><title></title>
-<para>映像包管理系统 <literal>pkg</literal>(5) 是用于提供软件生命周期管理（安装、升级和删除）的框架。映像包管理以软件包为单位对软件进行管理，软件包是由一组关键字/值对以及可能的数据有效负荷定义的操作的集合。在许多情况下，操作是在文件系统中找到的文件，但它们也表示其他可安装对象，例如驱动程序、服务和用户。</para>
+<para>映像包管理系统 <literal>pkg</literal>(7) 是用于提供软件生命周期管理（安装、升级和删除）的框架。映像包管理以软件包为单位对软件进行管理，软件包是由一组关键字/值对以及可能的数据有效负荷定义的操作的集合。在许多情况下，操作是在文件系统中找到的文件，但它们也表示其他可安装对象，例如驱动程序、服务和用户。</para>
 </refsect1>
 <refsect1 role="other"><title>软件包 FMRI 和版本</title>
 <para>每个软件包均由带有机制 <literal>pkg:</literal> 的故障管理资源标识符 (fault management resource identifier, FMRI) 表示。软件包的完整 FMRI 由机制、发布者、软件包名称和以下格式的版本字符串组成：</para>
@@ -216,13 +216,13 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
-<listitem><para>指定除 <literal>mediator-version</literal> 之外还使用中介实现，或使用中介实现代替 mediator-version。不认为实现字符串应进行排序，如果系统管理员未显式指定，则由 <literal>pkg</literal>(5) 任意选择一个字符串。</para>
+<listitem><para>指定除 <literal>mediator-version</literal> 之外还使用中介实现，或使用中介实现代替 mediator-version。不认为实现字符串应进行排序，如果系统管理员未显式指定，则由 <literal>pkg</literal>(7) 任意选择一个字符串。</para>
 <para>该值可以是由字母数字字符和空格组成的任意长度的字符串。如果实现本身可被版本化或已被版本化，则应在字符串的结尾处在 @ 之后指定版本（表示为非负整数的点分序列）。如果存在实现的多个版本，则缺省行为是选择最高版本的实现。</para>
 <para>如果系统上仅安装了特定路径的实现中介链接的一个实例，则会自动选择该实例。如果以后安装了该路径的其他链接，除非应用供应商、站点或本地覆盖或者如果某一链接进行了版本中介，否则不会切换链接。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-priority</literal></term>
-<listitem><para>在解决中介链接中的冲突时，<literal>pkg</literal>(5) 通常会选择 <literal>mediator-version</literal> 值最大的链接，如果不可能，则会基于 <literal>mediator-implementation</literal> 进行选择。此属性用于为常规冲突解决方案过程指定覆盖。</para>
+<listitem><para>在解决中介链接中的冲突时，<literal>pkg</literal>(7) 通常会选择 <literal>mediator-version</literal> 值最大的链接，如果不可能，则会基于 <literal>mediator-implementation</literal> 进行选择。此属性用于为常规冲突解决方案过程指定覆盖。</para>
 <para>如果未指定此属性，则会应用缺省中介选择逻辑。</para>
 <para>如果值为 <literal>vendor</literal>，则与未指定 <literal>mediator-priority</literal> 的链接相比，会优先选择该链接。</para>
 <para>如果值为 <literal>site</literal>，则与值为 <literal>vendor</literal> 或未指定 <literal>mediator-priority</literal> 的链接相比，会优先选择该链接。</para>
@@ -235,7 +235,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>hardlink</literal> 操作表示硬链接。它具有与 <literal>link</literal> 操作相同的属性，<literal>path</literal> 也是其关键属性。</para>
 </refsect2>
 <refsect2><title>驱动程序操作</title>
-<para><literal>driver</literal> 操作表示设备驱动程序。<literal>driver</literal> 操作不引用有效负荷。驱动程序文件自身必须作为 <literal>file</literal> 操作进行安装。可识别下列属性（有关更多信息，请参见 <command>add_drv</command>(1M)）：</para>
+<para><literal>driver</literal> 操作表示设备驱动程序。<literal>driver</literal> 操作不引用有效负荷。驱动程序文件自身必须作为 <literal>file</literal> 操作进行安装。可识别下列属性（有关更多信息，请参见 <command>add_drv</command>(8)）：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>驱动程序的名称。这通常是（但并不总是）二进制驱动程序文件的文件名。此属性是 <literal>driver</literal> 操作的关键属性。</para>
@@ -266,7 +266,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>此属性指定 <filename>/etc/devlink.tab</filename> 中的条目。该值是定义了进入文件的确切行，带有由 <literal>\t</literal> 表示的制表符。有关更多信息，请参见 <literal>devlinks</literal>(1M)。给定的驱动程序可以具有多个 <literal>devlink</literal> 属性。</para>
+<listitem><para>此属性指定 <filename>/etc/devlink.tab</filename> 中的条目。该值是定义了进入文件的确切行，带有由 <literal>\t</literal> 表示的制表符。有关更多信息，请参见 <literal>devlinks</literal>(8)。给定的驱动程序可以具有多个 <literal>devlink</literal> 属性。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -413,7 +413,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>set</literal> 操作可以提供软件包作者选择的任何元数据。但是，存在大量定义明确的对包管理系统具有特定意义的属性名称。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>info.classification</literal></term>
-<listitem><para>一个 <literal>pkg</literal>(5) 客户端可以使用一个或多个标记对软件包进行分类。该值应具有一个机制（例如 "org.opensolaris.category.2008" 或 "org.acm.class.1998"）和实际分类（例如 "Applications/Games"），由冒号 (:) 分隔。</para>
+<listitem><para>一个 <literal>pkg</literal>(7) 客户端可以使用一个或多个标记对软件包进行分类。该值应具有一个机制（例如 "org.opensolaris.category.2008" 或 "org.acm.class.1998"）和实际分类（例如 "Applications/Games"），由冒号 (:) 分隔。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg.description</literal></term>
@@ -540,7 +540,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
-<listitem><para>其中每个执行器在软件包安装或删除过程中均使用服务实例的 FMRI 值进行操作。根据 <literal>svcadm</literal>(1M) 的 <literal>disable</literal> 子命令，<literal>disable_fmri</literal> 会导致给定的 FMRI 在删除操作之前被禁用。根据 <literal>svcadm</literal>(1M) 的各个子命令，<literal>refresh_fmri</literal> 和 <literal>restart_fmri</literal> 会导致给定的 FMRI 在安装、更新或删除操作后被刷新或重新启动。最后，<literal>suspend_fmri</literal> 会导致给定的 FMRI 在安装操作阶段之前被临时禁用，并在该阶段完成后被重新启用。</para>
+<listitem><para>其中每个执行器在软件包安装或删除过程中均使用服务实例的 FMRI 值进行操作。根据 <literal>svcadm</literal>(8) 的 <literal>disable</literal> 子命令，<literal>disable_fmri</literal> 会导致给定的 FMRI 在删除操作之前被禁用。根据 <literal>svcadm</literal>(8) 的各个子命令，<literal>refresh_fmri</literal> 和 <literal>restart_fmri</literal> 会导致给定的 FMRI 在安装、更新或删除操作后被刷新或重新启动。最后，<literal>suspend_fmri</literal> 会导致给定的 FMRI 在安装操作阶段之前被临时禁用，并在该阶段完成后被重新启用。</para>
 <para>该值可以包含与多个服务实例匹配的模式。但是，它必须使用 <literal>svcs</literal>(1) 所接受的 glob 显式执行此操作，而不是通过不指示任何实例来隐式执行此操作。</para>
 </listitem>
 </varlistentry>
@@ -567,11 +567,11 @@ link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</pr
 <refsect1 role="other"><title>发布者和系统信息库</title>
 <para>如上所述，发布者只是软件包客户端用来标识软件包提供者的一个名称。发布者可使用软件包系统信息库和/或软件包归档来发行其软件包。软件包系统当前支持以下两种类型的系统信息库：源系统信息库和镜像系统信息库。</para>
 <para><emphasis>源</emphasis>是包含一个或多个软件包的所有元数据（例如，目录、清单和搜索索引）和内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了多个源，则软件包客户端 API 会尝试选择从其检索软件包数据的最佳源。这是最常见的系统信息库类型，当每次在软件包系统信息库上使用 <command>pkgsend</command> 或 <command>pkgrecv</command> 时进行隐式创建。</para>
-<para><emphasis>mirror</emphasis> 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 <command>pkg.depotd</command>(1M) 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 <literal>https</literal> 源，以及提供软件包内容的 <literal>http</literal> 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 <filename>file</filename> 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 <command>pkg.depotd</command>(1M) 的镜像模式还可将源系统信息库置备为镜像。</para>
+<para><emphasis>mirror</emphasis> 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 <command>pkg.depotd</command>(8) 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 <literal>https</literal> 源，以及提供软件包内容的 <literal>http</literal> 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 <filename>file</filename> 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 <command>pkg.depotd</command>(8) 的镜像模式还可将源系统信息库置备为镜像。</para>
 </refsect1>
 <refsect1 role="other"><title>全局和非全局区域更新</title>
 <para><literal>pkg</literal> 系统会强制使非全局区域与全局区域保持同步。这表示某些软件包在全局区域和所有非全局区域中必须处于同一版本，以确保运行相同的内核。为此，<literal>pkg</literal> 会使用 <literal>parent</literal> 依赖性对非全局区域施加某些约束。有关 <literal>parent</literal> 依赖性的更多信息，请参见“依赖操作”。</para>
-<para>由于全局区域对非全局区域施加的限制，非全局区域必须可以访问全局区域的软件包且必须具有相似的发布者配置。使用<emphasis role="strong">系统信息库</emphasis>可实现上述两个目标（请参见 <literal>pkg.sysrepo</literal>(1M) 手册页）。系统信息库可提供全局区域中配置的发布者的访问权，以及有关如何配置这些发布者的信息。要阻止非全局区域在安装或更新期间选择不同软件包，在发布者搜索顺序中系统发布者的排列顺序需要高于非全局区域中配置的发布者的顺序。有关发布者搜索顺序的信息，请参见 <literal>pkg</literal>(1) 手册页中的 <command>pkg set-publisher</command> 命令。</para>
+<para>由于全局区域对非全局区域施加的限制，非全局区域必须可以访问全局区域的软件包且必须具有相似的发布者配置。使用<emphasis role="strong">系统信息库</emphasis>可实现上述两个目标（请参见 <literal>pkg.sysrepo</literal>(8) 手册页）。系统信息库可提供全局区域中配置的发布者的访问权，以及有关如何配置这些发布者的信息。要阻止非全局区域在安装或更新期间选择不同软件包，在发布者搜索顺序中系统发布者的排列顺序需要高于非全局区域中配置的发布者的顺序。有关发布者搜索顺序的信息，请参见 <literal>pkg</literal>(1) 手册页中的 <command>pkg set-publisher</command> 命令。</para>
 <para>要更新系统上的所有非全局区域，请使用不带全局区域中参数的 <command>pkg update</command> 命令。此命令会在全局区域上执行并以递归方式在每个非全局区域上执行。将对非全局区域仅进行最少的必要更改，以使其与全局区域中所进行的更改同步。例如，假设全局区域和非全局区域中都安装了版本 1 的软件包 <literal>foo</literal>，并假设系统信息库中存在版本 2。如果 <literal>foo</literal> 具有父项依赖性，则 <command>pkg update foo</command> 会在全局区域和非全局区域中将 <literal>foo</literal> 更新至版本 2，这是因为 <literal>parent</literal> 依赖性会强制使软件包保持同步。如果 <literal>foo</literal> 不具有父项依赖性，则 <literal>foo</literal> 在全局区域中会更新至版本 2，但在非全局区域中仍为版本 1。</para>
 </refsect1>
 <refsect1 role="other"><title>侧面和变量</title>
@@ -669,7 +669,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para>映像策略由具有布尔值的映像属性所定义。有关 <literal>flush-content-cache-on-success</literal> 和 <literal>send-uuid</literal> 属性的说明以及如何查看和修改其值的信息，请参见 <literal>pkg</literal>(1) 手册页中的“映像属性”。</para>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para>因为 <literal>pkg</literal>(5) 映像可位于任意一个较大的文件系统内，需要使用标记 <literal>$IMAGE_ROOT</literal> 来区分相对路径。对于典型的系统安装，<literal>$IMAGE_ROOT</literal> 等效于 /。</para>
+<para>因为 <literal>pkg</literal>(7) 映像可位于任意一个较大的文件系统内，需要使用标记 <literal>$IMAGE_ROOT</literal> 来区分相对路径。对于典型的系统安装，<literal>$IMAGE_ROOT</literal> 等效于 /。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
 <listitem><para>完整或部分映像的元数据目录。</para>
@@ -694,7 +694,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para><literal>$IMAGE_META</literal> 目录分层结构中的其他路径是专用的，但可以进行更改。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -727,7 +727,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-1m"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-1m"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="AUOSS">《<citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle>》</olink></para>
 <para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
 <para><olink targetdoc="PKDEV">《<citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>》</olink></para>

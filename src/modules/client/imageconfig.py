@@ -52,7 +52,7 @@ from pkg.misc import DictProperty, SIGNATURE_POLICY
 from pkg.client.debugvalues import DebugValues
 from pkg.client.transport.exception import TransportFailures
 # The default_policies dictionary defines the policies that are supported by
-# pkg(5) and their default values. Calls to the ImageConfig.get_policy method
+# pkg(7) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
 
 BE_POLICY = "be-policy"
@@ -870,7 +870,7 @@ class ImageConfig(cfg.FileConfig):
 
                                 # if the uri isn't in either 'origins' or
                                 # 'mirrors', then we've likely deleted it
-                                # using an older pkg(5) client format.  We
+                                # using an older pkg(7) client format.  We
                                 # must ignore this entry.
                                 if uri not in orig:
                                         continue
@@ -995,7 +995,7 @@ class NullSystemPublisher(object):
         system publisher."""
 
         # property.proxied-urls is here for backwards compatibility, it is no
-        # longer used by pkg(5)
+        # longer used by pkg(7)
         __supported_props = ("publisher-search-order", "property.proxied-urls",
             SIGNATURE_POLICY, "signature-required-names")
 

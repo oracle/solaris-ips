@@ -123,7 +123,7 @@ def format_update_error(e):
         logger.error(_("To continue, execute 'pkg update-format' as a "
             "privileged user and then try again.  Please note that updating "
             "the format of the image will render it unusable with older "
-            "versions of the pkg(5) system."))
+            "versions of the pkg(7) system."))
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -1535,8 +1535,8 @@ def __api_plan_exception(op, noexecute, verbose, api_inst):
                 return e.lix_exitrv
         if e_type == api_errors.IpkgOutOfDateException:
                 msg(_("""\
-WARNING: pkg(5) appears to be out of date, and should be updated before
-running {op}.  Please update pkg(5) by executing 'pkg install
+WARNING: pkg(7) appears to be out of date, and should be updated before
+running {op}.  Please update pkg(7) by executing 'pkg install
 pkg:/package/pkg' as a privileged user and then retry the {op}."""
                     ).format(**locals()))
                 return EXIT_OOPS
@@ -2073,7 +2073,7 @@ def _emit_error_general_cb(status, err, cmd=None, selected_type=[],
                         emsg(_("To continue, execute 'pkg update-format' as a "
                             "privileged user and then try again.  Please note "
                             "that updating the format of the image will render "
-                            "it unusable with older versions of the pkg(5) "
+                            "it unusable with older versions of the pkg(7) "
                             "system."))
                 elif err["errtype"] == "catalog_refresh":
                         if selected_type and err["errtype"] not in selected_type:

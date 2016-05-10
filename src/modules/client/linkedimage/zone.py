@@ -27,7 +27,7 @@
 """
 Zone linked image module classes.  Zone linked images only support
 child attach.  Zone linked image child configuration information is all
-derived from zonecfg(1m) options and this plugin, no child configuration
+derived from zonecfg(8) options and this plugin, no child configuration
 information is stored within a parent image.
 """
 

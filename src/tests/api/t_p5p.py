@@ -301,7 +301,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 os.unlink(arc_path)
 
         def test_02_add_package(self):
-                """Verify that pkg(5) archive creation using add_package() works
+                """Verify that pkg(7) archive creation using add_package() works
                 as expected.
                 """
 
@@ -386,7 +386,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 os.unlink(signed_path)
 
         def test_03_add_repo_package(self):
-                """Verify that pkg(5) archive creation using add_repo_package()
+                """Verify that pkg(7) archive creation using add_repo_package()
                 works as expected.
                 """
 
@@ -723,7 +723,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 return arc
 
         def test_04_extract(self):
-                """Verify that pkg(5) archive extraction methods work as
+                """Verify that pkg(7) archive extraction methods work as
                 expected.
                 """
 
@@ -754,13 +754,13 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 ext_dir = os.path.join(self.test_root, "extracted")
 
                 # First, verify behaviour using archive created using
-                # pkg(5) archive class.
+                # pkg(7) archive class.
                 arc = self.__verify_extract(repo, arc_path, hashes, ext_dir)
                 arc.close()
 
                 # Now extract everything from the archive and create
                 # a new archive using the tarfile class, and verify
-                # that the pkg(5) archive class can still extract
+                # that the pkg(7) archive class can still extract
                 # and access the contents as expected even though
                 # the index file isn't marked with the appropriate
                 # pax headers (and so should be ignored since it's
@@ -811,7 +811,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualDiff(sorted(set(expected)), actual)
                 arc.close()
 
-                # Verify pkg(5) archive class extraction behaviour using
+                # Verify pkg(7) archive class extraction behaviour using
                 # the new archive.
                 arc = self.__verify_extract(repo, arc_path, hashes, ext_dir)
                 arc.close()
@@ -831,7 +831,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                         list(map(add_entry, dirnames))
                 arc.close()
 
-                # Verify pkg(5) archive class extraction behaviour using
+                # Verify pkg(7) archive class extraction behaviour using
                 # the new archive.
                 arc = self.__verify_extract(repo, arc_path, hashes, ext_dir)
                 arc.close()
@@ -861,7 +861,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 arc.close()
 
         def test_05_invalid(self):
-                """Verify that pkg(5) archive class handles broken archives
+                """Verify that pkg(7) archive class handles broken archives
                 and items that aren't archives as expected."""
 
                 arc_path = os.path.join(self.test_root, "nosucharchive.p5p")

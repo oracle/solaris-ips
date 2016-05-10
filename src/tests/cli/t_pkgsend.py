@@ -595,7 +595,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                         self.__validate_bundle_dir_package(pfmri, expected)
 
 
-        # A map used to create a SVR4 package, and check an installed pkg(5)
+        # A map used to create a SVR4 package, and check an installed pkg(7)
         # version of that package, created via 'pkgsend import'.  We map the
         # path name to
         # [ type, mode, user, group, digest ] initially setting the digest to None
@@ -863,7 +863,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 # the hash_func used here just needs to
                                 # correspond with the one used when creating
                                 # the svr4 package - it does not consult the
-                                # pkg(5) hash or chash attributes.
+                                # pkg(7) hash or chash attributes.
                                 pkg5_digest, contents = misc.get_data_digest(
                                     name, return_content=True,
                                     hash_func=DEFAULT_HASH_FUNC)

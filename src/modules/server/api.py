@@ -440,7 +440,7 @@ class CatalogInterface(_Interface):
                 """Searches the catalog for actions or packages (as determined
                 by 'return_type') matching the specified 'tokens'.
 
-                'tokens' is a string using pkg(5) query syntax.
+                'tokens' is a string using pkg(7) query syntax.
 
                 'case_sensitive' is an optional, boolean value indicating
                 whether matching entries must have the same case as that of
@@ -668,7 +668,7 @@ class ConfigInterface(_Interface):
                 """Returns a dictionary of depot configuration properties
                 organized by section, with each section's keys as a list.
 
-                See pkg.depotd(1M) for the list of properties.
+                See pkg.depotd(8) for the list of properties.
                 """
                 rval = {}
                 for sname, props in six.iteritems(self._depot.cfg.get_index()):

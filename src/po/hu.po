@@ -322,12 +322,12 @@ msgstr ""
 #: ../client.py:770
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %s.  Please update pkg(5) using 'pfexec pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
 "SUNWipkg' and then retry the %s."
 msgstr ""
-       "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-       "running %s.  Please update pkg(5) using 'pfexec pkg install\n"
+       "WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+       "running %s.  Please update pkg(7) using 'pfexec pkg install\n"
        "SUNWipkg' and then retry the %s."
 
 #: ../client.py:777
@@ -926,13 +926,13 @@ msgid ""
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
 "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
+"above traceback and this message.  The version of pkg(7) is '%s'."
 msgstr ""
        "\n"
        "\n"
        "This is an internal error.  Please let the developers know about this\n"
        "problem by filing a bug at http://defect.opensolaris.org and including the\n"
-       "above traceback and this message.  The version of pkg(5) is '%s'."
+       "above traceback and this message.  The version of pkg(7) is '%s'."
 
 #: ../client.py:3306
 msgid ""
@@ -2404,10 +2404,10 @@ msgstr ""
 
 #: ../gui/modules/installupdate.py:510
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update SUNWipkg package"
 msgstr ""
-       "pkg(5) appears to be out of date and should be updated.\n"
+       "pkg(7) appears to be out of date and should be updated.\n"
        "Please update SUNWipkg package"
 
 #: ../gui/modules/installupdate.py:516
@@ -3523,8 +3523,8 @@ msgstr ""
        "publisher information."
 
 #: ../modules/client/api_errors.py:805
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "Unsupported pkg(5) publisher information data format."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Unsupported pkg(7) publisher information data format."
 
 #: ../modules/client/api_errors.py:831
 #, python-format
@@ -5680,7 +5680,7 @@ msgid ""
 "        -r              Recursively evaluates all dependencies for the "
 "provided\n"
 "                        list of packages and adds them to the list.\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "Environment:\n"
@@ -5730,7 +5730,7 @@ msgstr ""
        "        -r              Recursively evaluates all dependencies for the "
        "provided\n"
        "                        list of packages and adds them to the list.\n"
-       "        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+       "        -s src_repo_uri A URI representing the location of a pkg(7)\n"
        "                        repository to retrieve package data from.\n"
        "\n"
        "Environment:\n"

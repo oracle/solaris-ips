@@ -25,7 +25,7 @@ set name=pkg.fmri value=pkg:/package/pkg-34@$(PKGVERS)
 set name=pkg.summary \
     value="Python 3.4 support modules for the Image Packaging System"
 set name=pkg.description \
-    value="Python 3.4 support modules for the Image Packaging System. The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
+    value="Python 3.4 support modules for the Image Packaging System. The Image Packaging System (IPS), or pkg(7), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)

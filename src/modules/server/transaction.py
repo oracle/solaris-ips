@@ -131,7 +131,7 @@ class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
         incoming changes to a package.  Manipulation of Transaction objects in
         the repository server is generally initiated by a package publisher,
-        such as pkgsend(1M)."""
+        such as pkgsend(1)."""
 
         def __init__(self):
                 # XXX Need to use an FMRI object.

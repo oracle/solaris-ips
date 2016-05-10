@@ -122,14 +122,14 @@ svc_method_dir = 'lib/svc/method'
 svc_share_dir = 'lib/svc/share'
 
 man1_dir = 'usr/share/man/man1'
-man1m_dir = 'usr/share/man/man1m'
-man5_dir = 'usr/share/man/man5'
+man7_dir = 'usr/share/man/man7'
+man8_dir = 'usr/share/man/man8'
 man1_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man1'
-man1m_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man1m'
-man5_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man5'
+man8_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man8'
+man7_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man7'
 man1_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man1'
-man1m_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man1m'
-man5_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man5'
+man8_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man8'
+man7_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man7'
 
 resource_dir = 'usr/share/lib/pkg'
 rad_dir = 'usr/share/lib/pkg'
@@ -264,18 +264,18 @@ man1_files = [
         'pkgsurf.1',
     ]
 ]
-man1m_files = [
-    MANPAGE_OUTPUT_ROOT + '/man1m/' + f
+man7_files = [
+    MANPAGE_OUTPUT_ROOT + '/man7/' + f
     for f in [
-        'pkg.depotd.1m',
-        'pkg.depot-config.1m',
-        'pkg.sysrepo.1m',
+        'pkg.7'
     ]
 ]
-man5_files = [
-    MANPAGE_OUTPUT_ROOT + '/man5/' + f
+man8_files = [
+    MANPAGE_OUTPUT_ROOT + '/man8/' + f
     for f in [
-        'pkg.5'
+        'pkg.depotd.8',
+        'pkg.depot-config.8',
+        'pkg.sysrepo.8',
     ]
 ]
 
@@ -295,17 +295,17 @@ man1_ja_files = [
         'pkgsign.1',
     ]
 ]
-man1m_ja_files = [
-    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man1m/' + f
+man7_ja_files = [
+    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man7/' + f
     for f in [
-        'pkg.depotd.1m',
-        'pkg.sysrepo.1m',
+        'pkg.7'
     ]
 ]
-man5_ja_files = [
-    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man5/' + f
+man8_ja_files = [
+    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man8/' + f
     for f in [
-        'pkg.5'
+        'pkg.depotd.8',
+        'pkg.sysrepo.8',
     ]
 ]
 
@@ -325,17 +325,17 @@ man1_zh_CN_files = [
         'pkgsign.1',
     ]
 ]
-man1m_zh_CN_files = [
-    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man1m/' + f
+man7_zh_CN_files = [
+    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man7/' + f
     for f in [
-        'pkg.depotd.1m',
-        'pkg.sysrepo.1m',
+        'pkg.7'
     ]
 ]
-man5_zh_CN_files = [
-    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man5/' + f
+man8_zh_CN_files = [
+    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man8/' + f
     for f in [
-        'pkg.5'
+        'pkg.depotd.8',
+        'pkg.sysrepo.8',
     ]
 ]
 
@@ -1462,9 +1462,9 @@ class build_data_func(Command):
                 intltool_update_maintain()
                 intltool_update_pot()
 
-                xml2roff(man1_files + man1m_files + man5_files)
-                xml2roff(man1_ja_files + man1m_ja_files + man5_ja_files)
-                xml2roff(man1_zh_CN_files + man1m_zh_CN_files + man5_zh_CN_files)
+                xml2roff(man1_files + man7_files + man8_files)
+                xml2roff(man1_ja_files + man7_ja_files + man8_ja_files)
+                xml2roff(man1_zh_CN_files + man7_zh_CN_files + man8_zh_CN_files)
 
 def rm_f(filepath):
         """Remove a file without caring whether it exists."""
@@ -1668,17 +1668,17 @@ cmdclasses = {
 # all builds of IPS should have manpages
 english_manpage_files = [
         (man1_dir, man1_files),
-        (man1m_dir, man1m_files),
-        (man5_dir, man5_files),
+        (man7_dir, man7_files),
+        (man8_dir, man8_files),
         ]
 data_files += english_manpage_files
 data_files += [
         (man1_ja_JP_dir, man1_ja_files),
-        (man1m_ja_JP_dir, man1m_ja_files),
-        (man5_ja_JP_dir, man5_ja_files),
+        (man7_ja_JP_dir, man7_ja_files),
+        (man8_ja_JP_dir, man8_ja_files),
         (man1_zh_CN_dir, man1_zh_CN_files),
-        (man1m_zh_CN_dir, man1m_zh_CN_files),
-        (man5_zh_CN_dir, man5_zh_CN_files),
+        (man7_zh_CN_dir, man7_zh_CN_files),
+        (man8_zh_CN_dir, man8_zh_CN_files),
         ]
 # add resource files
 data_files += [

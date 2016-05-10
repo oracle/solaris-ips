@@ -19,14 +19,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Load SMF constants and functions
 . /lib/svc/share/smf_include.sh
 
 if [[ -z "$SMF_FMRI" ]]; then
-	echo "this script can only be invoked by smf(5)"
+	echo "this script can only be invoked by smf(7)"
 	exit $SMF_EXIT_ERR_NOSMF
 fi
 

@@ -20,12 +20,10 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 
 #
-# This relatively basic script looks for pkg(5) depot server instances
+# This relatively basic script looks for pkg(7) depot server instances
 # in the smf repository, and invokes logadm to roll their logs in
 # $CHUNKSIZE chunks.  It is intended to be run from cron.  For example:
 #

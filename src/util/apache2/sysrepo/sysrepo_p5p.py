@@ -169,7 +169,7 @@ class SysrepoP5p(object):
         def _file_response(self, path, pub):
                 """Process our file query."""
 
-                # use the basename of the path, which is the pkg(5) hash
+                # use the basename of the path, which is the pkg(7) hash
                 self.start_response(SERVER_OK_STATUS, response_headers)
                 try:
                         return self.p5p.get_package_file(os.path.basename(path),
@@ -301,7 +301,7 @@ class SysrepoP5p(object):
                 where:
                     <publisher>    the name of the publisher from the p5p file
                     <hash>         the sha1 hash of the location of the p5p file
-                    <path>         the path of the pkg(5) client request
+                    <path>         the path of the pkg(7) client request
 
                 In the environment of this WSGI application, apart from the
                 default WSGI values, defined in PEP333, we expect:

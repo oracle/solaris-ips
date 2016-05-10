@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>Image Packaging System マニフェスト変換ツール</refpurpose></refnamediv>
@@ -82,7 +82,7 @@ operation</replaceable>></programlisting>
 <para>一致条件の形式は次のとおりです。</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
 </replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
-<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<literal>pkg</literal>(5) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
+<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<literal>pkg</literal>(7) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
 <para>複数の条件をスペースで区切って指定できます。</para>
 <para>次の操作が使用できます。</para>
 <variablelist>
@@ -246,7 +246,7 @@ operation</replaceable>></programlisting>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -279,7 +279,7 @@ operation</replaceable>></programlisting>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

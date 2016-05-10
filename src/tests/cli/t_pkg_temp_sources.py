@@ -721,7 +721,7 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 self.pkg("set-property signature-policy ignore")
                 self.pkg("list -a")
                 # --no-refresh is required for now because -g combines temporary
-                # sources with configured soures and pkg(5) currently treats
+                # sources with configured soures and pkg(7) currently treats
                 # refresh failure as fatal.  See bug 18323.
                 self.pkg("install --no-refresh -g {0} foo".format(self.foo_arc))
 

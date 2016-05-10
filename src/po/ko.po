@@ -28,8 +28,8 @@ msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creatio
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
-"unusable with older versions of the pkg(5) system."
-msgstr "계속하려면 권한을 가진 사용자로 'pkg update-format'을 실행한 다음 다시 시도하십시오. 이미지의 형식을 업데이트하면 이전 버전의 pkg(5) 시스템에서 사용할 수 없게 렌더링됩니다."
+"unusable with older versions of the pkg(7) system."
+msgstr "계속하려면 권한을 가진 사용자로 'pkg update-format'을 실행한 다음 다시 시도하십시오. 이미지의 형식을 업데이트하면 이전 버전의 pkg(7) 시스템에서 사용할 수 없게 렌더링됩니다."
 
 #: ../client.py:157
 msgid ""
@@ -627,10 +627,10 @@ msgstr "%s 이(가) 실패하였습니다 (인벤토리 예외상황):\n%s"
 #: ../client.py:1495
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) by executing 'pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) by executing 'pkg install\n"
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
-msgstr "경고: pkg(5)가 오래된 것 같습니다. %(op)s 실행 전에 업데이트해야 합니다.\n권한을 가진 사용자로 'pkg install pkg:/package/pkg'를 실행하여 pkg(5)를\n업데이트한 다음 %(op)s를 다시 시도하십시오."
+msgstr "경고: pkg(7)가 오래된 것 같습니다. %(op)s 실행 전에 업데이트해야 합니다.\n권한을 가진 사용자로 'pkg install pkg:/package/pkg'를 실행하여 pkg(7)를\n업데이트한 다음 %(op)s를 다시 시도하십시오."
 
 #: ../client.py:1502
 #, python-format
@@ -4111,12 +4111,12 @@ msgid ""
 msgstr "제공된 p5s 데이터가 인식할 수 없는 형식이거나 유효한 게시자 정보를 포함하지 않습니다."
 
 #: ../modules/client/api_errors.py:1405
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "지원되지 않는 pkg(5) 게시자 정보 데이터 형식입니다."
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "지원되지 않는 pkg(7) 게시자 정보 데이터 형식입니다."
 
 #: ../modules/client/api_errors.py:1414
-msgid "Unsupported pkg(5) publisher and image information data format."
-msgstr "지원되지 않는 pkg(5) 게시자 및 이미지 정보 데이터 형식입니다."
+msgid "Unsupported pkg(7) publisher and image information data format."
+msgstr "지원되지 않는 pkg(7) 게시자 및 이미지 정보 데이터 형식입니다."
 
 #: ../modules/client/api_errors.py:1426
 #, python-format
@@ -4459,8 +4459,8 @@ msgstr "관련 서명 작업의 값 속성은 %s입니다."
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
-msgstr "서명 작업 %(act)s이(가) 이 버전의 pkg(5)에서 인식할 수 없는 버전(%(ver)s)을 사용하여 만들어졌습니다."
+"of pkg(7) doesn't understand."
+msgstr "서명 작업 %(act)s이(가) 이 버전의 pkg(7)에서 인식할 수 없는 버전(%(ver)s)을 사용하여 만들어졌습니다."
 
 #: ../modules/client/api_errors.py:2047
 #, python-format
@@ -4552,10 +4552,10 @@ msgstr "제목이 %(cert)s인 인증서가 pkg5에서 아직 처리할 수 없�
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
-"has an extension with a value that pkg(5) does not understand.\n"
+"has an extension with a value that pkg(7) does not understand.\n"
 "Extension name:%(name)s\n"
 "Extension value:%(val)s"
-msgstr "pkg(5)에서 이해할 수 없는 값의 확장을 가지고 있으므로 주체가 %(cert)s인 인증서를 확인할 수 없습니다.\n확장 이름:%(name)s\n확장 값:%(val)s"
+msgstr "pkg(7)에서 이해할 수 없는 값의 확장을 가지고 있으므로 주체가 %(cert)s인 인증서를 확인할 수 없습니다.\n확장 이름:%(name)s\n확장 값:%(val)s"
 
 #: ../modules/client/api_errors.py:2194
 #, python-format
@@ -5219,8 +5219,8 @@ msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "'%s' 게시자는 시스템 게시자이므로 이동할 수 없습니다."
 
 #: ../modules/client/image.py:4401
-msgid "pkg(5) update check failed."
-msgstr "pkg(5) 업데이트 확인에 실패했습니다."
+msgid "pkg(7) update check failed."
+msgstr "pkg(7) 업데이트 확인에 실패했습니다."
 
 #: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
 #: ../modules/client/publisher.py:2525
@@ -5661,8 +5661,8 @@ msgid "Done (%(elapsed).3fs)"
 msgstr "완료(%(elapsed).3fs)"
 
 #: ../modules/client/progress.py:1796
-msgid "Checking that pkg(5) is up to date ..."
-msgstr "pkg(5)가 최신인지 확인 중..."
+msgid "Checking that pkg(7) is up to date ..."
+msgstr "pkg(7)가 최신인지 확인 중..."
 
 #: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
 #: ../modules/gui/progress.py:50
@@ -5759,8 +5759,8 @@ msgstr "링크된 이미지: %s 완료; %d 작업 중: %s"
 
 #: ../modules/client/progress.py:2151
 #, python-format
-msgid "Checking that pkg(5) is up to date %c"
-msgstr "pkg(5)가 최신 %c인지 확인 중"
+msgid "Checking that pkg(7) is up to date %c"
+msgstr "pkg(7)가 최신 %c인지 확인 중"
 
 #: ../modules/client/progress.py:2188
 msgid "Retrieving target catalog"
@@ -6690,9 +6690,9 @@ msgstr "\n유효한 패키지 저장소에 연결할 수 없습니다. 네트워
 #: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
-msgstr "pkg(5)가 오래된 것 같습니다. 업데이트해야 합니다.\n%s 패키지를 업데이트하십시오."
+msgstr "pkg(7)가 오래된 것 같습니다. 업데이트해야 합니다.\n%s 패키지를 업데이트하십시오."
 
 #: ../modules/gui/installupdate.py:750
 #, python-format
@@ -8556,8 +8556,8 @@ msgid "Packages should not have dependencies on obsolete packages."
 msgstr "패키지에는 오래된 패키지에 대한 종속성이 없어야 합니다."
 
 #: ../modules/lint/pkglint_action.py:1333
-msgid "pkg(5) FMRIs should be valid."
-msgstr "pkg(5) FMRI는 유효해야 합니다."
+msgid "pkg(7) FMRIs should be valid."
+msgstr "pkg(7) FMRI는 유효해야 합니다."
 
 #: ../modules/lint/pkglint_action.py:1340
 #, python-format
@@ -8768,10 +8768,10 @@ msgstr "'%s'은(는) 유효한 mediator-priority가 아닙니다. 유효한 값�
 msgid ""
 "\n"
 "\n"
-"This is an internal error in pkg(5) version %(version)s.  Please log a\n"
+"This is an internal error in pkg(7) version %(version)s.  Please log a\n"
 "Service Request about this issue including the information above and this\n"
 "message."
-msgstr "\n\n이것은 pkg(5) 버전 %(version)s의 내부 오류입니다.  위의 정보 및\n이 메시지를 포함하여 이 문제에 대한\n서비스 요청을 기록하십시오."
+msgstr "\n\n이것은 pkg(7) 버전 %(version)s의 내부 오류입니다.  위의 정보 및\n이 메시지를 포함하여 이 문제에 대한\n서비스 요청을 기록하십시오."
 
 #: ../modules/misc.py:437
 msgid "B"
@@ -8931,14 +8931,14 @@ msgstr "'%(pkg)s' 패키지에는 수동으로 지정된 종속성이 포함되�
 #: ../modules/publish/dependencies.py:195
 msgid ""
 "pkgdepend has inferred conditional dependencies with different targets but\n"
-"which share a predicate.  pkg(5) can not represent these dependencies.  "
+"which share a predicate.  pkg(7) can not represent these dependencies.  "
 "This\n"
 "issue can be resolved by changing the packaging of the links which generated "
 "the\n"
 "conditional dependencies so that they have different predicates or share "
 "the\n"
 "same FMRI.  Each pair of problematic conditional dependencies follows: \n"
-msgstr "pkgdepend가 대상은 다르지만 술어를 공유하는 조건부 종속성을 \n유추했습니다.  pkg(5)는 이러한 종속성을 나타낼 수 없습니다.  이\n문제는 서로 다른 술어를 가지거나\n동일한 FMRI를 공유하도록 조건부 종속성을 생성한 링크의\n패키징을 변경하여 해결할 수 있습니다.  각 문제의 조건부 종속성 쌍은 다음과 같습니다. \n"
+msgstr "pkgdepend가 대상은 다르지만 술어를 공유하는 조건부 종속성을 \n유추했습니다.  pkg(7)는 이러한 종속성을 나타낼 수 없습니다.  이\n문제는 서로 다른 술어를 가지거나\n동일한 FMRI를 공유하도록 조건부 종속성을 생성한 링크의\n패키징을 변경하여 해결할 수 있습니다.  각 문제의 조건부 종속성 쌍은 다음과 같습니다. \n"
 
 #: ../modules/publish/dependencies.py:206
 #, python-format
@@ -9996,7 +9996,7 @@ msgid ""
 "        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
-"        -a              Store the retrieved package data in a pkg(5) "
+"        -a              Store the retrieved package data in a pkg(7) "
 "archive\n"
 "                        at the location specified by -d.  The file may not\n"
 "                        already exist, and this option may only be used "
@@ -10038,7 +10038,7 @@ msgid ""
 "provided\n"
 "                        list of packages and adds them to the list.\n"
 "\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "        --newest        List the most recent versions of the packages "
@@ -10067,7 +10067,7 @@ msgid ""
 "Environment:\n"
 "        PKG_DEST        Destination directory or URI\n"
 "        PKG_SRC         Source URI or path"
-msgstr "사용법:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n옵션:\n        -a              검색된 패키지 데이터를 -d로 지정된 위치에 있는 pkg(5) 아카이브에\n                        저장합니다. 아직 파일이 존재하지 않을 수 있으며,\n                        이 옵션은 파일 시스템 기반 대상에서만 사용할\n                        수 있습니다.\n\n        -c cache_dir    다운로드된 컨텐츠를 캐시하는 데 사용할\n                        디렉토리의 경로입니다. 제공하지 않을 경우\n                        클라이언트가 자동으로 캐시 디렉토리를 \n                        선택합니다. 다운로드가 중단되고\n                        캐시 디렉토리가 자동으로 선택되면 이 옵션을\n                        사용하여 다운로드를 계속하십시오.\n\n        -d path_or_uri  패키지를 다시 게시할 대상 저장소의 파일\n                        시스템 경로 또는 URI입니다. 대상이 존재해야 합니다.\n                        새 저장소는 pkgrepo(1)를 사용하여 만들 수 있습니다.\n\n        -h              이 사용법 메시지를 표시합니다.\n\n        -k              다시 게시할 때 검색된 패키지 컨텐츠를 압축 및 무시된\n                        상태로 유지합니다. pkgsend와 함께 사용하지 마십시오.\n\n        -m match        다음 값을 사용하여 일치하는 동작을 제어합니다.\n                            all-timestamps\n                                최신 시간 표시 방식뿐 아니라 일치하는 모든\n                                시간 표시 방식을 포함합니다(all-versions를 의미함).\n                            all-versions\n                                최신 버전뿐 아니라 일치하는 모든 버전을 포함합니다.\n\n        -n              변경 사항 없이 테스트 실행을 수행합니다.\n\n        -r              제공된 패키지 목록의 모든 종속성을 반복적으로 평가하여\n                        목록에 추가합니다.\n\n        -s src_repo_uri 패키지 데이터를 검색할 pkg(5) 저장소\n                        위치를 나타내는 URI입니다.\n\n        --newest        지정된 저장소에서 사용 가능한 최신 패키지 버전을 나열하고\n                        종료합니다. -s를 제외한 기타\n                        옵션은 모두 무시됩니다.\n\n        --raw           -d로 지정된 위치에 있는 스템 및 버전으로\n                        디렉토리 구조 세트의 원시 패키지 데이터를 검색하고\n                        저장합니다. 파일 시스템 기반 대상에서만\n                        사용할 수 있습니다. pkgsend(1)\n                        include와 함께 사용하면 파일 내용을 수정하거나 추가\n                        패키지 메타 데이터를 제공하여\n                        패키지를 편리하게 수정하고 다시 게시할 수 있습니다.\n\n        --key keyfile   pkg 검색을 위해 사용할 클라이언트 SSL 키 파일을 지정합니다.\n\n        --cert certfile pkg 검색을 위해 사용할 클라이언트 SSL 인증서 파일을\n                        지정합니다.\n\n환경:\n        PKG_DEST        대상 디렉토리 또는 URI입니다.\n        PKG_SRC         소스 URI 또는 경로입니다."
+msgstr "사용법:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n옵션:\n        -a              검색된 패키지 데이터를 -d로 지정된 위치에 있는 pkg(7) 아카이브에\n                        저장합니다. 아직 파일이 존재하지 않을 수 있으며,\n                        이 옵션은 파일 시스템 기반 대상에서만 사용할\n                        수 있습니다.\n\n        -c cache_dir    다운로드된 컨텐츠를 캐시하는 데 사용할\n                        디렉토리의 경로입니다. 제공하지 않을 경우\n                        클라이언트가 자동으로 캐시 디렉토리를 \n                        선택합니다. 다운로드가 중단되고\n                        캐시 디렉토리가 자동으로 선택되면 이 옵션을\n                        사용하여 다운로드를 계속하십시오.\n\n        -d path_or_uri  패키지를 다시 게시할 대상 저장소의 파일\n                        시스템 경로 또는 URI입니다. 대상이 존재해야 합니다.\n                        새 저장소는 pkgrepo(1)를 사용하여 만들 수 있습니다.\n\n        -h              이 사용법 메시지를 표시합니다.\n\n        -k              다시 게시할 때 검색된 패키지 컨텐츠를 압축 및 무시된\n                        상태로 유지합니다. pkgsend와 함께 사용하지 마십시오.\n\n        -m match        다음 값을 사용하여 일치하는 동작을 제어합니다.\n                            all-timestamps\n                                최신 시간 표시 방식뿐 아니라 일치하는 모든\n                                시간 표시 방식을 포함합니다(all-versions를 의미함).\n                            all-versions\n                                최신 버전뿐 아니라 일치하는 모든 버전을 포함합니다.\n\n        -n              변경 사항 없이 테스트 실행을 수행합니다.\n\n        -r              제공된 패키지 목록의 모든 종속성을 반복적으로 평가하여\n                        목록에 추가합니다.\n\n        -s src_repo_uri 패키지 데이터를 검색할 pkg(7) 저장소\n                        위치를 나타내는 URI입니다.\n\n        --newest        지정된 저장소에서 사용 가능한 최신 패키지 버전을 나열하고\n                        종료합니다. -s를 제외한 기타\n                        옵션은 모두 무시됩니다.\n\n        --raw           -d로 지정된 위치에 있는 스템 및 버전으로\n                        디렉토리 구조 세트의 원시 패키지 데이터를 검색하고\n                        저장합니다. 파일 시스템 기반 대상에서만\n                        사용할 수 있습니다. pkgsend(1)\n                        include와 함께 사용하면 파일 내용을 수정하거나 추가\n                        패키지 메타 데이터를 제공하여\n                        패키지를 편리하게 수정하고 다시 게시할 수 있습니다.\n\n        --key keyfile   pkg 검색을 위해 사용할 클라이언트 SSL 키 파일을 지정합니다.\n\n        --cert certfile pkg 검색을 위해 사용할 클라이언트 SSL 인증서 파일을\n                        지정합니다.\n\n환경:\n        PKG_DEST        대상 디렉토리 또는 URI입니다.\n        PKG_SRC         소스 URI 또는 경로입니다."
 
 #: ../pull.py:165
 #, python-format

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -390,7 +390,7 @@ class InvalidContentException(TransportException):
 class PkgProtoError(TransportException):
         """Raised when the pkg protocol doesn't behave according to
         specification.  This is different than TransportProtoError, which
-        deals with the L7 protocols that we can use to perform a pkg(5)
+        deals with the L7 protocols that we can use to perform a pkg(7)
         transport operation.  Although it doesn't exist, this is essentially
         a L8 error, since our pkg protocol is built on top of application
         level protocols.  The Framework errors deal with L3-6 errors."""
@@ -406,10 +406,10 @@ class PkgProtoError(TransportException):
 
         def __str__(self):
                 if self.proxy:
-                        s = "Invalid pkg(5) response from {0} (proxy {1})".format(
+                        s = "Invalid pkg(7) response from {0} (proxy {1})".format(
                             self.url, self.proxy)
                 else:
-                        s = "Invalid pkg(5) response from {0}".format(self.url)
+                        s = "Invalid pkg(7) response from {0}".format(self.url)
                 if self.operation:
                         s += ": Attempting operation '{0}'".format(self.operation)
                 if self.version is not None:

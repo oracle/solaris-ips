@@ -24,7 +24,7 @@
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
 set name=pkg.summary value="Image Packaging System"
 set name=pkg.description \
-    value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
+    value="The Image Packaging System (IPS), or pkg(7), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
@@ -423,10 +423,10 @@ file path=usr/share/man/ja_JP.UTF-8/man1/pkgrecv.1
 file path=usr/share/man/ja_JP.UTF-8/man1/pkgrepo.1
 file path=usr/share/man/ja_JP.UTF-8/man1/pkgsend.1
 file path=usr/share/man/ja_JP.UTF-8/man1/pkgsign.1
-dir  path=usr/share/man/ja_JP.UTF-8/man1m
-file path=usr/share/man/ja_JP.UTF-8/man1m/pkg.depotd.1m
-dir  path=usr/share/man/ja_JP.UTF-8/man5
-file path=usr/share/man/ja_JP.UTF-8/man5/pkg.5
+dir  path=usr/share/man/ja_JP.UTF-8/man7
+file path=usr/share/man/ja_JP.UTF-8/man7/pkg.7
+dir  path=usr/share/man/ja_JP.UTF-8/man8
+file path=usr/share/man/ja_JP.UTF-8/man8/pkg.depotd.8
 dir  path=usr/share/man/man1
 file path=usr/share/man/man1/pkg.1
 file path=usr/share/man/man1/pkgdepend.1
@@ -440,10 +440,10 @@ file path=usr/share/man/man1/pkgrepo.1
 file path=usr/share/man/man1/pkgsend.1
 file path=usr/share/man/man1/pkgsign.1
 file path=usr/share/man/man1/pkgsurf.1
-dir  path=usr/share/man/man1m
-file path=usr/share/man/man1m/pkg.depotd.1m
-dir  path=usr/share/man/man5
-file path=usr/share/man/man5/pkg.5
+dir  path=usr/share/man/man7
+file path=usr/share/man/man7/pkg.7
+dir  path=usr/share/man/man8
+file path=usr/share/man/man8/pkg.depotd.8
 dir  path=usr/share/man/zh_CN.UTF-8
 dir  path=usr/share/man/zh_CN.UTF-8/man1
 file path=usr/share/man/zh_CN.UTF-8/man1/pkg.1
@@ -457,10 +457,10 @@ file path=usr/share/man/zh_CN.UTF-8/man1/pkgrecv.1
 file path=usr/share/man/zh_CN.UTF-8/man1/pkgrepo.1
 file path=usr/share/man/zh_CN.UTF-8/man1/pkgsend.1
 file path=usr/share/man/zh_CN.UTF-8/man1/pkgsign.1
-dir  path=usr/share/man/zh_CN.UTF-8/man1m
-file path=usr/share/man/zh_CN.UTF-8/man1m/pkg.depotd.1m
-dir  path=usr/share/man/zh_CN.UTF-8/man5
-file path=usr/share/man/zh_CN.UTF-8/man5/pkg.5
+dir  path=usr/share/man/zh_CN.UTF-8/man7
+file path=usr/share/man/zh_CN.UTF-8/man7/pkg.7
+dir  path=usr/share/man/zh_CN.UTF-8/man8
+file path=usr/share/man/zh_CN.UTF-8/man8/pkg.depotd.8
 dir  path=usr/share/pkg
 dir  path=usr/share/pkg/ignored_deps
 dir  path=usr/share/pkg/transforms
@@ -471,7 +471,7 @@ file path=usr/share/pkg/transforms/smf-manifests
 dir  path=var/cache/pkg/mirror
 dir  path=var/log/pkg/mirror
 group groupname=pkg5srv gid=97
-user username=pkg5srv gcos-field="pkg(5) server UID" group=pkg5srv password=NP \
+user username=pkg5srv gcos-field="pkg(7) server UID" group=pkg5srv password=NP \
     uid=97
 legacy pkg=SUNWipkg version=0.0.0
 license lic_gustaebel license="MIT (Lars Gustaebel)" \

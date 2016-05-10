@@ -258,7 +258,7 @@ driver; both drivers cannot be installed simultaneously.  Please remove\n\
 the package delivering '{old}' or ensure that the package delivering\n\
 '{new}' will not be installed, and try the operation again.".format(**errdict))
                         else:
-                                comment = "# pkg(5): "
+                                comment = "# pkg(7): "
                                 lines[line] = comment + lines[line]
                                 # XXX Module printing
                                 if be_name:

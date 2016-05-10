@@ -111,7 +111,7 @@ class Image(object):
         system's root Image.
 
         For image format details, see section 5.3 of doc/on-disk-format.txt
-        in the pkg(5) gate.
+        in the pkg(7) gate.
         """
 
         # Class constants
@@ -687,7 +687,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.update_last_modified()
                 self.__load_publisher_ssl()
 
-                # Remove the old the pkg.sysrepo(1M) cache, if present.
+                # Remove the old the pkg.sysrepo(8) cache, if present.
                 cache_path = os.path.join(self.root,
                     global_settings.sysrepo_pub_cache_path)
                 try:
@@ -1647,7 +1647,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if refresh_allowed and repo.origins:
                         try:
                                 # First, verify that the publisher has a
-                                # valid pkg(5) repository.
+                                # valid pkg(7) repository.
                                 self.transport.valid_publisher_test(pub)
                                 pub.validate_config()
                                 self.refresh_publishers(pubs=[pub],
@@ -4094,7 +4094,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         useimg = False
                                 except apx.CatalogRefreshException as cre:
                                         cre.errmessage = \
-                                            _("pkg(5) update check failed.")
+                                            _("pkg(7) update check failed.")
                                         raise
                                 finally:
                                         newimg.unlock()
@@ -4288,7 +4288,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         @staticmethod
         def get_dehydrated_exclude_func(dehydrated_pubs):
-                """A boolean function that will be added to the pkg(5) exclude
+                """A boolean function that will be added to the pkg(7) exclude
                 mechanism to determine if an action is allowed to be installed
                 based on whether its publisher is going to be dehydrated or has
                 been currently dehydrated."""

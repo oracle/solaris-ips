@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2015 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -133,7 +133,7 @@
 					</loctext>
 				</common_name>
 				<documentation>
-					<manpage title='pkg.sysrepo' section='1M' />
+					<manpage title='pkg.sysrepo' section='8' />
 				</documentation>
 			</template>
 		</instance>

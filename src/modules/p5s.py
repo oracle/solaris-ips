@@ -39,7 +39,7 @@ from pkg.misc import force_bytes
 CURRENT_VERSION = 0
 
 def parse(proxy_host, data):
-        """Reads the pkg(5) publisher JSON formatted data at 'location'
+        """Reads the pkg(7) publisher JSON formatted data at 'location'
         or from the provided file-like object 'fileobj' and returns a
         tuple.  The first element of the tuple is a list of publisher objects.
         The second element is a dictionary of image properties.

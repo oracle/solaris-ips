@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -178,7 +178,7 @@
 		<propval name='publishers' type='astring'
 			value='solaris' />
 
-		<!-- The cache_dir used for the -c option to pkgrecv(1M)
+		<!-- The cache_dir used for the -c option to pkgrecv(1)
 		-->
                 <propval name='cache_dir' type='astring'
                         value='/var/cache/pkg/mirror' />
@@ -230,7 +230,7 @@
                     <loctext xml:lang='C'>IPS Repository Mirror</loctext>
                 </common_name>
                 <documentation>
-                        <manpage title='pkgrecv' section='1M' />
+                        <manpage title='pkgrecv' section='1' />
                 </documentation>
         </template>
 

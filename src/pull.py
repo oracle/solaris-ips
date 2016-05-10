@@ -107,7 +107,7 @@ Usage:
             [--key src_key --cert src_cert] --clone
 
 Options:
-        -a              Store the retrieved package data in a pkg(5) archive
+        -a              Store the retrieved package data in a pkg(7) archive
                         at the location specified by -d.  The file may not
                         already exist, and this option may only be used with
                         filesystem-based destinations.
@@ -147,7 +147,7 @@ Options:
         -r              Recursively evaluates all dependencies for the provided
                         list of packages and adds them to the list.
 
-        -s src_repo_uri A URI representing the location of a pkg(5)
+        -s src_repo_uri A URI representing the location of a pkg(7)
                         repository to retrieve package data from.
 
         --clone         Make an exact copy of the source repository. By default,

@@ -23,7 +23,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <para><command>pkglint</command> 对一个或多个软件包清单运行一系列检查，并有选择性地引用其他系统信息库。</para>
 <para>应该在发布软件包之前，在软件包构建期间使用 <command>pkglint</command>。<command>pkglint</command> 将对清单执行全面的测试，在 <command>pkgsend</command> 或 <command>pkg.depotd</command> 正常操作期间，执行这种测试可能会消耗过多的资源。<command> pkglint</command> 检查包括对重复操作、缺少的属性和非正常文件权限的测试。</para>
 <para>可以在命令行上将用于 lint 的清单作为本地文件的空格分隔列表进行传递，也可以从系统信息库检索清单。</para>
-<para>从系统信息库检索清单时，首次运行时 <command>pkglint</command> 将在指定的高速缓存目录中创建并填充 <literal>pkg</literal>(5) 用户映像。如果提供了 <option>r</option> 选项，则为引用系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/ref_image</literal> 的用户映像。如果提供了 <option>l</option> 选项，则为 lint 系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/lint_image</literal> 的用户映像。不会在这些映像中安装任何内容。<command>pkglint</command> 只使用这些映像从系统信息库中检索清单。</para>
+<para>从系统信息库检索清单时，首次运行时 <command>pkglint</command> 将在指定的高速缓存目录中创建并填充 <literal>pkg</literal>(7) 用户映像。如果提供了 <option>r</option> 选项，则为引用系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/ref_image</literal> 的用户映像。如果提供了 <option>l</option> 选项，则为 lint 系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/lint_image</literal> 的用户映像。不会在这些映像中安装任何内容。<command>pkglint</command> 只使用这些映像从系统信息库中检索清单。</para>
 <para><command>pkglint</command> 的后续调用可以重新使用高速缓存目录，并可以省略任何 <option>r</option> 或 <option>l</option> 参数。</para>
 <para><command>pkglint</command> 对在高速缓存目录中配置发布者提供有限的支持。使用 <command>pkg</command> 可对这些映像执行更复杂的发布者配置。</para>
 <para><command>pkglint</command> 使软件包作者能够绕过对给定清单或操作进行的检查。其中的属性 <literal> pkg.linted</literal> 设置为 <literal>True</literal> 的清单或操作不会为该清单或操作生成任何 lint 输出。</para>
@@ -164,7 +164,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -197,7 +197,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

@@ -26,7 +26,7 @@
 
 """The pkg.config module provides a set of classes for managing both 'flat'
 (single-level) and 'structured' (n-level deep) configuration data that may
-be stored in memory, on disk, or using an smf(5) service instance.
+be stored in memory, on disk, or using an smf(7) service instance.
 
 The basic structure of the classes found here is roughly as follows:
 
@@ -1591,7 +1591,7 @@ class FileConfig(Config):
                         # write should occur.  This isn't strictly correct,
                         # but is the desired behaviour in most cases.  This
                         # also matches the historical behaviour of the
-                        # configuration classes used in pkg(5).
+                        # configuration classes used in pkg(7).
                         self._dirty = False
 
         def write(self):
@@ -1914,7 +1914,7 @@ class SMFConfig(Config):
                         # write should occur.  This isn't strictly correct,
                         # but is the desired behaviour in most cases.  This
                         # also matches the historical behaviour of the
-                        # configuration classes used in pkg(5).
+                        # configuration classes used in pkg(7).
                         self._dirty = False
 
         def write(self):

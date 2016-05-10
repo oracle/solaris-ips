@@ -1027,7 +1027,7 @@ class PkgActionChecker(base.ActionChecker):
                         seed_obsolete_dict(manifest, self.obsolete_pkgs)
 
         def underscores(self, action, manifest, engine, pkglint_id="001"):
-                """In general, pkg(5) discourages the use of underscores in
+                """In general, pkg(7) discourages the use of underscores in
                 attributes."""
 
                 for key in action.attrs.keys():
@@ -1179,7 +1179,7 @@ class PkgActionChecker(base.ActionChecker):
 
                         legacy = engine.get_manifest(action.attrs["pkg"],
                             search_type=engine.LATEST_SUCCESSOR)
-                        # Some legacy ancestor packages never existed as pkg(5)
+                        # Some legacy ancestor packages never existed as pkg(7)
                         # stubs
                         if legacy:
                                 self.check_legacy_rename(legacy, action,
@@ -1405,7 +1405,7 @@ class PkgActionChecker(base.ActionChecker):
                                             msgid="{0}{1}".format(
                                             self.name, pkglint_id))
 
-        valid_fmri.pkglint_desc = _("pkg(5) FMRIs should be valid.")
+        valid_fmri.pkglint_desc = _("pkg(7) FMRIs should be valid.")
 
         def license(self, action, manifest, engine, pkglint_id="007"):
                 """License actions should not have path attributes."""
@@ -1528,7 +1528,7 @@ class PkgActionChecker(base.ActionChecker):
             " have a version.")
 
         def facet_value(self, action, manifest, engine, pkglint_id="012"):
-                """facet values should be set to a valid value in pkg(5)"""
+                """facet values should be set to a valid value in pkg(7)"""
 
                 for key in action.attrs.keys():
                         if key.startswith("facet"):
@@ -1549,7 +1549,7 @@ class PkgActionChecker(base.ActionChecker):
 
         def supported_pkg_actuator(self, action, manifest, engine,
             pkglint_id="013"):
-                """pkg_actuators should be set to a valid value in pkg(5)"""
+                """pkg_actuators should be set to a valid value in pkg(7)"""
 
                 start_pattern = "pkg.additional-"
                 supported_actuators = [

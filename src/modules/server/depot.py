@@ -1192,7 +1192,7 @@ License:
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])
         def publisher_0(self, *tokens):
-                """Returns a pkg(5) information datastream based on the
+                """Returns a pkg(7) information datastream based on the
                 repository configuration's publisher information."""
 
                 prefix = self._get_req_pub()
@@ -1222,7 +1222,7 @@ License:
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])
         def publisher_1(self, *tokens):
-                """Returns a pkg(5) information datastream based on the
+                """Returns a pkg(7) information datastream based on the
                 the request's publisher or all if not specified."""
 
                 prefix = self._get_req_pub()
@@ -1303,7 +1303,7 @@ License:
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])
         def p5i_0(self, *tokens):
-                """Returns a pkg(5) information datastream for the provided full
+                """Returns a pkg(7) information datastream for the provided full
                 or partial FMRI using the repository configuration's publisher
                 information.  If a partial FMRI is specified, an attempt to
                 validate it will be made, and it will be put into the p5i
@@ -1897,7 +1897,7 @@ class DNSSD_Plugin(SimplePlugin):
                         self.exit = lambda: None
                         return
 
-                self.name = "pkg(5) mirror on {0}".format(socket.gethostname())
+                self.name = "pkg(7) mirror on {0}".format(socket.gethostname())
                 self.wanted_name = self.name
                 self.regtype = "_pkg5._tcp"
                 self.port = gconf["server.socket_port"]
@@ -2041,7 +2041,7 @@ class BackgroundTaskPlugin(SimplePlugin):
 
 class DepotConfig(object):
         """Returns an object representing a configuration interface for a
-        a pkg(5) depot server.
+        a pkg(7) depot server.
 
         The class of the object returned will depend upon the specified
         configuration target (which is used as to retrieve and store

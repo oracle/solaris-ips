@@ -87,7 +87,7 @@ class DepotException(Exception):
 
 class AdminOpsDisabledException(DepotException):
         """An exception thrown when this wsgi application hasn't been configured
-        to allow admin/0 pkg(5) depot responses."""
+        to allow admin/0 pkg(7) depot responses."""
 
         def __init__(self, request):
                 self.request = request
@@ -250,7 +250,7 @@ class DepotBUI(object):
 
 class WsgiDepot(object):
         """A WSGI application object that allows us to process search/1 and
-        certain admin/0 requests from pkg(5) clients of the depot.  Other
+        certain admin/0 requests from pkg(7) clients of the depot.  Other
         requests for BUI content are dealt with by instances of DepotHTTP, which
         are created as necessary.
 
@@ -667,10 +667,10 @@ class WsgiDepot(object):
                 return b""
 
         def wait_refresh(self, *tokens, **params):
-                """Not a pkg(5) operation, this allows clients to wait until any
+                """Not a pkg(7) operation, this allows clients to wait until any
                 pending index refresh operations have completed.
 
-                This method exists primarily for the pkg(5) test suite to ensure
+                This method exists primarily for the pkg(7) test suite to ensure
                 that we do not attempt to perform searches when the server is
                 still coming up.
                 """

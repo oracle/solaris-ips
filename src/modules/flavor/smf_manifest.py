@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os.path
@@ -231,7 +231,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
 
         Note that while we resolve SMF dependencies from SMF FMRIs to the files
         that deliver them, we don't attempt to further resolve those files to
-        pkg(5) packages at this point.
+        pkg(7) packages at this point.
         That stage is done using the normal "pkgdepend resolve" mechanism."""
 
         if action.name != "file":

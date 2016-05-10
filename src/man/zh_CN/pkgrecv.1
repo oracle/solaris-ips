@@ -25,7 +25,7 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> 从 <option>s</option> 选项指定的 <literal>pkg</literal>(5) 系统信息库或软件包归档文件检索每个匹配 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的软件包的所有版本，并且可以将检索到的软件包重新发布到 <option>d</option> 选项指定的软件包系统信息库或软件包归档文件。缺省情况下，会以 <command>pkg</command>、<command>pkg.depotd</command> 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。</para>
+<para><command>pkgrecv</command> 从 <option>s</option> 选项指定的 <literal>pkg</literal>(7) 系统信息库或软件包归档文件检索每个匹配 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的软件包的所有版本，并且可以将检索到的软件包重新发布到 <option>d</option> 选项指定的软件包系统信息库或软件包归档文件。缺省情况下，会以 <command>pkg</command>、<command>pkg.depotd</command> 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。</para>
 <para>不重新发布未更改的软件包。因此，更新现有系统信息库的时间取决于新的和已更改软件包的数量。</para>
 <para>使用 <option>m</option> 选项可指定是检索每个匹配软件包的所有版本还是每个匹配软件包的最新版本。</para>
 <para>如果未指定要检索的 <literal>'*'</literal>，则可以指定 <option>r</option> 选项来确保检索指定软件包的所有依赖项。</para>
@@ -40,7 +40,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>a</option></term>
-<listitem><para>将检索的软件包数据存储在 <option>d</option> 选项指定的位置中的 <literal>pkg</literal>(5) 归档文件中。<option>d</option> 指定的文件不能已经存在。<option>a</option> 选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 <literal>.p5p</literal>（例如：<literal> archive.p5p</literal>）。<option>a</option> 选项不能与 <option>-raw</option> 选项一起使用。</para>
+<listitem><para>将检索的软件包数据存储在 <option>d</option> 选项指定的位置中的 <literal>pkg</literal>(7) 归档文件中。<option>d</option> 指定的文件不能已经存在。<option>a</option> 选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 <literal>.p5p</literal>（例如：<literal> archive.p5p</literal>）。<option>a</option> 选项不能与 <option>-raw</option> 选项一起使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -94,7 +94,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
-<listitem><para>指定要从中接收软件包数据的 <literal>pkg</literal>(5) 系统信息库或软件包归档文件的文件系统路径或 URI。如果未指定 <option>s</option>，则使用值 <envar>PKG_SRC</envar>。请参见下面的“环境变量”。</para>
+<listitem><para>指定要从中接收软件包数据的 <literal>pkg</literal>(7) 系统信息库或软件包归档文件的文件系统路径或 URI。如果未指定 <option>s</option>，则使用值 <envar>PKG_SRC</envar>。请参见下面的“环境变量”。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
@@ -210,7 +210,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
-<listitem><para>URI 或文件系统路径代表要从中检索软件包的 <literal> pkg</literal>(5) 系统信息库或软件包归档文件的位置。</para>
+<listitem><para>URI 或文件系统路径代表要从中检索软件包的 <literal> pkg</literal>(7) 系统信息库或软件包归档文件的位置。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
@@ -245,7 +245,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -278,11 +278,11 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>当使用基于文件系统的目标系统信息库时，在完成软件包传输后必须重新启动提供该系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <command>pkg.depotd</command>(1M)。</para>
+<para>当使用基于文件系统的目标系统信息库时，在完成软件包传输后必须重新启动提供该系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <command>pkg.depotd</command>(8)。</para>
 </refsect1>
 </refentry>

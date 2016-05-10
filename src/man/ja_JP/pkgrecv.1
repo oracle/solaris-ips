@@ -25,7 +25,7 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> は、<literal>pkg</literal>(5) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
+<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
 <para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
 <para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
 <para>取得対象に <literal>'*'</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
@@ -40,7 +40,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>a</option></term>
-<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <literal>pkg</literal>(5) アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
+<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <literal>pkg</literal>(7) アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -94,7 +94,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
-<listitem><para>パッケージデータ受信先の <literal>pkg</literal>(5) リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
+<listitem><para>パッケージデータ受信先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
@@ -210,7 +210,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
-<listitem><para>パッケージ取得先の <literal>pkg</literal>(5) リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
+<listitem><para>パッケージ取得先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
@@ -245,7 +245,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -278,11 +278,11 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2 </citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(1M) を参照してください。</para>
+<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(8) を参照してください。</para>
 </refsect1>
 </refentry>

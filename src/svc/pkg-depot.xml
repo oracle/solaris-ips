@@ -189,7 +189,7 @@
                             </loctext>
 			</common_name>
 			<documentation>
-				<manpage title='pkg.depot-config' section='1M' />
+				<manpage title='pkg.depot-config' section='8' />
 			</documentation>
 		</template>
 

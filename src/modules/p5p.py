@@ -57,7 +57,7 @@ class ArchiveErrors(apx.ApiException):
 
 class InvalidArchiveIndex(ArchiveErrors):
         """Used to indicate that the specified index is in a format not
-        supported or recognized by this version of the pkg(5) ArchiveIndex
+        supported or recognized by this version of the pkg(7) ArchiveIndex
         class."""
 
         def __init__(self, arc_name):
@@ -70,7 +70,7 @@ class InvalidArchiveIndex(ArchiveErrors):
 
 
 class ArchiveIndex(object):
-        """Class representing a pkg(5) archive table of contents and a set of
+        """Class representing a pkg(7) archive table of contents and a set of
         interfaces to populate and retrieve entries.
 
         Entries in this file are written in the following format:
@@ -105,7 +105,7 @@ class ArchiveIndex(object):
         ENTRY_FORMAT = "{0}\0{1:d}\0{2:d}\0{3:d}\0{4}\0\n"
 
         def __init__(self, name, mode="r", version=None):
-                """Open a pkg(5) archive table of contents file.
+                """Open a pkg(7) archive table of contents file.
 
                 'name' should be the absolute path of the file to use when
                 reading or writing index data.
@@ -215,7 +215,7 @@ class ArchiveIndex(object):
 
 class InvalidArchive(ArchiveErrors):
         """Used to indicate that the specified archive is in a format not
-        supported or recognized by this version of the pkg(5) Archive class.
+        supported or recognized by this version of the pkg(7) Archive class.
         """
 
         def __init__(self, arc_name):
@@ -277,7 +277,7 @@ class UnknownPackageManifest(ArchiveErrors):
 
 
 class Archive(object):
-        """Class representing a pkg(5) archive and a set of interfaces to
+        """Class representing a pkg(7) archive and a set of interfaces to
         populate it and retrieve data from it.
 
         This class stores package data in pax archives in version 4 repository

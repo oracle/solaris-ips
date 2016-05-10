@@ -35,7 +35,7 @@ except ImportError:
 # debug flags.
 from pkg.client.debugvalues import DebugValues
 
-# pkg(5) uses cryptographic hash functions for a number of tasks. We define the
+# pkg(7) uses cryptographic hash functions for a number of tasks. We define the
 # default hash function, along with the hash name here. Note that the use of
 # hashes in package metadata is *not* governed by this value, since multiple
 # hashes are supported for payload-bearing actions in a package.
@@ -76,7 +76,7 @@ DEFAULT_HASH_NAME = "sha-1"
 # get_least_preferred_hash(..) and get_common_preferred_hash(..)
 #
 if DebugValues["hash"] == "sha1+sha512_256" and sha512_supported:
-        # Simulate pkg(5) where SHA-1 and SHA-512/256 are used for publication
+        # Simulate pkg(7) where SHA-1 and SHA-512/256 are used for publication
         DEFAULT_HASH_ATTRS = ["hash", "pkg.hash.sha512_256"]
         DEFAULT_CHASH_ATTRS = ["chash", "pkg.chash.sha512_256"]
         DEFAULT_CONTENT_HASH_ATTRS = ["elfhash", "pkg.content-hash.sha512_256"]
@@ -85,7 +85,7 @@ if DebugValues["hash"] == "sha1+sha512_256" and sha512_supported:
             "pkg.chain.chashes.sha512_256"]
 
 elif DebugValues["hash"] == "sha1+sha256":
-        # Simulate pkg(5) where SHA-1 and SHA-256 are used for publication
+        # Simulate pkg(7) where SHA-1 and SHA-256 are used for publication
         DEFAULT_HASH_ATTRS = ["hash", "pkg.hash.sha256"]
         DEFAULT_CHASH_ATTRS = ["chash", "pkg.chash.sha256"]
         DEFAULT_CONTENT_HASH_ATTRS = ["elfhash", "pkg.content-hash.sha256"]
@@ -94,7 +94,7 @@ elif DebugValues["hash"] == "sha1+sha256":
             "pkg.chain.chashes.sha256"]
 
 elif DebugValues["hash"] == "sha512_256" and sha512_supported:
-        # Simulate pkg(5) where SHA-1 is no longer used for publication
+        # Simulate pkg(7) where SHA-1 is no longer used for publication
         DEFAULT_HASH_ATTRS = ["pkg.hash.sha512_256"]
         DEFAULT_CHASH_ATTRS = ["pkg.chash.sha512_256"]
         DEFAULT_CONTENT_HASH_ATTRS = ["pkg.content-hash.sha512_256"]
@@ -102,7 +102,7 @@ elif DebugValues["hash"] == "sha512_256" and sha512_supported:
         DEFAULT_CHAIN_CHASH_ATTRS = ["pkg.chain.chashes.sha512_256"]
 
 elif DebugValues["hash"] == "sha256":
-        # Simulate pkg(5) where SHA-1 is no longer used for publication
+        # Simulate pkg(7) where SHA-1 is no longer used for publication
         DEFAULT_HASH_ATTRS = ["pkg.hash.sha256"]
         DEFAULT_CHASH_ATTRS = ["pkg.chash.sha256"]
         DEFAULT_CONTENT_HASH_ATTRS = ["pkg.content-hash.sha256"]
@@ -136,11 +136,11 @@ CHAIN_CHASH = 4
 # At present, some of these are hashlib factory methods. When maintaining these
 # dictionaries, it is important to *never remove* entries from them, otherwise
 # clients with installed packages will not be able to verify their content when
-# pkg(5) is updated.
+# pkg(7) is updated.
 
-# A dictionary of the pkg(5) hash attributes we know about.
+# A dictionary of the pkg(7) hash attributes we know about.
 if DebugValues["hash"] == "sha1":
-        # Simulate older non-SHA2 aware pkg(5) code
+        # Simulate older non-SHA2 aware pkg(7) code
         HASH_ALGS = {"hash": hashlib.sha1}
 else:
         HASH_ALGS = {

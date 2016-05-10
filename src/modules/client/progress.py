@@ -1209,7 +1209,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
         def refresh_start(self, pub_cnt, full_refresh, target_catalog=False):
                 #
                 # We can wind up doing multiple refreshes in some cases,
-                # for example when we have to check if pkg(5) is up-to-date,
+                # for example when we have to check if pkg(7) is up-to-date,
                 # so we reset these each time we start.
                 #
                 self.pub_refresh.reset()
@@ -1947,7 +1947,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 self._ptimer.reset()
                 if np == self.PURPOSE_PKG_UPDATE_CHK:
                         self._pe.cprint(self._phase_prefix() +
-                            _("Checking that pkg(5) is up to date ..."), end='')
+                            _("Checking that pkg(7) is up to date ..."), end='')
                 if op == self.PURPOSE_PKG_UPDATE_CHK:
                         self._pe.cprint(" "  + _("Done"))
 
@@ -2341,7 +2341,7 @@ class RADProgressTracker(CommandLineProgressTracker):
                 self._ptimer.reset()
                 if np == self.PURPOSE_PKG_UPDATE_CHK:
                         prog_json = self.__prep_prog_json(
-                            _("Checking that pkg(5) is up to date ..."))
+                            _("Checking that pkg(7) is up to date ..."))
                         self.__handle_prog_output(prog_json)
 
         def _cache_cats_output(self, outspec):
@@ -2765,7 +2765,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if not self._ptimer.time_to_print():
                         return
                 self._pe.cprint(
-                    _("Checking that pkg(5) is up to date {0}").format(
+                    _("Checking that pkg(7) is up to date {0}").format(
                     self._spinner()), end='', erase=True)
 
         # Unused argument 'op'; pylint: disable=W0613

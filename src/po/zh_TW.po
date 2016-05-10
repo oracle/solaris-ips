@@ -28,8 +28,8 @@ msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creatio
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
-"unusable with older versions of the pkg(5) system."
-msgstr "若要繼續，請以具有權限的使用者身分執行 'pkg update-format'，然後再試一次。請注意，更新影像的格式將會導致影像無法與舊版 pkg(5) 系統搭配使用。"
+"unusable with older versions of the pkg(7) system."
+msgstr "若要繼續，請以具有權限的使用者身分執行 'pkg update-format'，然後再試一次。請注意，更新影像的格式將會導致影像無法與舊版 pkg(7) 系統搭配使用。"
 
 #: ../client.py:157
 msgid ""
@@ -627,10 +627,10 @@ msgstr "%s 錯誤 (清單列表異常):\n%s"
 #: ../client.py:1495
 #, python-format
 msgid ""
-"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
-"running %(op)s.  Please update pkg(5) by executing 'pkg install\n"
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %(op)s.  Please update pkg(7) by executing 'pkg install\n"
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
-msgstr "警告：pkg(5) 可能已經過期，應在執行 %(op)s 之前先予以更新。\n請以具有權限的使用者身分執行 'pkg install pkg:/package/pkg' 以\n更新 pkg(5)，然後重試 %(op)s。"
+msgstr "警告：pkg(7) 可能已經過期，應在執行 %(op)s 之前先予以更新。\n請以具有權限的使用者身分執行 'pkg install pkg:/package/pkg' 以\n更新 pkg(7)，然後重試 %(op)s。"
 
 #: ../client.py:1502
 #, python-format
@@ -4111,12 +4111,12 @@ msgid ""
 msgstr "提供的 p5s 資料格式無法辨識，或未包含有效的發佈者資訊。"
 
 #: ../modules/client/api_errors.py:1405
-msgid "Unsupported pkg(5) publisher information data format."
-msgstr "不受支援的 pkg(5) 發佈者資訊資料格式。"
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "不受支援的 pkg(7) 發佈者資訊資料格式。"
 
 #: ../modules/client/api_errors.py:1414
-msgid "Unsupported pkg(5) publisher and image information data format."
-msgstr "不受支援的 pkg(5) 發佈者和影像資訊資料格式。"
+msgid "Unsupported pkg(7) publisher and image information data format."
+msgstr "不受支援的 pkg(7) 發佈者和影像資訊資料格式。"
 
 #: ../modules/client/api_errors.py:1426
 #, python-format
@@ -4459,8 +4459,8 @@ msgstr "相關簽名動作的值屬性是 %s"
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
-"of pkg(5) doesn't understand."
-msgstr "簽名動作 %(act)s 是使用此版 pkg(5) 所不瞭解的版本 (%(ver)s) 所執行。"
+"of pkg(7) doesn't understand."
+msgstr "簽名動作 %(act)s 是使用此版 pkg(7) 所不瞭解的版本 (%(ver)s) 所執行。"
 
 #: ../modules/client/api_errors.py:2047
 #, python-format
@@ -4552,10 +4552,10 @@ msgstr "無法驗證主體為 %(cert)s 的憑證，因為它使用 pkg5 尚無�
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
-"has an extension with a value that pkg(5) does not understand.\n"
+"has an extension with a value that pkg(7) does not understand.\n"
 "Extension name:%(name)s\n"
 "Extension value:%(val)s"
-msgstr "無法驗證主體為 %(cert)s 的憑證，因為 pkg(5) 不瞭解它所具有之副檔名的值。\n副檔名：%(name)s\n副檔名值：%(val)s"
+msgstr "無法驗證主體為 %(cert)s 的憑證，因為 pkg(7) 不瞭解它所具有之副檔名的值。\n副檔名：%(name)s\n副檔名值：%(val)s"
 
 #: ../modules/client/api_errors.py:2194
 #, python-format
@@ -5219,8 +5219,8 @@ msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "發佈者 '%s' 是系統發佈者，無法移動。"
 
 #: ../modules/client/image.py:4401
-msgid "pkg(5) update check failed."
-msgstr "pkg(5) 更新檢查失敗。"
+msgid "pkg(7) update check failed."
+msgstr "pkg(7) 更新檢查失敗。"
 
 #: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
 #: ../modules/client/publisher.py:2525
@@ -5661,8 +5661,8 @@ msgid "Done (%(elapsed).3fs)"
 msgstr "完成 (%(elapsed).3fs)"
 
 #: ../modules/client/progress.py:1796
-msgid "Checking that pkg(5) is up to date ..."
-msgstr "正在檢查 pkg(5) 是否為最新狀態..."
+msgid "Checking that pkg(7) is up to date ..."
+msgstr "正在檢查 pkg(7) 是否為最新狀態..."
 
 #: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
 #: ../modules/gui/progress.py:50
@@ -5759,8 +5759,8 @@ msgstr "連結影像：已完成 %s；%d 工作中：%s"
 
 #: ../modules/client/progress.py:2151
 #, python-format
-msgid "Checking that pkg(5) is up to date %c"
-msgstr "檢查 pkg(5) 是否為最新狀態 %c"
+msgid "Checking that pkg(7) is up to date %c"
+msgstr "檢查 pkg(7) 是否為最新狀態 %c"
 
 #: ../modules/client/progress.py:2188
 msgid "Retrieving target catalog"
@@ -6690,9 +6690,9 @@ msgstr "\n無法連接到有效的套裝軟體儲存庫。請檢查您的網路�
 #: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
-"pkg(5) appears to be out of date and should be updated.\n"
+"pkg(7) appears to be out of date and should be updated.\n"
 "Please update %s package"
-msgstr "pkg(5) 可能已經過期，應予以更新。\n請更新 %s 套裝軟體"
+msgstr "pkg(7) 可能已經過期，應予以更新。\n請更新 %s 套裝軟體"
 
 #: ../modules/gui/installupdate.py:750
 #, python-format
@@ -8556,8 +8556,8 @@ msgid "Packages should not have dependencies on obsolete packages."
 msgstr "套裝軟體不應有過時套裝軟體的相依性。"
 
 #: ../modules/lint/pkglint_action.py:1333
-msgid "pkg(5) FMRIs should be valid."
-msgstr "pkg(5) FMRI 應該有效。"
+msgid "pkg(7) FMRIs should be valid."
+msgstr "pkg(7) FMRI 應該有效。"
 
 #: ../modules/lint/pkglint_action.py:1340
 #, python-format
@@ -8768,10 +8768,10 @@ msgstr "'%s' 不是有效的 mediator-priority；有效的值為 'site' 或 'ven
 msgid ""
 "\n"
 "\n"
-"This is an internal error in pkg(5) version %(version)s.  Please log a\n"
+"This is an internal error in pkg(7) version %(version)s.  Please log a\n"
 "Service Request about this issue including the information above and this\n"
 "message."
-msgstr "\n\n這是 pkg(5) 版本 %(version)s 的內部錯誤。請記錄\n關於此問題的「服務要求」，包括上述資訊以及\n本訊息。"
+msgstr "\n\n這是 pkg(7) 版本 %(version)s 的內部錯誤。請記錄\n關於此問題的「服務要求」，包括上述資訊以及\n本訊息。"
 
 #: ../modules/misc.py:437
 msgid "B"
@@ -8931,14 +8931,14 @@ msgstr "套裝軟體 '%(pkg)s' 包含手動指定的相依性，\n在這些相�
 #: ../modules/publish/dependencies.py:195
 msgid ""
 "pkgdepend has inferred conditional dependencies with different targets but\n"
-"which share a predicate.  pkg(5) can not represent these dependencies.  "
+"which share a predicate.  pkg(7) can not represent these dependencies.  "
 "This\n"
 "issue can be resolved by changing the packaging of the links which generated "
 "the\n"
 "conditional dependencies so that they have different predicates or share "
 "the\n"
 "same FMRI.  Each pair of problematic conditional dependencies follows: \n"
-msgstr "pkgdepend 已經使用不同但共用述詞的目標推斷\n條件性相依性。pkg(5) 無法表現這些相依性。\n可以變更產生條件性相依性之連結的套裝軟體來\n解決此問題，使它們具有不同的述詞或共用相同的 \nFMRI。下列是每一對問題條件性相依性：\n"
+msgstr "pkgdepend 已經使用不同但共用述詞的目標推斷\n條件性相依性。pkg(7) 無法表現這些相依性。\n可以變更產生條件性相依性之連結的套裝軟體來\n解決此問題，使它們具有不同的述詞或共用相同的 \nFMRI。下列是每一對問題條件性相依性：\n"
 
 #: ../modules/publish/dependencies.py:206
 #, python-format
@@ -9996,7 +9996,7 @@ msgid ""
 "        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
-"        -a              Store the retrieved package data in a pkg(5) "
+"        -a              Store the retrieved package data in a pkg(7) "
 "archive\n"
 "                        at the location specified by -d.  The file may not\n"
 "                        already exist, and this option may only be used "
@@ -10038,7 +10038,7 @@ msgid ""
 "provided\n"
 "                        list of packages and adds them to the list.\n"
 "\n"
-"        -s src_repo_uri A URI representing the location of a pkg(5)\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
 "                        repository to retrieve package data from.\n"
 "\n"
 "        --newest        List the most recent versions of the packages "
@@ -10067,7 +10067,7 @@ msgid ""
 "Environment:\n"
 "        PKG_DEST        Destination directory or URI\n"
 "        PKG_SRC         Source URI or path"
-msgstr "用法：\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n選項：\n        -a              將所擷取的套裝軟體資料儲存在 -d 所指定之位置的\n                         pkg(5) 歸檔。此檔案可能\n                        尚未存在，而且此選項只能與以檔案系統為基礎的\n                        目標搭配使用。\n\n        -c cache_dir    將用來快取已下載之\n                        內容的目錄路徑。如果未提供目錄\n                        路徑，用戶端將會自動挑選一個\n                        快取目錄。在發生下載中斷而已經\n                        自動選擇快取目錄的情況下，使用\n                        此選項可以讓下載作業繼續。\n\n        -d path_or_uri  重新發佈套裝軟體時，目標\n                        儲存庫的檔案系統路徑或 URI。目標必須已經存在。\n                        您可以使用 pkgrepo(1) 建立新儲存庫。\n\n        -h              顯示此用法訊息。\n\n        -k              將所擷取的套裝軟體內容保持壓縮，重新發佈\n                        時會忽略此選項。不應與 pkgsend 搭配使用。\n\n        -m match        使用下列值控制比對行為：\n                            all-timestamps\n                                包括所有相符的時間戳記，而不僅是\n                                最新的時間戳記 (隱含 all-versions)\n                            all-versions\n                                包括所有相符的版本，而不僅是最新的版本\n\n        -n              執行不會做任何變更的試驗執行。\n\n        -r              以遞迴方式評估所提供之套裝軟體清單的\n                        所有相依性，然後將它們新增至清單中。\n\n        -s src_repo_uri 代表擷取套裝軟體資料時的來源 pkg(5)\n                        儲存庫位置的 URI。\n\n        --newest        列出指定儲存庫中可用套裝軟體的最新版本並結束。\n                        (將會忽略 -s 以外的所有\n                        其他選項。)\n\n        --raw           擷取原始套裝軟體資料，並將其以一組\n                        目錄結構 (依主體和版本) 儲存在 -d 所指定的位置。\n                        只能與以檔案系統為基礎的\n                        目的地搭配使用。此選項可以與 pkgsend(1)\n                        include 搭配使用，讓您透過更正檔案內容或提供\n                        其他的套裝軟體中介資料，便利地\n                        修改及重新發佈套裝軟體。\n\n        --key keyfile   指定用於擷取套裝軟體的用戶端 SSL 金鑰檔案。\n\n        --cert certfile 指定用於擷取套裝軟體的用戶端 SSL 憑證檔案。\n\n環境：\n        PKG_DEST        目標目錄或儲存庫 URI\n        PKG_SRC         來源 URI 或路徑"
+msgstr "用法：\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n選項：\n        -a              將所擷取的套裝軟體資料儲存在 -d 所指定之位置的\n                         pkg(7) 歸檔。此檔案可能\n                        尚未存在，而且此選項只能與以檔案系統為基礎的\n                        目標搭配使用。\n\n        -c cache_dir    將用來快取已下載之\n                        內容的目錄路徑。如果未提供目錄\n                        路徑，用戶端將會自動挑選一個\n                        快取目錄。在發生下載中斷而已經\n                        自動選擇快取目錄的情況下，使用\n                        此選項可以讓下載作業繼續。\n\n        -d path_or_uri  重新發佈套裝軟體時，目標\n                        儲存庫的檔案系統路徑或 URI。目標必須已經存在。\n                        您可以使用 pkgrepo(1) 建立新儲存庫。\n\n        -h              顯示此用法訊息。\n\n        -k              將所擷取的套裝軟體內容保持壓縮，重新發佈\n                        時會忽略此選項。不應與 pkgsend 搭配使用。\n\n        -m match        使用下列值控制比對行為：\n                            all-timestamps\n                                包括所有相符的時間戳記，而不僅是\n                                最新的時間戳記 (隱含 all-versions)\n                            all-versions\n                                包括所有相符的版本，而不僅是最新的版本\n\n        -n              執行不會做任何變更的試驗執行。\n\n        -r              以遞迴方式評估所提供之套裝軟體清單的\n                        所有相依性，然後將它們新增至清單中。\n\n        -s src_repo_uri 代表擷取套裝軟體資料時的來源 pkg(7)\n                        儲存庫位置的 URI。\n\n        --newest        列出指定儲存庫中可用套裝軟體的最新版本並結束。\n                        (將會忽略 -s 以外的所有\n                        其他選項。)\n\n        --raw           擷取原始套裝軟體資料，並將其以一組\n                        目錄結構 (依主體和版本) 儲存在 -d 所指定的位置。\n                        只能與以檔案系統為基礎的\n                        目的地搭配使用。此選項可以與 pkgsend(1)\n                        include 搭配使用，讓您透過更正檔案內容或提供\n                        其他的套裝軟體中介資料，便利地\n                        修改及重新發佈套裝軟體。\n\n        --key keyfile   指定用於擷取套裝軟體的用戶端 SSL 金鑰檔案。\n\n        --cert certfile 指定用於擷取套裝軟體的用戶端 SSL 憑證檔案。\n\n環境：\n        PKG_DEST        目標目錄或儲存庫 URI\n        PKG_SRC         來源 URI 或路徑"
 
 #: ../pull.py:165
 #, python-format

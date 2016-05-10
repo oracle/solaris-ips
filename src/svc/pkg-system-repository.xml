@@ -152,7 +152,7 @@
 				value='solaris.smf.value.pkg-sysrepo' />
 
 			<!-- If the system-repository itself should use web
-			proxies to gain access to pkg(5) repositories,
+			proxies to gain access to pkg(7) repositories,
 			specify those here in, the form http://<host>:[port]
 			-->
 			<propval name='http_proxy' type='astring' value='' />
@@ -176,7 +176,7 @@
 				</loctext>
 			</common_name>
 			<documentation>
-				<manpage title='pkg.sysrepo' section='1M' />
+				<manpage title='pkg.sysrepo' section='8' />
 			</documentation>
 		</template>
 

@@ -1517,7 +1517,7 @@ def _set_repo(conf, subcommand, props, repo):
 
 
 def subcmd_version(conf, args):
-        """Display the version of the pkg(5) API."""
+        """Display the version of the pkg(7) API."""
 
         subcommand = "version"
         if args:

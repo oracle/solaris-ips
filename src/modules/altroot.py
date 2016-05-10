@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -376,9 +376,9 @@ def ar_diff(root, path1, path2):
         return diff
 
 def ar_img_prefix(root):
-        """A function that attempts to determine if a user or root pkg(5)
+        """A function that attempts to determine if a user or root pkg(7)
         managed image can be found at 'root'.  If 'root' does point to a
-        pkg(5) image, then we return the relative path to the image metadata
+        pkg(7) image, then we return the relative path to the image metadata
         directory."""
 
         import pkg.client.image as image

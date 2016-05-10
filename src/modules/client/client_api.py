@@ -1087,8 +1087,8 @@ def __api_plan_exception(op, noexecute, verbose, api_inst, errors_json=[],
                 return __prepare_json(e.lix_exitrv, errors=errors_json)
         if e_type == api_errors.IpkgOutOfDateException:
                 error ={"info": _("""\
-WARNING: pkg(5) appears to be out of date, and should be updated before
-running {op}.  Please update pkg(5) by executing 'pkg install
+WARNING: pkg(7) appears to be out of date, and should be updated before
+running {op}.  Please update pkg(7) by executing 'pkg install
 pkg:/package/pkg' as a privileged user and then retry the {op}."""
                     ).format(**locals())}
                 errors_json.append(error)
