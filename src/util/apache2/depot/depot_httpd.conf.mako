@@ -104,9 +104,6 @@ LoadModule wsgi_module libexec/mod_wsgi-{0}.so
 AddOutputFilterByType DEFLATE text/html application/javascript text/css text/plain
 # We only alias a specific script, not all files in ${template_dir}
 WSGIScriptAlias ${sroot}/depot ${template_dir}/depot_index.py
-# Run wsgi script in the current version of Python runtime
-WSGIPythonHome sys.executable
-WSGIPythonPath os.pathsep.join(sys.path)
 
 # We set a 5 minute inactivity timeout: if no requests have been received in the
 # last 5 minutes and no requests are currently being processed, mod_wsgi shuts

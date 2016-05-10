@@ -78,9 +78,6 @@ LoadModule wsgi_module libexec/mod_wsgi-{0}.so
 
 # We only alias a specific script, not all files in ${sysrepo_template_dir}
 WSGIScriptAlias /wsgi_p5p ${sysrepo_template_dir}/sysrepo_p5p.py
-# Run wsgi script in the current version of Python runtime
-WSGIPythonHome sys.executable
-WSGIPythonPath os.pathsep.join(sys.path)
 WSGIDaemonProcess sysrepo processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_sysrepo inactivity-timeout=120
 WSGIProcessGroup sysrepo
 WSGISocketPrefix ${sysrepo_runtime_dir}/wsgi
