@@ -1208,7 +1208,7 @@ class Transport(object):
                 as fmri.  An optional intent string may be supplied
                 as intent."""
 
-                failures = tx.TransportFailures()
+                failures = tx.TransportFailures(pfmri=fmri)
                 pub_prefix = fmri.publisher
                 pub = self.cfg.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
@@ -1251,7 +1251,7 @@ class Transport(object):
                 object."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-                failures = tx.TransportFailures()
+                failures = tx.TransportFailures(pfmri=fmri)
                 pub_prefix = fmri.publisher
                 download_dir = self.cfg.incoming_root
                 mcontent = None
@@ -1833,7 +1833,7 @@ class Transport(object):
                             x for x in failures
                             if x.request in failedreqs
                         ]
-                        tfailurex = tx.TransportFailures()
+                        tfailurex = tx.TransportFailures(pfmri=mfile.pfmri)
                         for f in failures:
                                 tfailurex.append(f)
                         raise tfailurex
@@ -2541,7 +2541,7 @@ class Transport(object):
                         pub = publisher.Publisher(fmri.publisher)
 
                 mfile = MultiFile(pub, self, progtrack, ccancel,
-                    alt_repo=alt_repo)
+                    alt_repo=alt_repo, pfmri=fmri)
 
                 return mfile
 
@@ -3226,7 +3226,8 @@ class MultiFile(MultiXfr):
         with the actions, and performs the download and content
         verification necessary to assure correct content installation."""
 
-        def __init__(self, pub, xport, progtrack, ccancel, alt_repo=None):
+        def __init__(self, pub, xport, progtrack, ccancel, alt_repo=None,
+            pfmri=None):
                 """Supply the destination publisher in the pub argument.
                 The transport object should be passed in xport."""
 
@@ -3234,6 +3235,7 @@ class MultiFile(MultiXfr):
                     ccancel=ccancel, alt_repo=alt_repo)
 
                 self._transport = xport
+                self.pfmri = pfmri
 
         def add_action(self, action):
                 """The multiple file retrieval operation is asynchronous.

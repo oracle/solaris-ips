@@ -287,11 +287,61 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0444 owner=root group=bin path=rofdir/rofile
             close """
 
-        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
+        filemissing = """
+            open filemissing@1.0,5.11:20160426T084036Z
+            add file tmp/truck1 path=opt/truck1 mode=755 owner=root group=bin
+            close
+        """
+
+        manimissing = """
+            open manimissing@1.0,5.11:20160426T084036Z
+            add file tmp/truck2 path=opt/truck2 mode=755 owner=root group=bin
+            close
+        """
+
+        fhashes = {
+            "tmp/truck1": "c9e257b659ace6c3fbc4d334f49326b3889fd109",
+            "tmp/truck2": "c07fd27b5b57f8131f42e5f2c719a469d9fc71c5"
+        }
+
+        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz", "tmp/truck1",
+            "tmp/truck2" ]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
+
+        def __get_mf_path(self, fmri_str, pub=None):
+                """Given an FMRI, return the path to its manifest in our
+                repository."""
+
+                usepub = "test"
+                if pub:
+                        usepub = pub
+                path_comps = [self.dc.get_repodir(), "publisher",
+                    usepub, "pkg"]
+                pfmri = pkg.fmri.PkgFmri(fmri_str)
+                path_comps.append(pfmri.get_name())
+                path_comps.append(pfmri.get_link_path().split("@")[1])
+                return os.path.sep.join(path_comps)
+
+        def __get_file_path(self, path):
+                """Returns the path to a file in the repository. The path name
+                must be present in self.fhashes."""
+
+                fpath = os.path.sep.join([self.dc.get_repodir(), "publisher",
+                    "test", "file"])
+                fhash = self.fhashes[path]
+                return os.path.sep.join([fpath, fhash[0:2], fhash])
+
+        def __inject_nofile(self, path):
+                fpath = self.__get_file_path(path)
+                os.remove(fpath)
+                return fpath
+
+        def __inject_nomanifest(self, fmri_str):
+                mpath = self.__get_mf_path(fmri_str)
+                os.remove(mpath)
 
         def test_cli(self):
                 """Test bad cli options"""
@@ -1193,6 +1243,31 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                         # Ensure directory can be cleaned up.
                         os.chmod(pdir, 0o755)
 
+        def test_error_messages(self):
+                """Verify that error messages for installing a package with a
+                file or manifest that cannot be retrieved include the package
+                FMRI."""
+
+                repo_path = self.dc.get_repodir()
+                durl = self.dc.get_depot_url()
+                self.dc.start()
+                self.image_create(durl)
+                # publish a single package and break it
+                fmris = self.pkgsend_bulk(repo_path, (self.filemissing,
+                    self.manimissing))
+                self.__inject_nofile("tmp/truck1")
+                self.pkg("install filemissing", exit=1)
+                self.assertTrue("pkg://test/filemissing@1.0,5.11:20160426T084036Z"
+                    in self.errout)
+                self.image_create("file://" + repo_path)
+                self.pkg("install filemissing", exit=1)
+                self.assertTrue("pkg://test/filemissing@1.0,5.11:20160426T084036Z"
+                    in self.errout)
+                self.__inject_nomanifest(fmris[1])
+                self.pkg("install manimissing", exit=1)
+                self.assertTrue("pkg://test/manimissing@1.0,5.11:20160426T084036Z"
+                    in self.errout)
+                self.dc.stop()
 
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):

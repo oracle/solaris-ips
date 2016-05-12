@@ -98,9 +98,10 @@ class TransportFailures(TransportException):
         # code can reasonably 'except TransportException' and get either
         # a single-valued or in this case a multi-valued instance.
         #
-        def __init__(self):
+        def __init__(self, pfmri=None):
                 TransportException.__init__(self)
                 self.exceptions = []
+                self.pfmri = pfmri
 
         def append(self, exc):
                 found = False
@@ -124,12 +125,17 @@ class TransportFailures(TransportException):
                         return "[no errors accumulated]"
 
                 s = ""
+                if self.pfmri:
+                        s += "{0}\n".format(self.pfmri)
+
                 for i, x in enumerate(self.exceptions):
+                        s += "  "
                         if len(self.exceptions) > 1:
                                 s += "{0:d}: ".format(i + 1)
                         s += str(x)
                         if x.count > 1:
-                                s += " (happened {0:d} times)".format(x.count)
+                                s += _(" (happened {0:d} times)").format(
+                                    x.count)
                         s += "\n"
                 s += self._str_autofix()
                 return s
