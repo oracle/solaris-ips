@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -206,3 +206,19 @@ one_mirror.add_repo_uri("mirror5", depot.SPEED_SLOW, depot.CSPEED_FARAWAY)
 one_mirror.set_megabytes(total_mb)
 
 one_mirror.run()
+
+# Scenario 4.  Six origins.
+
+six_origin = Scenario("six origins")
+
+six_origin.add_origin_uri("origin1", depot.SPEED_VERY_SLOW,
+   depot.CSPEED_VERY_SLOW)
+six_origin.add_origin_uri("origin2", depot.SPEED_SLOW, depot.CSPEED_FARAWAY)
+six_origin.add_origin_uri("origin3", depot.SPEED_MODERATE, depot.CSPEED_MEDIUM)
+six_origin.add_origin_uri("origin4", depot.SPEED_SLIGHTLY_FASTER, depot.CSPEED_LAN)
+six_origin.add_origin_uri("origin5", depot.SPEED_MEDIUM, depot.CSPEED_SLOW)
+six_origin.add_origin_uri("origin6", depot.SPEED_FAST, depot.CSPEED_MEDIUM)
+
+six_origin.set_megabytes(total_mb)
+
+six_origin.run()

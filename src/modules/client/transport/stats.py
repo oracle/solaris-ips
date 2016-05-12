@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -152,6 +152,10 @@ class RepoChooser(object):
                 # If they're already in the dictionary, copy a reference
                 # into the found_rs list, otherwise create the object
                 # and then add it to our list of found objects.
+                num_origins = len(origin_list)
+                num_mirrors = len(repouri_list) - len(origin_list)
+                o_idx = 0
+                m_idx = 0
                 for ruri in repouri_list:
                         key = ruri.key()
                         if key in self.__rsobj:
@@ -160,9 +164,19 @@ class RepoChooser(object):
                                 rs = RepoStats(ruri)
                                 self.__rsobj[key] = rs
                         found_rs.append((rs, ruri))
-
+                        if ruri in origin_list:
+                                n = num_origins - o_idx
+                                # old-division; pylint: disable=W1619
+                                rs.origin_factor = n / num_origins
+                                o_idx += 1
+                        else:
+                                n = num_mirrors - m_idx
+                                # old-division; pylint: disable=W1619
+                                rs.origin_factor = n / num_mirrors
+                                m_idx += 1
                         if origin_count > 0:
                                 rs.origin_speed = origin_avg_speed
+                                rs.origin_count = origin_count
                         if origin_ccount > 0:
                                 rs.origin_cspeed = origin_avg_cspeed
 
@@ -170,6 +184,9 @@ class RepoChooser(object):
                         # Reduce the error penalty by .1% each iteration.
                         # In other words, keep 99.9% of the current value.
                         rs._err_decay *= 0.999
+                        # Decay origin bonus each iteration to gradually give
+                        # up slow and erroneous origins.
+                        rs.origin_decay *= 0.95
 
                 found_rs.sort(key=lambda x: x[0].quality, reverse=True)
 
@@ -226,6 +243,9 @@ class RepoStats(object):
                 self.__seconds_xfr = 0.0
                 self.origin_speed = 0.0
                 self.origin_cspeed = 0.0
+                self.origin_count = 1
+                self.origin_factor = 1
+                self.origin_decay = 1
 
         def clear_consecutive_errors(self):
                 """Set the count of consecutive errors to zero.  This is
@@ -423,6 +443,12 @@ class RepoStats(object):
 
                         return 0
 
+                def origin_order_bonus(self):
+                        b = Cspeed * (self.origin_count) ** 2 + Nused ** 2 * \
+                            Cused
+                        return self.origin_factor * b * self.origin_decay
+
+
                 #
                 # Quality function:
                 #
@@ -434,11 +460,11 @@ class RepoStats(object):
                 #
                 # The equation is currently defined as:
                 #
-                # Q = Unused_bonus() + Cspeed * ((bytes/.001+seconds) /
-                # origin_speed)^2 + random_bonus(Crand_max) - Cconn_speed *
-                # (connect_speed / origin_connect_speed)^2 -
-                # Ccontent_error * (content_errors)^2 - Cerror *
-                # (non_decayable_errors + value_of_decayed_errors)^2
+                # Q = Origin_order_bonus() + Unused_bonus() + Cspeed *
+                # ((bytes/.001+seconds) / origin_speed)^2 + random_bonus(
+                # Crand_max) - Cconn_speed * (connect_speed /
+                # origin_connect_speed)^2 - Ccontent_error * (content_errors)^2
+                # - Cerror * (non_decayable_errors + value_of_decayed_errors)^2
                 #
                 # Unused_bonus = Cused * (MaxUsed - total tx)^2 if total_tx
                 # is less than MaxUsed, otherwise return 0.
@@ -452,7 +478,7 @@ class RepoStats(object):
                 # a simulated environment.
                 #
                 # old-division; pylint: disable=W1619
-                q = unused_bonus(self) + \
+                q = origin_order_bonus(self) + unused_bonus(self) + \
                     (Cspeed * ((self.__bytes_xfr / (.001 + self.__seconds_xfr))
                     / ospeed)**2) + \
                     int(random.gauss(0, Crand_max)) - \

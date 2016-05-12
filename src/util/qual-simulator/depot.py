@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -109,9 +109,46 @@ class RepositoryURI(object):
                 self.__error_type = error_type
                 self.__response_modality = modality
                 self.__decay = 0.9
+                self.__proxy = None
+                self.__system = None
                 self.aggregate_decay = 1
 
                 self.stats = stats.RepoStats(self)
+
+        def __get_proxy(self):
+                return self.__proxy
+
+        def __set_proxy(self, val):
+                self.__proxy = val
+
+        def __get_system(self):
+                return self.__system
+
+        def __set_system(self, val):
+                self.__system = val
+
+        proxy = property(__get_proxy, __set_proxy, None, "Proxy of the "
+            "repository URI.")
+
+        system = property(__get_system, __set_system, None, "System publisher "
+            "of the repository URI.")
+
+        def key(self):
+                """Returns a value that can be used to identify this RepoURI
+                uniquely for the transport system.  Normally, this would be done
+                using __hash__() however, TransportRepoURI objects are not
+                guaranteed to be immutable.
+
+                The key is a (uri, proxy) tuple, where the proxy is
+                the proxy used to reach that URI.  Note that in the transport
+                system, we may choose to override the proxy value here."""
+
+                u = self.uri
+                p = self.__proxy
+
+                if self.uri:
+                        u = self.uri.rstrip("/")
+                return (u, p)
 
         def speed_single(self, size):
                 """Implements a depot that runs at a single speed."""
@@ -144,24 +181,24 @@ class RepositoryURI(object):
                 if not size:
                         size = random.randint(1, 1000) * 1024
 
-                if not rc[self.uri].used:
-                        rc[self.uri].record_connection(self.cspeed)
+                if not rc[self.key()].used:
+                        rc[self.key()].record_connection(self.cspeed)
                 else:
                         conn_choose = (1 / self.maxtx) * \
                             math.exp(-1 / self.maxtx)
                         if random.random() < conn_choose:
-                                rc[self.uri].record_connection(self.cspeed)
+                                rc[self.key()].record_connection(self.cspeed)
 
-                rc[self.uri].record_tx()
+                rc[self.key()].record_tx()
                 self.__tx += 1
-               
+
                 if random.random() < self.__error_rate:
                         if self.__error_type == ERROR_T_DECAYABLE:
-                                rc[self.uri].record_error(decayable=True)
+                                rc[self.key()].record_error(decayable=True)
                         elif self.__error_type == ERROR_T_CONTENT:
-                                rc[self.uri].record_error(content=True)
+                                rc[self.key()].record_error(content=True)
                         else:
-                                rc[self.uri].record_error()
+                                rc[self.key()].record_error()
                         return (1, size, None)
 
                 if self.__response_modality == MODAL_SINGLE:
@@ -173,6 +210,6 @@ class RepositoryURI(object):
                 else:
                         raise RuntimeError("no modality")
 
-                rc[self.uri].record_progress(size, time)
+                rc[self.key()].record_progress(size, time)
 
                 return (errors, size, time)
