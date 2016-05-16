@@ -2236,9 +2236,9 @@ def revert(op, api_inst, pargs,
                 usage(_("at least one file path or tag name required"), cmd=op)
 
         return __api_op(op, api_inst, _noexecute=noexecute, _quiet=quiet,
-            _verbose=verbose, be_activate=be_activate, be_name=be_name,
-            new_be=new_be, _parsable_version=parsable_version, args=pargs,
-            tagged=tagged)
+            _verbose=verbose, backup_be=backup_be, be_activate=be_activate,
+            backup_be_name=backup_be_name, be_name=be_name, new_be=new_be,
+            _parsable_version=parsable_version, args=pargs, tagged=tagged)
 
 def dehydrate(op, api_inst, pargs, noexecute, publishers, quiet, verbose):
         """Minimize image size for later redeployment."""
