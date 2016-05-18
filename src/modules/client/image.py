@@ -2191,6 +2191,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 progtrack.job_add_progress(
                                     progtrack.JOB_IMAGE_STATE)
                                 cat.meta_root = cpath
+                                cat.file_root = tmp_state_root
                                 cat.finalize(pfmris=added)
                                 progtrack.job_add_progress(
                                     progtrack.JOB_IMAGE_STATE)
@@ -2295,7 +2296,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # image upgrade or metadata refresh.  In both cases, the catalog
                 # is resorted and finalized so this is always safe to use.
                 cat = pkg.catalog.Catalog(batch_mode=True, meta_root=croot,
-                    sign=False)
+                    sign=False, file_root=self.imgdir)
                 return cat
 
         def __remove_catalogs(self):
@@ -2516,7 +2517,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 kcat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
-                    self.IMG_CATALOG_KNOWN), sign=False)
+                    self.IMG_CATALOG_KNOWN), sign=False,
+                    file_root=self.imgdir)
 
                 # XXX if any of the below fails for any reason, the old 'known'
                 # catalog needs to be re-loaded so the client is in a consistent
@@ -2568,7 +2570,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Create the new installed catalog in a temporary location.
                 icat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
-                    self.IMG_CATALOG_INSTALLED), sign=False)
+                    self.IMG_CATALOG_INSTALLED), sign=False,
+                    file_root=self.imgdir)
 
                 excludes = self.list_excludes()
 

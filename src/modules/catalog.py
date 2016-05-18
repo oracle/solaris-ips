@@ -210,19 +210,23 @@ class CatalogPartBase(object):
         __file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
         __meta_root = None
+        __file_root = None
         last_modified = None
         loaded = False
         name = None
         sign = True
         signatures = None
 
-        def __init__(self, name, meta_root=None, sign=True):
+        def __init__(self, name, meta_root=None, sign=True, file_root=None):
                 """Initializes a CatalogPartBase object."""
 
                 self.meta_root = meta_root
+                self.file_root = file_root
+                if not self.file_root:
+                        self.file_root = meta_root
                 # Sanity check: part names can't be pathname-ish.
                 if name != os.path.basename(name):
-                        raise UnrecognizedCatalogPart(name)
+                        raise api_errors.UnrecognizedCatalogPart(name)
                 self.name = name
                 self.sign = sign
                 self.signatures = {}
@@ -244,6 +248,9 @@ class CatalogPartBase(object):
         def __get_meta_root(self):
                 return self.__meta_root
 
+        def __get_file_root(self):
+                return self.__file_root
+
         def __last_modified(self):
                 """A UTC datetime object representing the time the file used to
                 to store object metadata was modified, or None if it does not
@@ -264,6 +271,11 @@ class CatalogPartBase(object):
                 if path:
                         path = os.path.abspath(path)
                 self.__meta_root = path
+
+        def __set_file_root(self, path):
+                if path:
+                        path = os.path.abspath(path)
+                self.__file_root = path
 
         def destroy(self):
                 """Removes any on-disk files that exist for the catalog part and
@@ -301,7 +313,8 @@ class CatalogPartBase(object):
                 location = os.path.join(self.meta_root, self.name)
 
                 try:
-                        fobj = open(location, "rb")
+                        fobj = misc.open_image_file(self.file_root, location,
+                            os.O_RDONLY, misc.PKG_FILE_MODE)
                 except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
                                 raise api_errors.RetrievalError(e,
@@ -312,6 +325,9 @@ class CatalogPartBase(object):
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
+                        if e.errno == errno.EREMOTE:
+                                raise api_errors.UnrecognizedCatalogPart(
+                                    self.name)
                         raise
 
                 try:
@@ -376,6 +392,7 @@ class CatalogPartBase(object):
                         os.utime(self.pathname, (mtime, mtime))
 
         meta_root = property(__get_meta_root, __set_meta_root)
+        file_root = property(__get_file_root, __set_file_root)
 
 
 class CatalogPart(CatalogPartBase):
@@ -385,15 +402,16 @@ class CatalogPart(CatalogPartBase):
         __data = None
         ordered = None
 
-        def __init__(self, name, meta_root=None, ordered=True, sign=True):
+        def __init__(self, name, meta_root=None, ordered=True, sign=True,
+            file_root=None):
                 """Initializes a CatalogPart object."""
 
                 self.__data = {}
                 self.ordered = ordered
                 if not name.startswith("catalog."):
-                        raise UnrecognizedCatalogPart(name)
+                        raise api_errors.UnrecognizedCatalogPart(name)
                 CatalogPartBase.__init__(self, name, meta_root=meta_root,
-                    sign=sign)
+                    sign=sign, file_root=file_root)
 
         def __iter_entries(self, last=False, ordered=False, pubs=EmptyI):
                 """Private generator function to iterate over catalog entries.
@@ -958,14 +976,14 @@ class CatalogUpdate(CatalogPartBase):
         ADD = "add"
         REMOVE = "remove"
 
-        def __init__(self, name, meta_root=None, sign=True):
+        def __init__(self, name, meta_root=None, sign=True, file_root=None):
                 """Initializes a CatalogUpdate object."""
 
                 self.__data = {}
                 if not name.startswith("update."):
-                        raise UnrecognizedCatalogPart(name)
+                        raise api_errors.UnrecognizedCatalogPart(name)
                 CatalogPartBase.__init__(self, name, meta_root=meta_root,
-                    sign=sign)
+                    sign=sign, file_root=file_root)
 
         def add(self, pfmri, operation, op_time, metadata=None):
                 """Records the specified catalog operation and any related
@@ -1124,12 +1142,12 @@ class CatalogAttrs(CatalogPartBase):
             "version": 1,
         }
 
-        def __init__(self, meta_root=None, sign=True):
+        def __init__(self, meta_root=None, sign=True, file_root=None):
                 """Initializes a CatalogAttrs object."""
 
                 self.__data = {}
                 CatalogPartBase.__init__(self, name="catalog.attrs",
-                    meta_root=meta_root, sign=sign)
+                    meta_root=meta_root, sign=sign, file_root=file_root)
 
                 if self.loaded:
                         # If the data is already seen as 'loaded' during init,
@@ -1258,6 +1276,21 @@ class CatalogAttrs(CatalogPartBase):
                                                     UnrecognizedCatalogPart(
                                                     "{0} {{{1}: {2}}}".format(
                                                     self.name, key, subpart))
+                                        # Check if subpart is a symbolic link
+                                        # that would cause an access to be
+                                        # redirected outside of 'file_root'.
+                                        try:
+                                                misc.open_image_file(
+                                                    self.file_root,
+                                                    os.path.join(self.meta_root,
+                                                    subpart), os.O_RDONLY,
+                                                    misc.PKG_FILE_MODE)
+                                        except OSError as e:
+                                                if e.errno == errno.EREMOTE:
+                                                        raise api_errors.\
+                                                            UnrecognizedCatalogPart(
+                                                            "{0} {{{1}: {2}}}".format(
+                                                            self.name, key, subpart))
 
                                 # Build datetimes from timestamps.
                                 for e in val:
@@ -1336,6 +1369,7 @@ class Catalog(object):
         __batch_mode = None
         __lock = None
         __meta_root = None
+        __file_root = None
         __sign = None
 
         # These are used to cache or store CatalogPart and CatalogUpdate objects
@@ -1348,7 +1382,7 @@ class Catalog(object):
         DEPENDENCY, SUMMARY = range(2)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
-            read_only=False, sign=True):
+            read_only=False, sign=True, file_root=None):
                 """Initializes a Catalog object.
 
                 'batch_mode' is an optional boolean value that indicates that
@@ -1390,9 +1424,13 @@ class Catalog(object):
                 self.meta_root = meta_root
                 self.read_only = read_only
                 self.sign = sign
+                self.file_root = file_root
+                if not self.file_root:
+                        self.file_root = meta_root
 
                 # Must be set after the above.
-                self._attrs = CatalogAttrs(meta_root=self.meta_root, sign=sign)
+                self._attrs = CatalogAttrs(meta_root=self.meta_root, sign=sign,
+                    file_root=file_root)
 
                 # This lock is used to protect the catalog file from multiple
                 # threads writing to it at the same time.
@@ -1676,6 +1714,9 @@ class Catalog(object):
         def __get_meta_root(self):
                 return self.__meta_root
 
+        def __get_file_root(self):
+                return self.__file_root
+
         def __get_sign(self):
                 return self.__sign
 
@@ -1890,6 +1931,22 @@ class Catalog(object):
 
                 for ulog in self.__updates.values():
                         ulog.meta_root = pathname
+
+        def __set_file_root(self, pathname):
+                if pathname:
+                        pathname = os.path.abspath(pathname)
+                self.__file_root = pathname
+
+                # If the Catalog's file_root changes, the file_root of all of
+                # its parts must be changed too.
+                if self._attrs:
+                        self._attrs.file_root = pathname
+
+                for part in self.__parts.values():
+                        part.file_root = pathname
+
+                for ulog in self.__updates.values():
+                        ulog.file_root = pathname
 
         def __set_perms(self):
                 """Sets permissions on attrs and parts if not read_only and if
@@ -2311,7 +2368,7 @@ class Catalog(object):
                         ulog.destroy()
 
                 self._attrs = CatalogAttrs(meta_root=self.meta_root,
-                    sign=self.__sign)
+                    sign=self.__sign, file_root=self.file_root)
                 self.__parts = {}
                 self.__updates = {}
                 self._attrs.destroy()
@@ -3312,7 +3369,8 @@ class Catalog(object):
                 # Next, since the part hasn't been cached, create an object
                 # for it and add it to catalog attributes.
                 part = CatalogPart(name, meta_root=self.meta_root,
-                    ordered=not self.__batch_mode, sign=self.__sign)
+                    ordered=not self.__batch_mode, sign=self.__sign,
+                    file_root=self.file_root)
                 if must_exist and self.meta_root and not part.exists:
                         # This is a double-check for the client case where
                         # there is a part that is known to the catalog but
@@ -3788,6 +3846,7 @@ class Catalog(object):
             doc="A UTC datetime object indicating the last time the catalog "
             "was modified.")
         meta_root = property(__get_meta_root, __set_meta_root)
+        file_root = property(__get_file_root, __set_file_root)
         sign = property(__get_sign, __set_sign)
         version = property(__get_version, __set_version)
 

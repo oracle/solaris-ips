@@ -852,6 +852,7 @@ class Archive(object):
                 # as having catalog data cached.
                 croot = self.__mkdtemp()
                 cat.meta_root = croot
+                cat.file_root = croot
                 cat.batch_mode = False
                 cat.finalize()
                 if lm:

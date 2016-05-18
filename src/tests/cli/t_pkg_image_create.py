@@ -452,8 +452,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                     self.rurl1, p), su_wrap=True, exit=1)
 
         def test_11_ssl_key_cert_set(self):
-                """Verify that pkg image create will still pass if 
-                repo_uri doesn't have ssl_scheme but one of the origins or 
+                """Verify that pkg image create will still pass if
+                repo_uri doesn't have ssl_scheme but one of the origins or
                 mirrors have schemes"""
 
                 self.image_create(self.rurl1)

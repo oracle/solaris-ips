@@ -2948,6 +2948,24 @@ if six.PY2:
 else:
         force_str = force_text
 
+def open_image_file(root, path, flag, mode=None):
+        """Safely open files that ensures that the path we'are accessing resides
+        within a specified image root.
+
+        'root' is a directory that the path must reside in.
+        """
+
+        try:
+                return os.fdopen(os.open(path, flag|os.O_NOFOLLOW, mode))
+        except EnvironmentError as e:
+                if e.errno != errno.ELOOP:
+                        # Access to protected member; pylint: disable=W0212
+                        raise api_errors._convert_error(e)
+        # If it is a symbolic link, fall back to ar_open. ar_open interprets
+        # 'path' as relative to 'root', that is, 'root' will be prepended to
+        # 'path', so we need to call os.path.relpath here.
+        from pkg.altroot import ar_open
+        return os.fdopen(ar_open(root, os.path.relpath(path, root), flag, mode))
 
 def check_ca(cert):
         """Check if 'cert' is a proper CA. For this the BasicConstraints need to
