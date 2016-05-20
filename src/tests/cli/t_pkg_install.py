@@ -7459,7 +7459,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a")
                 # install from non-preferred repo explicitly
                 self.pkg("install pkg://test2/upgrade-np@1.0")
-                # Demonstrate that perferred publisher is not
+                # Demonstrate that preferred publisher is not
                 # acceptable, since test2 is sticky by default
                 self.pkg("install upgrade-np@1.1", exit=1) # not right repo
                 # Check that we can proceed once test2 is not sticky
@@ -7511,7 +7511,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a")
                 # install from non-preferred repo explicitly
                 self.pkg("install pkg://test2/upgrade-np@1.0")
-                # Demonstrate that perferred publisher is not
+                # Demonstrate that preferred publisher is not
                 # acceptable, since test2 is sticky by default
                 self.pkg("install upgrade-np@1.1", exit=1) # not right repo
                 # Disable test2 and then we should be able to proceed
@@ -7550,13 +7550,34 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # Install older version of package from test1.
                 self.pkg("install pkg://test1/upgrade-p@1.0")
 
-                # Verify update of all packages results in nothing to do even
-                # after test2 is set as preferred.
+                # Verify setting test2 as higher-ranked would not result in
+                # update since test1 is sticky.
                 self.pkg("set-publisher -P test2")
                 self.pkg("update -v", exit=4)
 
-                # Verify setting test1 as non-sticky would result in update.
-                self.pkg("set-publisher --non-sticky test1")
+                # Verify setting test1 as higher-ranked and non-sticky would not
+                # result in update since test2 is lower-ranked and not
+                # non-sticky.
+                self.pkg("set-publisher -P --non-sticky test1")
+                self.pkg("update -v", exit=4)
+
+                # Verify setting test2 as non-sticky would result in update even
+                # though it is lower-ranked since it is non-sticky..
+                self.pkg("set-publisher --non-sticky test2")
+                self.pkg("publisher")
+                self.pkg("list -af upgrade-p")
+                self.pkg("update -nvvv")
+
+                # Verify placing a publisher between test1 and test2 causes the
+                # update to fail since even though test1 and test2 are
+                # non-sticky, they are not adjacent.
+                self.pkg("set-publisher --search-after=test1 foo")
+                self.pkg("update -v", exit=4)
+                self.pkg("unset-publisher foo")
+
+                # Verify setting test2 as higher-ranked and sticky would result
+                # in update since test1 is non-sticky and test2 is higher-ranked.
+                self.pkg("set-publisher -P test2")
                 self.pkg("update -n")
 
                 # Verify update of 'upgrade-p' package will result in upgrade

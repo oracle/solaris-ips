@@ -1430,8 +1430,10 @@ publishers to retrieve the newest list of available packages and other metadata.
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-non-sticky</option></term>
-<listitem><para>Higher ranked publishers than this one can provide updates
-to packages originally installed from this publisher.</para>
+<listitem><para>Higher ranked publishers than this one can provide updates to
+packages originally installed from this publisher.  All non-sticky publishers
+adjacent to this one or siblings, regardless of rank, can provide updates and
+satisfy dependencies of packages offered by this publisher.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>

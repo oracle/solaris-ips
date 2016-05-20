@@ -139,8 +139,28 @@ class PkgSolver(object):
                 self.__catalog = cat
                 self.__known_incs = set()       # stems with incorporate deps
                 self.__publisher = {}           # indexed by stem
-                self.__possible_dict = defaultdict(list) # indexed by stem
-                self.__pub_ranks = pub_ranks    # rank indexed by pub
+                self.__possible_dict = defaultdict(list)  # indexed by stem
+
+                #
+                # Get rank indexed by pub
+                #
+                self.__pub_ranks = {}
+
+                # To ease cross-publisher (i.e. consolidation) flag days, treat
+                # adjacent, non-sticky publishers as having the same rank so
+                # that any of them may be used to satisfy package dependencies.
+                last_rank = None
+                last_sticky = None
+                rank_key = operator.itemgetter(1)
+                for p, pstate in sorted(pub_ranks.items(), key=rank_key):
+                        rank, sticky, enabled = pstate
+                        if sticky or sticky != last_sticky:
+                                last_rank = rank
+                                last_sticky = sticky
+                        else:
+                                rank = last_rank
+                        self.__pub_ranks[p] = (rank, sticky, enabled)
+
                 self.__depend_ts = False        # flag used to indicate whether
                                                 # any dependencies with
                                                 # timestamps were seen; used in
