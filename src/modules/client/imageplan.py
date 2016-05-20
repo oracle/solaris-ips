@@ -660,6 +660,7 @@ class ImagePlan(object):
                                 new_variants=new_variants,
                                 excludes=self.__new_excludes,
                                 reject_set=reject_set,
+                                trim_proposed_installed=False,
                                 relax_all=li_sync_op,
                                 ignore_inst_parent_deps=\
                                     ignore_inst_parent_deps,

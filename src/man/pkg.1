@@ -7,7 +7,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">2 May 2016</refmiscinfo>
+<refmiscinfo class="date">20 May 2016</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -253,6 +253,14 @@ use <literal>latest</literal> for the version portion of
 pattern can include the <literal>?</literal> and <literal>*</literal>
 characters as <literal>glob</literal>(3C)-style wildcards to match one or more
 packages.</para>
+<para>Versions older or newer than what is already installed can be specified
+to perform in-place downgrades or upgrades of specific packages. Updating
+specific packages across package rename or obsolete boundaries is not supported.</para>
+<para>Any preserved configuration files that are part of packages to be downgraded and that have
+been changed since the original version was installed are renamed using the extension
+<literal>.update</literal>. For more information about how the package system determines which files
+to preserve, and how these files are preserved during package upgrades, see &ldquo;File
+Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
 <para>Packages are selected based on publisher search order and stickiness.
 See the <command>pkg publisher</command> and <command>pkg set-publisher</command> commands
 for information about search order and stickiness. If the <replaceable>pkg_fmri_pattern
