@@ -82,7 +82,18 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         add set name=variant.unknown value=bar value=foo
         add file tmp/bar path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=bar
         add file tmp/foo path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=foo
-        close """
+        close
+        open unknown-boolean@1.0
+        add set name=variant.unknown value=true value=false
+        add file tmp/bar path=usr/bin/bar mode=0755 owner=root group=root variant.unknown=false
+        add file tmp/foo path=usr/bin/foo mode=0755 owner=root group=root variant.unknown=true
+        close
+        open unknown-boolean@2.0
+        add set name=variant.unknown value=true value=false
+        add file tmp/bar path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=false
+        add file tmp/foo path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=true
+        close
+        """
 
         # this package intentionally has no variant.arch specification.
         pkg_inc = """
@@ -468,36 +479,64 @@ variant.opensolaris.zone\t{1}
 
                 self.image_create(self.rurl)
 
-                # Install package with unknown variant and verify both files are
-                # present.
+                # First test if unknown variant doesn't have the values of
+                # true/false.
+
+                # Install package with unknown variant and verify both files
+                # are elided.
                 self.pkg("install -v unknown@1.0")
                 for fname in ("bar", "foo"):
-                        self.f_verify("usr/bin/{0}".format(fname), fname)
+                        self.f_verify("usr/bin/{0}".format(fname), fname,
+                            negate=True)
 
                 # Next, verify upgrade to version of package with unknown
-                # variant fails if new version delivers conflicting content and
-                # variant has not been set.
-                self.pkg("update -vvv unknown@2.0", exit=1)
+                # variant won't fail if new version delivers conflicting content
+                # and variant has not been set.
+                self.pkg("update -vvv unknown@2.0")
+                # And the file is still elided.
+                for fname in ("bar", "foo"):
+                        self.f_verify("usr/bin/foobar", fname, negate=True)
 
                 # Next, set unknown variant explicitly and verify content
                 # changes as expected.
                 self.pkg("change-variant unknown=foo")
-
-                # Verify bar no longer exists...
-                self.f_verify("usr/bin/bar", "bar", negate=True)
-                # ...and foo still does.
-                self.f_verify("usr/bin/foo", "foo")
-
-                # Next, upgrade to version of package with conflicting content
-                # and verify content changes as expected.
-                self.pkg("update -vvv unknown@2.0")
-
-                # Verify bar and foo no longer exist...
-                for fname in ("bar", "foo"):
-                        self.f_verify("usr/bin/{0}".format(fname), fname, negate=True)
-
-                # ...and that foo variant of foobar is now installed.
+                # Verify that foo variant of foobar is now installed.
                 self.f_verify("usr/bin/foobar", "foo")
+                self.f_verify("usr/bin/foobar", "bar", negate=True)
+
+                self.image_destroy()
+                self.image_create(self.rurl)
+
+                # Now test if unknown variant has the values of true/false.
+
+                # Install package with unknown variant and verify that false
+                # variant of content is installed since unknown variants have a
+                # default value of 'false'.
+                self.pkg("install -vvv unknown-boolean@1.0")
+                self.f_verify("usr/bin/bar", "bar")
+                self.f_verify("usr/bin/foo", "foo", negate=True)
+
+                # Next, verify upgrade to version of package with unknown
+                # variant won't fail if new version delivers conflicting content
+                # and variant has not been set.
+                self.pkg("update -vvv unknown-boolean@2.0")
+                # And that false variant of content is installed.
+                self.f_verify("usr/bin/foobar", "bar")
+                self.f_verify("usr/bin/foobar", "foo", negate=True)
+
+                # Next, set unknown variant explicitly and verify content
+                # changes as expected. First test with uppercase 'True'.
+                self.pkg("change-variant unknown=True")
+                # Verify that true variant of foobar is now installed.
+                self.f_verify("usr/bin/foobar", "foo")
+                self.f_verify("usr/bin/foobar", "bar", negate=True)
+                # Now test with lowercase 'true'. Need to set the variant to
+                # some other value first, otherwise it shows nothing to do.
+                self.pkg("change-variant unknown=false")
+                self.pkg("change-variant unknown=true")
+                # Verify that true variant of foobar is now installed.
+                self.f_verify("usr/bin/foobar", "foo")
+                self.f_verify("usr/bin/foobar", "bar", negate=True)
 
         def test_cv_parsable(self):
                 """Test the parsable output of change-variant."""

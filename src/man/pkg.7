@@ -1172,7 +1172,7 @@ one or two specific locales, as shown in the following example:</para>
 whatever architectures the distribution
 supports. (Only <literal>i386</literal> and <literal>sparc</literal> are used
 in Oracle Solaris.) The exception are the <literal>debug</literal> variants.
-The <literal>debug</literal> variants can only be set to <literal>true</literal>
+The <literal>debug</literal> variants should only be set to <literal>true</literal>
 or <literal>false</literal>; other values have undefined behavior. If a file
 action has both non-debug and debug versions, both versions must have the
 applicable <literal>debug</literal> variant explicitly set, as shown in the
@@ -1185,10 +1185,10 @@ file group=sys mode=0644 overlay=allow owner=root &bsol;
   path=etc/motd pkg.csize=68 pkg.size=48 preserve=true &bsol;
   variant.debug.osnet=false</programlisting>
 <para>The variant value must be set on the image in order for a package using
-the variant to be installed. The <literal>arch</literal> and
-<literal>zone</literal> variants are set by the program that creates the image
-and installs its initial contents. The <literal>debug.*</literal> variants are
-<literal>false</literal> in the image by default.</para>
+the variant to be installed; by default all unspecified variants have the value
+'false', which may or may not make the package installable. The
+<literal>arch</literal> and <literal>zone</literal> variants are set by the
+program that creates the image and installs its initial contents.</para>
 <itemizedlist>
 <para>The facets and variants set on the image affect whether a particular
 action is installed.</para>
@@ -1215,8 +1215,7 @@ of all the variant tags are the same as the values set in the image.</para>
 both the facets and the variants allow the action to be installed.</para>
 </listitem>
 </itemizedlist>
-<para>You can create custom facet tags and <literal>variant.debug.*</literal>
-variant tags. See
+<para>You can create custom facet tags and variant tags. See
 <citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>
 for more information. The following tags are in common use in Oracle
 Solaris.</para>

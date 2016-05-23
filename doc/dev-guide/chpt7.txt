@@ -92,18 +92,18 @@ use the |pkgmerge| command to take the packages from the sparc and i386
 builds and merge them together.  This is far more reliable and faster 
 than attempting to construct such packages manually.
 
-In general, it is not practical to define new variants without
-modifying the packaging system as no practical means currently exists
-for defining a default value for variants in general.  Package developers
-cannot define new variants at present.
+The ``variant.debug.*`` portion of the variant namespace is explicitly
+predefined to have a default version of ``false``; thus, developers
+can provide debug versions of their components, tagged with the
+appropriate variant, and users can select that variant if problems
+arise.  Remember that variants are set per image, so selecting a
+suitable name that is unique at the appropriate resolution for that
+piece of software is important.
 
-However, the ``variant.debug.*`` portion of the variant namespace is predefined
-to have a default version of ``false``; thus, developers can provide debug
-versions of their components, tagged with the appropriate variant, and
-users can select that variant if problems arise.  Remember that
-variants are set per image, so selecting a suitable name that
-is unique at the appropriate resolution for that piece of software 
-is important.
+In addition, any variant tags not described here are assumed to
+have a default value of ``false`` in the image.  This allows
+the definition of custom variants not explicitly set in the
+image for use in packages.
 
 Note that variant tags are applied to any actions that differ between
 architectures during merging; this includes dependencies, ``set`` actions,

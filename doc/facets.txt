@@ -122,4 +122,4 @@ facet.platform.sun4v	 true
 variant.arch		 one of sparc, i386 as set by platform code
 variant.opensolaris.zone either global or nonglobal as set by image type
 variant.debug.<all>	 false
-
+variant.<unknown>	 false	all unknown variants default to 'false'

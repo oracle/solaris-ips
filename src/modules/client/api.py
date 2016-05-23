@@ -1049,12 +1049,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                             for p in patterns
                             if "*" not in p and "?" not in p
                         )
-                        # Only debug variants can have an implicit value.
-                        iset = set(
-                            p
-                            for p in iset
-                            if p.startswith("variant.debug.")
-                        )
                 vlist = sorted(vimg | set(vpkg.keys()) | iset)
 
                 # Generate the results.

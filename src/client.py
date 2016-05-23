@@ -1970,6 +1970,10 @@ def change_variant(op, api_inst, pargs,
                 if not name.startswith("variant."):
                         name = "variant.{0}".format(name)
 
+                # forcibly lower-case for 'true' or 'false'
+                if not value.islower() and value.lower() in ("true", "false"):
+                        value = value.lower()
+
                 # make sure the user didn't specify duplicate variants
                 if name in variants:
                         usage(_("{subcmd}: duplicate variant specified: "

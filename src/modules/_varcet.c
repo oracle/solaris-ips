@@ -209,10 +209,9 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 			if (sysv == NULL) {
 				/*
 				 * If system variant value doesn't exist, then
-				 * allow the action if it is a debug variant
-				 * that is "false".
+				 * allow the action if it is a variant that is "false".
 				 */
-				if ((strncmp(as, "variant.debug.", 14) == 0) &&
+				if ((strncmp(as, "variant.", 8) == 0) &&
 				    (strncmp(av, "false", 5) != 0)) {
 					Py_DECREF(act_attrs);
 					Py_RETURN_FALSE;

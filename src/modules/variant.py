@@ -110,10 +110,8 @@ class Variants(_Variants):
                 if item in self:
                         return item, dict.__getitem__(self, item)
 
-                # The trailing '.' is to encourage namespace usage.
-                if item.startswith("variant.debug."):
-                        return None, "false" # 'false' by default
-                raise KeyError("unknown variant {0}".format(item))
+                # Unknown variants have a default implicit value 'false'.
+                return None, "false"
 
         def __getitem__(self, item):
                 return self.__getitem_internal(item)[1]
