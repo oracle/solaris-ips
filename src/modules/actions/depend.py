@@ -46,6 +46,7 @@ known_types = (
     "conditional",
     "exclude",
     "group",
+    "group-any",
     "incorporate",
     "optional",
     "origin",
@@ -95,7 +96,11 @@ class DependencyAction(generic.Action):
 
         group - a version of package is required unless stem is in image
         avoid list; version part of fmri is ignored.  Obsolete packages
-        are assumed to satisfy dependency."""
+        are assumed to satisfy dependency.
+
+        group-any - dependency on at least one of the specified packages is
+        required unless stem is in image avoid list; version part of fmri is
+        ignored.  Obsolete packages are assumed to satisfy dependency."""
 
         __slots__ = []
 
@@ -104,16 +109,8 @@ class DependencyAction(generic.Action):
         ordinality = generic._orderdict[name]
 
         def __init__(self, data=None, **attrs):
+                # data cannot be specified as a keyword argument
                 generic.Action.__init__(self, data, **attrs)
-                try:
-                        if self.attrs["type"] not in known_types:
-                                raise pkg.actions.InvalidActionError(
-                                    str(self),
-                                    _("Unknown type ({0}) in depend action").
-                                    format(self.attrs["type"]))
-                except KeyError:
-                        raise pkg.actions.InvalidActionError(
-                            str(self), _("Missing type attribute"))
 
         def __check_parent_installed(self, image, fmri):
 
@@ -246,6 +243,10 @@ class DependencyAction(generic.Action):
                 max_fmri = None
                 required = False
 
+                avoids = (image.avoid_set_get() |
+                          image.avoid_set_get(implicit=True) |
+                          image.obsolete_set_get())
+
                 if ctype == "require":
                         required = True
                         min_fmri = pfmri
@@ -266,9 +267,26 @@ class DependencyAction(generic.Action):
                                 min_fmri = pfmri
                                 required = True
                 elif ctype == "group":
-                        if pfmri.pkg_name not in \
-                           (image.avoid_set_get() | image.obsolete_set_get()):
+                        if pfmri.pkg_name not in avoids:
                                 required = True
+                elif ctype == "group-any":
+                        installed_stems = set(
+                            f.pkg_name for f in installed_versions
+                            if f is not None)
+                        group_stems = set(
+                            f.pkg_name for f in pfmris
+                            if f.pkg_name not in avoids)
+                        matching_stems = installed_stems & group_stems
+
+                        # If there are stems for this group-any dependency not
+                        # on the avoid list and none are installed, the
+                        # group-any dependency has not been satisfied.
+                        if group_stems and not matching_stems:
+                                stems = ", ".join(p for p in group_stems)
+                                errors.append(
+                                    _("Group dependency on one of {0} not "
+                                      "met").format(stems))
+                        return errors, warnings, info
                 elif ctype == "require-any":
                         for ifmri, rpfmri in zip(installed_versions, pfmris):
                                 e = self.__check_installed(image, ifmri,
@@ -281,10 +299,10 @@ class DependencyAction(generic.Action):
                                         errors.extend(e)
                         if not errors:  # none was installed
                                 errors.append(
-                                        _("Required dependency on one of "
-                                          "{0} not met").
-                                        format(", ".join((str(p)
-                                                          for p in pfmris))))
+                                    _("Required dependency on one of "
+                                      "{0} not met").
+                                    format(", ".join((str(p)
+                                                      for p in pfmris))))
                         return errors, warnings, info
                 elif ctype == "origin" and pfmri.pkg_name.startswith(
                                 "feature/firmware/"):
@@ -471,17 +489,26 @@ class DependencyAction(generic.Action):
                 'fmri' is an optional package FMRI (object or string)
                 indicating what package contained this action."""
 
-                required_attrs = ["type"]
+                required_attrs = ["type", "fmri"]
                 dtype = self.attrs.get("type")
                 if dtype == "conditional":
                         required_attrs.append("predicate")
 
-                errors = generic.Action._validate(
-                        self, fmri=fmri, raise_errors=False,
-                        required_attrs=required_attrs,
-                        single_attrs=("predicate", "root-image",
-                                      "ignore-check"))
+                single_attrs = ["predicate", "root-image", "ignore-check",
+                                "type"]
+                if dtype not in ("group-any", "require-any"):
+                        # Other dependency types only expect a single value.
+                        single_attrs.append("fmri")
 
+                errors = generic.Action._validate(
+                    self, fmri=fmri, raise_errors=False,
+                    required_attrs=required_attrs, single_attrs=single_attrs)
+
+                if (isinstance(dtype, six.string_types) and
+                   dtype not in known_types):
+                        errors.append(("type",
+                                      _("Unknown type '{0}' in depend action").
+                                      format(self.attrs["type"])))
                 if "predicate" in self.attrs and dtype != "conditional":
                         errors.append(("predicate",
                                        _("a predicate may only be specified "

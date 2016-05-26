@@ -1026,9 +1026,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         return len(self.output.splitlines())
 
                 def __check_errout(pfmri):
-                        s1 = "invalid action in package {0}".format(pfmri)
-                        s2 = "Malformed action in package '{0}'".format(pfmri)
-                        self.assertTrue(s1 in self.errout or s2 in self.errout,
+                        s1 = "in package '{0}'".format(pfmri)
+                        self.assertTrue(s1 in self.errout,
                             "{0} not in error".format(pfmri))
 
                 def __empty_repo(uri, arg_string):

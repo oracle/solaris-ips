@@ -287,7 +287,8 @@ def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
         action 'act' based on if the FMRI belongs to a reversioned package or
         not. 'fmri_str' contains the original FMRI string from the manifest to
         be adjusted. This has to be passed in separately since in case of
-        require-any dependencies an action can contain multiple FMRIs. """
+        require-any or group-any dependencies, an action can contain multiple
+        FMRIs. """
 
         dpfmri = fmri.PkgFmri(fmri_str)
 
@@ -349,7 +350,8 @@ def adjust_dep_action(pkg, act, latest_ref_pkgs, reversioned_pkgs, ref_xport):
         elif act.name != "depend":
                 return act
 
-        # Require-any deps are list so convert every dep FMRI into a list.
+        # require-any and group-any deps are a list so convert every dep FMRI
+        # into a list.
         fmris = act.attrlist("fmri")
 
         new_dep = []

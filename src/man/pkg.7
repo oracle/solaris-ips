@@ -7,7 +7,7 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">10 Mar 2015</refmiscinfo>
+<refmiscinfo class="date">21 Apr 2016</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -574,10 +574,11 @@ a sufficiently new version, subject to other constraints.</para>
 <listitem><para>The FMRI representing the dependent package. This is the <literal>
 dependency</literal> action's key attribute. The <literal>fmri</literal> value
 must not include the publisher. The package name is assumed to be complete.
-Dependencies of type <literal>require-any</literal> can have multiple <literal>fmri
-</literal> attributes. A version is optional on the <literal>fmri</literal> value,
-though for some types of dependencies, an <literal>fmri</literal> with no
-version has no meaning.</para>
+Dependencies of type <literal>group-any</literal> and <literal>require-any</literal>
+can have multiple <literal>fmri</literal> attributes. A version is optional on
+the <literal>fmri</literal> value, though for some types of dependencies, an
+<literal>fmri</literal> with no version has no meaning or the version is
+ignored.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>type</literal></term>
@@ -608,7 +609,7 @@ package is constrained. See &ldquo;Constraints and Freezing&rdquo; below.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>require-any</literal></term>
-<listitem><para>Any one of multiple dependent packages as specified by multiple <literal>fmri</literal>
+<listitem><para>Any one of the packages specified by multiple <literal>fmri</literal>
 attributes can satisfy the dependency, following the same rules as the <literal>require</literal>
 dependency type.</para>
 </listitem>
@@ -635,6 +636,13 @@ for examples.</para>
 <listitem><para>The dependency is required unless the package is on the image
 avoid list. Note that obsolete packages silently satisfy the group dependency.
 See the <command>avoid</command> subcommand in <command>pkg</command>(1).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-any</literal></term>
+<listitem><para>Any one of multiple dependent packages as specified by multiple
+<literal>fmri</literal> attributes can satisfy the dependency, following the
+same rules as the <literal>group</literal> dependency type with the exception
+that non-obsolete package stems are preferred over obsolete ones.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>parent</literal></term>

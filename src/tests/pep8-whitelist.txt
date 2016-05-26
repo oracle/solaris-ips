@@ -1,4 +1,5 @@
 cffi_src
+modules/actions/depend.py
 modules/arch.py
 modules/pspawn.py
 modules/sysattr.py

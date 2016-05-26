@@ -48,6 +48,8 @@ import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variants
 
+from pkg.actions.depend import known_types as dep_types
+
 paths_prefix = "{0}.path".format(base.Dependency.DEPEND_DEBUG_PREFIX)
 files_prefix = "{0}.file".format(base.Dependency.DEPEND_DEBUG_PREFIX)
 reason_prefix = "{0}.reason".format(base.Dependency.DEPEND_DEBUG_PREFIX)
@@ -621,6 +623,14 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                         a, local_path, used_bd = actions.internalizestr(l,
                             basedirs=basedirs,
                             load_data=load_data)
+
+                        # Ensure dependency is a type we understand; the
+                        # manifest could contain a future dependency type.
+                        if (a.name == "depend" and
+                            a.attrs.get("type") not in dep_types):
+                                raise actions.InvalidActionError(str(a),
+                                    "Unknown dependency type '{0}'".
+                                    format(a.attrs.get("type")))
 
                 except actions.ActionDataError as e:
                         new_a, local_path, used_bd = actions.internalizestr(

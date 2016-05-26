@@ -170,6 +170,7 @@ class ImagePlan(object):
 
                 # make sure we init this even if we don't call solver
                 self.pd._new_avoid_obs = (self.image.avoid_set_get(),
+                    self.image.avoid_set_get(implicit=True),
                     self.image.obsolete_set_get())
 
                 if self.pd.state == plandesc.UNEVALUATED:

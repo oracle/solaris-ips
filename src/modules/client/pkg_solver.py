@@ -44,6 +44,7 @@ import pkg.version           as version
 from collections import defaultdict
 # Redefining built-in; pylint: disable=W0622
 from functools import reduce
+from pkg.actions.depend import known_types as dep_types
 from pkg.client.debugvalues import DebugValues
 from pkg.client.firmware import Driver, Cpu
 from pkg.client.pkgdefs import PKG_OP_UNINSTALL, PKG_OP_UPDATE
@@ -128,7 +129,8 @@ class PkgSolver(object):
                 by name that define pkgs current installed in the image.
                 Pub_ranks dict contains (rank, stickiness, enabled) for each
                 publisher.  variants are the current image variants; avoids is
-                the set of pkg stems being avoided in the image."""
+                the set of pkg stems being avoided in the image due to
+                administrator action (e.g. --reject, uninstall)."""
 
                 # check if we're allowed to use the solver
                 if DebugValues["no_solver"]:
@@ -192,13 +194,22 @@ class PkgSolver(object):
                 self.__start_time = 0
                 self.__inc_list = []
                 self.__dependents = None
-                self.__root_fmris = None        # set of fmris installed in root
-                                                # image; used for origin
-                                                # dependencies
-                self.__avoid_set = avoids.copy()# set of stems we're avoiding
-                self.__obs_set = None           # set of obsolete stems
-                self.__reject_set = set()       # set of stems we're rejecting
-                self.__linked_pkgs = set()      # pkgs that have parent deps
+                # set of fmris installed in root image; used for origin
+                # dependencies
+                self.__root_fmris = None
+                # set of stems avoided by admin (e.g. --reject, uninstall)
+                self.__avoid_set = avoids.copy()
+                # set of stems avoided by solver due to dependency constraints
+                # (e.g. all fmris that satisfy group dependency trimmed); this
+                # intentionally starts empty for every new solver invocation and
+                # is only stored in image configuration for diagnostic purposes.
+                self.__implicit_avoid_set = set()
+                # set of obsolete stems
+                self.__obs_set = None
+                # set of stems we're rejecting
+                self.__reject_set = set()
+                # pkgs that have parent deps
+                self.__linked_pkgs = set()
 
                 # Internal cache of created fmri objects.  Used so that the same
                 # PkgFmri doesn't need to be created more than once.  This isn't
@@ -399,8 +410,9 @@ class PkgSolver(object):
                 if proposed is None:
                         proposed = set()
                 else:
-                        # remove packages to be installed from avoid_set
+                        # remove packages to be installed from avoid sets
                         self.__avoid_set -= proposed
+                        self.__implicit_avoid_set -= proposed
 
                 self.__removal_fmris |= set([
                     self.__installed_dict[name]
@@ -459,7 +471,7 @@ class PkgSolver(object):
                                     )
                                     if dtype != "group" or
                                         (dname not in self.__avoid_set and
-                                            dname not in self.__reject_set)
+                                         dname not in self.__reject_set)
                                 )
 
                                 if comm_deps is None:
@@ -628,7 +640,8 @@ class PkgSolver(object):
                 self.__end_subphase()  # end the last subphase.
                 pt.plan_done(pt.PLAN_SOLVE_SOLVER)
                 return self.__cleanup((self.__elide_possible_renames(solution,
-                    excludes), (self.__avoid_set, self.__obs_set)))
+                    excludes), (self.__avoid_set, self.__implicit_avoid_set,
+                        self.__obs_set)))
 
         def __assert_installed_allowed(self, proposed=None):
                 """Raises a PlanCreationException if the proposed operation
@@ -1470,28 +1483,31 @@ class PkgSolver(object):
                     ignore_inst_parent_deps=ignore_inst_parent_deps)
 
         def __update_solution_set(self, solution, excludes):
-                """Update avoid set w/ any missing packages (due to reject).
-                Remove obsolete packages from solution.
-                Keep track of which obsolete packages have group
-                dependencies so verify of group packages w/ obsolete
-                members works."""
+                """Update avoid sets w/ any missing packages (due to reject).
+                Remove obsolete packages from solution.  Keep track of which
+                obsolete packages have group dependencies so verify of group
+                packages w/ obsolete members works."""
 
                 solution_stems = set(f.pkg_name for f in solution)
                 tracked_stems = set()
                 for fmri in solution:
                         for a in self.__get_dependency_actions(fmri,
                             excludes=excludes, trim_invalid=False):
-                                if a.attrs["type"] != "group":
+                                if (a.attrs["type"] != "group" and
+                                    a.attrs["type"] != "group-any"):
                                         continue
-                                t = a.attrs["fmri"]
-                                try:
-                                        tmp = self.__fmridict[t]
-                                except KeyError:
-                                        tmp = pkg.fmri.PkgFmri(t)
-                                        self.__fmridict[t] = tmp
-                                tracked_stems.add(tmp.pkg_name)
 
-                self.__avoid_set |= (tracked_stems - solution_stems)
+                                for t in a.attrlist("fmri"):
+                                        try:
+                                                tmp = self.__fmridict[t]
+                                        except KeyError:
+                                                tmp = pkg.fmri.PkgFmri(t)
+                                                self.__fmridict[t] = tmp
+                                        tracked_stems.add(tmp.pkg_name)
+
+                avoided = (tracked_stems - solution_stems)
+                # Add stems omitted by solution and explicitly rejected.
+                self.__avoid_set |= avoided & self.__reject_set
 
                 ret = solution.copy()
                 obs = set()
@@ -1502,6 +1518,11 @@ class PkgSolver(object):
                                 obs.add(f.pkg_name)
 
                 self.__obs_set = obs & tracked_stems
+
+                # Add stems omitted by solution but not explicitly rejected, not
+                # previously avoided, and not avoided due to obsoletion.
+                self.__implicit_avoid_set |= avoided - self.__avoid_set - \
+                    self.__obs_set
 
                 return ret
 
@@ -1743,13 +1764,23 @@ class PkgSolver(object):
                         pass
 
                 try:
-                        self.__actcache[(fmri, name)] = [
+                        acts = [
                             a
                             for a in self.__catalog.get_entry_actions(fmri,
                             [catalog.Catalog.DEPENDENCY], excludes=excludes)
                             if a.name == name
                         ]
-                        return self.__actcache[(fmri, name)]
+
+                        if name == "depend":
+                                for a in acts:
+                                        if a.attrs["type"] in dep_types:
+                                                continue
+                                        raise api_errors.InvalidPackageErrors([
+                                            "Unknown dependency type {0}".
+                                            format(a.attrs["type"])])
+
+                        self.__actcache[(fmri, name)] = acts
+                        return acts
                 except api_errors.InvalidPackageErrors:
                         if not trim_invalid:
                                 raise
@@ -1864,6 +1895,7 @@ class PkgSolver(object):
                                  da.attrs["type"] == "group" or
                                  da.attrs["type"] == "conditional" or
                                  da.attrs["type"] == "require-any" or
+                                 da.attrs["type"] == "group-any" or
                                  (full_trim and (
                                      da.attrs["type"] == "incorporate" or
                                      da.attrs["type"] == "optional" or
@@ -2036,6 +2068,28 @@ class PkgSolver(object):
                             reduce(set.union, ret[pkg_name][1]))
                 return ret
 
+        def __parse_group_dependency(self, dotrim, obsolete_ok, fmris):
+                """Returns (matching, nonmatching) fmris for given list of group
+                dependencies."""
+
+                matching = []
+                nonmatching = []
+                for f in fmris:
+                        # remove version explicitly; don't
+                        # modify cached fmri
+                        if f.version is not None:
+                                fmri = f.copy()
+                                fmri.version = None
+                        else:
+                                fmri = f
+
+                        m, nm = self.__comb_newer_fmris(fmri,
+                            dotrim, obsolete_ok=obsolete_ok)
+                        matching.extend(m)
+                        nonmatching.extend(nm)
+
+                return frozenset(matching), frozenset(nonmatching)
+
         def __parse_dependency(self, dependency_action, source,
             dotrim=True, check_req=False, proposed_dict=None):
                 """Return tuple of (disallowed fmri list, allowed fmri list,
@@ -2140,23 +2194,58 @@ class PkgSolver(object):
                             obsolete_ok=obsolete_ok)
                         required = False
 
-                elif dtype == "group":
+                elif dtype == "group" or dtype == "group-any":
                         obsolete_ok = True
-                        # remove version explicitly; don't modify cached fmri
-                        if fmri.version is not None:
-                                fmri = fmri.copy()
-                                fmri.version = None
-                        if fmri.pkg_name in self.__avoid_set or \
-                            fmri.pkg_name in self.__reject_set:
-                                required = False
-                                matching = nonmatching = frozenset()
-                        else:
-                                matching, nonmatching = self.__comb_newer_fmris(
-                                    fmri, dotrim, obsolete_ok=obsolete_ok)
+                        # Determine potential fmris for matching.
+                        potential = [
+                            fmri
+                            for fmri in fmris
+                            if not (fmri.pkg_name in self.__avoid_set or
+                                fmri.pkg_name in self.__reject_set)
+                        ]
+                        required = len(potential) > 0
+
+                        # Determine matching fmris.
+                        matching = nonmatching = frozenset()
+                        if required:
+                                matching, nonmatching = \
+                                    self.__parse_group_dependency(dotrim,
+                                        obsolete_ok, potential)
+                                if not matching and not nonmatching:
+                                        # No possible stems at all? Ignore
+                                        # dependency.
+                                        required = False
+
+                        # If more than one stem matched, prefer stems for which
+                        # no obsoletion exists.
+                        mstems = frozenset(f.pkg_name for f in matching)
+                        if required and len(mstems) > 1:
+                                ostems = set()
+                                ofmris = set()
+                                for f in matching:
+                                        if self.__fmri_is_obsolete(f):
+                                                ostems.add(f.pkg_name)
+                                                ofmris.add(f)
+
+                                # If not all matching stems had an obsolete
+                                # version, remove the obsolete fmris from
+                                # consideration.  This makes the assumption that
+                                # at least one of the remaining, non-obsolete
+                                # stems will be installable.  If that is not
+                                # true, the solver may not find anything to do,
+                                # or may not find a solution if the system is
+                                # overly constrained.  This is believed
+                                # unlikely, so seems a reasonable compromise.
+                                # In that scenario, a client can move forward by
+                                # using --reject to remove the related group
+                                # dependencies.
+                                if mstems - ostems:
+                                        matching -= ofmris
+                                        nonmatching |= ofmris
 
                 else: # only way this happens is if new type is incomplete
-                        raise api_errors.InvalidPackageErrors(
-                            "Unknown dependency type {0}".format(dtype))
+                        raise api_errors.InvalidPackageErrors([
+                            "Unknown dependency type {0}".format(dtype)])
 
                 # check if we're throwing exceptions and we didn't find any
                 # matches on a required package
@@ -2583,8 +2672,8 @@ class PkgSolver(object):
 
                 if dtype == "require" or dtype == "require-any":
                         return self.__gen_require_clauses(fmri, m)
-                elif dtype == "group":
-                        if not m and not nm:
+                elif dtype == "group" or dtype == "group-any":
+                        if not m:
                                 return [] # no clauses needed; pkg avoided
                         else:
                                 return self.__gen_require_clauses(fmri, m)

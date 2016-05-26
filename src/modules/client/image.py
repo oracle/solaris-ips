@@ -208,9 +208,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self._usersbyname = {}
                 self._groupsbyname = {}
 
-                # Set of pkg stems being avoided
+                # Set of pkg stems being avoided per configuration.
                 self.__avoid_set = None
                 self.__avoid_set_altered = False
+
+                # Set of pkg stems being avoided by solver due to dependency
+                # constraints (not administrative action).
+                self.__implicit_avoid_set = None
 
                 # set of pkg stems subject to group
                 # dependency but removed because obsolete
@@ -4152,16 +4156,19 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 return img.imageplan.nothingtodo()
 
-        # avoid set implementation uses simplejson to store a
-        # set of pkg_stems being avoided, and a set of tracked
-        # stems that are obsolete.
+        # avoid set implementation uses simplejson to store a set of pkg_stems
+        # being avoided (explicitly or implicitly), and a set of tracked stems
+        # that are obsolete.
         #
-        # format is (version, dict((pkg stem, "avoid" or "obsolete"))
+        # format is (version, dict((pkg stem, "avoid", "implicit-avoid" or
+        # "obsolete"))
 
         __AVOID_SET_VERSION = 1
 
-        def avoid_set_get(self):
+        def avoid_set_get(self, implicit=False):
                 """Return copy of avoid set"""
+                if implicit:
+                        return self.__implicit_avoid_set.copy()
                 return self.__avoid_set.copy()
 
         def obsolete_set_get(self):
@@ -4172,6 +4179,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 """Load avoid set fron image state directory"""
                 state_file = os.path.join(self._statedir, "avoid_set")
                 self.__avoid_set = set()
+                self.__implicit_avoid_set = set()
                 self.__group_obsolete = set()
                 if os.path.isfile(state_file):
                         try:
@@ -4191,21 +4199,29 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         for stem in d:
                                 if d[stem] == "avoid":
                                         self.__avoid_set.add(stem)
+                                elif d[stem] == "implicit-avoid":
+                                        self.__implicit_avoid_set.add(stem)
                                 elif d[stem] == "obsolete":
                                         self.__group_obsolete.add(stem)
                                 else:
                                         logger.warning("Corrupted avoid list - ignoring")
                                         self.__avoid_set = set()
+                                        self.__implicit_avoid_set = set()
                                         self.__group_obsolete = set()
                                         self.__avoid_set_altered = True
                 else:
                         self.__avoid_set_altered = True
 
-        def _avoid_set_save(self, new_set=None, obsolete=None):
+        def _avoid_set_save(self, new_set=None, implicit_avoid=None,
+            obsolete=None):
                 """Store avoid set to image state directory"""
                 if new_set is not None:
                         self.__avoid_set_altered = True
                         self.__avoid_set = new_set
+
+                if implicit_avoid is not None:
+                        self.__avoid_set_altered = True
+                        self.__implicit_avoid_set = implicit_avoid
 
                 if obsolete is not None:
                         self.__group_obsolete = obsolete
@@ -4220,6 +4236,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 tf = open(tmp_file, "w")
 
                 d = dict((a, "avoid") for a in self.__avoid_set)
+                d.update(
+                    (a, "implicit-avoid")
+                    for a in self.__implicit_avoid_set
+                )
                 d.update((a, "obsolete") for a in self.__group_obsolete)
 
                 try:

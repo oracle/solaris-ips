@@ -239,7 +239,7 @@ def get_tracker():
         progresstracker.set_major_phase(progresstracker.PHASE_UTILITY)
         return progresstracker
 
-def get_manifest(pfmri, xport_cfg, contents=False):
+def get_manifest(pfmri, xport_cfg, validate=False):
 
         m = None
         pkgdir = xport_cfg.get_pkg_dir(pfmri)
@@ -256,8 +256,16 @@ def get_manifest(pfmri, xport_cfg, contents=False):
                         abort(err=_("Unable to parse manifest '{mpath}' for "
                             "package '{pfmri}'").format(**locals()))
 
-        if contents:
-                return m.tostr_unsorted()
+        if validate:
+                errors = []
+                for a in m.gen_actions():
+                        try:
+                                a.validate(fmri=pfmri)
+                        except Exception as e:
+                                errors.append(e)
+                if errors:
+                        raise apx.InvalidPackageErrors(errors)
+
         return m
 
 def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
@@ -813,7 +821,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 good_matches = []
                 for f in matches:
                         try:
-                                m = get_manifest(f, xport_cfg)
+                                m = get_manifest(f, xport_cfg, validate=True)
                         except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
@@ -946,9 +954,8 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         cleanup()
 
         if invalid_manifests:
-                error(_("The following errors were encountered.  The packages "
-                    "listed were not\nreceived.\n{0}").format(
-                    "\n".join(str(im) for im in invalid_manifests)))
+                error(_("One or more packages could not be retrieved:\n\n{0}").
+                    format("\n".join(str(im) for im in invalid_manifests)))
         if invalid_manifests and total_processed:
                 return pkgdefs.EXIT_PARTIAL
         if invalid_manifests:
@@ -1160,7 +1167,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 tracker.manifest_fetch_start(len(to_add))
                 for f, i in to_add:
                         try:
-                                m = get_manifest(f, xport_cfg)
+                                m = get_manifest(f, xport_cfg, validate=True)
                         except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
@@ -1244,8 +1251,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                     src_pub.prefix)
 
         if invalid_manifests:
-                error(_("The following packages could not be retrieved:\n{0}").format(
-                    "\n".join(str(im) for im in invalid_manifests)))
+                error(_("One or more packages could not be retrieved:\n\n{0}").
+                    format("\n".join(str(im) for im in invalid_manifests)))
 
         ret = 0
         # Run pkgrepo verify to check repo.
@@ -1432,7 +1439,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 while matches:
                         f = matches.pop()
                         try:
-                                m = get_manifest(f, xport_cfg)
+                                m = get_manifest(f, xport_cfg, validate=True)
                         except apx.InvalidPackageErrors as e:
                                 invalid_manifests.extend(e.errors)
                                 continue
@@ -1682,9 +1689,8 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         # Dump all temporary data.
         cleanup()
         if invalid_manifests:
-                error(_("The following errors were encountered.  The packages "
-                    "listed were not\nreceived.\n{0}").format(
-                    "\n".join(str(im) for im in invalid_manifests)))
+                error(_("One or more packages could not be retrieved:\n\n{0}").
+                    format("\n".join(str(im) for im in invalid_manifests)))
         if invalid_manifests and total_processed:
                 return pkgdefs.EXIT_PARTIAL
         if invalid_manifests:

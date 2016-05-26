@@ -114,7 +114,8 @@ class PlanDescription(object):
                 }
             },
             "_fmri_changes": [ ( pkg.fmri.PkgFmri, pkg.fmri.PkgFmri ) ],
-            "_new_avoid_obs": ( set(), set() ),
+            # avoid, implicit-avoid, obsolete
+            "_new_avoid_obs": ( set(), set(), set() ),
             "_new_mediators": collections.defaultdict(set, {
                 str: {
                     "version": pkg.version.Version,
@@ -175,7 +176,7 @@ class PlanDescription(object):
                 self._masked_facet_change = False
                 self._new_mediators = collections.defaultdict(set)
                 self._mediators_change = False
-                self._new_avoid_obs = (set(), set())
+                self._new_avoid_obs = (set(), set(), set())
                 self._fmri_changes = [] # install  (None, fmri)
                                         # remove   (oldfmri, None)
                                         # update   (oldfmri, newfmri|oldfmri)

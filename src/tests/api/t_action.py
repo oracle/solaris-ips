@@ -476,24 +476,16 @@ Incorrect attribute list.
                 self.assertMalformed("file 1234 path\t=/tmp/foo")
                 self.assertMalformed("file 1234 path\n=/tmp/foo")
 
-                # Attribute value is invalid.
-                self.assertInvalid("depend type=unknown fmri=foo@1.0")
-
-                # Missing required attribute 'type'.
-                self.assertInvalid("depend fmri=foo@1.0")
-
                 # Missing key attribute 'fmri'.
                 self.assertInvalid("depend type=require")
 
-                # Mutiple fmri values only allowed for require-any deps.
-                self.assertInvalid("depend type=require fmri=foo fmri=bar")
-
-                # Multiple values never allowed for depend action 'type' attribute.
-                self.assertInvalid("depend type=require type=require-any fmri=foo")
+                # XXX Fails in Python 3.4 due to module import issue; see
+                # set_invalid_action_error in actions/_common.c.
                 if six.PY2:
-                # have to skip this test case in Python 3 because _common.c`set_invalid_action_error
-                # can't import "pkg.actions" due to some reasons
-                        self.assertInvalid("depend type=require type=require-any fmri=foo fmri=bar")
+                        # Multiple values not allowed for 'fmri' if 'type' is
+                        # multi-valued.
+                        self.assertInvalid("depend type=require "
+                            "type=require-any fmri=foo fmri=bar")
 
                 # 'path' attribute specified multiple times
                 self.assertInvalid("file 1234 path=foo path=foo mode=777 owner=root group=root")
@@ -532,7 +524,8 @@ Incorrect attribute list.
                 fact = "file 12345 name=foo path=/tmp/foo mode=XXX"
                 dact = "dir path=/tmp mode=XXX"
 
-                def assertTrueinvalid_attrs(astr):
+                def assertActionError(astr,
+                    error=action.InvalidActionAttributesError):
                         bad_act = action.fromstr(astr)
                         try:
                                 bad_act.validate()
@@ -542,14 +535,20 @@ Incorrect attribute list.
                                 self.debug("expected failure validating: {0}".format(
                                     astr))
 
-                        self.assertRaises(
-                            action.InvalidActionAttributesError,
-                            bad_act.validate)
+                        self.assertRaises(error, bad_act.validate)
 
                 # Verify predicate and target attributes of FMRIs must be valid.
                 for nact in (
                     # FMRI value is invalid.
                     "depend type=require-any fmri=foo fmri=bar fmri=invalid@abc",
+                    # Missing required attribute 'type'.
+                    "depend fmri=foo@1.0"
+                    # type is invalid.
+                    "depend type=unknown fmri=foo@1.0",
+                    # Multiple values never allowed for depend action 'type' attribute.
+                    "depend type=require type=require-any fmri=foo",
+                    # Mutiple fmri values only allowed for require-any deps.
+                    "depend type=require fmri=foo fmri=bar",
                     # Predicate is missing for conditional dependency.
                     "depend type=conditional fmri=foo",
                     # Predicate value is invalid.
@@ -562,7 +561,7 @@ Incorrect attribute list.
                     "depend type=conditional predicate=foo predicate=bar fmri=baz",
                     # Multiple values for ignore-check are not allowed.
                     "depend type=require fmri=foo ignore-check=true ignore-check=false"):
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify multiple values for file attributes are rejected.
                 for attr in ("pkg.size", "pkg.csize", "chash", "preserve",
@@ -571,7 +570,7 @@ Incorrect attribute list.
                         nact = "file path=/usr/bin/foo owner=root group=root " \
                             "mode=0555 {attr}=1 {attr}=2 {attr}=3".format(
                             attr=attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify invalid values are not allowed for mode attribute on
                 # file and dir actions.
@@ -579,7 +578,7 @@ Incorrect attribute list.
                         for bad_mode in ("", 'mode=""', "mode=???",
                             "mode=44755", "mode=44", "mode=999", "mode=0898"):
                                 nact = act.replace("mode=XXX", bad_mode)
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                 # Verify multiple values aren't allowed for legacy action
                 # attributes.
@@ -587,22 +586,22 @@ Incorrect attribute list.
                     "version"):
                         nact = "legacy pkg=SUNWcs {attr}=1 {attr}=2".format(
                             attr=attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify multiple values aren't allowed for gid of group.
                 nact = "group groupname=staff gid=100 gid=101"
-                assertTrueinvalid_attrs(nact)
+                assertActionError(nact)
 
                 # Verify only numeric value is allowed for gid of group.
                 nact = "group groupname=staff gid=abc"
-                assertTrueinvalid_attrs(nact)
+                assertActionError(nact)
 
                 # Verify multiple values are not allowed for must-accept and
                 # must-display attributes of license actions.
                 for attr in ("must-accept", "must-display"):
                         nact = "license license=copyright {attr}=true " \
                             "{attr}=false".format(attr=attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Ensure link and hardlink attributes are validated properly.
                 for aname in ("link", "hardlink"):
@@ -610,13 +609,13 @@ Incorrect attribute list.
                         # invalid.
                         nact = "{0} path=usr/bin/vi target=../sunos/bin/edit " \
                             "mediator=vi".format(aname)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                         # Action with multiple mediator values is invalid.
                         nact = "{0} path=usr/bin/vi target=../sunos/bin/edit " \
                             "mediator=vi mediator=vim " \
                             "mediator-implementatio=svr4".format(aname)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                         # Action with mediator properties without mediator
                         # is invalid.
@@ -629,7 +628,7 @@ Incorrect attribute list.
                                 nact = "{0} path=usr/bin/vi " \
                                     "target=../sunos/bin/edit {1}={2}".format(aname,
                                     prop, val)
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                         # Action with multiple values for any property is
                         # invalid.
@@ -643,21 +642,21 @@ Incorrect attribute list.
                                         # valid, so test multiple value
                                         # invalid, add something.
                                         nact += " mediator-version=1.0"
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                         # Verify invalid mediator names are rejected.
                         for value in ("not/valid", "not valid", "not.valid"):
                                 nact = "{0} path=usr/bin/vi target=vim " \
                                     "mediator=\"{1}\" mediator-implementation=vim" \
                                    .format(aname, value)
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                         # Verify invalid mediator-versions are rejected.
                         for value in ("1.a", "abc", ".1"):
                                 nact = "{0} path=usr/bin/vi target=vim " \
                                     "mediator=vim mediator-version={1}" \
                                    .format(aname, value)
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                         # Verify invalid mediator-implementations are rejected.
                         for value in ("1.a", "@", "@1", "vim@.1",
@@ -665,50 +664,50 @@ Incorrect attribute list.
                                 nact = "{0} path=usr/bin/vi target=vim " \
                                     "mediator=vim mediator-implementation={1}" \
                                    .format(aname, value)
-                                assertTrueinvalid_attrs(nact)
+                                assertActionError(nact)
 
                         # Verify multiple targets are not allowed.
                         nact = "{0} path=/usr/bin/foo target=bar target=baz".format(
                             aname)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify multiple values are not allowed for set actions such as
                 # pkg.description, pkg.obsolete, pkg.renamed, and pkg.summary.
                 for attr in ("pkg.description", "pkg.obsolete", "pkg.renamed",
                     "pkg.summary", "pkg.depend.explicit-install"):
                         nact = "set name={0} value=true value=false".format(attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify signature action attribute 'value' is required during
                 # publication.
                 nact = "signature 12345 algorithm=foo"
-                assertTrueinvalid_attrs(nact)
+                assertActionError(nact)
 
                 # Verify multiple values aren't allowed for user attributes.
                 for attr in ("password", "group", "gcos-field", "home-dir",
                     "login-shell", "ftpuser"):
                         nact = "user username=user {attr}=ab {attr}=cd ".format(
                             attr=attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 for attr in ("uid", "lastchg", "min","max", "warn", "inactive",
                     "expire", "flag"):
                         nact = "user username=user {attr}=1 {attr}=2".format(
                             attr=attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Verify only numeric values are allowed for user attributes
                 # expecting a number.
                 for attr in ("uid", "lastchg", "min","max", "warn", "inactive",
                     "expire", "flag"):
                         nact = "user username=user {0}=abc".format(attr)
-                        assertTrueinvalid_attrs(nact)
+                        assertActionError(nact)
 
                 # Malformed pkg actuators
-                assertTrueinvalid_attrs(
+                assertActionError(
                     "set name=pkg.additional-update-on-uninstall "
                     "value=&@M")
-                assertTrueinvalid_attrs(
+                assertActionError(
                     "set name=pkg.additional-update-on-uninstall "
                     "value=A@1 value=&@M")
                 # Unknown actuator (should pass)
