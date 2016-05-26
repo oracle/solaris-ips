@@ -371,7 +371,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                         if be_obj is not None:
                                 raise api_errors.DuplicateBEName(be_name)
 
-                except AttributeError:
+                except Exception:
                         raise api_errors.BENamingNotSupported(be_name)
 
         @staticmethod
@@ -449,7 +449,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                         bemgr = bemgmt.BEManager()
                         be_obj = bemgr.get_active_on_boot_be()
                         return (be_obj.name)
-                except AttributeError:
+                except Exception:
                         raise api_errors.BENamingNotSupported("")
 
         @staticmethod
@@ -458,7 +458,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                         bemgr = bemgmt.BEManager()
                         be_obj = bemgr.get_active_be()
                         return (be_obj.name)
-                except AttributeError:
+                except Exception:
                         raise api_errors.BENamingNotSupported("")
 
 
