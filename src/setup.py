@@ -111,10 +111,7 @@ py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 py64_executable = None
 #Python 3 is always 64 bit and located in /usr/bin.
 if float(py_version) < 3 and osname == 'sunos':
-        if arch == 'sparc':
-                py64_executable = '/usr/bin/sparcv9/python' + py_version
-        elif arch == 'i386':
-                py64_executable = '/usr/bin/amd64/python' + py_version
+        py64_executable = '/usr/bin/64/python' + py_version
 
 scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
@@ -889,7 +886,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
                                 buf = sfp.read(buffer_size)
                                 if not buf:
                                         break
-                                if dst.endswith(".py"):
+                                if src.endswith(".py"):
                                         match = cddl_re.search(buf)
                                         if match:
                                                 # replace the CDDL expression
