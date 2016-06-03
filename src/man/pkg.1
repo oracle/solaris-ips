@@ -1407,7 +1407,10 @@ set and viewed. If only one publisher exists, it cannot be disabled.</para>
 <varlistentry><term><option>g</option> <replaceable>origin_to_add</replaceable></term>
 <term><option>-add-origin</option> <replaceable>origin_to_add</replaceable></term>
 <listitem><para>Add the specified URI or path as an origin for the given publisher.
-This should be the location of a package repository or archive.</para>
+This should be the location of a package repository or archive. If combined with
+<option>-enable</option> or <option>-disable</option>, the origins will be
+enabled or disabled as specified. In this case, <literal>*</literal> can be used
+to enable or disable all origins.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>k</option> <replaceable>ssl_key</replaceable></term>

@@ -100,6 +100,8 @@ ADD_MIRRORS           = "add_mirrors"
 REMOVE_MIRRORS        = "remove_mirrors"
 ADD_ORIGINS           = "add_origins"
 REMOVE_ORIGINS        = "remove_origins"
+ENABLE_ORIGINS        = "enable_origins"
+DISABLE_ORIGINS       = "disable_origins"
 REFRESH_ALLOWED       = "refresh_allowed"
 PUB_ENABLE            = "enable"
 PUB_DISABLE           = "disable"
@@ -221,6 +223,14 @@ def opts_table_cb_pub_opts(api_inst, opts, opts_new):
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [PUB_STICKY, PUB_NON_STICKY])
 
+        if opts[PUB_DISABLE] and opts[REMOVE_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [PUB_DISABLE, REMOVE_ORIGINS])
+
+        if opts[PUB_ENABLE] and opts[REMOVE_ORIGINS]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [PUB_DISABLE, REMOVE_ORIGINS])
+
         opts_new[PUB_DISABLE] = None
         if opts[PUB_DISABLE]:
                 opts_new[PUB_DISABLE] = True
@@ -278,8 +288,33 @@ def opts_table_cb_pub_opts(api_inst, opts, opts_new):
         opts_new[REMOVE_ORIGINS] = set()
         opts_new[ADD_MIRRORS] = set()
         opts_new[REMOVE_MIRRORS] = set()
+        opts_new[ENABLE_ORIGINS] = set()
+        opts_new[DISABLE_ORIGINS] = set()
         for e in opts[ADD_ORIGINS]:
-                opts_new[ADD_ORIGINS].add(misc.parse_uri(e, cwd=_orig_cwd))
+                if e == "*":
+                        if not (opts[PUB_DISABLE] or opts[PUB_ENABLE]):
+                                raise InvalidOptionError(InvalidOptionError.XOR,
+                                    [PUB_ENABLE, PUB_DISABLE])
+                        # Allow wildcard to support an easy, scriptable
+                        # way of enabling all existing entries.
+                        if opts[PUB_DISABLE]:
+                                opts_new[DISABLE_ORIGINS].add("*")
+                        if opts[PUB_ENABLE]:
+                                opts_new[ENABLE_ORIGINS].add("*")
+                else:
+                        opts_new[ADD_ORIGINS].add(misc.parse_uri(e,
+                            cwd=_orig_cwd))
+
+        # If enable/disable is specified and "*" is not present, then assign
+        # origins collected to be added into disable/enable set as well.
+        if opts[PUB_DISABLE]:
+                if "*" not in opts_new[DISABLE_ORIGINS]:
+                        opts_new[DISABLE_ORIGINS] = opts_new[ADD_ORIGINS]
+
+        if opts[PUB_ENABLE]:
+                if "*" not in opts_new[ENABLE_ORIGINS]:
+                        opts_new[ENABLE_ORIGINS] = opts_new[ADD_ORIGINS]
+
         for e in opts[REMOVE_ORIGINS]:
                 if e == "*":
                         # Allow wildcard to support an easy, scriptable
@@ -889,6 +924,12 @@ opts_table_pub_opts = [
                                   "items": {"type": "string"}
                                  }),
     (REMOVE_ORIGINS,  [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (ENABLE_ORIGINS,  [],    [], {"type": "array",
+                                  "items": {"type": "string"}
+                                 }),
+    (DISABLE_ORIGINS, [],    [], {"type": "array",
                                   "items": {"type": "string"}
                                  }),
     (REFRESH_ALLOWED, True,  [], {"type": "boolean"}),

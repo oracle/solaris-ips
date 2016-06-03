@@ -238,7 +238,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     "test1-test12-test12": ({}, [
                         PC(self.durl1),
                         PC(None,
-                            name="test12", origins=[self.durl2, self.durl5],
+                            name="test12", origins=[{"url": self.durl2,
+                            "disabled": False}, {"url": self.durl5,
+                            "disabled": False}],
                             sticky=False)]),
                     "test1-test3": ({}, [
                         PC(self.durl1),
@@ -250,7 +252,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                         PC(self.durl2, sticky=False)]),
                     "test12-test12": ({}, [
                         PC(None,
-                            name="test12", origins=[self.durl2, self.durl5],
+                            name="test12", origins=[{"url": self.durl2,
+                            "disabled": False}, {"url": self.durl5,
+                            "disabled": False}],
                             sticky=False)]),
                     "test12-test3": ({}, [
                         PC(self.durl2, sticky=False),
@@ -299,6 +303,18 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                         PC(self.rurl2, sticky=False, sig_pol="require-names",
                             req_names=["cs1_ch1_ta3", "foo", "bar", "baz"]),
                         PC(self.rurl3, sig_pol="ignore")]),
+                    "disabled_1_origin": ({}, [
+                        PC(None,
+                            name="test12", origins=[{"url": self.durl2,
+                            "disabled": True}, {"url": self.durl5,
+                            "disabled": False}],
+                            sticky=False)]),
+                    "disabled_2_origins": ({}, [
+                        PC(None,
+                            name="test12", origins=[{"url": self.durl2,
+                            "disabled": True}, {"url": self.durl5,
+                            "disabled": True}],
+                            sticky=False)]),
                 }
 
                 # Config needed for https apache instances.
@@ -396,7 +412,8 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                                         cmd += " -p {0}".format(pc.url)
                                 elif not pc.https and not pc.url:
                                         for o in pc.origins:
-                                                cmd += " -g {0}".format(o)
+                                                cmd += " -g {0}".format(
+                                                    o["url"])
                                         cmd += " {0}".format(pc.name)
                                 else:
                                         if pc.url in self.acs:
@@ -435,6 +452,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                                 for pub, m in pc.mirrors:
                                         self.pkg(
                                             "set-publisher -m {0} {1}".format(m, pub))
+                                for o in pc.origins:
+                                        if o["disabled"]:
+                                                self.pkg("set-publisher -d -g "
+                                                    "{0} {1}".format(o["url"],
+                                                    pc.name))
                                 if pc.disabled:
                                         self.pkg("set-publisher -d {0}".format(
                                             pc.name))
@@ -753,6 +775,10 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 api_obj = self.image_create(props={"use-system-repo": True})
 
                 # Test that most modifications to a system publisher fail.
+                self.pkg("set-publisher -g {0} --disable test1".format(
+                    self.durl1), exit=1)
+                self.pkg("set-publisher -g {0} --enable test1".format(
+                    self.durl1), exit=1)
                 self.pkg("set-publisher -d test1", exit=1)
                 self.pkg("set-publisher -e test1", exit=1)
                 self.pkg("set-publisher --non-sticky test1", exit=1)
@@ -918,10 +944,12 @@ test1\tfalse\tfalse\ttrue\torigin\tonline\t{0}/\t-
                 self.pkg("set-publisher -d test1")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t{0}/\t-
+test1\tfalse\tfalse\ttrue\torigin\tonline\t{0}/\t-
 """.format(self.durl1)
                 self.__check_publisher_info(expected)
                 self.__check_publisher_dirs([])
+                self.pkg("publisher")
+                self.assertTrue("disabled" in self.output)
 
                 # Now the syspub/0 response configures two publishers. The
                 # test12 publisher is totally new while the test1 publisher
@@ -1030,7 +1058,7 @@ example_pkg 1.0-0 ---
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
 test12\tfalse\ttrue\ttrue\torigin\tonline\t{durl2}/\thttp://localhost:{port}
-test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
+test1\tfalse\tfalse\ttrue\torigin\tonline\t{durl1}/\t-
 """.format(durl2=self.durl2, durl1=self.durl1, port=self.sysrepo_port)
                 self.__check_publisher_info(expected)
 
@@ -1052,7 +1080,7 @@ foo 1.0-0 ---
                 # as a system publisher.
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
+test1\tfalse\tfalse\ttrue\torigin\tonline\t{durl1}/\t-
 test12\tfalse\ttrue\tfalse\t\t\t\t
 """.format(durl1=self.durl1)
                 self.__check_publisher_info(expected)
@@ -1062,7 +1090,7 @@ test12\tfalse\ttrue\tfalse\t\t\t\t
                 self.pkg("uninstall foo")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\tfalse\tfalse\tfalse\torigin\tonline\t{durl1}/\t-
+test1\tfalse\tfalse\ttrue\torigin\tonline\t{durl1}/\t-
 """.format(durl1=self.durl1, durl3=self.durl3)
                 self.__check_publisher_info(expected)
 
@@ -2232,6 +2260,68 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                     "foo 1.0-0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
+
+        def test_disabled_origins(self):
+                """Test that publishers with disabled origins are handled "
+                correctly."""
+                self.__prep_configuration(["disabled_1_origin"])
+                self.__set_responses("disabled_1_origin")
+                sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["disabled_1_origin"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.register_apache_controller("sysrepo", sc)
+                sc.start()
+                # Test disabled origin is not shown in system repo.
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkg("publisher -F tsv")
+                self.assertTrue("localhost:12004" not in self.output)
+                self.assertTrue("localhost:12007" in self.output)
+
+                # Use cache configuration this time.
+                self.__prep_configuration(["disabled_1_origin"],
+                    use_config_cache=True)
+                self.__set_responses("disabled_1_origin")
+                sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["disabled_1_origin"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.register_apache_controller("sysrepo", sc)
+                sc.start()
+                # Test disabled origin is not shown in system repo.
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkg("publisher -F tsv")
+                self.assertTrue("localhost:12004" not in self.output)
+                self.assertTrue("localhost:12007" in self.output)
+
+                self.__prep_configuration(["disabled_2_origins"])
+                self.__set_responses("disabled_2_origins")
+                sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["disabled_2_origins"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.register_apache_controller("sysrepo", sc)
+                sc.start()
+                # Test publisher with all origins disabled is shown in the
+                # system repo as if no origin is set.
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkg("publisher -F tsv")
+                self.assertTrue("localhost:12004" not in self.output)
+                self.assertTrue("localhost:12007" not in self.output)
+
+                # Use cache configuration this time.
+                self.__prep_configuration(["disabled_2_origins"],
+                    use_config_cache=True)
+                self.__set_responses("disabled_2_origins")
+                sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["disabled_2_origins"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.register_apache_controller("sysrepo", sc)
+                sc.start()
+                # Test publisher with all origins disabled is shown in the
+                # system repo as if no origin is set.
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkg("publisher -F tsv")
+                self.assertTrue("localhost:12004" not in self.output)
+                self.assertTrue("localhost:12007" not in self.output)
+
 
         __smf_cmds_template = { \
             "usr/bin/svcprop" : """\

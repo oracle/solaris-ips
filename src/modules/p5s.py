@@ -226,8 +226,10 @@ def write(fileobj, pubs, cfg):
                         r = p.repository
                         reg_uri = ""
 
-                        mirrors = transform_uris(r.mirrors, p.prefix)
-                        origins = transform_uris(r.origins, p.prefix)
+                        mirrors = transform_uris([u for u in r.mirrors if not
+                            u.disabled], p.prefix)
+                        origins = transform_uris([u for u in r.origins if not
+                            u.disabled], p.prefix)
                         d = {
                             "collection_type": r.collection_type,
                             "description": r.description,

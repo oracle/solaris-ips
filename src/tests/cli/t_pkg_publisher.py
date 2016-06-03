@@ -682,6 +682,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             open baz@1,5.11-0
             close """
 
+        origin_1 = """
+            open origin1@1,5.11-0
+            add file tmp/cat mode=0444 owner=root group=bin path=etc/cat
+            close """
+
+        origin_2 = """
+            open origin2@1,5.11-0
+            close """
+
         test3_pub_cfg = {
             "publisher": {
                 "alias": "t3",
@@ -706,10 +715,14 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             },
         }
 
+        misc_files = [ "tmp/cat" ]
+
         def setUp(self):
                 # This test suite needs actual depots.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3",  "test1", "test1", "test3"], start_depots=True)
+                    "test3",  "test1", "test1", "test3", "test4", "test5",
+                    "test4"], start_depots=True)
+                self.make_misc_files(self.misc_files)
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(self.durl1, self.foo1)
@@ -1136,6 +1149,228 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --enable test2")
                 self.pkg("publisher -n | grep test2")
                 self.pkg("list -a bar")
+
+        def test_origins_enable_disable(self):
+                """Test enable and disable origins."""
+
+                self.durl7 = self.dcs[7].get_depot_url()
+                self.durl8 = self.dcs[8].get_depot_url()
+                self.durl9 = self.dcs[9].get_depot_url()
+                self.pkgsend_bulk(self.durl7, self.origin_1)
+                self.pkgsend_bulk(self.durl8, self.origin_2)
+                self.pkgsend_bulk(self.durl9, self.origin_2)
+
+                # Test invalid usages.
+                self.pkg("set-publisher -g '*' test4", exit=2)
+                # Test adding an enabled unknown origin.
+                self.pkg("set-publisher -g {0} --enable test1".format(
+                    "http://unknown"), exit=1)
+                # Test adding a disabled origin. Since we do not try to
+                # contact the repo, it should succeed.
+                self.pkg("set-publisher -g {0} --disable test1".format(
+                    "http://unknown"))
+                # Try to enable it will fail.
+                self.pkg("set-publisher -g {0} --enable test1".format(
+                    "http://unknown"), exit=1)
+                self.pkg("publisher -F tsv | grep unknown")
+                output = self.output.split()
+                self.assertTrue(output[3] == "false")
+
+                # Verify that remove option (-G) cannot be used with
+                # enable/disable.
+                self.pkg("set-publisher --enable -G " + self.durl7 + " test4",
+                    exit=2)
+                self.pkg("set-publisher --disable -G " + self.durl7 + " test4",
+                    exit=2)
+
+                # Test adding an enabled origin.
+                self.pkg("set-publisher --enable -g " + self.durl7 + " test4")
+                self.pkg("publisher -F tsv | grep test4")
+                output = self.output.split()
+                self.assertTrue(output[3] == "true")
+                # List and info will succeed.
+                self.pkg("list -af origin1")
+                self.pkg("info -r origin1")
+                # Install will succeed.
+                self.pkg("install origin1")
+                self.pkg("uninstall origin1")
+
+                # Disable that origin.
+                self.pkg("set-publisher --disable -g " + self.durl7 + " test4")
+                self.pkg("publisher -F tsv | grep test4")
+                output = self.output.split()
+                self.assertTrue(output[3] == "false")
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("install origin1", exit=1)
+
+                # Enable it again.
+                self.pkg("set-publisher --enable -g " + self.durl7 + " test4")
+                self.pkg("list -af origin1")
+
+                # Disable the entire publisher.
+                self.pkg("set-publisher --disable test4")
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" in self.output)
+
+                # The status of the origin should still be enabled.
+                self.pkg("publisher -F tsv | grep test4")
+                output = self.output.split()
+                self.assertTrue(output[3] == "true")
+
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("info origin1", exit=1)
+                self.pkg("install origin1", exit=1)
+                self.pkg("unset-publisher test4")
+
+                # Test adding a disabled origin.
+                self.pkg("set-publisher --disable -g " + self.durl8 + " test5")
+                self.pkg("publisher -F tsv | grep test5")
+                output = self.output.split()
+                self.assertTrue(output[3] == "false")
+                self.pkg("publisher | grep test5")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
+                # Install will fail.
+                self.pkg("install origin2", exit=1)
+
+                # Remove the origin but do not remove the publisher.
+                self.pkg("set-publisher -G " + self.durl8 + " test5")
+                # Then add the origin back and disable it.
+                self.pkg("set-publisher --disable -g " + self.durl8 + " test5")
+                self.pkg("publisher -F tsv | grep test5")
+                output = self.output.split()
+                self.assertTrue(output[3] == "false")
+                self.pkg("publisher | grep test5")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
+                # Install will fail.
+                self.pkg("install origin2", exit=1)
+
+                # Test wildcard.
+                self.pkg("set-publisher --enable -g '*' test5")
+                self.pkg("publisher -F tsv | grep test5")
+                output = self.output.split()
+                self.assertTrue(output[3] == "true")
+                self.pkg("publisher | grep test5")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("list -af origin2")
+                self.pkg("info -r origin2")
+                self.pkg("install -nv origin2")
+
+                self.pkg("set-publisher --disable -g '*' test5")
+                self.pkg("publisher -F tsv | grep test5")
+                output = self.output.split()
+                self.assertTrue(output[3] == "false")
+                self.pkg("publisher | grep test5")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
+                # Install will fail.
+                self.pkg("install origin2", exit=1)
+
+                # Test two origins case for one publisher.
+                self.pkg("set-publisher -g {0} test4".format(
+                    self.durl9))
+                # Disable one of origins for test4.
+                self.pkg("set-publisher -g {0} --disable test4".format(
+                    self.durl7))
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                output = outputs[1].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                # (disabled) indicating publisher level disable should not be
+                # in the output.
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" not in self.output)
+
+                # Test installing package from a disabled origin should fail.
+                self.pkg("install origin1", exit=1)
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("info -r origin1", exit=1)
+                # Even after refresh, contents for disabled origin should still
+                # remain unavailable.
+                self.pkg("refresh --full")
+                self.pkg("install origin1", exit=1)
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("info -r origin1", exit=1)
+
+                # Test installing package from the other enabled origin should
+                # succeed.
+                self.pkg("install origin2")
+                self.pkg("uninstall origin2")
+
+                # Disable the other origin.
+                self.pkg("set-publisher -g {0} --disable test4".format(
+                    self.durl9))
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                output = outputs[1].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.pkg("publisher -Hn | grep test4")
+                self.assertTrue("test4" in self.output)
+                # Install origin2 will fail.
+                self.pkg("install origin2", exit=1)
+                # List and info will also fail.
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
+
+                # Enable both origins.
+                self.pkg("set-publisher -g '*' --enable test4")
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                output = outputs[1].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                self.pkg("publisher -Hn | grep test4")
+                self.pkg("install -nv origin1")
+                self.pkg("install -nv origin2")
+                self.pkg("list -af origin1")
+                self.pkg("info -r origin1")
+                self.pkg("list -af origin2")
+                self.pkg("info -r origin2")
+
+                # Installing package from an enabled unreachable origin will
+                # still fail.
+                self.dcs[7].stop()
+                self.pkg("install origin1", exit=1)
+                self.dcs[7].start()
+
+                # Disable both origins.
+                self.pkg("set-publisher -g '*' --disable test4")
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                output = outputs[1].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.pkg("install origin1", exit=1)
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("info -r origin1", exit=1)
+                self.pkg("install origin2", exit=1)
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
+                # Even after refresh, contents for disabled origin should still
+                # remain unavailable.
+                self.pkg("refresh --full")
+                self.pkg("install origin1", exit=1)
+                self.pkg("list -af origin1", exit=1)
+                self.pkg("info -r origin1", exit=1)
+                self.pkg("install origin2", exit=1)
+                self.pkg("list -af origin2", exit=1)
+                self.pkg("info -r origin2", exit=1)
 
         def test_search_order(self):
                 """Test moving search order around"""

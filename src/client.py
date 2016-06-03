@@ -3653,10 +3653,10 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
 
 def publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
     reset_uuid, add_mirrors, remove_mirrors, add_origins, remove_origins,
-    refresh_allowed, disable, sticky, search_before, search_after,
-    search_first, approved_ca_certs, revoked_ca_certs, unset_ca_certs,
-    set_props, add_prop_values, remove_prop_values, unset_props, repo_uri,
-    proxy_uri):
+    enable_origins, disable_origins, refresh_allowed, disable, sticky,
+    search_before, search_after, search_first, approved_ca_certs,
+    revoked_ca_certs, unset_ca_certs, set_props, add_prop_values,
+    remove_prop_values, unset_props, repo_uri, proxy_uri):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-g|--add-origin origin to add] [-G|--remove-origin origin to
             remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
@@ -3675,10 +3675,11 @@ def publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
 
         out_json = client_api._publisher_set(op, api_inst, pargs, ssl_key,
             ssl_cert, origin_uri, reset_uuid, add_mirrors, remove_mirrors,
-            add_origins, remove_origins, refresh_allowed, disable, sticky,
-            search_before, search_after, search_first, approved_ca_certs,
-            revoked_ca_certs, unset_ca_certs, set_props, add_prop_values,
-            remove_prop_values, unset_props, repo_uri, proxy_uri)
+            add_origins, remove_origins, enable_origins, disable_origins,
+            refresh_allowed, disable, sticky, search_before, search_after,
+            search_first, approved_ca_certs, revoked_ca_certs, unset_ca_certs,
+            set_props, add_prop_values, remove_prop_values, unset_props,
+            repo_uri, proxy_uri)
 
         errors = None
         if "errors" in out_json:
@@ -5147,6 +5148,8 @@ opts_mapping = {
     "remove_mirrors":         ("M", "remove-mirror"),
     "add_origins":            ("g", "add-origin"),
     "remove_origins":         ("G", "remove-origin"),
+    "enable_origins":         ("", "enable-origins"),
+    "disable_origins":        ("", "disable-origins"),
     "refresh_allowed":        ("", "no-refresh"),
     "enable":                 ("e", "enable"),
     "disable":                ("d", "disable"),

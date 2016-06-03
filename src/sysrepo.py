@@ -448,9 +448,15 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                 prefix = pub.prefix
                 repo = pub.repository
 
+                # Only collect enabled URIs.
+                uris = [u
+                        for u in (repo.mirrors + repo.origins)
+                        if not u.disabled
+                ]
+
                 # Determine the proxies to use per URI
                 proxy_map = {}
-                for uri in repo.mirrors + repo.origins:
+                for uri in uris:
                         key = uri.uri.rstrip("/")
                         if uri.proxies:
                                 # Apache can only use a single proxy, even
@@ -466,8 +472,7 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                                     uri=uri, val=proxy_map[uri]))
 
                 uri_list, timed_out = _follow_redirects(
-                    [repo_uri.uri.rstrip("/")
-                    for repo_uri in repo.mirrors + repo.origins],
+                    [repo_uri.uri.rstrip("/") for repo_uri in uris],
                     http_timeout)
 
                 for uri in uri_list:
@@ -516,7 +521,7 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                             (prefix, cert, key, hash, proxy_map.get(uri), utype)
                             )
 
-                if not repo.mirrors + repo.origins:
+                if not uris:
                         no_uri_pubs.append(prefix)
 
         # if we weren't able to follow all redirects, then we don't write a new
