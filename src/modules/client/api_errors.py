@@ -3041,10 +3041,9 @@ class LinkedImageException(ApiException):
                         err = _("The following subprocess returned an "
                             "unexpected exit code of {rv:d}:\n    {cmd}").format(
                             rv=rv, cmd=cmd)
-                        if not errout:
-                                return
-                        err += _("\nAnd generated the following error "
-                            "message:\n{errout}".format(errout=errout))
+                        if errout:
+                                err += _("\nAnd generated the following error "
+                                    "message:\n{errout}".format(errout=errout))
 
                 if cmd_output_invalid is not None:
                         (cmd, output) = cmd_output_invalid
