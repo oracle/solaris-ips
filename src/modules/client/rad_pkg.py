@@ -604,7 +604,7 @@ class PkgImage(object):
             info_local=None, info_remote=None, origins=None, mode=None):
                 opts_json = self.__convert_opts2json(
                     display_license=license_only, info_local=info_local,
-                    Info_remote=info_remote, origins=origins)
+                    info_remote=info_remote, origins=origins)
                 ret_json = self.__pkg("info", pargs_json=pkg_fmri_patterns,
                     opts_json=opts_json, mode=mode)
                 return self.__handle_error(ret_json)
