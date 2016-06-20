@@ -316,3 +316,90 @@ providing a version at which to freeze them.
                 self.api_obj.freeze_pkgs(["*"], unfreeze=True)
                 self.api_obj.reset()
                 self.assertEqualDiff([], self.api_obj.get_frozen_list())
+
+
+class TestPkgFreezeDisplay(pkg5unittest.ManyDepotTestCase):
+
+        foo1 = """
+                open foo@1.1,5.11-0
+                close """
+
+        foo2 = """
+                open foo@1.2,5.12-0
+                close """
+
+        def setUp(self):
+                # This test suite needs actual depots.
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1",
+		        "test1"], start_depots=True)
+
+                self.durl1 = self.dcs[1].get_depot_url()
+                self.durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(self.durl1, self.foo1)
+
+                self.image_create(self.durl1)
+
+        def test_remove_origin_display(self):
+                """Test whether the frozen state is displayed for the installed
+                package when the configured origin is removed."""
+
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl1))
+                self.pkg("install foo")
+                self.pkg("freeze foo")
+                self.pkg("list -H foo")
+                self.assertTrue("if" in self.output)
+                self.pkg("info foo")
+                self.assertTrue("Frozen" in self.output)
+
+                self.pkg("set-publisher -G '*' test1")
+                self.pkg("list -H foo")
+                self.assertTrue("if" in self.output)
+
+                self.pkg("unfreeze foo")
+                self.pkg("list -H foo")
+                self.assertTrue("if" not in self.output)
+
+                self.pkg("freeze foo")
+                self.pkg("set-publisher -g {0} test1".format(self.durl1))
+                self.pkg("list -H foo")
+                self.assertTrue("if" in self.output)
+
+        def test_change_origin_display(self):
+                """Test whether the frozen state is displayed for the installed
+                package when the configured origin is changed and the new origin
+                also contains the package."""
+
+                self.pkgsend_bulk(self.durl2, self.foo1)
+
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl1))
+                self.pkg("install foo")
+                self.pkg("freeze foo@1.1,5.11-0")
+
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl2))
+                self.pkg("list -H foo")
+                self.assertTrue("if" in self.output)
+
+        def test_package_not_in_catalog_display(self):
+                """Test whether the frozen state is displayed for the installed
+                package when the frozen package is not in the catalog of the
+                new origin."""
+
+                self.pkgsend_bulk(self.durl2, self.foo2)
+
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl2))
+                self.pkg("install foo")
+
+                # Test the frozen state is displayed when the configured origin of
+                # the publisher is changed and the package is not in the catalog
+                # of the new origin.
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl1))
+                self.pkg("freeze foo")
+                self.pkg("list -H foo")
+                self.assertTrue("if" in self.output)
+
+                # Test the frozen state is removed after the origin of the publisher
+                # is changed back and the package is unfrozen.
+                self.pkg("set-publisher -G '*' -g {0} test1".format(self.durl2))
+                self.pkg("unfreeze foo")
+                self.pkg("list -H foo")
+                self.assertTrue("if" not in self.output)

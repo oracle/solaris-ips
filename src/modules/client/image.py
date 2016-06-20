@@ -2746,6 +2746,20 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         elif snver is not None:
                                                 states.add(
                                                     pkgdefs.PKG_STATE_UPGRADABLE)
+                                        # Check if the package is frozen.
+                                        if stem in frozen_pkgs:
+                                                f_ver = frozen_pkgs[stem].version
+                                                if f_ver == ver or \
+                                                    pkg.version.Version(ver
+                                                    ).is_successor(f_ver,
+                                                    constraint=
+                                                    pkg.version.CONSTRAINT_AUTO):
+                                                        states.add(
+                                                            pkgdefs.PKG_STATE_FROZEN)
+                                        else:
+                                                states.discard(
+                                                    pkgdefs.PKG_STATE_FROZEN)
+
                                         mdata["states"] = list(states)
 
                                 # Add entries.
@@ -4188,7 +4202,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         except EnvironmentError as e:
                                  raise apx._convert_error(e)
                         except ValueError as e:
-                                 salvaged_path = self.salvage(state_file, 
+                                 salvaged_path = self.salvage(state_file,
                                      full_path=True)
                                  logger.warning("Corrupted avoid list - salvaging"
                                      " file {state_file} in {salvaged_path}"
