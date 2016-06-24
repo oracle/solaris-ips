@@ -1104,7 +1104,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
         def make_elf(self, run_paths=[], output_path="elf_test", bit64=False,
             deferred_libs=misc.EmptyI, filter_files=misc.EmptyI,
             lazy_libs=misc.EmptyI, mapfile=None, no_link=False, obj_files=None,
-            optional_filters=misc.EmptyI, program_text=None, shared_lib=False):
+            optional_filters=misc.EmptyI, program_text=None, shared_lib=False,
+            record_audit=False):
                 assert obj_files is None or program_text is None
                 if obj_files is None and program_text is None:
                         program_text = "int main(){}\n"
@@ -1123,6 +1124,9 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                         opts.append("-c")
                 if mapfile:
                         opts.append("-M{0}".format(mapfile))
+                if record_audit:
+                        opts.append("-Wl,-paudit.so.1")
+
                 opts.extend(["-F{0}".format(f) for f in filter_files])
                 opts.extend(["-f{0}".format(f) for f in optional_filters])
                 opts.extend(["-z deferred"] +  list(deferred_libs) +
@@ -1363,6 +1367,54 @@ SYMBOL_SCOPE {
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
                 expected_file_deps = ["bar.so", "libc.so.1"]
+                found_file_deps = sorted(set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds])))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+        def test_audit_dependency(self):
+                """Test related to bug 7156221 where pkgdepend doesn't handle
+                auditing dependencies correctly."""
+                manf1 = """\
+file group=bin mode=0755 owner=sys path=usr/lib/libfoo.so.1
+"""
+
+                manf2 = """\
+file group=bin mode=0755 owner=sys path=usr/lib/main
+"""
+
+                foo_c = """\
+int foo() { return 1; }
+"""
+
+                main_c = """\
+int main() { return 1; }
+"""
+
+                base_dir = os.path.join(self.test_proto_dir, "usr", "lib")
+                so_path = os.path.join(base_dir, "libfoo.so.1")
+                main_path = os.path.join(base_dir, "main")
+                manifest1_path = self.make_manifest(manf1)
+                manifest2_path = self.make_manifest(manf2)
+
+                # Test that AUDIT dependency can be detected.
+                self.make_elf(output_path=so_path, program_text=foo_c,
+                    shared_lib=True, record_audit=True)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    manifest1_path, [self.test_proto_dir], {}, [],
+                    convert=False)
+
+                self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
+                expected_file_deps = ["audit.so.1", "libc.so.1"]
+                found_file_deps = sorted(set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds])))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that DEPAUDIT dependency can be detected.
+                self.make_elf(output_path=main_path, program_text=main_c,
+                    deferred_libs=[so_path])
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    manifest2_path, [self.test_proto_dir], {}, [],
+                    convert=False)
                 found_file_deps = sorted(set(itertools.chain.from_iterable(
                     [d.attrs[DDP + ".file"] for d in ds])))
                 self.assertEqualDiff(expected_file_deps, found_file_deps)

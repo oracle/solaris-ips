@@ -406,6 +406,8 @@ getdynamic(int fd)
 
 		switch (gd.d_tag) {
 		case DT_NEEDED:
+		case DT_AUDIT:
+		case DT_DEPAUDIT:
 		case DT_FILTER:
 		case DT_SUNW_FILTER:
 			if (liblist_add(deps, gd.d_un.d_val) == NULL)
