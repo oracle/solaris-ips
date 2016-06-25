@@ -642,11 +642,55 @@ def get_data_digest(data, length=None, return_content=False,
                 hash_results[attr] = hash_results[attr].hexdigest()
         return hash_results, content.read()
 
-def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
-    bufsz=64*1024, chash_attrs=None, chash_algs=None):
+
+class _GZWriteWrapper(object):
+        """Used by compute_compressed_attrs to calculate data size and compute
+        hashes as the data is written instead of having to read the written data
+        again later."""
+
+        def __init__(self, path, chashes):
+                """If path is None, the data will be discarded immediately after
+                computing size and hashes."""
+
+                if path:
+                        self._ofile = open(path, "wb")
+                else:
+                        self._ofile = None
+                self._chashes = chashes
+                self._size = 0
+
+        def close(self):
+                """Close the file."""
+                if self._ofile:
+                        self._ofile.close()
+                        self._ofile = None
+
+        def flush(self):
+                """Flush the file."""
+                if self._ofile:
+                        self._ofile.flush()
+
+        @property
+        def size(self):
+                """Return the size of the file."""
+                return self._size
+
+        def write(self, data):
+                """Write data to the file and compute the hashes of the data."""
+                if self._ofile:
+                        self._ofile.write(data)
+                self._size += len(data)
+                for chash_attr in self._chashes:
+                        self._chashes[chash_attr].update(
+                            data) # pylint: disable=E1101
+
+
+def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
+    compress_dir=None, bufsz=64*1024, chash_attrs=None, chash_algs=None):
         """Returns the size and one or more hashes of the compressed data.  If
         the file located at file_path doesn't exist or isn't gzipped, it creates
-        a file in compress_dir named fname.
+        a file in compress_dir named fname.  If compress_dir is None, the
+        attributes are calculated but no data will be written.
 
         'chash_attrs' is a list of the chash attributes we should compute, with
         'chash_algs' being a dictionary that maps the attribute names to the
@@ -657,6 +701,10 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                 chash_attrs = digest.DEFAULT_CHASH_ATTRS
         if chash_algs is None:
                 chash_algs = digest.CHASH_ALGS
+
+        chashes = {}
+        for chash_attr in chash_attrs:
+                chashes[chash_attr] = chash_algs[chash_attr]()
 
         #
         # This check prevents compressing a file which is already compressed.
@@ -675,8 +723,13 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                         opath = file_path
 
         if fileneeded:
-                opath = os.path.join(compress_dir, fname)
-                ofile = PkgGzipFile(opath, "wb")
+                if compress_dir:
+                        opath = os.path.join(compress_dir, fname)
+                else:
+                        opath = None
+
+                fobj = _GZWriteWrapper(opath, chashes)
+                ofile = PkgGzipFile(mode="wb", fileobj=fobj)
 
                 nbuf = size // bufsz
 
@@ -688,32 +741,33 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                 m = nbuf * bufsz
                 ofile.write(data[m:])
                 ofile.close()
-
-        data = None
-
-        # Now that the file has been compressed, determine its
-        # size.
-        fs = os.stat(opath)
-        csize = str(fs.st_size)
+                fobj.close()
+                csize = str(fobj.size)
+                for attr in chashes:
+                        chashes[attr] = chashes[attr].hexdigest()
+                return csize, chashes
 
         # Compute the SHA hash of the compressed file.  In order for this to
         # work correctly, we have to use the PkgGzipFile class.  It omits
         # filename and timestamp information from the gzip header, allowing us
         # to generate deterministic hashes for different files with identical
         # content.
-        cfile = open(opath, "rb")
-        chashes = {}
-        for chash_attr in chash_attrs:
-                chashes[chash_attr] = chash_algs[chash_attr]()
-        while True:
-                cdata = cfile.read(bufsz)
-                # cdata is bytes
-                if cdata == b"":
-                        break
-                for chash_attr in chashes:
-                        chashes[chash_attr].update(
-                            cdata) # pylint: disable=E1101
-        cfile.close()
+        fs = os.stat(opath)
+        csize = str(fs.st_size)
+        with open(opath, "rb") as cfile:
+                while True:
+                        cdata = cfile.read(bufsz)
+                        # cdata is bytes
+                        if cdata == b"":
+                                break
+                        for chash_attr in chashes:
+                                chashes[chash_attr].update(
+                                    cdata) # pylint: disable=E1101
+
+        # The returned dictionary can now be populated with the hexdigests
+        # instead of the hash objects themselves.
+        for attr in chashes:
+                chashes[attr] = chashes[attr].hexdigest()
         return csize, chashes
 
 class ProcFS(object):

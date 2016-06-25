@@ -1215,23 +1215,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
                         # the expected name.
                         shutil.rmtree(rpath)
 
-        def test_22_publish(self):
-                """Verify that pkgsend publish works as expected."""
-
-                rootdir = self.test_root
-                dir_1 = os.path.join(rootdir, "dir_1")
-                dir_2 = os.path.join(rootdir, "dir_2")
-                os.mkdir(dir_1)
-                os.mkdir(dir_2)
-                open(os.path.join(dir_1, "A"), "w").close()
-                open(os.path.join(dir_2, "B"), "w").close()
-                mfpath = os.path.join(rootdir, "manifest_test")
-                with open(mfpath, "w") as mf:
-                        mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
-                            file NOHASH mode=0755 owner=root group=bin path=/B
-                            set name=pkg.fmri value=testmultipledirs@1.0,5.10
-                            """)
-
+        def __test_publish(self, dir_1, dir_2, mfpath):
                 dhurl = self.dc.get_depot_url()
                 # -s may be specified either as a global option or as a local
                 # option for the publish subcommand.
@@ -1253,6 +1237,31 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkg("install testmultipledirs")
                 self.pkg("verify")
                 self.image_destroy()
+
+        def test_22_publish(self):
+                """Verify that pkgsend publish works as expected."""
+
+                rootdir = self.test_root
+                dir_1 = os.path.join(rootdir, "dir_1")
+                dir_2 = os.path.join(rootdir, "dir_2")
+                os.mkdir(dir_1)
+                os.mkdir(dir_2)
+                open(os.path.join(dir_1, "A"), "w").close()
+                open(os.path.join(dir_2, "B"), "w").close()
+                mfpath = os.path.join(rootdir, "manifest_test")
+                with open(mfpath, "w") as mf:
+                        mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
+                            file NOHASH mode=0755 owner=root group=bin path=/B
+                            set name=pkg.fmri value=testmultipledirs@1.0,5.10
+                            """)
+                self.__test_publish(dir_1, dir_2, mfpath)
+
+                # Verify that older logic for pkgsend publish works.
+                self.dc.stop()
+                self.dc.set_disable_ops(["manifest/1"])
+                self.dc.start()
+                self.__test_publish(dir_1, dir_2, mfpath)
+                self.dc.unset_disable_ops()
 
         def test_23_pkgsend_no_version(self):
                 """Verify that FMRI without version cannot be specified."""
@@ -1330,7 +1339,8 @@ file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath))
                 self.image_create(furi)
                 self.pkg("contents -rm multihash")
-                self.assertTrue("pkg.hash.{0}=spaghetti".format(hash_alg in self.output))
+                self.assertTrue("pkg.hash.{0}=spaghetti".format(
+                    hash_alg) in self.output)
 
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath),
                     debug_hash="sha1+{0}".format(hash_alg))

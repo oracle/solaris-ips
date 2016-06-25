@@ -1496,6 +1496,18 @@ file elftest.so.1 mode=0755 owner=root group=bin path=bin/true
                 tact = list(tm.gen_actions_by_type('file'))[0]
                 self.assertEqual("42." + oelfhash, tact.attrs["elfhash"])
 
+        def test_16_recv_old_republish(self):
+                """Verify that older logic of republication in pkgrecv works."""
+
+                f = fmri.PkgFmri(self.published[3], None)
+
+                self.dcs[2].stop()
+                self.dcs[2].set_disable_ops(["manifest/1"])
+                self.dcs[2].start()
+
+                self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl2, f))
+                self.dcs[2].unset_disable_ops()
+
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 

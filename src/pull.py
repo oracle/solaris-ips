@@ -321,8 +321,10 @@ def get_sizes(mfst):
         sendb = 0
         sendcb = 0
 
+        hashes = set()
         for a in mfst.gen_actions():
-                if a.has_payload:
+                if a.has_payload and a.hash not in hashes:
+                        hashes.add(a.hash)
                         getb += get_pkg_otw_size(a)
                         getf += 1
                         sendb += int(a.attrs.get("pkg.size", 0))
@@ -336,9 +338,11 @@ def add_hashes_to_multi(mfst, multi):
         """Takes a manifest and a multi object and adds the hashes to the multi
         object."""
 
+        hashes = set()
         for a in mfst.gen_actions():
-                if a.has_payload:
+                if a.has_payload and a.hash not in hashes:
                         multi.add_action(a)
+                        hashes.add(a.hash)
 
 def prune(fmri_list, all_versions, all_timestamps):
         """Returns a filtered version of fmri_list based on the provided
@@ -1518,12 +1522,11 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 # mogrify is done.
                                 nm = m
 
-                        getb, getf, sendb, sendcb = get_sizes(nm)
+                        getb, getf = get_sizes(nm)[:2]
                         if republish:
-                                # For now, normal republication always uses
-                                # uncompressed data as already compressed data
-                                # is not supported for publication.
-                                send_bytes += sendb
+                                send_bytes += dest_xport.get_transfer_size(
+                                    new_targ_pubs[nf.publisher],
+                                    nm.gen_actions())
 
                         # Store a mapping between new fmri and new manifest for
                         # future use.
@@ -1574,7 +1577,14 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         continue
 
                 processed = 0
+                uploads = set()
                 pkgs_to_get = sorted(pkgs_to_get)
+                hashes = set()
+                if republish and pkgs_to_get:
+                        # If files can be transferred compressed, keep them
+                        # compressed in the source.
+                        keep_compressed, hashes = dest_xport.get_transfer_info(
+                            new_targ_pubs[pkgs_to_get[0].publisher])
                 for nf in pkgs_to_get:
                         tracker.republish_start_pkg(nf)
                         # Processing republish.
@@ -1629,13 +1639,28 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                 # added to the manifest.
                                                 continue
 
+                                        fname = None
+                                        fhash = None
                                         if a.has_payload:
+                                                fhash = a.hash
                                                 fname = os.path.join(pkgdir,
-                                                    a.hash)
+                                                    fhash)
 
                                                 a.data = lambda: open(fname,
                                                     "rb")
-                                        t.add(a)
+
+                                        if fhash in hashes and \
+                                            fhash not in uploads:
+                                                # If the payload will be
+                                                # transferred and not have been
+                                                # uploaded, upload it...
+                                                t.add(a, exact=True, path=fname)
+                                                uploads.add(fhash)
+                                        else:
+                                                # ...otherwise, just add the
+                                                # action to the transaction.
+                                                t.add(a, exact=True)
+
                                         if a.name == "signature" and \
                                             not do_mog:
                                                 # We always store content in the
@@ -1645,7 +1670,11 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                     least_preferred=True):
                                                         fname = os.path.join(
                                                             pkgdir, fp)
-                                                        t.add_file(fname)
+                                                        if keep_compressed:
+                                                                t.add_file(fname,
+                                                                    basename=fp)
+                                                        else:
+                                                                t.add_file(fname)
                                 # Always defer catalog update.
                                 t.close(add_to_catalog=False)
                         except trans.TransactionError as e:

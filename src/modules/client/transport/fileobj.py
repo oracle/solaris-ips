@@ -240,6 +240,12 @@ class StreamingFileObj(object):
 
         # Header and message methods
 
+        @property
+        def headers(self):
+                if not self.__headers_arrived:
+                        self.__fill_headers()
+                return self.__headers
+
         def get_http_message(self):
                 """Return the status message that may be included
                 with a numerical HTTP response code.  Not all HTTP

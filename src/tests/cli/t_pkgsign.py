@@ -657,7 +657,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("install example_pkg", exit=1)
 
-        def test_sign_5(self):
+        def base_sign_5(self):
                 """Test that http repos work."""
 
                 self.dcs[1].start()
@@ -684,6 +684,16 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+        def test_sign_5(self):
+                """Test that http repos work."""
+
+                self.base_sign_5()
+
+                # Verify that older logic of publication api works.
+                self.dcs[1].stop()
+                self.dcs[1].set_disable_ops(["manifest/1"])
+                self.base_sign_5()
 
         def test_length_two_chains(self):
                 """Check that chains of length two work correctly."""
@@ -2008,7 +2018,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
-                self.dcs[1].set_disable_ops(["add"])
+                # New publication uses manifest/1 to upload manifest as-is
+                # and avoid using add ops. Disable manifest/1 to fall back
+                # to older logic here for testing.
+                self.dcs[1].set_disable_ops(["add", "manifest/1"])
                 self.dcs[1].start()
 
                 sign_args = "-k {key} -c {cert} {pkg}".format(
@@ -2023,7 +2036,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that publishing to a depot which doesn't support file
                 fails as expected."""
 
-                self.dcs[1].set_disable_ops(["file"])
+                # New publication uses manifest/1 which uses file/1, so if we
+                # disable file ops, we can't use the new publication model.
+                # Disable manifest/1 to fall back to older logic here for
+                # testing.
+                self.dcs[1].set_disable_ops(["file", "manifest/1"])
                 self.dcs[1].start()
 
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
@@ -2842,12 +2859,13 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self,
-                    ["test", "test", "crl"])
+                    ["test", "test", "crl", "test"])
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
+                self.durl4 = self.dcs[4].get_depot_url()
                 DebugValues["crl_host"] = self.dcs[3].get_depot_url()
                 self.ta_dir = None
 
@@ -3073,16 +3091,27 @@ close
                 are signed with the same certificates and intermediate
                 certificates are involved, pkgrecv continues to work."""
 
+                self.__test_sign_pkgrecv_cache_sign_interaction()
+                # Verify that older logic of publication api works.
+                self.dcs[1].stop()
+                self.dcs[2].stop()
+                self.dcs[1].set_disable_ops(["manifest/1"])
+                self.dcs[2].set_disable_ops(["manifest/1"])
+                self.__test_sign_pkgrecv_cache_sign_interaction()
+
+        def __test_sign_pkgrecv_cache_sign_interaction(self):
+                self.dcs[1].start()
+                self.dcs[2].start()
                 manf = """
 open a@1,5.11-0
 close
 """
-                self.pkgsend_bulk(self.rurl2, manf)
+                self.pkgsend_bulk(self.durl2, manf)
                 manf = """
 open b@1,5.11-0
 close
 """
-                self.pkgsend_bulk(self.rurl2, manf)
+                self.pkgsend_bulk(self.durl2, manf)
 
                 ta_path = os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")
@@ -3093,11 +3122,11 @@ close
                       pkg="'*'"
                    )
 
-                self.pkgsign(self.rurl2, sign_args)
+                self.pkgsign(self.durl2, sign_args)
 
                 cache_dir = os.path.join(self.test_root, "cache")
-                self.pkgrecv(self.rurl2, "-c {0} -d {1} '*'".format(
-                    cache_dir, self.rurl1))
+                self.pkgrecv(self.durl2, "-c {0} -d {1} '*'".format(
+                    cache_dir, self.durl1))
 
         def test_sign_pkgrecv_a(self):
                 """Check that signed packages can be archived."""
@@ -3235,6 +3264,58 @@ close
                                 if "ch1.1_ta4_crl.pem" in l:
                                         cnt += 1
                 self.assertEqual(cnt, 2)
+
+        def test_sign_pkgrecv_across_repositories(self):
+                """Check that signed packages can be pkgrecved to a new
+                repository that enables new hashes but the new hashes won't
+                be added to the packages so that the existing signatures won't
+                be invalidated"""
+
+                # We create an image simply so we can use "contents -g" to
+                # inspect the repository.
+                self.image_create()
+                self.dcs[1].start()
+                self.dcs[2].start()
+                plist = self.pkgsend_bulk(self.rurl2, self.example_pkg10)
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta3_cert.pem")
+                sign_args = "-k {key} -c {cert} -i {ch1} -i {ta} " \
+                    "{name}".format(**{
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"),
+                        "ta": ta_path,
+                })
+
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.durl1))
+                self.pkg("contents -g {0} -m example_pkg".format(self.durl1))
+                self.assertTrue("pkg.hash.sha256" not in self.output)
+                self.image_create(self.durl1)
+                self.seed_ta_dir("ta3")
+                self.pkg("set-property signature-policy verify")
+                self.pkg("install example_pkg")
+                self.image_destroy()
+
+                self.dcs[4].set_debug_feature("hash=sha1+sha256")
+                self.dcs[4].start()
+                self.image_create(self.durl4, destroy=True)
+                # pkgrecv to a new repository which enables SHA-2 hashes
+                self.pkgrecv(self.durl1, "-d {0} example_pkg".format(self.durl4))
+                self.pkg("contents -g {0} -m example_pkg".format(self.durl4))
+                # make sure that we don not get multiple hashes
+                self.assertTrue("pkg.hash.sha256" not in self.output)
+                self.seed_ta_dir("ta3")
+                self.pkg("set-property signature-policy verify")
+                # should not invalidate the signature
+                self.pkg("install example_pkg")
+
+                self.dcs[4].stop()
+                self.dcs[4].unset_debug_feature("hash=sha1+sha256")
 
 
 if __name__ == "__main__":

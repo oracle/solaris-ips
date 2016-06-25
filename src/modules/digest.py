@@ -75,6 +75,13 @@ DEFAULT_HASH_NAME = "sha-1"
 # using the "most preferred" hash. See get_preferred_hash(..),
 # get_least_preferred_hash(..) and get_common_preferred_hash(..)
 #
+
+LEGACY_HASH_ATTRS = ["hash"]
+LEGACY_CHASH_ATTRS = ["chash"]
+LEGACY_CONTENT_HASH_ATTRS = ["elfhash"]
+LEGACY_CHAIN_ATTRS = ["chain"]
+LEGACY_CHAIN_CHASH_ATTRS = ["chain.chashes"]
+
 if DebugValues["hash"] == "sha1+sha512_256" and sha512_supported:
         # Simulate pkg(7) where SHA-1 and SHA-512/256 are used for publication
         DEFAULT_HASH_ATTRS = ["hash", "pkg.hash.sha512_256"]

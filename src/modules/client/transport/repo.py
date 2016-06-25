@@ -49,7 +49,7 @@ import pkg.p5p
 import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
-from pkg.misc import N_, force_str
+from pkg.misc import N_, compute_compressed_attrs, EmptyDict
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -142,7 +142,11 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def publish_add_file(self, action, header=None, trans_id=None):
+        def publish_add_file(self, pth, header=None, trans_id=None,
+            basename=None, progtrack=None):
+                raise NotImplementedError
+
+        def publish_add_manifest(self, pth, header=None, trans_id=None):
                 raise NotImplementedError
 
         def publish_abandon(self, header=None, trans_id=None):
@@ -205,6 +209,18 @@ class TransportRepo(object):
         def touch_manifest(self, fmri, header=None, ccancel=None, pub=None):
                 """Send data about operation intent without actually
                 downloading a manifest."""
+
+                raise NotImplementedError
+
+        def get_compressed_attrs(self, fhash, header=None, pub=None,
+            trans_id=None, hashes=True):
+                """Given a fhash, returns a tuple of (csize, chashes) where
+                'csize' is the size of the file in the repository and 'chashes'
+                is a dictionary containing any hashes of the compressed data
+                known by the repository.  If the repository cannot provide the
+                hash information or 'hashes' is False, chashes will be an empty
+                dictionary.  If the repository does not have the file, a tuple
+                of (None, None) will be returned instead."""
 
                 raise NotImplementedError
 
@@ -814,13 +830,21 @@ class HTTPRepo(TransportRepo):
                     progclass=progclass, progtrack=progtrack)
                 self.__check_response_body(fobj)
 
-        def publish_add_file(self, pth, header=None, trans_id=None):
+        def publish_add_file(self, pth, header=None, trans_id=None,
+            basename=None, progtrack=None):
                 """The publish operation that adds content to a repository.
-                The action must be populated with a data property.
                 Callers may supply a header, and should supply a transaction
                 id in trans_id."""
 
                 attrs = {}
+                progclass = None
+
+                if progtrack:
+                        progclass = FileProgress
+
+                if basename:
+                        attrs["basename"] = basename
+
                 baseurl = self.__get_request_url("file/1/")
                 requesturl = urljoin(baseurl, trans_id)
 
@@ -832,7 +856,33 @@ class HTTPRepo(TransportRepo):
                 if header:
                         headers.update(header)
 
-                fobj = self._post_url(requesturl, header=headers, data_fp=pth)
+                fobj = self._post_url(requesturl, header=headers, data_fp=pth,
+                    progclass=progclass, progtrack=progtrack)
+                self.__check_response_body(fobj)
+
+        def publish_add_manifest(self, pth, header=None, trans_id=None):
+                """The publish operation that adds content to a repository.
+                Callers may supply a header, and should supply a transaction
+                id in trans_id."""
+
+                baseurl = self.__get_request_url("manifest/1/")
+                requesturl = urljoin(baseurl, trans_id)
+                # Compress the manifest for the HTTPRepo case.
+                size = int(os.path.getsize(pth))
+                with open(pth, "rb") as f:
+                        data = f.read()
+                basename = os.path.basename(pth) + ".gz"
+                dirname = os.path.dirname(pth)
+                pathname = os.path.join(dirname, basename)
+                compute_compressed_attrs(basename,
+                    data=data, size=size, compress_dir=dirname)
+
+                headers = {}
+                if header:
+                        headers.update(header)
+
+                fobj = self._post_url(requesturl, header=header,
+                    data_fp=pathname)
                 self.__check_response_body(fobj)
 
         def publish_abandon(self, header=None, trans_id=None):
@@ -1064,6 +1114,51 @@ class HTTPRepo(TransportRepo):
                 resp.read()
 
                 return True
+
+        def get_compressed_attrs(self, fhash, header=None, pub=None,
+            trans_id=None, hashes=True):
+                """Given a fhash, returns a tuple of (csize, chashes) where
+                'csize' is the size of the file in the repository and 'chashes'
+                is a dictionary containing any hashes of the compressed data
+                known by the repository.  If the repository cannot provide the
+                hash information or 'hashes' is False, chashes will be an empty
+                dictionary.  If the repository does not have the file, a tuple
+                of (None, None) will be returned instead."""
+
+                # If the publisher's prefix isn't contained in trans_id,
+                # assume the server doesn't have the file.
+                pfx = getattr(pub, "prefix", None)
+                if (pfx and trans_id and
+                    quote("pkg://{0}/".format(pfx), safe='') not in trans_id):
+                        return (None, None)
+
+                # If caller requests hashes and server supports providing them
+                # (v2 of file operation), then attempt to retrieve size and
+                # hashes.  Otherwise, fallback to the v0 file operation which
+                # only returns size (so is faster).
+                if hashes and self.supports_version("file", [2]) > -1:
+                        version = 2
+                else:
+                        version = 0
+
+                baseurl = self.__get_request_url("file/{0}/".format(version),
+                    pub=pub)
+                requesturl = urljoin(baseurl, fhash)
+
+                try:
+                        # see if repository has file
+                        resp = self._fetch_url_header(requesturl, header)
+                        resp.read()
+                        csize = resp.getheader("Content-Length", None)
+                        chashes = dict(
+                            val.split("=", 1)
+                            for hdr, val in six.iteritems(resp.headers)
+                            if hdr.lower().startswith("x-ipkg-attr")
+                        )
+                        return (csize, chashes)
+                except Exception:
+                        # repository transport issue or does not have file
+                        return (None, None)
 
         def build_refetch_header(self, header):
                 """For HTTP requests that have failed due to corrupt content,
@@ -1593,7 +1688,7 @@ class _FilesystemRepo(TransportRepo):
                     "catalog": ["1"],
                     "close": ["0"],
                     "file": ["0", "1"],
-                    "manifest": ["0"],
+                    "manifest": ["0", "1"],
                     "open": ["0"],
                     "publisher": ["0", "1"],
                     "search": ["1"],
@@ -1642,12 +1737,33 @@ class _FilesystemRepo(TransportRepo):
                                 sz = int(action.attrs.get("pkg.size", 0))
                                 progtrack.progress_callback(0, 0, sz, sz)
 
-        def publish_add_file(self, pth, header=None, trans_id=None):
+        def publish_add_file(self, pth, header=None, trans_id=None,
+            basename=None, progtrack=None):
                 """The publish operation that adds a file to an existing
                 transaction."""
 
+                progclass = None
+                if progtrack:
+                        progclass = FileProgress
+                        progtrack = progclass(progtrack)
+
                 try:
-                        self._frepo.add_file(trans_id, pth)
+                        self._frepo.add_file(trans_id, pth, basename)
+                except svr_repo.RepositoryError as e:
+                        if progtrack:
+                                progtrack.abort()
+                        raise tx.TransportOperationError(str(e))
+                else:
+                        if progtrack:
+                                sz = int(os.path.getsize(pth))
+                                progtrack.progress_callback(0, 0, sz, sz)
+
+        def publish_add_manifest(self, pth, header=None, trans_id=None):
+                """The publish operation that adds a manifest to an existing
+                transaction."""
+
+                try:
+                        self._frepo.add_manifest(trans_id, pth)
                 except svr_repo.RepositoryError as e:
                         raise tx.TransportOperationError(str(e))
 
@@ -1813,6 +1929,39 @@ class _FilesystemRepo(TransportRepo):
                 """No-op for file://."""
 
                 return True
+
+        def get_compressed_attrs(self, fhash, header=None, pub=None,
+            trans_id=None, hashes=True):
+                """Given a fhash, returns a tuple of (csize, chashes) where
+                'csize' is the size of the file in the repository and 'chashes'
+                is a dictionary containing any hashes of the compressed data
+                known by the repository.  If the repository cannot provide the
+                hash information or 'hashes' is False, chashes will be an empty
+                dictionary.  If the repository does not have the file, a tuple
+                of (None, None) will be returned instead."""
+
+                # If the publisher's prefix isn't contained in trans_id,
+                # assume the server doesn't have the file.
+                pfx = getattr(pub, "prefix", None)
+                if (pfx and trans_id and
+                    quote("pkg://{0}/".format(pfx), safe='') not in trans_id):
+                        return (None, None)
+
+                try:
+                        # see if repository has file
+                        fpath = self._frepo.file(fhash, pub=pfx)
+                        if hashes:
+                                csize, chashes = compute_compressed_attrs(fhash,
+                                    file_path=fpath)
+                        else:
+                                csize = os.stat(fpath).st_size
+                                chashes = EmptyDict
+                        return (csize, chashes)
+                except (EnvironmentError,
+                        svr_repo.RepositoryError,
+                        svr_repo.RepositoryFileNotFoundError):
+                        # repository transport issue or does not have file
+                        return (None, None)
 
         def build_refetch_header(self, header):
                 """Pointless to attempt refetch of corrupt content for

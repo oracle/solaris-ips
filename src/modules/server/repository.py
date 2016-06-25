@@ -1162,7 +1162,7 @@ class _RepoStore(object):
                 finally:
                         self.__unlock_rstore()
 
-        def add_file(self, trans_id, data, size=None):
+        def add_file(self, trans_id, data, basename=None, size=None):
                 """Adds a file to an in-flight transaction.
 
                 'trans_id' is the identifier of a transaction that
@@ -1170,6 +1170,8 @@ class _RepoStore(object):
 
                 'data' is the string object containing the payload of the
                 file to add.
+
+                'basename' is the basename of the file.
 
                 'size' is an optional integer value indicating the size of
                 the provided payload.
@@ -1184,7 +1186,31 @@ class _RepoStore(object):
 
                 t = self.__get_transaction(trans_id)
                 try:
-                        t.add_file(data, size)
+                        t.add_file(data, basename, size)
+                except trans.TransactionError as e:
+                        raise RepositoryError(e)
+                return
+
+        def add_manifest(self, trans_id, data):
+                """Adds a manifest to an in-flight transaction.
+
+                'trans_id' is the identifier of a transaction that
+                the manifest should be added to.
+
+                'data' is the string object containing the payload of the
+                manifest to add.
+                """
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.trans_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                t = self.__get_transaction(trans_id)
+                try:
+                        t.add_manifest(data)
                 except trans.TransactionError as e:
                         raise RepositoryError(e)
                 return
@@ -3512,12 +3538,20 @@ class Repository(object):
                                 continue
                         rstore.add_content(refresh_index=refresh_index)
 
-        def add_file(self, trans_id, data, size=None):
+        def add_file(self, trans_id, data, basename=None, size=None):
                 """Adds a file to a transaction with the specified Transaction
                 ID."""
 
                 rstore = self.get_trans_rstore(trans_id)
-                return rstore.add_file(trans_id, data=data, size=size)
+                return rstore.add_file(trans_id, data=data, basename=basename,
+                    size=size)
+
+        def add_manifest(self, trans_id, data):
+                """Adds a manifest to a transaction with the specified
+                Transaction ID."""
+
+                rstore = self.get_trans_rstore(trans_id)
+                return rstore.add_manifest(trans_id, data=data)
 
         def rebuild(self, build_catalog=True, build_index=False, pub=None):
                 """Rebuilds the repository catalog and search indexes using the

@@ -641,6 +641,28 @@ class DepotHTTP(_Depot):
 
         manifest_0._cp_config = { "response.stream": True }
 
+        def manifest_1(self, *tokens):
+                """Outputs the contents of the manifest or uploads the
+                manifest."""
+
+                method = cherrypy.request.method
+                if method == "GET":
+                        return self.manifest_0(*tokens)
+                elif method in ("POST", "PUT"):
+                        return self.__upload_manifest(*tokens)
+                raise cherrypy.HTTPError(http_client.METHOD_NOT_ALLOWED,
+                    "{0} is not allowed".format(method))
+
+        # We need to prevent cherrypy from processing the request body so that
+        # manifest can parse the request body itself.  In addition, we also need
+        # to set the timeout higher since the default is five minutes; not
+        # really enough for a slow connection to upload content.
+        manifest_1._cp_config = {
+            "request.process_request_body": False,
+            "response.timeout": 3600,
+            "response.stream": True
+        }
+
         @staticmethod
         def _tar_stream_close(**kwargs):
                 """This is a special function to finish a tar_stream-based
@@ -714,6 +736,48 @@ class DepotHTTP(_Depot):
             "response.timeout": 3600,
             "response.stream": True
         }
+
+        def file_2(self, *tokens):
+                """Outputs the contents of the file, named by the SHA hash
+                name in the request path, directly to the client."""
+
+                method = cherrypy.request.method
+                if method == "HEAD":
+                        try:
+                                fhash = tokens[0]
+                        except IndexError:
+                                fhash = None
+
+                        try:
+                                fpath = self.repo.file(fhash,
+                                    pub=self._get_req_pub())
+                        except srepo.RepositoryFileNotFoundError as e:
+                                raise cherrypy.HTTPError(http_client.NOT_FOUND,
+                                    str(e))
+                        except srepo.RepositoryError as e:
+                                # Treat any remaining repository error as a 404,
+                                # but log the error and include the real failure
+                                # information.
+                                cherrypy.log("Request failed: {0}".format(
+                                    str(e)))
+                                raise cherrypy.HTTPError(http_client.NOT_FOUND,
+                                    str(e))
+
+                        csize, chashes = misc.compute_compressed_attrs(fhash,
+                            file_path=fpath)
+                        response = cherrypy.response
+                        for i, attr in enumerate(chashes):
+                                response.headers["X-Ipkg-Attr-{0}".format(i)] = \
+                                    "{0}={1}".format(attr, chashes[attr])
+
+                        # set expiration of response to one day
+                        self.__set_response_expires("file", 86400, 86400)
+
+                        return serve_file(fpath, "application/data")
+
+                return self.file_1(*tokens)
+
+        file_2._cp_config = { "response.stream": True }
 
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
@@ -1045,9 +1109,46 @@ class DepotHTTP(_Depot):
                         raise cherrypy.HTTPError(http_client.BAD_REQUEST,
                             _("file/1 must be sent a file."))
                 data = request.rfile
+                attrs = dict(
+                    val.split("=", 1)
+                    for hdr, val in request.headers.items()
+                    if hdr.lower().startswith("x-ipkg-setattr")
+                )
+                basename = attrs.get("basename", None)
+                try:
+                        self.repo.add_file(trans_id, data, basename, size)
+                except srepo.RepositoryError as e:
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(http_client.BAD_REQUEST, str(e))
+                response.headers["Content-Length"] = "0"
+                return response.body
+
+        def __upload_manifest(self, *tokens):
+                """Adds a file to an in-flight transaction for the Transaction
+                ID specified in the request path.  The content is expected to be
+                in the request body.  Returns no output."""
 
                 try:
-                        self.repo.add_file(trans_id, data, size)
+                        # cherrypy decoded it, but we actually need it encoded.
+                        trans_id = quote(tokens[0], "")
+                except IndexError:
+                        raise
+                        trans_id = None
+
+                request = cherrypy.request
+                response = cherrypy.response
+
+                size = int(request.headers.get("Content-Length", 0))
+                if size < 0:
+                        raise cherrypy.HTTPError(http_client.BAD_REQUEST,
+                            _("manifest/1 must be sent a file."))
+                data = request.rfile
+
+                try:
+                        self.repo.add_manifest(trans_id, data)
                 except srepo.RepositoryError as e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret

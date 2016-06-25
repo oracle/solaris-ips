@@ -33,6 +33,7 @@ import re
 import shutil
 import six
 import time
+import zlib
 from six.moves.urllib.parse import quote, unquote
 
 import pkg.actions as actions
@@ -472,7 +473,7 @@ class Transaction(object):
                         # get all hashes for this action
                         hashes, data = misc.get_data_digest(action.data(),
                             length=size, return_content=True,
-                            hash_attrs=digest.DEFAULT_HASH_ATTRS,
+                            hash_attrs=digest.LEGACY_HASH_ATTRS,
                             hash_algs=digest.HASH_ALGS)
 
                         # set the hash member for backwards compatibility and
@@ -510,13 +511,13 @@ class Transaction(object):
                                         elf1 = "elfhash"
 
                                         if elf256 in \
-                                            digest.DEFAULT_CONTENT_HASH_ATTRS:
+                                            digest.LEGACY_CONTENT_HASH_ATTRS:
                                                 get_sha256 = True
                                         else:
                                                 get_sha256 = False
 
                                         if elf1 in \
-                                            digest.DEFAULT_CONTENT_HASH_ATTRS:
+                                            digest.LEGACY_CONTENT_HASH_ATTRS:
                                                 get_sha1 = True
                                         else:
                                                 get_sha1 = False
@@ -550,10 +551,8 @@ class Transaction(object):
                         csize, chashes = misc.compute_compressed_attrs(
                             fname, dst_path, data, size, self.dir)
                         for attr in chashes:
-                                action.attrs[attr] = chashes[attr].hexdigest()
+                                action.attrs[attr] = chashes[attr]
                         action.attrs["pkg.csize"] = csize
-                        chash = None
-                        data = None
 
                 self.remaining_payload_cnt = \
                     len(action.attrs.get("chain.sizes", "").split())
@@ -613,8 +612,39 @@ class Transaction(object):
 
                 self.types_found.add(action.name)
 
-        def add_file(self, f, size=None):
+        def add_file(self, f, basename=None, size=None):
                 """Adds the file to the Transaction."""
+
+                # If basename provided, just store the file as-is with the
+                # basename.
+                if basename:
+                        fileneeded = True
+                        try:
+                                dst_path = self.rstore.file(basename)
+                                fileneeded = False
+                        except Exception as e:
+                                dst_path = os.path.join(self.dir, basename)
+
+                        if not fileneeded:
+                                return
+
+                        if isinstance(f, six.string_types):
+                                portable.copyfile(f, dst_path)
+                                return
+
+                        bufsz = 128 * 1024
+                        if bufsz > size:
+                                bufsz = size
+
+                        with open(dst_path, "wb") as wf:
+                                while True:
+                                        data = f.read(bufsz)
+                                        # data is bytes
+                                        if data == b"":
+                                                break
+                                        wf.write(data)
+                        return
+
                 hashes, data = misc.get_data_digest(f, length=size,
                     return_content=True, hash_attrs=digest.DEFAULT_HASH_ATTRS,
                     hash_algs=digest.HASH_ALGS)
@@ -636,14 +666,81 @@ class Transaction(object):
                                 raise
                         dst_path = None
 
-                csize, chashes = misc.compute_compressed_attrs(fname, dst_path,
+                misc.compute_compressed_attrs(fname, dst_path,
                     data, size, self.dir,
                     chash_attrs=digest.DEFAULT_CHASH_ATTRS,
                     chash_algs=digest.CHASH_ALGS)
-                chashes = None
-                data = None
 
                 self.remaining_payload_cnt -= 1
+
+        def add_manifest(self, f):
+                """Adds the manifest to the Transaction."""
+
+                if isinstance(f, six.string_types):
+                        f = open(f, "rb")
+                # Store the manifest file.
+                fpath = os.path.join(self.dir, "manifest")
+                with open(fpath, "ab+") as wf:
+                        try:
+                                misc.gunzip_from_stream(f, wf, ignore_hash=True)
+                                wf.seek(0)
+                                content = wf.read()
+                        except zlib.error:
+                                # No need to decompress it if it's not a gzipped
+                                # file.
+                                f.seek(0)
+                                content = f.read()
+                                wf.write(content)
+                # Do some sanity checking on packages marked or being marked
+                # obsolete or renamed.
+                m = pkg.manifest.Manifest()
+                m.set_content(misc.force_str(content))
+                for action in m.gen_actions():
+                        if action.name == "set" and \
+                            action.attrs["name"] == "pkg.obsolete" and \
+                            action.attrs["value"] == "true":
+                                self.obsolete = True
+                                if self.types_found.difference(
+                                    set(("set", "signature"))):
+                                        raise TransactionOperationError(_("An obsolete "
+                                            "package cannot contain actions other than "
+                                            "'set' and 'signature'."))
+                        elif action.name == "set" and \
+                            action.attrs["name"] == "pkg.renamed" and \
+                            action.attrs["value"] == "true":
+                                self.renamed = True
+                                if self.types_found.difference(
+                                    set(("depend", "set", "signature"))):
+                                        raise TransactionOperationError(_("A renamed "
+                                            "package cannot contain actions other than "
+                                            "'set', 'depend', and 'signature'."))
+
+                        if not self.has_reqdeps and action.name == "depend" and \
+                            action.attrs["type"] == "require":
+                                self.has_reqdeps = True
+
+                        if self.obsolete and self.renamed:
+                                # Reset either obsolete or renamed, depending on which
+                                # action this was.
+                                if action.attrs["name"] == "pkg.obsolete":
+                                        self.obsolete = False
+                                else:
+                                        self.renamed = False
+                                raise TransactionOperationError(_("A package may not "
+                                    " be marked for both obsoletion and renaming."))
+                        elif self.obsolete and action.name not in ("set", "signature"):
+                                raise TransactionOperationError(_("A '{type}' action "
+                                    "cannot be present in an obsolete package: "
+                                    "{action}").format(
+                                    type=action.name, action=action))
+                        elif self.renamed and action.name not in \
+                            ("depend", "set", "signature"):
+                                raise TransactionOperationError(_("A '{type}' action "
+                                    "cannot be present in a renamed package: "
+                                    "{action}").format(
+                            type=action.name, action=action))
+
+                        self.types_found.add(action.name)
 
         def accept_publish(self, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.

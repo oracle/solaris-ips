@@ -412,13 +412,9 @@ def main_func():
                                     patterns=processdict[entry]))
                                 continue
 
-                # we're ready to merge
-                if not dry_run:
-                        target_pub = transport.setup_publisher(dest_repo,
-                            pub.prefix, dest_xport, dest_xport_cfg,
-                            remote_prefix=True)
-                else:
-                        target_pub = None
+                target_pub = transport.setup_publisher(dest_repo,
+                    pub.prefix, dest_xport, dest_xport_cfg,
+                    remote_prefix=True)
 
                 tracker.republish_set_goal(len(processdict), 0, 0)
                 # republish packages for this publisher. If we encounter any
@@ -504,10 +500,8 @@ def republish_packages(pub, target_pub, processdict, source_list, variant_list,
                 # Determine total bytes to send for this package; this must be
                 # done using the manifest since retrievals are coalesced based
                 # on hash, but sends are not.
-                sendbytes = sum(
-                    int(a.attrs.get("pkg.size", 0))
-                    for a in man.gen_actions()
-                )
+                sendbytes = dest_xport.get_transfer_size(target_pub,
+                    man.gen_actions())
 
                 f = man.fmri
 
