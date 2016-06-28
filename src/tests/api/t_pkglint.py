@@ -78,7 +78,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 hardlink path=usr/sbin/prtdiag target=../../usr/lib/platexec variant.arch=sparc
-file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=i386
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=64 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=i386
 # invalid modes
 dir path=usr mode=991
 dir path=usr/foo mode=457
@@ -108,7 +108,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 dir path=usr/sbin/prtdiag owner=root group=sys mode=0755 variant.arch=sparc
-file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=64 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
 """
 
 
@@ -145,7 +145,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 hardlink path=usr/sbin/prtdiag target=../../usr/lib/platexec variant.arch=sparc
-file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=64 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
 """
 
 expected_failures["dup-clashing-vars.mf"] = ["pkglint.dupaction001.1"]
@@ -169,7 +169,7 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=953 pkg.size=1572 variant.other=carrots
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234 variant.other=carrots
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["dup-depend-vars.mf"] = ["pkglint.manifest005.2",
@@ -310,7 +310,7 @@ file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["dup-refcount-diff-attrs.mf"] = ["pkglint.dupaction007"]
@@ -406,7 +406,7 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 dir group=bin mode=0755 owner=root path=usr/sbin/fsadmin variant.other=carrots
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234 variant.other=carrots
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["dup-types.mf"] = ["pkglint.dupaction008",
@@ -430,7 +430,7 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 link group=bin mode=0755 alt=foo owner=foor path=usr/lib/X11/fs target=bar
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["duplicate_sets.mf"] = ["pkglint.manifest006"]
@@ -1020,7 +1020,7 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=953 pkg.size=1572 variant.other=carrots
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234 variant.other=turnips
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["no_dup-types-different-vars.mf"] = []
@@ -1050,7 +1050,7 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs variant.bar=other
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs variant.bar=foo
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 # our obsolete depend lint check should complain about not being able to find
@@ -1096,7 +1096,7 @@ set name=variant.other value=other value=thing
 set name=variant.foo value=bar value=baz
 depend fmri=shell/zsh@4.3.9-0.133 type=require variant.foo=bar
 depend fmri=consolidation/sfw/sfw-incorporation type=require
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700
 """
 
 expected_failures["obsolete-has-description.mf"] = ["pkglint.manifest001.1"]
@@ -1736,7 +1736,7 @@ set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.noodles=singapore
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["unknown-variant.mf"] = ["pkglint.manifest003.2"]
@@ -1757,7 +1757,7 @@ set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=foo
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["ignorable-variant.mf"] = []
@@ -1778,7 +1778,7 @@ set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=global
-file nohash variant.debug.osnet=True elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash variant.debug.osnet=True elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["ignorable-unknown-variant.mf"] = ["pkglint.manifest003.2"]
@@ -1800,7 +1800,7 @@ set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=foo
-file nohash variant.debug.osnet=True elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash variant.debug.osnet=True elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["unknown.mf"] = ["pkglint.action004"]
@@ -1838,7 +1838,7 @@ dir group=bin mode=0424 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
-file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+file nohash elfarch=i386 elfbits=64 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 expected_failures["action_validation.mf" ] = ["pkglint.action009"]
@@ -2090,6 +2090,38 @@ link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-vers
 link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
 file path=usr/perl5/5.6/bin/perl facet.doc.man=other owner=root group=sys mode=0755
 file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["file-elfbits32.mf"] = ["pkglint.action014.1"]
+broken_manifests["file-elfbits32.mf"] = \
+"""
+#
+# One of the file has elfbits=32, causing an elfbits validation error.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+"""
+
+expected_failures["so-elfbits32.mf"] = []
+broken_manifests["so-elfbits32.mf"] = \
+"""
+#
+# Should not cause validation error if an so file has elfbits=32.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/lib/xfs.so pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
 class TestLogFormatter(log.LogFormatter):

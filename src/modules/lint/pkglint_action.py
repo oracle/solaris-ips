@@ -1600,3 +1600,52 @@ class PkgActionChecker(base.ActionChecker):
 
         supported_pkg_actuator.pkglint_desc = _("package actuator should be "
             "set to a valid value")
+
+        def arch64(self, action, manifest, engine, pkglint_id="014"):
+                """ELF files should be delivered as 64-bit objects, other
+                than libraries.
+
+                The pkglint paramter pkglint.action0014.report_type can change
+                whether this check issues errors or warnings. The value of
+                this parameter should be "error" or "warning". Any other value
+                defaults to "warning"
+                """
+
+                # Note that this check is intentionally delivered as disabled
+                # by default in the pkglintrc config file. The check exists
+                # so that we can move packages towards best-practises,
+                # but this may not be appropriate in all cases.
+
+                if action.name != "file":
+                        return
+                if "elfbits" not in action.attrs:
+                        return
+                elfbits = action.attrs["elfbits"]
+                if elfbits == "64":
+                        return
+
+                lint_id = "{}{}".format(self.name, pkglint_id)
+                path = action.attrs["path"]
+                if re.search("\\.so\\.?[0-9\\.]*$", path):
+                        # we allow libraries to be delivered as 32-bit
+                        return
+                report_errors = engine.get_param("{}.report_errors".format(
+                    lint_id), action=action, manifest=manifest)
+                # the parameter might not exist
+                if not report_errors:
+                        report_errors = False
+
+                if report_errors and report_errors.lower() == "true":
+                        lint_report = engine.error
+                        lint_subid = "2"
+                else:
+                        lint_report = engine.warning
+                        lint_subid = "1"
+
+                lint_report(
+                    _("{elfbits}s-bit object delivered for {path}s "
+                    "in {fmri}s.").format(elfbits=elfbits,
+                    fmri=manifest.fmri, path=action.attrs["path"]),
+                    msgid="{}.{}".format(lint_id, lint_subid))
+
+        arch64.pkglint_desc = _("non-library ELF files should be 64-bit")
