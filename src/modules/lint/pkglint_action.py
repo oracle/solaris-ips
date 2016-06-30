@@ -1643,8 +1643,8 @@ class PkgActionChecker(base.ActionChecker):
                         lint_subid = "1"
 
                 lint_report(
-                    _("{elfbits}s-bit object delivered for {path}s "
-                    "in {fmri}s.").format(elfbits=elfbits,
+                    _("{elfbits}-bit object delivered for {path} "
+                    "in {fmri}.").format(elfbits=elfbits,
                     fmri=manifest.fmri, path=action.attrs["path"]),
                     msgid="{}.{}".format(lint_id, lint_subid))
 
