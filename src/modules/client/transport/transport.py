@@ -1061,6 +1061,34 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
+        def get_datastream(self, pub, fhash, ccancel=None):
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                failures = tx.TransportFailures()
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, retries, v in self.__gen_repo(pub, retry_count,
+                    operation="file", versions=[0, 1]):
+
+                        repouri_key = d.get_repouri_key()
+                        repostats = self.stats[repouri_key]
+                        header = Transport.__get_request_header(header,
+                            repostats, retries, d)
+                        try:
+                                return d.get_datastream(fhash, v, header,
+                                    ccancel=ccancel, pub=pub)
+                        except tx.ExcessiveTransientFailure as e:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(e.failures)
+                        except tx.TransportException as e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+                raise failures
+
+        @LockedTransport()
         def get_content(self, pub, fhash, fmri=None, ccancel=None,
             hash_func=None):
                 """Given a fhash, return the uncompressed content content from
@@ -2641,6 +2669,8 @@ class Transport(object):
 
         @staticmethod
         def _make_opener(cache_path):
+                if cache_path is None:
+                        return
                 def opener():
                         f = open(cache_path, "rb")
                         return f

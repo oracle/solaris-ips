@@ -208,7 +208,15 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             open horse@2.0
             close """
 
-        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
+        foo = """
+            open foo@1.0
+            add file tmp/motd mode=0444 owner=root group=bin path=etc/motd
+            close
+            open foo@2.0
+            add file tmp/motd mode=0644 owner=root group=bin path=etc/motd
+            close"""
+
+        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz", "tmp/motd" ]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
@@ -237,6 +245,45 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
+
+        def test_needsdata(self):
+                """Ensure graceful failure or successful retrieval if preserved
+                files are modified after image planning or a small number of
+                files are missing."""
+
+                self.dc.start()
+                self.pkgsend_bulk(self.durl, self.foo)
+                api_obj = self.image_create(self.durl)
+
+                # Install foo@1.0
+                self.__do_install(api_obj, ["foo@1.0"])
+
+                # Now plan an upgrade to foo@2.0 in which only the mode changes,
+                # but the content has not...
+                api_obj.reset()
+                for pd in api_obj.gen_plan_update(["foo"]):
+                        continue
+                api_obj.prepare()
+
+                # Now remove the file before we execute the plan to simulate bad
+                # administrative change for a misbehaving program and verify we
+                # do a one-off retrieval of the file and won't fail.
+                self.file_remove("etc/motd")
+                api_obj.execute_plan()
+
+                self.__do_uninstall(api_obj, ["foo"])
+                self.__do_install(api_obj, ["foo@1.0"])
+                api_obj.reset()
+                for pd in api_obj.gen_plan_update(["foo"]):
+                        continue
+                api_obj.prepare()
+
+                DebugValues['max-plan-execute-retrievals'] = 1
+                self.file_remove("etc/motd")
+                # Test that we raise an exception if we have to retrieve too
+                # many files.
+                self.assertRaises(api_errors.PlanExecutionError,
+                    lambda *args, **kwargs: api_obj.execute_plan())
 
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """

@@ -470,6 +470,22 @@ class PackageMatchErrors(ApiException):
                 return "\n".join(res)
 
 
+class PlanExecutionError(InvalidPlanError):
+        """Used to indicate that the requested operation could not be executed
+        due to unexpected changes in image state after planning was completed.
+        """
+
+        def __init__(self, paths):
+                self.paths = paths
+
+        def __str__(self):
+                return _("The files listed below were modified after operation "
+                    "planning was complete or were missing during plan "
+                    "execution; this may indicate an administrative issue or "
+                    "system configuration issue:\n{0}".format(
+                    "\n".join(list(self.paths))))
+
+
 class PlanCreationException(ApiException):
         def __init__(self,
             already_installed=EmptyI,

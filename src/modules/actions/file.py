@@ -46,6 +46,7 @@ import pkg.misc as misc
 import pkg.portable as portable
 
 from pkg.client.api_errors import ActionExecutionError
+from pkg.client.debugvalues import DebugValues
 
 try:
         import pkg.elf as elf
@@ -95,6 +96,34 @@ class FileAction(generic.Action):
                                         raise
                                 return True
                         return False
+
+        def __set_data(self, pkgplan):
+                """Private helper function to set the data field of the
+                action."""
+
+                hash_attr, hash_attr_val, hash_func = \
+                    digest.get_least_preferred_hash(self)
+
+                retrieved = pkgplan.image.imageplan._retrieved
+                retrieved.add(self.get_installed_path(
+                    pkgplan.image.get_root()))
+                if len(retrieved) > 50 or \
+                    DebugValues['max-plan-execute-retrievals'] == 1:
+                        raise api_errors.PlanExecutionError(retrieved)
+
+                # This is an unexpected file retrieval, so the retrieved file
+                # will be streamed directly from the source to the final
+                # destination and will not be stored in the image download
+                # cache.
+                try:
+                        pub = pkgplan.image.get_publisher(
+                            pkgplan.destination_fmri.publisher)
+                        data = pkgplan.image.transport.get_datastream(pub,
+                            hash_attr_val)
+                        return lambda: data
+                finally:
+                        pkgplan.image.cleanup_downloads()
+
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a file."""
@@ -187,6 +216,11 @@ class FileAction(generic.Action):
                 if do_content and self.needsdata(orig, pkgplan):
                         tfilefd, temp = tempfile.mkstemp(dir=os.path.dirname(
                             final_path))
+                        if not self.data:
+                                # The state of the filesystem changed after the
+                                # plan was prepared; attempt a one-off
+                                # retrieval of the data.
+                                self.data = self.__set_data(pkgplan)
                         stream = self.data()
                         tfile = os.fdopen(tfilefd, "wb")
                         try:

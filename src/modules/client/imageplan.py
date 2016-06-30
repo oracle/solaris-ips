@@ -124,6 +124,7 @@ class ImagePlan(object):
                 self.__match_update = {} # dict of fmri -> pattern
 
                 self.__pkg_actuators = set()
+                self._retrieved = set()
 
                 self.pd = None
                 if pd is None:
