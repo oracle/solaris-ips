@@ -1198,6 +1198,25 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 self.pkg("search -s {0} {1}".format(self.durl1, sha1_hash))
                 self.pkg("search -s {0} {1}".format(self.durl1, sha2_hash), exit=1)
 
+        def test_search_indices(self):
+                """Ensure that search indices are generated properly when
+                a new hash is enabled."""
+
+                # Publish a package which only contains SHA-1 hashes.
+                self.pkgsend_bulk(self.durl1, self.same_pub2)
+                # Enable SHA-2 hashes in the other repository.
+                self.dcs[2].stop()
+                self.dcs[2].set_debug_feature("hash=sha1+sha256")
+                self.dcs[2].start()
+                # pkgrecv the published package which only contains SHA-1
+                # hashes to a repository which enables SHA-2 hashes.
+                self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl2,
+                    "same_pub2@1.1"))
+                self.pkgrepo("-s {0} refresh".format(self.durl2))
+                # Ensure no error log entry exists.
+                self.file_doesnt_contain(self.dcs[2].get_logpath(),
+                    "missing the expected attribute")
+
         def test_search_ignore_publisher_with_no_origin(self):
             """ Check that if pkg search will ignore the publisher with no
             origin."""

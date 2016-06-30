@@ -809,7 +809,9 @@ class FileAction(generic.Action):
                         # we already have an index entry for self.hash
                         if attr == "hash":
                                 continue
-                        hash = self.attrs[attr]
+                        hash = self.attrs.get(attr)
+                        if hash is None:
+                                continue
                         index_list.append(("file", attr, hash, None))
                 return index_list
 
