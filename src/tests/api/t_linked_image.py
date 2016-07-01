@@ -1110,9 +1110,12 @@ packages known:
                         assert len(linked) == li_count
 
                         #
-                        # an empty /etc/zones directory will cause the zone
-                        # commands to fail which will cause linked image
-                        # operations to fail.
+                        # Fail the zone list operation by making a fake zoneadm.
+                        #
+                        DebugValues["bin_zoneadm"] = "/bin/false"
+                        #
+                        # Setup the following directory in order to trigger the
+                        # zone list operation.
                         #
                         os.mkdir(os.path.join(self.img_path(), "etc/zones"),
                             0o755)
