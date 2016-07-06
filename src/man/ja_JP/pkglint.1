@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 1 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 4 月 29 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -15,13 +15,13 @@
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
     [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
-    [-l <replaceable>lint_uri</replaceable>] | <replaceable>manifest</replaceable> ...
+    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
 <refsect1 role="description"><title></title>
 <para><command>pkglint</command> は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。</para>
-<para><command>pkglint</command> は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
+<para><command>pkglint</command> は、パッケージ発行前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
 <para>lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。</para>
 <para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <literal>pkg</literal>(7) ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
 <para><command>pkglint</command> の以降の呼び出しではキャッシュディレクトリを再利用できるため、<option>r</option> または <option>l</option> 引数はすべて省略できます。</para>
@@ -47,7 +47,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><option>l</option> <replaceable>lint_uri</replaceable></term>
-<listitem><para>lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。<option>l</option> を指定する場合は、<option>c</option> も指定する必要があります。</para>
+<listitem><para>lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の発行がサポートされています。<option>l</option> を指定する場合は、<option>c</option> も指定する必要があります。<option>l</option> オプションは複数回指定できます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>L</option></term>
@@ -197,7 +197,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

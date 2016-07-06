@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkgrecv-1">
-<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 10 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname><refpurpose>Image Packaging System 内容取得ユーティリティー</refpurpose>
@@ -14,7 +14,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
     [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
-    [-m <replaceable>match</replaceable>] [--raw]
+    [-m <replaceable>match</replaceable>] [--mog-file <replaceable>file_path</replaceable> ...] [--raw]
     [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
     [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
     (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
@@ -25,7 +25,7 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
+<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
 <para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
 <para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
 <para>取得対象に <literal>'*'</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
@@ -110,15 +110,19 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-dkey</option> <replaceable>dest_key</replaceable></term>
-<listitem><para>公開先の HTTPS リポジトリにパッケージを公開するために使用するクライアント SSL キーファイルを指定します。</para>
+<listitem><para>宛先の HTTPS リポジトリにパッケージを発行するために使用するクライアント SSL キーファイルを指定します。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-dcert</option> <replaceable>dest_cert</replaceable></term>
-<listitem><para>公開先の HTTPS リポジトリにパッケージを公開するために使用するクライアント SSL 証明書ファイルを指定します。</para>
+<listitem><para>宛先の HTTPS リポジトリにパッケージを発行するために使用するクライアント SSL 証明書ファイルを指定します。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-clone</option></term>
 <listitem><para>ソースリポジトリの正確なコピーを作成します。デフォルトでは、ソースリポジトリ内のパブリッシャーが公開先にも存在する場合にのみ、クローン操作が成功します。クローン操作を指定されたパブリッシャーに制限するには、<option>p</option> オプションを使用します。<option>p</option> オプションを使用して指定されたパブリッシャーが公開先リポジトリにまだ存在しない場合は、公開先リポジトリに追加されます。公開先リポジトリに存在するがソースリポジトリに存在しないパッケージは、削除されます。クローン操作でエラーが発生した場合、公開先リポジトリは変更されたままになります。このため、公開先リポジトリを専用の ZFS データセットに配置し、クローン操作を実行する前にスナップショットを作成するようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mog-file</option></term>
+<listitem><para>pkgmogrify(1) 変換を含むファイルを、出力先のパッケージリポジトリにコピーされる前に、各パッケージのマニフェストに適用されるように指定します。&#39;-&#39; を指定すると stdin を入力として使用できます。ファイルと &#39;-&#39; の両方が一緒に指定された場合、&#39;-&#39; は無視され、指定されたファイルのみが使用されます。このオプションを使用すると、自動的に既存のパッケージ署名がパッケージから削除されます。ファイルおよびライセンスなどの新しいハッシュ可能アクションの追加は許可されません。このオプションは複数回指定できます。このオプションは --clone と組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-newest</option></term>
@@ -201,6 +205,12 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <para>パッケージアーカイブ内のすべてのパッケージを <filename>/export/repo</filename> にある既存のリポジトリにコピーします。</para>
 <screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
 </example>
+<example><title>パブリッシャー名を変更する</title>
+<para>再公開時に、パッケージ &#39;foo&#39; とそのすべての依存関係のパブリッシャー名を &#39;extra&#39; に変更します。</para>
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+</userinput></screen>
+</example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <para>次の環境変数がサポートされています。</para>
@@ -227,7 +237,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生した。</para>
+<listitem><para>エラーが発生しました。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -278,8 +288,8 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2 </citetitle></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

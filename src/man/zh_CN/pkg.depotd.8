@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkg.depotd-8">
-<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depotd</refname><refpurpose>映像包管理系统 depot 服务器</refpurpose>
@@ -37,21 +37,21 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/content_root</literal></term>
-<listitem><para>(<literal>astring</literal>) 实例应在其中找到其静态 Web 内容以及其他 Web 内容的文件系统路径。缺省值为 <filename>/usr/share/lib/pkg</filename>。</para>
+<listitem><para>(<literal>astring</literal>) 实例应在其中查找静态 Web 内容以及其他 Web 内容的文件系统路径。缺省值为 <filename>/usr/share/lib/pkg</filename>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/debug</literal></term>
 <listitem><para>(<literal>astring</literal>) 以逗号分隔的要启用的调试功能列表。可能的值为：</para>
 <variablelist>
 <varlistentry><term><literal>headers</literal></term>
-<listitem><para>将每个请求的标题记录到错误日志。</para>
+<listitem><para>将每个请求的标头记录到错误日志。</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/disable_ops</literal></term>
-<listitem><para>(<literal>astring</literal>) 以逗号分隔的应该为 depot 服务器禁用的操作列表。操作以 <replaceable> operation</replaceable>[/<replaceable>version</replaceable>] 形式提供（例如 <literal>catalog</literal> 或 <literal> search_1</literal>）。</para>
+<listitem><para>(<literal>astring</literal>) 以逗号分隔的应在 depot 服务器中禁用的操作列表。操作以下面的形式提供：<replaceable>operation</replaceable>[/<replaceable>version</replaceable>]（例如 <literal>catalog</literal> 或 <literal>search_1</literal>）。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/image_root</literal></term>
@@ -75,7 +75,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/port</literal></term>
-<listitem><para>(<literal>count</literal>) 实例应侦听传入软件包请求的端口号。如果未提供 SSL 证书和密钥信息，则缺省值为 80；否则，缺省值为 443。</para>
+<listitem><para>(<literal>count</literal>) 实例侦听传入软件包请求应使用的端口号。如果未提供 SSL 证书和密钥信息，则缺省值为 80；否则，缺省值为 443。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/proxy_base</literal></term>
@@ -91,22 +91,22 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/sort_file_max_size</literal></term>
-<listitem><para>(<literal>count</literal>) 索引器排序文件的最大大小。用于限制库用来创建索引的 RAM 数量，或增加数量以提高速度。</para>
+<listitem><para>(<literal>count</literal>) 索引器排序文件的最大大小。用于限制库 (depot) 创建索引可使用的 RAM 量，也可增大该大小以提高速度。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/ssl_cert_file</literal></term>
-<listitem><para>(<literal>astring</literal>) PEM 编码的证书文件的绝对路径名称。缺省值为 <literal>none</literal>。此属性必须与 <literal>ssl_key_file</literal> 一起使用。如果同时提供 <literal>ssl_cert_file</literal> 和 <literal>/ssl_key_file </literal>，则库只响应 SSL 请求。</para>
+<listitem><para>(<literal>astring</literal>) 以 PEM 编码的证书文件的绝对路径名。缺省值为 <literal>none</literal>。此属性必须与 <literal>ssl_key_file</literal> 一起使用。如果同时提供了 <literal>ssl_cert_file</literal> 和 <literal>/ssl_key_file</literal>，则库 (depot) 只响应 SSL 请求。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/ssl_dialog</literal></term>
-<listitem><para>(<literal>astring</literal>) 指定应使用何种方法来获取用于对 <literal>ssl_key_file</literal> 进行解密的口令短语。可能的值为：</para>
+<listitem><para>(<literal>astring</literal>) 指定应使用何种方法来获取用于 <literal>ssl_key_file</literal> 解密的口令短语。可能的值为：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>builtin</literal></term>
 <listitem><para>提示输入口令短语。这是缺省值。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
-<listitem><para>执行指定的外部程序来获取口令短语。程序的第一个参数为 <literal>''</literal>，并保留该参数。程序的第二个参数是服务器的端口号。口令短语输出到 <filename>stdout</filename>。</para>
+<listitem><para>执行指定的外部程序来获取口令短语。程序的第一个参数为 <literal>''</literal>，这是保留字。程序的第二个参数是服务器的端口号。口令短语输出到 <filename>stdout</filename>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>smf:fmri</literal></term>
@@ -133,18 +133,18 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg_secure/ssl_key_passphrase</literal></term>
-<listitem><para>(<literal>astring</literal>) 用于对 <literal>pkg/ssl_key_file</literal> 进行解密的口令。该值受读取授权保护（使用属性 <literal>solaris.smf.read.pkg-server</literal>）。</para>
+<listitem><para>(<literal>astring</literal>) 用于解密 <literal>pkg/ssl_key_file</literal> 的口令。该值受读取授权保护（使用属性 <literal>solaris.smf.read.pkg-server</literal> 实现）。</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para>使用以下属性控制 depot 服务器的浏览器用户界面 (Browser User Interface, BUI) 的显示和行为：</para>
+<para>depot 服务器的浏览器用户界面 (Browser User Interface, BUI) 的显示和行为由以下属性控制：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg_bui/feed_description</literal></term>
 <listitem><para>(<literal>astring</literal>) RSS/Atom 源的描述性段落。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg_bui/feed_icon</literal></term>
-<listitem><para>(<literal>astring</literal>) 用于以可视方式表示 RSS/Atom 源的小型图像的路径名称。路径名称应相对于 <literal>content_root</literal>。缺省值为 <filename>web/_themes/pkg-block-icon.png</filename>。</para>
+<listitem><para>(<literal>astring</literal>) 用于以可视方式表示 RSS/Atom 源的小型图像的路径名。路径名应相对于 <literal>content_root</literal>。缺省值为 <filename>web/_themes/pkg-block-icon.png</filename>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg_bui/feed_logo</literal></term>
@@ -244,11 +244,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-ssl-dialog</option> <replaceable>type</replaceable></term>
-<listitem><para>请参见上述 <literal>pkg/ssl_dialog</literal>。</para>
+<listitem><para>请参见上面的 <literal>pkg/ssl_dialog</literal>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-ssl-key-file</option> <replaceable>source</replaceable></term>
-<listitem><para>请参见上述 <literal>pkg/ssl_key_file</literal>。</para>
+<listitem><para>请参见上面的 <literal>pkg/ssl_key_file</literal>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>socket_timeout</replaceable></term>
@@ -293,11 +293,11 @@ feed_description = example.com's software
 <refsect1 role="environment-variables"><title></title>
 <variablelist>
 <varlistentry><term><envar>PKG_REPO</envar></term>
-<listitem><para>指定包含要提供的系统信息库的目录。如果指定 <option>d</option>，则忽略该值。</para>
+<listitem><para>指定要提供的系统信息库所在的目录。如果指定 <option>d</option>，将忽略该值。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_DEPOT_CONTENT</envar></term>
-<listitem><para>指定包含库提供的静态内容的目录。该目录中应该有列在下方“文件”下的文件，虽然其中的内容可能与提供的缺省内容不同。</para>
+<listitem><para>指定库 (depot) 提供的静态内容所在的目录。该目录应包含下面介绍的“文件”下的文件，虽然其中的内容可能与提供的缺省内容不同。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -326,7 +326,7 @@ feed_description = example.com's software
 <refsect1 role="files"><title></title>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
-<listitem><para>缺省显示内容的位置。修改 <literal>pkg/content_root </literal> 以选择备用位置。</para>
+<listitem><para>缺省显示内容的位置。修改 <literal>pkg/content_root</literal> 以选择其他位置。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -366,7 +366,7 @@ feed_description = example.com's software
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<literal>syslogd</literal>(8)、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

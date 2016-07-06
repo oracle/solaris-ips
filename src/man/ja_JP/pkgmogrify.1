@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>Image Packaging System マニフェスト変換ツール</refpurpose></refnamediv>
@@ -18,7 +18,8 @@ outputfile</replaceable>]
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="GKVND" role="description"><title></title>
-<para><command>pkgmogrify</command> は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの公開を自動化するときに必要な標準的な変換を簡略化します。</para>
+<para><command>pkgmogrify</command> は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの発行を自動化するときに必要な標準的な変換を簡略化します。</para>
+<para>これは指定された順序ですべてのファイルを読み取り、次の「埋め込みのディレクティブ」セクションで詳しく説明されているような、内部から検出された埋め込みのディレクティブをすべて適用します。指定されたファイルがない場合、入力は標準入力から読み取られます。標準入力を単独で、またはほかのファイルと組み合わせて入力として使用する場合、ファイル名として &#39;-&#39; を指定することもできます。</para>
 <itemizedlist>
 <para><command>pkgmogrify</command> は、次の機能を提供します。</para>
 <listitem><para>マクロ置換。単一のマニフェストを各種アーキテクチャーやプラットフォーム間で簡単に共有できます。</para></listitem>
@@ -48,19 +49,19 @@ outputfile</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><option>I</option> <replaceable>includedir</replaceable></term>
-<listitem><para>指定されたディレクトリを、コマンド行で指定されたファイルと、埋め込みのインクルード指令の両方の検索パスに追加します。このオプションは複数回指定できます。</para>
+<listitem><para>指定されたディレクトリを、コマンド行で指定されたファイルと、埋め込みのインクルードディレクティブの両方の検索パスに追加します。このオプションは複数回指定できます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>O</option> <replaceable>outputfile</replaceable></term>
-<listitem><para>マニフェスト出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、マニフェスト出力は<filename>標準出力</filename>に書き込まれます。</para>
+<listitem><para>マニフェスト出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換ディレクティブによって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、マニフェスト出力は<filename>標準出力</filename>に書き込まれます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>P</option> <replaceable>printfile</replaceable></term>
-<listitem><para>変換指令の出力操作から得られた出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、この出力は<filename>標準出力</filename>に書き込まれます。</para>
+<listitem><para>変換ディレクティブの出力操作から得られた出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換ディレクティブによって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、この出力は<filename>標準出力</filename>に書き込まれます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>i</option></term>
-<listitem><para>ファイル内のインクルード指令を無視します。コマンド行 (または<filename>標準入力</filename>) で指定されたファイルのみが処理されます。</para>
+<listitem><para>ファイル内のインクルードディレクティブを無視します。コマンド行 (または<filename>標準入力</filename>) で指定されたファイルのみが処理されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
@@ -69,15 +70,15 @@ outputfile</replaceable>]
 </varlistentry>
 </variablelist>
 </refsect1>
-<refsect1 role="other"><title>埋め込みの指令</title>
-<para>マニフェストファイルでは、インクルード指令と変換指令という 2 つのタイプの指令がサポートされています。</para>
-<para>インクルード指令の形式は次のとおりです。</para>
+<refsect1 role="other"><title>埋め込みのディレクティブ</title>
+<para>マニフェストファイルでは、インクルードディレクティブと変換ディレクティブという 2 つのタイプのディレクティブがサポートされています。</para>
+<para>インクルードディレクティブの形式は次のとおりです。</para>
 <programlisting>&lt;include <replaceable>file</replaceable>></programlisting>
-<para>この指令により、<command>pkgmogrify</command> は <literal>file</literal> という名前のファイルを、最初に現在のディレクトリで、次に <option>I</option> オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、この指令が置かれている場所に挿入されます。見つからなかった場合、<command>pkgmogrify</command> はエラーで終了します。</para>
-<para>変換指令の形式は次のとおりです。</para>
+<para>このディレクティブにより、<command>pkgmogrify</command> は <literal>file</literal> という名前のファイルを、最初に現在のディレクトリで、次に <option>I</option> オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、このディレクティブが置かれている場所に挿入されます。見つからなかった場合、<command>pkgmogrify</command> はエラーで終了します。</para>
+<para>変換ディレクティブの形式は次のとおりです。</para>
 <programlisting>&lt;transform <replaceable>matching-criteria</replaceable> -> <replaceable>
 operation</replaceable>></programlisting>
-<para>これらの指令は、すべての入力がメモリー内に読み取られるまで累積されたあと、各指令が検出された順序でアクションに適用されます。
+<para>これらのディレクティブは、すべての入力がメモリー内に読み取られるまで累積されたあと、各ディレクティブが検出された順序でアクションに適用されます。
 </para>
 <para>一致条件の形式は次のとおりです。</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
@@ -104,7 +105,7 @@ operation</replaceable>></programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>edit</literal></term>
-<listitem><para>アクションの属性を変更します。この操作には 3 つの引数を指定します。最初の引数は属性の名前であり、2 番目の引数は属性値を照合するための正規表現です。3 番目の引数は、正規表現で一致した値の部分に置き換えられる置換文字列です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。正規表現でグループが定義されている場合は、置換文字列内で通常の正規表現の後方参照 (形式は <literal>&bsol;1</literal>、<literal>&bsol;2</literal> など) を使用できます。</para>
+<listitem><para>アクションの属性を変更します。この操作には 3 つの引数を指定します。最初の引数は属性の名前であり、2 番目の引数は属性値を照合するための正規表現です。3 番目の引数は、正規表現で一致した値の部分に置き換えられる置換文字列です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。正規表現でグループが定義されている場合は、置換文字列内で通常の正規表現の後方参照 (形式は <literal>\1</literal>、<literal>\2</literal> など) を使用できます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>emit</literal></term>
@@ -143,17 +144,17 @@ operation</replaceable>></programlisting>
 </itemizedlist>
 <para>値を要求された属性が存在しない場合、<command>pkgmogrify</command> はエラーで終了します。エラーで終了することを回避するには、属性名のあとに <literal>;notfound=</literal> と、属性値の代わりに置換する値を指定します。たとえば、<literal>%(alias;notfound='no alias')</literal> は、属性 <literal>alias</literal> の値が存在する場合はその値を出力し、それ以外の場合は <literal>no alias</literal> を出力します。</para>
 <para>値を要求された属性が複数値の場合は、各値がスペースで区切られて出力されます。<literal>notfound</literal> トークンと同様に、トークン <literal>prefix</literal>、<literal>suffix</literal>、および <literal>sep</literal> を使用してこの動作を変更できます。<literal>prefix</literal> で指定された文字列は各値の先頭に追加され、<literal>suffix</literal> で指定された文字列は各値の末尾に追加され、<literal>sep</literal> はある値の接尾辞とその次の値の接頭辞の間に配置されます。</para>
-<para>アクション属性と同様に、<command>pkgmogrify</command> 指令では <literal>%{pkg.fmri}</literal> のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は <literal>set</literal> アクションで定義されている必要があります。そうしないと、この属性は上で説明した <literal>notfound</literal> として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。</para>
+<para>アクション属性と同様に、<command>pkgmogrify</command> ディレクティブでは <literal>%{pkg.fmri}</literal> のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換ディレクティブが適用される時点で、この属性は <literal>set</literal> アクションで定義されている必要があります。そうしないと、この属性は上で説明した <literal>notfound</literal> として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。</para>
 <para>これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 <literal>pkg</literal> を (<command>pkgmogrify</command> のコンテキストでのみ) 使用できます。
 </para>
-<para><command>pkgmogrify</command> がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで <literal>pkg.fmri</literal> パッケージ属性が定義されている場合、<command>pkgmogrify</command> はこの合成アクション <literal>pkg</literal> を作成します。属性はパッケージの属性になります。その後、<literal>&lt;transform></literal> 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。</para>
-<para><literal>pkg</literal> アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、<literal>add</literal>、<literal>default</literal>、または <literal>set</literal> 操作を使用して <literal>pkg</literal> アクションに属性を設定しようとしても、照合するほかの <literal>&lt;transform&gt;</literal> 指令では使用可能であるにもかかわらず、<literal>set</literal> アクションがマニフェストに追加されません。<literal>pkg</literal> アクションに対して <literal>emit</literal> を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに <literal>set</literal> アクションに対して <literal>emit</literal> を実行します。</para>
+<para><command>pkgmogrify</command> がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで <literal>pkg.fmri</literal> パッケージ属性が定義されている場合、<command>pkgmogrify</command> はこの合成アクション <literal>pkg</literal> を作成します。属性はパッケージの属性になります。その後、<literal>&lt;transform></literal> ディレクティブは、ほかのアクションに照合できるのと同様に、このアクションに照合できます。</para>
+<para><literal>pkg</literal> アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、<literal>add</literal>、<literal>default</literal>、または <literal>set</literal> 操作を使用して <literal>pkg</literal> アクションに属性を設定しようとしても、照合するほかの <literal>&lt;transform&gt;</literal> ディレクティブでは使用可能であるにもかかわらず、<literal>set</literal> アクションがマニフェストに追加されません。<literal>pkg</literal> アクションに対して <literal>emit</literal> を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに <literal>set</literal> アクションに対して <literal>emit</literal> を実行します。</para>
 <para>3 番目の種類の置換は後方参照です。この置換は <literal>edit</literal> 操作で使用可能なものとは異なり、<literal>-&gt;</literal> の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、<literal>%&lt;1&gt;</literal>、<literal>%&lt;2&gt;</literal> などによって指定されます。</para>
 <orderedlist>
 <para>処理の順序は次のとおりです。</para>
 <listitem><para>入力ファイルから行が読み取られます。</para></listitem>
 <listitem><para>マクロが適用されます。</para></listitem>
-<listitem><para><literal>&lt;include ...&gt;</literal> および <literal>&lt;transform&gt;</literal> 指令が処理されることにより、追加のファイルが検出され、読み取られます。</para></listitem>
+<listitem><para><literal>&lt;include ...&gt;</literal> および <literal>&lt;transform&gt;</literal> ディレクティブが処理されることにより、追加のファイルが検出され、読み取られます。</para></listitem>
 <listitem><para>すべての入力が累積されたあと、入力内の各行がアクションに変換され、すべての変換が適用されます。</para></listitem>
 <listitem><para>処理が正常に完了すると、出力が書き込まれます。</para></listitem>
 </orderedlist></refsect1>
@@ -279,7 +280,7 @@ operation</replaceable>></programlisting>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 1 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 4 月 29 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>映像包管理系统软件包 lint</refpurpose>
@@ -15,7 +15,7 @@
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
     [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
-    [-l <replaceable>lint_uri</replaceable>] | <replaceable>manifest</replaceable> ...
+    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
@@ -47,11 +47,11 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><option>l</option> <replaceable>lint_uri</replaceable></term>
-<listitem><para>指定表示 lint 系统信息库位置的 URI。支持基于 HTTP 和基于文件系统的发布。如果指定 <option> l</option>，则还必须指定 <option>c</option>。</para>
+<listitem><para>指定表示 lint 系统信息库位置的 URI。支持基于 HTTP 和基于文件系统的发布。如果指定 <option>l</option>，则必须还要指定 <option>c</option>。可以多次指定 <option>l</option> 选项。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>L</option></term>
-<listitem><para>列出已知的和排除的 lint 检查，然后退出。显示每个检查的短名称和描述。与 <option>v</option> 标志结合使用时，将显示实现检查的方法而不显示描述。</para>
+<listitem><para>列出已知的和排除的 lint 检查，然后退出。显示每个检查的短名称和说明。与 <option>v</option> 标志结合使用时，将显示实现检查的方法而不显示说明。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>f</option> <replaceable>config_file</replaceable></term>

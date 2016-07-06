@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 3 月 27 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>映像包管理系统的系统信息库管理实用程序</refpurpose></refnamediv>
@@ -39,10 +39,14 @@
     <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</synopsis>
 <synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
     <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</synopsis>
-<synopsis>/usr/bin/pkgrepo verify [-p <replaceable>publisher</replaceable>]...
+<synopsis>/usr/bin/pkgrepo verify [-d] [-p <replaceable>publisher</replaceable>]...
+    [-i <replaceable>ignored_dep_file</replaceable>]...  [--disable <replaceable>verification</replaceable>]...
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
 <synopsis>/usr/bin/pkgrepo fix [-v] [-p <replaceable>publisher</replaceable>]...
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo diff [-vq] [--strict] [--parsable] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>first_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    -s <replaceable>second_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
 <synopsis>/usr/bin/pkgrepo help</synopsis>
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
@@ -117,7 +121,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo get</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>section/property</replaceable> ...]</term>
 <listitem><para>显示系统信息库或其发布者的属性信息。</para>
-<para>缺省情况下，会在单独的行中显示每个属性及其值。空的 ASCII 字符串值用一对双引号 (<literal>""</literal>) 表示。ASCII 字符串值中的以下 Bourne shell 元字符以及换行符、空格符和制表符都必须使用反斜杠 (<literal>\</literal>) 进行转义：</para>
+<para>缺省情况下，会在单独的行中列显每个属性及其值。空的 ASCII 字符串值用一对双引号 (<literal>""</literal>) 表示。ASCII 字符串值中的以下 Bourne shell 元字符以及换行符、空格符和制表符都必须使用反斜杠 (<literal>\</literal>) 进行转义：</para>
 <programlisting>; &amp; ( ) | ^ &lt; > &bsol; " ' `</programlisting>
 <para>有关显示发布者和系统信息库属性的示例，请参见“示例”部分。</para>
 <para>有关属性列表以及每个属性的用途和值，请参见下文的 <command>set</command> 子命令。</para>
@@ -157,7 +161,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有关其他所有选项的描述，请参见上面的 <command>pkgrepo get</command> 命令。</para>
+<para>有关其他所有选项的说明，请参见上面的 <command>pkgrepo get</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
@@ -169,7 +173,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有关其他所有选项的描述，请参见上面的 <command>pkgrepo get</command> 命令。</para>
+<para>有关其他所有选项的说明，请参见上面的 <command>pkgrepo get</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo contents</command> [<option>m</option> [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable>...]</term>
@@ -184,7 +188,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有关其他所有选项的描述，请参见上面的 <command>pkgrepo get</command> 命令。</para>
+<para>有关其他所有选项的说明，请参见上面的 <command>pkgrepo get</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo rebuild</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>]</term>
@@ -203,7 +207,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有关其他所有选项的描述，请参见上面的 <command>pkgrepo get</command> 命令。</para>
+<para>有关其他所有选项的说明，请参见上面的 <command>pkgrepo get</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo refresh</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>] </term>
@@ -222,7 +226,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有关其他所有选项的描述，请参见上面的 <command>pkgrepo get</command> 命令。</para>
+<para>有关其他所有选项的说明，请参见上面的 <command>pkgrepo get</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo remove</command> [<option>n</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</term>
@@ -346,7 +350,7 @@
 <para>此处没有记录但列在 <command>get</command> 子命令输出中的属性均保留供内部使用，不应对其进行设置。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkgrepo verify</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<varlistentry><term><command>pkgrepo verify</command> [<option>d</option>] [<option>p</option> <replaceable>publisher</replaceable>]... [<option>i</option> <replaceable>ignored_dep_file</replaceable>]... [<option>-disable</option> <replaceable>verification</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>验证软件包系统信息库内容的以下属性是否正确：</para>
 <itemizedlist>
 <listitem><para>文件校验和</para></listitem>
@@ -365,6 +369,18 @@
 <listitem><para>仅针对指定发布者执行操作。如果没有指定发布者或者指定了特定值 <literal>all</literal>，则对所有发布者执行操作。可以多次指定此选项。</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>执行完整的依赖性验证。此选项不能与 <option>-disable</option> <literal>dependency</literal> 一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
+<listitem><para>执行依赖性验证，但忽略文件中指定的依赖性。此选项不能与 <option>-disable</option> <literal>dependency</literal> 一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
+<listitem><para>禁用指定的验证。当前的允许值：<literal>dependency</literal>。</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>对位于给定 URI 或文件系统路径的系统信息库进行操作。</para>
 </listitem>
@@ -372,7 +388,7 @@
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]。。。 <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>通过以下方法修复系统信息库的内容：首先验证系统信息库，然后将所有无效系统信息库内容移至系统信息库内的隔离目录。</para>
 <para>如果发现系统信息库错误，将自动执行系统信息库重新生成操作。如果发现任何错误，将向 <literal>stdout</literal> 发送消息，说明必须使用 <literal>pkgsend</literal>(1) 或 <literal>pkgrecv</literal>(1) 重新导入哪些软件包以便恢复系统信息库内容。</para>
 <para>该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
@@ -388,6 +404,42 @@
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>对位于给定 URI 或文件系统路径的系统信息库进行操作。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo diff</command> [<option>vq</option>] [<option>-strict</option>] [<option>-parsable</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>first_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... <option>s</option> <replaceable>second_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>比较两个系统信息库并显示二者之间的差异。</para>
+<para>输出文件开头的 <literal>-</literal> 符号仅指示在第一个系统信息库中找到的项目，而 <literal>+</literal> 符号仅指示在第二个系统信息库中找到的项目。开头没有符号说明它是通用项目。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>包括用于详述比较的输出（包括 per-fmri 输出）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>执行静默比较；将不生成任何输出。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-strict</option></term>
+<listitem><para>比较上次修改目录的时间戳。这可用于确定一个系统信息库是否为另一个系统信息库的确切克隆。</para>
+</listitem>
+<varlistentry><term><option>-parsable</option></term>
+<listitem><para>以 JSON 格式生成可解析的输出。</para>
+</listitem>
+</varlistentry>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>仅针对指定发布者执行操作。如果没有指定发布者或者指定了特定值 <literal>all</literal>，则对所有发布者执行操作。可以多次指定此选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>对位于给定 URI 或文件系统路径的系统信息库进行操作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>使用 <option>-key</option> 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。使用 <option>-cert</option> 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。可以多次指定此选项对。在第一个 <option>s</option> 之后、第二个 <option>s</option> 之前指定的对将应用于第一个系统信息库。在第二个 <option>s</option> 之后指定的对将应用于第二个系统信息库。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -471,7 +523,7 @@ solaris   repository related-uris     ()</screen>
 <para>将返回以下退出值：</para>
 <variablelist>
 <varlistentry><term><returnvalue>0</returnvalue></term>
-<listitem><para>命令成功。</para>
+<listitem><para>命令成功（或者对于 pkgrepo diff 未遇到任何差异）。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
@@ -488,6 +540,10 @@ solaris   repository related-uris     ()</screen>
 </varlistentry>
 <varlistentry><term><returnvalue>4</returnvalue></term>
 <listitem><para>没有进行更改时，无需执行任何操作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>针对 pkgrepo diff 找到了差异。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>99</returnvalue></term>
@@ -531,7 +587,7 @@ solaris   repository related-uris     ()</screen>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

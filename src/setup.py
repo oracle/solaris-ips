@@ -290,6 +290,7 @@ man1_ja_files = [
         'pkgrepo.1',
         'pkgsend.1',
         'pkgsign.1',
+        'pkgsurf.1',
     ]
 ]
 man7_ja_files = [
@@ -302,6 +303,7 @@ man8_ja_files = [
     MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man8/' + f
     for f in [
         'pkg.depotd.8',
+        'pkg.depot-config.8',
         'pkg.sysrepo.8',
     ]
 ]
@@ -320,6 +322,7 @@ man1_zh_CN_files = [
         'pkgrepo.1',
         'pkgsend.1',
         'pkgsign.1',
+        'pkgsurf.1',
     ]
 ]
 man7_zh_CN_files = [
@@ -332,6 +335,7 @@ man8_zh_CN_files = [
     MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man8/' + f
     for f in [
         'pkg.depotd.8',
+        'pkg.depot-config.8',
         'pkg.sysrepo.8',
     ]
 ]

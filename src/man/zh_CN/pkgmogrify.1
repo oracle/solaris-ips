@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>映像包管理系统清单变换程序</refpurpose></refnamediv>
@@ -19,6 +19,7 @@ outputfile</replaceable>]
 </refsynopsisdiv>
 <refsect1 id="GKVND" role="description"><title></title>
 <para><command>pkgmogrify</command> 允许对软件包清单进行编程式编辑，以简化自动生成软件和自动发布软件包时所需的典型变换。</para>
+<para>它按指定的顺序读取所有文件，然后将应用在其中找到的所有嵌入式指令，下文的“嵌入式指令”部分详细描述了这些指令。如果未命名任何文件，将从 stdin 读取输入。还可以将 &#39;-&#39; 指定为文件名，以将 stdin 单独用作输入，或者将其与其他文件组合来用作输入。</para>
 <itemizedlist>
 <para><command>pkgmogrify</command> 提供：</para>
 <listitem><para>宏替换，以便于在各种体系结构和平台间共享单个清单。</para></listitem>
@@ -82,7 +83,7 @@ operation</replaceable>></programlisting>
 <para>匹配条件的格式为：</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
 </replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
-<para>必须至少匹配一个指定的 <replaceable>action-name</replaceable>。必须匹配指定的每个 <replaceable>attribute</replaceable>。操作名称和属性列在 <literal>pkg</literal>(7) 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或请参见 <literal>http://docs.python.org/dev/howto/regex.html </literal> 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 <literal>.*</literal>，且应当包含尾随 <literal> $</literal>。</para>
+<para>必须至少匹配一个指定的 <replaceable>action-name</replaceable>。必须匹配指定的每个 <replaceable>attribute</replaceable>。操作名称和属性列在 <literal>pkg</literal>(7) 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或请参见 <literal>http://docs.python.org/dev/howto/regex.html </literal> 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 <literal>.*</literal>，且应当包含结尾 <literal> $</literal>。</para>
 <para>可以指定多个条件，以空格分隔。</para>
 <para>有以下操作可用：</para>
 <variablelist>
@@ -104,7 +105,7 @@ operation</replaceable>></programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>edit</literal></term>
-<listitem><para>修改操作的属性。此操作使用三个参数。第一个参数是属性的名称，第二个参数是与属性值匹配的正则表达式。第三个参数是用于替换正则表达式匹配的部分值的替换字符串。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。如果在正则表达式中定义了组，则在替换字符串中可以使用 <literal>&bsol;1</literal>、<literal>&bsol;2</literal> 等格式的一般正则表达式向后引用。</para>
+<listitem><para>修改操作的属性。此操作使用三个参数。第一个参数是属性的名称，第二个参数是与属性值匹配的正则表达式。第三个参数是用于替换正则表达式匹配的部分值的替换字符串。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。如果在正则表达式中定义了组，则在替换字符串中可以使用 <literal>\1</literal>、<literal>\2</literal> 等格式的一般正则表达式向后引用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>emit</literal></term>
@@ -175,7 +176,7 @@ operation</replaceable>></programlisting>
 <para>这还可以通过包含正则表达式的单个变换规则完成。</para>
 </example>
 <example><title>将 FMRI 属性转换为 Depend 操作</title>
-<para>将软件包属性 <literal>pkg.fmri</literal> 转换为 <literal>depend</literal> 操作，使其成为 incorporation 的一部分。</para>
+<para>将软件包属性 <literal>pkg.fmri</literal> 转换为 <literal>depend</literal> 操作，使其成为集合的一部分。</para>
 <programlisting>&lt;transform set name=pkg.fmri -> &bsol;
     emit depend type=incorporate fmri=%(value)>
 &lt;transform set name=pkg.fmri -> drop></programlisting>
@@ -199,7 +200,7 @@ operation</replaceable>></programlisting>
 &lt;transform dir -> default mode 0755></programlisting>
 </example>
 <example><title>将依赖项添加到未标记为已过时的软件包中</title>
-<para>对于未标记为已过时的任何软件包，为提供软件包的合并添加对 incorporation 的依赖。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 <literal>pkg</literal> 操作不会永久起作用，所以无需清除匹配 <literal> pkg.obsolete=false</literal> 的属性。</para>
+<para>对于未标记为已过时的任何软件包，为提供软件包的合并添加集合的依赖项。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 <literal>pkg</literal> 操作不会永久起作用，所以无需清除匹配 <literal> pkg.obsolete=false</literal> 的属性。</para>
 <programlisting>&lt;transform pkg -> default pkg.obsolete false>
 &lt;transform pkg pkg.obsolete=false -> emit depend &bsol;
     fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require></programlisting>

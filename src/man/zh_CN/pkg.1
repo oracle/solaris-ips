@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 3 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统的检索客户端</refpurpose>
@@ -61,9 +61,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
-<synopsis>/usr/bin/pkg verify [-Hqv] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
-<synopsis>/usr/bin/pkg fix [--accept] [--licenses]
-    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [--parsable <replaceable>version</replaceable>] [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -144,7 +147,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <synopsis>/usr/bin/pkg rebuild-index</synopsis>
 <synopsis>/usr/bin/pkg update-format</synopsis>
 <synopsis>/usr/bin/pkg version</synopsis>
-<synopsis>/usr/bin/pkg help</synopsis>
+<synopsis>/usr/bin/pkg help [-v]</synopsis>
 <synopsis>/usr/bin/pkg image-create [-FPUfz] [--force]
     [--full | --partial | --user] [--zone]
     [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>]
@@ -154,12 +157,14 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [--set-property <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>]
     [--variant <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]...
     [(-p | --publisher) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> dehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> rehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkg-1-desc" role="description"><title></title>
-<para><command>pkg</command> 是映像包管理系统的检索客户端。在有效配置下，可以调用 <command>pkg</command> 来为要安装的软件包创建位置（称为“映像”），然后将软件包安装到这些映像中。软件包由发布者发布。发布者可使其软件包在一个或多个系统信息库上可用，或者在软件包归档文件中可用。<command>pkg</command> 从发布者的系统信息库或软件包归档文件中检索软件包，然后将软件包安装到映像中。</para>
-<para>只能将软件包安装到属于 BE 的文件系统中。例如，在缺省的 Oracle Solaris 11 安装上，软件包操作仅支持 <filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> 下的数据集。</para>
+<para><command>pkg</command> 是映像包管理系统的检索客户端。在有效配置下，可以调用 <command>pkg</command> 来为要安装的软件包创建位置（称为“映像”），然后将软件包安装到这些映像中。软件包由发布者发布。发布者可使其软件包在一个或多个系统信息库上可用，或者在软件包归档中可用。<command>pkg</command> 从发布者的系统信息库或软件包归档中检索软件包，然后将软件包安装到映像中。</para>
+<para>只能将软件包安装到属于引导环境的文件系统中。例如，在缺省的 Oracle Solaris 11 安装上，软件包操作仅支持 <filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> 下的数据集。</para>
 <para>发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。</para>
-<para>系统信息库是客户端可在其中发布和检索软件包内容（该软件包包含的文件，例如程序和文档）和元数据（有关该软件包的信息，例如其名称和描述）的位置。例如，有一个名为 <literal>example.org</literal> 的发布者，其系统信息库位于 URI <literal>http://example.org/repository</literal>。</para>
+<para>系统信息库是客户端可在其中发布和检索软件包内容（该软件包包含的文件，例如程序和文档）和元数据（有关该软件包的信息，例如其名称和说明）的位置。例如，有一个名为 <literal>example.org</literal> 的发布者，其系统信息库位于 URI <literal>http://example.org/repository</literal>。</para>
 <para><command>pkg</command> 还可以卸载软件包、刷新发布者元数据（例如可用软件包的列表）、验证映像中的软件包安装，以及查询映像中的各个标记。也可以对 <literal>pkg</literal>(7) 系统信息库执行这些查询。</para>
 <para>映像有三种类型：完整映像：能够提供完整的系统；部分映像：与完整映像（父映像）链接，但本身无法提供完整的系统；用户映像。</para>
 </refsect1>
@@ -172,6 +177,10 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
 <listitem><para>对根目录为 <replaceable>dir</replaceable> 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见“环境变量”部分。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-network-cache</option></term>
+<listitem><para>请求操作期间使用的所有网络服务器（代理）忽略缓存的数据使用此选项解决可能由软件包客户端和基于网络的软件包系统信息库之间的缓存代理所导致的问题。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -191,7 +200,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-full</option></term>
-<listitem><para>强制完全检索所有发布者元数据（而不是尝试增量更新），并请求操作期间使用的所有代理忽略高速缓存的数据。此选项用于进行故障排除，正常情况下不应使用。</para>
+<listitem><para>强制完全检索所有发布者元数据（而不是尝试增量更新），并请求操作期间使用的所有代理忽略缓存的数据。此选项用于进行故障排除，正常情况下不应使用。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -602,7 +611,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<replaceable> pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>验证当前映像中安装的所有软件包的安装情况。如果相关发布者的当前签名策略不是 <literal>ignore</literal>，则会根据策略验证每个软件包的签名。有关如何应用签名策略的说明，请参见下文“映像属性”中的 <literal>signature-policy</literal>。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
@@ -613,22 +622,39 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para>在验证输出中省略标题。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>q</option></term>
-<listitem><para>隐藏请求的操作过程中的进度消息和所有其他输出。</para>
+<varlistentry><term><option>v</option></term>
+<listitem><para>包括有关软件包的信息性消息。另请参见对上述安装命令的 <option>v</option> 选项的说明。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>v</option></term>
-<listitem><para>包括有关软件包的信息性消息。</para>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>-q</option>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>除了常规输出之外，还报告未打包内容。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged-only</option></term>
+<listitem><para>仅报告未打包内容。</para>
 </listitem>
 </varlistentry>
 </variablelist>
+<para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg fix</command> [<option>-accept</option>] [<option>-licenses</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg fix</command> [<option>HnvqP</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-accept</option>] [<option>-licenses</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>修复 <command>pkg verify</command> 报告的任何错误。已安装软件包内容的验证基于定制的内容分析，该分析可能会返回与其他程序不同的结果。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>仅修复 <command>pkg verify</command> 报告的有关当前映像中安装的指定软件包的错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option></term>
+<listitem><para>在验证输出中省略标题。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>包括有关软件包的信息性消息。另请参见对上述安装命令的 <option>v</option> 选项的说明。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-accept</option></term>
@@ -639,7 +665,16 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para>显示在此操作过程中所安装或更新的软件包的所有许可证。对于更新的软件包，仅当许可证已更改时才显示许可证。</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>-q</option>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>除了常规输出之外，还报告未打包内容。</para>
+</listitem>
+</varlistentry>
 </variablelist>
+<para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg revert</command> [<option>nv</option>] [<option> -no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable> tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
@@ -964,7 +999,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
 <listitem><para>使用指定的代理 URI 检索指定源 (<option>g</option>) 或镜像 (<option>m</option>) 的内容。代理值被存储为发布者配置的一部分，这意味着子映像所使用的系统信息库是自动更新的。此选项不能用于设置验证代理。<replaceable>proxy_to_use</replaceable> 值不能使用 <literal>protocol://user:password@host</literal> 格式。</para>
-<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。有关接受的环境变量名列表，请参见 <literal>curl</literal>(1) 手册页的“环境”部分。如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见《<citetitle>Adding and Updating Software in Oracle Solaris 11.2</citetitle>》中的 "Specifying a Proxy"。</para>
+<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。有关接受的环境变量名列表，请参见 <literal>curl</literal>(1) 手册页的“环境”部分。如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见《<citetitle>在 Oracle Solaris 11.3 中添加和更新软件</citetitle>》中的“指定代理”。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
@@ -1136,10 +1171,17 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para>显示一个用于唯一标识 <command>pkg</command> 版本的字符串。不保证在不同版本中，此字符串在任何方面都具有类似性。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg help</command></term>
-<listitem><para>显示用法消息。</para>
+<varlistentry><term><command>pkg help</command> [<option>v</option>]</term>
+<listitem><para>显示子命令的完整列表。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>显示子命令的详细用法消息。</para>
 </listitem>
 </varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+
 <varlistentry><term><command>pkg image-create</command> [<option>FPUfz</option>] [<option>-force</option>] [<option>-full</option> | <option>-partial</option> | <option>-user</option>] [<option>-zone</option>] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable> ssl_key</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable> | <option>-origin</option> <replaceable>path_or_uri</replaceable>]... [<option>m</option> <replaceable>uri</replaceable> | <option>-mirror</option> <replaceable>uri</replaceable>]... [<option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>)]... [<option>-no-refresh</option>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]... [(<option>p</option> | <option>-publisher</option>) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></term>
 <listitem><para>在 <replaceable>dir</replaceable> 指定的位置，创建一个适合于软件包操作的映像。无法引导使用 <command>image-create</command> 子命令创建的映像。大多数用户应该将 <option>-be-name</option> 或 <option>-require-new-be</option> 选项与 <command>pkg</command> 命令配合使用，或者使用 <command>beadm</command> 或 <command>zoneadm</command> 命令创建映像。<command>pkg image-create</command> 命令用于维护软件包和操作系统分发等任务。</para>
 <para>缺省的映像类型为“用户”，可以通过使用 <option>U</option> 或 <option>-user</option> 选项来指定。或者，可以将映像类型设置为完整映像（<option>-F</option> 或 <option>-full</option>），或者设置为与完整映像（包括给定的 <option>dir</option> 路径）链接的部分映像（<option>P</option> 或 <replaceable>-partial</replaceable>）。</para>
@@ -1171,6 +1213,42 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> dehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para>从 <option>R</option> 选项指定的映像中删除所有不可编辑的打包文件和打包硬链接，以创建完全冻结的映像。打包文件和打包硬链接是当前安装的软件包版本提供的文件和硬链接。不可编辑的文件不能具有任何 <literal>preserve</literal> 或 <literal>overlay</literal> 属性，因此其 <literal>dehydrate</literal> 属性的值不能为 <literal>false</literal>。</para>
+<para><command>pkg dehydrate</command> 命令仅对备用根运行。使用 <option>R</option> 选项指定备用根。如果备用根属于引导环境，则冻结将使其无法引导。</para>
+<para>如果 <command>pkg dehydrate</command> 命令成功，则在 <option>R</option> 选项指定的 <replaceable>dir</replaceable> 映像上设置名为 <command>dehydrated</command> 的属性。<command>dehydrated</command> 属性的值是在具有已配置软件包系统信息库的 <replaceable>dir</replaceable> 映像中设置的所有发布者的列表。</para>
+<para>对来自已冻结发布者的软件包的软件包安装操作将自动冻结。如果安装已冻结映像中的软件包，则将安装软件包内容，然后将其冻结。软件包安装操作可包括 <command>update</command> 和 <command>change-facet</command> 以及 <command>install</command> 等操作。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>删除指定的发布者提供的不可编辑文件和硬链接以创建部分冻结的映像。如果指定了映像的所有已配置发布者，则如上所述创建完全冻结的映像。</para>
+<para>如果指定了一个或多个发布者，且未在映像中配置其中任一发布者，则不会从映像中删除任何内容。</para>
+<para>如果 <command>pkg dehydrate</command> 命令成功，则在 <option>R</option> 选项指定的 <replaceable>dir</replaceable> 映像上设置名为 <command>dehydrated</command> 的属性。<command>dehydrated</command> 属性的值是 <option>p</option> 选项指定的所有发布者的列表。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> rehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para>重新安装 <command>pkg dehydrate</command> 命令删除的所有文件和硬链接。</para>
+<para><command>pkg rehydrate</command> 命令仅对备用根运行。使用 <option>R</option> 选项指定备用根。</para>
+<para>如果 <command>pkg rehydrate</command> 命令成功，则映像的 <command>dehydrated</command> 属性的值为空。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>针对指定的发布者，重新安装 <command>pkg dehydrate</command> 命令删除的所有文件和硬链接。</para>
+<para>如果指定了一个或多个发布者，且未在映像中配置其中任一发布者，则不会安装任何内容。</para>
+<para>如果 <command>pkg rehydrate</command> 命令成功，则从映像上设置的 <command>dehydrated</command> 属性的值中删除指定的发布者的名称。<command>rehydrate</command> 命令中未指定的发布者仍列在 <command>dehydrated</command> 属性中，通过这些发布者安装的内容将仍保持冻结状态。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
+</listitem>
+</varlistentry>
+
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>映像属性</title>
@@ -1511,6 +1589,20 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <screen>$ <userinput>pkg set-publisher -G '*' -M '*' -g http://example.com:10000 &bsol;</userinput>
 <userinput>example.com</userinput></screen>
 </example>
+<example><title>冻结和解除冻结映像</title>
+<para>在这些示例中，<literal>/tmp/test_image</literal> 是要冻结和解除冻结的映像。</para>
+<para>因为未指定发布者，所以以下命令作用于 <literal>/tmp/test_image</literal> 映像中启用的所有发布者，进而完全冻结 <literal>/tmp/test_image</literal> 映像。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate</userinput></screen>
+<para>因为未指定发布者，所以以下命令作用于 <literal>/tmp/test_image</literal> 映像中配置的所有发布者，以完全恢复 <literal>/tmp/test_image</literal> 映像。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate</userinput></screen>
+</example>
+<example><title>冻结和解除冻结指定发布者的映像</title>
+<para>在这些示例中，<literal>/tmp/test_image</literal> 是要冻结和解除冻结的映像，在 <literal>/tmp/test_image</literal> 映像中启用了 <literal>test1</literal> 和 <literal>test2</literal> 发布者且其源提供了必要的内容。</para>
+<para>以下命令仅作用于 <literal>test1</literal> 发布者提供的文件和硬链接。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
+<para>以下命令仅解除冻结 <literal>test1</literal> 发布者提供的文件和硬链接。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate -p test1</userinput></screen>
+</example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <variablelist termlength="wholeline">
@@ -1601,7 +1693,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </variablelist>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para>可将 <literal>pkg</literal>(7) 映像放置在较大文件系统中的任意位置。在以下文件描述中，标记 <envar>$IMAGE_ROOT</envar> 用于区分相对路径。对于典型的系统安装，<envar>$IMAGE_ROOT</envar> 等效于 <literal>/</literal>。</para>
+<para>可将 <literal>pkg</literal>(7) 映像放置在较大文件系统中的任意位置。在以下文件说明中，标记 <envar>$IMAGE_ROOT</envar> 用于区分相对路径。对于典型的系统安装，<envar>$IMAGE_ROOT</envar> 等效于 <literal>/</literal>。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
 <listitem><para>完整或部分映像的元数据目录。</para>
@@ -1660,7 +1752,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<literal>glob</literal>(3C)、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS">《<citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.2 中添加和更新软件</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

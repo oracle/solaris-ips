@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgrecv-1">
-<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 10 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname> <refpurpose>映像包管理系统内容检索实用程序</refpurpose>
@@ -14,7 +14,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
     [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
-    [-m <replaceable>match</replaceable>] [--raw]
+    [-m <replaceable>match</replaceable>] [--mog-file <replaceable>file_path</replaceable> ...] [--raw]
     [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
     [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
     (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
@@ -121,6 +121,10 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 <listitem><para>为源系统信息库创建完全一致的副本。缺省情况下，仅当源系统信息库中的发布者也存在于目标中时，克隆操作才会成功。要限制仅对指定的发布者使用克隆操作，请使用 <option>p</option> 选项。使用 <option>p</option> 选项指定的发布者如果不在目标系统信息库中，则会将其添加到其中。存在于目标系统信息库中但不在源系统信息库中的软件包将被删除。如果发生错误，克隆操作会导致目标系统信息库更改。因此，目标系统信息库应位于自己的 ZFS 数据集中，并且在执行克隆操作之前应创建一个快照。</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>-mog-file</option></term>
+<listitem><para>指定一个包含 pkgmogrify(1) 转换的文件，在将每个软件包复制到目标软件包系统信息库之前，会将这些转换应用到该软件包的清单。可以指定 &#39;-&#39; 以将 stdin 用作输入。如果既指定了文件又指定了 &#39;-&#39;，则将忽略 &#39;-&#39; 而且仅使用所指定的文件。使用此选项将自动导致从软件包中删除任何现有的软件包签名。不允许添加新的可散列操作（如文件和许可证）。可以多次指定此选项。此选项不能与 --clone 结合使用。</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><option>-newest</option></term>
 <listitem><para>列出 <option>s</option> 选项指定的系统信息库中提供的最新版本的软件包。将忽略所有其他选项。</para>
 </listitem>
@@ -186,7 +190,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <para>从位于 <literal>http://pkg.oracle.com/solaris/release/</literal> 的系统信息库中将并非已存在的所有软件包和所有已更改内容接收到位于 <literal>/export/repoSolaris11</literal> 的系统信息库。</para>
 <screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
 <userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
-<para>将位于 <literal>https://pkg.oracle.com/solaris/support/</literal>的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 <literal>/export/repoSolaris11</literal> 的系统信息库。 </para>
+<para>将位于 <literal>https://pkg.oracle.com/solaris/support/</literal> 的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 <literal>/export/repoSolaris11</literal> 的系统信息库。 </para>
 <screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
 <userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
 <userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
@@ -200,6 +204,12 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <example><title>将软件包从归档文件复制到系统信息库中</title>
 <para>将软件包归档文件中的所有软件包复制到位于 <filename>/export/repo</filename> 中的现有系统信息库。</para>
 <screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+</example>
+<example><title>更改发布者名称</title>
+<para>在重新发布期间将软件包 &#39;foo&#39; 的发布者名称及其所有依赖项更改为 &#39;extra&#39;。</para>
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+</userinput></screen>
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
@@ -279,7 +289,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

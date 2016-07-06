@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgsend-1">
-<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 30 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 30 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgsend</refname><refpurpose>映像包管理系统发布客户机</refpurpose>
@@ -14,7 +14,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
 </synopsis>
-<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [--target <replaceable>file</replaceable>]
+<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [-u] [--target <replaceable>file</replaceable>]
     <replaceable>source</replaceable> ...</synopsis>
 <synopsis>/usr/bin/pkgsend publish [-b <replaceable>bundle</replaceable>]... [-d <replaceable>source</replaceable>]...
     [-s <replaceable>repo_uri_or_path</replaceable>] [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
@@ -36,8 +36,8 @@
 <refsect1 role="subcommands"><title></title>
 <para>支持以下子命令：</para>
 <variablelist termlength="wholeline">
-<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
-<listitem><para>读取每个 <replaceable>source</replaceable>（例如，SVR4 软件包、目录或 <command>tar</command> 文件）并将介绍 <replaceable>source</replaceable> 的清单发送到 <filename>stdout</filename>。在输出清单中，<literal>file</literal> 和 <literal>dir</literal> 操作将所有者设置为 <literal>root</literal>，并将组设置为 <literal>bin</literal>。
+<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>u</option>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
+<listitem><para>读取每个 <replaceable>source</replaceable>（例如，SVR4 软件包、目录或 <command>tar</command> 文件）并将介绍 <replaceable>source</replaceable> 的清单发送到 <filename>stdout</filename>。
 </para>
 <para>然后可以注释输出清单，使用 <command>pkgdepend</command> 添加或分析依赖项，并在将其传递到 <command>publish</command> 子命令之前使用 <command> pkglint</command> 验证它的正确性。
 </para>
@@ -70,6 +70,7 @@
 <para>如果指定源是一个目录，当单个 inode 具有多个路径名称时，则没有明确的方式区分 <literal>file</literal> 操作与 <literal>hardlink</literal> 操作。通常，在文件系统遍历中发现的第一个视为文件，其余的视为硬链接。这可以是任意的，具体取决于文件系统的实现方式。要指定哪些路径名称应视为文件，请将每个路径名称作为参数传递到 <option>-target</option> 选项。该选项不会影响其他类型的源，因为它们可以表明哪些路径名称是文件，哪些是硬链接。</para>
 <para>当提供 SVR4 软件包作为源时，<command>pkgsend</command> 会确认不存在具有类操作脚本的文件，以及不存在安装前、安装后、删除前或删除后脚本。但与 <literal>manifest</literal> 类一起安装的任何 SMF 清单除外。将从所有可重定位路径中删除 <literal>BASEDIR </literal>。</para>
 <para>SVR4 <literal>DESC</literal> 参数将转换为 <literal>pkg.description </literal> 值。SVR4 <literal>NAME</literal> 参数将转换为 <literal>pkg.summary</literal> 值。</para>
+<para>基于目录生成清单时，每个文件和目录的所有者和组分别缺省为根和 bin。要改用针对文件和目录设置的所有者和组信息，请指定 <option>u</option>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
@@ -194,7 +195,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="PKDEV">《<citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

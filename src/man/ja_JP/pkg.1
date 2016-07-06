@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 3 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -61,9 +61,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
-<synopsis>/usr/bin/pkg verify [-Hqv] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
-<synopsis>/usr/bin/pkg fix [--accept] [--licenses]
-    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [--parsable <replaceable>version</replaceable>] [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -144,7 +147,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <synopsis>/usr/bin/pkg rebuild-index</synopsis>
 <synopsis>/usr/bin/pkg update-format</synopsis>
 <synopsis>/usr/bin/pkg version</synopsis>
-<synopsis>/usr/bin/pkg help</synopsis>
+<synopsis>/usr/bin/pkg help [-v]</synopsis>
 <synopsis>/usr/bin/pkg image-create [-FPUfz] [--force]
     [--full | --partial | --user] [--zone]
     [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>]
@@ -154,6 +157,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [--set-property <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>]
     [--variant <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]...
     [(-p | --publisher) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> dehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> rehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkg-1-desc" role="description"><title></title>
 <para><command>pkg</command> は Image Packaging System 用の取得クライアントです。有効な構成では、<command>pkg</command> を呼び出すことにより、パッケージをインストールする場所を作成し、イメージを呼び出し、パッケージをイメージにインストールすることができます。パッケージはパブリッシャーによって公開され、パブリッシャーはそれらのパッケージを 1 つ以上のリポジトリまたはパッケージアーカイブで利用可能にすることができます。<command>pkg</command> はパブリッシャーのリポジトリまたはパッケージアーカイブからパッケージを取得し、パッケージをイメージにインストールします。</para>
@@ -172,6 +177,10 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
 <listitem><para><replaceable>dir</replaceable> をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」のセクションを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-network-cache</option></term>
+<listitem><para>操作中に使用されるプロキシなどのネットワークサーバーがキャッシュされたデータを無視するように要求します。このオプションを使用して、パッケージクライアントとネットワークベースのパッケージリポジトリ間のプロキシのキャッシュによって発生する可能性がある問題のトラブルシューティングを行います。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -602,7 +611,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<replaceable> pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>現在のイメージ内で、インストールされているすべてのパッケージのインストールを検証します。関連する発行元の現在の署名ポリシーが <literal>ignore</literal> でない場合、各パッケージの署名がポリシーに基づいて検証されます。署名ポリシーが適用されるしくみについては、後述する「イメージプロパティー」の <literal>signature-policy</literal> で説明します。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
@@ -613,22 +622,39 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para>検証の出力からヘッダーを省略します。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>q</option></term>
-<listitem><para>リクエストされた操作の実行中、進捗状況メッセージおよびその他すべての出力を抑止します。</para>
+<varlistentry><term><option>v</option></term>
+<listitem><para>パッケージに関する情報メッセージを含めます。前述の install コマンドの <option>v</option> オプションの説明も参照してください。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>v</option></term>
-<listitem><para>パッケージに関する情報メッセージを含めます。</para>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>一般的な出力に加えて展開されたパッケージ内容が報告されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged-only</option></term>
+<listitem><para>展開されたパッケージ内容のみを報告します。</para>
 </listitem>
 </varlistentry>
 </variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg fix</command> [<option>-accept</option>] [<option>-licenses</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg fix</command> [<option>HnvqP</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-accept</option>] [<option>-licenses</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para><command>pkg verify</command> で報告されたエラーをすべて修正します。インストール済みパッケージの内容は、独自の内容解析に基づいて検証されるため、ほかのプログラムの場合とは異なる結果が返されることがあります。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>現在のイメージ内で、指定されたインストール済みパッケージに対する <command>pkg verify</command> により報告されたエラーを修正します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>検証の出力からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>パッケージに関する情報メッセージを含めます。前述の install コマンドの <option>v</option> オプションの説明も参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-accept</option></term>
@@ -639,7 +665,16 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para>この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。更新されるパッケージの場合、ライセンスが変更された場合のみライセンスを表示します。</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>一般的な出力に加えて展開されたパッケージ内容が報告されます。</para>
+</listitem>
+</varlistentry>
 </variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg revert</command> [<option>nv</option>] [<option> -no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable> tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
@@ -1136,10 +1171,17 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <listitem><para><command>pkg</command> のバージョンを識別する一意な文字列を表示します。この文字列は、バージョン間で何らかの方法で比較可能であることは保証されていません。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg help</command></term>
-<listitem><para>使用方法に関するメッセージを表示します。</para>
+<varlistentry><term><command>pkg help</command> [<option>v</option>]</term>
+<listitem><para>サブコマンドの完全なリストを表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>サブコマンドの詳細な使用法のメッセージを表示します。</para>
 </listitem>
 </varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+
 <varlistentry><term><command>pkg image-create</command> [<option>FPUfz</option>] [<option>-force</option>] [<option>-full</option> | <option>-partial</option> | <option>-user</option>] [<option>-zone</option>] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable> ssl_key</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable> | <option>-origin</option> <replaceable>path_or_uri</replaceable>]... [<option>m</option> <replaceable>uri</replaceable> | <option>-mirror</option> <replaceable>uri</replaceable>]... [<option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>)]... [<option>-no-refresh</option>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]... [(<option>p</option> | <option>-publisher</option>) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></term>
 <listitem><para><replaceable>dir</replaceable> によって指定された場所に、パッケージ操作に適したイメージを作成します。<command>image-create</command> サブコマンドを使用して作成されたイメージは、ブート可能ではありません。ほとんどのユーザーは、<option>-be-name</option> または <option>-require-new-be</option> オプションを <command>pkg</command> コマンドで使用したり、<command>beadm</command> コマンドまたは <command>zoneadm</command> コマンドを使用してイメージを作成したりする必要があります。<command>pkg image-create</command> コマンドは、パッケージおよびオペレーティングシステムのディストリビューションを維持するといったタスク向けに使用されています。</para>
 <para>デフォルトのイメージタイプは user で、<option>U</option> オプションまたは <option>-user</option> オプションを使用して指定できます。あるいは、イメージタイプはフルイメージ (<option>-F</option> または <option>-full</option>)、または指定された <replaceable>dir</replaceable> パスを包含するフルイメージにリンクされた部分イメージ (<option>P</option> または <option>-partial</option>) に設定できます。</para>
@@ -1171,6 +1213,42 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> dehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para><option>R</option> オプションで指定されたイメージから、編集できないパッケージされたファイルおよびパッケージされたハードリンクをすべて削除して、完全にデハイドレートされたイメージを作成します。パッケージされたファイルおよびパッケージされたハードリンクは、現在インストールされているパッケージのバージョンによって提供されたファイルおよびハードリンクです。編集できないファイルは、<literal>preserve</literal> または <literal>overlay</literal> 属性を持つことはできず、値が <literal>false</literal> に設定された <literal>dehydrate</literal> 属性を持つこともできません。</para>
+<para><command>pkg dehydrate</command> コマンドは、代替ルートに対してのみ処理を実行します。代替ルートを指定するには、<option>R</option> オプションを使用します。代替ルートがブート環境に属している場合、デハイドレーションによってブート不可になります。</para>
+<para><command>pkg dehydrate</command> コマンドが成功すると、<option>R</option> オプションで指定された <replaceable>dir</replaceable> イメージに <command>dehydrated</command> というプロパティーが設定されます。<command>dehydrated</command> プロパティーの値は、構成済みのパッケージリポジトリを持っている、<replaceable>dir</replaceable> イメージ内に設定されたパブリッシャーのリストです。</para>
+<para>デハイドレートされたパブリッシャーからのパッケージに対するパッケージインストール操作は、自動的にデハイドレートされます。デハイドレートされたイメージにパッケージをインストールする場合、パッケージの内容はインストールされたあとでデハイドレートされます。パッケージインストール操作には、<command>install</command> だけでなく、<command>update</command> や <command>change-facet</command> などの操作も含まれます。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーから提供された、編集できないファイルおよびハードリンクだけを削除して、部分的にデハイドレートされたイメージを作成します。イメージ内の構成済みパブリッシャーがすべて指定された場合は、前述の完全にデハイドレートされたイメージが作成されます。</para>
+<para>1 つ以上のパブリッシャーが指定された場合で、そのいずれかがイメージ内に構成されていないときは、イメージからは何も削除されません。</para>
+<para><command>pkg dehydrate</command> コマンドが成功すると、<option>R</option> オプションで指定された <replaceable>dir</replaceable> イメージに <command>dehydrated</command> というプロパティーが設定されます。<command>dehydrated</command> プロパティーの値は、<option>p</option> オプションで指定されたすべてのパブリッシャーのリストです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> rehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para><command>pkg dehydrate</command> コマンドで削除されたすべてのファイルおよびハードリンクを再インストールします。</para>
+<para><command>pkg rehydrate</command> コマンドは、代替ルートに対してのみ処理を実行します。代替ルートを指定するには、<option>R</option> オプションを使用します。</para>
+<para><command>pkg rehydrate</command> コマンドが成功すると、イメージの <command>dehydrated</command> プロパティーの値は空になります。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーに関して <command>pkg dehydrate</command> コマンドで削除されたすべてのファイルおよびハードリンクを再インストールします。</para>
+<para>1 つ以上のパブリッシャーが指定された場合で、そのいずれかがイメージ内に構成されていないときは、何もインストールされません。</para>
+<para><command>pkg rehydrate</command> コマンドが成功すると、イメージに設定されている <command>dehydrated</command> プロパティーの値から、指定されたパブリッシャーの名前が削除されます。<command>rehydrate</command> コマンドで指定されていないパブリッシャーは <command>dehydrated</command> プロパティーのリストに残り、それらのパブリッシャーからインストールされた内容はデハイドレートされたままになります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>イメージプロパティー</title>
@@ -1511,6 +1589,20 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <screen>$ <userinput>pkg set-publisher -G '*' -M '*' -g http://example.com:10000 &bsol;</userinput>
 <userinput>example.com</userinput></screen>
 </example>
+<example><title>イメージをデハイドレートおよびリハイドレートする</title>
+<para>次の例で、<literal>/tmp/test_image</literal> はデハイドレートおよびリハイドレートしようとしているイメージです。</para>
+<para>パブリッシャーが指定されていないため、次のコマンドは <literal>/tmp/test_image</literal> イメージ内で有効になっているすべてのパブリッシャーに対して処理を実行し、<literal>/tmp/test_image</literal> イメージを完全にデハイドレートします。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate</userinput></screen>
+<para>パブリッシャーが指定されていないため、次のコマンドは <literal>/tmp/test_image</literal> イメージ内に構成されているすべてのパブリッシャーに対して処理を実行し、<literal>/tmp/test_image</literal> イメージを完全に復元します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate</userinput></screen>
+</example>
+<example><title>パブリッシャーを指定してイメージをデハイドレートおよびリハイドレートする</title>
+<para>次の例で、<literal>/tmp/test_image</literal> はデハイドレートおよびリハイドレートしようとしているイメージです。<literal>test1</literal> および <literal>test2</literal> は <literal>/tmp/test_image</literal> イメージ内で有効になっているパブリッシャーで、その起点からは必要な内容が提供されます。</para>
+<para>次のコマンドは、<literal>test1</literal> パブリッシャーから提供されたファイルおよびハードリンクに対してのみ処理を実行します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
+<para>次のコマンドは、<literal>test1</literal> パブリッシャーから提供されたファイルおよびハードリンクだけをリハイドレートします。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate -p test1</userinput></screen>
+</example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <variablelist termlength="wholeline">
@@ -1563,7 +1655,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生した。</para>
+<listitem><para>エラーが発生しました。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -1659,8 +1751,8 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <literal>glob</literal>(3C), <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2 </citetitle></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<literal>glob</literal>(3C)、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 </refentry>

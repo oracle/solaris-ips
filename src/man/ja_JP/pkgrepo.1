@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 3 月 27 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System リポジトリ管理ユーティリティー</refpurpose></refnamediv>
@@ -39,15 +39,19 @@
     <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</synopsis>
 <synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
     <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</synopsis>
-<synopsis>/usr/bin/pkgrepo verify [-p <replaceable>publisher</replaceable>]...
+<synopsis>/usr/bin/pkgrepo verify [-d] [-p <replaceable>publisher</replaceable>]...
+    [-i <replaceable>ignored_dep_file</replaceable>]...  [--disable <replaceable>verification</replaceable>]...
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
 <synopsis>/usr/bin/pkgrepo fix [-v] [-p <replaceable>publisher</replaceable>]...
     -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo diff [-vq] [--strict] [--parsable] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>first_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    -s <replaceable>second_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
 <synopsis>/usr/bin/pkgrepo help</synopsis>
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
-<para><command>pkgrepo</command> を使用すると、<literal>pkg</literal>(7) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
+<para><command>pkgrepo</command> を使用すると、<literal>pkg</literal>(7) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの発行クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>サポートしているオプションは、次のとおりです。</para>
@@ -207,7 +211,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo refresh</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>] </term>
-<listitem><para>リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延公開 (<command>pkgsend</command> の <option>-no-catalog</option> または <option>-no-index</option> オプション) で使用されることを目的にしています。</para>
+<listitem><para>リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延発行 (<command>pkgsend</command> の <option>-no-catalog</option> または <option>-no-index</option> オプション) で使用されることを目的にしています。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
@@ -346,7 +350,7 @@
 <para>ここには記載されていないが <command>get</command> サブコマンドの出力に一覧表示されるプロパティーは、内部使用のために予約されているため、設定しないようにしてください。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkgrepo verify</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<varlistentry><term><command>pkgrepo verify</command> [<option>d</option>] [<option>p</option> <replaceable>publisher</replaceable>]... [<option>i</option> <replaceable>ignored_dep_file</replaceable>]... [<option>-disable</option> <replaceable>verification</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>パッケージリポジトリの内容の次の属性が正しいことを検証します。</para>
 <itemizedlist>
 <listitem><para>ファイルのチェックサム</para></listitem>
@@ -363,6 +367,18 @@
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>完全な依存関係の検証を実行します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
+<listitem><para>依存関係の検証を実行しますが、ファイル内で指定された依存関係は無視します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
+<listitem><para>指定された検証を無効にします。現在の使用可能な値: <literal>dependency</literal>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
@@ -388,6 +404,42 @@
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo diff</command> [<option>vq</option>] [<option>-strict</option>] [<option>-parsable</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>first_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... <option>s</option> <replaceable>second_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>2 つのリポジトリを比較し、差異を示します。</para>
+<para>出力行の先頭にある <literal>-</literal> 記号は最初のリポジトリにのみ見つかった項目を示すのに対し、<literal>+</literal> 記号は 2 つ目のリポジトリにのみ見つかった項目を示します。先頭に記号がないものは、共通項目を意味します。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>per-fmri 出力を含む比較の詳細の出力を含めます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>非出力比較を実行します。出力は生成されません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-strict</option></term>
+<listitem><para>カタログの最後の変更時のタイムスタンプを比較します。これは 1 つのリポジトリがもう 1 つの正確なクローンであるかどうかを判断するために役立ちます。</para>
+</listitem>
+<varlistentry><term><option>-parsable</option></term>
+<listitem><para>解析可能な出力を JSON 形式で生成します。</para>
+</listitem>
+</varlistentry>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para><option>-key</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。<option>-cert</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。最初の <option>s</option> のあとで、2 つ目の <option>s</option> の前に指定されたペアは、最初のリポジトリに適用されます。2 つ目の<option>s</option> のあとに指定されたペアは 2 つ目のリポジトリに適用されます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -471,11 +523,11 @@ solaris   repository related-uris     ()</screen>
 <para>次の終了ステータスが返されます。</para>
 <variablelist>
 <varlistentry><term><returnvalue>0</returnvalue></term>
-<listitem><para>コマンドが成功しました。</para>
+<listitem><para>コマンドは成功しました (または pkgrepo diff での差異がありませんでした)。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生した。</para>
+<listitem><para>エラーが発生しました。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -488,6 +540,10 @@ solaris   repository related-uris     ()</screen>
 </varlistentry>
 <varlistentry><term><returnvalue>4</returnvalue></term>
 <listitem><para>変更は行われませんでした。処理がありません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>pkgrepo diff で差異が見つかりました。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>99</returnvalue></term>
@@ -530,8 +586,8 @@ solaris   repository related-uris     ()</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2 </citetitle></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
 <para><literal>https://java.net/projects/ips/pages/Home</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

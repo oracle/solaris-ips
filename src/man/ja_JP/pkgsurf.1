@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgsurf-1">
+<refmeta><refentrytitle>pkgsurf</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 8 月 9 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgsurf</refname><refpurpose>Image Packaging System の再サーフェスユーティリティー</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsurf -s <replaceable>target_repo</replaceable> -r <replaceable>reference_repo</replaceable> [-n]
+    [-p <replaceable>publisher_prefix</replaceable>]... [-i <replaceable>name</replaceable>]... [-c <replaceable>pattern</replaceable>]...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsurf-1-desc" role="description"><title></title>
+<para><command>pkgsurf</command> は、参照リポジトリ内の最新の発行済みバージョンから変更されていない、ターゲットリポジトリ内のパッケージを置き換えるためのパッケージ発行ツールです。結果は、ターゲットリポジトリ内のすべてのパッケージの新しいバージョンのサーフェスです。</para>
+<para><command>pkgsurf</command> 操作は元に戻せません。<command>pkgsurf</command> 操作を元に戻す必要がある場合、<command>pkgsurf</command> を実行する前に、ターゲットリポジトリを自身の ZFS データセットに格納し、データセットのスナップショットを作成する必要があります。</para>
+<para>ターゲットリポジトリ内のパッケージが、参照リポジトリ内のパッケージと比較され、内容の変更が分析されます。各パッケージで、内容の変更が見つからない場合、パッケージマニフェストがターゲットリポジトリから削除され、参照リポジトリの同じパッケージのマニフェストに置き換えられます。</para>
+<para>ターゲットリポジトリは、ファイルシステムに基づいたリポジトリである必要があります。最適なパフォーマンスのため、参照リポジトリもファイルシステムに基づいたリポジトリである必要があります。</para>
+<para>ターゲットリポジトリには、各パッケージの 1 つのバージョンのみが含まれている必要があります。ターゲットリポジトリに参照リポジトリ内の最新のバージョンよりも新しく、ターゲットリポジトリ内の最新のバージョンより古いパッケージが含まれている場合は、そのパッケージについてはパッケージマニフェストの置換は行われません。
+</para>
+<para>参照リポジトリは、各パッケージの 1 つ以上のバージョンを含むことができます。ただし、最新バージョンのみが比較に使用されます。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term><listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>pattern</replaceable></term>
+<listitem><para>FMRI が <replaceable>pattern</replaceable> に一致するすべてのパッケージを変更されたものとして扱い、内容の変更がない場合でも、復元しません。このオプションは複数回指定できます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>name</replaceable></term>
+<listitem><para>内容の変更を決定するために <literal>name</literal> フィールドが <replaceable>name</replaceable> に設定された <literal>set</literal> アクションを無視します。このアクションがターゲットと参照のバージョン間で異なる場合でも、パッケージは復元されます。このオプションは複数回指定できます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>ターゲットリポジトリを変更することなく、操作の試験実行を行います。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher_prefix</replaceable></term>
+<listitem><para>再サーフェスするパブリッシャーの名前を指定します。このオプションは複数回指定できます。</para>
+<para>デフォルトで、ターゲットリポジトリおよび参照リポジトリ内にあるすべてのパブリッシャーのパッケージが再サーフェスされます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>reference_repo</replaceable></term>
+<listitem><para>マニフェストの比較に使用する参照リポジトリの URI を指定します。各パッケージの最新バージョンのみが考慮されます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>target_repo</replaceable></term>
+<listitem><para>ターゲットリポジトリへのパスを指定します。このリポジトリ内のパッケージが、比較結果に従って参照リポジトリ内にあるバージョンに復元されます。ターゲットリポジトリには、各パッケージの 1 つのバージョンのみが含まれている必要があります。ターゲットリポジトリは、ファイルシステムに基づいたリポジトリである必要があります。</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>次の環境変数がサポートされています。</para>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>ターゲットリポジトリの絶対パス。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>リポジトリの再サーフェス</title>
+<para>内容の変更がなかったターゲットリポジトリ内の各パッケージを、参照リポジトリ内の同じパッケージから復元します。</para>
+<screen>$ <userinput>pkgsurf -s /path/to/target -r http://reference.example.com</userinput></screen>
+<para>ターゲットリポジトリ内のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@2.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>参照リポジトリ内のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para><command>pkgsurf</command> 操作後のターゲットリポジトリ内のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

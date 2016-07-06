@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgdepend-1">
-<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 1 月 28 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgdepend</refname><refpurpose>映像包管理系统依赖项分析器</refpurpose></refnamediv>
@@ -30,7 +30,7 @@ path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
 <para>提供的文件的多个组件用作依赖项信息的源：</para>
 <variablelist>
 <varlistentry><term>ELF</term>
-<listitem><para>分析提供的文件中的 ELF 头以获取依赖项信息，<option>k</option> 和 <option>D</option> 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 <command>ldd</command> 和<olink targetdoc="OSLLG">《<citetitle remap="book">Oracle Solaris 11.2 Linkers and Libraries Guide</citetitle>》</olink>。 </para>
+<listitem><para>分析提供的文件中的 ELF 头以获取依赖项信息，<option>k</option> 和 <option>D</option> 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 <command>ldd</command> 和<olink targetdoc="OSLLG">《<citetitle remap="book">Oracle Solaris 11.2 链接程序和库指南</citetitle>》</olink>。 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term>脚本</term>
@@ -179,7 +179,7 @@ foo    bar</screen>
 </example>
 <example><title>绕过依赖项生成</title>
 <para>将 <filename>opt/python</filename> 附加到给定 Python 脚本的标准 Python 运行路径，然后根据名称为 <literal>test</literal> 的所有 Python 模块绕过作为 <filename>opt/python/foo/file.py </filename> 提供的文件的依赖项生成。</para>
-<para>避免针对 <filename>usr/lib/python2.7/vendor-packages/xdg </filename> 中提供的任何文件生成依赖项。</para>
+<para>避免针对 <filename>usr/lib/python2.7/vendor-packages/xdg</filename> 中提供的任何文件生成依赖项。</para>
 <screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
 set name=pkg.summary value="My test package"
