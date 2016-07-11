@@ -4903,6 +4903,26 @@ exit 0""".strip("\n")
                 # Update the API object to point back to the old location.
                 api_inst._img.find_root(image1)
 
+        def test_pull_child_moving_and_parent_staying_fixed(self):
+                """Test what happens if we have a pull child image that gets
+                moved but the parent image doesn't move."""
+
+                # Setup image paths
+                img_dirs = [ "parent/", "child_foo/", ]
+
+                # Create images, link them, and install packages.
+                self.__create_images(self.img_path(0), img_dirs)
+                self.__attach_parent(self.img_path(0),  "child_foo/", "parent/")
+
+                # Move the child image
+                foo_path = os.path.join(self.img_path(0), "child_foo/")
+                bar_path = os.path.join(self.img_path(0), "child_bar/")
+                self.__ccmd("mv {0} {1}".format(foo_path, bar_path))
+
+                # sync the child image
+                self.pkg("-R {0} sync-linked -v".format(bar_path),
+                    exit=EXIT_NOP)
+
         def test_linked_paths_bad_zoneadm_list_output(self):
                 """Test that we emit an error message if we fail to parse
                 zoneadm list -p output."""

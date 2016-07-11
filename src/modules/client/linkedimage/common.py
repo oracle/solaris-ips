@@ -647,9 +647,16 @@ class LinkedImage(object):
                 props[PROP_PATH] = path
                 props[PROP_CURRENT_PATH] = current_path
                 props[PROP_PATH_TRANSFORM] = path_transform
-                if PROP_PARENT_PATH in props:
-                        props[PROP_CURRENT_PARENT_PATH] = path_transform_apply(
-                            props[PROP_PARENT_PATH], path_transform)
+                parent_path = props.get(PROP_PARENT_PATH)
+                if not parent_path:
+                        return
+
+                if not path_transform_applicable(parent_path, path_transform):
+                        props[PROP_CURRENT_PARENT_PATH] = parent_path
+                        return
+
+                props[PROP_CURRENT_PARENT_PATH] = path_transform_apply(
+                    parent_path, path_transform)
 
         def __set_current_path(self, props, update=False):
                 """Given a set of linked image properties, the image paths
