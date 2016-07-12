@@ -62,7 +62,7 @@
 		  name='sysrepo'
 	          type='service'
 	          grouping='require_all'
-	          restart_on='restart'>
+	          restart_on='none'>
 	          <service_fmri value='svc:/application/pkg/system-repository' />
 	</dependency>
 
