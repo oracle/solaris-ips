@@ -105,7 +105,14 @@ file {file_loc} group=bin mode=0755 owner=root path=kernel/foobar
 """
 
         miss_payload_manf = """\
-file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/bar.py
+file {payload} group=bin mode=0755 owner=root path=foo/bar.py
+"""
+        empty_payload_manf = """\
+file group=bin mode=0755 owner=root path=foo/bar.py
+"""
+
+        nohash_payload_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=foo/bar.py
 """
 
         if "PYTHONPATH" in os.environ:
@@ -404,6 +411,11 @@ depend fmri={dummy_fmri} {depend_debug_prefix}.file=libc.so.1 {depend_debug_pref
 )
 
         miss_payload_manf_error = """\
+Couldn't find '{payload}' needed for 'foo/bar.py' in any of the specified search directories:
+	{path_pref}
+"""
+
+        empty_payload_manf_error = """\
 Couldn't find 'foo/bar.py' in any of the specified search directories:
 	{path_pref}
 """
@@ -1727,14 +1739,30 @@ int main() { return 1; }
                 self.check_res("", self.errout)
                 self.check_res(self.double_double_stdout, self.output)
 
-        def test_bug_12816(self):
+        def test_missing_payload(self):
                 """Test that the error produced by a missing payload action
                 uses the right path."""
-
-                m_path = self.make_manifest(self.miss_payload_manf)
+                payload = "tmp/file/should/not/exist/here/foo"
+                m1_path = self.make_manifest(self.miss_payload_manf.format(
+                    payload=payload))
                 self.pkgdepend_generate("-d {0} {1}".format(
-                    self.test_proto_dir, m_path), exit=1)
+                    self.test_proto_dir, m1_path), exit=1)
                 self.check_res(self.miss_payload_manf_error.format(
+                    payload=payload, path_pref=self.test_proto_dir),
+                    self.errout)
+                self.check_res("", self.output)
+
+                m2_path = self.make_manifest(self.empty_payload_manf)
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m2_path), exit=1)
+                self.check_res(self.empty_payload_manf_error.format(
+                    path_pref=self.test_proto_dir), self.errout)
+                self.check_res("", self.output)
+
+                m3_path = self.make_manifest(self.nohash_payload_manf)
+                self.pkgdepend_generate("-d {0} {1}".format(
+                    self.test_proto_dir, m3_path), exit=1)
+                self.check_res(self.empty_payload_manf_error.format(
                     path_pref=self.test_proto_dir), self.errout)
                 self.check_res("", self.output)
 

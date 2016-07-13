@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -40,14 +40,21 @@ class MissingFile(DependencyAnalysisError):
         """Exception that is raised when a dependency checker can't find the
         file provided."""
 
-        def __init__(self, file_path, dirs=None):
+        def __init__(self, file_path, dirs=None, hash=None):
                 Exception.__init__(self)
                 self.file_path = file_path
                 self.dirs = dirs
+                self.hash = hash
 
         def __str__(self):
                 if not self.dirs:
                         return _("Couldn't find '{0}'").format(self.file_path)
+                elif self.hash != "NOHASH":
+                        return _("Couldn't find '{hash}' needed for '{path}'"
+                            " in any of the specified search directories:\n"
+                            "{dirs}").format(hash=self.hash,
+                                path=self.file_path, dirs="\n".join(
+                                    ["\t" + d for d in sorted(self.dirs)]))
                 else:
                         return _("Couldn't find '{path}' in any of the "
                             "specified search directories:\n{dirs}").format(

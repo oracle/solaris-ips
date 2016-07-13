@@ -640,7 +640,8 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                                 a = new_a
                         else:
                                 missing_files.append(base.MissingFile(
-                                    new_a.attrs["path"], basedirs))
+                                    new_a.attrs["path"], dirs=basedirs,
+                                    hash=new_a.hash))
                                 continue
                 except actions.ActionError as e:
                         action_errs.append(e)
@@ -1278,9 +1279,9 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
         omitted_req_any = {}
         fmri_dict = {}
         warnings = []
-        # 
+        #
         # We assume that the subsets are shorter than the supersets.
-        # 
+        #
         # Example:
         # #1 depend fmri=a, fmri=b, fmri=c, type=require-any
         # #2 depend fmri=a, fmri=b, type=require=any
@@ -1288,7 +1289,7 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
         #
         # Sort the dependencies by length to visit the subsets before the
         # supersets.
-        # 
+        #
         for cur_dep, cur_vars in sorted(deps, key=lambda i: len(str(i))):
                 if cur_dep.attrs["type"] not in ("require", "require-any"):
                         res.append((cur_dep, cur_vars))
