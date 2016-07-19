@@ -2271,7 +2271,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 op = API_OP_VERIFY
                 return self.__plan_op(op, args=args, _noexecute=noexecute,
-                    _refresh_catalogs=False, _update_index=False,
+                    _refresh_catalogs=False, _update_index=False, _new_be=None,
                     unpackaged=unpackaged, unpackaged_only=unpackaged_only)
 
         def gen_plan_fix(self, args, backup_be=None, backup_be_name=None,
