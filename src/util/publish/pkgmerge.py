@@ -500,10 +500,10 @@ def republish_packages(pub, target_pub, processdict, source_list, variant_list,
                 # Determine total bytes to send for this package; this must be
                 # done using the manifest since retrievals are coalesced based
                 # on hash, but sends are not.
+                f = man.fmri
+                target_pub.prefix = f.publisher
                 sendbytes = dest_xport.get_transfer_size(target_pub,
                     man.gen_actions())
-
-                f = man.fmri
 
                 tracker.republish_start_pkg(f, getbytes=getbytes,
                     sendbytes=sendbytes)
@@ -512,8 +512,6 @@ def republish_packages(pub, target_pub, processdict, source_list, variant_list,
                         # Dry-run; attempt a merge of everything but don't
                         # write any data or publish packages.
                         continue
-
-                target_pub.prefix = f.publisher
 
                 # Retrieve package data from each package source.
                 for i, uri in enumerate(source_list):

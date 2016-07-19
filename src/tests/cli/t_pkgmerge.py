@@ -148,8 +148,12 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
            close
         """
 
+        # etc/tree is purposefully delivered by this package to verify that
+        # pkgmerge can have an identical file being present in multiple
+        # packages (this and scheme@1.0) with different publishers.
         multiA = """
             open gold@1.0,5.11-0
+            add file tmp/sparc-only mode=0444 owner=root group=bin path=/etc/tree
             add file tmp/sparc1 mode=0444 owner=root group=bin path=/etc/debug-notes pkg.merge.blend=arch
             add file tmp/sparc2 mode=0444 owner=root group=bin path=/etc/sparc/debug-notes
             add file tmp/sparc3 mode=0444 owner=root group=bin path=/etc/binary
@@ -1070,6 +1074,7 @@ set name=variant.arch value=sparc value=i386\
                 expected = """\
 depend fmri=foo fmri=bar type=require-any
 file 24bb3b46361cf7d180d0227beea4f75a872b6ff4 chash=b91fb7bdd4d35779bbd70c6b0367198e48290373 group=bin mode=0444 owner=root path=etc/nondebug-notes pkg.csize=35 pkg.size=15 variant.debug=false
+file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.csize=40 pkg.size=20 variant.arch=sparc variant.debug=true
 file 3dfdd5c4f64e2005e7913ba8444c8ee6fa70f238 chash=05beb59e279eb2c9146c6547f1c4b94536f4b2b9 group=bin mode=0444 owner=root path=etc/binary pkg.csize=35 pkg.size=15 variant.arch=i386 variant.debug=false
 file 4c12fa38950b7a5580c2715725f0ea980354b407 chash=61801db07f048941675ab3951cace0899b571430 group=bin mode=0444 owner=root path=etc/binary pkg.csize=35 pkg.size=15 variant.arch=i386 variant.debug=true
 file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/binary pkg.csize=36 pkg.size=16 variant.arch=sparc variant.debug=false
@@ -1178,6 +1183,7 @@ set name=variant.debug value=false\
 """.format(**repo15_fmris)
                 expected_last_gold = """\
 depend fmri=foo fmri=bar type=require-any
+file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.csize=40 pkg.size=20 variant.arch=sparc
 file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/binary pkg.csize=36 pkg.size=16 variant.arch=i386
 file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/everywhere-notes pkg.csize=36 pkg.size=16
 file 9e837a70edd530a88c88f8a58b8a5bf2a8f3943c chash=d0323533586e1153bd1701254f45d2eb2c7eb0c4 group=bin mode=0444 owner=root path=etc/debug-notes pkg.csize=36 pkg.size=16
