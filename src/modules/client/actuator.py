@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.smf as smf
@@ -43,13 +43,30 @@ class Actuator(object):
         need to cause the equivalent effect during boot.
         This is Solaris specific for now. """
 
-        actuator_attrs = set([
+        # Each set of attributes listed below determines what attributes
+        # will be scanned for a given type of operation.  These sets must
+        # match the logic found in exec_pre_actuators() and
+        # exec_post_actuators() below or planning output may be incorrect.
+        __install_actuator_attrs = set([
+            "release-note",     # conditionally include this file
+                                # in release notes
+            "refresh_fmri",     # refresh this service on any change
+            "restart_fmri",     # restart this service on any change
+        ])
+
+        __update_actuator_attrs = set([
             "reboot-needed",    # have to reboot to update this file
             "release-note",     # conditionally include this file
                                 # in release notes
             "refresh_fmri",     # refresh this service on any change
             "restart_fmri",     # restart this service on any change
             "suspend_fmri",     # suspend this service during update
+        ])
+
+        __removal_actuator_attrs = set([
+            "reboot-needed",    # have to reboot to update this file
+            "refresh_fmri",     # refresh this service on any change
+            "restart_fmri",     # restart this service on any change
             "disable_fmri"      # disable this service prior to removal
         ])
 
@@ -157,19 +174,23 @@ class Actuator(object):
 
         # scan_* functions take ActionPlan arguments (see imageplan.py)
         def scan_install(self, ap):
-                self.__scan(self.install, ap.dst, ap.p.destination_fmri)
+                self.__scan(self.install, ap.dst, ap.p.destination_fmri,
+                    self.__install_actuator_attrs)
 
         def scan_removal(self, ap):
-                self.__scan(self.removal, ap.src, ap.p.origin_fmri)
+                self.__scan(self.removal, ap.src, ap.p.origin_fmri,
+                    self.__removal_actuator_attrs)
 
         def scan_update(self, ap):
                 if ap.src:
-                        self.__scan(self.update, ap.src, ap.p.destination_fmri)
-                self.__scan(self.update, ap.dst, ap.p.destination_fmri)
+                        self.__scan(self.update, ap.src, ap.p.destination_fmri,
+                            self.__update_actuator_attrs)
+                self.__scan(self.update, ap.dst, ap.p.destination_fmri,
+                    self.__update_actuator_attrs)
 
-        def __scan(self, dictionary, act, fmri):
+        def __scan(self, dictionary, act, fmri, actuator_attrs):
                 attrs = act.attrs
-                for a in set(attrs.keys()) & self.actuator_attrs:
+                for a in set(attrs.keys()) & actuator_attrs:
                         if a != "release-note":
                                 values = attrs[a]
                                 if not isinstance(values, list):

@@ -457,7 +457,7 @@ stop/type astring method
                     "svcadm restart -s -T 20 svc:/system/test_restart_svc:default")
                 os.unlink(svcadm_output)
 
-                # synchronous suspend 
+                # synchronous suspend
                 self.pkg("install --sync-actuators basics@1.4")
                 self.pkg("verify")
                 self.file_contains(svcadm_output,
@@ -494,6 +494,36 @@ stop/type astring method
                         self.file_contains(svcadm_output, "svc:/system/test_multi_svc2:default")
                 os.unlink(svcadm_output)
 
+        def test_actuator_plan_display(self):
+                """Test that the actuators are correct in plan display for different
+                pkg operations."""
+
+                rurl = self.dc.get_repo_url()
+                plist = self.pkgsend_bulk(rurl, self.pkg_list)
+                self.image_create(rurl)
+
+                self.pkg("install -v basics@1.0")
+                self.assertTrue("restart_fmri" in self.output)
+
+                self.pkg("update -v basics@1.5")
+                self.assertTrue("suspend_fmri" in self.output
+                    and "disable_fmri" not in self.output)
+
+                self.pkg("uninstall -v basics")
+                self.assertTrue("suspend_fmri" not in self.output
+                    and "disable_fmri" in self.output)
+
+                self.pkg("install -v basics@1.5")
+                self.assertTrue("suspend_fmri" not in self.output and
+                    "disable_fmri" not in self.output)
+                self.pkg("uninstall basics")
+
+                self.pkg("install -v basics@1.7")
+                self.assertTrue("restart_fmri" in self.output and
+                    "refresh_fmri" in self.output and
+                    "suspend_fmri" not in self.output and
+                    "disable_fmri" not in self.output)
+
         def __create_zone(self, zname, rurl):
                 """Create a fake zone linked image and attach to parent."""
 
@@ -506,7 +536,7 @@ stop/type astring method
                     self.img_path(0), zname, zimg_path))
 
                 return zone_path
-                
+
         def test_zone_actuators(self):
                 """test zone actuators"""
 
@@ -729,7 +759,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
 
                 uni_out.index(self.multi_unicode)
                 uni_out.index(self.multi_ascii)
-		
+
                 self.pkg("uninstall '*'")
 
         def test_release_note_8(self):
