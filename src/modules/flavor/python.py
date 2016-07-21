@@ -283,11 +283,15 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
         exec_file = os.path.join(root_dir, "depthlimitedmf.py")
         cmd = ["python{0}.{1}".format(analysis_major, analysis_minor), exec_file,
             os.path.dirname(action.attrs["path"]), local_file]
+        newenv = os.environ.copy()
+        # Tell Python to not create .pyc, .pyo, etc. cache files for any Python
+        # modules our script imports.
+        newenv["PYTHONDONTWRITEBYTECODE"] = "1"
 
         if run_paths:
                 cmd.extend(run_paths)
         try:
-                sp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         except Exception as e:
                 return [], [PythonSubprocessError(None, " ".join(cmd),\
