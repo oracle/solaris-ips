@@ -1095,6 +1095,25 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         self.assertFalse(fname.startswith("catalog.") or \
                             fname.startswith("update."))
 
+        def test_legacy_description(self):
+                """Test that gen_packages does not traceback when a package
+                uses the legacy style of declaring package description metadata."""
+
+                m = manifest.Manifest()
+                contents = misc.force_text(
+                    "set name=description "
+                    """value="legacy pkg description" """
+                )
+                m.set_content(contents, signatures=True)
+                f = fmri.PkgFmri("pkg://opensolaris.org/"
+                        "legacy@1.0,5.11-1:20000101T120000Z")
+                nc = catalog.Catalog()
+                nc.add_package(f, manifest=m)
+                cl = list(nc.gen_packages(patterns=[str(f)], collect_attrs=True))
+                self.assertEqual(len(cl), 1)
+                self.assertEqual(cl[0][2]['pkg.summary'][frozenset([])],
+                    "legacy pkg description")
+
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         """Basic functionality tests for empty catalogs."""

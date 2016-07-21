@@ -3058,9 +3058,8 @@ class Catalog(object):
                         states = set()
                         if collect_attrs:
                                 # use OrderedDict to get a deterministic output
-                                ddm = lambda: OrderedDict(
-                                    collections.defaultdict(list))
-                                attrs = collections.defaultdict(ddm)
+                                attrs = collections.defaultdict(
+                                    lambda: OrderedDict([]))
                         else:
                                 attrs = EmptyDict
 
@@ -3073,9 +3072,16 @@ class Catalog(object):
                                         atvalue = a.attrs["value"]
                                         if collect_attrs:
                                                 atvlist = a.attrlist("value")
-
-                                                # XXX Need to describe this data
-                                                # structure sanely somewhere.
+                                                # mods = frozenset(
+                                                #   (k1, frozenset([k1_1, k1_2]))
+                                                #   (k2, frozenset([k2_1, k2_2]))
+                                                # )
+                                                # will later be converted by the
+                                                # caller into a dict like:
+                                                # {
+                                                #    k1: frozenset([k1_1, k1_2]),
+                                                #    k2: frozenset([k2_1, k2_2])
+                                                # }
                                                 mods = frozenset(
                                                     (k, frozenset(a.attrlist(k)))
                                                     for k in six.iterkeys(a.attrs)
@@ -3092,14 +3098,20 @@ class Catalog(object):
                                                 continue
 
                                         if atname == "description":
-                                                if summ is None:
-                                                        # Historical summary
-                                                        # field.
-                                                        summ = atvalue
-                                                        collect_attrs and \
-                                                            attrs["pkg.summary"] \
-                                                            [mods]. \
-                                                            extend(atvlist)
+                                                if summ is not None:
+                                                        continue
+
+                                                # Historical summary field.
+                                                summ = atvalue
+                                                if collect_attrs:
+                                                        if mods not in \
+                                                            attrs["pkg.summary"]:
+                                                                attrs["pkg.summary"]\
+                                                                    [mods] = atvlist
+                                                        else:
+                                                                attrs["pkg.summary"]\
+                                                                    [mods].extend(
+                                                                        atvlist)
                                                 continue
 
                                         if atname == "pkg.renamed":
