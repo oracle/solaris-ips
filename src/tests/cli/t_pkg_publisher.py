@@ -1176,13 +1176,6 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 output = self.output.split()
                 self.assertTrue(output[3] == "false")
 
-                # Verify that remove option (-G) cannot be used with
-                # enable/disable.
-                self.pkg("set-publisher --enable -G " + self.durl7 + " test4",
-                    exit=2)
-                self.pkg("set-publisher --disable -G " + self.durl7 + " test4",
-                    exit=2)
-
                 # Test adding an enabled origin.
                 self.pkg("set-publisher --enable -g " + self.durl7 + " test4")
                 self.pkg("publisher -F tsv | grep test4")
@@ -1371,6 +1364,57 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install origin2", exit=1)
                 self.pkg("list -af origin2", exit=1)
                 self.pkg("info -r origin2", exit=1)
+
+                # Test -g, -G and --disable.
+                self.pkg("set-publisher -G " + self.durl9  + " -g " + self.durl7
+                    + " --disable test4")
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(self.durl7 in self.output)
+                self.assertTrue(self.durl9 not in self.output)
+
+                # Removing an non-existing origin fails the operation.
+                self.pkg("set-publisher -G http://unknown  -g " + self.durl7
+                    + " --enable test4", exit=1)
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(self.durl7 in self.output)
+                self.assertTrue(self.durl9 not in self.output)
+
+                # Remove all origins and add a new one.
+                self.pkg("set-publisher -G '*'  -g " + self.durl9
+                    + " --disable test4")
+                self.pkg("publisher -HF tsv | grep test4")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(self.durl9 in self.output)
+                self.assertTrue(self.durl7 not in self.output)
+                self.pkg("publisher | grep test4")
+                self.assertTrue("(disabled)" not in self.output)
+
+                # Removing an unknown origin for a publisher not set yet will
+                # fail.
+                self.pkg("unset-publisher test4")
+                self.pkg("set-publisher -G " + self.durl7 + " -g " +
+                    self.durl9 + " --disable " + "test4", exit=1)
+
+                # Add a new publisher with a disabled origin, plus removing any
+                # possible origins (actually no origin exists).
+                self.pkg("unset-publisher test5")
+                self.pkg("set-publisher -G '*' -g " + self.durl8 + " --disable "
+                    + "test5")
+                self.pkg("publisher -HF tsv | grep test5")
+                outputs = self.output.split("\n")
+                output = outputs[0].split("\t")
+                self.assertTrue(output[0] == "test5" and output[3] == "false")
+                self.assertTrue(self.durl8 in self.output)
+                self.pkg("publisher | grep test5")
+                self.assertTrue("(disabled)" not in self.output)
 
         def test_search_order(self):
                 """Test moving search order around"""

@@ -223,14 +223,6 @@ def opts_table_cb_pub_opts(api_inst, opts, opts_new):
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [PUB_STICKY, PUB_NON_STICKY])
 
-        if opts[PUB_DISABLE] and opts[REMOVE_ORIGINS]:
-                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
-                    [PUB_DISABLE, REMOVE_ORIGINS])
-
-        if opts[PUB_ENABLE] and opts[REMOVE_ORIGINS]:
-                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
-                    [PUB_DISABLE, REMOVE_ORIGINS])
-
         opts_new[PUB_DISABLE] = None
         if opts[PUB_DISABLE]:
                 opts_new[PUB_DISABLE] = True
