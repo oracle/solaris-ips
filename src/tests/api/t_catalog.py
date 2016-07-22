@@ -1112,7 +1112,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 cl = list(nc.gen_packages(patterns=[str(f)], collect_attrs=True))
                 self.assertEqual(len(cl), 1)
                 self.assertEqual(cl[0][2]['pkg.summary'][frozenset([])],
-                    "legacy pkg description")
+                    ["legacy pkg description"])
 
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
