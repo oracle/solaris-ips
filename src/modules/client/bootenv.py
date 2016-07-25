@@ -230,51 +230,6 @@ class BeadmV2BootEnv(GenericBootEnv):
                         # if were are on UFS.
                         raise RuntimeError("recoveryDisabled")
 
-        def __get_new_be_name(self, suffix=None):
-                """Create a new boot environment name."""
-
-                new_bename = self.be_name
-                if suffix:
-                        new_bename += suffix
-                base, sep, rev = new_bename.rpartition("-")
-                if sep and rev.isdigit():
-                        # The source BE has already been auto-named, so we need
-                        # to bump the revision.  List all BEs, cycle through the
-                        # names and find the one with the same basename as
-                        # new_bename, and has the highest revision.  Then add
-                        # one to it.  This means that gaps in the numbering will
-                        # not be filled.
-                        rev = int(rev)
-                        maxrev = rev
-
-                        for be in self.beList:
-                                oben = be.name
-                                nbase, sep, nrev = oben.rpartition("-")
-                                if (not sep or nbase != base or
-                                    not nrev.isdigit()):
-                                        continue
-                                maxrev = max(int(nrev), rev)
-                else:
-                        # If we didn't find the separator, or if the rightmost
-                        # part wasn't an integer, then we just start with the
-                        # original name.
-                        base = new_bename
-                        maxrev = 0
-
-                good = False
-                num = maxrev
-                while not good:
-                        new_bename = "-".join((base, str(num)))
-                        for be in self.beList:
-                                oben = be.name
-                                if oben == new_bename:
-                                        break
-                        else:
-                                good = True
-
-                        num += 1
-                return new_bename
-
         @staticmethod
         def libbe_exists():
                 return True
@@ -356,24 +311,21 @@ class BeadmV2BootEnv(GenericBootEnv):
                                 bemgr.validate_bename(be_name)
                         except BeNameError:
                                 raise api_errors.InvalidBENameException(be_name)
-                         
 
-                        # If there is already a BE with the same name as
-                        # be_name, then raise an exception.
-                        be_obj = None
-                        try:
-                                be_obj = bemgr.get_be_by_fmri(be_name)
-                        except BeNotFoundError:
-                                # The given BE shouldn't exist.  So, it's OK
-                                # to get the error.
-                                pass
-
-                        if be_obj is not None:
-                                raise api_errors.DuplicateBEName(be_name)
-
+                        # Check whether there's already a BE or ZBE with
+                        # the given name.  
+                        be_obj = bemgr.be_exists(be_name)
                 except Exception:
                         raise api_errors.BENamingNotSupported(be_name)
-
+                
+                if be_obj:
+                        # A BE or Zone BE with the given be_name exists.
+                        zonename = None
+                        if be_obj.parent_uuid:
+                                zonename = be_obj.be_group.name
+                        raise api_errors.DuplicateBEName(
+                            be_name, zonename=zonename)
+                   
         @staticmethod
         def get_be_list(raise_error=False):
                 # This check enables the test suite to run much more quickly.
@@ -468,16 +420,17 @@ class BeadmV2BootEnv(GenericBootEnv):
                 'be_name' is an optional string indicating the name to use
                 for the new backup BE."""
 
-                self.check_be_name(be_name)
-
                 if self.is_live_BE:
                         if not be_name:
-                                be_name = self.__get_new_be_name(
-                                    suffix="-backup-1")
+                                suffix = "-backup"
+                        else:
+                                suffix = None
+
                         # Create a clone of the live BE, but do not mount or
                         # activate it.
                         try:
-                                self.bemgr.copy(dst_be_fmri=be_name)
+                                self.bemgr.copy(dst_be_fmri=be_name,
+                                                dst_bename_suffix=suffix)
                         except Exception as ex:
                                 raise api_errors.UnableToCopyBE()
                         

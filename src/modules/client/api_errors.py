@@ -1698,13 +1698,21 @@ class DuplicateBEName(BEException):
         """Used to indicate that there is an existing boot environment
         with this name"""
 
-        def __init__(self, be_name):
+        def __init__(self, be_name, zonename=None):
                 BEException.__init__(self)
                 self.be_name = be_name
+                self.zonename = zonename
 
         def __str__(self):
-                return _("The boot environment '{0}' already exists.").format(
-                    self.be_name)
+                if not self.zonename:
+                        return _("The boot environment '{0}' already "
+                            "exists.").format(self.be_name)
+                d = {
+                    "be_name": self.be_name,
+                    "zonename": self.zonename
+                }
+                return _("The boot environment '{be_name}' already "
+                         "exists in zone '{zonename}'.").format(**d)
 
 class BENamingNotSupported(BEException):
         def __init__(self, be_name):
@@ -1714,7 +1722,7 @@ class BENamingNotSupported(BEException):
         def __str__(self):
                 return _("""\
 Boot environment naming during package install is not supported on this
-version of OpenSolaris. Please update without the --be-name option.""")
+version of Solaris. Please update without the --be-name option.""")
 
 class UnableToCopyBE(BEException):
         def __str__(self):
