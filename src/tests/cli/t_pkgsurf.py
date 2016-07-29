@@ -42,6 +42,7 @@ import unittest
 class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
         persistent_setup = True
+        need_ro_data = True
 
         # The 1.0 version of each package will be in the reference repo,
         # the 2.0 version in the target.
@@ -89,14 +90,31 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         sandtiger_ref = """
             open sandtiger@1.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/sandtiger
+            close
         """
 
         sandtiger_targ = """
             open sandtiger@2.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/sandtiger
+            close
         """
 
         sandtiger_exp = sandtiger_ref
+
+        # Basic package with content change, should not be reversioned.
+        elftest_ref = """
+            open elftest@1.0,5.11-0:20000101T000000Z
+            add file ro_data/elftest.so.1 mode=0755 owner=root group=bin path=/bin/true
+            close
+        """
+
+        elftest_targ = """
+            open elftest@2.0,5.11-0:20000101T000000Z
+            add file ro_data/elftest.so.1 mode=0755 owner=root group=bin path=/bin/true
+            close
+        """
+
+        elftest_exp = elftest_targ
 
         # Basic package with content change, should not be reversioned.
         hammerhead_ref = """
@@ -492,7 +510,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         pkgs = ["tiger", "sandtiger", "hammerhead", "blue", "bull", "mako",
             "white", "angel", "horn", "lemon", "leopard", "blacktip",
             "whitetip", "goblin", "reef", "sandbar", "greenland", "sleeper",
-            "whale", "thresher", "bamboo"]
+            "whale", "thresher", "bamboo", "elftest"]
 
         def setUp(self):
                 """Start 3 depots, 1 for reference repo, 1 for the target and
@@ -559,15 +577,44 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                     self.dpath2])
                 self.assertTrue(ret==0)
 
+        def __change_content_hash(self):
+                """Change the content-hash attr in the manifest located at the
+                target and expected repos."""
+
+                mapping = {self.dpath2: self.published_targ,
+                           self.dpath3: self.published_exp}
+                for repodir in (self.dpath2, self.dpath3):
+                        for s in mapping[repodir]:
+                                # Find elftest package
+                                if "elftest" in s:
+                                        break
+                        f = fmri.PkgFmri(s, None)
+                        repo = self.get_repo(repodir)
+                        mpath = repo.manifest(f)
+                        # load manifest, change content-hash attr and store back
+                        # to disk
+                        mani = manifest.Manifest()
+                        mani.set_content(pathname=mpath)
+                        for a in mani.gen_actions():
+                                if "bin/true" in str(a):
+                                        # change the signed version of hash of
+                                        # the ELF file
+                                        a.attrs["pkg.content-hash"][
+                                                0] = "gelf:sha512t_256:foo"
+                        mani.store(mpath)
+                        # rebuild repo catalog since manifest digest changed
+                        repo.rebuild()
+
         def test_1_basics(self):
                 """Test basic resurfacing operation."""
+
+                self.__change_content_hash()
 
                 # Copy target repo to tmp repo
                 self.copy_repository(self.dpath2, self.dpath_tmp,
                     { "selachii": "selachii" })
                 # The new repository won't have a catalog, so rebuild it.
                 self.dcs[4].get_repo(auto_create=True).rebuild()
-                #self.assertTrue(False)
 
                 # Check that empty repos get handled correctly
                 tempdir = tempfile.mkdtemp(dir=self.test_root)
@@ -640,6 +687,57 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 # to reversion. Use http for accessing reference repo this time.
                 self.pkgsurf("-s {0} -r {1}".format(self.dpath_tmp, self.durl1))
                 self.assertTrue("No packages to reversion." in self.output)
+
+        def test_4_unsigned_option(self):
+
+                self.__change_content_hash()
+
+                # Copy target repo to tmp repo
+                self.copy_repository(self.dpath2, self.dpath_tmp,
+                    {"selachii": "selachii"})
+                # The new repository won't have a catalog, so rebuild it.
+                self.dcs[4].get_repo(auto_create=True).rebuild()
+
+                # If '-u' is enabled, we just check the unsigned version of
+                # hashes so that the target basic package is treated as no
+                # content change and should be reversioned.
+                elftest_exp = self.elftest_ref
+                # Replace elftest package in the expected repo.
+                for i, s in enumerate(self.published_exp):
+                        if "elftest" in s:
+                                self.published_exp[-1] = self.pkgsend_bulk(
+                                    self.dpath3, (elftest_exp,))[0]
+
+                # Check that '-u' option works and should not affect other
+                # packages.
+                self.pkgsurf("-s {0} -r {1} -u".format(self.dpath_tmp,
+                    self.dpath1))
+
+                ref_repo = self.get_repo(self.dpath1)
+                targ_repo = self.get_repo(self.dpath_tmp)
+                exp_repo = self.get_repo(self.dpath3)
+                for s in self.published_exp:
+                        f = fmri.PkgFmri(s, None)
+                        targ = targ_repo.manifest(f)
+
+                        # Load target manifest
+                        targm = manifest.Manifest()
+                        targm.set_content(pathname=targ)
+
+                        # Load expected manifest
+                        exp = exp_repo.manifest(f)
+                        expm = manifest.Manifest()
+                        expm.set_content(pathname=exp)
+
+                        ta, ra, ca = manifest.Manifest.comm([targm, expm],
+                            cmp_unsigned=True)
+                        self.debug("{0}: {1:d} {2:d}".format(str(s), len(ta),
+                            len(ra)))
+
+                        self.assertEqual(0, len(ta), "{0} had unexpected actions:"
+                            " \n{1}".format(s, "\n".join([str(x) for x in ta])))
+                        self.assertEqual(0, len(ra), "{0} had missing actions: "
+                            "\n{1}".format(s, "\n".join([str(x) for x in ra])))
 
         def test_2_publishers(self):
                 """Tests for correct publisher handling."""

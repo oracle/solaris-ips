@@ -384,7 +384,7 @@ add dir group=sys mode=0755 owner=root path=usr/share
 add dir group=bin mode=0755 owner=root path=usr/share/info
 add dir group=bin mode=0755 owner=root path=usr/share/man
 add dir group=bin mode=0755 owner=root path=usr/share/man/man1
-add file ro_data/elftest.so.1 elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.size=12
+add file ro_data/elftest.so.1 elfarch=i386 elfbits=32 elfhash=083308992c921537fd757548964f89452234dd11 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.content-hash=bad_data pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-1 pkg.size=12
 add file tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-2 pkg.size=12
@@ -400,7 +400,7 @@ close
 
         res_bug_983 = set([
             ("pkg:/SUNWgmake@3.81-0.89", "basename", "link path=usr/sfw/bin/gmake target=../../bin/gmake"),
-            ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file 038cc7a09940928aeac6966331a2f18bc40e7792 chash=a3e76bd1b97b715cddc93b2ad6502b41efa4d833 elfarch=i386 elfbits=32 elfhash=6975080bd79b8ccf8b6ba2e64a83ca67fac3e256 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.csize=1358 pkg.size=3948'),
+            ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file 038cc7a09940928aeac6966331a2f18bc40e7792 chash=a3e76bd1b97b715cddc93b2ad6502b41efa4d833 elfarch=i386 elfbits=32 elfhash=083308992c921537fd757548964f89452234dd11 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.content-hash=gelf:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e pkg.content-hash=gelf.unsigned:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e pkg.csize=1358 pkg.size=3948'),
             ('pkg:/SUNWgmake@3.81-0.89', 'gmake - GNU make', 'set name=description value="gmake - GNU make"')
         ])
 

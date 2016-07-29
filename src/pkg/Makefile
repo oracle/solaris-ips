@@ -69,6 +69,7 @@ PKGCMDENV         = \
 	PYTHONPATH=$(PKGROOT)/usr/lib/python2.7/vendor-packages
 PKG               = $(PKGCMDENV) pkg
 PKGDEPEND         = $(PKGCMDENV) pkgdepend
+PKGDIFF           = $(PKGCMDENV) pkgdiff
 PKGFMT            = $(PKGCMDENV) pkgfmt
 PKGLINT           = $(PKGCMDENV) pkglint
 PKGMOGRIFY        = $(PKGCMDENV) pkgmogrify
@@ -175,7 +176,7 @@ $(PDIR)/%.pub: $(PDIR)/.resolved $(PKGDEST)/repo
 # Compare the proto area with the package manifests; if they've got different
 # filesets, complain
 check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
-	pkgdiff $(PDIR)/protomanifest $(PDIR)/pkgmanifest
+	$(PKGDIFF) $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 
 # We either lint against a reference repository, provided in
 # $(PKGLINT_REF_REPO) or just with the repository we built.

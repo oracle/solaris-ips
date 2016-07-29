@@ -199,7 +199,7 @@ class Manifest(object):
                 return "".join((l for l in self.as_lines()))
 
         def difference(self, origin, origin_exclude=EmptyI,
-            self_exclude=EmptyI):
+            self_exclude=EmptyI, pkgplan=None, cmp_unsigned=False):
                 """Return three lists of action pairs representing origin and
                 destination actions.  The first list contains the pairs
                 representing additions, the second list contains the pairs
@@ -253,7 +253,8 @@ class Manifest(object):
                 changed = [
                     (odict[i], sdict[i])
                     for i in oset & sset
-                    if odict[i].different(sdict[i])
+                    if odict[i].different(sdict[i], pkgplan=pkgplan,
+                        cmp_unsigned=cmp_unsigned)
                 ]
 
                 # XXX Do changed actions need to be sorted at all?  This is
@@ -271,12 +272,20 @@ class Manifest(object):
                 return ManifestDifference(added, changed, removed)
 
         @staticmethod
-        def comm(compare_m):
+        def comm(compare_m, cmp_unsigned=False):
                 """Like the unix utility comm, except that this function
                 takes an arbitrary number of manifests and compares them,
                 returning a tuple consisting of each manifest's actions
                 that are not the same for all manifests, followed by a
-                list of actions that are the same in each manifest."""
+                list of actions that are the same in each manifest.
+
+                Content hashes for action payloads may be present in
+                both signature-included and signature-excluded
+                variants. In most cases (cmp_unsigned=False), we only
+                want to compare the signature-included variants. When
+                no-signature-included comparison is requested, simply
+                pass cmp_unsigned through to Action.different().
+                """
 
                 # Must specify at least one manifest.
                 assert compare_m
@@ -334,7 +343,8 @@ class Manifest(object):
                 for k in common_keys.copy():
                         for i in range(len(m_dicts) - 1):
                                 if m_dicts[i][k].different(
-                                    m_dicts[i + 1][k]):
+                                    m_dicts[i + 1][k],
+                                    cmp_unsigned=cmp_unsigned):
                                         common_keys.remove(k)
                                         break
                 return tuple(
@@ -1951,12 +1961,14 @@ class FactoredManifest(Manifest):
                 return Manifest.duplicates(self, excludes=excludes)
 
         def difference(self, origin, origin_exclude=EmptyI,
-            self_exclude=EmptyI):
+            self_exclude=EmptyI, pkgplan=None, cmp_unsigned=False):
                 if not self.loaded:
                         self.__load()
                 return Manifest.difference(self, origin,
                     origin_exclude=origin_exclude,
-                    self_exclude=self_exclude)
+                    self_exclude=self_exclude,
+                    pkgplan=pkgplan,
+                    cmp_unsigned=cmp_unsigned)
 
         def store(self, mfst_path):
                 """Store the manifest contents to disk."""
@@ -1983,7 +1995,7 @@ class EmptyFactoredManifest(Manifest):
                 Manifest.__init__(self)
 
         def difference(self, origin, origin_exclude=EmptyI,
-            self_exclude=EmptyI):
+            self_exclude=EmptyI, pkgplan=None, cmp_unsigned=False):
                 """Return three lists of action pairs representing origin and
                 destination actions.  The first list contains the pairs
                 representing additions, the second list contains the pairs

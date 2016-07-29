@@ -61,6 +61,7 @@ strip_attrs = [
     "elfarch",
     "elfbits",
     "elfhash",
+    "pkg.content-hash",
     "pkg.csize",
     "pkg.size",
 ]

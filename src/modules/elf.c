@@ -42,16 +42,17 @@
  * which types of hash we want to calculate. This structure is used to
  * return information from arg parsing Python method arguments.
  *
- * 'fd'      the file descriptor of an ELF file
- * 'sha1'    an integer > 0 if we should calculate an SHA-1 hash
- * 'sha256'  an integer > 0 if we should calculate an SHA-2 256 hash
- *
+ * 'fd'          the file descriptor of an ELF file
+ * 'elfhash'     an integer > 0 if we should calculate the old elfhash
+ * 'sha256'      an integer > 0 if we should calculate an SHA-256 hash
+ * 'sha512t_256' an integer > 0 if we should calculate an SHA-512t_256 hash
  */
 typedef struct
 {
 	int fd;
-	int sha1;
+	int elfhash;
 	int sha256;
+	int sha512t_256;
 } hargs_t;
 
 static int
@@ -152,23 +153,25 @@ py_get_hash_args(PyObject *args, PyObject *kwargs)
 {
 	int fd = -1;
 	char *f;
-	int get_sha1 = 1;
-	int get_sha256 = 0;
-
-	hargs_t hargs;
-	hargs.fd = -1;
+	int get_elfhash = 1;
+	int get_sha256 = 1;
+	int get_sha512t_256 = 0;
 
 	/*
-	 * By default, we always get an SHA-1 hash, and never get an SHA-2
-	 * hash.
+	 * By default, we always get SHA-256 hashes with and without
+	 * the signature sections. Optionally, we get 256-bit
+	 * truncated SHA-512 hashes in addition to or instead of
+	 * 256-bit.
+	 *
+	 * The old-style calculation of elfhash will be dropped, but
+	 * for now, we continue to default to also retrieving it.
 	 */
-	hargs.sha1 = 1;
-	hargs.sha256 = 0;
+	hargs_t hargs = { -1, 1, 1, 0 };
 
-	static char *kwlist[] = {"fd", "sha1", "sha256", NULL};
+	static char *kwlist[] = {"f", "elfhash", "sha256", "sha512t_256", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &f,
-	    &get_sha1, &get_sha256)) {
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|iii", kwlist, &f,
+	    &get_elfhash, &get_sha256, &get_sha512t_256)) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
 		return (hargs);
 	}
@@ -179,8 +182,9 @@ py_get_hash_args(PyObject *args, PyObject *kwargs)
 	}
 
 	hargs.fd = fd;
-	hargs.sha1 = get_sha1;
+	hargs.elfhash = get_elfhash;
 	hargs.sha256 = get_sha256;
+	hargs.sha512t_256 = get_sha512t_256;
 	return (hargs);
 }
 
@@ -278,7 +282,7 @@ err:
  *
  * {
  *	elfhash: "sha1hash",
- *	pkg.content-type.sha256: "sha2hash"
+ *	pkg.content-hash: [requested sha256 and/or sha512t_256 hashes]
  * }
  *
  * If a hash was not requested, it is omitted from the dictionary.
@@ -291,15 +295,15 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 	hargs_t		hargs;
 	hashinfo_t	*h = NULL;
 	PyObject	*pdict = NULL;
-	PyObject	*ent = NULL;
-	char		hexchars[17] = "0123456789abcdef";
+	PyObject	*plist = NULL;
 
 	hargs = py_get_hash_args(args, keywords);
 	if (hargs.fd < 0) {
 		return (NULL);
 	}
 
-	if ((h = gethashes(hargs.fd, hargs.sha1, hargs.sha256)) == NULL) {
+	if ((h = gethashes(hargs.fd, hargs.elfhash,
+			   hargs.sha256, hargs.sha512t_256)) == NULL) {
 		goto out;
 	}
 
@@ -307,38 +311,61 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 		goto out;
 	}
 
-	if (hargs.sha1 > 0) {
+	/*
+	 * From here forward, error exits from get_hashes() should
+	 * jump to label err instead of label out.
+	 */
+	
+	if (hargs.elfhash > 0) {
 		PyObject	*ent;
-		int		i;
-		char		hexhash[41];
-
-		for (i = 0; i < 20; i++) {
-			hexhash[2 * i] = hexchars[(h->hash[i] & 0xf0) >> 4];
-			hexhash[2 * i + 1] = hexchars[h->hash[i] & 0x0f];
-		}
-		hexhash[40] = '\0';
-		ent = Py_BuildValue("s", hexhash);
+		
+		ent = Py_BuildValue("s", h->elfhash);
 		if (PyDict_SetItemString(pdict, "elfhash", ent) != 0) {
 			goto err;
 		}
 		Py_CLEAR(ent);
 	}
 
-	if (hargs.sha256 > 0) {
-		int	i;
-		char	hexhash[65];
-
-		for (i = 0; i < 32; i++) {
-			hexhash[2 * i] = hexchars[(h->hash256[i] & 0xf0) >> 4];
-			hexhash[2 * i + 1] = hexchars[h->hash256[i] & 0x0f];
-		}
-		hexhash[64] = '\0';
-		ent = Py_BuildValue("s", hexhash);
-		if (PyDict_SetItemString(pdict, "pkg.content-type.sha256",
-		    ent) != 0) {
+	if (hargs.sha256 > 0 || hargs.sha512t_256 > 0) {
+		plist = PyList_New(0);
+		if (plist == NULL ||
+		    PyDict_SetItemString(
+		        pdict, "pkg.content-hash", plist) != 0) {
 			goto err;
 		}
-		Py_CLEAR(ent);
+		Py_DECREF(plist);
+	}
+	
+	if (hargs.sha512t_256 > 0) {
+		PyObject *ent;
+
+		ent = Py_BuildValue("s", h->hash_sha512t_256);
+		if (PyList_Append(plist, ent) != 0) {
+			goto err;
+		}
+		Py_DECREF(ent);
+
+		ent = Py_BuildValue("s", h->uhash_sha512t_256);
+		if (PyList_Append(plist, ent) != 0) {
+			goto err;
+		}
+		Py_DECREF(ent);
+	}
+
+	if (hargs.sha256 > 0) {
+		PyObject *ent;
+
+		ent = Py_BuildValue("s", h->hash_sha256);
+		if (PyList_Append(plist, ent) != 0) {
+			goto err;
+		}
+		Py_DECREF(ent);
+
+		ent = Py_BuildValue("s", h->uhash_sha256);
+		if (PyList_Append(plist, ent) != 0) {
+			goto err;
+		}
+		Py_DECREF(ent);
 	}
 
 out:
@@ -351,7 +378,7 @@ out:
 	return (pdict);
 
 err:
-	Py_CLEAR(ent);
+	Py_CLEAR(plist);
 	Py_CLEAR(pdict);
 	goto out;
 }

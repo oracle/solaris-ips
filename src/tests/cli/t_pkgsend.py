@@ -1428,7 +1428,7 @@ path=dir-foo/subdir-foo/subdirfile-foo\n""".format(
                 with open(mfpath, "w") as mf:
                         mf.write("""\
 set name=pkg.fmri value=pkg://test/content-attrs@1.0
-file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored pkg.csize=ignored elfhash=ignored elfbits=ignored elfarch=ignored
+file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored pkg.csize=ignored elfhash=ignored elfbits=ignored elfarch=ignored pkg.content-hash=ignored
 """)
 
                 # Verify pkgsend publish can be performed even though values for
@@ -1462,10 +1462,11 @@ file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored 
                 )
                 self.assertEqualDiff(expected, actual)
 
-                # 'elfhash' can vary depending upon whether we've changed the
-                # content-hashing algorithms, so we only verify it exists and
-                # doesn't have a value of 'ignored'.
+                # 'elfhash' and 'pkg.content-hash' can vary depending upon
+                # whether we've changed the content-hashing algorithms, so we
+                # only verify it exists and doesn't have a value of 'ignored'.
                 self.assertNotEqual(a.attrs['elfhash'], 'ignored')
+                self.assertNotEqual(a.attrs['pkg.content-hash'][0], 'ignored')
 
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):

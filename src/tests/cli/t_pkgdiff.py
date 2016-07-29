@@ -77,12 +77,19 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         hashed10 = """
             set name=pkg.fmri value=hashed@1.0:20130804T203459Z
             license 6aba708bd383553aa84bba4fefe8495239927767 chash=60c3aa47dce2ba0132efdace8d3b88b6589767f4 license=lic_OTN
-            file 4ab5de3107a63f5cf454485f720cac025f1b7002 chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391 path=etc/motd"""
+            file 4ab5de3107a63f5cf454485f720cac025f1b7002 chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391 path=etc/motd
+            file 038cc7a09940928aeac6966331a2f18bc40e7792 elfarch=i386 elfbits=32 elfhash=083308992c921537fd757548964f89452234dd11 group=bin mode=0755 owner=root path=bin/true pkg.content-hash=gelf:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e pkg.content-hash=gelf.unsigned:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e
+            file nohash elfarch=i386 elfbits=64 elfhash=083308992c921537fd757548964f89452234dd11 group=bin mode=0755 owner=root path=bin/false pkg.content-hash=gelf:sha512t_256:abcd
+            """
 
         hashed20 = """
             set name=pkg.fmri value=hashed@2.0:20130904T203001Z
             license 7ab6de3107a63f5cf454485f720cac025f1b7001 chash=cc05afd488e3b3e4c4993d2403d7e15603b0a398 license=lic_OTN
-            file 3aba408bd383553aa84bba4fefe8495239927763 chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3 path=etc/motd"""
+            file 3aba408bd383553aa84bba4fefe8495239927763 chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3 path=etc/motd
+            file 038cc7a09940928aeac6966331a2f18bc40e7792 elfarch=i386 elfbits=32 elfhash=083308992c921537fd757548964f89452234dd22 group=bin mode=0755 owner=root path=bin/true pkg.content-hash=gelf:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c5f pkg.content-hash=gelf.unsigned:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e
+            file nohash elfarch=i386 elfbits=64 elfhash=083308992c921537fd757548964f89452234dd11 group=bin mode=0755 owner=root path=bin/false pkg.content-hash=gelf:sha512t_256:abcd pkg.content-hash=gelf:sha3_384:wxyz
+            """
+
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
@@ -211,6 +218,25 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 self.pkgdiff(" ".join(("-t file", self.hashed10_p5m,
                     self.hashed20_p5m)), exit=1)
                 expected = """\
+file path=bin/true elfarch=i386 elfbits=32 group=bin mode=0755 owner=root
+ - elfhash=083308992c921537fd757548964f89452234dd11
+ + elfhash=083308992c921537fd757548964f89452234dd22
+ - pkg.content-hash=gelf:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c4e
+ + pkg.content-hash=gelf:sha512t_256:d83d7d72909d64b455da54095f65b6f36917c53be456d61740dd83d98f0c6c5f
+file path=etc/motd 
+ - 4ab5de3107a63f5cf454485f720cac025f1b7002
+ + 3aba408bd383553aa84bba4fefe8495239927763
+ - chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391
+ + chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3
+"""
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
+
+                # Verify that only the unsigned value will be compared if it
+                # exists in the action when '-u' option is enabled.
+                self.pkgdiff(" ".join(("-t file -u", self.hashed10_p5m,
+                    self.hashed20_p5m)), exit=1)
+                expected = """\
 file path=etc/motd 
  - 4ab5de3107a63f5cf454485f720cac025f1b7002
  + 3aba408bd383553aa84bba4fefe8495239927763
@@ -232,7 +258,8 @@ file path=etc/motd
                 self.assertEqualDiff(expected, actual)
 
                 # Again, ignoring hash attributes (should find no differences).
-                self.pkgdiff(" ".join(("-t file -i hash -i chash",
+                self.pkgdiff(" ".join(("-t file -i hash -i chash -i elfhash "
+                    "-i pkg.content-hash",
                     self.hashed10_p5m, self.hashed20_p5m)), exit=0)
 
                 # Verify differences found for license actions between 2.0 and 1.0;

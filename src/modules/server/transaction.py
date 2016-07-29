@@ -507,14 +507,7 @@ class Transaction(object):
                                 try:
                                         # Check which content checksums to
                                         # compute and add to the action
-                                        elf256 = "pkg.content-type.sha256"
                                         elf1 = "elfhash"
-
-                                        if elf256 in \
-                                            digest.LEGACY_CONTENT_HASH_ATTRS:
-                                                get_sha256 = True
-                                        else:
-                                                get_sha256 = False
 
                                         if elf1 in \
                                             digest.LEGACY_CONTENT_HASH_ATTRS:
@@ -523,14 +516,10 @@ class Transaction(object):
                                                 get_sha1 = False
 
                                         hashes = elf.get_hashes(elf_name,
-                                            sha1=get_sha1, sha256=get_sha256)
+                                            sha1=get_sha1)
 
                                         if get_sha1:
                                                 action.attrs[elf1] = hashes[elf1]
-
-                                        if get_sha256:
-                                                action.attrs[elf256] = \
-                                                    hashes[elf256]
 
                                 except elf.ElfError:
                                         pass

@@ -54,6 +54,10 @@ try:
 except ImportError:
         haveelf = False
 
+# Once additional content-hashed file types are supported,
+# have_content_hash can be derived from multiple sources.
+have_content_hash = haveelf
+
 class FileAction(generic.Action):
         """Class representing a file-type packaging object."""
 
@@ -395,12 +399,14 @@ class FileAction(generic.Action):
                         # on the canonical path, foiling the standard verify
                         # checks.
                         is_mtpt = self.attrs.get("mountpoint", "").lower() == "true"
-                        elfhash = None
-                        elferror = None
-                        ehash_attr, elfhash_val, hash_func = \
+                        content_hash = None
+                        hash_error = None
+                        content_hash_attr, content_hash_val, \
+                            content_hash_func = \
                             digest.get_preferred_hash(self,
                                 hash_type=pkg.digest.CONTENT_HASH)
-                        if ehash_attr and haveelf and not is_mtpt:
+                        if (content_hash_attr and have_content_hash and
+                           not is_mtpt):
                                 #
                                 # It's possible for the elf module to
                                 # throw while computing the hash,
@@ -408,28 +414,35 @@ class FileAction(generic.Action):
                                 # corrupted or truncated.
                                 #
                                 try:
-                                        # Annoying that we have to hardcode this
-                                        if ehash_attr == \
-                                            "pkg.content-hash.sha256":
-                                                get_sha256 = True
-                                                get_sha1 = False
-                                        else:
-                                                get_sha256 = False
-                                                get_sha1 = True
-                                        elfhash = elf.get_hashes(path,
-                                            sha1=get_sha1,
-                                            sha256=get_sha256)[ehash_attr]
+                                        # On path, only calculate the
+                                        # content hash that matches
+                                        # the preferred one on the
+                                        # action
+                                        get_elfhash = \
+                                            content_hash_attr == "elfhash"
+                                        get_sha256 = (not get_elfhash and
+                                            ":sha256:" in content_hash_val)
+                                        get_sha512t_256 = (not get_elfhash and
+                                            ":sha512t_256:" in content_hash_val)
+                                        content_hash = elf.get_hashes(
+                                            path, elfhash=get_elfhash,
+                                            sha256=get_sha256,
+                                            sha512t_256=get_sha512t_256
+                                        )[content_hash_attr]
+
+                                        if get_elfhash:
+                                                content_hash = [content_hash]
                                 except RuntimeError as e:
                                         errors.append(
                                             "ELF content hash: {0}".format(e))
 
-                                if elfhash is not None and \
-                                    elfhash != elfhash_val:
-                                        elferror = _("ELF content hash: "
+                                if (content_hash is not None and
+                                     content_hash_val not in content_hash):
+                                        hash_error = _("ELF content hash: "
                                             "{found} "
                                             "should be {expected}").format(
-                                            found=elfhash,
-                                            expected=elfhash_val)
+                                            found=content_hash,
+                                            expected=content_hash_val)
 
                         # If we failed to compute the content hash, or the
                         # content hash failed to verify, try the file hash.
@@ -437,7 +450,7 @@ class FileAction(generic.Action):
                         # matches, it indicates that the content hash algorithm
                         # changed, since obviously the file hash is a superset
                         # of the content hash.
-                        if (elfhash is None or elferror) and not is_mtpt:
+                        if (content_hash is None or hash_error) and not is_mtpt:
                                 hash_attr, hash_val, hash_func = \
                                     digest.get_preferred_hash(self)
                                 sha_hash, data = misc.get_data_digest(path,
@@ -448,8 +461,8 @@ class FileAction(generic.Action):
                                                 info.append(_(
                                                     "editable file has "
                                                     "been changed"))
-                                        elif elferror:
-                                                errors.append(elferror)
+                                        elif hash_error:
+                                                errors.append(hash_error)
                                                 self.replace_required = True
                                         else:
                                                 errors.append(_("Hash: "
@@ -514,6 +527,7 @@ class FileAction(generic.Action):
                 except KeyError:
                         return
 
+                # Should ultimately be conditioned on file type
                 if "elfhash" in self.attrs:
                         # Don't allow preserve logic to be applied to elf files;
                         # if we ever stop tagging elf binaries with this
@@ -638,39 +652,33 @@ class FileAction(generic.Action):
                 # import goes here to prevent circular import
                 from pkg.client.imageconfig import CONTENT_UPDATE_POLICY
 
-                use_content_hash = pkgplan.image.cfg.get_policy_str(
+                use_content_hash = orig and pkgplan.image.cfg.get_policy_str(
                     CONTENT_UPDATE_POLICY) == "when-required"
 
-                # If content update policy allows it, check for the presence of
-                # a simple elfhash attribute, and if that's present, look for
-                # the common preferred elfhash.  For now, this is sufficient,
-                # but when additional content types are supported (and we stop
-                # publishing SHA-1 hashes) more work will be needed to compute
-                # 'bothelf'.
-                bothelf = use_content_hash and orig and \
-                    "elfhash" in orig.attrs and "elfhash" in self.attrs
-                if bothelf:
-                        common_elf_attr, common_elfhash, common_orig_elfhash, \
-                            common_elf_func = \
-                            digest.get_common_preferred_hash(self, orig,
-                            hash_type=digest.CONTENT_HASH)
+                # If content update policy allows it, check for a common
+                # preferred content hash.
+                if use_content_hash:
+                        content_hash_attr, content_hash_val, \
+                        orig_content_hash_val, content_hash_func = \
+                            digest.get_common_preferred_hash(
+                                self, orig, hash_type=digest.CONTENT_HASH)
 
-                common_hash_attr, common_hash_val, \
-                    common_orig_hash_val, common_hash_func = \
+                hash_attr, hash_val, orig_hash_val, hash_func = \
                     digest.get_common_preferred_hash(self, orig)
 
                 if not orig:
                         changed_hash = True
-                elif orig and (common_orig_hash_val is None or
-                    common_hash_val is None):
+                elif orig and (orig_hash_val is None or
+                    hash_val is None):
                         # we have no common hash so we have to treat this as a
                         # changed action
                         changed_hash = True
                 else:
-                        changed_hash = common_hash_val != common_orig_hash_val
+                        changed_hash = hash_val != orig_hash_val
 
-                if (changed_hash and (not bothelf or
-                    common_orig_elfhash != common_elfhash)):
+                if (changed_hash and
+                    (not use_content_hash or
+                     content_hash_val != orig_content_hash_val)):
                         if ("preserve" not in self.attrs or
                             not pkgplan.origin_fmri or
                             (pkgplan.destination_fmri.version <
@@ -776,16 +784,10 @@ class FileAction(generic.Action):
                                         # Ignore failure to reset parent mode.
                                         pass
 
-        def different(self, other, cmp_hash=True):
-                # Override the generic different() method to ignore the file
-                # hash for ELF files and compare the ELF hash instead.
-                # XXX This should be modularized and controlled by policy and
-                # needs work once additional content-type hashes are added.
-
-                # One of these isn't an ELF file, so call the generic method
-                if "elfhash" in self.attrs and "elfhash" in other.attrs:
-                        cmp_hash = False
-                return generic.Action.different(self, other, cmp_hash=cmp_hash)
+        def different(self, other, cmp_hash=True, pkgplan=None,
+            cmp_unsigned=False):
+                return generic.Action.different(self, other, cmp_hash=cmp_hash,
+                    pkgplan=pkgplan, cmp_unsigned=cmp_unsigned)
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

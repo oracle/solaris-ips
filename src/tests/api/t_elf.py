@@ -92,22 +92,43 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                 sha1_len = 40
                 sha256_len = 64
 
-                # the default is to return an SHA-1 elfhash only
+                # the default is to return both the SHA-1 elfhash and
+                # the SHA-256 pkg.content-hash
                 d = elf.get_hashes(self.elf_paths[0])
                 self.assertTrue(len(d["elfhash"]) == sha1_len)
-                self.assertTrue("pkg.content-type.sha256" not in d)
+                self.assertTrue("pkg.content-hash" in d)
+                self.assertTrue(len(d["pkg.content-hash"]) == 2)
+                for h in range(2):
+                        v = d["pkg.content-hash"][h].split(":")
+                        self.assertTrue(len(v) == 3)
+                        self.assertTrue(v[1] == "sha256")
+                        self.assertTrue(len(v[2]) == sha256_len)
 
-                d = elf.get_hashes(self.elf_paths[0], sha256=True)
-                self.assertTrue(len(d["elfhash"]) == sha1_len)
-                self.assertTrue(len(d["pkg.content-type.sha256"]) == sha256_len)
-
-                d = elf.get_hashes(self.elf_paths[0], sha1=False, sha256=True)
+                d = elf.get_hashes(self.elf_paths[0],
+                    elfhash=False, sha512t_256=True)
                 self.assertTrue("elfhash" not in d)
-                self.assertTrue(len(d["pkg.content-type.sha256"]) == sha256_len)
+                self.assertTrue("pkg.content-hash" in d)
+                self.assertTrue(len(d["pkg.content-hash"]) == 4)
+                sha256_count = 0
+                sha512t_256_count = 0
+                unsigned_count = 0
+                for h in range(4):
+                        v = d["pkg.content-hash"][h].split(":")
+                        self.assertTrue(len(v) == 3)
+                        self.assertTrue(len(v[2]) == sha256_len)
+                        if v[0].endswith(".unsigned"):
+                                unsigned_count += 1
+                        if v[1] == "sha256":
+                                sha256_count += 1
+                        elif v[1] == "sha512t_256":
+                                sha512t_256_count += 1
+                self.assertTrue(sha256_count == 2)
+                self.assertTrue(sha512t_256_count == 2)
+                self.assertTrue(unsigned_count == 2)
 
-                d = elf.get_hashes(self.elf_paths[0], sha1=False, sha256=False)
-                self.assertTrue("elfhash" not in d)
-                self.assertTrue("pkg.content-type.sha256" not in d)
+                d = elf.get_hashes(self.elf_paths[0], elfhash=False,
+                    sha256=False)
+                self.assertTrue(len(d) == 0)
 
 
 if __name__ == "__main__":

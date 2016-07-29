@@ -73,9 +73,10 @@ def main_func():
         onlyattrs = []
         onlytypes = []
         varattrs = defaultdict(set)
+        cmp_unsigned = False
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:t:v:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:t:uv:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-i":
                                 ignoreattrs.append(arg)
@@ -83,6 +84,8 @@ def main_func():
                                 onlyattrs.append(arg)
                         elif opt == "-t":
                                 onlytypes.extend(arg.split(","))
+                        elif opt == "-u":
+                                cmp_unsigned = True
                         elif opt == "-v":
                                 args = arg.split("=")
                                 if len(args) != 2:
@@ -219,7 +222,8 @@ def main_func():
                                         return False
                         return True
 
-                a, c, r = manifest2.difference(manifest1, [allow], [allow])
+                a, c, r = manifest2.difference(manifest1, [allow], [allow],
+                    cmp_unsigned=cmp_unsigned)
                 diffs += a
                 diffs += c
                 diffs += r
@@ -228,7 +232,8 @@ def main_func():
         real_diffs = [
             (a, b)
             for a, b in diffs
-            if a is None or b is None or a.different(b)
+            if a is None or b is None or a.different(b,
+                cmp_unsigned=cmp_unsigned)
         ]
 
         if not real_diffs:

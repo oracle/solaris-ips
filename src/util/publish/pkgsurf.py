@@ -149,8 +149,8 @@ def usage(usage_error=None, cmd=None, retcode=pkgdefs.EXIT_BADOPT):
 
         emsg(_("""\
 Usage:
-        pkgsurf -s target_path -r ref_uri [-n] [-p publisher ...] [-i name ...]
-            [-c pattern ...]
+        pkgsurf -s target_path -r ref_uri [-n] [-p publisher ...]
+            [-i name ...] [-c pattern ...]
 
 Options:
         -c pattern      Treat every package whose FMRI matches 'pattern' as 
@@ -400,7 +400,8 @@ def use_ref(a, deps, ignores):
 
         return False
 
-def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
+def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
+    cmp_unsigned):
         """Do the repo reversion.
         Return 'True' if repo got modified, 'False' otherwise."""
 
@@ -478,7 +479,8 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
 
                 # Diff target and ref manifest.
                 # action only in targ, action only in ref, common action
-                ta, ra, ca = manifest.Manifest.comm([dm, rm])
+                ta, ra, ca = manifest.Manifest.comm([dm, rm],
+                    cmp_unsigned=cmp_unsigned)
 
                 # Check for manifest changes.
                 if not all(use_ref(a, tdeps, ignores) for a in ta) \
@@ -571,6 +573,9 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores):
                         reversioned_pkgs.add(p)
 
         status = []
+        if cmp_unsigned:
+                status.append((_("WARNING: Signature changes in file content "
+                    "ignored in resurfacing")))
         status.append((_("Packages to process:"), str(len(latest_pkgs))))
         status.append((_("New packages:"), str(new_p)))
         status.append((_("Unmodified packages:"), str(dups)))
@@ -682,7 +687,7 @@ def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "?c:i:np:r:s:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "?c:i:np:r:s:u",
                     ["help"])
         except getopt.GetoptError as e:
                 usage(_("illegal option -- {0}").format(e.opt))
@@ -693,6 +698,7 @@ def main_func():
         changes = set()
         ignores = set()
         publishers = set()
+        cmp_unsigned = False
         
         processed_pubs = 0
 
@@ -709,6 +715,8 @@ def main_func():
                         ref_repo_uri = misc.parse_uri(arg)
                 elif opt == "-s":
                         repo_uri = misc.parse_uri(arg)
+                elif opt == "-u":
+                        cmp_unsigned = True
                 elif opt == "-?" or opt == "--help":
                         usage(retcode=pkgdefs.EXIT_OK)
 
@@ -769,7 +777,7 @@ def main_func():
                 processed_pubs += 1
 
                 rev = do_reversion(pub, ref_pub, target_repo, ref_xport,
-                    changes, ignores)
+                    changes, ignores, cmp_unsigned)
 
                 # Only rebuild catalog if anything got actually reversioned.
                 if rev and not dry_run:

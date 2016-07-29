@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -361,7 +361,8 @@ class PkgPlan(object):
                         new_excludes = EmptyI
 
                 self.actions = self.__destination_mfst.difference(
-                    self.__origin_mfst, old_excludes, new_excludes)
+                    self.__origin_mfst, old_excludes, new_excludes,
+                    pkgplan=self)
 
                 # figure out how many implicit directories disappear in this
                 # transition and add directory remove actions.  These won't
