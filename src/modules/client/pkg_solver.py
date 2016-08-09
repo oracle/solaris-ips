@@ -690,9 +690,8 @@ class PkgSolver(object):
                 # Used to de-dup errors.
                 already_seen = set()
                 ret = []
-                msg = N_("Package {0} must be uninstalled before the "
-                    "requested operation can be "
-                    "performed.")
+                msg = N_("Package '{0}' must be uninstalled or upgraded "
+                    "if the requested operation is to be performed.")
 
                 # First check for solver failures caused by missing parent
                 # dependencies.  We do this because missing parent dependency
@@ -2272,11 +2271,12 @@ class PkgSolver(object):
                 if not check_req or matching or not required:
                         return (nonmatching, matching, conditional, dtype,
                             required, fmri)
-                elif dotrim and source in self.__inc_list:
+                elif dotrim and source in self.__inc_list and \
+                     dtype == "incorporate":
                         # This is an incorporation package that will not be
                         # removed, so if dependencies can't be satisfied, try
                         # again with dotrim=False to ignore rejections due to
-                        # other packages.
+                        # proposed packages.
                         return self.__parse_dependency(dependency_action,
                             source, dotrim=False, check_req=check_req,
                             proposed_dict=proposed_dict)
