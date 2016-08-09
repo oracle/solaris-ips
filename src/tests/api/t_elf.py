@@ -47,7 +47,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
             "/usr/lib/__ARCH__/crti.o",
             "/kernel/drv/__ARCH__/sd",
             "/kernel/fs/__ARCH__/zfs",
-            "/usr/kernel/drv/__ARCH__/ptm",
+            "/usr/kernel/drv/__ARCH__/ksyms",
         ]
 
         def test_non_elf(self):
