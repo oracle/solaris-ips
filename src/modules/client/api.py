@@ -2257,7 +2257,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     publishers=publishers)
 
         def gen_plan_verify(self, args, noexecute=True, unpackaged=False,
-            unpackaged_only=False):
+            unpackaged_only=False, verify_paths=misc.EmptyI):
                 """This is a generator function that yields a PlanDescription
                 object.
 
@@ -2272,7 +2272,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 op = API_OP_VERIFY
                 return self.__plan_op(op, args=args, _noexecute=noexecute,
                     _refresh_catalogs=False, _update_index=False, _new_be=None,
-                    unpackaged=unpackaged, unpackaged_only=unpackaged_only)
+                    unpackaged=unpackaged, unpackaged_only=unpackaged_only,
+                    verify_paths=verify_paths)
 
         def gen_plan_fix(self, args, backup_be=None, backup_be_name=None,
             be_activate=True, be_name=None, new_be=None, noexecute=True,

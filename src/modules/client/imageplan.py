@@ -1771,49 +1771,10 @@ class ImagePlan(object):
                 # Clean up the BE used for verify.
                 bootenv.BootEnv.cleanup_be(dup_be_name)
 
-        def plan_fix(self, args, unpackaged=False, unpackaged_only=False):
-                """Determine the changes needed to fix the image."""
-
-                self.__plan_op()
-                self.__evaluate_excludes()
-
-                pt = self.__progtrack
-                pt.plan_all_start()
-
-                if args:
-                        proposed_dict, self.__match_rm = self.__match_user_fmris(
-                            self.image, args, self.MATCH_INST_VERSIONS)
-
-                        # merge patterns together
-                        proposed_fixes = sorted(set([
-                            f
-                            for each in proposed_dict.values()
-                            for f in each
-                        ]))
-                else:
-                        proposed_fixes = [
-                            f
-                            for f in self.image.gen_installed_pkgs(ordered=True)
-                        ]
-
-                if proposed_fixes:
-                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(proposed_fixes))
-                        # Verify unpackaged contents.
-                        if unpackaged or unpackaged_only:
-                                self.__process_unpackaged(proposed_fixes,
-                                    pt=pt)
-                                pt.plan_done(pt.PLAN_PKG_VERIFY)
-                                if unpackaged_only:
-                                        self.__finish_plan(plandesc.EVALUATED_PKGS)
-                                        return
-                                # Otherwise we reset the goals for packaged
-                                # contents.
-                                pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(
-                                    proposed_fixes))
-
-                repairs = []
-
-                for pfmri in proposed_fixes:
+        def __verify_fmris(self, repairs, args, proposed_fmris, pt, verifypaths,
+            overlaypaths):
+                path_only = bool(verifypaths or overlaypaths)
+                for pfmri in proposed_fmris:
                         entries = []
                         needs_fix = []
                         result = "OK"
@@ -1828,8 +1789,11 @@ class ImagePlan(object):
                         # related messages output for it.
                         process_overlay = False
                         errs = set()
+                        verify_path_count = len(verifypaths)
+                        overlay_path_count = len(overlaypaths)
                         for act, errors, warnings, pinfo in self.image.verify(
-                            pfmri, pt, verbose=True, forever=True):
+                            pfmri, pt, verifypaths=verifypaths,
+                            overlaypaths=overlaypaths, verbose=True, forever=True):
                                 # determine the package's status and message
                                 # type
                                 if errors:
@@ -1840,16 +1804,29 @@ class ImagePlan(object):
                                         # signature policy) and not a specific
                                         # action, so act may be None.
                                         needs_fix.append(act)
-                                        if act and not process_overlay:
+                                        if (not path_only and act and
+                                            not process_overlay):
+                                                # We only do this for package
+                                                # verification. In path verification,
+                                                # if the action has overlay=allow,
+                                                # its path will be in 'overlaypaths'
+                                                # and we will later look for the
+                                                # overlaying file anyway.
                                                 process_overlay = \
                                                     self.__process_verify_result(
-                                                    args, self.image, act, errs,
-                                                    pfmri)
+                                                        args, self.image,
+                                                        act, errs, pfmri)
                                 elif not failed and warnings:
                                         result = "WARNING"
                                         msg_level = MSG_WARNING
 
                                 entries.append((act, errors, warnings, pinfo))
+
+                        if (path_only and verify_path_count == len(verifypaths)
+                            and overlay_path_count == len(overlaypaths)):
+                                # When verifying paths, omit packages without any
+                                # matches from output.
+                                continue
                         timestamp = misc.time_to_timestamp(time.time())
                         self.pd.add_item_message(ffmri, timestamp,
                             msg_level, _("{pkg_name:70} {result:>7}").format(
@@ -1883,14 +1860,92 @@ class ImagePlan(object):
                                             _("{0}").format(x),
                                             parent=parent)
 
-                        if not needs_fix:
-                                continue
+                        if needs_fix:
+                                # Eliminate policy-based entries with no repair
+                                # action.
+                                needs_fix = [x for x in needs_fix
+                                             if x is not None]
+                                repairs.append((pfmri, needs_fix))
 
-                        # Eliminate policy-based entries with no repair action.
-                        needs_fix = [x for x in needs_fix if x is not None]
-                        repairs.append((pfmri, needs_fix))
-                if proposed_fixes:
-                        pt.plan_done(pt.PLAN_PKG_VERIFY)
+                        if path_only and not overlaypaths and not verifypaths:
+                                return
+
+        def plan_fix(self, args, unpackaged=False, unpackaged_only=False,
+                verify_paths=misc.EmptyI):
+                """Determine the changes needed to fix the image."""
+
+                self.__plan_op()
+                self.__evaluate_excludes()
+
+                pt = self.__progtrack
+                pt.plan_all_start()
+
+                if args:
+                        proposed_dict, self.__match_rm = self.__match_user_fmris(
+                            self.image, args, self.MATCH_INST_VERSIONS)
+
+                        # merge patterns together
+                        proposed_fixes = sorted(set([
+                            f
+                            for each in proposed_dict.values()
+                            for f in each
+                        ]))
+                else:
+                        # No FMRIs specified, verify all packages
+                        proposed_fixes = list(self.image.gen_installed_pkgs(
+                            ordered=True))
+
+                repairs = []
+                overlaypaths = set()
+                verifypaths = set(a.lstrip(os.path.sep) for a in verify_paths)
+
+                if not verify_paths:
+                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(proposed_fixes))
+
+                        # Verify unpackaged contents.
+                        if unpackaged or unpackaged_only:
+                                self.__process_unpackaged(proposed_fixes,
+                                    pt=pt)
+                                pt.plan_done(pt.PLAN_PKG_VERIFY)
+                                if unpackaged_only:
+                                        self.__finish_plan(plandesc.EVALUATED_PKGS)
+                                        return
+                                # Otherwise we reset the goals for packaged
+                                # contents.
+                                pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(
+                                    proposed_fixes))
+                        self.__verify_fmris(repairs, args, proposed_fixes, pt,
+                            verifypaths, overlaypaths)
+                else:
+                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(verifypaths))
+
+                        self.__verify_fmris(repairs, args, proposed_fixes, pt,
+                            verifypaths, overlaypaths)
+
+                        timestamp = misc.time_to_timestamp(time.time())
+                        for path_not_found in verifypaths:
+                                pt.plan_add_progress(pt.PLAN_PKG_VERIFY)
+                                self.pd.add_item_message("path not found",
+                                    timestamp, MSG_WARNING,
+                                    _("{path} is not found in the image").format(
+                                        path=path_not_found))
+
+                        if args and overlaypaths:
+                                # Only perform verification for the rest of packages
+                                # if FMRIs are provided and there are actions with
+                                # overlay=allow found in those FMRIs. In the second
+                                # pass, only look for actions with overlay=true.
+                                pfixes = set(proposed_fixes)
+                                path_fmri = [
+                                    f
+                                    for f in self.image.gen_installed_pkgs(
+                                        ordered=True)
+                                        if f not in pfixes
+                                ]
+                                self.__verify_fmris(repairs, args, path_fmri, pt,
+                                    set(), overlaypaths)
+
+                pt.plan_done(pt.PLAN_PKG_VERIFY)
 
                 # If no repairs, finish the plan.
                 if not repairs:

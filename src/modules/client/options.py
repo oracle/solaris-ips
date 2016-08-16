@@ -85,6 +85,7 @@ TAGGED                = "tagged"
 UPDATE_INDEX          = "update_index"
 UNPACKAGED            = "unpackaged"
 UNPACKAGED_ONLY       = "unpackaged_only"
+VERIFY_PATHS          = "verify_paths"
 VERBOSE               = "verbose"
 SYNC_ACT              = "sync_act"
 ACT_TIMEOUT           = "act_timeout"
@@ -451,6 +452,18 @@ def opts_table_cb_unpackaged(api_inst, opts, opts_new):
         if opts[UNPACKAGED] and opts[UNPACKAGED_ONLY]:
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [UNPACKAGED, UNPACKAGED_ONLY])
+
+def opts_table_cb_path_no_unpackaged(api_inst, opts, opts_new):
+        # Check whether path options is used with either unpackaged
+        # or unpackaged_only options.
+
+        if opts[VERIFY_PATHS] and opts[UNPACKAGED]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [VERIFY_PATHS, UNPACKAGED])
+
+        if opts[VERIFY_PATHS] and opts[UNPACKAGED_ONLY]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [VERIFY_PATHS, UNPACKAGED_ONLY])
 
 def __parse_linked_props(args):
         """"Parse linked image property options that were specified on the
@@ -1262,7 +1275,10 @@ opts_verify = \
     [
     opts_table_cb_nqv,
     opts_table_cb_unpackaged,
+    opts_table_cb_path_no_unpackaged,
     (UNPACKAGED_ONLY,  False, [], {"type": "boolean"}),
+    (VERIFY_PATHS, [], [], {"type": "array",
+                            "items": {"type": "string"}}),
 ]
 
 opts_publisher = \

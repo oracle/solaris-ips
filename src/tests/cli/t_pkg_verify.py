@@ -48,6 +48,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/usr/bin
             add file bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
             add file ls path=/usr/bin/ls mode=755 owner=root group=sys
+            add link path=/usr/bin/bobcat_link target=/usr/bin/bobcat
             add file bobcat path=/etc/preserved mode=644 owner=root group=sys preserve=true timestamp="20080731T024051Z"
             add file dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -57,6 +58,15 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add file dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
             add file permission mode=0600 owner=root group=bin path=/etc/permission preserve=true
             add driver name=zigit alias=pci8086,1234
+            close
+            """
+        bar10 = """
+            open bar@1.0,5.11-0:20110908T004546Z
+            add dir mode=0755 owner=root group=sys path=/usr
+            add dir mode=0755 owner=root group=bin path=/usr/bin
+            add link path=/usr/bin/bobcat_link target=/usr/bin/bobcat
+            add file bronze1 mode=644 owner=root group=sys path=/etc/bronze1
+            add file bronze2 mode=644 owner=root group=sys path=/etc/bronze2
             close
             """
 
@@ -74,7 +84,9 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
            "dricon_mp": """\n""",
            "dricon_dp": """\n""",
            "dricon_ep": """\n""",
-           "permission": ""
+           "permission": "",
+           "bronze1": "",
+           "bronze2": ""
         }
 
         def setUp(self):
@@ -123,6 +135,20 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg_verify("-q foo")
                 assert(self.output == "")
 
+                # Should not fail since the path exists in the package
+                # and is intact.
+                self.pkg_verify("-v -p /etc/name_to_major")
+                self.assertTrue("foo" in self.output
+                    and "etc/name_to_major" not in self.output)
+                self.pkg_verify("-v -p /usr/bin/bobcat_link")
+                self.assertTrue("OK" in self.output)
+                self.pkg_verify("-v -p /usr")
+                self.assertTrue(self.output.count("OK") == 1)
+
+                # Should output path not found.
+                self.pkg_verify("-p nonexist")
+                self.assertTrue("not found" in self.output)
+
                 # Should not fail if publisher is disabled and package is ok.
                 self.pkg("set-publisher -d test")
                 self.pkg_verify("foo")
@@ -138,6 +164,17 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg_verify("foo", exit=1)
                 self.assertTrue("Unexpected Exception" not in self.output)
                 self.assertTrue("PACKAGE" in self.output and "STATUS" in self.output)
+
+                # Should fail with exit code 2 because of invalid option combo.
+                self.pkg_verify("-p /usr/bin/bobcat --unpackaged", exit=2)
+                self.pkg_verify("-p /usr/bin/bobcat --unpackaged-only", exit=2)
+
+                # Should fail with exit code 1 because the file is removed
+                # and the package is not ok.
+                self.pkg_verify("-p /usr/bin/bobcat", exit=1)
+                self.assertTrue("PACKAGE" in self.output
+                    and self.output.count("ERROR") == 2)
+                self.assertTrue("usr/bin/bobcat" in self.output)
 
                 # Test that "-H" works as expected.
                 self.pkg_verify("foo -H", exit=1)
@@ -198,6 +235,155 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # Verify on system wide should also find the extra alias.
                 self.pkg_verify("")
                 self.assertTrue("4321" in self.output and "WARNING" in self.output)
+
+        def test_multiple_paths_input(self):
+                """Test that when input is multiple paths, results returned are as
+                expected."""
+
+                self.pkgsend_bulk(self.rurl, self.bar10)
+
+                self.image_create(self.rurl)
+                self.pkg("install foo bar")
+
+                # Test verification of multiple paths in a package.
+                # Should not fail since files specified by paths are all intact.
+                self.pkg_verify("-v -p /etc/driver_aliases -p /etc/minor_perm \
+                    -p /etc/security/extra_privs")
+
+                # Test verification of multiple paths in different packages.
+                # Should not fail since files specified by paths are all intact.
+                self.pkg_verify("-v -p /etc/driver_aliases -p /etc/bronze1 -p /usr/bin/bobcat")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 2)
+                self.pkg_verify("-v -p /usr -p /etc/driver_aliases")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 2)
+                self.pkg_verify("-v -p /usr -p /usr/bin")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 1)
+                self.pkg_verify("-v -p /usr -p /usr/bin/bobcat_link")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 1)
+
+
+                # When multiple paths are given to pkg verify, if any of them
+                # are not packaged in the image it should report the file not found.
+                self.pkg_verify("-v -p /etc/driver_aliases -p nonexist")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 1)
+                self.assertTrue("nonexist is not found" in self.output)
+
+                fd = open(os.path.join(self.get_img_path(), "usr", "bin", "bobcat"), "w+")
+                fd.write("Bobcats are here")
+                fd.close()
+
+                # When verify multilple paths in a package, should output
+                # ok for one package, error for the other.
+                self.pkg_verify("-v -p /etc/driver_aliases \
+                    -p /usr/bin/bobcat", exit=1)
+                self.assertTrue("usr/bin/bobcat" in self.output
+                    and "etc/driver_aliases" not in self.output)
+                self.assertTrue("foo" in self.output)
+                self.assertTrue("OK" not in self.output
+                    and self.output.count("ERROR") == 3
+                    and "Hash" in self.output)
+
+                # Even though the target file is modified, the link and dir
+                # verification should pass.
+                self.pkg_verify("-v -p /usr -p /usr/bin -p /usr/bin/bobcat_link")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 1)
+
+                # When verifying multiple paths in different packages, should fail
+                # the package whose manifest contains the path. Should not
+                # fail the other package.
+                self.pkg_verify("-v -p /usr/bin/bobcat -p /etc/bronze1", exit=1)
+                self.assertTrue("usr/bin/bobcat" in self.output
+                    and "etc/bronze1" not in self.output
+                    and "foo" in self.output and "bar" in self.output)
+                self.assertTrue(self.output.count("OK") == 1
+                    and self.output.count("ERROR") == 3
+                    and "Hash" in self.output)
+                self.pkg_verify("-v -p /usr -p /usr/bin/bobcat", exit=1)
+                self.assertTrue("usr/bin/bobcat" in self.output
+                    and "foo" in self.output and "bar" in self.output)
+                self.assertTrue("OK" in self.output
+                    and self.output.count("ERROR") == 3
+                    and "Hash" in self.output)
+
+                self.pkg("uninstall foo bar")
+
+        def test_mix_verify_input(self):
+                """Test that when input is mix of FMRIs and paths, verbose output
+                is correct"""
+
+                self.pkgsend_bulk(self.rurl, self.bar10)
+                self.image_create(self.rurl)
+                self.pkg("install foo bar")
+
+                # Should verify the package when only FMRI is provided.
+                self.pkg_verify("-v foo")
+                self.assertTrue("foo" in self.output and "OK" in self.output)
+
+                # Should verify the path when no FMRI is provided.
+                self.pkg_verify("-v -p /etc/name_to_major")
+                self.assertTrue("foo" in self.output and "OK" in self.output)
+
+                # Should verify only the path when both path and FMRI are
+                # provided and an action of the FMRI matches the path.
+                self.pkg_verify("-v -p /etc/name_to_major foo")
+                self.assertTrue("foo" in self.output
+                    and "etc/name_to_major" not in self.output)
+                self.assertTrue(self.output.count("OK") == 1)
+
+                # Should verify only the path when the path and more than
+                # one FMRIs are provided.
+                self.pkg_verify("-v -p /etc/name_to_major foo bar")
+                self.assertTrue("foo" in self.output
+                    and "bar" not in self.output
+                    and "etc/name_to_major" not in self.output)
+                self.assertTrue(self.output.count("OK") == 1)
+                self.pkg_verify("-v -p /usr foo bar")
+                self.assertTrue("bar" in self.output
+                    and "foo" not in self.output)
+                self.assertTrue(self.output.count("OK") == 1)
+                self.pkg_verify("-v -p /usr/bin/bobcat_link foo bar")
+                self.assertTrue("bar" in self.output
+                    and "foo" not in self.output)
+                self.assertTrue(self.output.count("OK") == 1)
+
+                # Should verify the path when both the path and the FMRI are
+                # provided but the path is not in the manifest of the package.
+                self.pkg_verify("-v -p /etc/name_to_major bar")
+                self.assertTrue("foo" not in self.output and
+                    "bar" not in self.output and "not found" in self.output)
+                self.assertTrue("OK" not in self.output)
+
+                fd = open(os.path.join(self.get_img_path(), "usr", "bin", "bobcat"), "w+")
+                fd.write("Bobcats are here")
+                fd.close()
+
+                # Should not output error for the package if the modified file
+                # is not verified.
+                self.pkg_verify("-v -p /etc/bronze1 bar")
+                self.assertTrue("bar" in self.output
+                    and "OK" in self.output and "ERROR" not in self.output)
+
+                # When the path belongs to the manifest of FMRI, should
+                # fail and report error for the path and the FMRI.
+                self.pkg_verify("-v -p /usr/bin/bobcat foo bar", exit=1)
+                self.assertTrue("foo" in self.output and "bar" not in self.output
+                    and "usr/bin/bobcat" in self.output)
+                self.assertTrue(self.output.count("ERROR") == 3
+                    and "OK" not in self.output)
+
+                # Even though the target file is modified, the link and dir
+                # verification should pass.
+                self.pkg_verify("-v -p /usr/bin -p /usr/bin/bobcat_link foo bar")
+                self.assertTrue("ERROR" not in self.output
+                    and self.output.count("OK") == 1)
+
+                self.pkg("uninstall foo bar")
 
         def test_02_installed(self):
                 """When multiple FMRIs are given to pkg verify, if any of them

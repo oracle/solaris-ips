@@ -622,11 +622,25 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # First, only install the package that has a file with
                 # attribute overlay=allow.
                 self.pkg("install gss")
+
+                # Path verification should report ok.
+                self.pkg("verify -v -p {0}".format(file_path))
+                self.assertTrue("OK" in self.output and file_path not in self.output
+                    and pfmri_gss.get_pkg_stem() in self.output)
+
                 self.file_exists(file_path)
                 self.file_remove(file_path)
                 self.file_doesnt_exist(file_path)
+
                 # Verify should report an error if the file is missing.
                 self.pkg("verify -v gss", exit=1)
+
+                # Path verification should report error.
+                self.pkg("verify -v -p {0}".format(file_path), exit=1)
+                self.assertTrue("OK" not in self.output and "ERROR" in self.output)
+                self.assertTrue(file_path in self.output and \
+                    pfmri_gss.get_pkg_stem() in self.output)
+
                 # Fix should be able to repair the file.
                 self.pkg("fix -v gss")
                 self.file_exists(file_path)
@@ -634,9 +648,38 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
                 # Install the overlaying package.
                 self.pkg("install krb5")
+
+                # Path verification should report ok for both the overlaid package
+                # and the overlaying package.
+                self.pkg("verify -v -p {0}".format(file_path))
+                self.assertTrue(self.output.count("OK") == 2
+                    and "ERROR" not in self.output)
+                self.assertTrue(pfmri_krb.get_pkg_stem() in self.output
+                    and pfmri_gss.get_pkg_stem() in self.output)
+
+                self.pkg("verify -v -p {0} gss".format(file_path))
+                self.assertTrue(self.output.count("OK") == 2
+                    and "ERROR" not in self.output)
+                self.assertTrue(pfmri_krb.get_pkg_stem() in self.output
+                    and pfmri_gss.get_pkg_stem() in self.output)
+
                 self.file_exists(file_path)
                 self.file_remove(file_path)
                 self.file_doesnt_exist(file_path)
+
+                # Path verification should report error for both the overlaid package
+                # and the overlaying package.
+                self.pkg("verify -v -p {0}".format(file_path), exit=1)
+                self.assertTrue("OK" not in self.output
+                    and self.output.count("ERROR") == 4)
+                self.assertTrue(pfmri_krb.get_pkg_stem() in self.output
+                    and pfmri_gss.get_pkg_stem() in self.output)
+
+                self.pkg("verify -v -p {0} gss".format(file_path), exit=1)
+                self.assertTrue("OK" not in self.output
+                    and self.output.count("ERROR") == 4)
+                self.assertTrue(pfmri_krb.get_pkg_stem() in self.output
+                    and pfmri_gss.get_pkg_stem() in self.output)
 
                 # Now pkg verify should still report an error on the overlaid
                 # package and tell the users to verify the overlaying package.

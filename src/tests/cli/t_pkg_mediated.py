@@ -546,6 +546,7 @@ vi\tsystem\t\tsystem\tsvr4\t
                 # debugging tests when they fail.
                 self.pkg("install -vvv sendmail@0.5")
                 self.pkg("mediator") # If tests fail, this is helpful.
+                self.pkg("verify -v -p /usr/sbin/sendmail -p /usr/bin/mailq")
 
                 # Verify that /usr/bin/mailq and /usr/lib/sendmail are files.
                 check_files(gen_mta_files())
@@ -555,6 +556,8 @@ vi\tsystem\t\tsystem\tsvr4\t
                 self.pkg("install -vvv sendmail@1")
                 self.pkg("mediator") # If tests fail, this is helpful.
                 self.pkg("verify -v")
+                self.pkg("verify -v -p /usr/sbin/sendmail -p /usr/bin/mailq")
+                self.pkg("verify -v -p /usr/sbin/sendmail -p /usr/bin/mailq sendmail@1")
 
                 # Check that installed links point to sendmail and that
                 # verify passes.
@@ -569,6 +572,8 @@ mta\tsystem\t\tsystem\tsendmail\t
                 self.pkg("mediator") # If tests fail, this is helpful.
                 check_target(gen_mta_links(), "sendmail3-mta")
                 self.pkg("verify -v")
+                self.pkg("verify -v -p /usr/sbin/sendmail -p /usr/bin/mailq")
+                self.pkg("verify -v -p /usr/sbin/sendmail -p /usr/bin/mailq sendmail@3")
 
                 # Downgrading to 0.5 should change sendmail and mailq links back
                 # to a file.
@@ -993,6 +998,7 @@ python\tsystem\t3.4\tlocal\tunladen-swallow@\t
                 self.pkg("verify -v python-unladen-swallow-27 "
                     "python-unladen-swallow-35")
                 self.pkg("verify -v python-unladen-swallow-34", exit=1)
+                self.pkg("verify -v -p /usr/bin/python", exit=1)
                 self.pkg("fix")
                 self.pkg("verify -v")
 

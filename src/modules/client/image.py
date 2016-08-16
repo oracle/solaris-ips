@@ -1738,7 +1738,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Only after success should the configuration be saved.
                 self.save_config()
 
-        def verify(self, fmri, progresstracker, **kwargs):
+        def verify(self, fmri, progresstracker, verifypaths=None,
+            overlaypaths=None, **kwargs):
                 """Generator that returns a tuple of the form (action, errors,
                 warnings, info) if there are any error, warning, or other
                 messages about an action contained within the specified
@@ -1750,8 +1751,14 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 'progresstracker' is a ProgressTracker object.
 
+                'verifypaths' is the set of paths to verify.
+
+                'overlaypaths' is the set of overlaying path to verify.
+
                 'kwargs' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
+
+                path_only = bool(verifypaths or overlaypaths)
 
                 try:
                         pub = self.get_publisher(prefix=fmri.publisher)
@@ -1764,8 +1771,10 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
 
-                progresstracker.plan_add_progress(
-                    progresstracker.PLAN_PKG_VERIFY)
+                if not path_only:
+                        progresstracker.plan_add_progress(
+                            progresstracker.PLAN_PKG_VERIFY)
+
                 manf = self.get_manifest(fmri, ignore_excludes=True)
                 sigs = list(manf.gen_actions_by_type("signature",
                     excludes=self.list_excludes()))
@@ -1786,8 +1795,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         except apx.InvalidResourceLocation as e:
                                 yield None, [e], [], []
 
-                progresstracker.plan_add_progress(
-                    progresstracker.PLAN_PKG_VERIFY, nitems=0)
                 def mediation_allowed(act):
                         """Helper function to determine if the mediation
                         delivered by a link is allowed.  If it is, then
@@ -1824,8 +1831,11 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         vardrate_excludes.append(func)
 
                 for act in manf.gen_actions():
+                        path = act.attrs.get("path")
+
                         progresstracker.plan_add_progress(
                             progresstracker.PLAN_PKG_VERIFY, nitems=0)
+
                         if (act.name == "link" or
                             act.name == "hardlink") and \
                             not mediation_allowed(act):
@@ -1837,14 +1847,29 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         warnings = []
                         info = []
                         if act.include_this(excludes, publisher=fmri.publisher):
-                                errors, warnings, info = act.verify(
-                                    self, pfmri=fmri, **kwargs)
+                                if not path_only:
+                                        errors, warnings, info = act.verify(
+                                            self, pfmri=fmri, **kwargs)
+                                elif path in verifypaths or path in overlaypaths:
+                                        if path in verifypaths:
+                                            progresstracker.plan_add_progress(
+                                                progresstracker.PLAN_PKG_VERIFY)
+
+                                        errors, warnings, info = act.verify(
+                                            self, pfmri=fmri, **kwargs)
+                                        # It's safe to immediately discard this
+                                        # match as only one action can deliver a
+                                        # path with overlay=allow and only one with
+                                        # overlay=true.
+                                        overlaypaths.discard(path)
+                                        if act.attrs.get("overlay") == "allow":
+                                                overlaypaths.add(path)
+                                        verifypaths.discard(path)
                         elif act.include_this(vardrate_excludes,
                             publisher=fmri.publisher) and not act.refcountable:
                                 # Verify that file that is faceted out does not
                                 # exist. Exclude actions which may be delivered
                                 # from multiple packages.
-                                path = act.attrs.get("path", None)
                                 if path is not None and os.path.exists(
                                     os.path.join(self.root, path)):
                                         errors.append(
@@ -4036,14 +4061,14 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 progtrack.plan_all_done()
 
         def make_fix_plan(self, op, progtrack, check_cancel, noexecute, args,
-            unpackaged=False, unpackaged_only=False):
+            unpackaged=False, unpackaged_only=False, verify_paths=EmptyI):
                 """Create an image plan to fix the image. Note: verify shares
                 the same routine."""
 
                 progtrack.plan_all_start()
                 self.__make_plan_common(op, progtrack, check_cancel, noexecute,
                     args=args, unpackaged=unpackaged,
-                    unpackaged_only=unpackaged_only)
+                    unpackaged_only=unpackaged_only, verify_paths=verify_paths)
                 progtrack.plan_all_done()
 
         def make_noop_plan(self, op, progtrack, check_cancel,

@@ -2214,12 +2214,13 @@ def uninstall(op, api_inst, pargs,
         return __handle_client_json_api_output(out_json, op)
 
 def verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
-    unpackaged, unpackaged_only):
+    unpackaged, unpackaged_only, verify_paths):
         """Determine if installed packages match manifests."""
 
         out_json = client_api._verify(op, api_inst, pargs, omit_headers,
             parsable_version, quiet, verbose, unpackaged, unpackaged_only,
-            display_plan_cb=display_plan_cb, logger=logger)
+            display_plan_cb=display_plan_cb, logger=logger,
+            verify_paths=verify_paths)
 
         # Print error messages.
         if "errors" in out_json:
@@ -3468,11 +3469,11 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
                         for o, e in err.failed:
                                 refresh_errstr += "\n"
                                 refresh_errstr += str(e)
-                                
+
                         refresh_errstr += "\n"
                 else:
                         refresh_errstr += "\n   \n" + str(err)
-                 
+
 
         partial_str = ":"
         if partial:
@@ -3531,7 +3532,7 @@ the last retrieval may not be available.
                 else:
                         repo_str = _("{0} of {1} repositories").format(
                             len(failed["errors"]), total)
-                        
+
                 outstr += _("Errors were encountered when attempting to " \
                     "contact {0} for publisher '{1}'.\n").format(repo_str, pub)
                 for err in failed["errors"]:
@@ -5169,7 +5170,8 @@ opts_mapping = {
     "info_local":             ("l", ""),
     "info_remote":            ("r", ""),
     "display_license":        ("", "license"),
-    "publisher_a":            ("a", "")
+    "publisher_a":            ("a", ""),
+    "verify_paths":           ("p", "")
 }
 
 #
