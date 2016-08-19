@@ -113,6 +113,15 @@ pkg_timer = pkg.misc.Timer("pkg client")
 valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 
 valid_special_prefixes = ["action."]
+
+default_attrs = {}
+for atype, aclass in six.iteritems(actions.types):
+        default_attrs[atype] = [aclass.key_attr]
+        if atype == "depend":
+                default_attrs[atype].insert(0, "type")
+        if atype == "set":
+                default_attrs[atype].append("value")
+
 _api_inst = None
 
 def format_update_error(e):
@@ -3292,6 +3301,11 @@ def list_contents(api_inst, args):
                         usage(_("-m and {0} may not be specified at the same "
                             "time").format(invalid.pop()), cmd=subcommand)
 
+        if action_types and all(
+            atype not in default_attrs
+            for atype in action_types):
+                usage(_("no valid action types specified"), cmd=subcommand)
+
         check_attrs(attrs, subcommand)
 
         api_inst.progresstracker.set_purpose(
@@ -3308,11 +3322,22 @@ def list_contents(api_inst, args):
         # sort order, then we fill in some defaults.
         #
         if not attrs:
-                # XXX Possibly have multiple exclusive attributes per column?
-                # If listing dependencies and files, you could have a path/fmri
-                # column which would list paths for files and fmris for
-                # dependencies.
-                attrs = ["path"]
+                if not action_types:
+                        # XXX Possibly have multiple exclusive attributes per
+                        # column? If listing dependencies and files, you could
+                        # have a path/fmri column which would list paths for
+                        # files and fmris for dependencies.
+                        attrs = ["path"]
+                else:
+                        # Choose default attrs based on specified action
+                        # types. A list is used here instead of a set is
+                        # because we want to maintain the order of the
+                        # attributes in which the users specify.
+                        for attr in itertools.chain.from_iterable(
+                            default_attrs.get(atype, EmptyI)
+                            for atype in action_types):
+                                    if attr not in attrs:
+                                            attrs.append(attr)
 
         if not sort_attrs and not display_raw:
                 # XXX reverse sorting

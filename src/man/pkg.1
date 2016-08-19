@@ -624,9 +624,9 @@ action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> .
 <listitem><para>Display the contents (action attributes) of all packages installed
 in the image. With no options, display the value of the <literal>path</literal> attribute
 for actions installed in the current image, sorted alphabetically by attribute
-value. For information about actions and their attributes, see &ldquo;Actions&rdquo;
-in the <literal>pkg</literal>(7) man page. See also the list of pseudo attribute
-names below.</para>
+value. If the <option>o</option> option is not specified, the key attributes, as described in <literal>pkg</literal>(7), of the related action name will be displayed instead. In addition, 'depend' actions will also include the 'type' attribute, and 'set' actions will include the 'value' attribute.</para>
+<para>When more than one action name is specified, the default attributes are 
+the set of all attributes, as described above, of all the specified actions. For information about actions and their attributes, see &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page. See also the list of pseudo attribute names below.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>Display contents of only the specified packages.</para>

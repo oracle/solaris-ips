@@ -96,6 +96,27 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("contents -m -s path", exit=2)
                 self.pkg("contents -m -t depend", exit=2)
 
+        def test_contents_default_attrs(self):
+                """Verify that when -t is specified without -o, the default
+                attributes vary to match."""
+
+                self.image_create(self.rurl)
+                self.pkg("install bronze")
+
+                self.pkg("contents")
+                self.assertTrue("PATH" in self.output)
+                self.pkg("contents -t file")
+                self.assertTrue("PATH" in self.output)
+                self.pkg("contents -t file,set")
+                self.assertTrue("PATH" in self.output and "NAME" in self.output
+                    and "VALUE" in self.output)
+                self.pkg("contents -t set,license")
+                self.assertTrue("LICENSE" in self.output and "NAME" in self.output
+                    and "VALUE" in self.output)
+                self.pkg("contents -t falseaction", exit=2)
+                self.pkg("contents -t falseaction,file", exit=1)
+                self.assertTrue("PATH" in self.output)
+
         def test_contents_empty_image(self):
                 """local pkg contents should fail in an empty image; remote
                 should succeed on a match """
