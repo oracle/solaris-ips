@@ -114,7 +114,7 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue("LICENSE" in self.output and "NAME" in self.output
                     and "VALUE" in self.output)
                 self.pkg("contents -t falseaction", exit=2)
-                self.pkg("contents -t falseaction,file", exit=1)
+                self.pkg("contents -t falseaction,file", exit=0)
                 self.assertTrue("PATH" in self.output)
 
         def test_contents_empty_image(self):

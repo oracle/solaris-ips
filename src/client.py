@@ -3301,10 +3301,17 @@ def list_contents(api_inst, args):
                         usage(_("-m and {0} may not be specified at the same "
                             "time").format(invalid.pop()), cmd=subcommand)
 
-        if action_types and all(
-            atype not in default_attrs
-            for atype in action_types):
-                usage(_("no valid action types specified"), cmd=subcommand)
+        if action_types:
+                invalid_atype = [atype
+                    for atype in action_types
+                    if atype not in default_attrs]
+                if invalid_atype == action_types:
+                        usage(_("no valid action types specified"),
+                            cmd=subcommand)
+                elif invalid_atype:
+                        msg(_("""\
+WARNING: invalid action types specified:{0}
+""".format(",".join(invalid_atype))))
 
         check_attrs(attrs, subcommand)
 
