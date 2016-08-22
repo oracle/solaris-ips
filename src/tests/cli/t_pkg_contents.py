@@ -114,8 +114,9 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue("LICENSE" in self.output and "NAME" in self.output
                     and "VALUE" in self.output)
                 self.pkg("contents -t falseaction", exit=2)
-                self.pkg("contents -t falseaction,file", exit=0)
+                self.pkg("contents -t falseaction,file")
                 self.assertTrue("PATH" in self.output)
+                self.assertTrue("falseaction" in self.errout)
 
         def test_contents_empty_image(self):
                 """local pkg contents should fail in an empty image; remote

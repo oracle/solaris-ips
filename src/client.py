@@ -3309,8 +3309,8 @@ def list_contents(api_inst, args):
                         usage(_("no valid action types specified"),
                             cmd=subcommand)
                 elif invalid_atype:
-                        msg(_("""\
-WARNING: invalid action types specified:{0}
+                        emsg(_("""\
+WARNING: invalid action types specified: {0}
 """.format(",".join(invalid_atype))))
 
         check_attrs(attrs, subcommand)
