@@ -195,8 +195,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.file_contains("etc/motd", arch)
                 self.file_contains("etc/zone_motd", zone)
-                self.file_contains("etc/zone_arch", zone)
-                self.file_contains("etc/zone_arch", arch)
+                self.file_contains("etc/zone_arch", [zone, arch])
                 self.file_contains("etc/isdebug", isdebug)
                 self.image_destroy()
 

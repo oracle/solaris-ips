@@ -3452,8 +3452,18 @@ class CliTestCase(Pkg5TestCase):
                 file_path = os.path.join(self.get_img_path(), path)
                 portable.remove(file_path)
 
-        def file_contains(self, path, string, appearances=1):
-                """Assert the existence of a string in a file in the image."""
+        def file_contains(self, path, strings, appearances=1):
+                """Assert the existence of strings provided in a file in the
+                image. The counting of appearances is line based. Repeated
+                string on the same line will be count once."""
+
+                if isinstance(strings, six.string_types):
+                        strings = [strings]
+
+                # Initialize a dict for counting appearances.
+                sdict = {}
+                for s in strings:
+                        sdict[s] = appearances
 
                 file_path = os.path.join(self.get_img_path(), path)
                 try:
@@ -3461,30 +3471,35 @@ class CliTestCase(Pkg5TestCase):
                 except:
                         self.assertTrue(False,
                             "File {0} does not exist or contain {1}".format(
-                            path, string))
+                            path, strings))
 
                 for line in f:
-                        if string in line:
-                                appearances -= 1
-                                if appearances == 0:
-                                        f.close()
-                                        break
+                        for k in sdict:
+                                if k in line:
+                                        sdict[k] -= 1
+                        # If all counts become < 0, we know we have found all
+                        # occurrences for all strings.
+                        if all(v <= 0 for v in sdict.values()):
+                                f.close()
+                                break
                 else:
                         f.close()
-                        self.assertTrue(False, "File {0} does not contain {1}".format(
-                            path, string))
+                        self.assertTrue(False, "File {0} does not contain {1} "
+                            "{2}".format(path, appearances, strings))
 
-        def file_doesnt_contain(self, path, string):
-                """Assert the non-existence of a string in a file in the
-                image."""
+        def file_doesnt_contain(self, path, strings):
+                """Assert the non-existence of strings in a file in the image.
+                """
+                if isinstance(strings, six.string_types):
+                        strings = [strings]
 
                 file_path = os.path.join(self.get_img_path(), path)
                 f = open(file_path)
                 for line in f:
-                        if string in line:
+                        if any(s in line for s in strings):
                                 f.close()
-                                self.assertTrue(False, "File {0} contains {1}".format(
-                                    path, string))
+                                self.assertTrue(False, "File {0} contains any "
+                                    "of {1}".format(path, strings))
                 else:
                         f.close()
 

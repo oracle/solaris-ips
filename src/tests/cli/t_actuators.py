@@ -436,9 +436,9 @@ stop/type astring method
                             "svc:/system/test_multi_svc2:default")
                 else:
                         # output order is not stable in Python 3
-                        self.file_contains(svcadm_output, "svcadm restart")
-                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc1:default")
-                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc2:default")
+                        self.file_contains(svcadm_output, ["svcadm restart",
+                            "svc:/system/test_multi_svc1:default",
+                            "svc:/system/test_multi_svc2:default"])
 
                 # Test synchronous options
                 # synchronous restart
@@ -489,9 +489,9 @@ stop/type astring method
                             "svc:/system/test_multi_svc2:default")
                 else:
                         # output order is not stable in Python 3
-                        self.file_contains(svcadm_output, "svcadm disable -s")
-                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc1:default")
-                        self.file_contains(svcadm_output, "svc:/system/test_multi_svc2:default")
+                        self.file_contains(svcadm_output, ["svcadm disable -s",
+                            "svc:/system/test_multi_svc1:default",
+                            "svc:/system/test_multi_svc2:default"])
                 os.unlink(svcadm_output)
 
         def test_actuator_plan_display(self):

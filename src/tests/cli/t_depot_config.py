@@ -362,15 +362,12 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                 self.start_depot()
 
                 # the httpd.conf should reference our repositories
-                self.file_contains(self.ac.conf, self.rdir1)
-                self.file_contains(self.ac.conf, self.rdir2)
-                self.file_contains(self.ac.conf, self.rdir3)
-                self.file_contains(self.ac.conf, self.index_dir)
+                self.file_contains(self.ac.conf, [self.rdir1, self.rdir2,
+                    self.rdir3, self.index_dir])
                 # it should not reference the repositories that we have
                 # marked as offline, writable or standalone
-                self.file_doesnt_contain(self.ac.conf, "/pkg5/there/aint")
-                self.file_doesnt_contain(self.ac.conf, "/pkg5/nobody/here")
-                self.file_doesnt_contain(self.ac.conf, "/pkg5/but/us/chickens")
+                self.file_doesnt_contain(self.ac.conf, ["/pkg5/there/aint",
+                    "/pkg5/nobody/here", "/pkg5/but/us/chickens"])
 
         def test_1_htdepot_usage(self):
                 """Tests that we show a usage message."""

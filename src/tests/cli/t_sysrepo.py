@@ -781,8 +781,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.pkg("set-publisher -g {0} test1".format(self.rurl1))
                 self.file_doesnt_exist(cache_path)
                 self.sysrepo("")
-                self.file_contains(cache_path, self.rurl1)
-                self.file_contains(cache_path, self.durl1)
+                self.file_contains(cache_path, [self.rurl1, self.durl1])
 
                 # record the last modification time of the cache
                 st_cache = os.lstat(full_cache_path)

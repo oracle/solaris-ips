@@ -205,16 +205,13 @@ class GroupAction(generic.Action):
                         # available.
                         return
                 gr = GroupFile(pkgplan.image)
-                cur_attrs = gr.getvalue(self.attrs)
-                # groups need to be first added, last removed
-                if "user-list" not in cur_attrs:
-                        try:
-                                gr.removevalue(self.attrs)
-                        except KeyError as e:
-                                # Already gone; don't care.
-                                pass
-                        else:
-                                gr.writefile()
+                try:
+                        gr.removevalue(self.attrs)
+                except KeyError as e:
+                        # Already gone; don't care.
+                        pass
+                else:
+                        gr.writefile()
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See
