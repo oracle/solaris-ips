@@ -347,8 +347,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
         for t in sorted(testclasses, key=__key, reverse=True):
                 if t.test_count():
                         suite_list.append(t)
-                else:
-                        break
+
         return suite_list
 
 def generate_coverage(cov_format, includes, omits, dest):

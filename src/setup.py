@@ -1176,6 +1176,8 @@ def syntax_check(filename):
                             line, col or "unknown", fname, code)
 
                 raise DistutilsError(res)
+        finally:
+                os.remove(tmp_file)
 
 # On Solaris, ld inserts the full argument to the -o option into the symbol
 # table.  This means that the resulting object will be different depending on
