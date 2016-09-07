@@ -60,6 +60,7 @@ class PkgPlan(object):
             "_license_status",
             "__origin_mfst",
             "__repair_actions",
+            "__salvage_actions",
             "__xferfiles",
             "__xfersize",
             "_autofix_pkgs",
@@ -88,6 +89,7 @@ class PkgPlan(object):
                 "__destination_mfst",
                 "__origin_mfst",
                 "__repair_actions",
+                "__salvage_actions",
                 "__xferfiles",
                 "__xfersize",
                 "image",
@@ -131,6 +133,7 @@ class PkgPlan(object):
                 self._executed = False
                 self._license_status = {}
                 self.__repair_actions = {}
+                self.__salvage_actions = {}
                 self.__xferfiles = -1
                 self.__xfersize = -1
                 self._autofix_pkgs = []
@@ -423,6 +426,26 @@ class PkgPlan(object):
                                             dest.attrs["license"],
                                             accepted=True)
 
+                        # Keep a cache of dir actions with salvage-from attrs.
+                        # Since directories are installed in top-down order,
+                        # we need this list to make sure we salvage contents
+                        # as accurately as possible. For example, where:
+                        #
+                        #  /var/user gets salvaged to /var/.migrate/user
+                        #  and
+                        #  /var/user/myuser/.ssh to /var/.migrate/user/myuser/.ssh
+                        #
+                        # We must ensure that we don't try to salvage
+                        # var/user/myuser/.ssh when installing
+                        # /var/.migrate/user,
+                        # but instead wait till /var/.migrate/user/myuser/.ssh
+                        # is being installed, otherwise that content will
+                        # the salvaged to the wrong place.
+                        if (dest.name == "dir" and
+                            "salvage-from" in dest.attrs):
+                                for p in dest.attrlist("salvage-from"):
+                                        self.__salvage_actions[p] = dest
+
         def get_licenses(self):
                 """A generator function that yields tuples of the form (license,
                 entry).  Where 'entry' is a dict containing the license status
@@ -647,14 +670,34 @@ class PkgPlan(object):
                 if local_path.startswith(os.path.sep):
                         local_path = local_path[1:]
 
+                # The salvaged locations known to us are a list of tuples of
+                # the form (old dir, lost+found salvage dir) and stored in
+                # self.image.imageplan.pd._salvaged[:]
+
+                #
+                # Check if this salvage-from is also the best match for other
+                # possibly previously packaged subdirs of this directory.
+                # E.g. if we stop delivering /var/user/evsuser/.ssh, then the
+                # action that specifies 'salvage-from=var/user' ought to deal
+                # with its files.
+                #
+                # On the other hand, if we package another directory, with
+                # 'salvage-from=/var/user/evsuser', then that should be used
+                # to salvage the .ssh content, not the action that salvages
+                # from /var/user.
+                #
                 for fpath, spath in self.image.imageplan.pd._salvaged[:]:
                         if fpath.startswith(local_path):
-                                self.image.imageplan.pd._salvaged.remove((fpath, spath))
-                                break
-                else:
-                        return
+                                for other_salvage in self.__salvage_actions:
+                                   if fpath.startswith(other_salvage) and \
+                                       len(other_salvage) > len(local_path):
+                                            continue
 
-                self.image.recover(spath, full_destination)
+                                self.image.imageplan.pd._salvaged.remove(
+                                    (fpath, spath))
+                                self.image.recover(
+                                    spath, full_destination,
+                                    local_path, fpath)
 
         @property
         def destination_manifest(self):

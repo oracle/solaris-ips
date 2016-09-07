@@ -3517,13 +3517,51 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         sdir.replace(self.root, "", 1)
                 return sdir
 
-        def recover(self, local_spath, full_dest_path):
+        def recover(self, local_spath, full_dest_path, dest_path, old_path):
                 """Called when recovering directory contents to implement
-                "salvage-from" directive... full_dest_path must exist."""
-                source_path = os.path.normpath(os.path.join(self.root, local_spath))
+                "salvage-from" directive... full_dest_path must exist.
+                dest_path is the image-relative location where we salvage to,
+                old_path is original image-relative directory that delivered
+                the files we're now recovering.
+
+                When recovering directories where the salvage-from string is
+                a substring of the previously packaged directory, attempt
+                to restore as much of the old directory structure as possible
+                by comparing the salvage-from value with the previously
+                packaged directory.
+
+                For example, say we had user-content in /var/user/myuser/.ssh,
+                but have stopped delivering that dir, replacing it with a new
+                directory /var/.migrate/user which specifies
+                salvage-from=var/user.
+
+                The intent of the package author, was to have the
+                /var/.migrate/user directory get the unpackaged 'myuser/.ssh'
+                directory created as part of the salvaging operation, giving
+                them /var/.migrate/user/myuser/.ssh
+                and not to just end up with
+                /var/.migrate/user/<contents of .ssh dir from myuser>
+                """
+
+                source_path = os.path.normpath(
+                    os.path.join(self.root, local_spath))
+                if dest_path != old_path and old_path.startswith(
+                    dest_path + os.path.sep):
+                        # this is here so that when salvaging the contents
+                        # of a previously packaged directory, we attempt to
+                        # restore as much of the old directory structure as
+                        # possible.
+                        spath = os.path.relpath(old_path, dest_path)
+                        full_dest_path = os.path.join(full_dest_path, spath)
+                        try:
+                                os.makedirs(full_dest_path)
+                        except OSError as e:
+                                if e.errno != errno.EEXIST:
+                                        raise e
+
                 for file_name in os.listdir(source_path):
                         misc.move(os.path.join(source_path, file_name),
-                            os.path.join(full_dest_path, file_name))
+                            full_dest_path)
 
         def temporary_dir(self):
                 """Create a temp directory under the image directory for various

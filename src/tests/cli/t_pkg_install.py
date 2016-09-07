@@ -3016,6 +3016,52 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        salvage_nested = """
+            open salvage-nested@1.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/mail mode=755 owner=root group=root
+            add dir path=var/user mode=755 owner=root group=root
+            add dir path=var/user/evsuser mode=755 owner=root group=root
+            add dir path=var/user/evsuser/.ssh mode=755 owner=root group=root
+            add file tmp/auth1 path=var/user/evsuser/.ssh/authorized_keys \
+                owner=root group=root mode=644 preserve=true
+            close
+            open salvage-nested@1.1
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/mail mode=755 owner=root group=root
+            add dir path=var/user mode=755 owner=root group=root
+            add dir path=var/user/evsuser mode=755 owner=root group=root
+            add dir path=var/user/evsuser/.ssh mode=755 owner=root group=root
+            add file tmp/auth1 path=var/user/evsuser/.ssh/authorized_keys \
+                owner=root group=root mode=644 preserve=abandon
+            close
+            open salvage-nested@2.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/.migrate mode=755 owner=root group=root
+            add dir path=var/.migrate/mail salvage-from=var/mail mode=755 \
+                owner=root group=root
+            add dir path=var/.migrate/user salvage-from=var/user mode=755 \
+                owner=root group=root
+            add dir path=var/.migrate/user/evsuser salvage-from=var/user/evsuser \
+                mode=755 owner=root group=root
+            add dir path=var/.migrate/user/evsuser/.ssh \
+                salvage-from=var/user/evsuser/.ssh mode=755 owner=root group=root
+            close
+            open salvage-nested@3.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/.migrate mode=755 owner=root group=root
+            add dir path=var/.migrate/user salvage-from=var/user mode=755 \
+                owner=root group=root
+            open salvage-nested@4.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/.migrate mode=755 owner=root group=root
+            add dir path=var/.migrate/user salvage-from=var/user mode=755 \
+                owner=root group=root
+            add dir path=var/.migrate/evsuser salvage-from=var/user/evsuser \
+                mode=755 owner=root group=root
+            close
+        """
+
         dumdir10 = """
             open dumdir@1.0
             add dir path=etc mode=0755 owner=root group=bin
@@ -3066,6 +3112,7 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             "tmp/silver-silly", "tmp/preserve1", "tmp/preserve2",
             "tmp/preserve3", "tmp/renold1", "tmp/renold3", "tmp/rennew1",
             "tmp/rennew3", "tmp/liveroot1", "tmp/liveroot2", "tmp/foo2",
+            "tmp/auth1"
         ]
 
         misc_files2 = {
@@ -4675,6 +4722,128 @@ adm
 
                 # This could hang reading fifo, or keel over reading socket.
                 self.pkg("uninstall salvage-special")
+
+        def test_salvage_nested(self):
+                """Make sure salvaging from nested packaged directories
+                works as expected. We test four scenarios, abandoning an
+                editable file (since that's a scenario ON will use for
+                23743369), a direct upgrade with no user edits,
+                salvaging all unpackaged contents despite nested dirs
+                not being delivered to var/.migrate, and splitting the
+                salvaged contents of a previously delivered directory to
+                two new directories."""
+
+                # We salvage to several places as part of the upgrade
+                # operation.
+                self.pkgsend_bulk(self.rurl, self.salvage_nested)
+                self.image_create(self.rurl)
+                self.pkg("install salvage-nested@1.0")
+                # add some unpackaged directories & contents
+                self.file_append("var/mail/foo", "foo's mail")
+                os.makedirs(
+                    os.path.join(self.get_img_path(),
+                    "var", "user", "webui", "timf"))
+                self.file_append("var/user/webui/user-pref.conf", "ook")
+                self.file_append("var/user/webui/timf/blah.conf", "moo")
+                self.file_append("var/user/evsuser/.ssh/config", "bar")
+
+                # modify a packaged editable file
+                self.file_append(
+                    "var/user/evsuser/.ssh/authorized_keys", "foo")
+
+                # abandon our editable file
+                self.pkg("update salvage-nested@1.1")
+                self.file_exists("var/user/evsuser/.ssh/authorized_keys")
+
+                self.pkg("update salvage-nested@2.0")
+                # Check negative cases first. This first location was where
+                # files would get salvaged to incorrectly prior to the fix
+                # for 23739095
+                self.file_doesnt_exist("var/.migrate/user/authorized_keys")
+                # these weren't known failures, but let's check anyway,
+                # since this is a useful safety net.
+                self.file_doesnt_exist("var/.migrate/authorized_keys")
+                self.file_doesnt_exist(
+                    "var/.migrate/user/evsuser/authorized_keys")
+                self.file_doesnt_exist("var/.migrate/user/evsuser/config")
+                self.file_doesnt_exist("var/.migrate/blah.conf")
+                self.file_doesnt_exist("var/.migrate/user/blah.conf")
+                self.file_doesnt_exist("var/.migrate/user/webui/blah.conf")
+
+                # now verify we salvaged everything correctly
+                self.file_contains("var/.migrate/mail/foo", "foo's mail")
+                self.file_contains(
+                    "var/.migrate/user/evsuser/.ssh/authorized_keys",
+                    "foo")
+                self.file_contains(
+                    "var/.migrate/user/evsuser/.ssh/config", "bar")
+                self.file_contains(
+                    "var/.migrate/user/webui/user-pref.conf", "ook")
+                self.file_contains(
+                    "var/.migrate/user/webui/timf/blah.conf", "moo")
+
+                # now try without the initial non-editable file
+                self.image_create(self.rurl)
+                self.pkg("install salvage-nested@1.1")
+                # an abandoned file shouldn't be installed
+                self.file_doesnt_exist("var/user/evsuser/.ssh/authorized_keys")
+                self.file_append(
+                    "var/user/evsuser/.ssh/authorized_keys", "ook")
+                self.pkg("update salvage-nested@2.0")
+                self.file_contains(
+                    "var/.migrate/user/evsuser/.ssh/authorized_keys",
+                    "ook")
+
+                # now try with no user edits
+                self.image_create(self.rurl)
+                self.pkg("install salvage-nested@1.1")
+                self.pkg("update salvage-nested@2.0")
+                self.file_doesnt_exist(
+                    "var/.migrate/user/evsuser/.ssh/authorized_keys")
+                self.dir_exists("var/.migrate/user/evsuser/.ssh")
+
+                # Now try without delivering the evsuser dir and subdirs
+                # in the updated package
+                self.image_create(self.rurl)
+                self.pkg("install salvage-nested@1.1")
+                os.makedirs(
+                    os.path.join(self.get_img_path(),
+                    "var", "user", "webui", "timf"))
+                os.makedirs(
+                    os.path.join(self.get_img_path(),
+                    "var", "user", "noodles"))
+                self.file_append("var/user/webui/timf/user-pref.conf", "ook")
+                self.file_append("var/user/noodles/blah.conf", "moo")
+                self.file_append("var/user/evsuser/.ssh/config", "bar")
+                self.pkg("update salvage-nested@3.0")
+                self.file_contains(
+                    "var/.migrate/user/evsuser/.ssh/config", "bar")
+                self.file_contains(
+                    "var/.migrate/user/webui/timf/user-pref.conf", "ook")
+                self.file_contains(
+                    "var/.migrate/user/noodles/blah.conf", "moo")
+
+                # Finally try splitting the salvaged contents from a
+                # previously delivered directory into two new directories.
+                self.image_create(self.rurl)
+                self.pkg("install salvage-nested@1.1")
+                os.makedirs(
+                    os.path.join(self.get_img_path(),
+                    "var", "user", "webui", "timf"))
+                os.makedirs(
+                    os.path.join(self.get_img_path(),
+                    "var", "user", "noodles"))
+                self.file_append("var/user/webui/timf/user-pref.conf", "ook")
+                self.file_append("var/user/noodles/blah.conf", "moo")
+                self.file_append("var/user/evsuser/.ssh/config", "bar")
+                self.pkg("update salvage-nested@4.0")
+                self.file_contains(
+                    "var/.migrate/evsuser/.ssh/config", "bar")
+                self.file_contains(
+                    "var/.migrate/user/webui/timf/user-pref.conf", "ook")
+                self.file_contains(
+                    "var/.migrate/user/noodles/blah.conf", "moo")
+
 
         def dest_file_valid(self, plist, pkg, src, dest):
                 """Used to verify that the dest item's mode, attrs, timestamp,
