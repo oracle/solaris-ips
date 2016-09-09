@@ -798,8 +798,8 @@ class Action(six.with_metaclass(NSG, object)):
                                     "value must be of the form '644', "
                                     "'0644', or '04755'.")))
                         elif isinstance(raw_mode, list):
-                                errors.append("mode", _("mode may only be "
-                                    "specified once"))
+                                errors.append(("mode", _("mode may only be "
+                                    "specified once")))
                         else:
                                 errors.append(("mode", _("'{0}' is not a valid "
                                     "mode; value must be of the form '644', "
