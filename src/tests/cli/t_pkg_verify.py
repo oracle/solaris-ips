@@ -76,6 +76,12 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add file bobcat mode=0555 owner=root group=bin sysattr=SH path=/p1/bobcat
             close """
 
+        sysattr2 = """
+            open sysattr2@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p2
+            add file bobcat mode=0555 owner=root group=bin sysattr=hidden sysattr=sensitive path=/p2/bobcat
+            close """
+
         misc_files = {
            "bobcat": "",
            "dricon_da": """zigit "pci8086,1234"\n""",
@@ -449,7 +455,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                         raise pkg5unittest.TestSkippedException(
                             "System attributes unsupported on this platform.")
 
-                self.pkgsend_bulk(self.rurl, [self.sysattr])
+                self.pkgsend_bulk(self.rurl, [self.sysattr, self.sysattr2])
 
                 # Need to create an image in /var/tmp since sysattrs don't work
                 # in tmpfs.
@@ -458,7 +464,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                     dir="/var/tmp"))
 
                 self.image_create(self.rurl)
-                self.pkg("install sysattr")
+                self.pkg("install sysattr sysattr2")
                 self.pkg("verify")
                 fpath = os.path.join(self.img_path(),"p1/bobcat")
 

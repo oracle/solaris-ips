@@ -281,6 +281,18 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,horst path=/p3/cat
             close """
 
+        secret5 = """
+            open secret5@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p3
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden sysattr=system path=/p3/cat
+            close """
+
+        secret6 = """
+            open secret6@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p3
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,sensitive sysattr=system path=/p4/cat
+            close """
+
         rofiles = """
             open rofilesdir@1.0-0
             add dir mode=0755 owner=root group=bin path=rofdir
@@ -1119,7 +1131,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                             "System attributes unsupported on this platform.")
 
                 plist = self.pkgsend_bulk(self.rurl, [self.secret1,
-                    self.secret2, self.secret3, self.secret4])
+                    self.secret2, self.secret3, self.secret4, self.secret5,
+                    self.secret6])
 
                 # Try to install in /tmp which does not support system
                 # attributes. Just make sure we fail gracefully.
@@ -1159,6 +1172,11 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # test some packages with invalid sysattrs
                 self.pkg("install secret3", exit=1)
                 self.pkg("install secret4", exit=1)
+
+                # test package with a file action that has multiple sysattr tags
+                self.pkg("install secret5")
+                self.pkg("install secret6")
+
                 shutil.rmtree(self.img_path())
                 self.set_img_path(old_img_path)
 
