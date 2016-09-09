@@ -2169,6 +2169,11 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 if variants:
                         op = API_OP_CHANGE_VARIANT
+                        # Check whether '*' or '?' is in the input. Currently,
+                        # change-variant does not accept globbing.
+                        for variant in variants:
+                                if "*" in variant or "?" in variant:
+                                        raise apx.UnsupportedVariantGlobbing()
                 else:
                         op = API_OP_CHANGE_FACET
 

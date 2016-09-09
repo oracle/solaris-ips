@@ -1147,7 +1147,8 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
             api_errors.UnknownErrors,
             api_errors.PermissionsException,
             api_errors.InvalidPropertyValue,
-            api_errors.InvalidResourceLocation)):
+            api_errors.InvalidResourceLocation,
+            api_errors.UnsupportedVariantGlobbing)):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 _error_json("\n" + str(e), cmd=op, errors_json=errors_json)

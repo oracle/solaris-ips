@@ -3451,3 +3451,8 @@ class PkgUnicodeDecodeError(UnicodeDecodeError):
                 return "{0}. You passed in {1!r} {2}".format(s, self.obj,
                     type(self.obj))
 
+class UnsupportedVariantGlobbing(ApiException):
+        """Used to indicate that globbing for variant is not supported."""
+
+        def __str__(self):
+                return _("Globbing is not supported for variants.")

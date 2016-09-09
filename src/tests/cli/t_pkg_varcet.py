@@ -128,7 +128,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
 
         def __assert_varcet_fails(self, cmd, operands, errout=True, exit=1,
             su_wrap=False):
-                self.pkg("{0} {1}".format(cmd, operands), exit=exit, su_wrap=su_wrap) 
+                self.pkg("{0} {1}".format(cmd, operands), exit=exit, su_wrap=su_wrap)
                 if errout:
                         self.assertTrue(self.errout != "")
                 else:
@@ -651,6 +651,22 @@ unknown foo
                 self.pkg("change-variant --reject=foo "
                     "variant.icecream=neapolitan", exit=EXIT_OOPS)
 
+        def test_03_variant_globbing(self):
+                """Verify that change-variant fails as expected when globbing
+                is used to refer to the variants."""
+
+                self.image_create(self.rurl)
+                self.pkg("install foo@2.0")
+
+                self.pkg("change-variant 'variant.unknown=strawberry'")
+                self.pkg("change-variant 'variant.unknown=strawberry*'")
+                self.pkg("change-variant 'variant.unknown=strawberry?'")
+                self.pkg("change-variant 'variant.*=strawberry'", exit=1)
+                self.pkg("change-variant 'variant.*=strawberry' "
+                        "'variant.unknown=strawberry'", exit=1)
+                self.pkg("change-variant 'variant?=strawberry'", exit=1)
+                self.pkg("change-variant 'variant?=strawberry' "
+                        "'variant.unknown=strawberry'", exit=1)
 
 if __name__ == "__main__":
         unittest.main()

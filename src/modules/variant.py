@@ -41,46 +41,14 @@ class _Variants(dict):
 
         def __init__(self, init=EmptyI):
                 dict.__init__(self)
-                self.__keyset = set()
                 for i in init:
                         self[i] = init[i]
-
-        def __setitem__(self, item, value):
-                dict.__setitem__(self, item, value)
-                self.__keyset.add(item)
-
-        def __delitem__(self, item):
-                dict.__delitem__(self, item)
-                self.__keyset.remove(item)
-
-        # allow_action is provided as a native function (see end of class
-        # declaration).
-
-        def pop(self, item, default=None):
-                self.__keyset.discard(item)
-                return dict.pop(self, item, default)
-
-        def popitem(self):
-                popped = dict.popitem(self)
-                self.__keyset.remove(popped[0])
-                return popped
-
-        def setdefault(self, item, default=None):
-                if item not in self:
-                        self[item] = default
-                return self[item]
-
-        def update(self, d):
-                for a in d:
-                        self[a] = d[a]
 
         def copy(self):
                 return Variants(self)
 
-        def clear(self):
-                self.__keyset = set()
-                dict.clear(self)
-
+        # allow_action is provided as a native function (see end of class
+        # declaration).
         if six.PY3:
                 def allow_action(self, action, publisher=None):
                         return _allow_variant(self, action, publisher=publisher)
@@ -305,7 +273,7 @@ class VariantCombinations(object):
                 values."""
 
                 return not self.__sat_set and not self.__not_sat_set
-                
+
         def issubset(self, vc, satisfied):
                 """Returns whether the instances in self are a subset of the
                 instances in vc. 'satisfied' determines whether the instances
@@ -332,7 +300,7 @@ class VariantCombinations(object):
                 if only_not_sat:
                         return bool(tmp.__not_sat_set)
                 return not tmp.is_empty()
-                
+
         def intersection(self, vc):
                 """Find those variant values in self that are also in var, and
                 return them."""
@@ -424,7 +392,7 @@ class VariantCombinations(object):
                 to use when simplifying the combinations."""
 
                 if not self.__template.issubset(vct):
-                        self.__simpl_template = {}                
+                        self.__simpl_template = {}
                         if assert_on_different_domains:
                                 assert self.__template.issubset(vct), \
                                     "template:{0}\nvct:{1}".format(
