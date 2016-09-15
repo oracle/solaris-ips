@@ -176,14 +176,14 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [-r [-z image_name ... | -Z image_name ...]]\n"
+            "            [-r [-z zonename ... | -Z zonename ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
             "[-nvq] [-C n] [--ignore-missing] [--no-be-activate] [--no-index]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [-r [-z image_name ... | -Z image_name ...]]\n"
+            "            [-r [-z zonename ... | -Z zonename ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["update"] = _(
@@ -191,7 +191,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [-r [-z image_name ... | -Z image_name ...]]\n"
+            "            [-r [-z zonename ... | -Z zonename ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
@@ -282,7 +282,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [-r [-z image_name ... | -Z image_name ...]]\n"
+            "            [-r [-z zonename ... | -Z zonename ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <variant_spec>=<instance> ...")
@@ -292,7 +292,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [-r [-z image_name ... | -Z image_name ...]]\n"
+            "            [-r [-z zonename ... | -Z zonename ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <facet_spec>=[True|False|None] ...")
