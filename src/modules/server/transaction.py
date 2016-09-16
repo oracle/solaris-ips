@@ -516,7 +516,7 @@ class Transaction(object):
                                                 get_sha1 = False
 
                                         hashes = elf.get_hashes(elf_name,
-                                            sha1=get_sha1)
+                                            elfhash=get_sha1)
 
                                         if get_sha1:
                                                 action.attrs[elf1] = hashes[elf1]

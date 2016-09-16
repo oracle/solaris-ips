@@ -1256,11 +1256,24 @@ dir path=foo/bar mode=0755 owner=root group=bin
                             """)
                 self.__test_publish(dir_1, dir_2, mfpath)
 
+                # Test the publication of elf files.
+                elfmfpath = os.path.join(self.test_root, "elftest.p5m")
+                with open(elfmfpath, "w") as mf:
+                        mf.write("""\
+                            set name=pkg.fmri value=pkg://test/elftest@1.0
+                            file elftest.so.1 mode=0755 owner=root group=bin path=bin/true
+                            """)
+
+                self.pkgsend(self.dc.get_depot_url(),
+                    "publish -d {0} {1}".format(self.ro_data_root, elfmfpath))
+
                 # Verify that older logic for pkgsend publish works.
                 self.dc.stop()
                 self.dc.set_disable_ops(["manifest/1"])
                 self.dc.start()
                 self.__test_publish(dir_1, dir_2, mfpath)
+                self.pkgsend(self.dc.get_depot_url(),
+                    "publish -d {0} {1}".format(self.ro_data_root, elfmfpath))
                 self.dc.unset_disable_ops()
 
         def test_23_pkgsend_no_version(self):
