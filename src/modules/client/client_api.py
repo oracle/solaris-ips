@@ -1093,23 +1093,13 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                     ).format(**locals())}
                 errors_json.append(error)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
-        if e_type == api_errors.NonLeafPackageException:
-                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
-                return __prepare_json(EXIT_OOPS, errors=errors_json)
         if e_type == api_errors.CatalogRefreshException:
                 _collect_catalog_failures(e, errors=errors_json)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
-        if e_type == api_errors.ConflictingActionErrors or \
-            e_type == api_errors.ImageBoundaryErrors:
+        if e_type == api_errors.ConflictingActionErrors:
                 if verbose and display_plan_cb:
                         display_plan_cb(api_inst, verbose=verbose,
                             noexecute=noexecute, plan_only=True)
-                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
-                return __prepare_json(EXIT_OOPS, errors=errors_json)
-        if e_type in (api_errors.InvalidPlanError,
-            api_errors.ReadOnlyFileSystemException,
-            api_errors.ActionExecutionError,
-            api_errors.InvalidPackageErrors):
                 _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
         if e_type == api_errors.ImageFormatUpdateNeeded:
@@ -1148,17 +1138,15 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
             api_errors.PermissionsException,
             api_errors.InvalidPropertyValue,
             api_errors.InvalidResourceLocation,
-            api_errors.UnsupportedVariantGlobbing)):
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
-                return __prepare_json(EXIT_OOPS, errors=errors_json)
-        if e_type == fmri.IllegalFmri:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
-                return __prepare_json(EXIT_OOPS, errors=errors_json)
-        if isinstance(e, api_errors.SigningException):
+            api_errors.UnsupportedVariantGlobbing,
+            fmri.IllegalFmri,
+            api_errors.SigningException,
+            api_errors.NonLeafPackageException,
+            api_errors.ReadOnlyFileSystemException,
+            api_errors.InvalidPlanError,
+            api_errors.ActionExecutionError,
+            api_errors.InvalidPackageErrors,
+            api_errors.ImageBoundaryErrors)):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
