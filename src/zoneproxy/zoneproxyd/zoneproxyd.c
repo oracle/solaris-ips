@@ -92,6 +92,7 @@
 #include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/brand.h>
 
 #define	PROXY_THREAD_DEFAULT		8
 #define	PROXY_THREAD_MAX		20
@@ -1220,20 +1221,39 @@ zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 	(void) mutex_unlock(&g_attach_zone_lock);
 }
 
+static ssize_t
+is_kernel_zone(zoneid_t zid, boolean_t *is_kz)
+{
+	char brand[MAXNAMELEN];
+	ssize_t err = 0;
+
+	if ((err = zone_getattr(zid, ZONE_ATTR_BRAND, brand,
+	    sizeof (brand))) < 0) {
+		return (err);
+	}
+
+	*is_kz = strcmp(brand, SOLARIS_KZ_BRAND_NAME) == 0 ? B_TRUE : B_FALSE;
+	return (0);
+}
+
 static void
 fattach_all_zones(boolean_t detach_only)
 {
 	zoneid_t *zids;
 	uint_t nzids;
 	int i;
+	boolean_t is_kz;
 
 	if (zone_get_zoneids(&zids, &nzids) != 0) {
 		(void) fprintf(stderr, "Could not get list of zones");
 		return;
 	}
 
-	for (i = 0; i < nzids; i++)
-		zpd_fattach_zone(zids[i], g_door, detach_only);
+	for (i = 0; i < nzids; i++) {
+		if (is_kernel_zone(zids[i], &is_kz) == 0 && is_kz == B_FALSE) {
+			zpd_fattach_zone(zids[i], g_door, detach_only);
+		}
+	}
 	free(zids);
 }
 
