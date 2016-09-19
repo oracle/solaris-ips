@@ -3134,7 +3134,7 @@ class CliTestCase(Pkg5TestCase):
                 self.assertEqual(expected, actual)
 
         def validate_html_file(self, fname, exit=0, comment="",
-            options="-utf8 -quiet", drop_prop_attrs=False):
+            options="--doctype strict -utf8 -quiet", drop_prop_attrs=False):
                 """ Run a html file specified by fname through a html validator
                     (tidy). The drop_prop_attrs parameter can be used to ignore
                     proprietary attributes which would otherwise make tidy fail.
