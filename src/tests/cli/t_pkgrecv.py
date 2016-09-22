@@ -167,9 +167,19 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
             close
         """
 
+        # /etc/bronze1 is purposefully delivered by this package to verify that
+        # pkgrecv can have an identical file being present in multiple packages
+        # with different publishers.
+        samefile10 = """
+            open pkg://pub1/samefile@1.0,5.11-0
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/foo mode=0444 owner=root group=bin path=/etc/foo
+            close
+        """
+
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
-            "tmp/sh", "tmp/extrafile"]
+            "tmp/sh", "tmp/extrafile", "tmp/foo"]
 
         def setUp(self):
                 """ Start six depots.
@@ -1513,6 +1523,17 @@ file elftest.so.1 mode=0755 owner=root group=bin path=bin/true
 
                 self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl2, f))
                 self.dcs[2].unset_disable_ops()
+
+        def test_17_multiple_publishers(self):
+                """"Verify that pkgrecv handles multiple publishers as
+                expected."""
+
+                # Publish a package under the publisher 'pub1'.
+                self.pkgsend_bulk(self.durl1, (self.samefile10))
+                # All other packages has been published under the publisher
+                # 'test1', so retrieving all packages will involve multiple
+                # publishers.
+                self.pkgrecv(self.durl1, "-d {0} '*'".format(self.durl2))
 
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):

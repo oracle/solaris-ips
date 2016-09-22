@@ -33,6 +33,7 @@ import simplejson as json
 import six
 import tempfile
 import zlib
+from collections import defaultdict
 from functools import cmp_to_key
 from io import BytesIO
 from six.moves import http_client, range
@@ -570,7 +571,7 @@ class Transport(object):
                 self.__tmp_crls = {}
                 # Used to record those actions that will have their payload
                 # transferred.
-                self.__hashes = set()
+                self.__hashes = defaultdict(set)
                 # Used to record those CRLs which are unreachable during the
                 # current operation.
                 self.__bad_crls = set()
@@ -3260,7 +3261,7 @@ class Transport(object):
                 their payload transferred."""
 
                 compressed = self.supports_version(pub, 'manifest', [1]) > -1
-                return compressed, self.__hashes
+                return compressed, self.__hashes[pub]
 
         def get_transfer_size(self, pub, actions):
                 """Return estimated transfer size given a list of actions that
@@ -3282,7 +3283,7 @@ class Transport(object):
                         if not support:
                                 sendb += int(a.attrs.get("pkg.size", 0))
                                 continue
-                        if a.hash not in self.__hashes:
+                        if a.hash not in self.__hashes[pub]:
                                 if (local or uploaded <
                                      self.cfg.max_transfer_checks):
                                         # If the repository is local
@@ -3297,7 +3298,7 @@ class Transport(object):
                                 # If server doesn't have file, assume it will be
                                 # uploaded.
                                 sendb += int(a.attrs.get("pkg.csize", 0))
-                                self.__hashes.add(a.hash)
+                                self.__hashes[pub].add(a.hash)
                                 uploaded += 1
                 return sendb
 
