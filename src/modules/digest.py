@@ -84,86 +84,54 @@ LEGACY_CONTENT_HASH_ATTRS = ["elfhash"]
 LEGACY_CHAIN_ATTRS = ["chain"]
 LEGACY_CHAIN_CHASH_ATTRS = ["chain.chashes"]
 
-if DebugValues["hash"] == "sha1+sha512_256" and sha512_supported:
-        # Simulate pkg(7) where SHA-1 and SHA-512/256 are used for publication
-        DEFAULT_HASH_ATTRS = ["hash", "pkg.hash.sha512_256"]
-        DEFAULT_CHASH_ATTRS = ["chash", "pkg.chash.sha512_256"]
-        DEFAULT_CONTENT_HASH_ATTRS = ["elfhash", "pkg.content-hash"]
-        UNSIGNED_CONTENT_HASH_MAP = {
-            "gelf:sha512t_256": "gelf.unsigned:sha512t_256"
-        }
-        DEFAULT_CHAIN_ATTRS = ["chain", "pkg.chain.sha512_256"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["chain.chashes",
-            "pkg.chain.chashes.sha512_256"]
-
-elif DebugValues["hash"] == "sha1+sha256":
-        # Simulate pkg(7) where SHA-1 and SHA-256 are used for publication
-        DEFAULT_HASH_ATTRS = ["hash", "pkg.hash.sha256"]
-        DEFAULT_CHASH_ATTRS = ["chash", "pkg.chash.sha256"]
-        DEFAULT_CONTENT_HASH_ATTRS = ["elfhash", "pkg.content-hash"]
-        UNSIGNED_CONTENT_HASH_MAP = {
-            "gelf:sha256": "gelf.unsigned:sha256"
-        }
-        DEFAULT_CHAIN_ATTRS = ["chain", "pkg.chain.sha256"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["chain.chashes",
-            "pkg.chain.chashes.sha256"]
-
-elif DebugValues["hash"] == "sha512_256" and sha512_supported:
-        # Simulate pkg(7) where SHA-1 is no longer used for publication
-        DEFAULT_HASH_ATTRS = ["pkg.hash.sha512_256"]
-        DEFAULT_CHASH_ATTRS = ["pkg.chash.sha512_256"]
-        DEFAULT_CONTENT_HASH_ATTRS = ["pkg.content-hash"]
-        UNSIGNED_CONTENT_HASH_MAP = {
-            "gelf:sha512t_256": "gelf.unsigned:sha512t_256"
-        }
-        DEFAULT_CHAIN_ATTRS = ["pkg.chain.sha512_256"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["pkg.chain.chashes.sha512_256"]
-
-elif DebugValues["hash"] == "sha256":
-        # Simulate pkg(7) where SHA-1 is no longer used for publication
-        DEFAULT_HASH_ATTRS = ["pkg.hash.sha256"]
-        DEFAULT_CHASH_ATTRS = ["pkg.chash.sha256"]
-        DEFAULT_CONTENT_HASH_ATTRS = ["pkg.content-hash"]
-        UNSIGNED_CONTENT_HASH_MAP = {
-            "gelf:sha256": "gelf.unsigned:sha256"
-        }
-        DEFAULT_CHAIN_ATTRS = ["pkg.chain.sha256"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["pkg.chain.chashes.sha256"]
-
-elif DebugValues["hash"] == "sha3":
-        # Simulate pkg(7) where SHA-3 is used for publication
-        DEFAULT_HASH_ATTRS = ["pkg.hash.sha3_384"]
-        DEFAULT_CHASH_ATTRS = ["pkg.chash.sha3_384"]
-        DEFAULT_CONTENT_HASH_ATTRS = ["pkg.content-hash"]
-        UNSIGNED_CONTENT_HASH_MAP = {
-            "gelf:sha3_384": "gelf.unsigned:sha3_384"
-        }
-        DEFAULT_CHAIN_ATTRS = ["pkg.chain.sha3_384"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["pkg.chain.chashes.sha3_384"]
+RANKED_HASHES = []
+if DebugValues["hash"]:
+        _hashes = reversed(DebugValues["hash"].split("+"))
 else:
-        # The current default is to add just a single hash value for each hash
-        # type
-        DEFAULT_HASH_ATTRS = ["hash"]
-        DEFAULT_CHASH_ATTRS = ["chash"]
-        # 'elfhash' was the only content-hash attribute originally supported
-        DEFAULT_CONTENT_HASH_ATTRS = ["elfhash", "pkg.content-hash"]
-        if sha512_supported:
-                UNSIGNED_CONTENT_HASH_MAP = {
-                    "gelf:sha512t_256": "gelf.unsigned:sha512t_256"
-                }
-        else:
-                UNSIGNED_CONTENT_HASH_MAP = {
-                    "gelf:sha256": "gelf.unsigned:sha256"
-                }
-        DEFAULT_CHAIN_ATTRS = ["chain"]
-        DEFAULT_CHAIN_CHASH_ATTRS = ["chain.chashes"]
+        _hashes = ("sha512t_256", "sha256", "sha1")
+
+for alg in _hashes:
+        if alg == "sha512t_256":
+                if not sha512_supported:
+                        continue
+        RANKED_HASHES.append(alg)
+
+PREFERRED_HASH = RANKED_HASHES[0]
+REVERSE_RANKED_HASHES = RANKED_HASHES[::-1]
+
+DEFAULT_HASH_ATTRS = []
+DEFAULT_CHASH_ATTRS = []
+DEFAULT_GELF_HASH_ATTRS = []
+DEFAULT_CHAIN_ATTRS = []
+DEFAULT_CHAIN_CHASH_ATTRS = []
+
+if "sha1" in RANKED_HASHES:
+        DEFAULT_HASH_ATTRS.append("hash")
+        DEFAULT_CHASH_ATTRS.append("chash")
+        DEFAULT_GELF_HASH_ATTRS.append("elfhash")
+        DEFAULT_CHAIN_ATTRS.append("chain")
+        DEFAULT_CHAIN_CHASH_ATTRS.append("chain.chashes")
+
+if PREFERRED_HASH != "sha1":
+        DEFAULT_HASH_ATTRS.append("pkg.content-hash")
+        DEFAULT_CHASH_ATTRS.append("pkg.chash.{0}".format(PREFERRED_HASH))
+        DEFAULT_GELF_HASH_ATTRS.append("pkg.content-hash")
+        DEFAULT_CHAIN_ATTRS.append("pkg.chain.{0}".format(PREFERRED_HASH))
+        DEFAULT_CHAIN_CHASH_ATTRS.append("pkg.chain.chashes.{0}".format(PREFERRED_HASH))
+
+UNSIGNED_GELF_HASH_MAP = {
+    "gelf:" + PREFERRED_HASH: "gelf.unsigned:" + PREFERRED_HASH
+}
 
 # The types of hashes we compute or consult for actions.
 HASH = 0
-CHASH = 1
-CONTENT_HASH = 2
+HASH_GELF = 1
+CHASH = 2
 CHAIN = 3
 CHAIN_CHASH = 4
+
+EXTRACT_FILE = "file"
+EXTRACT_GELF = "gelf"
 
 # In the dictionaries below, we map the action attributes to the name of the
 # class or factory-method that returns an object used to compute that attribute.
@@ -181,21 +149,27 @@ CHAIN_CHASH = 4
 if DebugValues["hash"] == "sha1":
         # Simulate older non-SHA2 aware pkg(7) code
         HASH_ALGS = {"hash": hashlib.sha1}
-        CONTENT_HASH_ALGS = {"elfhash": hashlib.sha1}
+        GELF_HASH_ALGS = {"elfhash": hashlib.sha1}
 else:
         HASH_ALGS = {
             "hash":            hashlib.sha1,
             "pkg.hash.sha256": hashlib.sha256,
+            "file:sha256": hashlib.sha256,
+            "gzip:sha256": hashlib.sha256,
         }
 
-        CONTENT_HASH_ALGS = {
+        GELF_HASH_ALGS = {
             "elfhash":     hashlib.sha1,
             "gelf:sha256": hashlib.sha256,
+            "file:sha256": hashlib.sha256
         }
 
         if sha512_supported:
-                HASH_ALGS["pkg.hash.sha512_256"] = pkg.sha512_t.SHA512_t
-                CONTENT_HASH_ALGS["gelf:sha512t_256"] = pkg.sha512_t.SHA512_t
+                HASH_ALGS["pkg.hash.sha512t_256"] = pkg.sha512_t.SHA512_t
+                HASH_ALGS["file:sha512t_256"] = pkg.sha512_t.SHA512_t
+                HASH_ALGS["gzip:sha512t_256"] = pkg.sha512_t.SHA512_t
+                GELF_HASH_ALGS["gelf:sha512t_256"] = pkg.sha512_t.SHA512_t
+                GELF_HASH_ALGS["file:sha512t_256"] = pkg.sha512_t.SHA512_t
 
 # A dictionary of the compressed hash attributes we know about.
 CHASH_ALGS = {}
@@ -212,130 +186,47 @@ CHAIN_CHASH_ALGS = {}
 for key in HASH_ALGS:
         CHAIN_CHASH_ALGS[key.replace("hash", "chain.chashes")] = HASH_ALGS[key]
 
-
-# Ordered lists of "most preferred" hash algorithm to "least preferred"
-# algorithm for each hash attribute we use. It's important to *never remove*
-# items from this list, otherwise we would strand clients installed with
-# packages using hashes that correspond to that item. Instead promote/demote the
-# hash algorithm so that better hashes are used for new packages.
-# 'hash' is a dummy attribute name, since it really references the action.hash
-# member.
-#
-if DebugValues["hash"] == "sha1":
-        RANKED_HASH_ATTRS = ("hash",)
-        RANKED_CONTENT_HASH_ATTRS = ("elfhash",)
-        RANKED_CONTENT_HASH_TYPES = tuple()
-elif DebugValues["hash"] == "sha2":
-        RANKED_CONTENT_HASH_ATTRS = ("pkg.content-hash",)
-        if sha512_supported:
-                RANKED_HASH_ATTRS = ("pkg.hash.sha512_256",)
-                RANKED_CONTENT_HASH_TYPES = ("gelf:sha512t_256",)
-        else:
-                RANKED_HASH_ATTRS = ("pkg.hash.sha256",)
-                RANKED_CONTENT_HASH_TYPES = ("gelf:sha256",)
-elif DebugValues["hash"] == "sha3":
-        RANKED_HASH_ATTRS = ("pkg.hash.sha3_384",)
-        RANKED_CONTENT_HASH_ATTRS = ("pkg.content-hash",)
-        RANKED_CONTENT_HASH_TYPES = ("gelf:sha3_384",)
-else:
-        RANKED_HASH_ATTRS = (
-            "pkg.hash.sha256",
-            "hash",
-        )
-        RANKED_CONTENT_HASH_ATTRS = ("pkg.content-hash", "elfhash")
-        RANKED_CONTENT_HASH_TYPES = ("gelf:sha256",)
-
-        if sha512_supported:
-                RANKED_HASH_ATTRS = (
-                    "pkg.hash.sha512_256",
-                ) + RANKED_HASH_ATTRS
-
-                RANKED_CONTENT_HASH_TYPES = (
-                    "gelf:sha512t_256",
-                ) + RANKED_CONTENT_HASH_TYPES
-
-RANKED_CHASH_ATTRS = tuple(key.replace("hash", "chash")
-    for key in RANKED_HASH_ATTRS)
-
-RANKED_CHAIN_ATTRS = tuple(key.replace("hash", "chain") for key in
-    RANKED_HASH_ATTRS)
-RANKED_CHAIN_CHASH_ATTRS = tuple(key.replace("hash", "chain.chashes") for key in
-    RANKED_HASH_ATTRS)
-
-
-# We keep reverse-order lists for all of the hash attribute we know about
-# because hash retrieval from the repository is always done using the least
-# preferred hash, allowing for backwards compatibility with existing clients.
-# Rather than compute the reverse-list every time we call
-# get_least_preferred_hash(..) we compute them once here.
-REVERSE_RANKED_HASH_ATTRS = RANKED_HASH_ATTRS[::-1]
-REVERSE_RANKED_CHASH_ATTRS = RANKED_CHASH_ATTRS[::-1]
-REVERSE_RANKED_CONTENT_HASH_ATTRS = RANKED_CONTENT_HASH_ATTRS[::-1]
-REVERSE_RANKED_CONTENT_HASH_TYPES = RANKED_CONTENT_HASH_TYPES[::-1]
-REVERSE_RANKED_CHAIN_ATTRS = RANKED_CHAIN_ATTRS[::-1]
-REVERSE_RANKED_CHAIN_CHASH_ATTRS = RANKED_CHAIN_CHASH_ATTRS[::-1]
-
-ALL_RANKED_HASH_ATTRS = (RANKED_HASH_ATTRS + RANKED_CHASH_ATTRS +
-    RANKED_CONTENT_HASH_ATTRS)
+ALL_HASH_ATTRS = (DEFAULT_HASH_ATTRS + DEFAULT_CHASH_ATTRS +
+    DEFAULT_GELF_HASH_ATTRS)
 
 def is_hash_attr(attr_name):
         """Tells whether or not the named attribute contains a hash value."""
 
-        return attr_name in ALL_RANKED_HASH_ATTRS
+        return attr_name in ALL_HASH_ATTRS
 
-def _get_hash_dics(hash_type, reverse=False):
+def _get_hash_dics(hash_type):
         """Based on the 'hash_type', return a tuple describing the ranking of
-        hash attributes from "most preferred" to "least preferred", an
-        optional tuple describing the ranking of content hash types
-        from "most preferred" to "least preferred", and a mapping of
-        those attributes to the hash algorithms that are used to
+        hash attributes from "most preferred" to "least preferred" and a mapping
+        of those attributes to the hash algorithms that are used to
         compute those attributes.
 
         If 'reverse' is true, return the rank_tuple in reverse order, from least
         preferred hash to most preferred hash.
         """
 
-        type_tuple = None
-
         if hash_type == HASH:
-                if reverse:
-                        rank_tuple = REVERSE_RANKED_HASH_ATTRS
-                else:
-                        rank_tuple = RANKED_HASH_ATTRS
+                hash_attrs = DEFAULT_HASH_ATTRS
                 hash_dic = HASH_ALGS
         elif hash_type == CHASH:
-                if reverse:
-                        rank_tuple = REVERSE_RANKED_CHASH_ATTRS
-                else:
-                        rank_tuple = RANKED_CHASH_ATTRS
+                hash_attrs = DEFAULT_CHASH_ATTRS
                 hash_dic = CHASH_ALGS
-        elif hash_type == CONTENT_HASH:
-                if reverse:
-                        rank_tuple = REVERSE_RANKED_CONTENT_HASH_ATTRS
-                        type_tuple = REVERSE_RANKED_CONTENT_HASH_TYPES
-                else:
-                        rank_tuple = RANKED_CONTENT_HASH_ATTRS
-                        type_tuple = RANKED_CONTENT_HASH_TYPES
-                hash_dic = CONTENT_HASH_ALGS
+        elif hash_type == HASH_GELF:
+                hash_attrs = DEFAULT_GELF_HASH_ATTRS
+                hash_dic = GELF_HASH_ALGS
         elif hash_type == CHAIN:
-                if reverse:
-                        rank_tuple = REVERSE_RANKED_CHAIN_ATTRS
-                else:
-                        rank_tuple = RANKED_CHAIN_ATTRS
+                hash_attrs = DEFAULT_CHAIN_ATTRS
                 hash_dic = CHAIN_ALGS
         elif hash_type == CHAIN_CHASH:
-                if reverse:
-                        rank_tuple = REVERSE_RANKED_CHAIN_CHASH_ATTRS
-                else:
-                        rank_tuple = RANKED_CHAIN_CHASH_ATTRS
+                hash_attrs = DEFAULT_CHAIN_CHASH_ATTRS
                 hash_dic = CHAIN_CHASH_ALGS
         else:
-                rank_tuple = None
+                hash_attrs = None
                 hash_dic = None
 
-        return rank_tuple, type_tuple, hash_dic
+        return hash_attrs, hash_dic
 
-class __ContentHash(dict):
+
+class ContentHash(dict):
         """This class breaks out the stringified tuples from
         pkg.content-hash
 
@@ -343,7 +234,7 @@ class __ContentHash(dict):
 
         into a dict with entries
 
-		"extract_method:hash_alg": "extract_method:hash_alg:hash_val"
+		"extract_method:hash_alg": "hash_val"
         """
         def __init__(self, vals):
                 dict.__init__(self)
@@ -352,41 +243,73 @@ class __ContentHash(dict):
                         vals = (vals,)
 
                 for v in vals:
-                        self[v.rsplit(":", 1)[0]] = v
+                        vs = v.rsplit(":", 1)
+                        self[vs[0]] = vs[1]
 
-def get_preferred_hash(action, hash_type=HASH):
+
+def get_preferred_hash(action, hash_type=HASH, reversed=False):
         """Returns a tuple of the form (hash_attr, hash_val, hash_func)
         where 'hash_attr' is the preferred hash attribute name, 'hash_val'
         is the the preferred hash value, and 'hash_func' is the function
         used to compute the preferred hash based on the available
         pkg.*hash.* attributes declared in the action."""
 
-        rank_attrs, rank_types, hash_dic = _get_hash_dics(hash_type)
-        if not (rank_attrs and hash_dic):
+        hash_attrs, hash_dic = _get_hash_dics(hash_type)
+        if not (hash_attrs and hash_dic):
                 raise ValueError("Unknown hash_type {0} passed to "
                     "get_preferred_hash".format(hash_type))
 
-        for hash_attr_name in rank_attrs:
-                if hash_attr_name in action.attrs:
-                        if hash_attr_name != "pkg.content-hash":
-                                return (hash_attr_name,
-                                    action.attrs[hash_attr_name],
-                                    hash_dic[hash_attr_name])
-                        ch = __ContentHash(action.attrs["pkg.content-hash"])
-                        for ch_type in rank_types:
+        if hash_type == HASH_GELF:
+                extract_method = EXTRACT_GELF
+        else:
+                extract_method = EXTRACT_FILE
+        if reversed:
+                ranked_hashes = REVERSE_RANKED_HASHES
+        else:
+                ranked_hashes = RANKED_HASHES
+
+        for alg in ranked_hashes:
+                if alg == "sha1":
+                        # The corresponding hash attr should be in the
+                        # first position if "sha1" is enabled.
+                        attr = hash_attrs[0]
+                        if not action:
+                                return attr, None, hash_dic[attr]
+                        if hash_type == HASH:
+                                if action.hash:
+                                        return attr, action.hash, hash_dic[attr]
+                        else:
+                                if attr in action.attrs:
+                                        return (attr, action.attrs[attr],
+                                            hash_dic[attr])
+                elif hash_type in (HASH, HASH_GELF):
+                        # Currently only HASH and HASH_GELF support
+                        # pkg.content-hash.
+                        ch_type = "{0}:{1}".format(extract_method, alg)
+                        attr = "pkg.content-hash"
+                        if not action:
+                                return attr, None, hash_dic[ch_type]
+                        if attr in action.attrs:
+                                ch = ContentHash(action.attrs[attr])
                                 if ch_type in ch:
-                                        return (hash_attr_name,
-                                            ch[ch_type], hash_dic[ch_type])
-                                                
+                                        return (attr, ch[ch_type],
+                                            hash_dic[ch_type])
+                elif hash_type in (CHASH, CHAIN, CHAIN_CHASH):
+                        # The corresponding hash attr should be in the
+                        # last position if sha2 or higher algorithm is enabled.
+                        attr = hash_attrs[-1]
+                        if attr in action.attrs:
+                                return attr, action.attrs[attr], hash_dic[attr]
+
         # fallback to the default hash member since it's not in action.attrs
         if hash_type == HASH:
                 return None, action.hash, hashlib.sha1
         # an action can legitimately have no chash
         if hash_type == CHASH:
-                return None, None, DEFAULT_HASH_FUNC
-        # an action can legitimately have no content-hash if it's not a file
-        # type we know about
-        if hash_type == CONTENT_HASH:
+                return None, None, hashlib.sha1
+        # an action can legitimately have no GELF content-hash if it's not a
+        # file type we know about
+        if hash_type == HASH_GELF:
                 return None, None, None
         # an action can legitimately have no chain
         if hash_type == CHAIN:
@@ -396,8 +319,12 @@ def get_preferred_hash(action, hash_type=HASH):
                 return None, None, None
 
         # This should never happen.
-        raise Exception("Error determining the preferred hash for {0} {1}".format(
-            action, hash_type))
+        if reversed:
+                raise Exception("Error determining the least preferred hash "
+                    "for {0} {1}".format(action, hash_type))
+        else:
+                raise Exception("Error determining the preferred hash for "
+                    "{0} {1}".format(action, hash_type))
 
 
 def get_least_preferred_hash(action, hash_type=HASH):
@@ -406,59 +333,11 @@ def get_least_preferred_hash(action, hash_type=HASH):
         to compute the hash based on the available hash and pkg.*hash.*
         attributes declared in the action."""
 
-        # the default hash member since it's not in action.attrs
-        if hash_type == HASH:
-                if not action:
-                        return "hash", None, hashlib.sha1
-
-                # This is nearly always true, except when we're running the
-                # test suite and have intentionally disabled SHA-1 hashes.
-                if "hash" in DEFAULT_HASH_ATTRS:
-                        return None, action.hash, hashlib.sha1
-
-        rank_attrs, rank_types, hash_dic = _get_hash_dics(hash_type, reverse=True)
-        if not (rank_attrs and hash_dic):
-                raise ValueError("Unknown hash_type {0} passed to "
-                    "get_preferred_hash".format(hash_type))
-
-        if not action:
-                if rank_attrs[0] == "pkg.content-hash":
-                        hash_alg = hash_dic[rank_types[0]]
-                else:
-                        hash_alg = hash_dic[rank_attrs[0]]
-                return rank_attrs[0], None, hash_alg
-
-        for hash_attr_name in rank_attrs:
-                if hash_attr_name in action.attrs:
-                        if hash_attr_name != "pkg.content-hash":
-                                return (hash_attr_name,
-                                    action.attrs[hash_attr_name],
-                                    hash_dic[hash_attr_name])
-
-                        ch = __ContentHash(action.attrs["pkg.content-hash"])
-                        for ch_type in rank_types:
-                                if ch_type in ch:
-                                        return ("pkg.content-hash",
-                                            ch[ch_type], hash_dic[ch_type])
-
-        # an action can legitimately have no chash
-        if hash_type == CHASH:
-                return None, None, DEFAULT_HASH_FUNC
-        # an action can legitimately have no content-hash if it's not a file
-        # type we know about
-        if hash_type == CONTENT_HASH:
-                return None, None, None
-        # an action can legitimately have no chain
-        if hash_type == CHAIN:
-                return None, None, None
-
-        # This should never happen.
-        raise Exception("Error determining the least preferred hash for {0} {1}".format(
-            action, hash_type))
+        return get_preferred_hash(action, hash_type=hash_type, reversed=True)
 
 
 def get_common_preferred_hash(action, old_action, hash_type=HASH,
-    cmp_unsigned=False):
+    cmp_policy=None):
         """Returns the most preferred hash attribute of those present
         on a new action and/or an installed (old) version of that
         action. We return the name of the hash attribute, the new and
@@ -472,7 +351,7 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
 
         Normally, payload comparisons should only be made based on
         hashes that include signatures in the extracted data. This
-        constraint can be relaxed by setting cmp_unsigned=True. In
+        constraint can be relaxed by setting cmp_policy=CMP_UNSIGNED. In
         this case, the most preferred hash will be selected first, and
         then we'll check for unsigned versions of that hash on both
         actions. When both actions have that unsigned hash, its values
@@ -488,49 +367,46 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
         if not old_action:
                 return None, None, None, None
 
-        rank_attrs, rank_types, hash_dic = _get_hash_dics(hash_type)
-        if not (rank_attrs and hash_dic):
+        hash_attrs, hash_dic = _get_hash_dics(hash_type)
+        if hash_type == HASH_GELF:
+                extract_method = EXTRACT_GELF
+        else:
+                extract_method = EXTRACT_FILE
+
+        if not (hash_attrs and hash_dic):
                 raise ValueError("Unknown hash_type {0} passed to "
                     "get_preferred_common_hash".format(hash_type))
 
-        new_hashes = set((a for a in action.attrs if a in rank_attrs))
-        old_hashes = set((a for a in old_action.attrs if a in rank_attrs))
+        new_hashes = frozenset(a for a in action.attrs if a in hash_attrs)
+        old_hashes = frozenset(a for a in old_action.attrs if a in hash_attrs)
 
         all_hashes = new_hashes | old_hashes
 
-        for hash_attr_name in rank_attrs:
-                if hash_attr_name not in all_hashes:
-                        continue
+        for alg in RANKED_HASHES:
+                if alg == "sha1":
+                        attr = hash_attrs[0]
+                        # The corresponding hash attr should be in the
+                        # first position if "sha1" is enabled.
+                        if attr not in all_hashes:
+                                continue
+                        new_hash = action.attrs.get(attr)
+                        old_hash = old_action.attrs.get(attr)
+                        return attr, new_hash, old_hash, hash_dic[attr]
+                elif hash_type in (HASH, HASH_GELF):
+                        # Currently only HASH and HASH_GELF support
+                        # pkg.content-hash.
+                        attr = "pkg.content-hash"
+                        if attr not in all_hashes:
+                                continue
+                        nh = ContentHash(
+                                action.attrs.get(attr, {}))
+                        oh = ContentHash(
+                                old_action.attrs.get(attr, {}))
+                        new_types = frozenset(nh)
+                        old_types = frozenset(oh)
+                        all_types = new_types | old_types
 
-                # For single-valued hash attributes, we simply grab
-                # the values (if any) and return
-                if hash_attr_name != "pkg.content-hash":
-                        new_hash = action.attrs.get(hash_attr_name)
-                        old_hash = old_action.attrs.get(hash_attr_name)
-                        return (hash_attr_name, new_hash, old_hash,
-                            hash_dic[hash_attr_name])
-
-                # Here, at least one of the actions has a
-                # potentially-multivalued pkg.content-hash
-                # attribute. We need to walk the ranked content hash
-                # types, looking for a match in at least one of the
-                # value sets. If neither action turns out to have a
-                # pkg.content-hash value corresponding to a ranked
-                # content hash type, we must consider pkg.content-hash
-                # to be a false match on the rank_attrs and continue
-                # with the next iteration of the hash_attr_name loop,
-                # potentially falling through and returning unranked
-                # hashes.
-
-                nh = __ContentHash(action.attrs.get("pkg.content-hash", {}))
-                oh = __ContentHash(old_action.attrs.get("pkg.content-hash", {}))
-
-                new_types = set(nh)
-                old_types = set(oh)
-
-                all_types = new_types | old_types
-
-                for ch_type in rank_types:
+                        ch_type = "{0}:{1}".format(extract_method, alg)
                         if ch_type not in all_types:
                                 continue
 
@@ -545,17 +421,24 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
                         # type, and both value sets have a
                         # corresponding unsigned hash, swap in those
                         # unsigned hash values.
-
-                        hash_alg = hash_dic.get(ch_type)
-
-                        if (cmp_unsigned and new_hash and old_hash and
-                            ch_type in UNSIGNED_CONTENT_HASH_MAP):
-                                ut = UNSIGNED_CONTENT_HASH_MAP[ch_type]
+                        from pkg.misc import CMP_UNSIGNED
+                        if (cmp_policy == CMP_UNSIGNED and new_hash and
+                            old_hash and ch_type in UNSIGNED_GELF_HASH_MAP):
+                                ut = UNSIGNED_GELF_HASH_MAP[ch_type]
                                 if ut in nh and ut in oh:
                                         new_hash = nh[ut]
                                         old_hash = oh[ut]
 
-                        return hash_attr_name, new_hash, old_hash, hash_alg
+                        return attr, new_hash, old_hash, hash_dic.get(ch_type)
+                elif hash_type in (CHASH, CHAIN, CHAIN_CHASH):
+                        # The corresponding hash attr should be in the
+                        # last position if sha2 or higher algorithm is enabled.
+                        attr = hash_attrs[-1]
+                        if attr not in all_hashes:
+                                continue
+                        new_hash = action.attrs.get(attr)
+                        old_hash = old_action.attrs.get(attr)
+                        return attr, new_hash, old_hash, hash_dic[attr]
 
         if action.hash and old_action.hash:
                 return None, action.hash, old_action.hash, hashlib.sha1

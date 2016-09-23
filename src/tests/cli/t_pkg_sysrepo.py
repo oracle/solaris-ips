@@ -175,7 +175,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     debug_hash="sha1+sha256")
                 if sha512_supported:
                         self.pkgsend_bulk(self.rurl3, self.caz10,
-                            debug_hash="sha1+sha512_256")
+                            debug_hash="sha1+sha512t_256")
                 self.pkgsend_bulk(self.rurl4, self.bar10)
                 self.pkgsend_bulk(self.rurl5, self.foo11)
 
@@ -651,11 +651,12 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # Test that we can install a multi-hash package
                 self.pkg("install baz")
                 self.pkg("contents -m baz")
-                self.assertTrue("pkg.hash.sha256" in self.output)
+                self.assertTrue("pkg.content-hash=file:sha256" in self.output)
                 if sha512_supported:
                         self.pkg("install caz")
                         self.pkg("contents -m caz")
-                        self.assertTrue("pkg.hash.sha512_256" in self.output)
+                        self.assertTrue("pkg.content-hash=file:sha512t_256"
+                            in self.output)
 
         def test_02_communication(self):
                 """Test that the transport for communicating with the depots is

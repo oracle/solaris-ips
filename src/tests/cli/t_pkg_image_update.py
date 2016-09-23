@@ -358,7 +358,7 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
         def test_content_policy(self):
                 """ Test the content-update-policy property. When set to
-                'when-required' content should only be updated if the content
+                'when-required' content should only be updated if the GELF content
                 hash has changed, if set to 'always' content should be updated
                 if there is any file change at all."""
 

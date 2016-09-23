@@ -39,7 +39,7 @@ import pkg.variant as variant
 import pkg.client.api_errors as apx
 import pkg.manifest as manifest
 import pkg.misc as misc
-from pkg.misc import PipeError
+from pkg.misc import PipeError, CMP_UNSIGNED, CMP_ALL
 from collections import defaultdict
 from itertools import product
 
@@ -73,7 +73,7 @@ def main_func():
         onlyattrs = []
         onlytypes = []
         varattrs = defaultdict(set)
-        cmp_unsigned = False
+        cmp_policy = CMP_ALL
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "i:o:t:uv:?", ["help"])
@@ -85,7 +85,7 @@ def main_func():
                         elif opt == "-t":
                                 onlytypes.extend(arg.split(","))
                         elif opt == "-u":
-                                cmp_unsigned = True
+                                cmp_policy = CMP_UNSIGNED
                         elif opt == "-v":
                                 args = arg.split("=")
                                 if len(args) != 2:
@@ -223,7 +223,7 @@ def main_func():
                         return True
 
                 a, c, r = manifest2.difference(manifest1, [allow], [allow],
-                    cmp_unsigned=cmp_unsigned)
+                    cmp_policy=cmp_policy)
                 diffs += a
                 diffs += c
                 diffs += r
@@ -232,8 +232,7 @@ def main_func():
         real_diffs = [
             (a, b)
             for a, b in diffs
-            if a is None or b is None or a.different(b,
-                cmp_unsigned=cmp_unsigned)
+            if a is None or b is None or a.different(b, cmp_policy=cmp_policy)
         ]
 
         if not real_diffs:

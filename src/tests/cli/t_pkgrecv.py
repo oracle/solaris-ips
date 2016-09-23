@@ -1207,9 +1207,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 """Tests that we can recv to and from repositories with
                 multi-hash support, interoperating with repositories without
                 multi-hash support."""
-                self.base_12_multihash("sha256")
                 if sha512_supported:
-                        self.base_12_multihash("sha512_256")
+                        self.base_12_multihash("sha256")
+                else:
+                        self.base_12_multihash("sha512t_256")
 
         def base_12_multihash(self, hash_alg):
                 f = fmri.PkgFmri(self.published[3], None)
@@ -1220,7 +1221,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # First, recv the package and verify it has no extended hashes
                 self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
-                self.assertTrue("pkg.hash.{0}".format(hash_alg not in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg)
+                    not in self.output)
 
                 # Now stop and start the repository as multi-hash aware, and
                 # recv it again, making sure that we do not get multiple hashes
@@ -1230,24 +1232,29 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.dcs[3].start()
                 self.pkgrecv(self.durl1, "-d {0} {1}".format(self.durl3, f))
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, f))
-                self.assertTrue("pkg.hash.{0}".format(hash_alg not in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg)
+                    not in self.output)
 
                 # Now check the reverse - that a package with multiple hashes
                 # can be received into a repository that is not multi-hash aware
                 b = "bronze@1.0,5.11-0"
-                self.pkgsend_bulk(self.durl3, self.bronze10)
+                self.pkgsend_bulk(self.durl3, self.bronze10,
+                    debug_hash="sha1+{0}".format(hash_alg))
                 self.pkg("contents -g {0} -m {1}".format(self.durl3, b))
-                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg)
+                    in self.output)
                 self.pkgrecv(self.durl3, "-d {0} {1}".format(self.durl4, b))
                 self.pkg("contents -g {0} -m {1}".format(self.durl4, b))
-                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg)
+                    in self.output)
 
                 # Ensure that we can recv multi-hash packages into p5p files
                 p5p_path = os.path.join(self.test_root,
                     "multi-hash-{0}.p5p".format(hash_alg))
                 self.pkgrecv(self.durl3, "-ad {0} {1}".format(p5p_path, b))
                 self.pkg("contents -g {0} -m {1}".format(p5p_path, b))
-                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg)
+                    in self.output)
 
                 # Finally, stop and start our scratch repository to clear the
                 # debug feature. If this doesn't happen because we've failed

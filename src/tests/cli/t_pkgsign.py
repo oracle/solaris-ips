@@ -538,12 +538,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.base_multiple_signatures("sha256")
                 if sha512_supported:
-                        self.base_multiple_signatures("sha512_256")
+                        self.base_multiple_signatures("sha512t_256")
 
         def test_no_empty_chain(self):
                 """Test that signing do not create empty chain"""
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10,
-                    debug_hash="sha1+sha512")
+                    debug_hash="sha1+sha512t_256")
                 sign_args = "-k {key} -c {cert} {pkg}".format(**{
                     "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
                     "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
@@ -2423,7 +2423,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 hash_alg_list = ["sha256"]
                 if sha512_supported:
-                        hash_alg_list.append("sha512_256")
+                        hash_alg_list.append("sha512t_256")
                 for hash_alg in hash_alg_list:
                         # Rebuild the catalog so that hash verification for the
                         # manifest won't cause problems.
@@ -3020,7 +3020,7 @@ close
 
                 # the file-store uses the least-preferred hash when storing
                 # content
-                alg = digest.HASH_ALGS[digest.REVERSE_RANKED_HASH_ATTRS[0]]
+                alg = digest.HASH_ALGS["hash"]
                 file_name = misc.get_data_digest(new_cert,
                     hash_func=alg)[0]
                 subdir = os.path.join(cache_dir, file_name[:2])
@@ -3072,6 +3072,8 @@ close
                             serialization.Encoding.PEM))
 
                 for attr in digest.DEFAULT_HASH_ATTRS:
+                        if attr == "pkg.content-hash":
+                                continue
                         alg = digest.HASH_ALGS[attr]
                         file_name = misc.get_data_digest(new_cert,
                             hash_func=alg)[0]
@@ -3294,7 +3296,7 @@ close
                 self.pkgsign(self.rurl2, sign_args)
                 self.pkgrecv(self.rurl2, "-d {0} example_pkg".format(self.durl1))
                 self.pkg("contents -g {0} -m example_pkg".format(self.durl1))
-                self.assertTrue("pkg.hash.sha256" not in self.output)
+                self.assertTrue("pkg.content-hash=file:sha256" not in self.output)
                 self.image_create(self.durl1)
                 self.seed_ta_dir("ta3")
                 self.pkg("set-property signature-policy verify")
@@ -3308,7 +3310,7 @@ close
                 self.pkgrecv(self.durl1, "-d {0} example_pkg".format(self.durl4))
                 self.pkg("contents -g {0} -m example_pkg".format(self.durl4))
                 # make sure that we don not get multiple hashes
-                self.assertTrue("pkg.hash.sha256" not in self.output)
+                self.assertTrue("pkg.content-hash=file:sha256" not in self.output)
                 self.seed_ta_dir("ta3")
                 self.pkg("set-property signature-policy verify")
                 # should not invalidate the signature

@@ -1546,7 +1546,7 @@ publisher\tprefix\texample.net
 
                 hash_alg_list = ["sha256"]
                 if sha512_supported:
-                        hash_alg_list.append("sha512_256")
+                        hash_alg_list.append("sha512t_256")
                 for hash_alg in hash_alg_list:
                         # Reset the src_repo for the rest of the test.
                         shutil.rmtree(src_repo)
@@ -2130,7 +2130,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 # preferred hash.
                 hash_alg_list = ["sha256"]
                 if sha512_supported:
-                        hash_alg_list.append("sha512_256")
+                        hash_alg_list.append("sha512t_256")
                 for hash_alg in hash_alg_list:
                         # Remove all existing packages first.
                         self.pkgrepo("-s {0} remove {1}".format(repo_path,
@@ -2159,7 +2159,8 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                         # printing the expected hash.
                         self.pkgrepo("-s {0} remove {1}".format(repo_path,
                             " ".join(fmris)))
-                        fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                        fmris = self.pkgsend_bulk(repo_path, (self.tree10),
+                            debug_hash="sha1")
                         self.__inject_badhash("tmp/truck1")
 
                         self.pkgrepo("-s {0} verify".format(repo_path), exit=1)

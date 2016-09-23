@@ -92,7 +92,7 @@ import pkg.portable as portable
 import pkg.server.repository as sr
 
 from pkg.client import global_settings
-from pkg.misc import emsg, msg, PipeError
+from pkg.misc import emsg, msg, PipeError, CMP_ALL, CMP_UNSIGNED
 
 PKG_CLIENT_NAME = "pkgsurf"
 
@@ -401,7 +401,7 @@ def use_ref(a, deps, ignores):
         return False
 
 def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
-    cmp_unsigned):
+    cmp_policy):
         """Do the repo reversion.
         Return 'True' if repo got modified, 'False' otherwise."""
 
@@ -480,7 +480,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                 # Diff target and ref manifest.
                 # action only in targ, action only in ref, common action
                 ta, ra, ca = manifest.Manifest.comm([dm, rm],
-                    cmp_unsigned=cmp_unsigned)
+                    cmp_policy=cmp_policy)
 
                 # Check for manifest changes.
                 if not all(use_ref(a, tdeps, ignores) for a in ta) \
@@ -573,7 +573,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                         reversioned_pkgs.add(p)
 
         status = []
-        if cmp_unsigned:
+        if cmp_policy == CMP_UNSIGNED:
                 status.append((_("WARNING: Signature changes in file content "
                     "ignored in resurfacing")))
         status.append((_("Packages to process:"), str(len(latest_pkgs))))
@@ -698,7 +698,7 @@ def main_func():
         changes = set()
         ignores = set()
         publishers = set()
-        cmp_unsigned = False
+        cmp_policy = CMP_ALL
         
         processed_pubs = 0
 
@@ -716,7 +716,7 @@ def main_func():
                 elif opt == "-s":
                         repo_uri = misc.parse_uri(arg)
                 elif opt == "-u":
-                        cmp_unsigned = True
+                        cmp_policy = CMP_UNSIGNED
                 elif opt == "-?" or opt == "--help":
                         usage(retcode=pkgdefs.EXIT_OK)
 
@@ -777,7 +777,7 @@ def main_func():
                 processed_pubs += 1
 
                 rev = do_reversion(pub, ref_pub, target_repo, ref_xport,
-                    changes, ignores, cmp_unsigned)
+                    changes, ignores, cmp_policy)
 
                 # Only rebuild catalog if anything got actually reversioned.
                 if rev and not dry_run:

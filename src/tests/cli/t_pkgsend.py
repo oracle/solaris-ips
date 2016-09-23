@@ -1332,7 +1332,7 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
 
                 self.base_26_pkgsend_multihash("sha256")
                 if sha512_supported:
-                        self.base_26_pkgsend_multihash("sha512_256")
+                        self.base_26_pkgsend_multihash("sha512t_256")
 
         def base_26_pkgsend_multihash(self, hash_alg):
                 # we use a file:// URI rather than the repo URI so we don't have
@@ -1346,23 +1346,37 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 with open(mfpath, "w") as mf:
                         mf.write("""
 set name=pkg.fmri value=pkg:/multihash@1.0
-file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.{1}=spaghetti \
-    pkg.hash.rot13=caesar
+file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.rot13=caesar
 """.format(payload, hash_alg))
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath))
                 self.image_create(furi)
                 self.pkg("contents -rm multihash")
-                self.assertTrue("pkg.hash.{0}=spaghetti".format(
-                    hash_alg) in self.output)
+                # The default case.
+                if sha512_supported:
+                        self.assertTrue("pkg.content-hash=file:sha512t_256"
+                            in self.output)
+                else:
+                        self.assertTrue("pkg.content-hash=file:sha256"
+                            in self.output)
 
+                # "sha1 + hash_alg" case.
                 self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath),
                     debug_hash="sha1+{0}".format(hash_alg))
                 self.pkg("refresh")
 
                 self.pkg("contents -rm multihash")
-                self.assertTrue("pkg.hash.{0}=spaghetti".format(hash_alg)
-                    not in self.output)
+                self.assertTrue("pkg.content-hash=file:{0}".format(
+                    hash_alg in self.output))
                 self.assertTrue("pkg.hash.rot13=caesar" in self.output)
+
+                # hash_alg case.
+                self.pkgsend("", "-s {0} publish {1}".format(furi, mfpath),
+                    debug_hash="{0}".format(hash_alg))
+                self.pkg("refresh")
+
+                self.pkg("contents -rm multihash")
+                self.assertTrue("pkg.content-hash=file:{0}".format(
+                    hash_alg in self.output))
 
         def test_27_ownership(self):
                 """Test whether the ownership of the file will change if the

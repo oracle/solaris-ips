@@ -438,41 +438,6 @@ Incorrect attribute list.
                 # If the action isn't invalid, something is wrong.
                 self.assertTrue(invalid, "Action not invalid: " + text)
 
-        def test_action_content_hash(self):
-                """Test that different() works as expected for files with
-                content-hash attributes."""
-
-                a = action.fromstr("file hash=efgh elfhash=1234 path=bin/true")
-                b = action.fromstr("file hash=efgh elfhash=1234 pkg.content-hash=gelf:sha512t_256:abcd path=bin/true")
-                # elfhash should be ignored, and even though they have the same
-                # action.hash, the second action has a hash we prefer over the
-                # old sha-1 action.hash.
-                self.assertTrue(a.different(b))
-
-                a = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha512t_256:abcd path=bin/true")
-                b = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha512t_256:abcd pkg.content-hash=gelf:sha3_384:wxyz path=bin/true")
-                c = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha3_384:wxyz path=bin/true")
-                d = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha512t_256:abcd path=bin/true")
-                e = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha512t_256:abcd pkg.content-hash=file:sha512t_256:qrst path=bin/true")
-                f = action.fromstr("file hash=efgh pkg.content-hash=gelf:sha512t_256:abcd pkg.content-hash=file:sha512t_256:wxyz path=bin/true")
-
-                # Currently we prefer sha2 hash algorithm by default.
-                self.assertTrue(not a.different(b))
-                self.assertTrue(a.different(c))
-                self.assertTrue(b.different(c))
-                # And we prefer gelf over file for extraction method, so d
-                # equals to e.
-                self.assertTrue(not d.different(e))
-                # We just check the hashes with most preferred extraction method
-                self.assertTrue(not e.different(f))
-
-                # Simulate that we prefer sha3_384 over sha2.
-                DebugValues["hash"] = "sha3"
-                reload(pkg.digest)
-                self.assertTrue(a.different(b))
-                self.assertTrue(not b.different(c))
-                self.assertTrue(a.different(c))
-
         def test_action_errors(self):
                 # Unknown action type
                 self.assertRaises(action.UnknownActionError, action.fromstr,

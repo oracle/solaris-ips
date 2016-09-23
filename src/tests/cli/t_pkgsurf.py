@@ -38,6 +38,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from pkg.misc import CMP_UNSIGNED
 
 class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
@@ -102,6 +103,8 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         sandtiger_exp = sandtiger_ref
 
         # Basic package with content change, should not be reversioned.
+        # These packages deliver the same file but the target one's gelf signed
+        # content-hash value will be changed.
         elftest_ref = """
             open elftest@1.0,5.11-0:20000101T000000Z
             add file ro_data/elftest.so.1 mode=0755 owner=root group=bin path=/bin/true
@@ -115,6 +118,22 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         """
 
         elftest_exp = elftest_targ
+
+        # Basic package with content change, should not be reversioned.
+        # These packages deliver different files, but they have the same gelf
+        # content-hash values.
+        elfdiff_ref = """
+            open elfdiff@1.0,5.11-0:20000101T000000Z
+            add file ro_data/elftest.so.1 mode=0755 owner=root group=bin path=/bin/false
+            close
+        """
+
+        elfdiff_targ = """
+            open elfdiff@2.0,5.11-0:20000101T000000Z
+            add file ro_data/elftest.so.2 mode=0755 owner=root group=bin path=/bin/false
+            close
+        """
+        elfdiff_exp = elfdiff_targ
 
         # Basic package with content change, should not be reversioned.
         hammerhead_ref = """
@@ -510,7 +529,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         pkgs = ["tiger", "sandtiger", "hammerhead", "blue", "bull", "mako",
             "white", "angel", "horn", "lemon", "leopard", "blacktip",
             "whitetip", "goblin", "reef", "sandbar", "greenland", "sleeper",
-            "whale", "thresher", "bamboo", "elftest"]
+            "whale", "thresher", "bamboo", "elftest", "elfdiff"]
 
         def setUp(self):
                 """Start 3 depots, 1 for reference repo, 1 for the target and
@@ -702,11 +721,15 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 # hashes so that the target basic package is treated as no
                 # content change and should be reversioned.
                 elftest_exp = self.elftest_ref
+                efldiff_exp = self.elfdiff_ref
                 # Replace elftest package in the expected repo.
                 for i, s in enumerate(self.published_exp):
                         if "elftest" in s:
-                                self.published_exp[-1] = self.pkgsend_bulk(
+                                self.published_exp[i] = self.pkgsend_bulk(
                                     self.dpath3, (elftest_exp,))[0]
+                        if "elfdiff" in s:
+                                self.published_exp[i] = self.pkgsend_bulk(
+                                    self.dpath3, (efldiff_exp,))[0]
 
                 # Check that '-u' option works and should not affect other
                 # packages.
@@ -730,7 +753,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                         expm.set_content(pathname=exp)
 
                         ta, ra, ca = manifest.Manifest.comm([targm, expm],
-                            cmp_unsigned=True)
+                            cmp_policy=CMP_UNSIGNED)
                         self.debug("{0}: {1:d} {2:d}".format(str(s), len(ta),
                             len(ra)))
 

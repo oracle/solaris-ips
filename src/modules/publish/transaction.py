@@ -342,15 +342,15 @@ class TransportTransaction(object):
 
                 # Check which content checksums to compute and add to the action
                 get_elfhash = (need_elfhash and "elfhash" in
-                    digest.DEFAULT_CONTENT_HASH_ATTRS)
+                    digest.DEFAULT_GELF_HASH_ATTRS)
                 get_sha256 = (need_elfhash and
                     not digest.sha512_supported and
                     "pkg.content-hash" in
-                    digest.DEFAULT_CONTENT_HASH_ATTRS)
+                    digest.DEFAULT_GELF_HASH_ATTRS)
                 get_sha512t_256 = (need_elfhash and
                     digest.sha512_supported and
                     "pkg.content-hash" in
-                    digest.DEFAULT_CONTENT_HASH_ATTRS)
+                    digest.DEFAULT_GELF_HASH_ATTRS)
 
                 if get_elfhash or get_sha256 or get_sha512t_256:
                         try:
@@ -433,6 +433,17 @@ class TransportTransaction(object):
                 action.hash = hashes.pop("hash", None)
                 action.attrs.update(hashes)
 
+                # Add file content-hash when preferred_hash is SHA2 or higher.
+                if action.name != "signature" and \
+                    digest.PREFERRED_HASH != "sha1":
+                        hash_attr = "{0}:{1}".format(digest.EXTRACT_FILE,
+                            digest.PREFERRED_HASH)
+                        file_content_hash, dummy = misc.get_data_digest(
+                            action.data(), length=size, return_content=False,
+                            hash_attrs=[hash_attr], hash_algs=digest.HASH_ALGS)
+                        action.attrs["pkg.content-hash"] = "{0}:{1}".format(
+                            hash_attr, file_content_hash[hash_attr])
+
                 # Now set the hash value that will be used for storing the file
                 # in the repository.
                 hash_attr, hash_val, hash_func = \
@@ -473,7 +484,11 @@ class TransportTransaction(object):
 
                         self.__uploads[fname] = (elf_attrs, csize, chashes)
 
-                action.attrs.update(elf_attrs)
+                for k, v in six.iteritems(elf_attrs):
+                        if isinstance(v, list):
+                                action.attrs[k] = v + action.attrlist(k)
+                        else:
+                                action.attrs[k] = v
                 action.attrs.update(chashes)
                 action.attrs["pkg.csize"] = csize
 

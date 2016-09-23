@@ -143,10 +143,12 @@ class SignatureAction(generic.Action):
                         # We need a filename to use for the uncompressed chain
                         # cert, so get the preferred chain hash value from the
                         # chain_hshes
-                        chain_val = None
-                        for attr in digest.RANKED_CHAIN_ATTRS:
-                                if not chain_val and attr in hshes:
-                                        chain_val = hshes[attr]
+                        alg = digest.PREFERRED_HASH
+                        if alg == "sha1":
+                                attr = "chain"
+                        else:
+                                attr = "pkg.chain.{0}".format(alg)
+                        chain_val = hshes.get(attr)
 
                         csize, chashes = misc.compute_compressed_attrs(
                             chain_val, None, data, fs.st_size, chash_dir,
@@ -550,11 +552,11 @@ class SignatureAction(generic.Action):
                 res.append((self.name, "signature", self.attrs["value"],
                     self.attrs["value"]))
                 for attr in digest.DEFAULT_HASH_ATTRS:
-                        # we already have an index entry for self.hash
-                        if attr == "hash":
-                                continue
-                        hash = self.attrs[attr]
-                        res.append((self.name, attr, hash, None))
+                        # We already have an index entry for self.hash;
+                        # we only want hash attributes other than "hash".
+                        hash = self.attrs.get(attr)
+                        if attr != "hash" and hash is not None:
+                                res.append((self.name, attr, hash, None))
                 return res
 
         def identical(self, other, hsh):

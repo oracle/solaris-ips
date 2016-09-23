@@ -1873,7 +1873,7 @@ class _RepoStore(object):
                 # if we're looking at a path to a file hash, and we have a pfmri
                 # we'd like to print the 'path' attribute as well as its
                 # location within the repository.
-                hsh = reason.get("hash")
+                hsh = reason.get("fname")
                 pfmri = reason.get("pkg")
                 if hsh and pfmri:
                         m = self._get_manifest(pfmri)
@@ -1900,8 +1900,8 @@ class _RepoStore(object):
                         message = _("Corrupt manifest.")
                         reason["err"] = _("Use pkglint(1) for more details.")
                 elif error == REPO_VERIFY_NOFILE:
-                        message = _("Missing file: {0}").format(reason["hash"])
-                        del reason["hash"]
+                        message = _("Missing file: {0}").format(reason["fname"])
+                        del reason["fname"]
                 elif error == REPO_VERIFY_BADGZIP:
                         message = _("Corrupted gzip file.")
                 elif error in [REPO_VERIFY_PERM, REPO_VERIFY_MFPERM]:
@@ -2293,11 +2293,16 @@ class _RepoStore(object):
 
                                         err = self.__verify_perm(path, pfmri, h)
                                         if err:
+                                                # For backward compatibility,
+                                                # store the SHA1 file name for
+                                                # file retrieval.
+                                                err[2]["fname"] = fname
                                                 errors.append(err)
                                                 continue
                                         err = self.__verify_hash(path, pfmri, h,
                                             alg=alg)
                                         if err:
+                                                err[2]["fname"] = fname
                                                 errors.append(err)
                                 for err in errors:
                                         yield self.__build_verify_error(*err)

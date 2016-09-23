@@ -641,6 +641,7 @@ class Transaction(object):
                 if size is None:
                         size = len(data)
 
+                fname = None
                 try:
                         # We don't have an Action yet, so passing None is fine.
                         default_hash_attr = digest.get_least_preferred_hash(

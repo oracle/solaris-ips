@@ -98,6 +98,10 @@ BUG_URI_CLI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&compo
 BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=gui"
 # pylint: enable=C0301
 
+# Comparison types
+CMP_UNSIGNED = 0
+CMP_ALL = 1
+
 # Traceback message.
 def get_traceback_message():
         """This function returns the standard traceback message.  A function
@@ -608,7 +612,12 @@ def get_data_digest(data, length=None, return_content=False,
                         assert False, "get_data_digest without hash_attrs/algs"
                 hash_results = {}
                 for attr in hash_attrs:
-                        hash_results[attr] = hash_algs[attr]()
+                        # "pkg.content-hash" is provided by default and doesn't
+                        # indicate the hash_alg to be used, so when we want to
+                        # calculate the content hash, we'll specify the
+                        # hash_attrs explicitly, such as "file:sha512t_256".
+                        if attr != "pkg.content-hash":
+                                hash_results[attr] = hash_algs[attr]()
 
         # Read the data in chunks and compute the SHA hashes as the data comes
         # in.  A large read on some platforms (e.g. Windows XP) may fail.
@@ -622,8 +631,9 @@ def get_data_digest(data, length=None, return_content=False,
                 else:
                         # update each hash with this data
                         for attr in hash_attrs:
-                                hash_results[attr].update(
-                                    data) # pylint: disable=E1101
+                                if attr != "pkg.content-hash":
+                                        hash_results[attr].update(
+                                            data) # pylint: disable=E1101
 
                 l = len(data)
                 if l == 0:

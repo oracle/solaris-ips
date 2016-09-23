@@ -291,7 +291,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                     and "etc/driver_aliases" not in self.output)
                 self.assertTrue("foo" in self.output)
                 self.assertTrue("OK" not in self.output
-                    and self.output.count("ERROR") == 3
+                    and self.output.count("ERROR") == 2
                     and "Hash" in self.output)
 
                 # Even though the target file is modified, the link and dir
@@ -308,13 +308,13 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                     and "etc/bronze1" not in self.output
                     and "foo" in self.output and "bar" in self.output)
                 self.assertTrue(self.output.count("OK") == 1
-                    and self.output.count("ERROR") == 3
+                    and self.output.count("ERROR") == 2
                     and "Hash" in self.output)
                 self.pkg_verify("-v -p /usr -p /usr/bin/bobcat", exit=1)
                 self.assertTrue("usr/bin/bobcat" in self.output
                     and "foo" in self.output and "bar" in self.output)
                 self.assertTrue("OK" in self.output
-                    and self.output.count("ERROR") == 3
+                    and self.output.count("ERROR") == 2
                     and "Hash" in self.output)
 
                 self.pkg("uninstall foo bar")
@@ -380,7 +380,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg_verify("-v -p /usr/bin/bobcat foo bar", exit=1)
                 self.assertTrue("foo" in self.output and "bar" not in self.output
                     and "usr/bin/bobcat" in self.output)
-                self.assertTrue(self.output.count("ERROR") == 3
+                self.assertTrue(self.output.count("ERROR") == 2
                     and "OK" not in self.output)
 
                 # Even though the target file is modified, the link and dir

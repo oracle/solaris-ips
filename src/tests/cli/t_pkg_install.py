@@ -3113,12 +3113,6 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
-        elfhash30 = """
-            open elfhash@3.0
-            add file ro_data/elftest.so.2 mode=0755 owner=root group=bin path=bin/true
-            close
-        """
-
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -3261,17 +3255,13 @@ adm
                 # to action that uses pkg.content-hash.
                 for a in mani.gen_actions():
                         if "bin/true" in str(a):
+                                tmp = a.attrs["pkg.content-hash"]
                                 del a.attrs["pkg.content-hash"]
                 mani.store(mpath1)
                 # rebuild repo catalog since manifest digest changed
                 repo.rebuild()
 
                 self.image_create(self.rurl)
-                # In our experiments, we want to compare content-hash attributes
-                # instead of file hash, so we need to set the content policy
-                # to be when-required so that it will check the content-hash
-                # attributes; the default policy checks the file hash.
-                self.pkg("set-property content-update-policy when-required")
                 self.pkg("install -v elfhash@1.0")
                 # should not see pkg.content-hash
                 self.pkg("contents -m elfhash | grep pkg.content-hash", exit=1)
@@ -3284,20 +3274,20 @@ adm
                 # that uses SHA-3 hash.
                 for a in mani.gen_actions():
                         if "bin/true" in str(a):
-                                a.attrs["pkg.content-hash"] = "gelf:sha512t_256:abcd"
+                                a.attrs["pkg.content-hash"] = tmp
                 mani.store(mpath1)
                 repo.rebuild()
 
                 for a in mani2.gen_actions():
                         if "bin/true" in str(a):
-                                a.attrs["pkg.content-hash"] = ["gelf:sha3_384:wxyz"]
+                                a.attrs["pkg.content-hash"] = \
+                                    ["file:sha3_384:abcd", "gelf:sha3_384:wxyz", "gelf.unsigned:sha3_384:wxyz"]
                 mani2.store(mpath2)
                 repo.rebuild()
 
                 self.pkg("install -v elfhash@1.0")
                 self.pkg("contents -m elfhash | grep gelf:sha512t_256")
                 self.pkg("update -vvv elfhash")
-                self.assertTrue("sha3_384" in self.output)
                 self.pkg("contents -m elfhash | grep gelf:sha512t_256", exit=1)
                 self.pkg("contents -m elfhash | grep gelf:sha3_384")
                 self.pkg("uninstall elfhash")
@@ -3315,19 +3305,16 @@ adm
                 self.pkg("install -v elfhash@1.0")
                 self.pkg("contents -m elfhash | grep gelf:sha512t_256")
                 self.pkg("update -vvv elfhash")
-                # We don't add the new file to the upgrade process because
-                # sha512t_256 is preferred...
-                self.assertTrue("sha3_384" not in self.output)
-                # ...but we still update the file's content-hash attributes.
                 self.pkg("contents -m elfhash | grep gelf:sha512t_256")
                 self.pkg("contents -m elfhash | grep gelf:sha3_384")
                 self.pkg("uninstall elfhash")
 
-                # Upgrade case: action that uses gelf extraction method upgrade
-                # to action that uses file extraction method.
+                # Upgrade case: action that uses gelf and file extraction method
+                # upgrade to action that only uses file extraction method.
                 for a in mani2.gen_actions():
                         if "bin/true" in str(a):
-                                a.attrs["pkg.content-hash"] = ["file:sha512t_256:qrst"]
+                                a.attrs["pkg.content-hash"] = \
+                                    ["file:sha512t_256:2374db2dfb4968baad246ab37afc560cc9d278b6104a889a2727d9bcf6a20b17"]
 
                 mani2.store(mpath2)
                 repo.rebuild()
@@ -3335,7 +3322,6 @@ adm
                 self.pkg("install -v elfhash@1.0")
                 self.pkg("contents -m elfhash | grep gelf")
                 self.pkg("update -vvv elfhash")
-                self.assertTrue("file:sha512t_256" in self.output)
                 self.pkg("contents -m elfhash | grep gelf", exit=1)
                 self.pkg("contents -m elfhash | grep file")
                 self.pkg("uninstall elfhash")
@@ -3345,56 +3331,18 @@ adm
                 for a in mani2.gen_actions():
                         if "bin/true" in str(a):
                                 a.attrs["pkg.content-hash"] = \
-                                    ["gelf:sha512t_256:abcd", "file:sha512t_256:qrst"]
+                                    ["gelf:sha512t_256:abcd", "file:sha512t_256:2374db2dfb4968baad246ab37afc560cc9d278b6104a889a2727d9bcf6a20b17"]
 
                 mani2.store(mpath2)
                 repo.rebuild()
 
                 self.pkg("install -v elfhash@1.0")
                 self.pkg("contents -m elfhash | grep gelf")
-                # We don't add the new file to the upgrade process because
-                # gelf is preferred...
                 self.pkg("update -vvv elfhash")
-                self.assertTrue("gelf" not in self.output)
-                # ...but we still update the file's content-hash attributes.
+                # we update the file's content-hash attributes.
                 self.pkg("contents -m elfhash | grep gelf")
                 self.pkg("contents -m elfhash | grep file")
                 self.pkg("uninstall elfhash")
-
-                # Upgrade case: action that doesn't use pkg.content-hash
-                # upgrade to action that uses pkg.content-hash with action.hash
-                # being changed. In this case, we are testing the most preferred
-                # hash that is set on either new or old action, that is,
-                # "pkg.content-hash". Since a higher-ranked digest exists on the
-                # new action, but not the old, we must assume that the previous
-                # digest should not be trusted, so we will update the file.
-
-                def get_test_sum(fname=None):
-                        """ Helper to get sha256 sum of installed test file."""
-                        if fname is None:
-                                fname = os.path.join(self.get_img_path(),
-                                    "bin/true")
-                        fsum, data = misc.get_data_digest(fname,
-                            hash_func=hashlib.sha256)
-                        return fsum
-
-                # get the sha256 sums from the original files to distinguish
-                # what actually got installed
-                elf2sum = get_test_sum(fname=os.path.join(self.ro_data_root,
-                    "elftest.so.2"))
-
-                self.pkgsend_bulk(self.rurl, self.elfhash30)[0]
-                for a in mani.gen_actions():
-                        if "bin/true" in str(a):
-                                del a.attrs["pkg.content-hash"]
-                mani.store(mpath1)
-                repo.rebuild()
-
-                self.pkg("install elfhash@1.0")
-                self.pkg("update -vvv elfhash@3.0")
-                # The file should be updated...
-                self.assertEqual(elf2sum, get_test_sum())
-                self.pkg("contents -m elfhash | grep pkg.content-hash")
 
         def test_upgrade1(self):
 
@@ -4937,16 +4885,16 @@ adm
                 self.many_hashalgs_helper("install", "sha256")
                 self.many_hashalgs_helper("exact-install", "sha256")
                 if sha512_supported:
-                        self.many_hashalgs_helper("install", "sha512_256")
-                        self.many_hashalgs_helper("exact-install", "sha512_256")
+                        self.many_hashalgs_helper("install", "sha512t_256")
+                        self.many_hashalgs_helper("exact-install", "sha512t_256")
 
         def many_hashalgs_helper(self, install_cmd, hash_alg):
-                self.pkgsend_bulk(self.rurl, (self.iron10))
+                self.pkgsend_bulk(self.rurl, self.iron10, debug_hash="sha1")
                 self.image_create(self.rurl, destroy=True)
                 self.pkg("install iron@1.0")
                 self.pkg("contents -m iron")
                 # We have not enabled SHA2 hash publication yet.
-                self.assertTrue(("pkg.hash.{0}".format(hash_alg) not in self.output))
+                self.assertTrue(("pkg.content-hash=file:{0}".format(hash_alg) not in self.output))
 
                 # publish with SHA1 and SHA2 hashes
                 self.pkgsend_bulk(self.rurl, self.iron20,
@@ -4961,7 +4909,7 @@ adm
                 # most-preferred hash.
                 self.pkg("install iron@2.0")
                 self.pkg("contents -m iron")
-                self.assertTrue("pkg.hash.{0}".format(hash_alg in self.output))
+                self.assertTrue("pkg.content-hash=file:{0}".format(hash_alg) in self.output)
 
                 # publish with only SHA-2 hashes
                 self.pkgsend_bulk(self.rurl, self.iron20,
@@ -4979,15 +4927,14 @@ adm
                 # the SHA-1 attributes.
                 self.pkg("-D hash={0} update".format(hash_alg))
                 self.pkg("contents -m iron")
-                for attr in ["pkg.hash.{0}".format(hash_alg),
-                    "pkg.chash.{0}".format(hash_alg)]:
+                for attr in ["pkg.chash.{0}".format(hash_alg), "pkg.content-hash"]:
                         self.output = self.output.replace(attr, "")
                 self.assertTrue("hash" not in self.output)
                 self.assertTrue("chash" not in self.output)
 
         def test_content_hash_ignore(self):
-                """Test that pkgs with content-hash attributes are ignored for
-                install and verify by default."""
+                """Test that pkgs with gelf content-hash attributes are ignored
+                for install and verify by default if file hash matches."""
 
                 elfpkg_1 = """
                     open elftest@1.0
@@ -5005,21 +4952,13 @@ adm
                 mani.set_content(pathname=mpath)
                 for a in mani.gen_actions():
                         if "bin/true" in str(a):
-                                a.attrs["pkg.content-hash.sha256"] = "foo"
+                                a.attrs["pkg.content-hash"] = "gelf:sha512t_256:foo"
                 mani.store(mpath)
                 # rebuild repo catalog since manifest digest changed
                 repo.rebuild()
 
-                # assert that the current pkg gate has the correct hash ranking
-                self.assertTrue(len(digest.RANKED_CONTENT_HASH_ATTRS) > 0)
-                self.assertEqual(digest.RANKED_CONTENT_HASH_ATTRS[0], "pkg.content-hash")
-                if sha512_supported:
-                        self.assertEqual(digest.RANKED_CONTENT_HASH_TYPES[0], "gelf:sha512t_256")
-                else:
-                        self.assertEqual(digest.RANKED_CONTENT_HASH_TYPES[0], "gelf:sha256")
-
-                # test that pkgrecv, pkgrepo verify, pkg install and pkg verify
-                # do not complain about unknown hash
+                # Test that pkgrecv, pkgrepo verify, pkg install and pkg verify
+                # do not complain about unknown gelf content-hash.
                 self.pkgrecv("{0} -a -d {1} '*'".format(repo_dir,
                     os.path.join(self.test_root, "x.p5p")))
                 self.pkgrepo("verify -s {0}".format(repo_dir))
@@ -5027,6 +4966,22 @@ adm
                 self.pkg("install -v {0}".format(elf1))
                 # Note that we pass verification if any of the hashes match, but
                 # we require by default that the content hash matches.
+                self.pkg("verify")
+
+                for a in mani.gen_actions():
+                        if "bin/true" in str(a):
+                                a.attrs["pkg.content-hash"] = "file:sha512t_256:foo"
+                mani.store(mpath)
+                # rebuild repo catalog since manifest digest changed
+                repo.rebuild()
+                # Test that pkgrecv, pkgrepo verify, pkg install complains about
+                # the unknown file hash.
+                self.pkgrecv("{0} -a -d {1} '*'".format(repo_dir,
+                    os.path.join(self.test_root, "y.p5p")))
+                self.pkgrepo("verify -s {0}".format(repo_dir), exit=1)
+                self.image_create(self.rurl, destroy=True)
+                self.pkg("install -v {0}".format(elf1), exit=1)
+                # We pass verification if any of the hashes match.
                 self.pkg("verify")
 
 

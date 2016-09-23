@@ -145,7 +145,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                     debug_hash="sha1+sha256"))
                 if sha512_supported:
                         self.plist.extend(self.pkgsend_bulk(self.rurl,
-                            self.pkgs3, debug_hash="sha1+sha512_256"))
+                            self.pkgs3, debug_hash="sha1+sha512t_256"))
                 else:
                         self.plist.extend(self.pkgsend_bulk(self.rurl,
                             self.pkgs3))
@@ -171,7 +171,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(sha2 in self.output)
 
                 if sha512_supported:
-                        self.pkg("-D hash=sha1+sha512_256 verify C", exit=1)
+                        self.pkg("-D hash=sha1+sha512t_256 verify C", exit=1)
                         sha2 = "13729cb7183961b48ce300c2588c86ad123e7c636f38a0f3c8408a75fd079d09"
                         self.assertTrue(sha2 in self.output, self.output)
                 self.pkg("verify C", exit=1)
@@ -210,13 +210,13 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 # When reverting damage, we always verify using the
                 # most-preferred hash, but retrieve content with the
                 # least-preferred hash: -D hash=sha1+sha256 and
-                # -D hash=sha1+sha512_256 should have no effect here whatsoever,
-                # but -D hash=sha256 and -D hash=sha512_256 should fail because
+                # -D hash=sha1+sha512t_256 should have no effect here whatsoever,
+                # but -D hash=sha256 and -D hash=sha512t_256 should fail because
                 # our repository stores its files by the SHA1 hash.
                 self.pkg("-D hash=sha256 revert --parsable=0 --tagged bob",
                     exit=1)
                 if sha512_supported:
-                        self.pkg("-D hash=sha512_256 revert --parsable=0 \
+                        self.pkg("-D hash=sha512t_256 revert --parsable=0 \
                             --tagged ted", exit=1)
                         self.pkg("-D hash=sha1+512_256 revert -n --parsable=0 \
                             --tagged ted")

@@ -1032,11 +1032,12 @@ class PkgActionChecker(base.ActionChecker):
 
                 for key in action.attrs.keys():
                         if "_" in key:
-                                if key in ["original_name", "refresh_fmri",
+                                if (key in ["original_name", "refresh_fmri",
                                     "restart_fmri", "suspend_fmri",
-                                    "disable_fmri", "clone_perms"] or \
-                                        key.startswith("facet.locale.") or \
-                                        key.startswith("facet.version-lock."):
+                                    "disable_fmri", "clone_perms"] or
+                                        key.startswith("facet.locale.") or
+                                        key.startswith("facet.version-lock.") or
+                                        key.startswith("pkg.")):
                                         continue
                                 engine.warning(
                                     _("underscore in attribute name {key} in "

@@ -2719,7 +2719,7 @@ class CliTestCase(Pkg5TestCase):
 
                 # debug_hash lets us choose the type of hash attributes that
                 # should be added to this package on publication. Valid values
-                # are: sha1, sha256, sha1+sha256, sha512_256, sha1+sha512_256
+                # are: sha1, sha256, sha1+sha256, sha512t_256, sha1+sha512t_256
                 if debug_hash:
                         args.append("-D hash={0}".format(debug_hash))
 
