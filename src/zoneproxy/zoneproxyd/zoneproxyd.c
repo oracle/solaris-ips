@@ -92,6 +92,7 @@
 #include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/brand.h>
 
 #define	PROXY_THREAD_DEFAULT		8
 #define	PROXY_THREAD_MAX		20
@@ -1220,20 +1221,43 @@ zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 	(void) mutex_unlock(&g_attach_zone_lock);
 }
 
+static boolean_t
+__is_native_zone(zoneid_t zid)
+{
+	char brand[MAXNAMELEN];
+	const char *name_list[] = { "solaris", "solaris-oci", "sn1",
+	    "labeled" };
+	uint_t nbrands = sizeof (name_list) / sizeof (const char *);
+
+	/* global zones have a NULL brand, but can be detected by zid. */
+	if (zid == 0) {
+		return (B_TRUE);
+	}
+	zone_getattr(zid, ZONE_ATTR_BRAND, brand, sizeof (brand));
+	for (int i = 0; i < nbrands; i++) {
+		if (strcmp(brand, name_list[i]) == 0) {
+			return (B_TRUE);
+		}
+	}
+	return (B_FALSE);
+}
+
 static void
 fattach_all_zones(boolean_t detach_only)
 {
 	zoneid_t *zids;
 	uint_t nzids;
-	int i;
 
 	if (zone_get_zoneids(&zids, &nzids) != 0) {
 		(void) fprintf(stderr, "Could not get list of zones");
 		return;
 	}
 
-	for (i = 0; i < nzids; i++)
-		zpd_fattach_zone(zids[i], g_door, detach_only);
+	for (int i = 0; i < nzids; i++) {
+		if (__is_native_zone(zids[i]) == B_TRUE) {
+			zpd_fattach_zone(zids[i], g_door, detach_only);
+		}
+	}
 	free(zids);
 }
 
