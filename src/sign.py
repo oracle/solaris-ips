@@ -127,9 +127,6 @@ def __make_tmp_cert(d, pth):
         return fp
 
 def main_func():
-        misc.setlocale(locale.LC_ALL, "", error)
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
         global_settings.client_name = "pkgsign"
 
         try:
@@ -388,6 +385,11 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
+
         try:
                 __ret = main_func()
         except (PipeError, KeyboardInterrupt):

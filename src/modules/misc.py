@@ -82,6 +82,7 @@ from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg.pkggzip import PkgGzipFile
+from pkg.client.pkgdefs import EXIT_OOPS
 
 # Default path where the temporary directories will be created.
 DEFAULT_TEMP_PATH = "/var/tmp"
@@ -3049,3 +3050,20 @@ def check_ca(cert):
                         kuse_sign = e.value.key_cert_sign
 
         return kuse_sign is not False and bconst_ca
+
+FILE_DESCRIPTOR_LIMIT = 4096
+
+def set_fd_limits(printer=None):
+        """Set the open file descriptor soft limit."""
+        if printer is None:
+                printer = emsg
+        try:
+                (soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)
+                soft = max(hard, FILE_DESCRIPTOR_LIMIT)
+                resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+        except (OSError, ValueError) as e:
+                printer(_("unable to set open file limit to {0}; please "
+                    "increase the open file limit using 'ulimit -n'"
+                    " and try the requested operation again: {1}")\
+                    .format(soft, e))
+                sys.exit(EXIT_OOPS)

@@ -78,9 +78,11 @@ try:
         from pkg.misc import emsg, PipeError
         from pkg.actions.generic import quote_attr_value
         from pkg.actions.depend import known_types as dep_types
+        from pkg.client.pkgdefs import (EXIT_OK, EXIT_OOPS, EXIT_BADOPT,
+            EXIT_PARTIAL)
 except KeyboardInterrupt:
         import sys
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
 
 FMT_V1 = "v1"
 FMT_V2 = "v2"
@@ -91,7 +93,7 @@ opt_diffs = False
 opt_format = FMT_V2
 orig_opt_format = None
 
-def usage(errmsg="", exitcode=2):
+def usage(errmsg="", exitcode=EXIT_BADOPT):
         """Emit a usage message and optionally prefix it with a more specific
         error message.  Causes program to exit."""
 
@@ -105,7 +107,7 @@ Usage:
 
         sys.exit(exitcode)
 
-def error(text, exitcode=1):
+def error(text, exitcode=EXIT_OOPS):
         """Emit an error message prefixed by the command name """
 
         # If we get passed something like an Exception, we can convert
@@ -519,8 +521,6 @@ def write_line(line, fileobj):
         print(output, file=fileobj)
 
 def main_func():
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
         global opt_unwrap
         global opt_check
         global opt_diffs
@@ -548,7 +548,7 @@ def main_func():
                         elif opt == "-u":
                                 opt_unwrap = True
                         elif opt in ("--help", "-?"):
-                                usage(exitcode=0)
+                                usage(exitcode=EXIT_OK)
         except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
         if len(opt_set - set(["-f"])) > 1:
@@ -666,9 +666,9 @@ def main_func():
                                 os.chmod(tname, mode)
                                 os.rename(tname, fname)
                         except EnvironmentError as e:
-                                error(str(e), exitcode=1)
+                                error(str(e), exitcode=EXIT_OOPS)
                 except (EnvironmentError, IOError) as e:
-                        error(str(e), exitcode=1)
+                        error(str(e), exitcode=EXIT_OOPS)
                 finally:
                         if tname:
                                 try:
@@ -714,6 +714,11 @@ def fmt_file(in_file, out_file):
 
 
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
+
         if six.PY3:
                 # disable ResourceWarning: unclosed file
                 warnings.filterwarnings("ignore", category=ResourceWarning)

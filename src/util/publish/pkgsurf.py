@@ -30,7 +30,7 @@
 # After determining the packages present in the target repo, pkgsurf tries to
 # find the associated version of each package in the reference repo. Packages
 # which can't be found in the reference are ignored (not reversioned). Only the
-# latest version of the reference packages are considered. 
+# latest version of the reference packages are considered.
 # We then compare the target and ref manifest for content changes. Any
 # difference in the manifests' actions is considered a content change unless
 # they differ in:
@@ -38,7 +38,7 @@
 #  - a set action whose name attribute is specified with -i/--ignore
 #  - a signature action (signature will change when FMRI changes)
 #  - a depend action (see below)
-#   
+#
 # Changes in depend actions are not considered a content change, however,
 # further analysis is required since the package can only be reversioned if the
 # dependency package didn't have a content change and its dependencies didn't
@@ -64,7 +64,7 @@
 # pkgsurf deletes and inserts manifests in place for the target repo. File data
 # does not need to be modified since we only operate on packages with no content
 # change. It runs a catalog rebuild as the last step to regain catalog integrity
-# within the repo. 
+# within the repo.
 
 import getopt
 import gettext
@@ -153,7 +153,7 @@ Usage:
             [-i name ...] [-c pattern ...]
 
 Options:
-        -c pattern      Treat every package whose FMRI matches 'pattern' as 
+        -c pattern      Treat every package whose FMRI matches 'pattern' as
                         changed and do not reversion it. Can be specified
                         multiple times.
 
@@ -298,7 +298,7 @@ def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
 
         # Dep package hasn't been changed, no adjustment necessary.
         if dpfmri.get_pkg_stem() not in reversioned_pkgs:
-                return fmri_str                
+                return fmri_str
 
         # Find the dependency action of the reference package
         # and replace the current version with it.
@@ -380,7 +380,7 @@ def use_ref(a, deps, ignores):
         if a.name == "set" and "name" in a.attrs:
                 if a.attrs["name"] in ignores:
                         return True
-                # We ignore the pkg FMRI because this is what 
+                # We ignore the pkg FMRI because this is what
                 # will always change.
                 if a.attrs["name"] == "pkg.fmri":
                         return True
@@ -487,13 +487,13 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                     or not all(use_ref(a, rdeps, ignores) for a in ra):
                         continue
 
-                # Both dep lists should be equally long in case deps have just 
+                # Both dep lists should be equally long in case deps have just
                 # changed. If not, it means a dep has been added or removed and
                 # that means content change.
                 if len(tdeps) != len(rdeps):
                         continue
 
-                # If len is not different we still have to make sure that 
+                # If len is not different we still have to make sure that
                 # entries have the same pkg stem. The test above just saves time
                 # in some cases.
                 if not all(td in rdeps for td in tdeps):
@@ -515,15 +515,15 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                 """Determine if a package or any of its dependencies has
                 changed.
                 Function will check if a dependency had a content change. If it
-                only had a dependency change, analyze its dependencies 
+                only had a dependency change, analyze its dependencies
                 recursively. Only if the whole dependency chain didn't have any
-                content change it is safe to reversion the package. 
+                content change it is safe to reversion the package.
 
-                Note about circular dependencies: The function keeps track of 
+                Note about circular dependencies: The function keeps track of
                 pkgs it already processed by stuffing them into the set 'seen'.
-                However, 'seen' gets updated before the child dependencies of 
+                However, 'seen' gets updated before the child dependencies of
                 the current pkg are examined. This works if 'seen' is only used
-                for one dependency chain since the function immediately comes 
+                for one dependency chain since the function immediately comes
                 back with a True result if a pkg has changed further down the
                 tree. However, if 'seen' is re-used between runs, it will
                 return prematurely, likely returning wrong results. """
@@ -648,7 +648,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                                     err=str(e)))
                         continue
 
-                # For packages we don't reversion we have to check if they 
+                # For packages we don't reversion we have to check if they
                 # depend on a reversioned package.
                 # Since the version of this dependency might be removed from the
                 # repo, we have to adjust the dep version to the one of the
@@ -681,9 +681,6 @@ def main_func():
         global temp_root, repo_modified, repo_finished, repo_uri, tracker
         global dry_run
 
-        misc.setlocale(locale.LC_ALL, "", error)
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
         global_settings.client_name = PKG_CLIENT_NAME
 
         try:
@@ -798,6 +795,11 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
+
         if six.PY3:
                 # disable ResourceWarning: unclosed file
                 warnings.filterwarnings("ignore", category=ResourceWarning)

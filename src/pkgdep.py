@@ -43,6 +43,7 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
+from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT
 
 CLIENT_API_VERSION = 82
 PKG_CLIENT_NAME = "pkgdepend"
@@ -77,7 +78,7 @@ def error(text, cmd=None):
         # program name on all platforms.
         emsg(ws + "pkgdepend: " + text_nows)
 
-def usage(usage_error=None, cmd=None, retcode=2):
+def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
         """Emit a usage message and optionally prefix it with a more specific
         error message.  Causes program to exit."""
 
@@ -124,7 +125,7 @@ def generate(args):
                 if opt == "-d":
                         if not os.path.isdir(arg):
                                 usage(_("The proto directory {0} could not be "
-                                    "found.".format(arg)), retcode=2)
+                                    "found.".format(arg)), retcode=EXIT_BADOPT)
                         proto_dirs.append(os.path.abspath(arg))
                 elif opt == "-D":
                         try:
@@ -147,7 +148,7 @@ def generate(args):
                 elif opt in ("--help", "-?"):
                         show_usage = True
         if show_usage:
-                usage(retcode=0)
+                usage(retcode=EXIT_OK)
         if len(pargs) > 2 or len(pargs) < 1:
                 usage(_("Generate only accepts one or two arguments."))
 
@@ -155,22 +156,22 @@ def generate(args):
                 usage(_("ORIGIN may not be specified using -D. It will be "
                     "inferred from the\ninstall paths of the files."))
 
-        retcode = 0
+        retcode = EXIT_OK
 
         manf = pargs[0]
 
         if not os.path.isfile(manf):
                 usage(_("The manifest file {0} could not be found.").format(manf),
-                    retcode=2)
+                    retcode=EXIT_BADOPT)
 
         if len(pargs) > 1:
                 if not os.path.isdir(pargs[1]):
                         usage(_("The proto directory {0} could not be found.").format(
-                            pargs[1]), retcode=2)
+                            pargs[1]), retcode=EXIT_BADOPT)
                 proto_dirs.insert(0, os.path.abspath(pargs[1]))
         if not proto_dirs:
                 usage(_("At least one proto directory must be provided."),
-                    retcode=2)
+                    retcode=EXIT_BADOPT)
 
         try:
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
@@ -179,10 +180,10 @@ def generate(args):
                 error(_("Could not parse manifest {manifest} because of the "
                     "following line:\n{line}").format(manifest=manf,
                     line=e.actionstr))
-                return 1
+                return EXIT_OOPS
         except api_errors.ApiException as e:
                 error(e)
-                return 1
+                return EXIT_OOPS
 
         if echo_manf:
                 fh = open(manf, "r")
@@ -202,7 +203,7 @@ def generate(args):
 
         for e in es:
                 emsg(e)
-                retcode = 1
+                retcode = EXIT_OOPS
         return retcode
 
 def resolve(args, img_dir):
@@ -247,13 +248,13 @@ def resolve(args, img_dir):
         for manifest in manifest_paths:
                 if not os.path.isfile(manifest):
                         usage(_("The manifest file {0} could not be found.").format(
-                            manifest), retcode=2)
+                            manifest), retcode=EXIT_BADOPT)
 
         if out_dir:
                 out_dir = os.path.abspath(out_dir)
                 if not os.path.isdir(out_dir):
                         usage(_("The output directory {0} is not a directory.").format(
-                            out_dir), retcode=2)
+                            out_dir), retcode=EXIT_BADOPT)
 
         provided_image_dir = True
         pkg_image_used = False
@@ -276,7 +277,7 @@ def resolve(args, img_dir):
         if not img_dir:
                 error(_("Could not find image.  Use the -R option or set "
                     "$PKG_IMAGE to the\nlocation of an image."))
-                return 1
+                return EXIT_OOPS
 
         system_patterns = misc.EmptyI
         if constraint_files:
@@ -294,12 +295,12 @@ def resolve(args, img_dir):
                                         error("{0}: '{1}'".format(
                                             e.args[1], e.filename),
                                             cmd="resolve")
-                                        return 1
+                                        return EXIT_OOPS
                                 raise api_errors._convert_error(e)
                 if not system_patterns:
                         error(_("External package list files were provided but "
                             "did not contain any fmri patterns."))
-                        return 1
+                        return EXIT_OOPS
         elif use_system_to_resolve:
                 system_patterns = ["*"]
 
@@ -320,14 +321,14 @@ def resolve(args, img_dir):
                                     e.user_dir))
                 else:
                         error(_("No image found."))
-                return 1
+                return EXIT_OOPS
         except api_errors.PermissionsException as e:
                 error(e)
-                return 1
+                return EXIT_OOPS
         except api_errors.ImageFormatUpdateNeeded as e:
                 # This should be a very rare error case.
                 format_update_error(e)
-                return 1
+                return EXIT_OOPS
 
         try:
                 pkg_deps, errs, warnings, unused_fmris, external_deps = \
@@ -336,14 +337,14 @@ def resolve(args, img_dir):
         except (actions.MalformedActionError, actions.UnknownActionError) as e:
                 error(_("Could not parse one or more manifests because of "
                     "the following line:\n{0}").format(e.actionstr))
-                return 1
+                return EXIT_OOPS
         except dependencies.DependencyError as e:
                 error(e)
-                return 1
+                return EXIT_OOPS
         except api_errors.ApiException as e:
                 error(e)
-                return 1
-        ret_code = 0
+                return EXIT_OOPS
+        ret_code = EXIT_OK
 
         if output_to_screen:
                 ret_code = pkgdeps_to_screen(pkg_deps, manifest_paths,
@@ -369,8 +370,8 @@ def resolve(args, img_dir):
                                 msg("\t{0}".format(pfmri))
 
         for e in errs:
-                if ret_code == 0:
-                        ret_code = 1
+                if ret_code == EXIT_OK:
+                        ret_code = EXIT_OOPS
                 emsg(e)
         for w in warnings:
                 emsg(w)
@@ -413,7 +414,7 @@ def __echo_manifest(pth, out_func, strip_newline=False):
                                         text += "\n"
                                 out_func(text)
         except EnvironmentError:
-                ret_code = 1
+                ret_code = EXIT_OOPS
                 emsg(_("Could not open {0} to echo manifest").format(
                     manifest_path))
 
@@ -429,7 +430,7 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         'echo_manifest' is a boolean which determines whether the original
         manifest will be written out or not."""
 
-        ret_code = 0
+        ret_code = EXIT_OK
         first = True
         for p in manifest_paths:
                 if not first:
@@ -456,11 +457,11 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
         'manifest_path' the path to the manifest which generated the
         dependencies."""
 
-        ret_code = 0
+        ret_code = EXIT_OK
         try:
                 out_fh = open(out_file, "w")
         except EnvironmentError:
-                ret_code = 1
+                ret_code = EXIT_OOPS
                 emsg(_("Could not open output file {0} for writing").format(
                     out_file))
                 return ret_code
@@ -489,7 +490,7 @@ def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
         'echo_manifest' is a boolean which determines whether the original
         manifest will be written out or not."""
 
-        ret_code = 0
+        ret_code = EXIT_OK
         if not os.path.exists(out_dir):
                 try:
                         os.makedirs(out_dir)
@@ -501,7 +502,7 @@ def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
                                 e_dic["err"] = e.args[0]
                         emsg(_("Out dir {out_dir} does not exist and could "
                             "not be created. Error is: {err}").format(**e_dic))
-                        return 1
+                        return EXIT_OOPS
         if suffix and suffix[0] != ".":
                 suffix = "." + suffix
         for p in manifest_paths:
@@ -531,7 +532,7 @@ def pkgdeps_in_place(pkg_deps, manifest_paths, suffix, echo_manifest):
         'echo_manifest' is a boolean which determines whether the original
         manifest will be written out or not."""
 
-        ret_code = 0
+        ret_code = EXIT_OK
         if not suffix:
                 suffix = DEFAULT_SUFFIX
         if suffix[0] != ".":
@@ -544,10 +545,6 @@ def pkgdeps_in_place(pkg_deps, manifest_paths, suffix, echo_manifest):
         return ret_code
 
 def main_func():
-        misc.setlocale(locale.LC_ALL, "", error)
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
-
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:?",
                     ["help"])
@@ -569,7 +566,7 @@ def main_func():
                         show_usage = True
 
         if show_usage:
-                usage(retcode=0)
+                usage(retcode=EXIT_OK)
         elif not subcommand:
                 usage()
 
@@ -587,6 +584,10 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
 
         # Make all warnings be errors.
         warnings.simplefilter('error')
@@ -598,7 +599,7 @@ if __name__ == "__main__":
                 __ret = main_func()
         except api_errors.MissingFileArgumentException as e:
                 error("The manifest file {0} could not be found.".format(e.path))
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.VersionException as __e:
                 error(_("The {cmd} command appears out of sync with the lib"
                     "raries provided\nby pkg:/package/pkg. The client version "
@@ -607,17 +608,17 @@ if __name__ == "__main__":
                     client=__e.received_version,
                     api=__e.expected_version
                     ))
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.ApiException as e:
                 error(e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except RuntimeError as _e:
                 emsg("{0}: {1}".format(PKG_CLIENT_NAME, _e))
-                __ret = 1
+                __ret = EXIT_OOPS
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                __ret = 1
+                __ret = EXIT_OOPS
         except SystemExit as _e:
                 raise _e
         except:

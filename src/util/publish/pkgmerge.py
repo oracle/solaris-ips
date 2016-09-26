@@ -52,9 +52,11 @@ try:
         from functools import reduce
         from pkg.misc import PipeError, emsg, msg
         from six.moves.urllib.parse import quote
+        from pkg.client.pkgdefs import (EXIT_OK, EXIT_OOPS, EXIT_BADOPT,
+            EXIT_PARTIAL)
 except KeyboardInterrupt:
         import sys
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
 
 class PkgmergeException(Exception):
         """An exception raised if something goes wrong during the merging
@@ -140,7 +142,7 @@ Environment:
 
         sys.exit(exitcode)
 
-def error(text, exitcode=1):
+def error(text, exitcode=EXIT_OOPS):
         """Emit an error message prefixed by the command name """
 
         emsg("pkgmerge: {0}".format(text))
@@ -450,9 +452,9 @@ def main_func():
         for message in errors:
                 error(message, exitcode=None)
         if errors:
-                exit(1)
+                exit(EXIT_OOPS)
 
-        return 0
+        return EXIT_OK
 
 def republish_packages(pub, target_pub, processdict, source_list, variant_list,
         variants, tracker, xport, dest_repo, dest_xport, pkg_tmpdir,
@@ -968,6 +970,7 @@ if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale",
             codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
 
         # Make all warnings be errors.
         import warnings
@@ -980,9 +983,9 @@ if __name__ == "__main__":
         except (pkg.actions.ActionError, trans.TransactionError,
             RuntimeError, pkg.fmri.FmriError, apx.ApiException) as __e:
                 print("pkgmerge: {0}".format(__e), file=sys.stderr)
-                __ret = 1
+                __ret = EXIT_OOPS
         except (PipeError, KeyboardInterrupt):
-                __ret = 1
+                __ret = EXIT_OOPS
         except SystemExit as __e:
                 raise __e
         except Exception as __e:

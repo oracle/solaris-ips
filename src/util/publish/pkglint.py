@@ -37,6 +37,7 @@ from optparse import OptionParser
 from pkg.client.api_errors import InvalidPackageErrors
 from pkg import VERSION
 from pkg.misc import PipeError
+from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT
 
 import pkg.lint.engine as engine
 import pkg.lint.log as log
@@ -48,8 +49,12 @@ import pkg.client.transport.exception as tx
 
 logger = None
 
-def error(message):
-        logger.error(_("Error: {0}").format(message))
+def error(message=""):
+        """Emit an error message prefixed by the command name. """
+        misc.emsg("pkglint: {0}".format(message))
+
+        if logger is not None:
+                logger.error(_("Error: {0}").format(message))
 
 def msg(message):
         logger.info(message)
@@ -59,9 +64,6 @@ def debug(message):
 
 def main_func():
         """Start pkglint."""
-
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
 
         global logger
 
@@ -128,7 +130,7 @@ def main_func():
                 if opts.list_checks:
                         list_checks(lint_engine.checkers,
                             lint_engine.excluded_checkers, opts.verbose)
-                        return 0
+                        return EXIT_OK
 
                 if (opts.lint_uris or opts.ref_uris) and not opts.cache:
                         parser.error(
@@ -141,7 +143,7 @@ def main_func():
                         if None in manifests or \
                             lint_logger.produced_lint_msgs():
                                 error(_("Fatal error in manifest - exiting."))
-                                return 1
+                                return EXIT_OOPS
                 lint_engine.setup(ref_uris=opts.ref_uris,
                     lint_uris=opts.lint_uris,
                     lint_manifests=manifests,
@@ -159,16 +161,16 @@ def main_func():
                 # errors during setup are likely to be caused by bad
                 # input or configuration, not lint errors in manifests.
                 error(err)
-                return 2
+                return EXIT_BADOPT
 
         except engine.LintEngineException as err:
                 error(err)
-                return 1
+                return EXIT_OOPS
 
         if lint_logger.produced_lint_msgs():
-                return 1
+                return EXIT_OOPS
         else:
-                return 0
+                return EXIT_OK
 
 def list_checks(checkers, exclude, verbose=False):
         """Prints a human-readable version of configured checks."""
@@ -315,6 +317,11 @@ def _make_list(opt):
 
 
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
+
         if six.PY3:
                 # disable ResourceWarning: unclosed file
                 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -323,12 +330,12 @@ if __name__ == "__main__":
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                __ret = 2
+                __ret = EXIT_BADOPT
         except SystemExit as __e:
                 __ret = __e.code
         except (apx.InvalidDepotResponseException, tx.TransportFailures) as __e:
                 error(__e)
-                __ret = 2
+                __ret = EXIT_BADOPT
         except:
                 traceback.print_exc()
                 error(misc.get_traceback_message())

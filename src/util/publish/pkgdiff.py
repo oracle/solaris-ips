@@ -42,8 +42,9 @@ import pkg.misc as misc
 from pkg.misc import PipeError, CMP_UNSIGNED, CMP_ALL
 from collections import defaultdict
 from itertools import product
+from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_PARTIAL
 
-def usage(errmsg="", exitcode=2):
+def usage(errmsg="", exitcode=EXIT_BADOPT):
         """Emit a usage message and optionally prefix it with a more specific
         error message.  Causes program to exit."""
 
@@ -57,7 +58,7 @@ Usage:
             [-v name=value]... (file1 | -) (file2 | -)"""))
         sys.exit(exitcode)
 
-def error(text, exitcode=3):
+def error(text, exitcode=EXIT_PARTIAL):
         """Emit an error message prefixed by the command name """
 
         print("pkgdiff: {0}".format(text), file=sys.stderr)
@@ -66,8 +67,6 @@ def error(text, exitcode=3):
                 sys.exit(exitcode)
 
 def main_func():
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
 
         ignoreattrs = []
         onlyattrs = []
@@ -95,7 +94,7 @@ def main_func():
                                         args[0] = "variant." + args[0]
                                 varattrs[args[0]].add(args[1])
                         elif opt in ("--help", "-?"):
-                                usage(exitcode=0)
+                                usage(exitcode=EXIT_OK)
 
         except getopt.GetoptError as e:
                 usage(_("illegal global option -- {0}").format(e.opt))
@@ -363,13 +362,18 @@ def main_func():
         return int(different)
 
 if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
+        misc.set_fd_limits(printer=error)
+
         if six.PY3:
                 # disable ResourceWarning: unclosed file
                 warnings.filterwarnings("ignore", category=ResourceWarning)
         try:
                 exit_code = main_func()
         except (PipeError, KeyboardInterrupt):
-                exit_code = 1
+                exit_code = EXIT_OOPS
         except SystemExit as __e:
                 exit_code = __e
         except Exception as __e:
