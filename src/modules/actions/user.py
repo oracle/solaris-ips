@@ -51,10 +51,11 @@ class UserAction(generic.Action):
         ordinality = generic._orderdict[name]
 
         # if these values are different on disk than in action
-        # prefer on-disk version
+        # prefer on-disk version for actual login accounts (root)
         use_existing_attrs = [ "password", "lastchg", "min",
                                "max", "expire", "flag",
                                "warn", "inactive"]
+        mutable_passwords = frozenset(("UP", ""))
 
         def as_set(self, item):
                 if isinstance(item, list):
@@ -78,10 +79,20 @@ class UserAction(generic.Action):
                             old_plan[attr] == on_disk[attr]):
                                 continue
 
-                        # prefer manifest version if either NP or *LK*
+                        # preserve UID if not specified explicitly
+                        if attr == "uid" and attr not in out:
+                                out[attr] = on_disk[attr]
+                                continue
+                        
+                        # prefer manifest version if not mutable password
                         if attr == "password" and \
-                           (out[attr] == 'NP' or
-                           out[attr] == '*LK*'):
+                           out[attr] not in self.mutable_passwords:
+                                continue
+
+                        # Only prefer on-disk entries if password is
+                        # user-settable (e.g. '' or UP).
+                        if "password" not in out or out["password"] not in \
+                           self.mutable_passwords:
                                 continue
 
                         if attr != "group-list":
@@ -255,14 +266,32 @@ class UserAction(generic.Action):
                         cur_attrs["uid"] = ""
                 if "lastchg" not in self.attrs:
                         cur_attrs["lastchg"] = ""
+                if "login-shell" not in self.attrs:
+                        cur_attrs["login-shell"] = ""
 
                 pwdefval["ftpuser"] = "true"
                 should_be = pwdefval.copy()
                 should_be.update(self.attrs)
 
-                if should_be["password"] not in ["*LK*", "NP"]:
-                        cur_attrs["password"] = should_be["password"]
+                # ignore changes in certain fields if password is
+                # mutable; this indicates that this account is used
+                # by a human and logins, timeouts, etc. are changable.
+                if should_be["password"] in self.mutable_passwords:
+                        for attr in self.use_existing_attrs:
+                                if attr in should_be:
+                                        cur_attrs[attr] = should_be[attr]
+                                else:
+                                        if attr in cur_attrs:
+                                                del cur_attrs[attr]
 
+                if "shell-change-ok" in self.attrs:
+                        del should_be["shell-change-ok"]
+                        if self.attrs["shell-change-ok"].lower() == "true":
+                                cur_attrs["login-shell"] = should_be["login-shell"]
+
+                # always ignore flag
+                if "flag" in cur_attrs:
+                        del cur_attrs["flag"]
                 # Note where attributes are missing
                 for k in should_be:
                         cur_attrs.setdefault(k, "<missing>")

@@ -5590,6 +5590,9 @@ adm:NP:6445::::::
         def test_preexisting_group_install(self):
                 """Make sure we correct any errors in pre-existing group actions"""
                 simplegroup = """
+                open simplegroup@0
+                add group groupname=muppets
+                close
                 open simplegroup@1
                 add group groupname=muppets gid=70
                 close
@@ -5609,6 +5612,10 @@ adm:NP:6445::::::
                 with open(gpath, "w") as f:
                         f.writelines(gdata)
                 self.pkg("verify")
+                # properly install group w/o a gid
+                self.pkg("install simplegroup@0")
+                self.pkg("verify simplegroup")
+                # install w/ different gid
                 self.pkg("install simplegroup@1")
                 self.pkg("verify simplegroup")
                 # check # lines beginning w/ 'muppets' in group file
@@ -5695,6 +5702,11 @@ adm:NP:6445::::::
                 close
                 open simpleuser2@2
                 add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh uid=6
+                open simpleuser3@1
+                add user username=wombat group=root gcos-field="& has explict password" login-shell=/bin/bash uid=99 password=$5$FuMX5tH9$MJkmx3wE5MFHtHhGNBlimwHtqPUdTVWs6VAjfQcCKS5
+                close
+                open simpleuser3@2
+                add user username=wombat group=root gcos-field="& has explict password" login-shell=/bin/bash uid=99 password=$5$C6451mtT$PDg63UKGtFr7FHkMSxUhdTcd0XBtHTnKXNN7RpJe/h1 shell-change-ok=true
                 close"""
 
 
@@ -5754,10 +5766,9 @@ adm:NP:6445::::::
                         f.writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("min: '7' should be '<empty>'")
-                # fails fix since we don't repair shadow entries on purpose
+                # we now fix entries w/ non-mutable passwords
                 self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser", exit=1)
-                finderr("min: '7' should be '<empty>'")
+                self.pkg("verify simpleuser")
 
                 # remove a non-provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
@@ -5822,8 +5833,7 @@ adm:NP:6445::::::
                 self.pkg("fix simpleuser")
                 self.pkg("verify simpleuser")
 
-                # verify that passwords set to anything
-                # other than '*LK*" or 'NP' in manifest
+                # verify that passwords set to UP
                 # do not cause verify errors if changed.
                 self.pkg("install --reject simpleuser simpleuser2@1")
                 self.pkg("verify simpleuser2")
@@ -5831,11 +5841,10 @@ adm:NP:6445::::::
                         pdata = f.readlines()
                 with open(spath) as f:
                         sdata = f.readlines()
-                sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
+                sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579:3:10::::1234"
                 with open(spath, "w") as f:
                         f.writelines(sdata)
                 self.pkg("verify simpleuser2")
-
                 # verify that upgrading package to version that implicitly
                 # uses *LK* default causes password to change and that it
                 # verifies correctly
@@ -5860,6 +5869,47 @@ adm:NP:6445::::::
                 with open(ppath) as f:
                         pdata = f.readlines()
                 pdata[-1].index("kermit")
+
+                # verify that entry w/ explicit password fails verify when that entry is changed
+                self.pkg("install simpleuser3@1")
+                self.pkg("verify simpleuser3")
+                with open(spath) as f:
+                        sdata = f.readlines()
+                splits = sdata[-1].split(":")
+                saved_password = splits[1]
+                splits[1] = "$5$TaoLBw9p$dbeliOK0AMQlgMtozei/IPgM1ncBdDVgzdv7HTk.bu0"
+                sdata[-1] = ":".join(splits)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
+                self.pkg("verify simpleuser3", exit=1)
+                # restore password
+                splits[1] = saved_password
+                sdata[-1] = ":".join(splits)
+                with open(spath, "w") as f:
+                        f.writelines(sdata)
+                self.pkg("verify simpleuser3")
+
+                # change shell and make sure error occurs
+                with open(ppath) as f:
+                        pdata = f.readlines()
+                pdata[-1].index("wombat")
+                splits = pdata[-1].split(":")
+                splits[6] = "/bin/zsh"
+                pdata[-1] = ":".join(splits)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
+                self.pkg("verify simpleuser3", exit=1)
+                finderr("login-shell")
+                # upgrade pkg so shell change is ok
+                self.pkg("update simpleuser3")
+                with open(ppath) as f:
+                        pdata = f.readlines()
+                splits = pdata[-1].split(":")
+                splits[6] = "/bin/zsh"
+                pdata[-1] = ":".join(splits)
+                with open(ppath, "w") as f:
+                        f.writelines(pdata)
+                self.pkg("verify simpleuser3")
 
         def test_minugid(self):
                 """Ensure that an unspecified uid/gid results in the first

@@ -87,36 +87,35 @@ class GroupAction(generic.Action):
                 #        (XXX this doesn't chown any files on-disk)
                 # else, nothing to do
                 if cur_attrs:
-                        if (cur_attrs["gid"] == self.attrs["gid"]):
-                                if pw:
-                                        pw.unlock()
-                                return
-
-                        cur_gid = cur_attrs["gid"]
-                        template = cur_attrs;
-                        template["gid"] = self.attrs["gid"]
-                        # Update the user database with the new gid
-                        # as well.
-                        try:
+                        if "gid" not in self.attrs:
+                                self.attrs["gid"] = cur_attrs["gid"]
+                        elif self.attrs["gid"] != cur_attrs["gid"]:
+                                cur_gid = cur_attrs["gid"]
+                                template = cur_attrs;
+                                template["gid"] = self.attrs["gid"]
+                                # Update the user database with the new gid
+                                # as well in case group is someone's primary
+                                # group.
                                 usernames = pkgplan.image.get_usernames_by_gid(
                                     cur_gid)
-                                for username in usernames:
-                                        user_entry = pw.getuser(
-                                            username)
-                                        user_entry["gid"] = self.attrs[
-                                            "gid"]
-                                        pw.setvalue(user_entry)
-                        except Exception as e:
-                                if pw:
-                                        pw.unlock()
-                                txt = _("Group cannot be installed. "
-                                    "Updating related user entries "
-                                    "failed.")
-                                raise apx.ActionExecutionError(self,
-                                    error=e, details=txt,
-                                    fmri=pkgplan.destination_fmri)
+                                try:
+                                        for username in usernames:
+                                                user_entry = pw.getuser(
+                                                        username)
+                                                user_entry["gid"] = self.attrs[
+                                                        "gid"]
+                                                pw.setvalue(user_entry)
+                                except Exception as e:
+                                        if pw:
+                                                pw.unlock()
+                                                txt = _("Group cannot be installed. "
+                                                        "Updating related user entries "
+                                                        "failed.")
+                                                raise apx.ActionExecutionError(self,
+                                                    error=e, details=txt,
+                                                    fmri=pkgplan.destination_fmri)
 
-                # XXX needs modification if more attrs are used
+                # NOTE: needs modification if more attrs are used
                 gr.setvalue(template)
                 try:
                         gr.writefile()
