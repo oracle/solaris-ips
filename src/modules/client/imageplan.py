@@ -152,8 +152,8 @@ class ImagePlan(object):
                         s = s + "\nActuators:\n{0}\n".format(self.pd._actuators)
 
                 if self.__old_excludes != self.__new_excludes:
-                        s = s + "\nVariants/Facet changes:\n {0} -> {1}\n".format(
-                            self.__old_excludes, self.__new_excludes)
+                        s += "\nVariants/Facet changes:\n {0}".format(
+                            "\n".join(self.pd.get_varcets()))
 
                 if self.pd._mediators_change:
                         s = s + "\nMediator changes:\n {0}".format(
