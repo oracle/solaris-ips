@@ -175,10 +175,7 @@ Options:
         --raw           Retrieve and store the raw package data in a set of
                         directory structures by stem and version at the location
                         specified by -d.  May only be used with filesystem-
-                        based destinations.  This can be used with pkgsend(1)
-                        include to conveniently modify and republish packages,
-                        perhaps by correcting file contents or providing
-                        additional package metadata.
+                        based destinations.
 
         --key src_key   Specify a client SSL key file to use for pkg retrieval.
 
