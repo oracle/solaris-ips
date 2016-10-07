@@ -37,6 +37,7 @@ import stat
 import tempfile
 import types
 import zlib
+import time
 
 from . import _common
 import pkg.actions
@@ -45,6 +46,7 @@ import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 
+from pkg.client.pkgdefs import MSG_WARNING
 from pkg.client.api_errors import ActionExecutionError
 from pkg.client.debugvalues import DebugValues
 
@@ -317,16 +319,25 @@ class FileAction(generic.Action):
                         except OSError as e:
                                 if e.errno != errno.EINVAL:
                                         raise
-                                raise ActionExecutionError(self,
-                                    details=_("System attributes are not "
-                                    "supported on the target filesystem."))
+                                warn = _("System attributes are not supported "
+                                    "on the target image filesystem; 'sysattr'"
+                                    " ignored for {0}").format(
+                                        self.attrs["path"])
+                                pkgplan.image.imageplan.pd.add_item_message(
+                                    pkgplan.destination_fmri,
+                                    misc.time_to_timestamp(time.time()),
+                                    MSG_WARNING, warn)
                         except ValueError as e:
-                                raise ActionExecutionError(self,
-                                    details=_("Could not set system attributes "
+                                warn = _("Could not set system attributes for {path}"
                                     "'{attrlist}': {err}").format(
                                         attrlist=sattr,
-                                        err=e
-                                   ))
+                                        err=e,
+                                        path=self.attrs["path"]
+                                    )
+                                pkgplan.image.imageplan.pd.add_item_message(
+                                    pkgplan.destination_fmri,
+                                    misc.time_to_timestamp(time.time()),
+                                    MSG_WARNING, warn)
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,

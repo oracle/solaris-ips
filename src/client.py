@@ -94,6 +94,8 @@ try:
         from pkg.client.debugvalues import DebugValues
         from pkg.client.pkgdefs import *
         from pkg.misc import EmptyI, msg, emsg, PipeError
+        from pkg.client.plandesc import (OP_STAGE_PREP, OP_STAGE_EXEC,
+            OP_STAGE_PLAN)
 except KeyboardInterrupt:
         import sys
         sys.exit(1)
@@ -1182,8 +1184,8 @@ def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
                         msg()
 
                 last_item_id = None
-                for item_id, msg_time, msg_type, msg_text in \
-                    plan.gen_item_messages(ordered=True):
+                for item_id, parent_id, msg_time, msg_level, msg_type, \
+                    msg_text in plan.gen_item_messages(ordered=True):
                         ntd = api_inst.planned_nothingtodo(li_ignore_all=True)
                         if last_item_id is None or last_item_id != item_id:
                                 last_item_id = item_id
@@ -1348,6 +1350,23 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
                         __print_verify_result(op, api_inst, plan, noexecute,
                             omit_headers, verbose, print_packaged=False)
 
+def __display_plan_messages(api_inst, stages=None):
+        """Print out any messages generated during the specified
+        stages."""
+        if not isinstance(stages, frozenset):
+                stages = frozenset([stages])
+        plan = api_inst.describe()
+        if not plan:
+                return
+        for item_id, parent_id, msg_time, msg_level, msg_type, msg_text in \
+            plan.gen_item_messages(ordered=True, stages=stages):
+                if msg_level == MSG_INFO:
+                        msg("\n" + _("{0}").format(msg_text))
+                elif msg_level == MSG_WARNING:
+                        emsg("\n" + _("WARNING: {0}").format(msg_text))
+                else:
+                        emsg("\n" + _("ERROR: {0}").format(msg_text))
+
 def __api_prepare_plan(operation, api_inst):
         """Prepare plan."""
 
@@ -1395,6 +1414,8 @@ def __api_prepare_plan(operation, api_inst):
                 error(_("\nAn unexpected error happened while preparing for "
                     "{0}:").format(operation))
                 raise
+        finally:
+                __display_plan_messages(api_inst, OP_STAGE_PREP)
         return EXIT_OK
 
 def __api_execute_plan(operation, api_inst):
@@ -1468,6 +1489,8 @@ def __api_execute_plan(operation, api_inst):
                         # Store original exception so that the real cause of
                         # failure can be raised if this fails.
                         exc_type, exc_value, exc_tb = sys.exc_info()
+
+                __display_plan_messages(api_inst, OP_STAGE_EXEC)
 
                 try:
                         salvaged = api_inst.describe().salvaged
@@ -1802,7 +1825,8 @@ def _verify_exit_code(api_inst):
         whether we find errors."""
 
         plan = api_inst.describe()
-        for item_id, msg_time, msg_type, msg_text in plan.gen_item_messages():
+        for item_id, parent_id, msg_time, msg_level, msg_type, msg_text in \
+            plan.gen_item_messages():
                 if msg_type == MSG_ERROR:
                         return EXIT_OOPS
         return EXIT_OK
@@ -2056,7 +2080,7 @@ def change_facet(op, api_inst, pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
-def __handle_client_json_api_output(out_json, op):
+def __handle_client_json_api_output(out_json, op, api_inst):
         """This is the main client_json_api output handling function used for
         install, update and uninstall and so on."""
 
@@ -2067,6 +2091,8 @@ def __handle_client_json_api_output(out_json, op):
         if "data" in out_json and "repo_status" in out_json["data"]:
                 display_repo_failures(out_json["data"]["repo_status"])
 
+        __display_plan_messages(api_inst, frozenset([OP_STAGE_PREP,
+            OP_STAGE_EXEC]))
         return out_json["status"]
 
 def _emit_error_general_cb(status, err, cmd=None, selected_type=[],
@@ -2178,7 +2204,7 @@ def exact_install(op, api_inst, pargs,
             quiet, refresh_catalogs, reject_pats, show_licenses, update_index,
             verbose, display_plan_cb=display_plan_cb, logger=logger)
 
-        return  __handle_client_json_api_output(out_json, op)
+        return  __handle_client_json_api_output(out_json, op, api_inst)
 
 def install(op, api_inst, pargs,
     accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
@@ -2195,7 +2221,7 @@ def install(op, api_inst, pargs,
             show_licenses, stage, update_index, verbose,
             display_plan_cb=display_plan_cb, logger=logger)
 
-        return  __handle_client_json_api_output(out_json, op)
+        return  __handle_client_json_api_output(out_json, op, api_inst)
 
 def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
     be_activate, be_name, force, ignore_missing, li_ignore, li_erecurse,
@@ -2211,7 +2237,7 @@ def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
             reject_pats, show_licenses, stage, update_index, verbose,
             display_plan_cb=display_plan_cb, logger=logger)
 
-        return __handle_client_json_api_output(out_json, op)
+        return __handle_client_json_api_output(out_json, op, api_inst)
 
 def uninstall(op, api_inst, pargs,
     act_timeout, backup_be, backup_be_name, be_activate, be_name,
@@ -2225,7 +2251,7 @@ def uninstall(op, api_inst, pargs,
             noexecute, parsable_version, quiet, stage, update_index, verbose,
             display_plan_cb=display_plan_cb, logger=logger)
 
-        return __handle_client_json_api_output(out_json, op)
+        return __handle_client_json_api_output(out_json, op, api_inst)
 
 def verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
     unpackaged, unpackaged_only, verify_paths):

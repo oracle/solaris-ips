@@ -1137,7 +1137,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Try to install in /tmp which does not support system
                 # attributes. Just make sure we fail gracefully.
                 self.image_create(self.rurl)
-                self.pkg("install secret1", exit=1)
+                self.pkg("install secret1")
+                self.assertTrue("WARNING" in self.errout)
 
                 # Need to create an image in /var/tmp since sysattrs don't work
                 # in tmpfs.
@@ -1170,11 +1171,14 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(expected in out, out)
 
                 # test some packages with invalid sysattrs
-                self.pkg("install secret3", exit=1)
-                self.pkg("install secret4", exit=1)
+                self.pkg("install secret3")
+                self.pkg("uninstall secret3")
+                self.pkg("install secret4")
+                self.pkg("uninstall secret4")
 
                 # test package with a file action that has multiple sysattr tags
                 self.pkg("install secret5")
+                self.pkg("uninstall secret5")
                 self.pkg("install secret6")
 
                 shutil.rmtree(self.img_path())
