@@ -1040,7 +1040,6 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
         def reset_download(self):
                 # Attribute defined outside __init__; pylint: disable=W0201
                 self.dl_mode = None
-                self.dl_caching = 0
                 self.dl_estimator = None
 
                 self.dl_pkgs = GoalTrackerItem(_("Download packages"))
@@ -1418,11 +1417,8 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.dl_files.items += nfiles
 
                 if cachehit:
-                        # attr defined outside __init__; pylint: disable=W0201
-                        self.dl_caching += 1
                         self.dl_estimator.goalbytes -= nbytes
                 else:
-                        self.dl_caching = 0 # pylint: disable=W0201
                         self.dl_estimator.newdata(nbytes)
 
                 if self.dl_bytes.goalitems != 0:
@@ -2983,29 +2979,17 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 if outspec.last:
                         pkg_name = _("Completed")
+                        speed = self.dl_estimator.get_final_speed()
                 else:
                         pkg_name = self.dl_pkgs.curinfo.get_name()
+                        speed = self.dl_estimator.get_speed_estimate()
                 if len(pkg_name) > 34:
                         pkg_name = "..." + pkg_name[-30:]
-
-                if outspec.last:
-                        speedstr = self.dl_estimator.format_speed(
-                            self.dl_estimator.get_final_speed())
-                        if speedstr is None:
-                                speedstr = "--"
+                # show speed if greater than 0, otherwise "--"
+                if speed is not None and speed > 0:
+                        speedstr = self.dl_estimator.format_speed(speed)
                 else:
-                        #
-                        # if we see 10 items in a row come out of the cache,
-                        # show the "cache" moniker in the speed column until we
-                        # see a non-cache download.
-                        #
-                        if self.dl_caching > 10:
-                                speedstr = "cache"
-                        else:
-                                speedstr = self.dl_estimator.format_speed(
-                                    self.dl_estimator.get_speed_estimate())
-                                if speedstr is None:
-                                        speedstr = "--"
+                        speedstr = "--"
 
                 # Use floats unless it makes the field too wide
                 mbstr = format_pair("{0:.1f}", self.dl_bytes.items,
