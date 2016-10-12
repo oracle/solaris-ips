@@ -81,8 +81,6 @@ import tempfile
 import threading
 import traceback
 
-from pkg.misc import force_bytes, force_str
-
 # import JSON RPC libraries and objects
 import jsonrpclib as rpclib
 import jsonrpclib.jsonrpc as rpc
@@ -91,12 +89,6 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler as \
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCDispatcher as \
     SimpleRPCDispatcher
 
-# jsonrpclib 0.2.6's SimpleJSONRPCServer makes logging calls, but we don't
-# configure logging in this file, so we attach a do-nothing handler to it to
-# prevent error message being output to sys.stderr.
-logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
-    logging.NullHandler())
-
 #
 # These includes make it easier for clients to catch the specific
 # exceptions that can be raised by this module.
@@ -104,11 +96,17 @@ logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
 # Unused import; pylint: disable=W0611
 from jsonrpclib import ProtocolError as ProtocolError1
 
-# import-error; pylint: disable=F0401
-# no-name-in-module; pylint: disable=E0611
 from six.moves import socketserver, http_client
 from six.moves.xmlrpc_client import ProtocolError as ProtocolError2
 # Unused import; pylint: enable=W0611
+
+from pkg.misc import force_bytes, force_str
+
+# jsonrpclib 0.2.6's SimpleJSONRPCServer makes logging calls, but we don't
+# configure logging in this file, so we attach a do-nothing handler to it to
+# prevent error message being output to sys.stderr.
+logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
+    logging.NullHandler())
 
 # debugging
 pipeutils_debug = (os.environ.get("PKG_PIPEUTILS_DEBUG", None) is not None)
@@ -241,6 +239,8 @@ class PipeFile(object):
         def readinto(self, b):
                 """Read up to len(b) bytes into the writable buffer *b* and
                 return the numbers of bytes read."""
+                # not-context-manager for py 2.7;
+                # pylint: disable=E1129
                 with memoryview(b) as view:
                         data = self.read(len(view))
                         view[:len(data)] = force_bytes(data)
@@ -398,7 +398,7 @@ class PipedHTTPConnection(http_client.HTTPConnection):
 
                 # self.sock was initialized by httplib.HTTPConnection
                 # to point to a socket, overwrite it with a pipe.
-                assert(type(fd) == int) and os.fstat(fd)
+                assert type(fd) == int and os.fstat(fd)
                 self.sock = PipeSocket(fd, "client-connection")
 
         def __del__(self):
@@ -444,7 +444,7 @@ class _PipedTransport(rpc.Transport):
                 self.__pipe_file.close()
                 self.__pipe_file = None
 
-        def make_connection(self, host):
+        def make_connection(self, host): # Unused argument 'host'; pylint: disable=W0613
                 """Create a new PipedHTTP connection to the server.  This
                 involves creating a new pipe, and sending one end of the pipe
                 to the server, and then wrapping the local end of the pipe

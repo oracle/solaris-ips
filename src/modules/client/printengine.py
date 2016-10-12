@@ -345,4 +345,3 @@ def test_posix_printengine(output_file, ttymode):
         pe.cprint("This should be on the next line (with no nl's intervening).")
         # just test that it works
         pe.isslow()
-

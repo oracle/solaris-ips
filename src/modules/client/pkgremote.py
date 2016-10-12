@@ -143,6 +143,7 @@ class PkgRemote(object):
                         # module subprocess here.
                         # unexpected-keyword-arg 'pass_fds';
                         # pylint: disable=E1123
+                        # Redefinition of p type
                         if six.PY2:
                                 p = pkg.pkgsubprocess.Popen(pkg_cmd,
                                     stdout=fstdout, stderr=fstderr)

@@ -50,7 +50,7 @@ import simplejson as json
 import six
 
 # Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
-# import-error: six.moves; pylint: disable=F0401
+# Imports from package six are not grouped: pylint: disable=C0412
 from functools import reduce
 from six.moves import zip
 
@@ -550,7 +550,7 @@ class LinkedImage(object):
                 new properties, updates them, and resets any cached state
                 that is affected by property values."""
 
-                if props == None:
+                if props is None:
                         props = dict()
                 elif props:
                         self.__verify_props(props)
@@ -989,7 +989,7 @@ class LinkedImage(object):
 
                 # compare in-memory and on-disk properties
                 li_ondisk_props = self.__load_ondisk_props(tmp=False)
-                if li_ondisk_props == None:
+                if li_ondisk_props is None:
                         li_ondisk_props = dict()
                 li_inmemory_props = rm_dict_ent(self.__props,
                     temporal_props)
@@ -1060,7 +1060,7 @@ class LinkedImage(object):
                 pubs = get_pubs(self.__img)
                 ppubs = self.__ppubs
 
-                if ppubs == None:
+                if ppubs is None:
                         # parent publisher data is missing, press on and hope
                         # for the best.
                         return
@@ -1232,7 +1232,7 @@ class LinkedImage(object):
                 Always returns a copy of the properties in case the caller
                 tries to update them."""
 
-                if lin == None:
+                if lin is None:
                         # If we're not linked we'll return an empty
                         # dictionary.  That's ok.
                         return self.__props.copy()
@@ -1334,7 +1334,7 @@ class LinkedImage(object):
                 # sort by linked image name
                 li_children = sorted(li_children, key=operator.itemgetter(0))
 
-                if li_ignore == None:
+                if li_ignore is None:
                         # don't ignore any children
                         return li_children
 
@@ -1403,9 +1403,9 @@ class LinkedImage(object):
 
                 assert type(lin) == LinkedImageName
                 assert type(path) == str
-                assert props == None or type(props) == dict, \
+                assert props is None or type(props) == dict, \
                     "type(props) == {0}".format(type(props))
-                if props == None:
+                if props is None:
                         props = dict()
 
                 lip = self.__plugins[lin.lin_type]
@@ -1419,7 +1419,7 @@ class LinkedImage(object):
 
                 # Path must be an absolute path.
                 if not os.path.isabs(path):
-                        raise apx.LinkedImageException(parent_path_notabs=path)
+                        raise apx.LinkedImageException(parent_bad_notabs=path)
 
                 # we don't bother to cleanup the path to the parent image here
                 # because when we allocate an Image object for the parent
@@ -1706,10 +1706,7 @@ class LinkedImage(object):
                 # Unused variable 'be_uuid'; pylint: disable=W0612
                 (be_name, be_uuid) = bootenv.BootEnv.get_be_name(self.__root)
                 # pylint: enable=W0612
-                if be_name:
-                        img_is_clonable = True
-                else:
-                        img_is_clonable = False
+                img_is_clonable = bool(be_name)
 
                 # If the parent image is clonable then the new child image
                 # must be nested within the parents filesystem namespace.
@@ -1824,9 +1821,9 @@ class LinkedImage(object):
 
                 assert type(lin) == LinkedImageName
                 assert type(path) == str
-                assert props == None or type(props) == dict, \
+                assert props is None or type(props) == dict, \
                     "type(props) == {0}".format(type(props))
-                if props == None:
+                if props is None:
                         props = dict()
 
                 lip = self.__plugins[lin.lin_type]
@@ -3698,32 +3695,32 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
         assert not (li and lic)
         assert not ((lin or path) and li)
         assert not ((lin or path) and lic)
-        assert path == None or type(path) == str
+        assert path is None or type(path) == str
 
         if bad_cp:
-                assert err == None
+                assert err is None
                 err = "Invalid linked content policy: {0}".format(bad_cp)
         elif bad_iup:
-                assert err == None
+                assert err is None
                 err = "Invalid linked image update policy: {0}".format(bad_iup)
         elif bad_lin_type:
-                assert err == None
+                assert err is None
                 err = "Invalid linked image type: {0}".format(bad_lin_type)
         elif bad_prop:
-                assert err == None
+                assert err is None
                 err = "Invalid linked property value: {0}={1}".format(*bad_prop)
         elif missing_props:
-                assert err == None
+                assert err is None
                 err = "Missing required linked properties: {0}".format(
                     ", ".join(missing_props))
         elif multiple_transforms:
-                assert err == None
+                assert err is None
                 err = "Multiple plugins reported different path transforms:"
                 for plugin, transform in multiple_transforms:
                         err += "\n\t{0} = {1} -> {2}".format(plugin,
                             transform[0], transform[1])
         elif saved_temporal_props:
-                assert err == None
+                assert err is None
                 err = "Found saved temporal linked properties: {0}".format(
                     ", ".join(saved_temporal_props))
         else:

@@ -199,4 +199,3 @@ MSG_INFO = "info"
 # Message types
 MSG_GENERAL = "general"
 MSG_UNPACKAGED = "unpackaged"
-

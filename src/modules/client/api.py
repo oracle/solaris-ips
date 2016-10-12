@@ -70,11 +70,7 @@ import tempfile
 import threading
 import time
 from functools import cmp_to_key
-# Pylint seems to be panic about six even if it is installed. Instead of using
-# 'disable' here, a better way is to use ignore-modules in pylintrc, but
-# it has an issue that is not fixed until recently. See pylint/issues/#223.
-# import-error; pylint: disable=F0401
-# no-name-in-module; pylint: disable=E0611
+# Imports from package six are not grouped: pylint: disable=C0412
 from six.moves.urllib.parse import unquote
 
 import pkg.catalog as catalog
@@ -354,7 +350,7 @@ class ImageInterface(object):
                 if global_settings.client_name is None:
                         global_settings.client_name = pkg_client_name
 
-                if cmdpath == None:
+                if cmdpath is None:
                         cmdpath = misc.api_cmdpath()
                 self.cmdpath = cmdpath
 
@@ -596,7 +592,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 before the exception is passed on.
                 """
 
-                if log_op_end == None:
+                if log_op_end is None:
                         log_op_end = []
 
                 # we always explicitly handle apx.ExpiringCertificate
@@ -1368,7 +1364,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # sanity checks
                 assert _op in api_op_values
-                assert _ad_kwargs == None or \
+                assert _ad_kwargs is None or \
                     _op in [API_OP_ATTACH, API_OP_DETACH]
                 assert _ad_kwargs != None or \
                     _op not in [API_OP_ATTACH, API_OP_DETACH]
@@ -1530,6 +1526,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self._img.imageplan.update_index = _update_index
                 self.__plan_common_finish()
 
+                # Value 'DebugValues' is unsubscriptable;
+                # pylint: disable=E1136
                 if DebugValues["plandesc_validate"]:
                         # save, load, and get a new json copy of the plan,
                         # then compare that new copy against our current one.
@@ -1974,7 +1972,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 'gen_plan_sync' functions for an explanation of their usage
                 and effects."""
 
-                if li_props == None:
+                if li_props is None:
                         li_props = dict()
 
                 op = API_OP_ATTACH
@@ -2789,7 +2787,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 be = bootenv.BootEnvNull(self._img)
                         self._img.bootenv = be
 
-                        if self.__new_be == False and \
+                        if not self.__new_be and \
                             self._img.imageplan.reboot_needed() and \
                             self._img.is_liveroot():
                                 e = apx.RebootNeededOnLiveImageException()
@@ -2798,7 +2796,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                         # Before proceeding, create a backup boot environment if
                         # requested.
-                        if self.__backup_be == True:
+                        if self.__backup_be:
                                 try:
                                         be.create_backup_be(
                                             be_name=self.__backup_be_name)
@@ -2815,7 +2813,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                         # After (possibly) creating backup be, determine if
                         # operation should execute on a clone of current BE.
-                        if self.__new_be == True:
+                        if self.__new_be:
                                 try:
                                         be.init_image_recovery(self._img,
                                             self.__be_name)
@@ -2851,7 +2849,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 if not self._img.linked.nothingtodo():
                                         self._img.linked.syncmd()
                         except RuntimeError as e:
-                                if self.__new_be == True:
+                                if self.__new_be:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
@@ -2878,7 +2876,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 raise error
 
                         except Exception as e:
-                                if self.__new_be == True:
+                                if self.__new_be:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
@@ -2891,7 +2889,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 exc_type, exc_value, exc_traceback = \
                                     sys.exc_info()
 
-                                if self.__new_be == True:
+                                if self.__new_be:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
@@ -2914,7 +2912,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         def __finished_execution(self, be):
                 if self._img.imageplan.state != plandesc.EXECUTED_OK:
-                        if self.__new_be == True:
+                        if self.__new_be:
                                 be.restore_image()
                         else:
                                 be.restore_install_uninstall()
@@ -2929,7 +2927,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     self.__new_be:
                         be.update_boot_archive()
 
-                if self.__new_be == True:
+                if self.__new_be:
                         be.activate_image(set_active=self.__be_activate)
                 else:
                         be.activate_install_uninstall()
@@ -3344,6 +3342,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 pkg_repos = {}
                 pkg_pub_map = {}
+                # Too many nested blocks;
+                # pylint: disable=R0101
                 try:
                         progtrack.refresh_start(len(pubs), full_refresh=False)
                         failed = []
@@ -3595,7 +3595,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                 rids = tuple(sorted(
                                                     pkg_pub_map[pub][stem][ver]))
 
-                                                if not rids in rid_map:
+                                                if rids not in rid_map:
                                                         # Create a publisher and
                                                         # repository for this
                                                         # unique set of origins.
@@ -3943,6 +3943,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                         pubs = sorted(pubs, key=pub_key)
 
+                # Too many nested blocks;
+                # pylint: disable=R0101
                 ranked_stems = {}
                 for t, entry, actions in pkg_cat.entry_actions(cat_info,
                     cb=filter_cb, excludes=excludes, last=use_last,
@@ -4526,7 +4528,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if self.__can_be_canceled == status:
                         return
 
-                if status == True:
+                if status:
                         # Callers must hold activity lock for operations
                         # that they will make cancelable.
                         assert self._activity_lock._is_owned()

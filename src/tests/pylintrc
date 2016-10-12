@@ -19,7 +19,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This file is used to control pylint when checking python source
@@ -69,10 +69,11 @@ disable-checker=similarities
 # W0141 Used builtin function '%s'
 # W0142 Used * or ** magic
 # W0614 Unused import %s from wildcard import
-# W1504 Unidiomatic typecheck
 # I0011 Locally disabling %r
 # I0012 Locally enabling %s (%s)
-disable=C0103,C0302,C0326,C0330,R0901,R0902,R0904,R0911,R0912,R0913,R0914,R0915,R0923,W0141,W0142,W0614,W1504,I0011,I0012
+# R0204 Redefined variable type
+# C0123 Unidiomatic typecheck
+disable=C0103,C0302,C0326,C0330,R0901,R0902,R0904,R0911,R0912,R0913,R0914,R0915,R0923,W0141,W0142,W0614,I0011,I0012,R0204,C0123
 
 [REPORTS]
 # set the output format. Available formats are text, parseable, colorized, msvs
@@ -117,9 +118,6 @@ msg-template='{msg_id}:{line:3d},{column:2d}: {msg} ({symbol})'
 # * uses of the global statement
 #
 [BASIC]
-
-# Required attributes for module, separated by a comma
-required-attributes=
 
 # Regular expression which should only match functions or classes name which do
 # not require a docstring
@@ -186,6 +184,9 @@ acquired-members=REQUEST,acl_users,aq_parent
 # * redefinition of variable from builtins or from an outer scope
 # * use of variable before assigment
 #
+
+ignored-modules=six.moves
+
 [VARIABLES]
 
 # Tells wether we should check for unused import in __init__ files.
@@ -211,10 +212,6 @@ additional-builtins=_
 # * unreachable code
 #
 [CLASSES]
-
-# List of interface methods to ignore, separated by a comma. This is used for
-# instance to not check methods defines in Zope's Interface base class.
-ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
 
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,__new__,setUp

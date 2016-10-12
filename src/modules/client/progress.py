@@ -38,9 +38,10 @@ import sys
 import simplejson as json
 import six
 import time
+from collections import deque
 from functools import wraps
 # Redefining built-in 'range'; pylint: disable=W0622
-# import-error: six.moves; pylint: disable=F0401
+# Imports from package six are not grouped: pylint: disable=C0412
 from six.moves import range
 
 import pkg.client.pkgdefs as pkgdefs
@@ -51,8 +52,6 @@ import pkg.misc as misc
 from pkg.client import global_settings
 from pkg.client import printengine
 logger = global_settings.logger
-
-from collections import deque
 
 class ProgressTrackerException(Exception):
         """Thrown if a ProgressTracker determines that it can't be instantiated.
@@ -230,10 +229,8 @@ class SpeedEstimator(object):
                 # used ctrl-z and then resumed; disable the estimate until we
                 # build up more data.
                 #
-                if len(self.__deque) < 10 or timelapse < (self.INTERVAL / 20.0):
-                        self.__noestimate = True
-                else:
-                        self.__noestimate = False
+                self.__noestimate = bool(len(self.__deque) < 10 or
+                    timelapse < (self.INTERVAL / 20.0))
 
                 curspeed = self.__intervalbytes / timelapse
 
@@ -2400,7 +2397,7 @@ class RADProgressTracker(CommandLineProgressTracker):
                 # adjusts the output based on the major phase.
                 #
                 goalitems = self.mfst_fetch.goalitems
-                if goalitems == None:
+                if goalitems is None:
                         goalitems = 0
                 prog_json = {self.O_PHASE: self._phase_prefix(),
                     self.O_MESSAGE: _("Fetching manifests"),
@@ -3176,7 +3173,7 @@ def test_progress_tracker(t, gofast=False):
 
         print("Use ctrl-c to skip sections")
 
-        if gofast == False:
+        if not gofast:
                 fast = 1.0
         else:
                 fast = 0.10

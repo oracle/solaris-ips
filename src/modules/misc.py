@@ -54,15 +54,11 @@ import traceback
 import urllib
 import zlib
 
+# ungrouped-imports: pylint: disable=C0412
 from binascii import hexlify, unhexlify
 from collections import defaultdict
 from io import BytesIO
 from operator import itemgetter
-# Pylint seems to be panic about six even if it is installed. Instead of using
-# 'disable' here, a better way is to use ignore-modules in pylintrc, but
-# it has an issue that is not fixed until recently. See pylint/issues/#223.
-# import-error; pylint: disable=F0401
-# no-name-in-module; pylint: disable=E0611
 # Redefining built-in 'range'; pylint: disable=W0622
 # Module 'urllib' has no 'parse' member; pylint: disable=E1101
 from six.moves import range, zip_longest
@@ -1032,7 +1028,7 @@ class ImmutableDict(dict):
         def __setitem__(self, item, value):
                 self.__oops()
 
-        def __delitem__(self, item, value):
+        def __delitem__(self, item):
                 self.__oops()
 
         def pop(self, item, default=None):
@@ -1982,6 +1978,8 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
                 data = { "json_state": data, "json_objects": obj_cache2 }
 
+                # Value 'DebugValues' is unsubscriptable;
+                # pylint: disable=E1136
                 if DebugValues["plandesc_validate"]:
                         json_validate(name, data)
 
@@ -2591,6 +2589,8 @@ class AsyncCall(object):
                 # Catch "Exception"; pylint: disable=W0703
 
                 try:
+                        # Value 'DebugValues' is unsubscriptable;
+                        # pylint: disable=E1136
                         if DebugValues["async_thread_error"]:
                                 raise Exception("async_thread_error")
 
@@ -2611,6 +2611,8 @@ class AsyncCall(object):
                         self.e = self.__e
                         self.e.e = e
                         try:
+                                # Value 'DebugValues' is unsubscriptable;
+                                # pylint: disable=E1136
                                 if DebugValues["async_thread_error"]:
                                         raise Exception("async_thread_error")
                                 self.e.tb = traceback.format_exc()
@@ -2832,6 +2834,8 @@ def list_actions_by_attrs(actionlist, attrs, show_all=False,
                                 a = ""
                         line.append(a)
 
+                # Too many boolean expressions in if statement;
+                # pylint: disable=R0916
                 if (line and [l for l in line if str(l) != ""] or show_all) \
                     and (not remove_consec_dup_lines or last_line is None or
                     last_line != line):

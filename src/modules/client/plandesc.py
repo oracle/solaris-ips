@@ -422,8 +422,8 @@ class PlanDescription(object):
                                     "version-source")
                         return mimpl, mver, mimpl_source, mver_source
 
-                for m in sorted(set(list(self._new_mediators.keys()) +
-                    list(self._cfg_mediators.keys()))):
+                for m in sorted(set(self._new_mediators) |
+                    set(self._cfg_mediators)):
                         orig_impl, orig_ver, orig_impl_source, \
                             orig_ver_source = get_mediation(
                                 self._cfg_mediators, m)
@@ -532,6 +532,8 @@ class PlanDescription(object):
                 #    dict[(<facet, src>)] = (<value>, <masked>)
                 old_facets = dict([
                     ((f, src), (v, masked))
+                    # not-an-iterable self._old_facets;
+                    # pylint: disable=E1133
                     for f in self._old_facets
                     # W0212 Access to a protected member
                     # pylint: disable=W0212
@@ -539,6 +541,8 @@ class PlanDescription(object):
                 ])
                 new_facets = dict([
                     ((f, src), (v, masked))
+                    # not-an-iterable self._new_facets;
+                    # pylint: disable=E1133
                     for f in self._new_facets
                     # W0212 Access to a protected member
                     # pylint: disable=W0212
