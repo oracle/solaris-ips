@@ -915,13 +915,25 @@ class ImageBoundaryError(ApiException):
 
         def __str__(self):
                 error_list = [self.GENERIC, self.OUTSIDE_BE, self.RESERVED]
-                s = _("The package {0} delivers items outside the boundaries of"
-                    " the target image and can not be "
-                    "installed.\n\n").format(self.fmri)
+                s = ""
                 for err_type in error_list:
                         if not err_type in self.actions:
                                 continue
                         if self.actions[err_type]:
+                                if err_type == self.GENERIC:
+                                        s += ("The package {0} delivers items"
+                                            " outside the boundaries of"
+                                            " the target image and can not be"
+                                            " installed.\n\n").format(self.fmri)
+                                elif err_type == self.OUTSIDE_BE:
+                                        s += ("The package {0} delivers items"
+                                            " outside the target boot"
+                                            " environment and can not be"
+                                            " installed.\n\n").format(self.fmri)
+                                else:
+                                        s += ("The package {0} delivers items"
+                                            " to reserved directories and can"
+                                            " not be installed.\n\n").format(self.fmri) 
                                 s += self.message[err_type]
                         for action in self.actions[err_type]:
                                 s += ("      {0} {1}\n").format(
@@ -971,15 +983,7 @@ class ImageBoundaryErrors(ApiException):
                                 continue
 
                         if len(cur_errs) == 1:
-                                fmri = cur_errs[0].fmri
-                                s += _("The package {0} delivers items outside "
-                                    "the boundaries of the target image and can "
-                                    "not be installed.\n\n").format(fmri)
-                                s += cur_errs[0].message[err_type]
-                                for action in cur_errs[0].actions[err_type]:
-                                        s += ("      {0} {1}\n").format(
-                                            action.name, action.attrs["path"])
-                                s += "\n"
+                                s += str(cur_errs[0]) + "\n"
                                 continue
 
                         s += self.message[err_type]

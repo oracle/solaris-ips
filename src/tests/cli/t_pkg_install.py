@@ -203,12 +203,12 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
         badfile10 = """
             open badfile@1.0,5.11-0
-            add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+            add file tmp/baz mode=644 owner=root group=bin path=/foo/baz-file
             close """
 
         baddir10 = """
             open baddir@1.0,5.11-0
-            add dir mode=755 owner=root group=bin path=/tmp/baz-dir
+            add dir mode=755 owner=root group=bin path=/foo/baz-dir
             close """
 
         a16189 = """
@@ -1203,14 +1203,30 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     add dir mode=0755 owner=root group=bin path=var/pkg/config
                     close
                     """
+                b4 = """
+                    open b4@1.0-0
+                    add dir mode=0755 owner=root group=bin path=var/tmp/foo
+                    close
+                    """
+                b5 = """
+                    open b5@1.0-0
+                    add dir mode=0755 owner=root group=bin path=var/tmp/
+                    close
+                    """
 
                 self.image_create(self.rurl)
-                self.pkgsend_bulk(self.rurl, [b1, b2, b3])
+                self.pkgsend_bulk(self.rurl, [b1, b2, b3, b4, b5])
 
                 self.pkg("install b1", exit=1)
                 self.pkg("install b2", exit=1)
                 # this should pass because var/pkg/config is not reserved
                 self.pkg("install b3", exit=0)
+                
+                if portable.osname != "sunos":
+                        return
+                self.pkg("install b4", exit=1)
+                # this should pass because we are packaging var/tmp but not delivering
+                self.pkg("install b5", exit=0)
 
         def test_update_to_reserved_directories(self):
                 """Ensure installation of new actions will fail when the delivered

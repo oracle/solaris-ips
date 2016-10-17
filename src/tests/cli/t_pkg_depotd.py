@@ -59,12 +59,12 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
 
         foo10 = """
             open foo@1.0,5.11-0
-            add dir path=tmp/foo mode=0755 owner=root group=bin
+            add dir path=foo/foo mode=0755 owner=root group=bin
             close """
 
         bar10 = """
             open bar@1.0,5.11-0
-            add dir path=tmp/bar mode=0755 owner=root group=bin
+            add dir path=foo/bar mode=0755 owner=root group=bin
             close """
 
         quux10 = """

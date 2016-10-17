@@ -126,6 +126,15 @@ sets of attributes are easy to augment to incorporate future developments.</para
 <para>Some attributes cause additional operations to be executed outside of
 the packaging context. These attributes are documented in the &ldquo;Actuators&rdquo;
 section below.</para>
+<para>Actions that are installed to a path must not deliver content to any of
+the following paths:</para>
+<programlisting>/system/volatile
+/tmp
+/var/share
+/var/tmp</programlisting>
+<para>Additionallly, the following directories are reserved for use by the system
+and should also not be used by actions:</para>
+<programlisting>/var/pkg</programlisting>
 <refsect2><title>File Actions</title>
 <para>The <literal>file</literal> action represents an ordinary file. The <literal>
 file</literal> action references a payload, and has four standard attributes:</para>

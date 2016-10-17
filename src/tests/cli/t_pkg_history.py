@@ -60,7 +60,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
         baz = """
             open baz@1,5.11-0
-            add file tmp/baz mode=0555 owner=root group=bin path=/tmp/baz
+            add file tmp/baz mode=0555 owner=root group=bin path=/foo/baz
             close"""
 
         def setUp(self):
@@ -141,7 +141,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 # remove a file in the image which will cause pkg fix to do
                 # work, writing a history entry in the process
-                img_file = os.path.join(self.get_img_path(), "tmp/baz")
+                img_file = os.path.join(self.get_img_path(), "foo/baz")
                 os.remove(img_file)
 
                 for cmd, exit in commands:

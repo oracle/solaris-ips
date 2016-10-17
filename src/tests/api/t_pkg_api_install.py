@@ -145,12 +145,12 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
         badfile10 = """
             open badfile@1.0,5.11-0
-            add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+            add file tmp/baz mode=644 owner=root group=bin path=/foo/baz-file
             close """
 
         baddir10 = """
             open baddir@1.0,5.11-0
-            add dir mode=755 owner=root group=bin path=/tmp/baz-dir
+            add dir mode=755 owner=root group=bin path=/foo/baz-dir
             close """
 
         moving10 = """

@@ -64,6 +64,7 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.mediator as med
+import pkg.portable as portable
 import pkg.search_errors as se
 import pkg.version
 
@@ -4073,15 +4074,29 @@ class ImagePlan(object):
                 dirs = ["cache", "gui_cache", "history", "license",
                     "linked", "lost+found", "publisher", "ssl", "state"
                 ]
+
+                # Also check whether files are delivered to other
+                # reserved directories besides var/pkg
+                if portable.osname == "sunos":
+                        reserved_dirs = ["var/tmp", "var/share", "tmp", "system/volatile"]
+                else:
+                        reserved_dirs = []
+
                 files = ["pkg5.image", "lock"]
                 path = action.get_installed_path(self.image.root)
+                dir_path = path + "/"
 
                 for d in dirs:
                         dir_p = os.path.join(self.image.imgdir, d) + "/"
-                        dir_path = path + "/"
                         if dir_path.startswith(dir_p):
                                 return False
 
+                for d in reserved_dirs:
+                        dir_p = os.path.join(self.image.root, d) + "/"
+                        # can package these directories but not deliver anything to them
+                        if dir_path.startswith(dir_p) and dir_path != dir_p:
+                                return False
+                
                 for f in files:
                         fname = os.path.join(self.image.imgdir, f)
                         if path == fname:
