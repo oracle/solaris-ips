@@ -2165,15 +2165,24 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if not variants and facets is None:
                         raise ValueError("Nothing to do")
 
+                invalid_names = []
                 if variants:
                         op = API_OP_CHANGE_VARIANT
                         # Check whether '*' or '?' is in the input. Currently,
-                        # change-variant does not accept globbing.
+                        # change-variant does not accept globbing. Also check
+                        # for whitespaces.
                         for variant in variants:
                                 if "*" in variant or "?" in variant:
                                         raise apx.UnsupportedVariantGlobbing()
+                                if not misc.valid_varcet_name(variant):
+                                        invalid_names.append(variant)
                 else:
                         op = API_OP_CHANGE_FACET
+                        for facet in facets:
+                                if not misc.valid_varcet_name(facet):
+                                        invalid_names.append(facet)
+                if invalid_names:
+                        raise apx.InvalidVarcetNames(invalid_names)
 
                 return self.__plan_op(op, _act_timeout=act_timeout,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,

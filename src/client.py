@@ -1637,10 +1637,9 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                 # be printed on the same line as the spinner.
                 error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
-        if isinstance(e, api_errors.UnsupportedVariantGlobbing):
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e), cmd=op)
+        if isinstance(e, (api_errors.UnsupportedVariantGlobbing,
+            api_errors.InvalidVarcetNames)):
+                error(str(e), cmd=op)
                 return EXIT_OOPS
 
         # if we didn't deal with the exception above, pass it on.

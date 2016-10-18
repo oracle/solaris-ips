@@ -217,7 +217,7 @@ class UnknownSectionError(PropertyConfigError):
 class Property(object):
         """Base class for properties."""
 
-        # Whitespace, '/', and '\' are never allowed.
+        # Whitespace (except single space), '/', and '\' are never allowed.
         __name_re = re.compile(r"\A[^\t\n\r\f\v\\/]+\Z")
 
         _value = None
@@ -882,10 +882,10 @@ class PropertySection(object):
         provides an interface for adding and managing properties and sections
         for the section."""
 
-        # Whitespace, '/', and '\' are never allowed although consumers can
-        # place additional restrictions by providing a name re.  In addition,
-        # the name "CONFIGURATION" is reserved for use by the configuration
-        # serialization classes.
+        # Whitespace (except single space), '/', and '\' are never allowed
+        # although consumers can place additional restrictions by providing
+        # a name re. In addition, the name "CONFIGURATION" is reserved for
+        # use by the configuration serialization classes.
         __name_re = re.compile(r"\A[^\t\n\r\f\v\\/]+\Z")
 
         def __init__(self, name, properties=misc.EmptyI):

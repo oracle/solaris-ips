@@ -643,6 +643,14 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     ("optional_fr.doc", False),
                 ))
 
+        def test_07_invalid_facet_name(self):
+                """Test that invalid facet names are handled appropriately"""
+
+                self.image_create(self.rurl)
+                self.pkg("change-facet --no-refresh "
+                    "facet.foo\ bar=false", exit=1)
+                self.assertTrue("facet.foo bar" in self.errout)
+
 
 if __name__ == "__main__":
         unittest.main()

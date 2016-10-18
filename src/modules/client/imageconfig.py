@@ -424,7 +424,11 @@ class ImageConfig(cfg.FileConfig):
                 # how ssl cert and key paths are interpreted.)
                 idx = self.get_index()
                 self.variants.update(idx.get("variant", {}))
-                # facets are encoded so they can contain '/' characters.
+                # Variants and facets are encoded so they can contain
+                # '/' characters.
+                for k, v in six.iteritems(idx.get("variant", {})):
+                        # convert variant name from unicode to a string
+                        self.variants[str(unquote(k))] = v
                 for k, v in six.iteritems(idx.get("facet", {})):
                         # convert facet name from unicode to a string
                         self.facets[str(unquote(k))] = v
@@ -566,7 +570,8 @@ class ImageConfig(cfg.FileConfig):
                 except cfg.UnknownSectionError:
                         pass
                 for f in self.variants:
-                        self.set_property("variant", f, self.variants[f])
+                        self.set_property("variant",
+                            quote(f, ""), self.variants[f])
 
                 try:
                         self.remove_section("facet")

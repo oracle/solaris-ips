@@ -284,6 +284,19 @@ class PlanLicenseErrors(PlanPrepareException):
                 return output
 
 
+class InvalidVarcetNames(PlanPrepareException):
+        """Used to indicate that image plan evaluation or execution failed due
+        to illegal characters in variant/facet names."""
+
+        def __init__(self, invalid_names):
+                PlanPrepareException.__init__(self)
+                self.names = invalid_names
+
+        def __str__(self):
+                return _(", ".join(self.names) + " are not valid variant/facet "
+                    "names; variant/facet names cannot contain whitespace.")
+
+
 class ActuatorException(ApiException):
         def __init__(self, e):
                 ApiException.__init__(self)

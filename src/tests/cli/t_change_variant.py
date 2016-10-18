@@ -538,7 +538,7 @@ variant.opensolaris.zone\t{1}
                 self.f_verify("usr/bin/foobar", "foo")
                 self.f_verify("usr/bin/foobar", "bar", negate=True)
 
-        def test_cv_parsable(self):
+        def test_cv_13_parsable(self):
                 """Test the parsable output of change-variant."""
 
                 self.image_create(self.rurl, variants={
@@ -554,7 +554,7 @@ variant.opensolaris.zone\t{1}
                 self.assertEqualParsable(self.output, change_variants=[
                     ["variant.arch", "i386"]])
 
-        def test_invalid_variant(self):
+        def test_cv_14_invalid_variant(self):
                 """Test that invalid input is handled appropriately"""
 
                 self.image_create(self.rurl, variants={
@@ -563,6 +563,19 @@ variant.opensolaris.zone\t{1}
                 })
                 self.pkg("install pkg_shared")
                 self.pkg("change-variant variant.opensolaris.zone=bogus")
+
+        def test_cv_15_invalid_variant_name(self):
+                """Test that invalid variant names are handled appropriately"""
+
+                self.image_create(self.rurl)
+                # This should pass because there are no illegal characters
+                self.pkg("change-variant --no-refresh "
+                    "variant.foobar=false", exit=0)
+                # Variant names contain space, should raise an exception
+                self.pkg("change-variant --no-refresh "
+                    "variant.foo\ bar=false variant.bar\ foo=false", exit=1)
+                self.assertTrue("variant.foo bar" and "variant.bar foo"
+                    in self.errout)
 
 
 class TestPkgChangeVariantPerTestRepo(pkg5unittest.SingleDepotTestCase):

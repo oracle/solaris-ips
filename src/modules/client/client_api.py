@@ -1146,7 +1146,8 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
             api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors,
-            api_errors.ImageBoundaryErrors)):
+            api_errors.ImageBoundaryErrors,
+            api_errors.InvalidVarcetNames)):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 _error_json("\n" + str(e), cmd=op, errors_json=errors_json)
