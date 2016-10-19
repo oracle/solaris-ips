@@ -711,7 +711,15 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
 
         chashes = {}
         for chash_attr in chash_attrs:
-                chashes[chash_attr] = chash_algs[chash_attr]()
+                # "pkg.content-hash" is provided by default and doesn't
+                # indicate the hash_alg to be used, so when we want to
+                # calculate the content hash, we'll specify the
+                # hash_attrs explicitly, such as "gzip:sha512t_256".
+                if chash_attr == "pkg.content-hash":
+                        chashes[chash_attr] = chash_algs["{0}:{1}".format(
+                            digest.EXTRACT_GZIP, digest.PREFERRED_HASH)]()
+                else:
+                        chashes[chash_attr] = chash_algs[chash_attr]()
 
         #
         # This check prevents compressing a file which is already compressed.
@@ -751,7 +759,12 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
                 fobj.close()
                 csize = str(fobj.size)
                 for attr in chashes:
-                        chashes[attr] = chashes[attr].hexdigest()
+                        if attr == "pkg.content-hash":
+                                chashes[attr] = "{0}:{1}:{2}".format(
+                                    digest.EXTRACT_GZIP, digest.PREFERRED_HASH,
+                                    chashes[attr].hexdigest())
+                        else:
+                                chashes[attr] = chashes[attr].hexdigest()
                 return csize, chashes
 
         # Compute the SHA hash of the compressed file.  In order for this to
@@ -774,7 +787,12 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
         # The returned dictionary can now be populated with the hexdigests
         # instead of the hash objects themselves.
         for attr in chashes:
-                chashes[attr] = chashes[attr].hexdigest()
+                if attr == "pkg.content-hash":
+                        chashes[attr] = "{0}:{1}:{2}".format(
+                                digest.EXTRACT_GZIP, digest.PREFERRED_HASH,
+                                chashes[attr].hexdigest())
+                else:
+                        chashes[attr] = chashes[attr].hexdigest()
         return csize, chashes
 
 class ProcFS(object):

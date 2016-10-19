@@ -114,7 +114,7 @@ if "sha1" in RANKED_HASHES:
 
 if PREFERRED_HASH != "sha1":
         DEFAULT_HASH_ATTRS.append("pkg.content-hash")
-        DEFAULT_CHASH_ATTRS.append("pkg.chash.{0}".format(PREFERRED_HASH))
+        DEFAULT_CHASH_ATTRS.append("pkg.content-hash")
         DEFAULT_GELF_HASH_ATTRS.append("pkg.content-hash")
         DEFAULT_CHAIN_ATTRS.append("pkg.chain.{0}".format(PREFERRED_HASH))
         DEFAULT_CHAIN_CHASH_ATTRS.append("pkg.chain.chashes.{0}".format(PREFERRED_HASH))
@@ -132,6 +132,7 @@ CHAIN_CHASH = 4
 
 EXTRACT_FILE = "file"
 EXTRACT_GELF = "gelf"
+EXTRACT_GZIP = "gzip"
 
 # In the dictionaries below, we map the action attributes to the name of the
 # class or factory-method that returns an object used to compute that attribute.
@@ -230,7 +231,7 @@ class ContentHash(dict):
         """This class breaks out the stringified tuples from
         pkg.content-hash
 
-        	"extract_method:hash_alg:hash_val"
+        "extract_method:hash_alg:hash_val"
 
         into a dict with entries
 
@@ -252,7 +253,7 @@ def get_preferred_hash(action, hash_type=HASH, reversed=False):
         where 'hash_attr' is the preferred hash attribute name, 'hash_val'
         is the the preferred hash value, and 'hash_func' is the function
         used to compute the preferred hash based on the available
-        pkg.*hash.* attributes declared in the action."""
+        pkg.content-hash or pkg.*hash.* attributes declared in the action."""
 
         hash_attrs, hash_dic = _get_hash_dics(hash_type)
         if not (hash_attrs and hash_dic):
@@ -261,6 +262,8 @@ def get_preferred_hash(action, hash_type=HASH, reversed=False):
 
         if hash_type == HASH_GELF:
                 extract_method = EXTRACT_GELF
+        elif hash_type == CHASH:
+                extract_method = EXTRACT_GZIP
         else:
                 extract_method = EXTRACT_FILE
         if reversed:
@@ -282,8 +285,8 @@ def get_preferred_hash(action, hash_type=HASH, reversed=False):
                                 if attr in action.attrs:
                                         return (attr, action.attrs[attr],
                                             hash_dic[attr])
-                elif hash_type in (HASH, HASH_GELF):
-                        # Currently only HASH and HASH_GELF support
+                elif hash_type in (HASH, HASH_GELF, CHASH):
+                        # Currently only HASH, HASH_GELF and CHASH support
                         # pkg.content-hash.
                         ch_type = "{0}:{1}".format(extract_method, alg)
                         attr = "pkg.content-hash"
@@ -294,7 +297,7 @@ def get_preferred_hash(action, hash_type=HASH, reversed=False):
                                 if ch_type in ch:
                                         return (attr, ch[ch_type],
                                             hash_dic[ch_type])
-                elif hash_type in (CHASH, CHAIN, CHAIN_CHASH):
+                elif hash_type in (CHAIN, CHAIN_CHASH):
                         # The corresponding hash attr should be in the
                         # last position if sha2 or higher algorithm is enabled.
                         attr = hash_attrs[-1]
@@ -370,6 +373,8 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
         hash_attrs, hash_dic = _get_hash_dics(hash_type)
         if hash_type == HASH_GELF:
                 extract_method = EXTRACT_GELF
+        elif hash_type == CHASH:
+                extract_method = EXTRACT_GZIP
         else:
                 extract_method = EXTRACT_FILE
 
@@ -392,8 +397,8 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
                         new_hash = action.attrs.get(attr)
                         old_hash = old_action.attrs.get(attr)
                         return attr, new_hash, old_hash, hash_dic[attr]
-                elif hash_type in (HASH, HASH_GELF):
-                        # Currently only HASH and HASH_GELF support
+                elif hash_type in (HASH, HASH_GELF, CHASH):
+                        # Currently only HASH, HASH_GELF and CHASH support
                         # pkg.content-hash.
                         attr = "pkg.content-hash"
                         if attr not in all_hashes:
@@ -430,7 +435,7 @@ def get_common_preferred_hash(action, old_action, hash_type=HASH,
                                         old_hash = oh[ut]
 
                         return attr, new_hash, old_hash, hash_dic.get(ch_type)
-                elif hash_type in (CHASH, CHAIN, CHAIN_CHASH):
+                elif hash_type in (CHAIN, CHAIN_CHASH):
                         # The corresponding hash attr should be in the
                         # last position if sha2 or higher algorithm is enabled.
                         attr = hash_attrs[-1]

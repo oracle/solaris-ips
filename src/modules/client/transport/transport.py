@@ -2724,7 +2724,7 @@ class Transport(object):
                         # i.e. if we have attributes:
                         # chain="a.a b.b c.c"
                         # chain.chash="aa bb cc" \
-                        #   pkg.chain.chash.sha256="AA BB CC"
+                        #   pkg.chain.chashes.sha512t_256="AA BB CC"
                         #
                         # and we're looking at file "b.b" then we must compare
                         # our computed value against the "BB" chash.

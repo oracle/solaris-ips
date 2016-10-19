@@ -305,7 +305,7 @@ adm:NP:6445::::::
         res_remote_file = set([
             'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
             'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-            'pkg.content-hash file   file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d pkg:/example_pkg@1.0-0\n',
+            "pkg.content-hash file   ['file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d', 'gzip:sha512t_256:8846fa174b11c8241080d58796509ef3f86f1dba119f318d32e5ca1b2be33f91'] pkg:/example_pkg@1.0-0\n",
             'hash                                     file   bin/example_path pkg:/example_pkg@1.0-0\n'
         ]) | res_remote_path
 
@@ -320,7 +320,7 @@ adm:NP:6445::::::
              'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
              'basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n',
              'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-             'pkg.content-hash file   file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d pkg:/example_pkg@1.0-0\n',
+             "pkg.content-hash file   ['file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d', 'gzip:sha512t_256:8846fa174b11c8241080d58796509ef3f86f1dba119f318d32e5ca1b2be33f91'] pkg:/example_pkg@1.0-0\n",
              'hash                                     file   bin/example_path pkg:/example_pkg@1.0-0\n'
         ])
 
@@ -334,7 +334,7 @@ adm:NP:6445::::::
             "file bin/example_path example_pkg " \
             "pkg:/example_pkg@1.0-0 bin/example_path " \
             "basename 0555 root bin " \
-            "file b40981aab75932c5b2f555f50769d878e44913d7 chash=6a4299897fca0c4d0d18870da29a0dc7ae23b79c group=bin mode=0555 owner=root path=bin/example_path pkg.chash.sha512t_256=8846fa174b11c8241080d58796509ef3f86f1dba119f318d32e5ca1b2be33f91 pkg.content-hash=file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d pkg.csize=25 pkg.size=5\n"
+            "file b40981aab75932c5b2f555f50769d878e44913d7 chash=6a4299897fca0c4d0d18870da29a0dc7ae23b79c group=bin mode=0555 owner=root path=bin/example_path pkg.content-hash=file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d pkg.content-hash=gzip:sha512t_256:8846fa174b11c8241080d58796509ef3f86f1dba119f318d32e5ca1b2be33f91 pkg.csize=25 pkg.size=5\n"
 
         o_results = o_results_no_pub.rstrip() + " test\n"
 

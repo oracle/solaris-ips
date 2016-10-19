@@ -489,7 +489,11 @@ class TransportTransaction(object):
                                 action.attrs[k] = v + action.attrlist(k)
                         else:
                                 action.attrs[k] = v
-                action.attrs.update(chashes)
+                for k, v in six.iteritems(chashes):
+                        if k == "pkg.content-hash":
+                                action.attrs[k] = action.attrlist(k) + [v]
+                        else:
+                                action.attrs[k] = v
                 action.attrs["pkg.csize"] = csize
 
         def add_file(self, pth, basename=None, progtrack=None):
