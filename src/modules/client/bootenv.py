@@ -262,7 +262,7 @@ class BeadmV2BootEnv(GenericBootEnv):
         def destroy_be(be_name):
                 bemgr = bemgmt.BEManager()
                 return bemgr.destroy(be_name, destroy_snaps=True,
-                                     force_unmount=True)
+                                     force_umount=True)
 
         @staticmethod
         def cleanup_be(be_name):
@@ -277,10 +277,13 @@ class BeadmV2BootEnv(GenericBootEnv):
                         return
 
                 try:
-                    bemgr.destroy(be_name, destroy_snaps=True,
-                                  force_unmount=True)
-                    if be_obj.mounted:
-                        shutil.rmtree(be_obj.mountpoint, ignore_errors=True)
+                        mounted = be_obj.mounted
+                        mountpoint = be_obj.mountpoint
+                        bemgr.destroy(be_name, destroy_snaps=True,
+                            force_umount=True)
+                        if mounted:
+                                shutil.rmtree(mountpoint,
+                                    ignore_errors=True)
                 except Exception as e:
                     pass
 
@@ -340,6 +343,13 @@ class BeadmV2BootEnv(GenericBootEnv):
                 except Exception:
                     return []
                 return (beList)
+
+        @staticmethod
+        def get_be_names():
+                """Return a list of BE names."""
+                return [
+                    be.name for be in BeadmV2BootEnv.get_be_list() if be.name
+                ]
 
         @staticmethod
         def get_be_name(path):
@@ -955,6 +965,14 @@ class BeadmV1BootEnv(GenericBootEnv):
                 return None, None
 
         @staticmethod
+        def get_be_names():
+                """Return a list of BE names."""
+                return [
+                    be["orig_be_name"] for be in BeadmV1BootEnv.get_be_list()
+                    if "orig_be_name" in be
+                ]
+
+        @staticmethod
         def get_uuid_be_dic():
                 """Return a dictionary of all boot environment names on the
                 system, keyed by uuid"""
@@ -1358,6 +1376,10 @@ class BootEnvNull(object):
 
         @staticmethod
         def get_be_list():
+                return []
+
+        @staticmethod
+        def get_be_names():
                 return []
 
         @staticmethod

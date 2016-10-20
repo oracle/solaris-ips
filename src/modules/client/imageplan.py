@@ -1646,55 +1646,50 @@ class ImagePlan(object):
         def __alt_image_root_with_new_be(self, dup_be_name, orig_img_root):
                 img_root = orig_img_root
                 mntpoint = None
+                if not dup_be_name:
+                        dup_be_name = "duplicate_livebe_for_verify"
                 isalbe, src_be_name = self.__is_active_liveroot_be(self.image)
-                if isalbe:
-                        try:
-                                bootenv.BootEnv.cleanup_be(dup_be_name)
-                                temp_root = misc.config_temp_root()
-                                mntpoint = tempfile.mkdtemp(dir=temp_root,
-                                    prefix="pkg-verify" + "-")
-                                bootenv.BootEnv.copy_be(src_be_name,
-                                    dup_be_name)
-                                bootenv.BootEnv.mount_be(dup_be_name, mntpoint)
-                                img_root = mntpoint
-                        except Exception as e:
-                                did_create = False
-                                be_list = bootenv.BootEnv.get_be_list()
-                                for elem in be_list:
-                                        if "orig_be_name" in elem and \
-                                            dup_be_name == \
-                                            elem["orig_be_name"]:
-                                                did_create = True
-                                                break
-                                warn = _("Cannot create or mount a copy of " \
-                                    "current be. Reporting unpackaged " \
-                                    "content aganist current live image.")
-                                timestamp = misc.time_to_timestamp(time.time())
-                                if did_create:
-                                        try:
-                                                if img_root != mntpoint:
-                                                        bootenv.BootEnv.mount_be(
-                                                            dup_be_name,
-                                                            mntpoint)
-                                                        img_root = mntpoint
-                                        except Exception as e:
-                                                # If we could not mount be,
-                                                # fallback.
-                                                self.pd.add_item_message(
-                                                    "warnings", timestamp,
-                                                    MSG_WARNING, warn,
-                                                    msg_type=MSG_UNPACKAGED,
-                                                    parent="unpackaged")
-                                else:
-                                        # If we could not create be,
-                                        # fallback.
-                                        self.pd.add_item_message(
-                                            "warnings", timestamp, MSG_WARNING,
-                                            warn, msg_type=MSG_UNPACKAGED,
-                                            parent="unpackaged")
+                if not isalbe:
+                        return img_root, mntpoint
+
+                try:
+                        bootenv.BootEnv.cleanup_be(dup_be_name)
+                        temp_root = misc.config_temp_root()
+                        mntpoint = tempfile.mkdtemp(dir=temp_root,
+                            prefix="pkg-verify" + "-")
+                        bootenv.BootEnv.copy_be(src_be_name, dup_be_name)
+                        bootenv.BootEnv.mount_be(dup_be_name, mntpoint)
+                        img_root = mntpoint
+                except Exception as e:
+                        did_create = dup_be_name in \
+                            bootenv.BootEnv.get_be_names()
+                        warn = _("Cannot create or mount a copy of current be. "
+                            "Reporting unpackaged content aganist current live "
+                            "image.")
+                        fallback = False
+                        timestamp = misc.time_to_timestamp(time.time())
+                        if did_create:
+                                try:
+                                        if img_root != mntpoint:
+                                                bootenv.BootEnv.mount_be(
+                                                    dup_be_name, mntpoint)
+                                                img_root = mntpoint
+                                except Exception as e:
+                                        # Cannot mount be, fallback.
+                                        fallback = True
+                        else:
+                                # Cannot create be, fallback.
+                                fallback = True
+
+                        if fallback:
+                                shutil.rmtree(mntpoint, ignore_errors=True)
+                                self.pd.add_item_message("warnings", timestamp,
+                                    MSG_WARNING, warn, msg_type=MSG_UNPACKAGED,
+                                    parent="unpackaged")
                 return img_root, mntpoint
 
-        def __process_unpackaged(self, proposed_fmris, pt=None):
+        def __process_unpackaged(self, proposed_fmris, pt=None,
+            dup_be_name="duplicate_livebe_for_verify"):
                 allentries = {}
                 img_root = self.image.get_root()
 
@@ -1723,7 +1718,6 @@ class ImagePlan(object):
                             msg_type=MSG_UNPACKAGED, parent="unpackaged")
 
                 orig_img_root = img_root
-                dup_be_name = "duplicate_livebe_for_verify"
                 img_root, mntpoint = self.__alt_image_root_with_new_be(
                     dup_be_name, orig_img_root)
 
@@ -1769,8 +1763,6 @@ class ImagePlan(object):
                                             _("Unpackaged file"),
                                             msg_type=MSG_UNPACKAGED,
                                             parent="unpackaged")
-                # Clean up the BE used for verify.
-                bootenv.BootEnv.cleanup_be(dup_be_name)
 
         def __verify_fmris(self, repairs, args, proposed_fmris, pt, verifypaths,
             overlaypaths):
@@ -1905,8 +1897,14 @@ class ImagePlan(object):
 
                         # Verify unpackaged contents.
                         if unpackaged or unpackaged_only:
-                                self.__process_unpackaged(proposed_fixes,
-                                    pt=pt)
+                                dup_be_name = "duplicate_livebe_for_verify"
+                                try:
+                                        self.__process_unpackaged(
+                                            proposed_fixes, pt=pt,
+                                            dup_be_name=dup_be_name)
+                                finally:
+                                        # Clean up the BE used for verify.
+                                        bootenv.BootEnv.cleanup_be(dup_be_name)
                                 pt.plan_done(pt.PLAN_PKG_VERIFY)
                                 if unpackaged_only:
                                         self.__finish_plan(plandesc.EVALUATED_PKGS)
