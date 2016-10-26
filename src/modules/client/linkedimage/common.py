@@ -127,7 +127,7 @@ PATH_PUBS      = os.path.join(__DATA_DIR, "linked_ppubs")
 
 #
 # we define PATH_TRANSFORM_NONE as a tuple instead of just None because this
-# will prevent it from being accidently serialized to json.
+# will prevent it from being accidentally serialized to json.
 #
 PATH_TRANSFORM_NONE = ("/", "/")
 
@@ -2424,7 +2424,7 @@ class LinkedImage(object):
                         assert pd.children_ignored != [] or \
                             pd.children_planned == pd.children_nop == []
 
-                        # there shouldn't be any overloap between sets of
+                        # there shouldn't be any overlap between sets of
                         # children in the plan
                         assert not (set(pd.children_planned) &
                             set(pd.children_nop))
@@ -2519,7 +2519,7 @@ class LinkedImage(object):
 
                 if api_op == pkgdefs.API_OP_SYNC:
                         pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
-                        # If we are doing an explict sync, we do have to make
+                        # If we are doing an explicit sync, we do have to make
                         # sure we actually recurse into the child and sync
                         # metadata.
                         ignore_syncmd_nop = True
@@ -3467,6 +3467,19 @@ def get_inheritable_facets(img, pd=None):
         ])
 
         #
+        # For performance reasons see if we can limit ourselves to using the
+        # installed catalog.  If this is a non-image modifying operation then
+        # the installed catalog should be sufficient.  If this is an image
+        # modifying operation that is installing new packages, then we'll need
+        # to use the known catalog (which should already have been initialized
+        # and used during the image planning operation) to lookup information
+        # about the packages being installed.
+        #
+        cat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+        if not ppkgs <= frozenset(cat.fmris()):
+                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+
+        #
         # iterate through all installed (or planned) package incorporation
         # dependency actions and find those that are affected by image facets.
         #
@@ -3475,7 +3488,6 @@ def get_inheritable_facets(img, pd=None):
         # no effect on other actions within that package.)
         #
         faceted_deps = dict()
-        cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
         for pfmri in ppkgs:
                 for act in cat.get_entry_actions(pfmri, [cat.DEPENDENCY]):
                         # we're only interested in incorporate dependencies
