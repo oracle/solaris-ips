@@ -90,7 +90,7 @@
 
 # Add manpage facets
 <transform dir file link hardlink path=usr.*/man(/.+){0,1}$ -> \
-    default facet.doc.man true>
+    default facet.doc.man all>
 
 # Default values for legacy actions
 <transform legacy -> default name %{pkg.summary}>
