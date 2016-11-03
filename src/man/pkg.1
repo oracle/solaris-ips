@@ -7,7 +7,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">20 May 2016</refmiscinfo>
+<refmiscinfo class="date">3 Nov 2016</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -930,20 +930,26 @@ paths. Paths specified are assumed to be relative to the <literal>/</literal> of
 the image on which the verify is performed. If a directory or a link is specified, 
 only the matching action for the directory or the link will be verified.</para>
 <para>If no <replaceable>pkg_fmri_pattern</replaceable>s are provided when specifying
-paths, all matching actions from packages installed in the image will be verified.</para>
+paths, all matching actions from packages installed in the image will be verified.
+This option cannot be combined with <option>-unpackaged</option> or
+<option>-unpackaged-only</option>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
 <listitem><para>Parsable output. The supported version is 0. Use of this option
-implies <option>-q</option>.</para>
+implies <option>q</option>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
-<listitem><para>report unpackaged contents in addition to general output.</para>
+<listitem><para>Report unpackaged contents in addition to general verification
+output. Current unpackaged contents includes unpackaged files and unpackaged
+directories. This option can be combined with <option>-parsable</option>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged-only</option></term>
-<listitem><para>report only unpackaged contents.</para>
+<listitem><para>Report only unpackaged contents. This option excludes general
+verification output and only reports the unpackaged files and directories.
+This option can be combined with <option>-parsable</option>.</para>
 </listitem>
 </varlistentry>
 </variablelist>
