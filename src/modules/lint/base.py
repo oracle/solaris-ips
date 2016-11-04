@@ -31,6 +31,7 @@ import traceback
 from six.moves import configparser
 
 import pkg.variant as variant
+import pkg.fmri as fmri
 
 
 class LintException(Exception):
@@ -145,14 +146,67 @@ class Checker(object):
                 for i in range(0, len(action_list)):
                         action = action_list[i]
                         var = action.get_variant_template()
-                        # if we don't declare any variants on a given
-                        # action, then it's automatically a conflict
-                        if len(var) == 0:
-                                conflict_actions.add(action)
-
                         vc = variant.VariantCombinations(var, True)
                         for j in range(i + 1, len(action_list)):
                                 cmp_action = action_list[j]
+                                cmp_var = variant.VariantCombinations(
+                                    cmp_action.get_variant_template(), True)
+                                if vc.intersects(cmp_var):
+                                        intersection = vc.intersection(cmp_var)
+                                        intersection.simplify(pkg_vars,
+                                            assert_on_different_domains=False)
+                                        conflict_actions.add(action)
+                                        conflict_actions.add(cmp_action)
+                                        for k in intersection.sat_set:
+                                                if len(k) != 0:
+                                                        conflict_vars.add(k)
+                return conflict_vars, list(conflict_actions)
+
+        def conflicting_dep_actions(self, actions, pkg_vars, compared):
+                """Given a set of depend actions, determine that if any of the
+                two actions are conflicting.
+
+                We return a list of variants that conflict, and a list of the
+                actions involved."""
+
+                def get_fmri_set(action):
+                        fmris = set()
+                        for dep in action.attrs["fmri"]:
+                                fmris.add(fmri.extract_pkg_name(dep))
+                        return fmris
+
+                conflict_vars = set()
+                conflict_actions = set()
+                action_list = list(actions)
+
+                # Record the fmri set of action we have generated.
+                fmris_dict = [None] * len(actions)
+                multidep_type = frozenset(["require-any", "group-any"])
+                # compare every action in the list with every other,
+                # determining what actions have conflicting variants
+                # The comparison is commutative.
+                for i in range(0, len(action_list)):
+                        action = action_list[i]
+                        var = action.get_variant_template()
+                        vc = variant.VariantCombinations(var, True)
+                        if action.attrs["type"] in multidep_type:
+                                if fmris_dict[i] == None:
+                                        fmris_dict[i] = get_fmri_set(action)
+                                fmris = fmris_dict[i]
+                        for j in range(i + 1, len(action_list)):
+                                cmp_action = action_list[j]
+                                # If we have compared this pair of actions,
+                                # don't bother to compare again.
+                                if ((action, cmp_action) in compared or
+                                    (cmp_action, action) in compared):
+                                        continue
+                                compared.add((action, cmp_action))
+                                if (cmp_action.attrs["type"] in multidep_type
+                                    and action.attrs["type"] in multidep_type):
+                                        fmris_dict[j] = get_fmri_set(cmp_action)
+                                        cmp_fmris = fmris_dict[j]
+                                        if fmris != cmp_fmris:
+                                                continue
                                 cmp_var = variant.VariantCombinations(
                                     cmp_action.get_variant_template(), True)
                                 if vc.intersects(cmp_var):

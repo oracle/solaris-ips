@@ -255,9 +255,9 @@ depend fmri=foo/bar type=require pkg.linted.pkglint.manifest005.2=True
 depend fmri=foo/bar fmri=foo/baz type=require-any
 """
 
-expected_failures["dup-depend-require-any.mf"] = ["pkglint.manifest005.2",
+expected_failures["dup-depend-require-any_1.mf"] = ["pkglint.manifest005.2",
     "pkglint.action005.1"]
-broken_manifests["dup-depend-require-any.mf"] = \
+broken_manifests["dup-depend-require-any_1.mf"] = \
 """
 #
 # We deliver duplicate dependencies, one coming from a require-any dep
@@ -270,6 +270,102 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 depend fmri=foo/bar type=require
 depend fmri=foo/bar fmri=foo/baz type=require-any
+"""
+
+expected_failures["dup-depend-require-any_2.mf"] = ["pkglint.manifest005.2"]
+broken_manifests["dup-depend-require-any_2.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=require-any
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=require-any
+"""
+
+expected_failures["dup-depend-group-any_1.mf"] = []
+broken_manifests["dup-depend-group-any_1.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=group-any
+depend fmri=foo/gcc-c-runtime fmri=foo/gcc-3-runtime type=group-any
+"""
+
+expected_failures["dup-depend-group-any_2.mf"] = ["pkglint.manifest005.2"]
+broken_manifests["dup-depend-group-any_2.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=group-any
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=group-any
+"""
+
+expected_failures["dup-depend-group-any_require-any_1.mf"] = ["pkglint.manifest005.2"]
+broken_manifests["dup-depend-group-any_require-any_1.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c-runtime fmri=foo/gcc-3-runtime type=require-any
+depend fmri=foo/gcc-c-runtime fmri=foo/gcc-3-runtime type=group-any
+"""
+
+expected_failures["dup-depend-group-any_require-any_2.mf"] = []
+broken_manifests["dup-depend-group-any_require-any_2.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c-runtime fmri=foo/gcc-3-runtime type=require-any
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=group-any
+"""
+
+expected_failures["bug-17337432.mf"] = []
+broken_manifests["bug-17337432.mf"] = \
+"""
+#
+# Should use all values of fmri attribute for duplicate depends check
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/gcc-c++-runtime fmri=foo/gcc-3-runtime type=require-any
+depend fmri=foo/gcc-c-runtime fmri=foo/gcc-3-runtime type=require-any
 """
 
 expected_failures["license-has-path.mf"] = ["pkglint.action007"]

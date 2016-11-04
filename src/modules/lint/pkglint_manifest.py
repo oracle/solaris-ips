@@ -398,8 +398,10 @@ class PkgManifestChecker(base.ManifestChecker):
                     "duplicate depend actions in {pkg} {actions}")
                 duplicates = []
                 for action in manifest.gen_actions_by_type("depend"):
-                        # this only checks require and require-any actions
-                        if "require" not in action.attrs["type"]:
+                        # this only checks require, require-any and group-any
+                        # actions
+                        if action.attrs["type"] not in ["require",
+                            "require-any", "group-any"]:
                                 continue
 
                         if "fmri" not in action.attrs:
@@ -429,12 +431,13 @@ class PkgManifestChecker(base.ManifestChecker):
                                 else:
                                         seen_deps[shortname].append(action)
 
+                compared = set()
                 for key in seen_deps:
                         actions = seen_deps[key]
                         if len(actions) > 1:
                                 conflict_vars, conflict_actions = \
-                                    self.conflicting_variants(actions,
-                                        manifest.get_all_variants())
+                                    self.conflicting_dep_actions(actions,
+                                        manifest.get_all_variants(), compared)
                                 if conflict_actions:
                                         duplicates.append(key)
 
