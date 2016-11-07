@@ -1496,7 +1496,7 @@ class PkgActionChecker(base.ActionChecker):
                             msgid="{0}{1}.2".format(self.name, pkglint_id))
 
                 if len(username)> 0 and not \
-                    re.match("^[a-z]([a-zA-Z1-9._-])*$", username):
+                    re.match("^[a-z]([a-zA-Z0-9._-])*$", username):
                         engine.warning(
                             _("Username {name} in {pkg} is discouraged - see "
                             "passwd(4)").format(

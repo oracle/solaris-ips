@@ -2124,6 +2124,21 @@ set name=info.classification value=org.opensolaris.category.2008:System/Packagin
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/lib/xfs.so pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
+expected_failures["valid_usernames.mf"] = []
+broken_manifests["valid_usernames.mf"] = \
+"""
+#
+# Usernames are allowed to contain digit zero.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+user gcos-field="pkg(7) server UID" group=pkg5srv uid=97 username="pkg5s0v"
+"""
+
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
         def __init__(self):
