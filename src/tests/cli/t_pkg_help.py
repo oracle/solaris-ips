@@ -68,8 +68,8 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                         ret, out, err = self.pkg(option, out=True, stderr=True)
                         verify_help(err,
                             ["pkg [options] command [cmd_options] [operands]",
-                            "pkg verify [-Hqv] [--parsable version] [--unpackaged]\n"
-                            "            [--unpackaged-only] [pkg_fmri_pattern ...]",
+                            "pkg verify [-Hqv] [-p path]... [--parsable version]\n"
+                            "            [--unpackaged] [--unpackaged-only] [pkg_fmri_pattern ...]",
                             "PKG_IMAGE", "Usage:"])
 
                 # Invalid subcommands, ensuring we exit 2

@@ -258,8 +258,8 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
         adv_usage["search"] = _(
             "[-HIaflpr] [-o attribute ...] [-s repo_uri] query")
 
-        adv_usage["verify"] = _("[-Hqv] [--parsable version] [--unpackaged]\n"
-            "            [--unpackaged-only] [pkg_fmri_pattern ...]")
+        adv_usage["verify"] = _("[-Hqv] [-p path]... [--parsable version]\n"
+            "            [--unpackaged] [--unpackaged-only] [pkg_fmri_pattern ...]")
         adv_usage["fix"] = _(
             "[-Hnvq] [--no-be-activate]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
