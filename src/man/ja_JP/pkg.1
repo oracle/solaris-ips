@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 20 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -61,7 +61,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
-<synopsis>/usr/bin/pkg verify [-Hqv] [--parsable <replaceable>version</replaceable>] [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [-p <replaceable>path</replaceable>]... [--parsable <replaceable>version</replaceable>]
+    [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -208,6 +209,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><command>pkg install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
 <listitem><para>指定されたパッケージをインストールし、イメージにインストールされたパッケージで許容されている <replaceable>pkg_fmri_pattern</replaceable> と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<para>すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。</para>
+<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
 <para>パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、<command>pkg publisher</command> および <command>pkg set-publisher</command> コマンドを参照してください。<replaceable>pkg_fmri_pattern </replaceable> が発行元を指定しない場合、一致するパッケージを提供する最初の発行元がインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、<command>pkg list -a</command> コマンドを使用します。</para>
 <para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。</para>
 <para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
@@ -443,7 +446,8 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg contents</command> [<option>Hmr</option>] [<option>a</option> <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]... [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>o</option> <replaceable> attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable> sort_key</replaceable>] [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable> action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
-<listitem><para>イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの <literal>path</literal> 属性の値をアルファベット順で並べ替えて表示します。アクションとそれらの属性については、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。下の疑似属性名のリストも参照してください。</para>
+<listitem><para>イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの <literal>path</literal> 属性の値をアルファベット順で並べ替えて表示します。<option>o</option> オプションが指定されていない場合、<literal>pkg</literal>(7) で説明されている、関連するアクション名のキー属性が代わりに表示されます。さらに、「depend」アクションには「type」属性も含められ、「set」アクションには「value」属性が含められます。</para>
+<para>複数のアクション名が指定されている場合、デフォルトの属性は、前述のように、指定されたすべてのアクションのすべての属性セットです。アクションとそれらの属性については、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。下の疑似属性名のリストも参照してください。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>指定したパッケージの内容のみを表示します。</para>
@@ -518,7 +522,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </varlistentry>
 </variablelist>
 <para>関連するサブコマンドは <command>contents</command> および <command>search</command> であり、どちらもパッケージの内容についてシステムをクエリーします。<command>contents</command> サブコマンドは、1 つまたは複数のインストールされているか、インストール可能なパッケージ内のアクションを、指定されたオプションに基づいて出力をフィルタ処理して表示します。<command>search</command> サブコマンドは逆方向からクエリーを行い、ユーザーが指定したトークンを含むすべてのパッケージの名前を表示します。</para>
-<para>各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行ってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。</para>
+<para>各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行なってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg search</command> [<option>HIaflpr</option>] [<option>o</option> <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></term>
@@ -611,11 +615,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>p</option> <replaceable>path</replaceable>]... [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>現在のイメージ内で、インストールされているすべてのパッケージのインストールを検証します。関連する発行元の現在の署名ポリシーが <literal>ignore</literal> でない場合、各パッケージの署名がポリシーに基づいて検証されます。署名ポリシーが適用されるしくみについては、後述する「イメージプロパティー」の <literal>signature-policy</literal> で説明します。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
-<listitem><para>現在のイメージ内で、指定されたインストール済みパッケージのインストールのみを検証します。</para>
+<listitem><para>現在のイメージ内で、指定されたインストール済みパッケージのインストールのみを検証します。<option>p</option> とともに使用する場合、指定されたパッケージからの一致するアクションのみが検証されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>H</option> </term>
@@ -624,6 +628,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
 <listitem><para>パッケージに関する情報メッセージを含めます。前述の install コマンドの <option>v</option> オプションの説明も参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>path</replaceable></term>
+<listitem><para>パスを指定して、個々のファイル、リンク、またはディレクトリを検証します。指定されたパスは、検証が実行されるイメージの <literal>/</literal> の相対パスであると見なされます。ディレクトリまたはリンクが指定されている場合、そのディレクトリまたはリンクの一致するアクションのみが検証されます。</para>
+<para>パスの指定時に <replaceable>pkg_fmri_pattern</replaceable> を指定しないと、イメージにインストールされているパッケージから一致するすべてのアクションが検証されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
@@ -925,7 +934,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
-<listitem><para>代替出力形式を指定します。詳細は、<command>pkg mediator</command> コマンドを参照してください。</para></listitem>
+<listitem><para>代替出力形式を指定します。<replaceable>format</replaceable> の値には、<literal>tsv</literal> (タブ区切り値) のみを指定できます。</para></listitem>
 </varlistentry>
 <varlistentry><term><option>H</option> </term>
 <listitem><para>一覧からヘッダーを省略します。</para>
@@ -970,7 +979,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>g</option> <replaceable>origin_to_add</replaceable></term> <term><option>-add-origin</option> <replaceable>origin_to_add</replaceable></term>
-<listitem><para>指定された URI またはパスを、特定の発行元の起点として追加します。これはパッケージのリポジトリまたはアーカイブの場所にしてください。</para>
+<listitem><para>指定された URI またはパスを、特定の発行元の起点として追加します。これはパッケージのリポジトリまたはアーカイブの場所にしてください。<option>-enable</option> または <option>-disable</option> と組み合わせた場合、指定されたされたとおりに起点が有効または無効にされます。この場合、すべての起点を有効または無効にするために <literal>*</literal> を使用できます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>k</option> <replaceable>ssl_key</replaceable></term>
@@ -994,7 +1003,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-non-sticky</option></term>
-<listitem><para>この発行元よりも上位にランクされる発行元が、この発行元から最初にインストールされたパッケージに更新を提供できます。</para>
+<listitem><para>この発行元よりも上位にランクされる発行元が、この発行元から最初にインストールされたパッケージに更新を提供できます。このパブリッシャーまたは兄弟に隣接するすべての非固定パブリッシャーが、ランクに関係なく、更新を提供して、このパブリッシャーによって提供されるパッケージの依存関係を満たすことができます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
@@ -1602,6 +1611,10 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
 <para>次のコマンドは、<literal>test1</literal> パブリッシャーから提供されたファイルおよびハードリンクだけをリハイドレートします。</para>
 <screen>$ <userinput>pkg -R /tmp/test_image rehydrate -p test1</userinput></screen>
+</example>
+<example><title>イメージ内の個々のパスの検証</title>
+<para>パス <literal>/tmp/test_image/usr/bin/ls</literal> にある個々のファイルを検証して、冗長結果を表示します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image verify -v -p /usr/bin/ls</userinput></screen>
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>

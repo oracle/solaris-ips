@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2015 年 3 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统</refpurpose>
@@ -284,7 +284,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>可以识别下列属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>fmri</literal></term>
-<listitem><para>表示依赖软件包的 FMRI。此属性是 <literal>dependency</literal> 操作的关键属性。<literal>fmri</literal> 值不得包括发布者。假定软件包名称是完整的。<literal>require-any</literal> 类型的依赖性可具有多个 <literal>fmri</literal> 属性。<literal>fmri</literal> 值中的版本是可选项，虽然对于某些类型的依赖性来说，不带版本的 <literal>fmri</literal> 没有任何意义。</para>
+<listitem><para>表示依赖软件包的 FMRI。此属性是 <literal>dependency</literal> 操作的关键属性。<literal>fmri</literal> 值不得包括发布者。假定软件包名称是完整的。<literal>group-any</literal> 和 <literal>require-any</literal> 类型的依赖性可具有多个 <literal>fmri</literal> 属性。<literal>fmri</literal> 值中的版本是可选项，虽然对于某些类型的依赖性来说，不带版本的 <literal>fmri</literal> 没有任何意义或者将忽略该版本。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>type</literal></term>
@@ -307,7 +307,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>require-any</literal></term>
-<listitem><para>多个 <literal>fmri</literal> 属性指定的多个依赖软件包中的任一个都可满足依赖性（遵循与 <literal>require</literal> 依赖性类型相同的规则）。</para>
+<listitem><para>多个 <literal>fmri</literal> 属性指定的软件包中的任一个都可满足依赖性（遵循与 <literal>require</literal> 依赖性类型相同的规则）。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>conditional</literal></term>
@@ -320,6 +320,10 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </varlistentry>
 <varlistentry><term><literal>group</literal></term>
 <listitem><para>除非软件包出现在映像避免列表上，否则该依赖性是必需的。请注意，过时软件包会无提示地满足组依赖性。请参见 <command>pkg</command>(1) 中的 <command>avoid</command> 子命令。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-any</literal></term>
+<listitem><para>多个 <literal>fmri</literal> 属性指定的多个依赖软件包中的任一个都可满足依赖性（遵循与 <literal>group</literal> 依赖性类型相同的规则，只是非过时软件包主干优先于过时软件包主干）。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>parent</literal></term>

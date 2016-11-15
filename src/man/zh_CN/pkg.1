@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 20 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统的检索客户端</refpurpose>
@@ -61,7 +61,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
-<synopsis>/usr/bin/pkg verify [-Hqv] [--parsable <replaceable>version</replaceable>] [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [-p <replaceable>path</replaceable>]... [--parsable <replaceable>version</replaceable>]
+    [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -208,6 +209,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><command>pkg install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
 <listitem><para>安装指定软件包并将其更新到最新版本，该版本与映像中安装的软件包所允许的 <replaceable>pkg_fmri_pattern</replaceable> 匹配。要显式请求安装软件包的最新版本，请在 <replaceable>pkg_fmri_pattern</replaceable> 的版本部分使用 <literal>latest</literal>。例如，指定 <literal>vim@latest</literal>。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
+<para>可以指定比已安装版本更高或更低的版本，以便对特定软件包执行就地降级或升级。不支持跨越软件包重命名边界或过时边界更新特定的软件包。</para>
+<para>作为将要降级的软件包的一部分、自原始版本安装以来更改了的任何保留配置文件，将使用扩展名 <literal>.update</literal> 进行重命名。有关软件包系统如何确定要保留的文件，以及在软件包升级期间如何保留这些文件的更多信息，请参见 <literal>pkg</literal>(7) 手册页中的“文件操作”。</para>
 <para>软件包基于发布者搜索顺序和粘性进行选择。有关搜索顺序和粘性的信息，请参见 <command>pkg publisher</command> 和 <command>pkg set-publisher</command> 命令。如果 <replaceable>pkg_fmri_pattern</replaceable> 未指定发布者，则会将第一个提供匹配软件包的发布者用作安装源。如果该发布者未提供可以安装在此映像中的软件包版本，则安装操作将失败。使用 <command>pkg list -a</command> 命令可查看哪些发布者提供可以安装在此映像中的软件包版本。</para>
 <para>指定了多个 <replaceable>pkg_fmri_pattern</replaceable> 时，如果指定的软件包中有任何一个无法在此映像中安装，则指定的所有软件包都不会安装。</para>
 <para>安装过程中，某些配置文件可能被重命名或替换。有关软件包系统如何确定要保留的文件以及在软件包操作期间如何保留这些文件的更多信息，请参见 <literal>pkg</literal>(7) 手册页中的“文件操作”。</para>
@@ -443,7 +446,8 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg contents</command> [<option>Hmr</option>] [<option>a</option> <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]... [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>o</option> <replaceable> attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable> sort_key</replaceable>] [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable> action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
-<listitem><para>显示映像中安装的所有软件包的内容（操作属性）。未指定选项时，显示当前映像中安装的操作的 <literal>path</literal> 属性值，按属性值的字母顺序排列。有关操作及其属性的信息，请参见 <literal>pkg</literal>(7) 手册页中的“操作”。另请参见以下伪属性名称列表。</para>
+<listitem><para>显示映像中安装的所有软件包的内容（操作属性）。未指定选项时，显示当前映像中安装的操作的 <literal>path</literal> 属性值，按属性值的字母顺序排列。如果未指定 <option>o</option> 选项，将改为显示相关操作名称的关键属性（如 <literal>pkg</literal>(7) 中所述）。此外，'depend' 操作还将包括 'type' 属性，'set' 操作将包括 'value' 属性。</para>
+<para>指定多个操作名称时，缺省属性是所有指定操作的所有属性集，如上所述。有关操作及其属性的信息，请参见 <literal>pkg</literal>(7) 手册页中的“操作”。另请参见以下伪属性名称列表。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>仅显示指定软件包的内容。</para>
@@ -611,11 +615,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </variablelist>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>p</option> <replaceable>path</replaceable>]... [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>验证当前映像中安装的所有软件包的安装情况。如果相关发布者的当前签名策略不是 <literal>ignore</literal>，则会根据策略验证每个软件包的签名。有关如何应用签名策略的说明，请参见下文“映像属性”中的 <literal>signature-policy</literal>。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
-<listitem><para>仅验证当前映像中安装的指定软件包的安装情况。</para>
+<listitem><para>仅验证当前映像中安装的指定软件包的安装情况。与 <option>p</option> 配合使用时，将仅验证指定软件包中的匹配操作。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>H</option></term>
@@ -624,6 +628,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
 <listitem><para>包括有关软件包的信息性消息。另请参见对上述安装命令的 <option>v</option> 选项的说明。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>path</replaceable></term>
+<listitem><para>通过指定路径验证单个文件、链接或目录。指定的路径假定为相对于在其上执行验证的映像的 <literal>/</literal>。如果指定目录或链接，将仅验证该目录或链接的匹配操作。</para>
+<para>如果指定路径时未提供 <replaceable>pkg_fmri_pattern</replaceable>，将验证映像中安装的软件包中的所有匹配操作。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
@@ -925,7 +934,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
-<listitem><para>指定备用输出格式。有关说明，请参见 <command>pkg mediator</command> 命令。</para></listitem>
+<listitem><para>指定备用输出格式。<replaceable>format</replaceable> 的值只能是 <literal>tsv</literal>（Tab Separated Value，制表符分隔值）。</para></listitem>
 </varlistentry>
 <varlistentry><term><option>H</option></term>
 <listitem><para>在列出时省略标题。</para>
@@ -970,7 +979,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>g</option> <replaceable>origin_to_add</replaceable></term> <term><option>-add-origin</option> <replaceable>origin_to_add</replaceable></term>
-<listitem><para>将指定的 URI 或路径添加为给定发布者的源。这应该是软件包系统信息库或归档的位置。</para>
+<listitem><para>将指定的 URI 或路径添加为给定发布者的源。这应该是软件包系统信息库或归档的位置。如果与 <option>-enable</option> 或 <option>-disable</option> 结合使用，将按照指定启用或禁用源。在这种情况下，<literal>*</literal> 可用于启用或禁用所有源。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>k</option> <replaceable>ssl_key</replaceable></term>
@@ -994,7 +1003,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-non-sticky</option></term>
-<listitem><para>对于最初从此发布者安装的软件包，更新可以从级别比此发布者更高的发布者处获取。</para>
+<listitem><para>对于最初从此发布者安装的软件包，更新可以从级别比此发布者更高的发布者处获取。与此发布者或同级相邻的所有非粘滞型发布者（无论级别）可以提供更新并满足此发布者提供的软件包的依赖性。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
@@ -1602,6 +1611,10 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
 <para>以下命令仅解除冻结 <literal>test1</literal> 发布者提供的文件和硬链接。</para>
 <screen>$ <userinput>pkg -R /tmp/test_image rehydrate -p test1</userinput></screen>
+</example>
+<example><title>验证映像中的单个路径</title>
+<para>验证路径 <literal>/tmp/test_image/usr/bin/ls</literal> 处的单个文件并显示详细结果。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image verify -v -p /usr/bin/ls</userinput></screen>
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>

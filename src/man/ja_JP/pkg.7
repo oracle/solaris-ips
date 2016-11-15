@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="ja" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2015 年 3 月 10 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -284,7 +284,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>次の属性が認識されます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>fmri</literal></term>
-<listitem><para>依存パッケージを表す FMRI。これは <literal>dependency</literal> アクションのキー属性です。<literal>fmri</literal> 値にパブリッシャーを含めることはできません。パッケージ名は完全であると見なされます。タイプ <literal>require-any</literal> の依存関係は、複数の <literal>fmri</literal> 属性を持つことができます。<literal>fmri</literal> 値でバージョンはオプションですが、依存関係のタイプによっては、バージョンのない <literal>fmri</literal> は無意味である場合があります。</para>
+<listitem><para>依存パッケージを表す FMRI。これは <literal>dependency</literal> アクションのキー属性です。<literal>fmri</literal> 値にパブリッシャーを含めることはできません。パッケージ名は完全であると見なされます。タイプ <literal>group-any</literal> および <literal>require-any</literal> の依存関係は、複数の <literal>fmri</literal> 属性を持つことができます。<literal>fmri</literal> 値でバージョンはオプションですが、依存関係のタイプによっては、バージョンのない <literal>fmri</literal> は無意味であるか、バージョンは無視されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>type</literal></term>
@@ -307,7 +307,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>require-any</literal></term>
-<listitem><para>複数の <literal>fmri</literal> 属性で指定された複数の依存パッケージのうちのいずれか 1 つが、依存関係のタイプ <literal>require</literal> と同じ規則に従って依存関係を満たすことができます。</para>
+<listitem><para>複数の <literal>fmri</literal> 属性で指定されたパッケージのうちのいずれか 1 つが、依存関係のタイプ <literal>require</literal> と同じ規則に従って依存関係を満たすことができます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>conditional</literal></term>
@@ -320,6 +320,10 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </varlistentry>
 <varlistentry><term><literal>group</literal> </term>
 <listitem><para>依存関係は、パッケージがイメージ回避リスト上にないかぎり必要です。廃止されたパッケージは、暗黙のうちにグループの依存関係を満たすことに注意してください。<command>pkg</command>(1) の <command>avoid</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-any</literal></term>
+<listitem><para>廃止されていないパッケージの語幹が廃止されたパッケージの語幹よりも優先されるという点を除き、依存関係のタイプ <literal>group</literal> と同じ規則に従って、複数の <literal>fmri</literal> 属性で指定された複数の依存パッケージのうちのいずれか 1 つが、依存関係を満たすことができます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>parent</literal></term>
@@ -702,7 +706,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para><literal>$IMAGE_META</literal> ディレクトリ階層内のその他のパスは非公開であり、変更される可能性があります。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>属性についての詳細は、マニュアルページの <literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
