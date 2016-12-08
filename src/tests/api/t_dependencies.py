@@ -100,12 +100,12 @@ hardlink path=baz target={authlog_path}
 
         int_hardlink_manf = """ \
 hardlink path=usr/foo target=../{syslog_path}
-file NOHASH group=sys mode=0644 owner=root path={syslog_path} 
+file NOHASH group=sys mode=0644 owner=root path={syslog_path}
 """.format(**paths)
 
         int_hardlink_manf_test_symlink = """ \
 hardlink path=usr/foo target=../{syslog_path}
-file NOHASH group=sys mode=0644 owner=root path=bar/syslog 
+file NOHASH group=sys mode=0644 owner=root path=bar/syslog
 """.format(**paths)
 
         ext_script_manf = """ \
@@ -1144,7 +1144,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 opts = []
                 # In some cases we want to generate an elf binary with no
-                # dependencies of its own.  We use -c (supress linking) for
+                # dependencies of its own.  We use -c (suppress linking) for
                 # this purpose.
                 if static:
                         opts.extend(["-c"])
@@ -1164,7 +1164,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 reported as a dependency."""
 
                 def _check_results(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1199,7 +1199,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 t_path = self.make_manifest(self.int_hardlink_manf)
                 self.make_proto_text_file(self.paths["syslog_path"])
-                ds, es, ms, pkg_attrs = \
+                ds, es, ws, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
                         {}, [], convert=False)
                 if es != []:
@@ -1209,7 +1209,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.assertTrue(len(ds) == 0)
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -1230,7 +1230,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 outside its package is reported as a dependency."""
 
                 def _check_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1261,7 +1261,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_elf(self.paths["ksh_path"])
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1276,7 +1276,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertEqual(len(ds), 2)
@@ -1301,7 +1301,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 package is reported as a dependency."""
 
                 def _check_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1334,7 +1334,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 internal dependencies is set."""
 
                 def _check_all_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -1355,7 +1355,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.int_elf_manf)
                 self.make_elf(self.paths["curses_path"])
                 self.make_elf(self.paths["libc_path"], static=True)
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                d_map, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1373,7 +1373,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 package is reported as a dependency."""
 
                 def _check_all_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         mod_pats = [
                             "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
                             "{0}.so", "{0}module.so",
@@ -1427,7 +1427,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 is handled correctly."""
 
                 def _check_all_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         mod_pats = [
                             "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
                             "{0}.so", "{0}module.so",
@@ -1485,7 +1485,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 package is handled correctly."""
 
                 def _check_all_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         mod_pats = [
                             "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
                             "{0}.so", "{0}module.so",
@@ -1567,7 +1567,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_python_test_files(3.4)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 self.assertTrue(es != 0, "Unexpected errors reported: {0}".format(es))
                 self.assertTrue(ds != 2, "Unexpected deps reported: {0}".format(ds))
@@ -1581,7 +1581,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     self.relative_ext_depender_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=True,
                     convert=False)
 
@@ -1616,7 +1616,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.assertTrue(os.path.exists(os.path.join(self.proto_dir,
                     self.paths["relative_dependee"])))
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=True,
                     convert=False)
                 if es != []:
@@ -1630,7 +1630,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                             "dependency which wasn't of the expected type:{0}".format(
                             d))
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -1657,7 +1657,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_mod_manf)
                 self.make_broken_python_test_file(3.4)
                 self.make_broken_python_test_file(2.7)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 self.assertTrue(es != 2, "Unexpected errors reported: {0}".format(es))
                 self.assertTrue(ds != 0, "Unexpected deps reported: {0}".format(ds))
@@ -1673,7 +1673,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1720,7 +1720,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1737,7 +1737,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -1778,7 +1778,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1825,7 +1825,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_elf(self.paths["ksh_path"])
 
                 # Check that we only report a single external dependency
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -1845,7 +1845,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -1902,7 +1902,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 t_path = self.make_manifest(
                     self.int_hardlink_manf_test_symlink)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
 
         def test_str_methods(self):
@@ -1950,7 +1950,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 # This should fail because the "foo" directory is not given
                 # as a proto_dir.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                d_map, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [], convert=False)
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
@@ -1964,7 +1964,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 # This should work since the "foo" directory has been added to
                 # the list of proto_dirs to use.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                d_map, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir,
                     os.path.join(self.proto_dir, "foo")], {}, [], convert=False)
                 if es:
@@ -1976,7 +1976,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 # This should be different because the empty text file
                 # is found before the binary file.
                 self.make_proto_text_file(self.paths["curses_path"])
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                d_map, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir,
                     os.path.join(self.proto_dir, "foo")], {}, [],
                     remove_internal_deps=False, convert=False)
@@ -1991,7 +1991,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 # This should find the binary file first and thus produce
                 # a depend action.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                d_map, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [os.path.join(self.proto_dir, "foo"),
                     self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
@@ -2007,7 +2007,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     self.paths["syslog_path"]))
                 # This test should fail because "foo" is not included in the
                 # list of proto_dirs.
-                ds, es, ms, pkg_attrs = \
+                ds, es, ws, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
                         {}, [], convert=False)
                 if len(es) != 1:
@@ -2022,7 +2022,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 # This test should pass because the needed directory has been
                 # added to the list of proto_dirs.
-                ds, es, ms, pkg_attrs = \
+                ds, es, ws, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path,
                         [self.proto_dir, os.path.join(self.proto_dir, "foo")],
                         {}, [], convert=False)
@@ -2036,7 +2036,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 # scripts.
 
                 def _py_check_all_res(res):
-                        ds, es, ms, pkg_attrs = res
+                        ds, es, ws, ms, pkg_attrs = res
                         mod_pats = [
                             "{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
                             "{0}.so", "{0}module.so",
@@ -2082,7 +2082,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     self.python_text)
                 # This should have an error because it cannot find the file
                 # needed.
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
@@ -2169,7 +2169,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.int_smf_manf)
                 self.make_smf_test_files()
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -2192,7 +2192,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     "int_smf_manf")
 
                 # verify that removing internal dependencies works as expected
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=True,
                     convert=False)
                 self.assertTrue(len(ds) == 0, "Expected 0 dependencies, got {0}".format(
@@ -2207,7 +2207,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.ext_smf_manf)
                 self.make_smf_test_files()
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 if es != []:
@@ -2239,7 +2239,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.broken_smf_manf)
                 self.make_smf_test_files()
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2289,7 +2289,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.faildeps_smf_manf)
                 self.make_smf_test_files()
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2322,7 +2322,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.delete_smf_manf)
                 self.make_smf_test_files()
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2365,7 +2365,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 # multiple SMF manifests.
                 t_path = self.make_manifest(self.int_req_svc_smf_manf)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
                 self.assertTrue(len(es) == 0, "Detected {0} error(s), expected 0".format(
@@ -2388,7 +2388,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 # Test the second case: specific dependencies on instances
                 # satisfied by multiple (different) SMF manifests.
                 t_path = self.make_manifest(self.int_req_inst_smf_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
                 self.assertTrue(len(es) == 0, "Detected {0} error(s), expected 0".format(
@@ -2418,7 +2418,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 # multiple SMF manifests, but with one bypassed.
                 t_path = self.make_manifest(self.bypassed_int_req_svc_smf_manf)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     t_path, [self.proto_dir], {}, [],
                     remove_internal_deps=False, convert=False)
                 self.assertTrue(len(es) == 0, "Detected {0} error(s), expected 0".format(
@@ -2442,7 +2442,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_runpath_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(es==[], "Unexpected errors reported: {0}".format(es))
@@ -2467,14 +2467,14 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
                 # test a runpath with multiple values
                 t_path = self.make_manifest(self.python_invalid_runpath_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(es != [], "No errors reported for broken runpath")
 
                 # test a runpath with multiple $PD_DEFAULT_RUNPATH components
                 t_path = self.make_manifest(self.python_invalid_runpath2_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(es != [], "No errors reported for broken runpath")
@@ -2485,7 +2485,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_empty_runpath_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(es != [], "No errors reported for empty runpath")
@@ -2582,7 +2582,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_bypass_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(self.verify_bypass(ds, es, [
@@ -2598,7 +2598,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     "opt/pkgdep_runpath/pdtest.pyc"]))
 
                 # now run this again as a control, this time skipping bypass
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False, ignore_bypass=True)
                 # the first two items in the list were previously bypassed
@@ -2619,7 +2619,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     self.ksh_bypass_dup_manf, self.ksh_bypass_filename_manf]:
                         t_path = self.make_manifest(manifest)
 
-                        ds, es, ms, pkg_attrs = \
+                        ds, es, ws, ms, pkg_attrs = \
                             dependencies.list_implicit_deps(t_path,
                             [self.proto_dir], {}, [],
                             remove_internal_deps=False, convert=False)
@@ -2629,7 +2629,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                             ["usr/bin/ksh"]), "Ksh script was not bypassed")
 
                         # don't perform bypass
-                        ds, es, ms, pkg_attrs = \
+                        ds, es, ws, ms, pkg_attrs = \
                             dependencies.list_implicit_deps(t_path,
                             [self.proto_dir], {}, [],
                             remove_internal_deps=False, convert=False,
@@ -2645,7 +2645,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_wildcard_bypass_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2659,7 +2659,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(
                     self.python_wildcard_dir_bypass_manf)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2675,7 +2675,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(
                     self.python_wildcard_file_bypass_manf)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(self.verify_bypass(ds, es, [
@@ -2695,7 +2695,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(
                     self.python_wildcard_combo_bypass_manf)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
                 self.assertTrue(self.verify_bypass(ds, es, [
@@ -2716,7 +2716,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 t_path = self.make_manifest(self.python_bypass_nomatch_manf)
                 self.make_python_test_files(2.7)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
@@ -2744,7 +2744,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 gen_paths = all_paths(ds)
 
                 # now run again, without trying to perform dependency bypass
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False, ignore_bypass=True)
 
@@ -2772,14 +2772,14 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                 self.make_python_test_files(2.7)
                 self.make_elf(self.paths["curses_path"])
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False)
 
                 smf.SMFManifestDependency._clear_cache()
 
                 # now run the same function, this time using our symlinked dir
-                dsl, esl, msl, pkg_attrsl = dependencies.list_implicit_deps(
+                dsl, esl, wsl, msl, pkg_attrsl = dependencies.list_implicit_deps(
                     t_path, [linked_proto], {}, [],
                     remove_internal_deps=False, convert=False)
 

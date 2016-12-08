@@ -174,7 +174,7 @@ def generate(args):
                     retcode=EXIT_BADOPT)
 
         try:
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
                     proto_dirs, dyn_tok_conv, run_paths, remove_internal_deps)
         except (actions.MalformedActionError, actions.UnknownActionError) as e:
                 error(_("Could not parse manifest {manifest} because of the "
@@ -200,6 +200,8 @@ def generate(args):
         if show_missing:
                 for m in ms:
                         emsg(m)
+        for w in ws:
+                emsg(w)
 
         for e in es:
                 emsg(e)

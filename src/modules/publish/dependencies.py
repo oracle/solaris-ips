@@ -125,7 +125,7 @@ class UnresolvedDependencyError(DependencyError):
                             pth=self.path, dep=dep_str)
 
 
-class MissingPackageVariantError(DependencyError):
+class UndeclaredVariantWarning(DependencyError):
         """This exception is used when an action is tagged with a variant or
         variant value which the package is not tagged with."""
 
@@ -135,9 +135,9 @@ class MissingPackageVariantError(DependencyError):
                 self.path = pth
 
         def __str__(self):
-                return _("The action delivering {path} is tagged with a "
-                    "variant type or value not tagged on the package. "
-                    "Dependencies on this file may fail to be reported.\n"
+                return _("WARNING: The action delivering {path} is tagged with "
+                    "a variant type or value not declared for the package; use "
+                    "pkglint for details.\n"
                     "The action's variants are: {act}\nThe package's "
                     "variants are: {pkg}").format(
                         path=self.path,
@@ -267,9 +267,9 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
 
         m, manifest_errs = __make_manifest(file_path, proto_dirs)
         pkg_vars = m.get_all_variants()
-        deps, elist, missing, pkg_attrs = list_implicit_deps_for_manifest(m,
-            proto_dirs, pkg_vars, dyn_tok_conv, run_paths,
-            ignore_bypass=ignore_bypass)
+        deps, elist, warnings, missing, pkg_attrs = \
+            list_implicit_deps_for_manifest(m, proto_dirs, pkg_vars,
+                dyn_tok_conv, run_paths, ignore_bypass=ignore_bypass)
         rid_errs = []
         if remove_internal_deps:
                 deps, rid_errs = resolve_internal_deps(deps, m, proto_dirs,
@@ -277,7 +277,7 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
         if convert:
                 deps = convert_to_standard_dep_actions(deps)
 
-        return deps, manifest_errs + elist + rid_errs, missing, pkg_attrs
+        return deps, manifest_errs + elist + rid_errs, warnings, missing, pkg_attrs
 
 def convert_to_standard_dep_actions(deps):
         """Convert pkg.base.Dependency objects to
@@ -336,15 +336,7 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
                 pvars = a.get_variant_template()
                 if not pvars:
                         pvars = pkg_vars
-                else:
-                        if not pvars.issubset(pkg_vars):
-                                # This happens when an action in a package is
-                                # tagged with a variant type or value which the
-                                # package has not been tagged with.
-                                errs.append(
-                                    MissingPackageVariantError(pvars, pkg_vars,
-                                        a.attrs["path"]))
-                        pvars.merge_unknown(pkg_vars)
+                assert pvars.issubset(pkg_vars)
                 pvc = variants.VariantCombinations(pvars, satisfied=True)
                 p = a.attrs["path"]
                 bn = os.path.basename(p)
@@ -400,11 +392,13 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
         pkg.depend.bypass-generate attributes - this is primarily to aid
         debugging and testing.
 
-        Returns a tuple of three lists.
+        Returns a tuple of four lists.
 
         'deps' is a list of dependencies found for the given Manifest.
 
         'elist' is a list of errors encountered while finding dependencies.
+
+        'warnings' is a list of warnings encountered while finding dependencies.
 
         'missing' is a dictionary mapping a file type that isn't recognized by
         portable.get_file_type to a file which produced that filetype.
@@ -416,16 +410,29 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
         deps = []
         elist = []
         missing = {}
+        warnings = []
         pkg_attrs = {}
         act_list = list(mfst.gen_actions_by_type("file"))
         file_types = portable.get_file_type(act_list)
+        var_dict = dict()
+
+        # Collect all variants that are used and not declared and emit a warning
+        # for each of them.
+        for a in mfst.gen_actions():
+                pvars = a.get_variant_template()
+                for k, v in six.iteritems(pvars):
+                        if k not in pkg_vars or not v.issubset(pkg_vars[k]):
+                                warnings.append(UndeclaredVariantWarning(
+                                    pvars, pkg_vars.copy(), a.attrs["path"]))
+                                var_dict.setdefault(k, set()).update(v)
+        pkg_vars.merge_unknown(var_dict)
 
         if portable.PD_RUN_PATH in mfst:
                 # check for multiple values in a set attribute
                 run_path_str = mfst[portable.PD_RUN_PATH]
                 es = __verify_run_path(run_path_str)
                 if es:
-                        return deps, elist + es, missing, pkg_attrs
+                        return deps, elist + es, warnings, missing, pkg_attrs
                 run_paths = run_path_str.split(":")
 
         mf_bypass = []
@@ -440,7 +447,8 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                         a_run_path_str = a.attrs[portable.PD_RUN_PATH]
                         es = __verify_run_path(a_run_path_str)
                         if es:
-                                return deps, elist + es, missing, pkg_attrs
+                                return (deps, elist + es, warnings, missing,
+                                    pkg_attrs)
                         a_run_paths = a_run_path_str.split(":")
 
                 bypass = __makelist(
@@ -477,7 +485,7 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                                 elist.append(e)
         for a in mfst.gen_actions_by_type("hardlink"):
                 deps.extend(hardlink.process_hardlink_deps(a, pkg_vars))
-        return deps, elist, missing, pkg_attrs
+        return deps, elist, warnings, missing, pkg_attrs
 
 def __update_pkg_attrs(pkg_attrs, new_attrs):
         """Update the pkg_attrs dictionary with the contents of new_attrs."""

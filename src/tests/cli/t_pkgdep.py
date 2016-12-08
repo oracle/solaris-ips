@@ -877,6 +877,12 @@ file NOHASH group=bin mode=0755 owner=root path=var/log/syslog variant.opensolar
 hardlink path=var/log/foobar target=syslog
 """
 
+        bug_18640960_manf = """\
+set name=variant.opensolaris.zone value=global
+file NOHASH group=bin mode=0755 owner=root path=var/log/syslog variant.opensolaris.zone=nonglobal
+hardlink path=var/log/foobar target=syslog
+"""
+
         bug_15958_manf = """\
 set name=variant.opensolaris.zone value=global value=nonglobal
 """ + bug_16808_manf
@@ -885,10 +891,16 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=syslog pkg.debug.depend.path=var/log pkg.debug.depend.reason=var/log/foobar pkg.debug.depend.type=hardlink type=require variant.opensolaris.zone=nonglobal
 """
 
-        bug_16808_error = """\
-The action delivering var/log/syslog is tagged with a variant type or value not tagged on the package. Dependencies on this file may fail to be reported.
-The action's variants are: variant.opensolaris.zone="global"
-The package's variants are: <none>
+        bug_16808_warning = """\
+WARNING: The action delivering var/log/syslog is tagged with a variant type or value not declared for the package; use pkglint for details.
+The action's variants are:  variant.opensolaris.zone="global"
+The package's variants are: {}
+"""
+
+        bug_18640960_warning = """\
+WARNING: The action delivering var/log/syslog is tagged with a variant type or value not declared for the package; use pkglint for details.
+The action's variants are:  variant.opensolaris.zone="global"
+The package's variants are: {}
 """
 
         res_elf_warning = """\
@@ -1291,7 +1303,7 @@ SYMBOL_SCOPE {
                     filter_files=[bar_path], shared_lib=True,
                     obj_files=[foo_path])
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
@@ -1308,7 +1320,7 @@ SYMBOL_SCOPE {
                     mapfile=mapfile_1_path, obj_files=[foo_path],
                     shared_lib=True)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
@@ -1324,7 +1336,7 @@ SYMBOL_SCOPE {
                     optional_filters=["xxx.so"], obj_files=[foo_path],
                     shared_lib=True)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
@@ -1341,7 +1353,7 @@ SYMBOL_SCOPE {
                     mapfile=mapfile_2_path, obj_files=[foo_path],
                     shared_lib=True)
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
@@ -1358,7 +1370,7 @@ SYMBOL_SCOPE {
                     deferred_libs=[bar_path], shared_lib=True,
                     obj_files=[foo_path])
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
@@ -1374,7 +1386,7 @@ SYMBOL_SCOPE {
                     lazy_libs=[bar_path], shared_lib=True,
                     obj_files=[foo_path])
 
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 __check_res(es, ms, pkg_attrs)
                 self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
@@ -1411,7 +1423,7 @@ int main() { return 1; }
                 # Test that AUDIT dependency can be detected.
                 self.make_elf(output_path=so_path, program_text=foo_c,
                     shared_lib=True, record_audit=True)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     manifest1_path, [self.test_proto_dir], {}, [],
                     convert=False)
 
@@ -1424,7 +1436,7 @@ int main() { return 1; }
                 # Test that DEPAUDIT dependency can be detected.
                 self.make_elf(output_path=main_path, program_text=main_c,
                     deferred_libs=[so_path])
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     manifest2_path, [self.test_proto_dir], {}, [],
                     convert=False)
                 found_file_deps = sorted(set(itertools.chain.from_iterable(
@@ -2594,7 +2606,7 @@ dir group=bin mode=0755 owner=root path=b/bin
 file NOHASH group=bin mode=0555 owner=root path=b/bin/perl
 """
                 internal_dep_pth = self.make_manifest(internal_dep_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     internal_dep_pth, [self.test_proto_dir], {}, [],
                     convert=False)
 
@@ -2620,7 +2632,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=b
 file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=c
 """
                 internal_dep_pth = self.make_manifest(internal_dep_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     internal_dep_pth, [self.test_proto_dir], {}, [],
                     convert=False)
 
@@ -2657,7 +2669,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d
                 foo_path = self.make_proto_text_file("bar/foo",
                     "#!/usr/bin/perl\n\n")
                 internal_dep_pth = self.make_manifest(internal_dep_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     internal_dep_pth, [self.test_proto_dir], {}, [],
                     convert=False)
 
@@ -2701,7 +2713,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
                 foo_path = self.make_proto_text_file("bar/foo",
                     "#!/usr/bin/perl\n\n")
                 internal_dep_pth = self.make_manifest(internal_dep_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     internal_dep_pth, [self.test_proto_dir], {}, [],
                     convert=False)
 
@@ -2725,13 +2737,21 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
 
         def test_bug_16808(self):
                 """Test that if an action uses a variant not declared at the
-                package level, an error is reported."""
+                package level, an warning is reported."""
 
                 tp = self.make_manifest(self.bug_16808_manf)
                 self.make_proto_text_file("var/log/syslog", "text")
-                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp),
-                    exit=1)
-                self.check_res(self.bug_16808_error, self.errout)
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
+                self.check_res(self.bug_16808_warning, self.errout)
+
+        def test_bug_18640960(self):
+                """Test that if an action uses a variant value not declared at the
+                package level, an warning is reported."""
+
+                tp = self.make_manifest(self.bug_16808_manf)
+                self.make_proto_text_file("var/log/syslog", "text")
+                self.pkgdepend_generate("-d {0} {1}".format(self.test_proto_dir, tp))
+                self.check_res(self.bug_18640960_warning, self.errout)
 
         def test_bug_17808(self):
                 """Test that a 64-bit binary has its runpaths set to /lib/64 and
@@ -2739,7 +2759,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
 
                 self.make_elf(bit64=True, output_path="usr/bin/x64")
                 mp = self.make_manifest(self.test_64bit_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
                 self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
@@ -2823,7 +2843,7 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
                     "usr/bin/amd64/python{0}-config".format(py_ver_default),
                      self.python_amd_text)
                 mp = self.make_manifest(self.python_amd_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
                 self.assertEqual(len(ds), 3, "\n".join([str(d) for d in ds]))
@@ -2840,7 +2860,7 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
                     "usr/bin/sparcv9/python{0}-config".format(py_ver_default),
                     self.python_amd_text)
                 mp = self.make_manifest(self.python_sparcv9_manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     mp, [self.test_proto_dir], {}, [], convert=False)
                 self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
                 self.assertEqual(len(ds), 3, "\n".join([str(d) for d in ds]))
@@ -2901,7 +2921,7 @@ set name=pkg.fmri value=bug_18019@1.0,5.11-1
 depend fmri=pkg:/a@0,5.11-1 type=conditional
 """
                 manf_path = self.make_manifest(manf)
-                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
                     manf_path, [self.test_proto_dir], {}, [],
                     convert=False)
                 self.assertEqual(len(es), 1)
