@@ -219,6 +219,7 @@ def move(src, dst):
         try:
                 os.rename(src, dst)
         except EnvironmentError as e:
+                # Access to protected member; pylint: disable=W0212
                 s = os.lstat(src)
 
                 if e.errno == errno.EXDEV:
@@ -238,7 +239,6 @@ def move(src, dst):
                         raise shutil.Error("Destination path '{0}' already "
                             "exists".format(dst))
                 else:
-                        # Access to protected member; pylint: disable=W0212
                         raise api_errors._convert_error(e)
 
 def expanddirs(dirs):
