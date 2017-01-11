@@ -154,6 +154,8 @@ mirror_cache_dir = 'var/cache/pkg/mirror'
 # together if the os supports it and otherwise copied.
 hardlink_modules = []
 
+symlink_modules = [('cronjob-removal.sh', 'usr/lib/update-refresh.sh')]
+
 scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
@@ -172,7 +174,8 @@ scripts_sunos = {
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
                 ['sysrepo.py', 'pkg.sysrepo'],
-                ['depot-config.py', "pkg.depot-config"]
+                ['depot-config.py', 'pkg.depot-config'],
+                ['cronjob-removal.sh', 'cronjob-removal.sh'],
                 ],
         svc_method_dir: [
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
@@ -744,6 +747,7 @@ class install_func(_install):
                 """
 
                 _install.run(self)
+
                 for o_src, o_dest in hardlink_modules:
                         for e in [".py", ".pyc"]:
                                 src = util.change_root(self.root_dir, o_src + e)
@@ -776,6 +780,10 @@ class install_func(_install):
                                 os.chmod(dst_path,
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+                for target, o_dest in symlink_modules:
+                        dest = util.change_root(self.root_dir, o_dest)
+                        file_util.copy_file(target, dest, link="sym", update=True)
 
 class install_lib_func(_install_lib):
         """Remove the target files prior to the standard install_lib procedure
@@ -873,7 +881,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
         cddl_re = re.compile(b"\n(#\s*\n)?^[^\n]*CDDL HEADER START.+"
             b"CDDL HEADER END[^\n]*$(\n#\s*$)?", re.MULTILINE|re.DOTALL)
 
-        # Look for shebang line to replace with arch-specific Python executable. 
+        # Look for shebang line to replace with arch-specific Python executable.
         shebang_re = re.compile('^#!.*python[0-9]\.[0-9]')
         first_buf = True
 

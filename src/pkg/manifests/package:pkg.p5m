@@ -273,7 +273,9 @@ file path=usr/bin/pkgsend
 file path=usr/bin/pkgsign
 file path=usr/bin/pkgsurf
 dir  path=usr/lib
+file path=usr/lib/cronjob-removal.sh mode=0755
 file path=usr/lib/pkg.depotd mode=0755 pkg.depend.bypass-generate=.*six.*
+link path=usr/lib/update-refresh.sh target=cronjob-removal.sh
 dir  path=usr/share
 dir  path=usr/share/lib
 dir  path=usr/share/lib/pkg
