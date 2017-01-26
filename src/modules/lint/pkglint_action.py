@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -358,10 +358,13 @@ class PkgDupActionChecker(base.ActionChecker):
                                                         continue
 
                                                 action_types.add(a.name)
-                                                if key in a.attrs:
-                                                        val = a.attrs[key]
+                                                if not key in a.attrs:
+                                                        continue
+
+                                                for val in a.attrlist(key):
                                                         if val in attr:
-                                                                attr[val].append(pfmri)
+                                                                attr[val].append(
+                                                                    pfmri)
                                                         else:
                                                                 attr[val] = \
                                                                     [pfmri]

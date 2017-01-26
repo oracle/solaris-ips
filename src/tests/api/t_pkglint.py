@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -108,7 +108,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 dir path=usr/sbin/prtdiag owner=root group=sys mode=0755 variant.arch=sparc
-file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=64 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=64 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc pkg.content-hash=gzip:sha1:1d5eac1aab628317f9c088d21e4afda9c754bb76 pkg.content-hash=gzip:sha1:43dbb3e0bc142f399b61d171f926e8f91adcffe2
 """
 
 
