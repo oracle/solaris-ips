@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -11758,6 +11758,21 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                     close """,
         )
 
+        pkgs6 = (
+                """
+                    open p1@1.0,5.11-0.1.1.2
+                    add depend type=require fmri=pkg:/p2@2.0,5.11-0.1.1.2
+                    close """,
+                """
+                    open p2@1.0,5.11-0.1.1.2
+                    add set name=pkg.depend.explicit-install value=true
+                    close """,
+                """
+                    open p2@2.0,5.11-0.1.1.2
+                    add set name=pkg.depend.explicit-install value=true
+                    close """,
+        )
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.pkgsend_bulk(self.rurl, self.pkgs)
@@ -11891,6 +11906,13 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 # Test hierarchic dependencies.
                 self.pkgsend_bulk(self.rurl, self.pkgs5)
                 self.pkg("install -v Hiera1@1.0", exit=1)
+
+                # Test package with pkg.depend.explicit-install=true
+                # can be installed if a different version of it has already
+                # been installed.
+                self.pkgsend_bulk(self.rurl, self.pkgs6)
+                self.pkg("install p2@1.0")
+                self.pkg("install p1")
 
         def test_02_updateReject(self):
                 self.image_create(self.rurl, prefix="")

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Provides the interfaces and exceptions needed to determine which packages
@@ -1868,8 +1868,7 @@ class PkgSolver(object):
                         if pkg_name in self.__expl_install_dict and \
                             fmri in self.__expl_install_dict[pkg_name]:
                                 will_filter = False
-                        elif pkg_name in self.__installed_dict and \
-                            fmri == self.__installed_dict[pkg_name]:
+                        elif pkg_name in self.__installed_dict:
                                 will_filter = False
                 else:
                         will_filter = False
