@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -471,12 +471,14 @@ class Manifest(object):
 
                         afacets = []
                         avariants = []
-                        for attr, val in six.iteritems(attrs):
+                        for attr in attrs:
                                 if attr[:8] == "variant.":
-                                        variants[attr].add(val)
-                                        avariants.append((attr, val))
+                                        for val in a.attrlist(attr):
+                                                variants[attr].add(val)
+                                                avariants.append((attr, val))
                                 elif attr[:6] == "facet.":
-                                        afacets.append((attr, val))
+                                        for val in a.attrlist(attr):
+                                                afacets.append((attr, val))
 
                         for name, val in afacets:
                                 # Facet applicable to this particular variant

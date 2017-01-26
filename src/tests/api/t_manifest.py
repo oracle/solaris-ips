@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -39,6 +39,7 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.facet as facet
 import pkg.variant as variant
 
 # Set the path so that modules above can be found
@@ -423,6 +424,15 @@ dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
 dir owner=root path="opt/dir with " \\
     "whitespaces   " \\
     "in value" group=bin mode=0755 variant.debug.osnet=true
+dir owner=root path=test group=bin mode=0755 facet.test=true
+dir owner=root path=vdo group=bin mode=0755 variant.debug.osnet=true \\
+    variant.debug.osnet=false
+dir owner=root path=vo group=bin mode=0755 variant.osnet=true \\
+    variant.osnet=false
+dir owner=root path=fdm group=bin mode=0755 facet.debug.multi=true \\
+    facet.debug.multi=false
+dir owner=root path=fm group=bin mode=0755 facet.multi=true \\
+    facet.multi=false
 """
 
         def setUp(self):
@@ -468,12 +478,20 @@ dir owner=root path="opt/dir with " \\
                 """Verifies that get_directories() works as expected."""
 
                 v = variant.Variants({ "variant.arch": "sparc" })
-                excludes = [v.allow_action, lambda x, publisher: True]
+                vexcludes = [v.allow_action, lambda x, publisher: True]
+
+                f = facet.Facets({ "facet.test": False })
+                fexcludes = [lambda x, publisher: True, f.allow_action]
 
                 m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
                     pathname=self.foo_content_p5m)
 
                 all_expected = [
+                    "fdm",
+                    "fm",
+                    "vdo",
+                    "vo",
+                    "test",
                     "opt/dir with spaces in value",
                     "opt",
                     "usr/bin",
@@ -482,16 +500,33 @@ dir owner=root path="opt/dir with " \\
                 ]
 
                 var_expected = [
+                    "fdm",
+                    "fm",
                     "opt/dir with spaces in value",
-                    "opt"
+                    "opt",
+                    "test"
+                ]
+
+                facet_expected = [
+                    "fm",
+                    "vdo",
+                    "vo",
+                    "opt/dir with spaces in value",
+                    "opt",
+                    "usr/bin",
+                    "opt/dir with whitespaces   in value",
+                    "usr"
                 ]
 
                 def do_get_dirs():
                         actual = m1.get_directories([])
                         self.assertEqualDiff(sorted(all_expected), sorted(actual))
 
-                        actual = m1.get_directories(excludes)
+                        actual = m1.get_directories(vexcludes)
                         self.assertEqualDiff(sorted(var_expected), sorted(actual))
+
+                        actual = m1.get_directories(fexcludes)
+                        self.assertEqualDiff(sorted(facet_expected), sorted(actual))
 
                 # Verify get_directories works for initial load.
                 do_get_dirs()

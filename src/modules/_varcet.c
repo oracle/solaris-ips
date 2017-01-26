@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -136,6 +136,17 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 prep_ret:
 		if (facet_ret != NULL) {
 			char *vs = PyBytes_AS_STRING(value);
+			if (vs == NULL) {
+				/*
+				 * value is not a string; probably a list, so
+				 * don't allow the action since older clients
+				 * would fail anyway.
+				 */
+				PyErr_Clear();
+				all_ret = Py_False;
+				break;
+			}
+
 			if (strcmp(vs, "all") == 0) {
 				/*
 				 * If facet == 'all' and is False, then no more
@@ -202,14 +213,24 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 	while (PyDict_Next(act_attrs, &pos, &attr, &value)) {
 		char *as = PyBytes_AS_STRING(attr);
 		if (strncmp(as, "variant.", 8) == 0) {
-			PyObject *sysv = PyDict_GetItem(vars, attr);
 			char *av = PyBytes_AsString(value);
-			char *sysav = NULL;
+			if (av == NULL) {
+				/*
+				 * value is not a string; probably a list, so
+				 * don't allow the action since older clients
+				 * would fail anyway.
+				 */
+				PyErr_Clear();
+				Py_DECREF(act_attrs);
+				Py_RETURN_FALSE;
+			}
 
+			PyObject *sysv = PyDict_GetItem(vars, attr);
 			if (sysv == NULL) {
 				/*
 				 * If system variant value doesn't exist, then
-				 * allow the action if it is a variant that is "false".
+				 * allow the action if it is a variant that is
+				 * "false".
 				 */
 				if ((strncmp(as, "variant.", 8) == 0) &&
 				    (strncmp(av, "false", 5) != 0)) {
@@ -219,7 +240,7 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 				continue;
 			}
 
-			sysav = PyBytes_AsString(sysv);
+			char *sysav = PyBytes_AsString(sysv);
 			if (strcmp(av, sysav) != 0) {
 				/*
 				 * If system variant value doesn't match action
