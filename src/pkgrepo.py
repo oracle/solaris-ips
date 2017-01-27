@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -2325,7 +2325,7 @@ def handle_errors(func, *args, **kwargs):
                 except (MemoryError, EnvironmentError) as __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
-                                raise
+                                raise apx._convert_error(__e)
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
         except SystemExit as __e:

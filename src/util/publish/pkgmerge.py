@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -988,6 +988,9 @@ if __name__ == "__main__":
                 __ret = EXIT_OOPS
         except SystemExit as __e:
                 raise __e
+        except EnvironmentError as __e:
+                error(str(apx._convert_error(__e)))
+                __ret = EXIT_OOPS
         except Exception as __e:
                 traceback.print_exc()
                 error(misc.get_traceback_message(), exitcode=None)

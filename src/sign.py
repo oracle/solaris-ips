@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -398,6 +398,9 @@ if __name__ == "__main__":
                 __ret = EXIT_OOPS
         except SystemExit as _e:
                 raise _e
+        except EnvironmentError as _e:
+                error(str(api_errors._convert_error(_e)))
+                __ret = 1
         except:
                 traceback.print_exc()
                 error(misc.get_traceback_message())

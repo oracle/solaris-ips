@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -816,6 +816,10 @@ if __name__ == "__main__":
         except (actions.ActionError, RuntimeError,
             api_errors.ApiException) as _e:
                 error(_e)
+                cleanup()
+                __ret = pkgdefs.EXIT_OOPS
+        except EnvironmentError as _e:
+                error(api_errors._convert_error(_e))
                 cleanup()
                 __ret = pkgdefs.EXIT_OOPS
         except SystemExit as _e:
