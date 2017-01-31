@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -1517,7 +1517,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.assertTrue(crl.issuer == cert.issuer)
                 for rev in crl:
-                        if rev.serial_number == cert.serial:
+                        if rev.serial_number == cert.serial_number:
                                 break
                 else:
                         self.assertTrue(False, "Can not find revoked "

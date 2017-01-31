@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -2658,7 +2658,7 @@ pkg unset-publisher {0}
 
                 assert crl.issuer == cert.issuer
                 for rev in crl:
-                        if rev.serial_number != cert.serial:
+                        if rev.serial_number != cert.serial_number:
                                 continue
                         try:
                                 reason = rev.extensions.get_extension_for_oid(
