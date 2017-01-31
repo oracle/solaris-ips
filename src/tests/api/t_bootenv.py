@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -30,6 +30,7 @@ import pkg5unittest
 import unittest
 import os
 import sys
+import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
 
 class TestBootEnv(pkg5unittest.Pkg5TestCase):
@@ -85,6 +86,10 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
                 # This assumes that a1b2c3d4e5f6g7h8i9j0 is highly unlikely to
                 # be an existing BE on the system.
                 bootenv.BootEnv.check_be_name("a1b2c3d4e5f6g7h8i9j0")
+
+                self.assertRaises(api_errors.InvalidBENameException,
+                    bootenv.BootEnv.check_be_name,
+                    "rpool/ROOT/a1b2c3d4e5f6g7h8i9j0")
 
 
 if __name__ == "__main__":

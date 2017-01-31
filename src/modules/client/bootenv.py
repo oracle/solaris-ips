@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 import errno
 import os
@@ -45,7 +45,8 @@ import pkg.pkgsubprocess as subprocess
 try:
         # First, try importing the pybemgmt module.
         import bemgmt 
-        from bemgmt.be_errors import BeNameError, BeNotFoundError, BeMgmtError
+        from bemgmt.be_errors import BeFmriError, BeNameError, \
+            BeNotFoundError, BeMgmtError
 except ImportError:
         # Try importing older libbe
         try:
@@ -310,15 +311,14 @@ class BeadmV2BootEnv(GenericBootEnv):
                                 return
 
                         bemgr = bemgmt.BEManager()
-                        try:
-                                bemgr.validate_bename(be_name)
-                        except BeNameError:
-                                raise api_errors.InvalidBENameException(be_name)
+                        bemgr.validate_bename(be_name)
 
                         # Check whether there's already a BE or ZBE with
                         # the given name.  
                         be_obj = bemgr.be_exists(be_name)
-                except Exception:
+                except (BeFmriError, BeNameError):
+                        raise api_errors.InvalidBENameException(be_name)
+                except BeMgmtError:
                         raise api_errors.BENamingNotSupported(be_name)
                 
                 if be_obj:
