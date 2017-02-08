@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 PYTHON27 = /usr/bin/python2.7
@@ -99,9 +99,14 @@ packages: install pylint pep8
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
-test:
+test-27:
 	$(PYTHON27) tests/run.py -j ${JOBS} -v
+
+test-34:
 	$(PYTHON34) tests/run.py -j ${JOBS} -v
+
+test:
+	$(MAKE) -k test-27 test-34 JOBS=${JOBS}
 
 test-verbose:
 	$(PYTHON27) setup.py test -v
