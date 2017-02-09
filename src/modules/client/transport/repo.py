@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -1746,16 +1746,17 @@ class _FilesystemRepo(TransportRepo):
                 if progtrack:
                         progclass = FileProgress
                         progtrack = progclass(progtrack)
+                sz = int(os.path.getsize(pth))
 
                 try:
-                        self._frepo.add_file(trans_id, pth, basename)
+                        self._frepo.add_file(trans_id, pth, basename, size=sz)
                 except svr_repo.RepositoryError as e:
                         if progtrack:
                                 progtrack.abort()
                         raise tx.TransportOperationError(str(e))
                 else:
                         if progtrack:
-                                sz = int(os.path.getsize(pth))
+
                                 progtrack.progress_callback(0, 0, sz, sz)
 
         def publish_add_manifest(self, pth, header=None, trans_id=None):

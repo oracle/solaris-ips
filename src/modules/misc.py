@@ -590,7 +590,7 @@ def get_data_digest(data, length=None, return_content=False,
         paragraph.
         """
 
-        bufsz = 128 * 1024
+        bufsz = PKG_FILE_BUFSIZ
         closefobj = False
         if isinstance(data, six.string_types):
                 f = open(data, "rb", bufsz)
@@ -747,15 +747,27 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
                 fobj = _GZWriteWrapper(opath, chashes)
                 ofile = PkgGzipFile(mode="wb", fileobj=fobj)
 
-                nbuf = size // bufsz
+                if isinstance(data, (six.string_types, bytes)):
+                        # caller passed data in string
+                        nbuf = size // bufsz
+                        for n in range(0, nbuf):
+                                l = n * bufsz
+                                h = (n + 1) * bufsz
+                                ofile.write(data[l:h])
 
-                for n in range(0, nbuf):
-                        l = n * bufsz
-                        h = (n + 1) * bufsz
-                        ofile.write(data[l:h])
+                        m = nbuf * bufsz
+                        ofile.write(data[m:])
+                elif data:
+                        # assume caller passed file-like object
+                        if bufsz > size:
+                                bufsz = size
 
-                m = nbuf * bufsz
-                ofile.write(data[m:])
+                        while True:
+                                chunk = data.read(bufsz)
+                                if not chunk:
+                                        break
+                                ofile.write(chunk)
+
                 ofile.close()
                 fobj.close()
                 csize = str(fobj.size)

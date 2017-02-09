@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Provides a set of publishing interfaces for interacting with a pkg(7)
@@ -308,7 +308,7 @@ class TransportTransaction(object):
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=msg)
 
-        def __get_elf_attrs(self, action, fname, data):
+        def __get_elf_attrs(self, action, fname, size):
                 """Helper function to get the ELF information."""
 
                 # This currently uses the presence of "elfhash" to indicate the
@@ -318,18 +318,31 @@ class TransportTransaction(object):
                 need_elf_info = False
                 need_elfhash = False
 
-                if haveelf and data[:4] == b"\x7fELF":
+                bufsz = misc.PKG_FILE_BUFSIZ
+                if bufsz > size:
+                        bufsz = size
+
+                f = action.data()
+                magic = f.read(4)
+                if haveelf and magic == b"\x7fELF":
                         need_elf_info = (
                             "elfarch" not in action.attrs or
                             "elfbits" not in action.attrs)
                         need_elfhash = "elfhash" not in action.attrs
                 if not need_elf_info or not need_elfhash:
+                        f.close()
                         return misc.EmptyDict
 
                 elf_name = os.path.join(self._tmpdir,
                     ".temp-{0}".format(fname))
                 with open(elf_name, "wb") as elf_file:
-                        elf_file.write(data)
+                        elf_file.write(magic)
+                        while True:
+                                data = f.read(bufsz)
+                                if not data:
+                                    break
+                                elf_file.write(data)
+                f.close()
 
                 attrs = {}
                 if need_elf_info:
@@ -364,8 +377,8 @@ class TransportTransaction(object):
                 os.unlink(elf_name)
                 return attrs
 
-        def __get_compressed_attrs(self, fhash, data, size):
-                """Given a fhash, data, and size of a file, returns a tuple
+        def __get_compressed_attrs(self, fhash):
+                """Given a fhash of a file, returns a tuple
                 of (csize, chashes) where 'csize' is the size of the file
                 in the repository and 'chashes' is a dictionary containing
                 any hashes of the compressed data known by the repository."""
@@ -424,9 +437,8 @@ class TransportTransaction(object):
                         return
 
                 # Get all hashes for this action.
-                hashes, data = misc.get_data_digest(action.data(),
-                    length=size, return_content=True,
-                    hash_attrs=digest.DEFAULT_HASH_ATTRS,
+                hashes, dummy = misc.get_data_digest(action.data(),
+                    length=size, hash_attrs=digest.DEFAULT_HASH_ATTRS,
                     hash_algs=digest.HASH_ALGS)
                 # Set the hash member for backwards compatibility and
                 # remove it from the dictionary.
@@ -457,16 +469,15 @@ class TransportTransaction(object):
                         # We haven't processed this file before, determine if
                         # it needs to be uploaded and what information the
                         # repository knows about it.
-                        elf_attrs = self.__get_elf_attrs(action, fname, data)
-                        csize, chashes = self.__get_compressed_attrs(fname,
-                            data, size)
+                        elf_attrs = self.__get_elf_attrs(action, fname, size)
+                        csize, chashes = self.__get_compressed_attrs(fname)
 
                         # 'csize' indicates that if file needs to be uploaded.
                         fileneeded = csize is None
                         if fileneeded:
                                 fpath = os.path.join(self._tmpdir, fname)
                                 csize, chashes = misc.compute_compressed_attrs(
-                                    fname, data=data, size=size,
+                                    fname, data=action.data(), size=size,
                                     compress_dir=self._tmpdir)
                                 # Upload the compressed file for each action.
                                 self.add_file(fpath, basename=fname,
@@ -480,7 +491,7 @@ class TransportTransaction(object):
                                 # avoids writing the file to get the attributes
                                 # we need.
                                 csize, chashes = misc.compute_compressed_attrs(
-                                    fname, data=data, size=size)
+                                    fname, data=action.data(), size=size)
 
                         self.__uploads[fname] = (elf_attrs, csize, chashes)
 
