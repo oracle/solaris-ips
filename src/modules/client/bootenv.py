@@ -44,7 +44,7 @@ import pkg.pkgsubprocess as subprocess
 # also attempt to use the old libbe module, if it exists.
 try:
         # First, try importing the pybemgmt module.
-        import bemgmt 
+        import bemgmt
         from bemgmt.be_errors import BeFmriError, BeNameError, \
             BeNotFoundError, BeMgmtError
 except ImportError:
@@ -53,7 +53,7 @@ except ImportError:
                 import libbe as be
         except ImportError:
                 try:
-                        # try importing using libbe module's old name (pre 172) 
+                        # try importing using libbe module's old name (pre 172)
                         import libbe_py as be
                 except ImportError:
                         # All recovery actions are disabled when libbe can't
@@ -156,7 +156,7 @@ class GenericBootEnv(object):
                 destroy the snapshot for the live and non-live case."""
 
                 self.destroy_snapshot()
-        
+
 
 class BeadmV2BootEnv(GenericBootEnv):
         """A BeadmV2BootEnv object is an object containing the
@@ -174,11 +174,11 @@ class BeadmV2BootEnv(GenericBootEnv):
 
                 GenericBootEnv.__init__(self, img, progress_tracker)
 
-                self.bemgr = bemgmt.BEManager()
+                self.bemgr = bemgmt.BEManager(logger=logger)
                 self.img_be = None
                 self.be_clone = None
                 try:
-                    self.beList = self.bemgr.list() 
+                    self.beList = self.bemgr.list()
                 except Exception:
                     # Unable to get the list of BEs
                     raise RuntimeError("recoveryDisabled")
@@ -247,7 +247,7 @@ class BeadmV2BootEnv(GenericBootEnv):
 
         @staticmethod
         def copy_be(src_be_name, dst_be_name):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 try:
                         bemgr.copy(dst_be_fmri=dst_be_name,
                                    src_be_fmri=src_be_name)
@@ -256,12 +256,12 @@ class BeadmV2BootEnv(GenericBootEnv):
 
         @staticmethod
         def rename_be(orig_name, new_name):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 bemgr.rename(orig_name, new_name)
 
         @staticmethod
         def destroy_be(be_name):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 return bemgr.destroy(be_name, destroy_snaps=True,
                                      force_umount=True)
 
@@ -269,7 +269,7 @@ class BeadmV2BootEnv(GenericBootEnv):
         def cleanup_be(be_name):
                 ''' Force unmount and destroy BE.  Ignore all errors '''
 
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 try:
                         be_obj = bemgr.list(fmri=be_name)
                         be_obj = be_obj[0]
@@ -290,18 +290,18 @@ class BeadmV2BootEnv(GenericBootEnv):
 
         @staticmethod
         def mount_be(be_name, mntpt, include_bpool=False):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 bemgr.mount(fmri=be_name, mountpoint=mntpt,
                             mount_bpool=include_bpool)
-                
+
         @staticmethod
         def unmount_be(be_name, force=False):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 bemgr.unmount(fmri=be_name, force=force)
 
         @staticmethod
         def set_default_be(be_name):
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 return bemgr.activate(be_name)
 
         @staticmethod
@@ -310,17 +310,17 @@ class BeadmV2BootEnv(GenericBootEnv):
                         if be_name is None:
                                 return
 
-                        bemgr = bemgmt.BEManager()
+                        bemgr = bemgmt.BEManager(logger=logger)
                         bemgr.validate_bename(be_name)
 
                         # Check whether there's already a BE or ZBE with
-                        # the given name.  
+                        # the given name.
                         be_obj = bemgr.be_exists(be_name)
                 except (BeFmriError, BeNameError):
                         raise api_errors.InvalidBENameException(be_name)
                 except BeMgmtError:
                         raise api_errors.BENamingNotSupported(be_name)
-                
+
                 if be_obj:
                         # A BE or Zone BE with the given be_name exists.
                         zonename = None
@@ -328,7 +328,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                                 zonename = be_obj.be_group.name
                         raise api_errors.DuplicateBEName(
                             be_name, zonename=zonename)
-                   
+
         @staticmethod
         def get_be_list(raise_error=False):
                 # This check enables the test suite to run much more quickly.
@@ -337,7 +337,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                 if "PKG_NO_LIVE_ROOT" in os.environ:
                         return BootEnvNull.get_be_list()
 
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 try:
                     beList = bemgr.list()
                 except Exception:
@@ -360,13 +360,13 @@ class BeadmV2BootEnv(GenericBootEnv):
                 # The bemgr.list() call in the bemgmt module scans the
                 # whole system, and might take a long time depending
                 # on how many BEs are there on the system.
-                # 
+                #
                 # This is necessary because pkg5unittest (eventually) imports
                 # the module before the environment is sanitized.
                 if "PKG_NO_LIVE_ROOT" in os.environ:
                         return BootEnvNull.get_be_name(path)
 
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 try:
                     beList = bemgr.list()
                 except Exception:
@@ -394,7 +394,7 @@ class BeadmV2BootEnv(GenericBootEnv):
         def get_uuid_be_dic():
                 """Return a dictionary of all boot environment names on the
                 system, keyed by uuid"""
-                bemgr = bemgmt.BEManager()
+                bemgr = bemgmt.BEManager(logger=logger)
                 try:
                     beList = bemgr.list()
                 except Exception:
@@ -408,7 +408,7 @@ class BeadmV2BootEnv(GenericBootEnv):
         @staticmethod
         def get_activated_be_name():
                 try:
-                        bemgr = bemgmt.BEManager()
+                        bemgr = bemgmt.BEManager(logger=logger)
                         be_obj = bemgr.get_active_on_boot_be()
                         return (be_obj.name)
                 except Exception:
@@ -417,7 +417,7 @@ class BeadmV2BootEnv(GenericBootEnv):
         @staticmethod
         def get_active_be_name():
                 try:
-                        bemgr = bemgmt.BEManager()
+                        bemgr = bemgmt.BEManager(logger=logger)
                         be_obj = bemgr.get_active_be()
                         return (be_obj.name)
                 except Exception:
@@ -443,7 +443,7 @@ class BeadmV2BootEnv(GenericBootEnv):
                                                 dst_bename_suffix=suffix)
                         except Exception as ex:
                                 raise api_errors.UnableToCopyBE()
-                        
+
                 elif be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
 
@@ -672,7 +672,7 @@ beadm activate {be_name_clone}
                                     name=self.be_clone.name,
                                     clone_dir=self.clone_dir))
                                 return
-                         
+
                         logger.error(_("The Boot Environment {name} failed "
                             "to be updated. A snapshot was taken before the "
                             "failed attempt and is mounted here {clone_dir}. "
@@ -704,7 +704,7 @@ class BeadmV1BootEnv(GenericBootEnv):
         logic for managing the recovery of image-modifying operations such
         as install, uninstall, and update.
 
-        Recovery is only enabled for ZFS filesystems. Any operation attempted 
+        Recovery is only enabled for ZFS filesystems. Any operation attempted
         on UFS will not be handled by BootEnv.
 
         This class makes use of usr/lib/python*/vendor-packages/libbe.py
@@ -920,7 +920,7 @@ class BeadmV1BootEnv(GenericBootEnv):
                 if "PKG_NO_LIVE_ROOT" in os.environ:
                         return BootEnvNull.get_be_list()
                 # Check for the old beList() API since pkg(1) can be
-                # back published and live on a system without the 
+                # back published and live on a system without the
                 # latest libbe.
                 rc = 0
 
@@ -1099,8 +1099,8 @@ class BeadmV1BootEnv(GenericBootEnv):
                         logger.error(_("pkg: '{cmd}' failed. \nwith "
                             "a return code of {ret:d}.").format(
                             cmd=" ".join(cmd), ret=ret))
-                    
-                
+
+
         def activate_image(self, set_active=True):
                 """Activate a clone of the BE being operated on.
                 If were operating on a non-live BE then
