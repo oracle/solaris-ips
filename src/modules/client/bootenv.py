@@ -179,9 +179,10 @@ class BeadmV2BootEnv(GenericBootEnv):
                 self.be_clone = None
                 try:
                     self.beList = self.bemgr.list()
-                except Exception:
-                    # Unable to get the list of BEs
-                    raise RuntimeError("recoveryDisabled")
+                except BeMgmtOpError:
+                        # Unable to get the list of BEs
+                        if portable.osname == "sunos":
+                                raise RuntimeError("recoveryDisabled")
 
                 # Need to find the name of the BE we're operating on in order
                 # to create a snapshot and/or a clone of the BE.
