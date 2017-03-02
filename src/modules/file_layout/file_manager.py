@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -237,7 +237,17 @@ class FileManager(object):
                         return open(cur_full_path, "rb")
                 return cur_full_path
 
+        def copy(self, hashval, src_path):
+                """Copy the content at "src_path" to the files under the name
+                "hashval".  Returns the path to the copied file."""
+                return self.__place(hashval, src_path, portable.copyfile)
+
         def insert(self, hashval, src_path):
+                """Add the content at "src_path" to the files under the name
+                "hashval".  Returns the path to the inserted file."""
+                return self.__place(hashval, src_path, portable.rename)
+
+        def __place(self, hashval, src_path, pfunc):
                 """Add the content at "src_path" to the files under the name
                 "hashval".  Returns the path to the inserted file."""
 
@@ -262,8 +272,8 @@ class FileManager(object):
 
                 while True:
                         try:
-                                # Move the file into place.
-                                portable.rename(src_path, dest_full_path)
+                                # Place the file.
+                                pfunc(src_path, dest_full_path)
                         except EnvironmentError as e:
                                 p_dir = os.path.dirname(dest_full_path)
                                 if e.errno == errno.ENOENT and \
@@ -288,7 +298,7 @@ class FileManager(object):
                                                         raise
 
                                         # Parent directory created successsfully
-                                        # so loop again to retry rename.
+                                        # so loop again to retry place.
                                 elif e.errno == errno.ENOENT and \
                                     not os.path.exists(src_path):
                                         if os.path.exists(dest_full_path):
@@ -324,7 +334,7 @@ class FileManager(object):
                                 else:
                                         raise
 
-                # Return the location of the inserted file to the caller.
+                # Return the location of the placed file to the caller.
                 return dest_full_path
 
         def remove(self, hashval):

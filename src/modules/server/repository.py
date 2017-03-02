@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from __future__ import print_function
 
@@ -1311,6 +1311,36 @@ class _RepoStore(object):
                 except (apx.CatalogError,
                     trans.TransactionError) as e:
                         raise RepositoryError(e)
+
+        def insert_file(self, fhash, src_path):
+                """Add the content at "src_path" to the files under the name
+                "hashval". Returns the path to the inserted file."""
+
+                if not self.file_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                if fhash is None:
+                        raise RepositoryFileNotFoundError(fhash)
+
+                fp = self.cache_store.insert(fhash, src_path)
+                if fp is not None:
+                        return fp
+                raise RepositoryFileNotFoundError(fhash)
+
+        def copy_file(self, fhash, src_path):
+                """Copy the content at "src_path" to the files under the name
+                "hashval".  Returns the path to the copied file."""
+
+                if not self.file_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                if fhash is None:
+                        raise RepositoryFileNotFoundError(fhash)
+
+                fp = self.cache_store.copy(fhash, src_path)
+                if fp is not None:
+                        return fp
+                raise RepositoryFileNotFoundError(fhash)
 
         def file(self, fhash):
                 """Returns the absolute pathname of the file specified by the
@@ -4141,6 +4171,7 @@ class Repository(object):
         root = property(lambda self: self.__root)
         rstores = property(lambda self: self.__rstores.values())
         writable_root = property(lambda self: self.__writable_root)
+        temp_root = property(lambda self: self.__tmp_root)
 
 
 class RepositoryConfig(object):

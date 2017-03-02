@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -134,6 +134,16 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
             close
         """
         elfdiff_exp = elfdiff_targ
+
+        # package that uses the same file elftest.so.2 as elfdiff package
+        elfshare_ref = """
+            open elfshare@1.0,5.11-0:20000101T000000Z
+            add file ro_data/elftest.so.2 mode=0755 owner=root group=bin path=/bin/share
+            close
+        """
+
+        elfshare_targ = elfshare_ref
+        elfshare_exp = elfshare_ref
 
         # Basic package with content change, should not be reversioned.
         hammerhead_ref = """
@@ -529,7 +539,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         pkgs = ["tiger", "sandtiger", "hammerhead", "blue", "bull", "mako",
             "white", "angel", "horn", "lemon", "leopard", "blacktip",
             "whitetip", "goblin", "reef", "sandbar", "greenland", "sleeper",
-            "whale", "thresher", "bamboo", "elftest", "elfdiff"]
+            "whale", "thresher", "bamboo", "elftest", "elfdiff", "elfshare"]
 
         def setUp(self):
                 """Start 3 depots, 1 for reference repo, 1 for the target and
@@ -552,7 +562,8 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                         self.exp_pkgs.append(getattr(self, exp))
 
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["selachii",
-                    "selachii", "selachii", "selachii"], start_depots=True)
+                    "selachii", "selachii", "selachii", "selachii", "selachii"],
+                    start_depots=True)
 
                 self.make_misc_files(self.misc_files)
 
@@ -573,6 +584,9 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
                 # keep a tmp repo to copy the target into for each new test
                 self.dpath_tmp = self.dcs[4].get_repodir()
+
+                self.dpath5 = self.dcs[5].get_repodir()
+                self.dpath6 = self.dcs[6].get_repodir()
 
         def test_0_options(self):
                 """Check for correct input handling."""
@@ -735,6 +749,27 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 # packages.
                 self.pkgsurf("-s {0} -r {1} -u".format(self.dpath_tmp,
                     self.dpath1))
+
+                self.pkgrepo("-s {0} verify --disable dependency".format(
+                    self.dpath_tmp))
+
+                # Create a target repo that just contains elfdiff and elfshare
+                # package. Ultimately the file elftest.so.1 and elftest.so.2
+                # should reside in the target repo.
+                self.pkgsend_bulk(self.dpath5, [self.elfdiff_targ,
+                    self.elfshare_targ])
+                self.pkgsurf("-s {0} -r {1} -u".format(self.dpath5,
+                    self.dpath1))
+                self.pkgrepo("-s {0} verify --disable dependency".format(
+                    self.dpath5))
+
+                # Test the HTTP-based reference repo case.
+                self.pkgsend_bulk(self.dpath6, [self.elfdiff_targ,
+                    self.elfshare_targ])
+                self.pkgsurf("-s {0} -r {1} -u".format(self.dpath6,
+                    self.durl1))
+                self.pkgrepo("-s {0} verify --disable dependency".format(
+                    self.dpath6))
 
                 ref_repo = self.get_repo(self.dpath1)
                 targ_repo = self.get_repo(self.dpath_tmp)

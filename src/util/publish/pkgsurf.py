@@ -401,7 +401,7 @@ def use_ref(a, deps, ignores):
         return False
 
 def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
-    cmp_policy):
+    cmp_policy, ref_repo, ref, ref_xport_cfg):
         """Do the repo reversion.
         Return 'True' if repo got modified, 'False' otherwise."""
 
@@ -635,6 +635,21 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                         # for these packages because they will not depend on
                         # anything we'll reversion.
                         rmani = ref_xport.get_manifest(pfmri)
+
+                        if cmp_policy == CMP_UNSIGNED:
+                                # Files with different signed content hash
+                                # values can have equivalent unsigned content
+                                # hash. CMP_UNSIGNED relaxes comparison
+                                # constraints and allows this case to compare
+                                # as equal. The reversioned manifest may
+                                # reference file data that is not present in
+                                # the target repository, so ensure that any
+                                # missing file data is added to the target
+                                # repository.
+                                add_missing_files(target_repo, pub,
+                                    latest_pkgs[p], pfmri, rmani, ref, ref_repo,
+                                    ref_xport, ref_xport_cfg, ref_pub)
+
                         opath = target_repo.manifest(latest_pkgs[p], pub)
                         os.remove(opath)
                         path = target_repo.manifest(pfmri, pub)
@@ -675,6 +690,60 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
         tracker.reversion_done()
 
         return True
+
+def add_missing_files(target_repo, pub, latest_pkg, pfmri, rmani, ref, ref_repo,
+    ref_xport, ref_xport_cfg, ref_pub):
+        """Add missing data from reference repository to target repository."""
+
+        tmani = get_manifest(target_repo, pub, latest_pkg)
+        trstore = target_repo.get_pub_rstore(pub)
+
+        thashes = frozenset(
+                ta.hash for ta in tmani.gen_actions() if ta.has_payload)
+        rhashes = frozenset(
+                ra.hash for ra in rmani.gen_actions() if ra.has_payload)
+        possible = rhashes - thashes
+
+        if ref.scheme == "file":
+                for h in possible:
+                        try:
+                                target_repo.file(h)
+                                continue
+                        except (sr.RepositoryUnsupportedOperationError,
+                            sr.RepositoryFileNotFoundError):
+                                pass
+
+                        try:
+                                trstore.copy_file(h, ref_repo.file(h))
+                        except (EnvironmentError,
+                            sr.RepositoryFileNotFoundError) as e:
+                                abort(err=_("Could not reversion file "
+                                    "{path}: {err}").format(path=h, err=str(e)))
+                return
+
+        pkgdir = ref_xport_cfg.get_pkg_dir(pfmri)
+        mfile = ref_xport.multi_file_ni(ref_pub, pkgdir)
+
+        downloaded = set()
+        for a in rmani.gen_actions():
+                if (a.has_payload and a.hash in possible and
+                    a.hash not in downloaded):
+                        try:
+                                target_repo.file(a.hash)
+                        except (sr.RepositoryUnsupportedOperationError,
+                            sr.RepositoryFileNotFoundError):
+                                downloaded.add(a.hash)
+                                mfile.add_action(a)
+        mfile.wait_files()
+
+        for h in downloaded:
+                src_path = os.path.join(pkgdir, h)
+                try:
+                        trstore.insert_file(h, src_path)
+                except (EnvironmentError,
+                    sr.RepositoryFileNotFoundError) as e:
+                        abort(err=_("Could not reversion file "
+                        "{path}: {err}").format(path=h, err=str(e)))
 
 def main_func():
 
@@ -726,9 +795,20 @@ def main_func():
         if not ref_repo_uri:
                 usage(_("A reference repository must be provided."))
 
-        t = misc.config_temp_root()
-        temp_root = tempfile.mkdtemp(dir=t,
-            prefix=global_settings.client_name + "-")
+        target = publisher.RepositoryURI(misc.parse_uri(repo_uri))
+        if target.scheme != "file":
+                abort(err=_("Target repository must be filesystem-based."))
+        try:
+                target_repo = sr.Repository(read_only=dry_run,
+                    root=target.get_pathname())
+        except sr.RepositoryError as e:
+                abort(str(e))
+
+        # Use the tmp directory in target repo for efficient file rename since
+        # files are in the same file system.
+        temp_root = target_repo.temp_root
+        if not os.path.exists(temp_root):
+                os.makedirs(temp_root)
 
         ref_incoming_dir = tempfile.mkdtemp(dir=temp_root)
         ref_pkg_root = tempfile.mkdtemp(dir=temp_root)
@@ -739,14 +819,14 @@ def main_func():
         transport.setup_publisher(ref_repo_uri, "ref", ref_xport,
             ref_xport_cfg, remote_prefix=True)
 
-        target = publisher.RepositoryURI(misc.parse_uri(repo_uri))
-        if target.scheme != "file":
-                abort(err=_("Target repository must be filesystem-based."))
-        try:
-                target_repo = sr.Repository(read_only=dry_run,
-                    root=target.get_pathname())
-        except sr.RepositoryError as e:
-                abort(str(e))
+        ref_repo = None
+        ref = publisher.RepositoryURI(misc.parse_uri(ref_repo_uri))
+        if ref.scheme == "file":
+                try:
+                        ref_repo = sr.Repository(read_only=dry_run,
+                            root=ref.get_pathname())
+                except sr.RepositoryError as e:
+                        abort(str(e))
 
         tracker = get_tracker()
 
@@ -774,7 +854,7 @@ def main_func():
                 processed_pubs += 1
 
                 rev = do_reversion(pub, ref_pub, target_repo, ref_xport,
-                    changes, ignores, cmp_policy)
+                    changes, ignores, cmp_policy, ref_repo, ref, ref_xport_cfg)
 
                 # Only rebuild catalog if anything got actually reversioned.
                 if rev and not dry_run:
