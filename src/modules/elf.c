@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <sys/stat.h>
@@ -234,6 +234,7 @@ get_info(PyObject *self, PyObject *args)
 	int fd;
 	hdrinfo_t *hi = NULL;
 	PyObject *pdict = NULL;
+	dyninfo_t *dyn = NULL;
 	if ((fd = py_get_fd(args)) < 0) {
 		return (NULL);
 	}
@@ -257,7 +258,19 @@ get_info(PyObject *self, PyObject *args)
 	}
 
 	pdict = PyDict_New();
-	GI_SET_ITEM("type", "s", pkg_string_from_type(hi->type));
+
+	if ((dyn = getdynamic(fd)) == NULL) {
+		goto out;
+	}
+
+	char *type = NULL;
+	if (dyn->obj_type != NULL) {
+		type = dyn->obj_type;
+	} else {
+		type = pkg_string_from_type(dyn->obj_type);	
+	}
+
+	GI_SET_ITEM("type", "s", type);
 	GI_SET_ITEM("bits", "i", hi->bits);
 	GI_SET_ITEM("arch", "s", pkg_string_from_arch(hi->arch));
 	GI_SET_ITEM("end", "s", pkg_string_from_data(hi->data));
@@ -266,6 +279,9 @@ get_info(PyObject *self, PyObject *args)
 out:
 	if (hi != NULL) {
 		free(hi);
+	}
+	if (dyn != NULL) {
+		dyninfo_free(dyn);
 	}
 	(void) close(fd);
 	return (pdict);

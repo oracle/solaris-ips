@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -81,7 +81,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(elf.is_elf_object(p), True)
                         elf.get_dynamic(p)
                         elf.get_hashes(p)
-                        elf.get_info(p)
+                        self.debug("elf.get_info {0}".format(elf.get_info(p)))
 
         def test_get_hashes_params(self):
                 """Test that get_hashes(..) returns checksums according to the

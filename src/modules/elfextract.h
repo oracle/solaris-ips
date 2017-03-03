@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 #ifndef _ELFEXTRACT_H
@@ -42,6 +42,7 @@ typedef struct dyninfo {
 	off_t		runpath;	/* offset in table of the runpath  */
 	off_t		def;		/* offset in table of the vdefname */
 	off_t		dynstr;		/* string table			   */
+	char		*obj_type;	/* type of the object */
 	liblist_t 	*deps;		/* dependency list (also contains  */
 					/* 	offsets)		   */
 	liblist_t 	*vers;		/* version provided list (also	   */
