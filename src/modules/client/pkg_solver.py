@@ -1030,7 +1030,7 @@ class PkgSolver(object):
                                 self.__progress()
                                 self.__allowed_downgrades |= \
                                     self.__allow_incorp_downgrades(f,
-                                    excludes=excludes)
+                                    excludes=excludes, relax_all=True)
 
                 possible_set |= self.__allowed_downgrades
 
@@ -1304,7 +1304,8 @@ class PkgSolver(object):
                 self.__allowed_downgrades = set()
                 for f in possible_set:
                         self.__allowed_downgrades |= \
-                            self.__allow_incorp_downgrades(f, excludes=excludes)
+                            self.__allow_incorp_downgrades(f, excludes=excludes,
+                                relax_all=True)
                 possible_set |= self.__allowed_downgrades
 
                 # trim fmris we cannot install because they're older
@@ -3298,13 +3299,11 @@ class PkgSolver(object):
                     N_("Package contains invalid or unsupported actions"))
 
         def __get_older_incorp_pkgs(self, fmri, install_holds, excludes=EmptyI,
-            candidates=None, depth=0):
+            relax_all=False, depth=0):
                 """Get all incorporated pkgs for the given 'fmri' whose versions
                 are older than what is currently installed in the image."""
 
-                if not candidates:
-                        candidates = set()
-
+                candidates = set()
                 if fmri in self.__dg_incorp_cache:
                         candidates |= self.__dg_incorp_cache[fmri]
                         return candidates
@@ -3345,10 +3344,22 @@ class PkgSolver(object):
 
                         inst_ver = inst_fmri.version
                         for df in matchdg:
-                                # Ignore pkgs incorporated at a higher or same
-                                # version.
-                                if (df.version.is_successor(inst_ver, None) or
-                                    df.version == inst_ver):
+                                if df.version == inst_ver:
+                                        # If installed version is not changing,
+                                        # there is no need to check for
+                                        # downgraded incorporate deps.
+                                        continue
+
+                                is_successor = df.version.is_successor(inst_ver,
+                                    None)
+                                if relax_all and is_successor:
+                                        # If all install-holds are relaxed, and
+                                        # this package is being upgraded, it is
+                                        # not a downgrade candidate and there is
+                                        # no need to recursively check for
+                                        # downgraded incorporate deps here as
+                                        # will be checked directly later in
+                                        # solve_update_all.
                                         continue
 
                                 # Do not allow implicit publisher switches.
@@ -3382,17 +3393,27 @@ class PkgSolver(object):
                                 if install_hold:
                                         continue
 
-                                self.__dg_incorp_cache[fmri].add(df)
-                                candidates.add(df)
+                                if not is_successor:
+                                        self.__dg_incorp_cache[fmri].add(df)
+                                        candidates.add(df)
 
-                                # Check if this pkgs has incorporate deps of its
-                                # own.
-                                self.__get_older_incorp_pkgs(df, install_holds,
-                                    excludes, candidates, depth + 1)
+                                if not relax_all:
+                                        # If all install-holds are not relaxed,
+                                        # then we need to check if pkg has
+                                        # incorporate deps of its own since not
+                                        # every package is being checked
+                                        # individually.
+                                        candidates |= \
+                                            self.__get_older_incorp_pkgs(df,
+                                                install_holds,
+                                                excludes=excludes,
+                                                relax_all=relax_all,
+                                                depth=depth + 1)
 
-                return candidates
+                        return candidates
 
-        def __allow_incorp_downgrades(self, fmri, excludes=EmptyI):
+        def __allow_incorp_downgrades(self, fmri, excludes=EmptyI,
+            relax_all=False):
                 """Find packages which have lower versions than installed but
                 are incorporated by a package in the proposed list."""
 
@@ -3405,7 +3426,7 @@ class PkgSolver(object):
                 # Get all pkgs which are incorporated by 'fmri',
                 # including nested incorps.
                 candidates = self.__get_older_incorp_pkgs(fmri, install_holds,
-                    excludes=excludes)
+                    excludes=excludes, relax_all=relax_all)
 
                 return candidates
 

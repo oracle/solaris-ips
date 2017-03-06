@@ -12114,12 +12114,20 @@ class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):
                     add depend type=incorporate fmri=child_incorp@1.0
                     close """,
                 """
+                    open parent_incorp@3.0,5.11-0
+                    add depend type=incorporate fmri=child_incorp@3.0
+                    close """,
+                """
                     open child_incorp@1.0,5.11-0
                     add depend type=incorporate fmri=A@1.0
                     close """,
                 """
                     open child_incorp@2.0,5.11-0
                     add depend type=incorporate fmri=A@2.0
+                    close """,
+                """
+                    open child_incorp@3.0,5.11-0
+                    add depend type=incorporate fmri=A@1.0
                     close """,
                 """
                     open ihold_incorp@1.0,5.11-0
@@ -12187,9 +12195,17 @@ class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install parent_incorp@1 child_incorp@2")
                 self.pkg("list A@2.0 child_incorp@2 parent_incorp@1")
 
-                # test update of nested incorporation supports downgrade
+                # test upgrade of parent incorporation allows downgrade of child
+                # incorporation and packages incorporated by child
                 self.pkg("update -v parent_incorp@2")
                 self.pkg("list A@1 child_incorp@1 parent_incorp@2")
+
+                # reset and test upgrade of parent incorporation allows
+                # downgrade of packages incorporated by child
+                self.pkg("update -v parent_incorp@1")
+                self.pkg("list A@2 child_incorp@2 parent_incorp@1")
+                self.pkg("update -v parent_incorp@3")
+                self.pkg("list A@1 child_incorp@3 parent_incorp@3")
 
                 # prepare test for explicit downgrade of incorp
                 self.pkg("uninstall parent_incorp")
@@ -12199,7 +12215,6 @@ class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):
                 # test explicit downgrade of incorp downgrades incorp'ed pkgs
                 self.pkg("update -v child_incorp@1")
                 self.pkg("list A@1 child_incorp@1")
-
 
         def test_incorp_downgrade_installhold(self):
                 """Test correct handling of install-holds when determining
