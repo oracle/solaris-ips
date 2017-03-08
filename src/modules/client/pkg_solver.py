@@ -3410,7 +3410,7 @@ class PkgSolver(object):
                                                 relax_all=relax_all,
                                                 depth=depth + 1)
 
-                        return candidates
+                return candidates
 
         def __allow_incorp_downgrades(self, fmri, excludes=EmptyI,
             relax_all=False):
