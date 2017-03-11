@@ -267,7 +267,7 @@ get_info(PyObject *self, PyObject *args)
 	if (dyn->obj_type != NULL) {
 		type = dyn->obj_type;
 	} else {
-		type = pkg_string_from_type(dyn->obj_type);	
+		type = pkg_string_from_type(hi->type);	
 	}
 
 	GI_SET_ITEM("type", "s", type);
