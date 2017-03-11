@@ -86,8 +86,7 @@ pkg_string_from_arch(int arch)
 		return ("sparc");
 	case EM_386:
 #if defined(__SVR4) && defined(__sun)
-/* Solaris calls x86_64 "amd64", and recognizes 486 */
-	case EM_486:
+/* Solaris calls x86_64 "amd64" */
 	case EM_AMD64:
 #else
 	case EM_X86_64:
