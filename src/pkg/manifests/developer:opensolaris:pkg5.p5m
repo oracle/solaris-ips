@@ -33,6 +33,7 @@ depend type=require fmri=pkg:/developer/build/make
 depend type=require fmri=pkg:/developer/build/onbld
 depend type=require fmri=pkg:/developer/documentation-tool/xml2roff
 depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
+depend type=require fmri=pkg:/developer/intltool
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
 depend type=require fmri=pkg:/library/python/cffi-27@1.4.2
