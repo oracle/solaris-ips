@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -1692,8 +1692,12 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
 
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
                 distro_vars.merge_values(pkg_vars)
-                if pfmri:
-                        resolving_pkgs.add(pfmri.pkg_name)
+                try:
+                        if pfmri is None:
+                                pfmri = fmri.PkgFmri(name)
+                except fmri.IllegalFmri as e:
+                        raise BadPackageFmri(mp, e)
+                resolving_pkgs.add(pfmri.pkg_name)
 
         def __merge_actvct_with_pkgvct(act_vct, pkg_vct):
                 act_vct.merge_unknown(pkg_vct)
