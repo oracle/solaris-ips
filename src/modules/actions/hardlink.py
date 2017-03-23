@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -44,6 +44,10 @@ class HardLinkAction(link.LinkAction):
 
         name = "hardlink"
         ordinality = generic._orderdict[name]
+
+        def compare(self, other):
+                return ((self.attrs["path"] > other.attrs["path"]) -
+                    (self.attrs["path"] < other.attrs["path"]))
 
         def get_target_path(self):
                 """ return a path for target that is relative to image"""

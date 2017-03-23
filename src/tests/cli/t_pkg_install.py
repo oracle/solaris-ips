@@ -5332,6 +5332,16 @@ adm:NP:6445::::::
                     close
                 """
 
+                self.hardlink_chain = """
+                    open hardlink_chain@1.0,5.11-0
+                    add file cat mode=0555 owner=root group=bin path=file
+                    add hardlink path=hardlink1 target=hardlink2
+                    add hardlink path=hardlink2 target=file
+                    add hardlink path=hardlink3 target=hardlink2
+                    add hardlink path=etc/hardlink4 target=../hardlink1
+                    close
+                """
+
                 self.make_misc_files(self.misc_files)
 
         def test_basics_0_install(self):
@@ -6390,6 +6400,14 @@ adm:NP:6445::::::
                 ino1 = os.stat(os.path.join(self.get_img_path(), "foo")).st_ino
                 ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
                 self.assertTrue(ino1 == ino2)
+
+        def test_hardlink_chain(self):
+                self.pkgsend_bulk(self.rurl, (self.hardlink_chain))
+                self.image_create(self.rurl)
+
+                # A package which tries to install a hard link to another
+                # hardlink should install them in the correct order.
+                self.pkg("{0} hardlink_chain".format("install"))
 
         def test_legacy(self):
                 self.pkgsend_bulk(self.rurl,

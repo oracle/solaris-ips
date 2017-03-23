@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -73,6 +73,44 @@ from pkg.client.plandesc import _ActionPlan
 from pkg.mediator import mediator_impl_matches
 from pkg.client.pkgdefs import (PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE, MSG_ERROR,
     MSG_WARNING, MSG_INFO, MSG_GENERAL, MSG_UNPACKAGED, PKG_OP_VERIFY)
+
+
+def _reorder_hardlinks(hardlinks):
+        """Re-order the list of hardlinks to handle hard links whose
+        target is another hard link."""
+
+        reordered = []
+
+        # Capture the paths for all given hardlinks.
+        paths = [hardlink.dst.attrs["path"] for hardlink in hardlinks]
+
+        def add_targets(path, hardlinks, reordered):
+                """Find those hardlinks whose target is path."""
+
+                srcs = [l for l in hardlinks
+                    if l.dst.get_target_path() == path]
+                for hardlink in srcs:
+                        hardlinks.remove(hardlink)
+                        reordered.append(hardlink)
+                        # ... process hardlinks whose dst is _this_ hardlink.
+                        add_targets(hardlink.dst.attrs["path"], hardlinks,
+                            reordered)
+
+        # Find hardlinks whose dst is _not_ another hardlink.
+        unchained = [l for l in hardlinks
+            if l.dst.get_target_path() not in paths]
+        for hardlink in unchained:
+                hardlinks.remove(hardlink)
+                reordered.append(hardlink)
+                # ... process hardlinks whose target is _this_ hardlink.
+                add_targets(hardlink.dst.attrs["path"], hardlinks,
+                    reordered)
+
+        # Append remaining hardlinks (likely circular or otherwise broken).
+        reordered.extend(hardlinks)
+
+        return reordered
+
 
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
@@ -4094,7 +4132,7 @@ class ImagePlan(object):
                         # can package these directories but not deliver anything to them
                         if dir_path.startswith(dir_p) and dir_path != dir_p:
                                 return False
-                
+
                 for f in files:
                         fname = os.path.join(self.image.imgdir, f)
                         if path == fname:
@@ -4590,6 +4628,22 @@ class ImagePlan(object):
                 self.pd.removal_actions.sort(key=remsort, reverse=True)
                 self.pd.update_actions.sort(key=addsort)
                 self.pd.install_actions.sort(key=addsort)
+
+                # find the first and last hardlink in the install_actions
+                fhl = lhl = -1
+                for i, ap in enumerate(self.pd.install_actions):
+                        if ap.dst.name == "hardlink":
+                                if fhl == -1:
+                                        fhl = i
+                                lhl = i
+                        elif fhl != -1:
+                                break
+
+                # now reorder the hardlinks to respect inter-dependencies
+                if fhl != -1:
+                        hardlinks = self.pd.install_actions[fhl:lhl + 1]
+                        hardlinks = _reorder_hardlinks(hardlinks)
+                        self.pd.install_actions[fhl:lhl + 1] = hardlinks
 
                 # cleanup pkg_plan objects which don't actually contain any
                 # changes and add any new ones to list of changes
