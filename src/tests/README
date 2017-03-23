@@ -1,5 +1,5 @@
 
-Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
 tests/README
 
@@ -12,27 +12,19 @@ tests/README
   run.py drives the execution of our api and cli test suites, and
   compares the results to a baseline file stored in baseline.txt.
 
-  run.py can also be run standalone with a variety of options:
+  run.py can also be run standalone with a variety of options.
+  Use "run.py -h" to see what options are supported.
 
-	Usage: run.py [-ghptv] [-c format] [-b filename] [-o regexp]
-	       run.py [-hptvx] [-c format] [-b filename] [-s regexp] [-o regexp]
-	   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
-	   -b <filename>  Baseline filename
-	   -c <format>    Collect code coverage data in xml or html format
-	   -d             Show debug output, including commands run, and outputs
-	   -f             Show fail/error information even when test is expected to fail
-	   -g             Generate result baseline
-	   -h             This help message
-	   -j             Parallelism
-	   -o <regexp>    Run only tests that match regexp
-	   -p             Parseable output format
-	   -q             Quiet output
-	   -s <regexp>    Run tests starting at regexp
-	   -t             Generate timing info file
-	   -u             Enable IPS GUI tests, disabled by default
-	   -v             Verbose output
-	   -x             Stop after the first baseline mismatch
-	   -z <port>      Lowest port the test suite should use
+  To run subsets of tests or individual tests, use the "-o" or the "-s"
+  options to select what tests to run.
+
+  For example:
+    - To run the tests in cli/t_pkg_install.py:
+      $ run.py -o cli.t_pkg_install
+    - To run just the tests in the TestPkgInstallActions class in that file:
+      $ run.py -o cli.t_pkg_install.TestPkgInstallActions
+    - To run just the "test_bad_hardlinks" test:
+      $ run.py -o cli.t_pkg_install.TestPkgInstallActions.test_bad_hardlinks
 
   When adding, removing, or changing the results of test cases, make
   sure to update baseline.txt and check it in.  This can be done with the

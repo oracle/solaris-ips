@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -59,11 +59,10 @@ import pkg5testenv
 import warnings
 cov = None
 
-def usage():
-        print("Usage: {0} [-ghptv] [-c format] [-b filename] "\
-            "[-o regexp]".format(sys.argv[0]), file=sys.stderr)
-        print("       {0} [-hptvx] [-c format] [-b filename] "\
-            "[-s regexp] [-o regexp]".format(sys.argv[0]), file=sys.stderr)
+def usage(exitcode=2):
+        print("Usage: {0} [-dfghlpqtvx] [-a dir] [-b filename] [-c format]\n"\
+             "              [-j jobs] [-o regexp] [-s regexp]\n"\
+             "              [-z port] ".format(sys.argv[0]), file=sys.stderr)
         print("""\
    -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
    -b <filename>  Baseline filename
@@ -72,7 +71,7 @@ def usage():
    -f             Show fail/error information even when test is expected to fail
    -g             Generate result baseline
    -h             This help message
-   -j             Parallelism
+   -j <jobs>      Parallelism
    -l             Run tests against live system
    -o <regexp>    Run only tests that match regexp
    -p             Parseable output format
@@ -83,7 +82,7 @@ def usage():
    -x             Stop after the first baseline mismatch
    -z <port>      Lowest port the test suite should use
 """, file=sys.stderr)
-        sys.exit(2)
+        sys.exit(exitcode)
 
 if __name__ == "__main__":
         #
@@ -123,7 +122,7 @@ if __name__ == "__main__":
                     "verbose", "baseline-file", "only"])
         except getopt.GetoptError as e:
                 print("Illegal option -- {0}".format(e.opt), file=sys.stderr)
-                sys.exit(1)
+                usage(1)
 
         bfile = os.path.join(os.getcwd(), "baseline.txt")
         generate = False
