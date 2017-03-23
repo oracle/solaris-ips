@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+
 #
 # CDDL HEADER START
 #
@@ -19,16 +20,16 @@
 #
 # CDDL HEADER END
 #
+
 #
 # Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
 #
+
 # set some environment variables
-PACKAGE_MANAGER_ROOT=$WORKSPACE/proto/root_`uname -p`/
-PATH=/opt/solarisstudio12.4/bin:/usr/sfw/bin:$PATH
+PATH=/usr/bin:/opt/solarisstudio12.4/bin:/usr/sbin
 CC=/opt/solarisstudio12.4/bin/cc
 PRIVATE_BUILD=1
-LC_ALL=C
-export PACKAGE_MANAGER_ROOT PYTHONPATH PATH CC PRIVATE_BUILD LC_ALL
+export PATH CC PRIVATE_BUILD
 
 umask 0022
 
@@ -36,7 +37,6 @@ umask 0022
 rm -rf $WORKSPACE/proto
 cd $WORKSPACE/src
 make clobber
-
 make install packages || exit $?
 
 # clean up test directory and coverage
@@ -46,12 +46,10 @@ rm -rf tests/.coverage* tests/cov_* tests/core
 # XXX coverage temporarily disabled
 # tests/run.py -v -j 12 -c xml
 make test JOBS=12
-
 test_result=$?
 
 COVERAGE=$WORKSPACE/src/tests/cov_proto.xml
 # note cov_tests.xml should already have relative paths
-
 if [[ -e $COVERAGE ]]; then
 	# fix coverage report to have relative path
 	sed "s@$WORKSPACE/@@" $COVERAGE > $COVERAGE.tmp
@@ -67,44 +65,47 @@ fi
 # create summary file
 log=/export/home/jenkins/jobs/$JOB_NAME/builds/$BUILD_NUMBER/log
 summary=/export/home/jenkins/jobs/$JOB_NAME/builds/$BUILD_NUMBER/summary
+
 rm -f ${summary}
 touch ${summary}
-chmod 777 ${summary}
-base=`egrep -n BASELINE ${log}`
-stat=$?
-echo "TEST RUN SUMMARY JOB: $JOB_NAME  RUN: $BUILD_NUMBER" >> ${summary}
-echo "" >> ${summary}
-egrep "tests in" ${log} >> ${summary}
+chmod 666 ${summary}
+
+{
+	echo "TEST REPORT   JOB: $JOB_NAME   RUN: $BUILD_NUMBER"
+	echo ""
+
+	echo "Test summary:"
+	echo ""
+	egrep "^/usr/bin/python.* tests|tests in|FAILED" ${log}
+	echo ""
+
+	echo "Baseline summary:"
+	echo ""
+	# extract text between "^BASELINE MISMATCH" and "Target .* not remade"
+	# insert a blank line after each block
+	nawk '
+	    /^BASELINE MISMATCH/, /Target .* not remade/
+	    /Target .* not remade/ {print ""}
+	' ${log}
+} >> ${summary}
+
 rcode=0
-if [[ ${stat} == 0 ]]; then
-        start=${base%:BASELINE*}
-        (( start -= 1 ))
-        echo "" >> ${summary}
-        egrep "FAILED" ${log} >> ${summary}
-        echo "" >> ${summary}
-        more +${start} ${log} >> ${summary}
-        rcode=1
+
+# check for baselines, which indicates an error
+if grep -q BASELINE ${log} ; then
+	rcode=1
 fi
 
 # check for skipped tests, which we treat as errors
-FOUND_SKIPPED=0
-while read line
-do
-        echo $line | grep "s - skipped" > /dev/null
-        if [ $? -eq 0 ]; then
-                echo $line | grep "s - skipped 0 tests" > /dev/null
-                if [ $? -ne 0 ]; then
-                        FOUND_SKIPPED=1
-                        echo $line >> ${summary}
-                fi
-        fi
-done < ${log}
-
-if [ $FOUND_SKIPPED -eq 1 ]; then
-        rcode=1
+if grep "s - skipped" ${log} | grep -v "skipped 0" >/dev/null ; then
+	{
+		echo "There were skipped tests."
+		echo ""
+	} >> ${summary}
+	rcode=1
 fi
 
-if [ $test_result -ne 0 ]; then
+if [[ $test_result -ne 0 ]]; then
         rcode=1
 fi
 
