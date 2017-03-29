@@ -46,7 +46,7 @@ try:
         # First, try importing the pybemgmt module.
         import bemgmt
         from bemgmt.be_errors import BeFmriError, BeNameError, \
-            BeNotFoundError, BeMgmtError
+            BeNotFoundError, BeMgmtError, BeMgmtOpError
 except ImportError:
         # Try importing older libbe
         try:
