@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -3596,7 +3596,8 @@ def save_data(path, data, root="/", catch_exception=True):
 
         try:
                 if not ar.ar_exists(root, path_dir):
-                        ar.ar_mkdir(root, path_dir, misc.PKG_DIR_MODE)
+                        ar.ar_mkdir(root, path_dir, misc.PKG_DIR_MODE,
+                            exists_is_ok=True) # parallel zone create race
 
                 # write the output to a temporary file
                 fd = ar.ar_open(root, pathtmp, os.O_WRONLY,

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -265,7 +265,7 @@ def ar_rename(root, src, dst):
         os.close(dst_dir_fd)
         return
 
-def ar_mkdir(root, path, mode):
+def ar_mkdir(root, path, mode, exists_is_ok=False):
         """A function similar to os.mkdir() that ensures that the path we're
         opening resides within a specified directory subtree.
 
@@ -287,6 +287,8 @@ def ar_mkdir(root, path, mode):
                 sat.mkdirat(path_dir_fd, path_file, mode)
         except OSError as e:
                 os.close(path_dir_fd)
+                if exists_is_ok and e.errno == errno.EEXIST:
+                        return
                 raise e
 
         os.close(path_dir_fd)
