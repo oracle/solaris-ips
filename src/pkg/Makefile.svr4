@@ -1,0 +1,62 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
+# Create SVr4 packages.
+
+# Pull in the main makefile for its definitions and some rules.
+include Makefile
+
+# Cull out the SVr4 package names
+SVR4_NAMES.cmd    = $(PKGMOGRIFY) -O /dev/null $(MANIFESTS:%=manifests/%) transforms/svr4-names
+SVR4_NAMES        = $(SVR4_NAMES.cmd:sh)
+
+# Main SVr4 packaging target
+_svr4: $(SVR4_NAMES:%=$(PKGDEST)/svr4/%/pkgmap)
+	pkgtrans $(PKGDEST)/svr4 pkg5-$$(hg id -i).pkg $(SVR4_NAMES)
+
+$(PKGDEST)/svr4:
+	mkdir -p $@
+
+# We need to map SVr4 package names to the manifest files that contain their
+# legacy actions.  This mapping exists in the manifest file, but there's no way
+# to extract it in a way that makes direct sense to make.  So we create a small
+# forest of links from the SVr4 names to the manifest names and use that as the
+# mapping for use in other rules.
+Makefile.link: $(MOGRIFESTS)
+	$(PKGMOGRIFY) -O /dev/null $(MOGRIFESTS) transforms/svr4-link > $@
+
+include Makefile.link
+
+# A directory target can't have dependencies because it'll always be out of
+# date.  So the target is the pkgmap file, which is just as good, but it makes
+# the rule a bit more convoluted.
+$(PKGDEST)/svr4/%/pkgmap: $(PDIR)/%.pkginfo $(PDIR)/%.pkgproto $(PKGDEST)/svr4
+	pkgmk -a $(ARCH) -o -r $(PKGROOT) -d $(PKGDEST)/svr4 -f $(PDIR)/$$(basename $(@D)).pkgproto
+
+# A rule to make the pkginfo file
+$(PDIR)/%.pkginfo: $(PDIR)/% transforms/svr4-info
+	$(PKGMOGRIFY) $(PKGMOG_DEFINES) -O /dev/null -P $@ $< transforms/svr4-info
+
+# A rule to make the prototype file
+$(PDIR)/%.pkgproto: $(PDIR)/% transforms/svr4-proto
+	$(PKGMOGRIFY) $(PKGMOG_DEFINES) -O /dev/null -P $@ $< transforms/svr4-proto

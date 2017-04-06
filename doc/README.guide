@@ -1,0 +1,60 @@
+
+Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+
+README.guide
+
+0.  Format
+
+    We're writing the Developer Guide in reStructured Text.  Once we're
+    happy with the content, we'll output XML and convert that to
+    DocBook-XML to hand over to Documentation for final production.
+
+    Heading in rST are based on over- and underlining.  Heading levels
+    are a document-specific convention; our levels are as follows:
+
+    ====   ----
+
+    ==== , ---- , ==== , ---- , ~~~~, ````, ^^^^
+
+    Inconsistencies with this ordering will lead to document build
+    failure.
+
+1.  Files
+
+    guide-main.rst is the Developer Guide's outline.  It contains the
+    main document directives; it may also contain shorter sections,
+    prior to being broken out into separate files.
+
+    Each file should begin with its appropriate heading for the Guide as
+    a whole.
+
+1.1.  Titles
+
+    Titles are always mixed case.  Particular levels may be set in
+    capitals or small capitals by style sheet.
+
+2.  Rest of the directory
+
+    Files not starting with guide- are legacy documents from earlier in
+    the project.  If you are rewriting one of these to fit into the
+    Guide, please rename them; if you don't feel you're the owner,
+    extract the content, and add an "XXX Copied to guide-....rst" in the
+    original file.
+
+3.  Tools
+
+    You can obtain docutils by using easy_install via
+
+    $ pfexec easy_install docutils
+
+    With a straight docutils installation, you can build the "html"
+    target out of the Makefile.
+
+    To build the PDF version, you will need a pdflatex-capable TeX
+    installation, such as TeX Live, which is available for download at
+
+    http://www.tug.org/texlive/
+
+    The Makefile and docutils expect that the TeX executables are
+    available via the path.
+

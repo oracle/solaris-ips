@@ -1,0 +1,57 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008, 2011 Oracle and/or its affiliates. All rights reserved.
+##
+<%page args="g_vars, title, crumbs, gmenu_items"/>\
+
+<div id="head-container" class="page-container">
+	<div class="masthead">
+               	<a id="logo" href="http://www.oracle.com/" title="www.oracle.com"></a>
+               	<div class="lang_wrapper">
+			United States | English
+               	</div>
+	</div>
+	<ul id="navigation" class="menu">
+	% for e, (link, text) in enumerate(gmenu_items):
+		% if e == 0:
+		<li id="left_cap" class="top-level"><p><a href="${link}">${text}</a></p></li>
+		% else:
+		<li class="top-level"><p><a href="${link}">${text}</a></p></li>
+		% endif
+	% endfor
+		<li class="top-level special last"><p>&nbsp;</p></li>
+	</ul>
+        <div class="breadcrumbs">
+		<div class="breadcrumb_left"></div>
+		<div class="breadcrumb_center">
+			<span class="breadcrumb_content">
+			% for e, (link, text) in enumerate(crumbs):
+			        <a href="${link}">${text}</a> 
+			% if e < len(crumbs) - 1:
+				<img src="http://www.oracleimg.com/ocom/groups/systemobject/@mktg_admin/documents/digitalasset/066625.gif"/>
+			% endif
+			% endfor
+			</span>
+		</div>
+		<div class="breadcrumb_right"></div>
+        </div>
+</div>

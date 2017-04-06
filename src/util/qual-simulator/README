@@ -1,0 +1,23 @@
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+Quality Simulator
+-----------------
+
+Testing the transport quality metrics involved both live and simulated
+testing.  This is the synthetic environment that was used to test how
+the quality function behaves based upon various inputs and scenarios.
+
+This can be built by typing 'make' in the project's directory.  Use
+'make clean' to remove the cruft and copy in new versions of files.
+
+The simulator contains the following files:
+
+Makefile - build/clean the simulator
+
+scenario.py - The scenarios that the simulator tests, as well the
+classes that allow parameters about the simulation to be configured.
+
+depot.py - A class that emulates a simulated aspects of a remote depot.
+Parameters about the remote endpoint and its performance are defined
+here.

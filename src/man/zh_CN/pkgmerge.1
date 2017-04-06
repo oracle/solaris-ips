@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkgmerge-1">
+<refmeta><refentrytitle>pkgmerge</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgmerge</refname><refpurpose>映像包管理系统软件包合并实用程序</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgmerge [-n] -d <replaceable>dest_repo</replaceable>
+    [-p <replaceable>publisher_prefix</replaceable>]...
+    -s <replaceable>variant</replaceable>=<replaceable>value</replaceable>[,...],<replaceable>src_repo</replaceable> ...
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgmerge-1-desc" role="description"><title></title>
+<para><command>pkgmerge</command> 是一种用于创建多变量软件包的软件包发布工具。它通过合并具有相同名称和版本的软件包（时间戳除外），使用给定源的指定变量名称和值标记合并的版本中的唯一操作，然后将新的软件包发布到目标系统信息库，从而实现此操作。仅使用每个源中各软件包的最新版本。</para>
+<para>如果将某一操作的 <literal>pkg.merge.blend</literal> 属性设置为要合并变量的名称，则在合并之前将该操作复制到其他清单，以便在最终输出中显示该操作时不显示任何已添加的变量标记。请注意，属性 <literal>pkg.merge.blend</literal> 本身已从输出清单的所有操作中删除。对于多个传递合并，可以使用不同的值重复该属性。</para>
+<para>在输入清单中交付到同一路径的不同操作将导致 <command>pkgmerge</command> 因错误而退出。</para>
+<para>完成 <command>pkgmerge</command> 操作后，如果您的目标系统信息库必须支持 <command>pkg search</command> 操作，则在系统信息库上运行 <command>pkgrepo refresh</command> 以更新搜索索引。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>dest_repo</replaceable></term>
+<listitem><para>指定要将合并软件包发布到的目标系统信息库的文件系统路径或 URI。目标系统信息库必须已存在。可以使用 <command>pkgrepo</command> 创建新的系统信息库。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>执行试运行，不对目标系统信息库进行任何更改。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher_prefix</replaceable></term>
+<listitem><para>指定要合并其软件包的发布者的名称。可以多次指定此选项。</para>
+<para>缺省情况下，将合并所有源系统信息库中所有发布者的软件包。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>variant</replaceable>=<replaceable>value</replaceable>[,...],<replaceable>src_repo</replaceable></term>
+<listitem><para>指定用于该源的软件包的变量名称和值，后跟要从中检索软件包的源系统信息库或软件包归档文件的文件系统路径或 URI。可指定多个变量，以逗号分隔。必须为所有源命名相同的变量。可以多次指定此选项。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="operands"><title></title>
+<para>支持下列操作数：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定要合并的软件包。<replaceable>pkg_fmri_pattern</replaceable> 操作数可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>支持以下环境变量：</para>
+<variablelist>
+<varlistentry><term><envar>TMPDIR</envar></term>
+<listitem><para>在程序执行期间用于存储临时数据的目录的绝对路径。如果未设置，则存储临时数据的缺省路径为 <filename>/var/tmp</filename>。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>指定变量名称和值</title>
+<para>使用为从中检索到软件包的源指定的给定变量名称和值标记在指定源中发现的每个软件包：</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src.example.com &bsol;</userinput>
+<userinput>-d http://dest.example.com</userinput></screen>
+<para>样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>操作后的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example><title>合并和发布软件包</title>
+<para>合并给定源中每个软件包的最新版本并将新软件包发布到目标系统信息库：</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src1.example.com &bsol;</userinput>
+<userinput>-s arch=i386,http://src2.example.com &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>源 1 (SPARC) 中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>源 2 (i386) 中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>合并软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example><title>合并 i386 和 SPARC 系统的调试和非调试软件包</title>
+<para>在一组用于 i386 和 SPARC 系统的调试及非调试系统信息库中，合并每个软件包的最新版本：</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,debug=false,/repo/sparc-nondebug &bsol;</userinput>
+<userinput>-s arch=sparc,debug=true,/repo/sparc-debug &bsol;</userinput>
+<userinput>-s arch=i386,debug=false,/repo/i386-nondebug &bsol;</userinput>
+<userinput>-s arch=i386,debug=true,/repo/i386-debug &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>源 1（SPARC 非调试）中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>源 2（SPARC 调试）中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121411Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>源 3（i386 非调试）中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>源 4（i386 调试）中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>合并软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false value=true
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=false
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=true
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=false
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=true
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example id="GLFDD"><title>使用 <literal>pkg.merge.blend</literal> 合并</title>
+<para>使用 <literal> pkg.merge.blend</literal> 属性合并两个不相互冲突的体系结构的软件包。</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src1/example.com &bsol;</userinput>
+<userinput>-s arch=i386,http://src2.example.com &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>源 1 (SPARC) 中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/sparc/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>源 2 (i386) 中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/i386/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>合并软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/i386/foo
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/sparc/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example id="differentpubs"><title>合并带有不同发布者前缀的软件包</title>
+<para>仅合并带有 <literal>dev</literal> 前缀的软件包，即使这些系统信息库中的其他软件包带有 <literal>example.com</literal> 前缀也是如此。</para>
+<screen>$ <userinput>pkgmerge -p dev -s arch=sparc,http://src1.example.com &bsol;
+-s arch=i386,http://src2.example.com &bsol;
+-d /path/to/target/repository</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>

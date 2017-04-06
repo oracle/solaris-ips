@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkg.depotd-8">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum>
+<refmiscinfo class="date">02 Oct 2013</refmiscinfo>
+<refmiscinfo class="sectdesc">&man8;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.depotd</refname><refpurpose>Image Packaging System depot server</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depotd [--cfg <replaceable>source</replaceable>] [-a <replaceable>address</replaceable>]
+    [--content-root <replaceable>root_dir</replaceable>] [-d <replaceable>inst_root</replaceable>]
+    [--debug <replaceable>feature_list</replaceable>] [--disable-ops=<replaceable>op</replaceable>[/1][,...]]
+    [--image-root <replaceable>path</replaceable>] [--log-access <replaceable>dest</replaceable>]
+    [--log-errors <replaceable>dest</replaceable>] [--mirror <replaceable>mode</replaceable>] [-p <replaceable>port</replaceable>]
+    [--proxy-base <replaceable>url</replaceable>] [--readonly <replaceable>mode</replaceable>] [-s <replaceable>threads</replaceable>]
+    [--sort-file-max-size <replaceable>bytes</replaceable>] [--ssl-cert-file <replaceable>source</replaceable>]
+    [--ssl-dialog <replaceable>type</replaceable>] [--ssl-key-file <replaceable>source</replaceable>]
+    [-t <replaceable>socket_timeout</replaceable>] [--writable-root <replaceable>path</replaceable>]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depotd</command> is the depot server for the Image Packaging
+System. It provides network access to the data contained within a package
+repository. Clients that do not support direct access to a repository through
+the file system, or for which network access is the only available or preferred
+method of transport, typically use the package depot.</para>
+<para>Clients such as <command>pkg</command>, the retrieval client, can retrieve
+a list of packages and package metadata from a repository directly or through
+the depot server. <command>pkgsend</command>, the publication client, can
+send new versions of packages to a repository directly or through the depot
+server. <command>pkgrepo</command> can be used to create repositories for
+use with the depot server, or to manage them both directly and through the
+depot server.</para>
+<para><command>pkg.depotd</command> is typically run as a service on the system.
+Package and software developers might want to run private copies for testing.</para>
+<para>The depot does not provide any access control methods of its own. By
+default, all of the clients that are able to connect are able to read all
+package data and publish new package versions. The exception is that when
+running under Service Management Facility (SMF), the default is to run in
+read-only mode. The &ldquo;Notes&rdquo; section below describes some best
+practices for maintaining a public depot server with evolving content.</para>
+</refsect1>
+<refsect1 role="other"><title>SMF Properties</title>
+<para>The <literal>pkg.depotd</literal> server is generally configured via
+the SMF properties associated with its service. The
+<literal>svc:/application/pkg/server</literal> service runs a
+<literal>pkg.depot</literal> server process, or contributes configuration to
+the <literal>svc:/application/pkg/depot</literal> service. See
+the <literal>pkg.depot-config</literal>(8) man page and the
+<literal>pkg/standalone</literal> property below.</para>
+<para>See the <literal>smf</literal>(7) man page for information about SMF
+properties. The following properties are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/address</literal></term>
+<listitem><para>(<literal>net_address</literal>) The IP address on which to
+listen for connections. The default value is 0.0.0.0 (<literal>INADDR_ANY</literal>),
+which listens on all active interfaces. To listen on all active IPv6 interfaces,
+use <literal>::</literal>. Only the first value is used.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/content_root</literal></term>
+<listitem><para>(<literal>astring</literal>) The file system path at which
+the instance should find its static and other web content. The default value
+is <filename>/usr/share/lib/pkg</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/debug</literal></term>
+<listitem><para>(<literal>astring</literal>) A comma-separated list of debug
+features to enable. Possible values are:</para>
+<variablelist>
+<varlistentry><term><literal>headers</literal></term>
+<listitem><para>Logs the headers of every request to the error log.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/disable_ops</literal></term>
+<listitem><para>(<literal>astring</literal>) A comma-separated list of operations
+that should be disabled for the depot server. Operations are given as <replaceable>
+operation</replaceable>[/<replaceable>version</replaceable>] (<literal>catalog</literal> or <literal>
+search_1</literal>, for example).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) The path to the image whose file
+information will be used as a cache for file data.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/inst_root</literal></term>
+<listitem><para>(<literal>astring</literal>) The file system path at which the
+instance should find its repository data. Required unless
+<literal>PKG_REPO</literal> has been provided. The default value is
+<filename>/var/pkgrepo</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_access</literal></term>
+<listitem><para>(<literal>astring</literal>) The destination for any access related information logged by the depot process. Possible values are: <filename>stderr</filename>, <filename>stdout</filename>, <literal>none</literal>, or an absolute path name. The default value is <filename>stdout</filename> if <filename>stdout</filename> is a <literal>tty</literal>. If <filename>stdout</filename> is not a <literal>tty</literal>, the default value is <literal>none</literal>. If you run <literal>pkg</literal> as a service, the default value for <literal>log_access</literal> is <literal>none</literal> and output is written to <filename>/var/svc/log/application-pkg-server:*</filename>. See the <literal>logadm</literal>(8) man page for examples of managing large log files.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_errors</literal></term>
+<listitem><para>(<literal>astring</literal>) The destination for any errors
+or other information logged by the depot process. Possible values are: <filename>
+stderr</filename>, <filename>stdout</filename>, <literal>none</literal>, or
+an absolute path name. The default value is <filename>stderr</filename>. See
+the <literal>logadm</literal>(8) man page for examples of managing large
+log files.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/mirror</literal></term>
+<listitem><para>(<literal>boolean</literal>) Sets whether package mirror mode
+is used. When true, publishing and metadata operations are disabled and only
+a limited browser user interface is provided. This property cannot be true
+when the <literal>pkg/readonly</literal> property is true. The default value
+is <literal>false</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) The port number on which the instance
+should listen for incoming package requests. If SSL certificate and key information
+has not been provided, the default value is 80; otherwise, the default value
+is 443.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/proxy_base</literal></term>
+<listitem><para>(<literal>uri</literal>) This changes the base URL for the
+depot server and is most useful when running behind Apache or some other web
+server in a reverse proxy configuration.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/readonly</literal></term>
+<listitem><para>(<literal>boolean</literal>) Sets whether modifying operations,
+such as those initiated by <command>pkgsend</command>, are disabled. Retrieval
+operations are still available. This property cannot be true when the <literal>pkg/mirror
+</literal> property is true. The default value is <literal>true</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/socket_timeout</literal></term>
+<listitem><para>(<literal>count</literal>) The maximum number of seconds the
+server should wait for a response from a client before closing a connection.
+The default value is 60.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/sort_file_max_size</literal></term>
+<listitem><para>(<literal>count</literal>) The maximum size of the indexer
+sort file. Used to limit the amount of RAM the depot uses for indexing, or
+increase it for speed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_cert_file</literal></term>
+<listitem><para>(<literal>astring</literal>) The absolute path name to a PEM-encoded
+Certificate file. The default value is <literal>none</literal>. This property
+must be used with <literal>ssl_key_file</literal>. The depot only responds
+to SSL requests if both <literal>ssl_cert_file</literal> and <literal>/ssl_key_file
+</literal> are provided.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_dialog</literal></term>
+<listitem><para>(<literal>astring</literal>) Specifies what method should
+be used to obtain the passphrase used to decrypt the <literal>ssl_key_file</literal>.
+Possible values are:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>builtin</literal></term>
+<listitem><para>Prompt for the passphrase. This is the default value.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
+<listitem><para>Execute the specified external program to obtain the passphrase.
+The first argument to the program is <literal>''</literal>, and is reserved.
+The second argument to the program is the port number of the server. The passphrase
+is printed to <filename>stdout</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>smf:fmri</literal></term>
+<listitem><para>Attempt to retrieve the value of the property <literal>pkg_secure/ssl_key_passphrase
+</literal> from the service instance related to the FMRI.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_key_file</literal></term>
+<listitem><para>(<literal>astring</literal>) The absolute path name to a PEM-encoded
+Private Key file. This property must be used with the property <literal>ssl_cert_file
+</literal>. The depot only responds to SSL requests if both <literal>/ssl_key_file
+</literal> and <literal>ssl_cert_file</literal> are provided.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/standalone</literal></term>
+<listitem><para>(<literal>boolean</literal>) To easily serve multiple
+repositories from a single Apache instance with minimal Apache configuration,
+set this property to <literal>false</literal> and set the
+<literal>pkg/readonly</literal> property of this <literal>pkg/server</literal>
+instance to <literal>true</literal>. The default value of
+<literal>pkg/standalone</literal> is <literal>false</literal> and the default
+value of <literal>pkg/readonly</literal> is <literal>true</literal>. See the
+<literal>pkg.depot-config</literal>(8) man page for more information.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/threads</literal></term>
+<listitem><para>(<literal>count</literal>) The number of threads started to
+serve requests. The default value is 60. Suitable only for small deployments.
+This value should be approximately 20 times the number of concurrent clients.
+The maximum value of <literal>threads</literal> is 5000.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/writable_root</literal></term>
+<listitem><para>(<literal>astring</literal>) The file system path to a directory
+to which the program has write access. This is used with the <option>readonly</option> option
+to enable the depot server to create files, such as search indexes, without
+needing write access to the package information.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_secure/ssl_key_passphrase</literal></term>
+<listitem><para>(<literal>astring</literal>) The password to use to decrypt
+the <literal>pkg/ssl_key_file</literal>. This value is read-authorization
+protected using the attribute <literal>solaris.smf.read.pkg-server</literal>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The presentation and behavior of the Browser User Interface (BUI) of
+the depot server is controlled using the following properties:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg_bui/feed_description</literal></term>
+<listitem><para>(<literal>astring</literal>) A descriptive paragraph for the
+RSS/Atom feed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_icon</literal></term>
+<listitem><para>(<literal>astring</literal>) The path name of a small image
+used to visually represent the RSS/Atom feed. The path name should be relative
+to the <literal>content_root</literal>. The default value is <filename>web/_themes/pkg-block-icon.png
+</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_logo</literal></term>
+<listitem><para>(<literal>astring</literal>) The path name of a large image
+that will be used to visually brand or identify the RSS/Atom feed. This value
+should be relative to the <literal>content_root</literal>. The default value
+is <filename>web/_themes/pkg-block-icon.png</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_name</literal></term>
+<listitem><para>(<literal>astring</literal>) A short, descriptive name for
+RSS/Atom feeds generated by the depot serving the repository. The default
+value is &ldquo;package repository feed&rdquo;.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_window</literal></term>
+<listitem><para>(<literal>count</literal>) The number of hours before the
+feed for the repository was last generated, to include when generating the
+feed.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The package depot is also able to act as a mirror server for local client
+images from <literal>pkg</literal>(7). This enables clients that share a subnet
+on a LAN to mirror their file caches. Clients can download files from one
+another, thereby reducing load on the package depot server. This functionality
+is available as an alternate depot service configured by SMF. It uses mDNS
+and <literal>dns-sd</literal> for service discovery.</para>
+<para>The mDNS mirror is generally configured via the SMF properties associated
+with its service. The following properties are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) The path to the image whose file
+information will be used as a cache for file data. The default value is <filename>
+/</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) The port number on which the instance
+should listen for incoming package requests. The default value is 80.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para><command>pkg.depotd</command> can read its base configuration information
+from a file or from the property data of an existing SMF service instance.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-cfg</option> <replaceable>source</replaceable></term>
+<listitem><para>Specify the path name of a file to use when reading and writing
+configuration data, or a string of the form <literal>smf:<replaceable>fmri</replaceable></literal> where <replaceable>
+fmri</replaceable> is the service fault management resource identifier (FMRI)
+of the instance to read configuration data from. See &ldquo;Depot Configuration&rdquo;
+below for details on the format of the file specified.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>If no preexisting configuration source is available, or to override
+values read from a configuration file provided using <option>-cfg</option>,
+the following options can be used to alter the default behavior of the depot
+server:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>a</option> <replaceable>address</replaceable></term>
+<listitem><para>See <literal>pkg/address</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-content-root</option> <replaceable>root_dir</replaceable></term>
+<listitem><para>See <literal>pkg/content_root</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>inst_root</replaceable></term>
+<listitem><para>See <literal>pkg/inst_root</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-debug</option> <replaceable>feature_list</replaceable></term>
+<listitem><para>See <literal>pkg/debug</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable-ops</option>=<replaceable>op</replaceable>[<literal>
+/1</literal>][,...]</term>
+<listitem><para>See <literal>pkg/disable_ops</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-image-root</option> <replaceable>path</replaceable></term>
+<listitem><para>See <literal>pkg/image_root</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-access</option> <replaceable>dest</replaceable></term>
+<listitem><para>See <literal>pkg/log_access</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-errors</option> <replaceable>dest</replaceable></term>
+<listitem><para>See <literal>pkg/log_errors</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mirror</option> <replaceable>mode</replaceable></term>
+<listitem><para>See <literal>pkg/mirror</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>See <literal>pkg/port</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-proxy-base</option> <replaceable>url</replaceable></term>
+<listitem><para>See <literal>pkg/proxy_base</literal> above. This option is
+ignored if an empty value is provided.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-readonly</option> <replaceable>mode</replaceable></term>
+<listitem><para>See <literal>pkg/readonly</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>threads</replaceable></term>
+<listitem><para>See <literal>pkg/threads</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sort-file-max-size</option> <replaceable>bytes</replaceable></term>
+<listitem><para>See <literal>pkg/sort_file_max_size</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-cert-file</option> <replaceable>source</replaceable></term>
+<listitem><para>See <literal>pkg/ssl_cert_file</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-dialog</option> <replaceable>type</replaceable></term>
+<listitem><para>See <literal>pkg/ssl_dialog</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-key-file</option> <replaceable>source</replaceable></term>
+<listitem><para>See <literal>pkg/ssl_key_file</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>socket_timeout</replaceable></term>
+<listitem><para>See <literal>pkg/socket_timeout</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-writable-root</option> <replaceable>path</replaceable></term>
+<listitem><para>See <literal>pkg/writable_root</literal> above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Additional administrative and management functionality for package repositories
+is provided by <command>pkgrepo</command>.</para>
+</refsect1>
+<refsect1 role="other"><title>Depot Configuration</title>
+<para>When a configuration file is provided (instead of an SMF FMRI) by using
+the <option>-cfg</option> option, the depot server reads and writes all configuration
+data in a simple text format. The configuration data is described in &ldquo;SMF
+Properties&rdquo; above. The configuration data consists of sections, lead
+by a <literal>[<replaceable>section</replaceable>]</literal> header, and followed
+by <literal>name = <replaceable>value</replaceable></literal> entries. Continuations
+are in the style of RFC 822. Values can be split over multiple lines by beginning
+continuation lines with whitespace.</para>
+<para>Any required values not provided in the configuration file must be provided
+using the option listed in &ldquo;Options&rdquo; above. A sample configuration
+file might look like this:</para>
+<programlisting>[pkg]
+port = 80
+inst_root = /export/repo
+
+[pub_example_com]
+feed_description = example.com's software
+  update log</programlisting>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Enabling the Depot Server</title>
+<screen># <userinput>svcadm enable application/pkg/server</userinput></screen>
+</example>
+<example id="GLHBM"><title>Changing the Listening Port of the Server.</title>
+<screen># <userinput>svccfg -s application/pkg/server setprop pkg/port = 10000</userinput>
+# <userinput>svcadm refresh application/pkg/server</userinput>
+# <userinput>svcadm restart application/pkg/server</userinput></screen>
+</example>
+<example id="GLHAW"><title>Enabling the Mirror</title>
+<screen># <userinput>svcadm enable application/pkg/dynamic-mirror</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>Specifies the directory that contains the repository to serve.
+This value is ignored if <option>d</option> is specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_DEPOT_CONTENT</envar></term>
+<listitem><para>Specifies the directory that contains static content served
+by the depot. The files listed below under &ldquo;Files&rdquo; should be present
+in this directory, although their content can differ from the supplied default
+content.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Successful operation.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>An error occurred.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
+<listitem><para>Default presentation content location. Modify <literal>pkg/content_root
+</literal> to select an alternate location.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <literal>syslogd</literal>(8), <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>The <literal>pkd.depotd</literal> service is managed by SMF under the
+service identifier <literal>svc:/application/pkg/server</literal>.</para>
+<para>The mDNS mirror service is managed by SMF under the service identifier
+<literal>svc:/application/pkg/dynamic-mirror</literal>.</para>
+<para>To control read access to the depot, you can use an HTTP reverse proxy
+in combination with authentication methods such as client based SSL certificate
+access, which <command>pkg</command> natively supports.</para>
+<para>To easily serve multiple repositories from a single Apache instance with
+minimal Apache configuration, set the <literal>pkg/standalone</literal> property
+of a particular <literal>pkg/server</literal> instance to
+<literal>false</literal> and set the <literal>pkg/readonly</literal> property of
+that instance to <literal>true</literal>. See the
+<literal>pkg.depot-config</literal>(8) man page for more information.</para>
+<para>Changes to configuration, or changes to package data using file system
+based operations, require a restart of the depot server process so that the
+changes can be reflected in operations and output. Use one of the following
+methods to restart the depot server process:</para>
+<itemizedlist>
+<listitem><para>Use <command>svcadm</command> to restart the <literal>application/pkg/server
+</literal> instance.</para></listitem>
+<listitem><para>Send a <literal>SIGUSR1</literal> signal to the depot server
+process using <command>kill</command>. This executes a &ldquo;graceful restart&rdquo;
+that leaves the process intact but reloads all configuration, package, and
+search data:</para>
+<screen># <userinput>kill -USR1 <replaceable>pid</replaceable></userinput></screen>
+</listitem>
+</itemizedlist>
+</refsect1>
+</refentry>
+

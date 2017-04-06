@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkg.depot-config-8">
+<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.depot-config</refname><refpurpose>映像包管理系统 HTTP 库 (depot) 配置生成器</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depot-config ( -d <replaceable>repository_dir</replaceable> | -S )
+    -r <replaceable>runtime_dir</replaceable> [-c <replaceable>cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>] [-p <replaceable>port</replaceable>]
+    [-h <replaceable>hostname</replaceable>] [-l <replaceable>logs_dir</replaceable>] [-T <replaceable>template_dir</replaceable>]
+    [-A] [-t <replaceable>server_type</replaceable>] ( ([-F] [-P <replaceable>server_prefix</replaceable>] ) |
+    [--https ( (--cert <replaceable>server_cert_file</replaceable> --key <replaceable>server_key_file</replaceable>
+    [--cert-chain <replaceable>ssl_cert_chain_file</replaceable>] ) |
+    --cert-key-dir <replaceable>cert_key_directory</replaceable> )
+    [ (--ca-cert <replaceable>ca_cert_file</replaceable> --ca-key <replaceable>ca_key_file</replaceable> ) ]
+    [--smf-fmri <replaceable>smf_pkg_depot_fmri</replaceable>] ] )</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depot-config</command> 为映像包管理系统 (Image Packaging System, IPS) 库 (depot) 生成配置文件。IPS 库 (depot) 通过 HTTP 提供对 IPS 软件包系统信息库的可伸缩只读访问。</para>
+<para>IPS 库 (depot) 是通过将 <literal>svc:/application/pkg/depot</literal> 服务管理工具 (Service Management Facility, SMF) 服务与 <literal>svc:/application/pkg/server</literal> 服务的一个或多个实例结合使用来配置的。</para>
+<para><command>pkg.depot-config</command> 生成要由 <literal>pkg/depot</literal> 服务使用的配置，也可以通过在命令行上调用 <command>pkg.depot-config</command> 命令来生成独立的配置。</para>
+<para>要更改库 (depot) 配置，请修改 <literal>pkg/depot</literal> 服务或相应 <literal>pkg/server</literal> 服务实例的属性并刷新该实例。修改 <literal>pkg/server</literal> 服务实例的状态可能会导致刷新 <literal>pkg/depot</literal> 服务并重新生成库 (depot) 配置文件。</para>
+<para>要为多个系统信息库提供服务，需要针对每个系统信息库提供一个 <literal>pkg/server</literal> 服务实例，但只需要一个 <literal>pkg/depot</literal> 服务实例。<literal>pkg/server</literal> 服务的每个实例都映射到一个由 <literal>pkg/inst_root</literal> 服务属性指定的 IPS 系统信息库。<literal>pkg/server</literal> 服务执行以下操作之一：</para>
+<itemizedlist>
+<listitem><para>运行相关的 <literal>pkg.depotd</literal> 进程以便为系统信息库的内容服务。</para></listitem>
+<listitem><para>不运行任何进程，而是改为帮助配置 <literal>pkg.depot</literal> 服务。</para>
+</listitem>
+</itemizedlist>
+<para>每个系统信息库都由一个 <literal>pkg/server</literal> 服务实例提供支持。系统信息库还可能由 <literal>pkg/depot:default</literal> 服务提供支持。如果特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>true</literal>，则系统信息库由 <literal>pkg.depotd</literal> 进程提供服务。如果特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal>，则系统信息库由 <literal>pkg/depot:default</literal> 服务提供服务。每个 <literal>pkg/server</literal> 实例要么运行 <literal>pkg.depotd</literal>，要么为 <literal>pkg/depot:default</literal> 贡献配置信息。</para>
+<para>在启用其 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal> 的 <literal>pkg/server</literal> 实例时，<literal>pkg/depot:default</literal> 配置会进行刷新，该系统信息库将由 <literal>pkg/depot:default</literal> 服务提供服务。当您禁用同一个 <literal>pkg/server</literal> 实例时，<literal>pkg/depot:default</literal> 服务会进行刷新，该系统信息库将不再由 <literal>pkg/depot:default</literal> 服务提供服务。</para>
+<para>可以通过使用带有 <option>F</option> 选项的 <command>pkg.depot-config</command> 命令来手动配置库 (depot)。<option>F</option> 选项会生成可添加到现有 Web 服务器的 Web 服务器配置文件。在这种情况下，库 (depot) 可以运行，但其功能会减少：<literal>pkg </literal>(1) 搜索支持和库 (depot) 浏览器用户界面将不可用。为了安装和更新 Oracle Solaris 11 系统而需要的所有其他 <literal>pkg</literal>(1) 功能均可用。</para>
+<itemizedlist>
+<para>使用下列方法之一可以将系统信息库路径和配置传递到 depot 服务器：</para>
+<listitem><para>使用带有 <option>S</option> 选项的 <command>pkg.depot-config</command> 命令。<option>S</option> 选项导致 <literal>pkg.depotd</literal> 在系统中查询 <literal>pkg/server</literal> 服务的符合以下条件的所有实例：标记为 <literal>online</literal>、<literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 而且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。</para></listitem>
+<listitem><para>使用带有 <option>d</option> 选项的 <command>pkg.depot-config</command> 命令。<option>d</option> 选项提供要使用的 <literal>pkg</literal>(7) 系统信息库的路径。接受多个 <option>d</option> 选项。</para></listitem>
+</itemizedlist>
+<para>系统信息库必须具有允许 <literal>pkg5srv</literal> 用户读取系统信息库中文件和目录的文件权限。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>d</option> <replaceable>prefix</replaceable>=<replaceable> repository_dir</replaceable></term>
+<listitem><para>指定要使用的 <literal>pkg</literal>(7) 文件系统信息库的路径。<replaceable>prefix</replaceable> 用作可从其中访问此系统信息库的 <literal>depot-config</literal> Web 服务器名称空间的前缀。<replaceable>repository_dir</replaceable> 是一个包含 4.0 版 <literal>pkg</literal>(7) 文件系统信息库的目录，该系统信息库包括在 depot 服务器配置中。<option>d</option> 选项不能与 <option>S</option> 选项一起使用。如果不使用 <option>S</option> 选项，则至少需要一个 <option>d</option> 选项。允许使用多个 <option>d</option> 选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>S</option></term>
+<listitem><para>在系统中查询要使用的系统信息库。<option>S</option> 选项导致 <literal>pkg.depotd</literal> 在系统中查询 <literal>pkg/server</literal> 服务的符合以下条件的所有实例：标记为 <literal>online</literal>、<literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 而且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。这些属性值允许库 (depot) 同时运行多个未设置这些属性的 <literal>pkg/server</literal> 实例。有关 <literal>pkg.depotd</literal> 的信息，请参见 <literal>pkg.depotd</literal>(8) 手册页。<option>S</option> 选项不能与 <option>d</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>runtime_dir</replaceable></term>
+<listitem><para>指定配置文件的缺省输出目录。此目录还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/runtime_dir</literal> 属性来指定。在使用 <literal>config/runtime_dir</literal> 属性时，此目录的内容会在服务启动时重新创建。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>指定库 (depot) 用来存储其高速缓存的目录。如果同时使用了 <option>A</option> 选项，则还可以使用高速缓存目录来存储服务器端 <literal>pkg</literal>(7) 搜索索引。此目录还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/cache_dir</literal> 属性来指定。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
+<listitem><para>为库 (depot) 指定最大高速缓存大小。<replaceable>cache_size</replaceable> 值是整数个兆字节。如果 <replaceable>cache_size</replaceable> 为 0，则 Web 服务器不执行任何缓存。<replaceable>cache_size</replaceable> 的缺省值为 0。如果由 depot 服务器提供服务的所有文件系统信息库都位于 depot 服务器本地（而不是通过 NFS 访问），则缺省值 0 已足够。此高速缓存大小还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/cache_max</literal> 属性来指定。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>指定将由库 (depot) 侦听的端口号。<replaceable>port</replaceable> 的缺省值为 80。此端口还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/port</literal> 属性来指定。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>h</option> <replaceable>hostname</replaceable></term>
+<listitem><para>指定要用作 Apache <literal>ServerName</literal> 指令的参数的主机名。<replaceable>hostname</replaceable> 的缺省值为 <literal> 0.0.0.0</literal>。此主机名还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/host</literal> 属性来指定。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option> <replaceable>logs_dir</replaceable></term>
+<listitem><para>指定库 (depot) 用来存储日志文件的目录。<replaceable>logs_dir</replaceable> 的缺省值为 <filename>/var/log/pkg/depot</filename>。此目录还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/log_dir</literal> 属性来指定。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>T</option> <replaceable>template_dir</replaceable></term>
+<listitem><para>指定库 (depot) 在其中生成库 (depot) 配置并存储为了运行库 (depot) 而所需的额外文件的目录。<replaceable>template_dir</replaceable> 的缺省值为 <filename>/etc/pkg/depot</filename>。此目录还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/template_dir</literal> 属性来指定。此目录应当不需要进行更改。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>A</option> </term>
+<listitem><para>在调用 <command>pkgrepo refresh</command> 时刷新由库 (depot) 维护的任何搜索索引。缺省情况下，在调用 <command>pkgrepo refresh</command> 时，由库 (depot) 维护的搜索索引不进行刷新。此选项还可以通过在 <literal>pkg/server</literal> 服务中设置 <literal>config/allow_refresh</literal> 属性来指定。最佳做法不是使用 <option>A</option> 选项或 <literal>config/allow_refresh</literal> 属性来刷新生产服务器上的索引，因为搜索索引会在库 (depot) 启动时自动刷新。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>server_type</replaceable></term>
+<listitem><para>指定 <command>pkg.depot-config</command> 应当为其输出配置信息的 Web 服务器类型。在该发行版中，对于 <replaceable>server_type</replaceable>，缺省值为 <literal>apache2</literal> (Apache 2.4)，可接受的值为 <literal>apache2</literal> 和 <literal>apache22 (Apache 2.2)</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>F</option></term>
+<listitem><para>生成一个部分配置，该配置允许 Web 服务器使用现有的 Web 服务为客户机提供基本的 <literal>pkg</literal>(7) 安装操作。对于 Oracle Solaris OS 上运行的 Apache Web 服务器，该部分配置文件可以放在 <filename>/etc/apache2/2.4/conf.d</filename> 中。对于其他操作系统，请查阅 OS 文档以确定如何使用这个部分配置文件。另请参见 <option>P</option> 选项。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option> <replaceable>server_prefix</replaceable></term>
+<listitem><para>指定用来将库 (depot) 映射到 Web 服务器名称空间的前缀。<option>P</option> 选项应当与 <option>F</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-https</option></term>
+<listitem><para>启用 HTTPS 服务。此选项不能与 <option>F</option> 或 <option>P</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert</option> <replaceable>server_cert_file</replaceable></term>
+<listitem><para>指定服务器证书文件的位置。此选项只能与 <option>-https</option> 选项一起使用。<option>-cert</option> 和 <option>-key</option> 选项或者 <option>-cert-key-dir</option> 选项必须与 <option>-https</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>server_key_file</replaceable></term>
+<listitem><para>指定服务器密钥文件的位置。此选项只能与 <option>-https</option> 选项一起使用。<option>-cert</option> 和 <option>-key</option> 选项或者 <option>-cert-key-dir</option> 选项必须与 <option>-https</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert-key-dir</option> <replaceable>cert_key_directory</replaceable></term>
+<listitem><para>指定在省略 <option>-cert</option> 和 <option>-key</option> 选项时，应当在其中存储自动生成的证书和密钥的目录。此选项只能与 <option>-https</option> 选项一起使用。<option>-cert</option> 和 <option>-key</option> 选项或者 <option>-cert-key-dir</option> 选项必须与 <option>-https</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ca-cert</option> <replaceable>ssl_ca_cert_file</replaceable></term>
+<listitem><para>指定顶级 CA 证书文件的位置。此选项只能与 <option>-https</option> 选项一起使用，而且必须是与 <option>-ca-key</option> 选项共同使用。此选项仅用于根据此 CA 证书和 <option>-ca-key</option> 选项所指定的 CA 密钥自动生成服务器证书。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ca-key</option> <replaceable>ssl_ca_key_file</replaceable></term>
+<listitem><para>指定顶级 CA 密钥文件的位置。此选项只能与 <option>-https</option> 选项一起使用，而且必须是与 <option>-ca-cert</option> 选项共同使用。此选项仅用于根据此 CA 密钥和 <option>-ca-cert</option> 选项所指定的 CA 证书自动生成服务器证书。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert-chain</option> <replaceable>ssl_cert_chain_file</replaceable></term>
+<listitem><para>此选项只能与 <option>-https</option> 选项一起使用。如果服务器证书不是由顶级 CA 直接签名而是由中间颁发机构签名的，则需要使用此选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-smf-fmri</option> <replaceable>smf_pkg_depot_fmri</replaceable></term>
+<listitem><para>指定 <literal>pkg/depot</literal> 服务实例的 FMRI。如果为该实例自动生成了任何证书或密钥，则可以使用此选项更新该实例的相应 SMF 属性。此选项只能与 <option>-https</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>提供其他服务器配置</title>
+<para>如果未使用 <option>F</option> 选项，而且设置了缺省 <command>-t apache2</command>，则 <literal>svc:/application/pkg/depot</literal> 服务在启动时将在 <filename>/etc/pkg/depot/conf.d</filename> 中查找其他可用于扩展服务器配置的 Apache 配置文件。有关用于配置 Web 服务器的指令的详细信息，请查阅 Apache Web 服务器文档。</para>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>显示如何为系统信息库提供服务</title>
+<para>此示例中的系统运行多个 <literal>svc:/application/pkg/server</literal> 实例和单个 <literal>svc:/application/pkg/depot</literal> 实例。<literal>pkg/server:standalone</literal> 实例有一个相关的 <command>pkg.depotd</command> 进程。<command>pkg.depotd</command> 进程为 <literal>pkg/server:standalone</literal> 服务中配置的系统信息库提供服务。<literal>pkg/server:userland</literal> 实例没有相关进程。<literal>pkg/depot:default</literal> 服务为 <literal>pkg/server:userland</literal> 服务中配置的系统信息库提供服务。</para>
+<screen>$ <userinput>svcs pkg/server</userinput>
+STATE    STIME    FMRI
+disabled Feb_06   svc:/application/pkg/server:default
+online   Feb_03   svc:/application/pkg/server:userland
+online   Feb_03   svc:/application/pkg/server:standalone
+$ <userinput>svcs pkg/depot</userinput>
+STATE    STIME    FMRI
+online   Feb_07   svc:/application/pkg/depot:default
+$ <userinput>svcprop -p pkg/standalone -p pkg/readonly &bsol;</userinput>
+<userinput>pkg/server:standalone</userinput>
+true
+true
+$ <userinput>svcprop -p pkg/standalone -p pkg/readonly &bsol;</userinput>
+<userinput>pkg/server:userland</userinput>
+false
+true
+$ <userinput>svcs -p svc:/application/pkg/server:standalone</userinput>
+STATE    STIME    FMRI
+online   Feb_03   svc:/application/pkg/server:standalone
+         Jan_31       1206 pkg.depotd
+$ <userinput>svcs -p svc:/application/pkg/server:userland</userinput>
+STATE    STIME    FMRI
+online   Feb_03   svc:/application/pkg/server:userland</screen>
+</example>
+<example id="GMWHD"><title>显示与库 (depot) 相关联的进程</title>
+<para>下面的命令显示与 <literal>pkg/depot</literal> 服务相关联的 <literal>httpd</literal> 进程。</para>
+<screen>$ <userinput>svcs -p pkg/depot</userinput>
+STATE    STIME    FMRI
+online   11:43:56 svc:/application/pkg/depot:default
+         11:43:55     16969 httpd
+         11:43:55     16974 httpd
+         11:43:55     16975 httpd
+         11:43:55     16976 httpd
+         11:49:01     16990 httpd
+         11:51:33     16995 httpd</screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>命令失败。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg/depot</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="svcprop-1"><citerefentry><refentrytitle>svcprop</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svccfg-8"><citerefentry><refentrytitle>svccfg</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

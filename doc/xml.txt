@@ -1,0 +1,31 @@
+
+pkg
+USE OF XML
+
+It might be helpful, for tools development, to offer an XML description
+of package transactions and manifests.
+
+That is, if we're backing into a full fledged package dialect, beyond
+something single line-based, then we should consider whether an XML
+document is a suitable choice.  Usual pro-XML, con-XML position follows.
+
+1.  Specific cases in support.
+
+Multiline text properties and localized text properties argues for use
+of XML.
+
+Sympathy with <property>, <value>, and <propval> in the smf(5) DTD might
+be of benefit.
+
+2.  Specific cases against.
+
+Server side assembly of the transaction into a package version means
+that the manifest might be difficult to construct.  Or maybe not:
+
+open ->  <manifest package="...">
+add ->   <action ...>
+close -> </manifest>
+
+(But accept and publish will require that manifest to be imported and
+updated.)
+

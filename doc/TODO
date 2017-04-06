@@ -1,0 +1,62 @@
+
+pkg
+TODO
+
+  During the prototype phase, this is merely a list of items not fully
+  discussed, written up or implemented.
+
+1.  Algorithms/Logic
+
+	- Preferred publisher fallback
+		- a discussion of catalogs, comparisons between, and
+		  operations on
+		- per-package publisher association
+
+	- Catalog update mechanism
+		- event oriented
+		- digested
+
+	- Freeze/constraint flow
+		- statement
+		- back tracking
+
+	- Snapshot/revert safety
+
+	- Image/substrate relationship
+	- Image operational history
+
+	- Conventions for automated repository discovery
+	- Peer/neighborhood cooperation/verification/etc.
+
+	- Depot management
+		- store forever and demote from catalog
+		- conserve disk space
+		- client as depot?
+
+	- Compatibility options
+		- understand SysV as fixed version:timestamp packages
+		  from a legacy publisher?
+
+2.  Formats/interfaces
+
+	- Versioned formats (event, full) for catalog
+	- Versioned format for manifest
+
+	- Versioned format for marshalled transactions ("new package
+	  format")
+
+	- Practices around REST and versions (entry points or data?)
+
+3.  Data analysis
+
+	- continued examination of version and patch history of S9 and
+	  S10 (S8?)
+		- write up worked examples (e.g. telnet on both sides
+		  of private kernel API change)
+
+4.  Coding
+
+	- Server split to transaction server and plain old HTTP server
+	  sides
+
+	- SSH tunnel support in pkgsend(1)

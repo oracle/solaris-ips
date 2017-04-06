@@ -1,0 +1,38 @@
+
+pkg
+Use of REST
+
+We use REST over HTTP as the primary networking API between client and
+server.  That choice means that
+
+- the client can be reimplemented,
+
+- the server can be reimplemented, and
+
+- decorations on a transaction, like authentication, encryption, and
+  redirection, can be handled using the enormous technology set around
+  HTTP.
+
+The first two are true of any well-defined protocol, but we benefit in
+this case from the wide availability of HTTP client and server
+implementation starting points.
+
+Installer API:
+
+GET /catalog
+GET /version/pkg_name
+GET /depend/pkg_name
+GET /data/pkg_name[/from[/to]]
+
+Packager API:
+
+POST /trans/pkg_name
+	Returning a transaction ID
+POST /add/trans_id/type
+	Plus metadata in submitted headers and contents as file body.
+GET /summary/trans_id
+POST /meta/trans_id/require
+	Dependency metadata in submitted headers.
+POST /commit/trans_id
+	Returning package URL.
+

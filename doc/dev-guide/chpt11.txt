@@ -1,0 +1,361 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 11
+----------
+
+Signing Packages
+................
+
+One important consideration in the design of IPS was being able to
+validate that the software installed on the customer's machine was
+actually as originally specified by the publisher.  This ability to
+validate the installed system is key for both the customer and the
+support engineering staff.
+
+To support this validation, manifests can be signed in IPS with the
+signatures becoming part of the manifest.  Signatures are represented
+as actions like all other manifest content.  Since manifests contain
+all the package metadata - file permissions, ownership, content
+hashes, etc., a ``signature`` action that validates that the manifest has
+not be altered since it was published is an important part of system
+validation.
+
+The ``signature`` actions form a tree that includes the delivered binaries
+such that complete verification of the installed software is possible.
+
+There are other uses for manifest signing beyond validation; signatures
+can also be used to indicate approval by other organizations or parties.
+
+For example, the internal QA organization could sign manifests of packages
+once it was determined the packages were qualified for production use.
+Policy could mandate such approvals prior to installation.
+
+As a result, a useful characteristic for signatures is to be
+independent of other signatures in a manifest. Signatures can be
+added or removed without invalidating the other signatures
+that might be present.  This feature also facilitates production
+hand offs, with signatures used along the path to indicate completion
+along the way. Subsequent steps can optionally remove previous
+signatures at any time without ill effect.
+
+``signature`` actions look like this::
+
+    signature <hash of certificate> algorithm=<signature algorithm> \
+        value=<signature value> \
+        chain="<hashes of certs needed to validate primary certificate>" \
+        version=<pkg version of signature>
+
+The payload and ``chain`` attributes represent the packaging
+hash of the PEM (Privacy Enhanced Mail) files, containing the
+x.509 certificates downloadable from the originating repository.
+The value is the signed hash of the manifest's message text, prepared
+as discussed below.  The payload certificate is the certificate which
+verifies the value in ``value``.
+
+The other certificates presented needs to form a
+certificate path that leads from the payload certificate to the trust
+anchors that were established as part of the publisher configuration.
+
+Two types of signature algorithms are currently supported.  The first
+is the RSA group of signature algorithms; an example is ``rsa-sha256``.
+The bit after the dash specifies the hash algorithm to use to change
+the message text into a single value the RSA algorithm can use.
+
+The second type of signature algorithm is compute the hash only. This
+type of algorithm exists primarily for testing and process
+verification purposes and presents the hash as the signature value.  A
+signature action of this type is indicated by the lack of a payload
+certificate hash.  This type of signature action is verified if the
+image is configured to check signatures.  Its presence however does
+not count as a signature if signatures are required::
+
+    signature algorithm=<hash algorithm> value=<hash> \
+        version=<pkg version of signature>
+
+
+Additional metadata can be added to a signature if desired, as with
+any other action. Such metadata is protected by that signature.
+
+Policies can be set for the image or for specific publishers.  The
+policies include ignoring signatures, verifying existing signatures,
+requiring signatures, and requiring that specific common names must be
+seen in the chain of trust.  Other policies might be added in the
+future.
+
+
+Publishing a signed manifest is a two step process:
+
+1. Publish the package unsigned to a repository.
+2. Update the package in place, using |pkgsign| to append
+   a signature action to the manifest in the repository.
+
+This process leaves the package intact, including its timestamp.
+
+This process enables a signature action to be added
+by someone other than the publisher without invalidating the original
+publisher's signature.  For example, the QA department of a company
+might want to sign all packages that are installed internally to
+indicate they have been approved for use, but not republish the
+packages, which would create a new timestamp and invalidate the
+signature of the original publisher.
+
+Note that |pkgsign| is the only way to publish a signed package.  If one
+attempts to publish a package already containing a signature, that
+signature is removed and a warning is emitted.  The |pkgsign| man page
+contains examples of how to use |pkgsign|.
+
+One current restriction to be aware of is that signature actions with variants
+are ignored.  That means that doing a |pkgmerge| on a pair of manifests will
+invalidate any signatures which were previously applied.  Signing the package
+should be the last step of the package development before the package is tested.
+
+|pkgsign| does not perform all the possible checks for its inputs when signing
+packages.  This means it's important to check signed packages to ensure that
+they can be properly installed after being signed.  What follows are some of the
+errors that can appear when attempting to install or update a signed package
+along with explanations of what the errors mean and how to solve the problem.
+
+
+Errors Involving Signed Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A signed package can fail to install or update for reasons that are unique to
+signed packages.  For example, if a package's signature fails to verify, or if
+its chain of trust can't be verified or anchored to a trusted certificate, the
+package will fail to install.
+
+When installing signed packages, certain image properties will influence the
+checks that are performed on packages. These properties are:
+
+    * ``signature-policy``
+    * ``signature-required-names``
+    * ``trust-anchor-directory``
+
+See the |pkg| man page for further information about these properties, and their
+permitted values.
+
+What follows are some examples of different failure paths and what can
+be done to resolve them.
+
+Example 1: Chain Certificate Not Found
+``````````````````````````````````````
+::
+
+    pkg install: The certificate which issued this certificate:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta3/emailAddress=cs1_ch1_ta3
+    could not be found. The issuer is:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3
+
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T184152Z
+
+The error shown above happens when a certificate in the chain of trust is
+missing or otherwise erroneous.
+
+In this case, there were three certificates in the chain of trust when the
+package was signed.  It was rooted in the trust anchor, a certificate named
+``ta3``.  ``ta3`` signed a chain cert named ``ch1_ta3``.
+
+``ch1_ta3`` signed a code signing certificate named ``cs1_ch1_ta3``.  When |pkg|
+tried to install the package, it was able to locate the code signing
+certificate, ``cs1_ch1_ta3``, but it couldn't locate the chain certificate,
+``ch1_ta3``, so the chain of trust could not be established.
+
+The most common cause of this problem is failing to provide the right
+certificate(s) to the ``-i`` option of |pkgsign|.
+
+Example 2: Authorized Certificate Not Found
+```````````````````````````````````````````
+
+::
+
+    pkg install: The certificate which issued this certificate:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_cs8_ch1_ta3/emailAddress=cs1_cs8_ch1_ta3
+    could not be found. The issuer is:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs8_ch1_ta3/emailAddress=cs8_ch1_ta3
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T201101Z
+
+The error shown above is similar to the error in *Example 1* but has a different
+cause.
+
+In this case, the package was signed using the ``cs1_cs8_ch1_ta3``
+certificate, which was signed by the ``cs8_ch1_ta3`` certificate.
+
+The problem is that the ``cs8_ch1_ta3`` certificate wasn't authorized to sign
+other certificates. (To be specific, the ``cs8_ch1_ta3`` certificate had the
+``basicConstraints`` extension set to ``CA:false`` and marked critical.)
+
+When |pkg| verifies the chain of trust, it doesn't find a certificate which was
+allowed to sign the ``cs1_cs8_ch1_ta3`` certificate.  Since the chain of trust
+can't be verified from the leaf to the root, |pkg| prevents the package from
+being installed.
+
+
+Example 3: Untrusted Self-Signed Certificate
+````````````````````````````````````````````
+
+::
+
+    pkg install: Chain was rooted in an untrusted self-signed certificate.
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T185335Z
+
+The error shown above happens when a chain of trust ends in a self-signed
+certificate which isn't trusted by the system.
+
+When a developer creates a chain of certificates using ``openssl`` for testing,
+the root certificate is usually self-signed, since there's little reason to have
+an outside company verify a certificate only used for testing.
+
+In a test situation, there are two solutions.
+
+The first is to add the self-signed certificate which is the root of the chain
+of trust into ``/etc/certs/CA`` and refresh the ``system/ca-certificates``
+service.
+
+This mirrors the likely situation customers will encounter where a production
+package is signed with a certificate that's ultimately rooted in a certificate
+that's delivered with the operating system as a trust anchor.
+
+The second solution is to approve the self-signed certificate for the publisher
+which offers the package for testing by using the ``--approve-ca-cert``
+option for the ``set-publisher`` subcommand to |pkg|.
+
+Example 4: Signature Value Does Not Match Expected Value
+````````````````````````````````````````````````````````
+
+::
+
+    pkg install: A signature in pkg://test/example_pkg@1.0,5.11-0:20110919T195801Z
+    could not be verified for this reason:
+    The signature value did not match the expected value. Res: 0
+    The signature's hash is 0ce15c572961b7a0413b8390c90b7cac18ee9010
+
+The error shown above happens when the value on the signature action could not
+be verified using the certificate which the action claims was paired with the
+key used to sign the package.
+
+There are two possible causes for an error like this.
+
+The first is that the package has been changed since it was signed.  This
+is unlikely to happen since |pkgsend| will strip existing signature actions
+during publication (since the new timestamp the package will get will invalidate
+the old signature) but is possible if the package's manifest has been hand
+edited since signing.
+
+The second, and most likely cause, is that the key and certificate used to the
+sign the package weren't a matched pair.  If the certificate given to the
+``-c`` option of |pkgsign| wasn't created with the key given to the
+``-k`` option of |pkgsign|, the package is signed, but its signature won't
+be verified.
+
+Example 5: Unknown Critical Extension
+`````````````````````````````````````
+
+::
+
+    pkg install: The certificate whose subject is 
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs2_ch1_ta3/emailAddress=cs2_ch1_ta3
+    could not be verified because it uses a critical extension that pkg5 cannot
+    handle yet. Extension name:issuerAltName
+    Extension value:<EMPTY>
+
+The error above happens when a certificate in the chain of trust uses a critical
+extension which |pkg| doesn't understand.
+
+Until |pkg| learns how to process that critical extension, the only solution is
+to regenerate the certificate without the problematic critical extension.
+
+Example 6: Unknown Extension Value
+``````````````````````````````````
+
+::
+
+    pkg install: The certificate whose subject is 
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs5_ch1_ta3/emailAddress=cs5_ch1_ta3
+    could not be verified because it has an extension with a value that pkg(5)
+    does not understand.
+    Extension name:keyUsage
+    Extension value:Encipher Only
+
+The error above is similar to the error in *Example 5* except that the problem is
+not with an unfamiliar critical extension but with a value that |pkg| doesn't
+understand for an extension which |pkg| does understand.
+
+In this case, |pkg| understands the ``keyUsage`` extension, but doesn't
+understand the value ‘``Encipher Only``.’  The error will look the same whether
+the extension in question is critical or not.
+
+The solution, until |pkg| learns about the value in question, is to remove the
+value from the extension, or remove the extension entirely.
+
+Example 7: Unauthorized Use of Certificate
+``````````````````````````````````````````
+
+::
+
+    pkg install: The certificate whose subject is
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3
+    could not be verified because it has been used inappropriately.
+    The way it is used means that the value for extension keyUsage must include
+    'DIGITAL SIGNATURE' but the value was 'Certificate Sign, CRL Sign'.
+
+The error above occurs when a certificate has been used for a purpose for which
+it was not authorized.
+
+In this case, the certificate ``ch1_ta3`` has been used to sign the package.
+It's ``keyUsage`` extension means that it's only valid to use that certificate
+to sign other certificates and CRL's.
+
+Example 8: Unexpected Hash Value
+````````````````````````````````
+
+::
+
+    pkg install: Certificate 
+    /tmp/ips.test.7149/0/image0/var/pkg/publisher/test/certs/0ce15c572961b7a0413b8390c90b7cac18ee9010
+    has been modified on disk. Its hash value is not what was expected.
+
+The error above means what it says.
+
+The certificate at the provided path is used to verify the package being
+installed but the hash of the contents on disk don't match what the signature
+action thought they should be.
+
+This indicates that the certificate has been changed since it was last retrieved
+from the publisher.
+
+The simple solution is to remove the certificate and allow |pkg| to download
+the certificate again.
+
+Example 9: Revoked Certificate
+``````````````````````````````
+
+::
+
+    pkg install: This certificate was revoked:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta4/emailAddress=cs1_ch1_ta4
+    for this reason: None
+    The package involved is: pkg://test/example_pkg@1.0,5.11-0:20110919T205539Z
+
+The error above indicates the certificate in question, which was in the chain of
+trust for the package to be installed, was revoked by the issuer of the
+certificate.
+

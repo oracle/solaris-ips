@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkgsurf-1">
+<refmeta><refentrytitle>pkgsurf</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 8 月 9 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2013, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgsurf</refname><refpurpose>映像包管理系统系统信息库版本信息集调整实用程序</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsurf -s <replaceable>target_repo</replaceable> -r <replaceable>reference_repo</replaceable> [-n]
+    [-p <replaceable>publisher_prefix</replaceable>]... [-i <replaceable>name</replaceable>]... [-c <replaceable>pattern</replaceable>]...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsurf-1-desc" role="description"><title></title>
+<para><command>pkgsurf</command> 是一个软件包发布工具，可用于替换目标系统信息库中自参考系统信息库中的最新发布版本以来尚未更改的软件包。结果是目标系统信息库中所有软件包的新版本信息集。</para>
+<para><command>pkgsurf</command> 操作不可逆。如果必须对 <command>pkgsurf</command> 操作进行恢复，则应当将目标系统信息库存储在其各自的 ZFS 数据集中，并在运行 <command>pkgsurf</command> 之前创建数据集的快照。</para>
+<para>目标系统信息库中的软件包会与参考系统信息库中的软件包进行比较，通过分析比较结果可了解内容是否发生更改。对于每个软件包，如果未找到内容更改，则该软件包的清单将从目标系统信息库中删除并替换为参考系统信息库中同一软件包的清单。</para>
+<para>目标系统信息库必须是基于文件系统的系统信息库。为了实现最佳性能，参考系统信息库也应当是基于文件系统的系统信息库。</para>
+<para>目标系统信息库对于每个软件包应当仅包含一个版本。如果目标系统信息库中有一个软件包的版本大于参考系统信息库中的最新版本但小于目标系统信息库中最新版本，则将不针对该软件包执行任何软件包清单操作。
+</para>
+<para>参考系统信息库对于每个软件包可以包含一个或多个版本。但是，仅使用最新的版本进行比较。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term><listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>pattern</replaceable></term>
+<listitem><para>将其 FMRI 与 <replaceable>pattern</replaceable> 相匹配的每个软件包视为已更改而且不对它进行复原，即使内容未发生更改也是如此。可以多次指定此选项。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>name</replaceable></term>
+<listitem><para>忽略其 <literal>name</literal> 字段设置为 <replaceable>name</replaceable> 的 <literal>set</literal> 操作以确定内容更改。将复原该软件包，即使此操作在目标版本和参考版本之间不同也是如此。可以多次指定此选项。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>对该操作执行试运行而不对目标系统信息库进行任何更改。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher_prefix</replaceable></term>
+<listitem><para>指定要调整版本信息集的发布者的名称。可以多次指定此选项。</para>
+<para>缺省情况下，将对目标系统信息库和参考系统信息库中找到的所有发布者的软件包进行版本信息集调整。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>reference_repo</replaceable></term>
+<listitem><para>指定要用于进行清单比较的参考系统信息库的 URI。仅考虑每个软件包的最新版本。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>target_repo</replaceable></term>
+<listitem><para>指定目标系统信息库的路径。此系统信息库中的软件包将根据比较结果复原到参考系统信息库中存在的版本。目标系统信息库对于每个软件包应当仅包含一个版本。目标系统信息库必须是基于文件系统的系统信息库。</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>支持以下环境变量：</para>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>目标系统信息库的绝对路径。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>对系统信息库进行版本信息集调整</title>
+<para>对于目标系统信息库中符合以下条件的每个软件包进行复原：其内容与参考系统信息库中同一软件包的内容完全相同。</para>
+<screen>$ <userinput>pkgsurf -s /path/to/target -r http://reference.example.com</userinput></screen>
+<para>目标系统信息库中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@2.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>参考系统信息库中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>在执行 <command>pkgsurf</command> 操作之后，目标系统信息库中的样例软件包：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

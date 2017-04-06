@@ -1,0 +1,118 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 2
+---------
+
+Package Lifecycle
+.................
+
+This chapter provides an overview of the software package lifecycle with IPS.
+
+Software packages go through a detailed lifecycle with IPS. Understanding
+the various phases of the package lifecycle will help the developer and
+administrator optimize their results.  The following sections provide a
+high-level description of each state in the package lifecycle:
+
+Creation
+~~~~~~~~
+
+    Packages can be created by anybody.  IPS does not impose any particular
+    software build system or directory hierarchy on the part of package
+    authors.  More detail about package creation is available in *Chapter 4*.
+    Aspects of package creation are discussed throughout the remaining
+    chapters of this guide.
+
+
+Publication
+~~~~~~~~~~~
+
+    Packages are published to an IPS repository, either via HTTP or
+    to the file system.  If desired, once packages are published they can
+    converted to a ``.p5p`` package archive file.  To access software from an IPS
+    repository, the repository can be added to the system, using the
+    ``pkg set-publisher`` command, or accessed as a temporary source, using the
+    ``-g`` flag to |pkg|.  Examples of package publication are shown in
+    *Chapter 4*.
+
+Installation
+~~~~~~~~~~~~
+
+    Packages can be installed on a system, either from an IPS repository,
+    accessed over http://, https:// or file:// URLs, or installed directly
+    from a ``.p5p`` package archive.  Package installation is described in more
+    detail in *Chapter 5*.
+
+Updates
+~~~~~~~
+
+    Updated versions of packages might become available, either
+    published to an IPS repository, or delivered as a new ``.p5p`` package
+    archive.
+
+    Installed packages can then be brought up to date, either individually,
+    or as part of an entire system update.
+
+    It is important to note that IPS does not use the same concept of
+    "patching" as the SVR4 packaging system did: all changes to packaged
+    software are delivered by updated packages.
+
+    The packaging system is optimized to install only the changed portions 
+    delivered by an updated package, but essentially, package
+    updates are performed in much the same way as package installs.  Package
+    updating is described in more detail in *Chapter 5*.
+
+Renaming
+~~~~~~~~
+
+    During a package's lifecycle, it might be desirable to rename a package.
+    Often this is done for organizational reasons or to refactor packages.
+
+    Examples of package refactoring would be where there is an interest in
+    combining several packages into a single package, breaking a single
+    package into multiple smaller packages, or a combination of the two.
+
+    IPS gracefully handles actions that move between packages, and has
+    capabilities to allow old package names to persist on the system,
+    automatically installing the new packages when a user asks to install
+    a renamed package.  Package renaming is described in more detail in
+    *Chapter 10*.
+
+Obsoletion
+~~~~~~~~~~
+
+    Eventually a package might reach the end of its life.  A package
+    publisher might decide that a package will no longer be supported,
+    and that it will not have any more updates made available.  IPS
+    allows publishers to mark such packages as obsolete.
+
+    Obsolete packages can no longer be used as a target for most
+    dependencies from other packages, and any packages upgraded to an
+    obsolete version are automatically removed from the system.  Package
+    obsoletion is described in more detail in *Chapter 10*.
+
+Removal
+~~~~~~~
+
+    Finally, a package can be removed from the system assuming that no other
+    packages have dependencies on it.  Package removal is described in more
+    detail in *Chapter 5*.
+

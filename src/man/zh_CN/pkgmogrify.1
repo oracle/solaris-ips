@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkgmogrify-1">
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgmogrify</refname><refpurpose>映像包管理系统清单变换程序</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgmogrify [-vi] [-I <replaceable>includedir</replaceable>]...
+    [-D <replaceable>macro</replaceable>=<replaceable>value</replaceable>]... [-O <replaceable>
+outputfile</replaceable>]
+    [-P <replaceable>printfile</replaceable>] [<replaceable>inputfile</replaceable> ...]
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GKVND" role="description"><title></title>
+<para><command>pkgmogrify</command> 允许对软件包清单进行编程式编辑，以简化自动生成软件和自动发布软件包时所需的典型变换。</para>
+<para>它按指定的顺序读取所有文件，然后将应用在其中找到的所有嵌入式指令，下文的“嵌入式指令”部分详细描述了这些指令。如果未命名任何文件，将从 stdin 读取输入。还可以将 &#39;-&#39; 指定为文件名，以将 stdin 单独用作输入，或者将其与其他文件组合来用作输入。</para>
+<itemizedlist>
+<para><command>pkgmogrify</command> 提供：</para>
+<listitem><para>宏替换，以便于在各种体系结构和平台间共享单个清单。</para></listitem>
+<listitem><para>包含其他清单或清单片段，例如标准组件和变换。</para></listitem>
+<listitem><para>变换软件包操作，包括修改、删除或添加操作属性。</para></listitem>
+</itemizedlist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>macro</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>将 <replaceable>macro</replaceable> 定义为一个宏，其值为 <replaceable>value</replaceable>。可以多次指定此选项。宏在输入文件中显示为 <literal> $(macro)</literal>。将重复执行替换操作，直到再也找不到变换。常见用语包括：</para>
+<itemizedlist>
+<listitem><para>通过在行的开头使用特定于体系结构的标记来删除其他体系结构清单中的行。</para>
+<programlisting>$(sparc_ONLY)file ...</programlisting>
+<para>处理 SPARC 体系结构时，该宏将被设置为空字符串。而处理其他体系结构时，该宏在命令行中会被设置为 <literal>#</literal>，从而从当前体系结构的清单中删除此操作。</para>
+</listitem>
+<listitem><para>指定路径名称中特定于平台的部分，例如，可执行文件和库的 64 位体系结构目录的名称：</para>
+<programlisting>file path=usr/bin/$(ARCH64)/cputrack ...</programlisting>
+<para>应当将这些宏设置为命令行中所需的值。不存在预定义的宏值。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>I</option> <replaceable>includedir</replaceable></term>
+<listitem><para>将指定目录添加到在命令行上和为嵌入式 include 指令指定的文件的搜索路径中。可以多次指定此选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>O</option> <replaceable>outputfile</replaceable></term>
+<listitem><para>将清单输出写入指定的文件中。如果出现错误或 transform 指令引起中止操作，则不会写入该文件。缺省情况下，清单输出会写入 <filename>stdout</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option> <replaceable>printfile</replaceable></term>
+<listitem><para>将 transform 指令输出操作生成的输出写入指定的文件。如果出现错误或 transform 指令引起中止操作，则不会写入该文件。缺省情况下，输出会写入 <filename>stdout</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option></term>
+<listitem><para>忽略文件中的 include 指令。仅处理在命令行（或 <filename>stdin</filename>）中指定的文件。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>将注释写入显示变换效果的输出清单。该信息可以帮助调试。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>嵌入式指令</title>
+<para>清单文件支持两种类型的指令：include 指令和 transform 指令。</para>
+<para>Include 指令的格式为：</para>
+<programlisting>&lt;include <replaceable>file</replaceable>></programlisting>
+<para>该指令能够使 <command>pkgmogrify</command> 首先在当前目录中搜索名为 <literal>file</literal> 的文件，然后在 <option>I</option> 选项指定的目录中搜索该文件。如果找到，则会将该文件的内容插入清单中遇到该指令的位置。如果未找到，<command>pkgmogrify</command> 将退出并显示错误。</para>
+<para>Transform 指令的格式为：</para>
+<programlisting>&lt;transform <replaceable>matching-criteria</replaceable> -> <replaceable>
+operation</replaceable>></programlisting>
+<para>这些指令会进行累积（直到将所有输入都读入内存中），然后按遇到这些指令的顺序应用到操作。
+</para>
+<para>匹配条件的格式为：</para>
+<programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
+</replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
+<para>必须至少匹配一个指定的 <replaceable>action-name</replaceable>。必须匹配指定的每个 <replaceable>attribute</replaceable>。操作名称和属性列在 <literal>pkg</literal>(7) 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或请参见 <literal>http://docs.python.org/dev/howto/regex.html </literal> 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 <literal>.*</literal>，且应当包含结尾 <literal> $</literal>。</para>
+<para>可以指定多个条件，以空格分隔。</para>
+<para>有以下操作可用：</para>
+<variablelist>
+<varlistentry><term><literal>add</literal></term>
+<listitem><para>将值添加到属性中。此操作使用两个参数。第一个参数是属性的名称，第二个参数是对应值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>default</literal></term>
+<listitem><para>如果不存在属性值，则设置该属性值。此操作与 <command>add</command> 操作使用相同的两个参数。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>delete</literal></term>
+<listitem><para>删除属性值。此操作使用两个参数。第一个参数是属性的名称。第二个参数是要与删除的属性值匹配的正则表达式。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>drop</literal></term>
+<listitem><para>放弃该操作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>edit</literal></term>
+<listitem><para>修改操作的属性。此操作使用三个参数。第一个参数是属性的名称，第二个参数是与属性值匹配的正则表达式。第三个参数是用于替换正则表达式匹配的部分值的替换字符串。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。如果在正则表达式中定义了组，则在替换字符串中可以使用 <literal>\1</literal>、<literal>\2</literal> 等格式的一般正则表达式向后引用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>emit</literal></term>
+<listitem><para>向清单输出流中发出一行。此行必须是有效操作字符串、为空（导致空白行）或注释（<literal> #</literal> 后面跟有任意文本）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exit</literal></term>
+<listitem><para>终止清单处理过程。不输出任何清单，也不应用任何 <literal> print</literal> 操作。如果给定一个参数，该参数必须是整数并且用作退出代码。缺省为 0。如果给定两个参数，则第一个参数是退出代码，第二个参数是要输出到 <filename>stderr</filename> 的消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>print</literal></term>
+<listitem><para>将消息输出到 <option>P</option> 指定的输出文件中。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>set</literal></term>
+<listitem><para>设置属性的值。此操作与 <command>add</command> 操作使用相同的两个参数。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>除了 <literal>delete</literal> 和 <literal>drop</literal> 以外的所有操作都使用其内容输出到输出流的参数（可能是可选的）。这些字符串可能包含三种不同类型的特殊标记，这些标记允许输出包含不基于每种操作的固定变换的信息。</para>
+<para>第一种替换通过将属性的名称放置在括号内（跟随在百分号后面），允许操作引用当前操作的属性值。例如，<literal>%(alias)</literal> 引用操作的 <literal>alias</literal> 属性的值。</para>
+<itemizedlist>
+<para>存在几个合成属性。以下两个对 <command>pkgmogrify</command> 而言是唯一的：
+</para>
+<listitem><para><literal>pkg.manifest.filename</literal> 引用在其中找到操作的文件的名称。</para></listitem>
+<listitem><para><literal>pkg.manifest.lineno</literal> 引用在其中找到操作的行。</para></listitem>
+</itemizedlist>
+<itemizedlist>
+<para>以下三个合成属性类似于 <command>pkg</command> 中使用的属性：
+</para>
+<listitem><para><literal>action.hash</literal> 引用操作的散列值（如果该操作携带有效负荷）。对于携带有效负荷的操作，<literal> set</literal> 操作可以通过对 <literal>action.hash</literal> 属性进行操作来更改该操作的散列。</para></listitem>
+<listitem><para><literal>action.key</literal> 引用关键属性的值。</para></listitem>
+<listitem><para><literal>action.name</literal> 引用操作的名称。</para>
+</listitem>
+</itemizedlist>
+<para>如果请求其值的属性不存在，<command>pkgmogrify </command> 将退出并显示错误。为防止出现错误退出，请在属性名称后面附加 <literal>;notfound=</literal> 以及要用于替换属性值的值。例如，如果存在 <literal>alias</literal> 属性，则 <literal>%(alias;notfound='no alias')</literal> 输出该属性的值，否则输出 <literal>no alias</literal>。</para>
+<para>如果请求其值的属性具有多个值，则输出每个值，以空格隔开。与 <literal>notfound</literal> 标记类似，标记 <literal>prefix</literal>、<literal>suffix</literal> 和 <literal>sep </literal> 也可用于更改此行为。由 <literal>prefix </literal> 表示的字符串放置在每个值之前，由 <literal>suffix</literal> 表示的字符串放置在每个值之后，而 <literal>sep</literal> 放置在某个值的后缀与下一个值的前缀之间。</para>
+<para>与操作属性类似，<command>pkgmogrify</command> 指令也可以使用花括 （而非圆括号）引用 件包属性：<literal>%{pkg.fmri}</literal>。应用 transform 指令时，必须已在 <literal>set</literal> 操作中定义了属性，否则会将其视为 <literal>notfound</literal>，如上所述。当处理过程到达清单文件（介绍软件包）的结尾处时，将清除下一个软件包的属性。</para>
+<para>这不仅在将软件包属性视为操作属性来引用方面，而且在匹配甚至暂时修改这些属性方面，都很有用。因此，在这些情况下都可以使用合成属性名称 <literal>pkg</literal>（仅在 <command>pkgmogrify</command> 上下文中）。
+</para>
+<para>如果 <command>pkgmogrify</command> 完成读取在命令行中指定的清单并且该清单定义了 <literal>pkg.fmri</literal> 软件包属性，<command>pkgmogrify</command> 会创建此合成 <literal>pkg</literal> 操作，其属性为软件包的属性。<literal>&lt;transform></literal> 指令随后会对此操作进行匹配，正如它会对任何其他操作进行匹配一样。</para>
+<para><literal>pkg</literal> 操作中的操作是特殊的，它们仅在内存中进行，不会直接影响发出的清单。例如，尝试通过 <literal>add</literal>、<literal>default</literal> 或 <literal>set</literal> 操作设置 <literal>pkg</literal> 操作的属性时，不会使 <literal>set</literal> 操作添加到清单中，虽然该操作将可用于其他 <literal>&lt;transform&gt;</literal> 指令进行匹配。尝试 <literal>emit</literal><literal>pkg</literal> 操作会导致错误。要添加软件包属性，改为 <literal>emit</literal><literal>set </literal> 操作。</para>
+<para>第三种替换是逆向引用功能。该替换与在 <literal>edit</literal> 操作中可使用的替换不同，它是对 <literal>-&gt;</literal> 左侧的变换匹配中列出组的引用。它们由 <literal>%&lt;1&gt;</literal>、<literal> %&lt;2&gt;</literal> 等表示（以在匹配条件中显示的顺序）。</para>
+<orderedlist>
+<para>处理顺序如下所示：</para>
+<listitem><para>从输入文件中读取行。</para></listitem>
+<listitem><para>应用宏。</para></listitem>
+<listitem><para>处理 <literal>&lt;include ...&gt;</literal> 和 <literal>&lt;transform&gt;</literal> 指令，从而找到并读取更多文件。</para></listitem>
+<listitem><para>累积所有输入之后，输出中的每行都会转换为操作并应用所有变换。</para></listitem>
+<listitem><para>成功完成处理后，写入输出。</para></listitem>
+</orderedlist></refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>将标记添加到 SMF 清单中</title>
+<para>将标记添加到服务管理工具 (Service Management Facility, SMF) 清单中，以便在活动系统上安装软件包时导入这些标记。</para>
+<programlisting>&lt;transform file path=(var|lib)/svc/manifest/.*&bsol;.xml -> &bsol;
+    add restart_fmri svc:/system/manifest-import:default></programlisting>
+</example>
+<example><title>移动文件</title>
+<para>将文件从 <filename>usr/sfw/bin</filename> 移至 <filename>usr/bin</filename>。
+</para>
+<programlisting>&lt;transform file -> edit path usr/sfw/bin usr/bin></programlisting>
+</example>
+<example><title>指定需要重新引导</title>
+<para>将 <literal>reboot-needed</literal> 标记添加到 <filename>/kernel</filename> 下 <filename>.conf</filename> 文件以外的文件中。请注意，以下示例利用了按照在输入文件中看见的顺序将变换应用到每个操作的方式。</para>
+<programlisting>&lt;transform file path=kernel/.* -> set reboot-needed true>
+&lt;transform file path=kernel/.*&bsol;.conf -> delete reboot-needed .*></programlisting>
+<para>这还可以通过包含正则表达式的单个变换规则完成。</para>
+</example>
+<example><title>将 FMRI 属性转换为 Depend 操作</title>
+<para>将软件包属性 <literal>pkg.fmri</literal> 转换为 <literal>depend</literal> 操作，使其成为集合的一部分。</para>
+<programlisting>&lt;transform set name=pkg.fmri -> &bsol;
+    emit depend type=incorporate fmri=%(value)>
+&lt;transform set name=pkg.fmri -> drop></programlisting>
+</example>
+<example><title>输出错误编号列表</title>
+<para>输出带有双引号和前缀的错误编号的逗号分隔列表。</para>
+<programlisting>set name=bugs value=12345 value=54321 value=13579 value=97531
+&lt;transform set name=bugs -> &bsol;
+    print %(value;sep=",";prefix="bug='";suffix="'")></programlisting>
+</example>
+<example><title>允许丢失属性</title>
+<para>即使是在丢失属性时，也可以安全输出消息。</para>
+<programlisting>&lt;transform driver -> print Found aliases: %(alias;notfound=&lt;none>)>
+</programlisting>
+</example>
+<example><title>设置缺省值</title>
+<para>设置缺省所有者、组以及权限的值。</para>
+<programlisting>&lt;transform file dir -> default owner root>
+&lt;transform file dir -> default group bin>
+&lt;transform file -> default mode 0444>
+&lt;transform dir -> default mode 0755></programlisting>
+</example>
+<example><title>将依赖项添加到未标记为已过时的软件包中</title>
+<para>对于未标记为已过时的任何软件包，为提供软件包的合并添加集合的依赖项。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 <literal>pkg</literal> 操作不会永久起作用，所以无需清除匹配 <literal> pkg.obsolete=false</literal> 的属性。</para>
+<programlisting>&lt;transform pkg -> default pkg.obsolete false>
+&lt;transform pkg pkg.obsolete=false -> emit depend &bsol;
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require></programlisting>
+</example>
+<example><title>发现问题时退出并输出消息</title>
+<para>在清单中发现已过时属性时退出并输出错误消息。
+</para>
+<programlisting>&lt;transform file dir link hardlink opensolaris.zone=.* -> &bsol;
+    exit 1 The opensolaris.zone attribute is obsolete.></programlisting>
+</example>
+<example><title>设置合适的语言环境侧面</title>
+<para>设置适用于正在考虑的路径名称的语言环境侧面。</para>
+<programlisting>&lt;transform dir file link hardlink path=.*/locale/([^/]+).* -> &bsol;
+    default facet.locale.%&lt;1> true></programlisting>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>一切正常工作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现预料中的错误情况。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>意外的处理错误。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/pkg/transforms</filename></term>
+<listitem><para>该目录包含使用有用变换设置侧面、执行器和其他属性的文件。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

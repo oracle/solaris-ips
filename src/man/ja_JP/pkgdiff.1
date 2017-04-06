@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgdiff-1">
+<refmeta><refentrytitle>pkgdiff</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 2 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgdiff</refname><refpurpose>パッケージマニフェストの比較</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgdiff [-i <replaceable>attribute</replaceable>]... [-o <replaceable>attribute</replaceable>]
+    [-t <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]...
+    [-v <replaceable>name</replaceable>=<replaceable>value</replaceable>]... (<replaceable>file1</replaceable> | -) (<replaceable>file2</replaceable> | -)
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgdiff-1-desc" role="description"><title></title>
+<para><command>pkgdiff</command> は 2 つのパッケージマニフェストを比較し、違いを報告します。いずれかのマニフェストを <literal>stdin</literal> から読み取るには、ファイル名の代わりに <literal>-</literal> を指定します。<command>pkgdiff</command> は、比較の前に、各マニフェストとアクションを一貫した順序にソートします。</para>
+<para>出力の形式は次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term>+ <replaceable>complete_action</replaceable></term>
+<listitem><para>このアクションは <replaceable>file2</replaceable> に含まれていますが、<replaceable>file1</replaceable> には含まれていません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>- <replaceable>complete_action</replaceable></term>
+<listitem><para>このアクションは <replaceable>file1</replaceable> に含まれていますが、<replaceable>file2</replaceable> には含まれていません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<programlisting><replaceable>actionname</replaceable> <replaceable>keyvalue</replaceable> [<replaceable>variant values, if any</replaceable>]</programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term>- <replaceable>attribute1</replaceable>=<replaceable>value1</replaceable></term>
+<listitem><para>この <replaceable>attribute</replaceable>,<replaceable>value</replaceable> は <replaceable>file1</replaceable> に含まれていますが、<replaceable>file2</replaceable> には含まれていません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>+ <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable></term>
+<listitem><para>この <replaceable>attribute</replaceable>,<replaceable>value</replaceable> は <replaceable>file2</replaceable> に含まれていますが、<replaceable>file1</replaceable> には含まれていません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>バリアントは異なるが、タイプとキー属性値が同じアクションは、比較の目的では別のアクションとして扱われます。そのため、属性を変更したアクションは属性変更としてではなく、完全な形式で表示されます。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>attribute</replaceable></term>
+<listitem><para>比較中に <replaceable>attribute</replaceable> が存在した場合は、無視します。<option>i</option> <replaceable>hash</replaceable> により、ファイルのハッシュ値を無視できます。このオプションを <option>o</option> オプションとともに使用することはできません。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option> <replaceable>attribute</replaceable></term>
+<listitem><para><replaceable>attribute</replaceable> の違いのみを報告します。このオプションを <option>i</option> オプションとともに使用することはできません。このオプションは、アクション時に <replaceable>attribute</replaceable> に影響を与えないアクション変更をすべて省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>t</option> <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...</term>
+<listitem>
+<para>指定されたアクションのみを比較します。複数のアクションをコンマ区切りリストで指定できます。<replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(7) マニュアルページの「アクション」に一覧表示されているアクションのいずれかです。たとえば、<replaceable>action_name</replaceable> には次の値を指定できます。<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal>。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option> <replaceable>name</replaceable>=<replaceable>value</replaceable></term>
+<listitem><para>このバリアント値の違いのみを計算します。たとえば、<literal>arch=sparc</literal> の違いのみを計算します。このバリアントタグは、比較前にすべてのアクションについて削除されます。バリアントあたり 1 つの値のみを指定できます。このオプションは、異なるバリアントに対して複数回指定できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>違いは見つかりませんでした。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>違いが見つかりました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

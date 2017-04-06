@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkg-7">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg</refname><refpurpose>映像包管理系统</refpurpose>
+</refnamediv>
+<refsect1 id="GLHDA" role="description"><title></title>
+<para>映像包管理系统 <literal>pkg</literal>(7) 是用于提供软件生命周期管理（安装、升级和删除）的框架。映像包管理以软件包为单位对软件进行管理，软件包是由一组关键字/值对以及可能的数据有效负荷定义的操作的集合。在许多情况下，操作是在文件系统中找到的文件，但它们也表示其他可安装对象，例如驱动程序、服务和用户。</para>
+</refsect1>
+<refsect1 role="other"><title>软件包 FMRI 和版本</title>
+<para>每个软件包均由带有机制 <literal>pkg:</literal> 的故障管理资源标识符 (fault management resource identifier, FMRI) 表示。软件包的完整 FMRI 由机制、发布者、软件包名称和以下格式的版本字符串组成：</para>
+<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+</screen>
+<para><literal>solaris</literal> 是发布者。<literal>system/library/c++-runtime</literal> 是软件包名称。虽然名称空间是有层次的且可具有任意深度，但不存在强制包含；名称从本质上而言是任意的。发布者信息为可选项，但必须位于 <literal>pkg://</literal> 之后（如果存在）。包含发布者的 FMRI 通常被称为“全限定”。如果不存在发布者信息，那么软件包名称之前通常应带有 <literal>pkg:/</literal>。</para>
+<para>如果 FMRI 不包含发布者信息，打包客户端通常允许省略 FMRI 的机制。例如，<literal>pkg:/system/library/c++-runtime</literal> 可以写为 <literal>system/library/c++-runtime</literal>。如果省略了机制，客户端也允许省略除软件包名称的最后一个组成部分（用于匹配目的）之外的所有其他内容。例如，<literal>system/library/c++-runtime</literal> 可以写为 <literal>library/c++-runtime</literal> 或 <literal>c++-runtime</literal>，这将与名为 <literal>c++-runtime</literal> 的软件包或以 <literal>/c++-runtime</literal> 结尾的软件包名称匹配。</para>
+<para>发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。</para>
+<para>版本跟在软件包名称后面，由 @ 符号分隔。版本包含四个数字序列，由标点符号分隔。前三个序列中的元素由圆点分隔，各序列可具有任意长度。不允许版本的组成部分以零开头（例如 01.1 或 1.01）。允许以零结尾（例如 1.10）。</para>
+<para>版本的第一个部分是组件版本。对于紧密绑定到操作系统上的组件，此序列通常是操作系统中该版本的 <command>uname -r</command> 值。对于具有自己的开发生命周期的组件，此序列是一个由小圆点分隔的发行编号，例如 2.4.10。</para>
+<para>版本的第二个部分（如果存在）必须跟在逗号 (,) 后面，是内部版本。内部版本指定构建软件包内容的操作系统版本，提供了希望软件包内容可成功运行的最低操作系统版本。</para>
+<para>版本的第三个部分（如果存在）必须跟在连字符 (<literal>-</literal>) 后面，是分支版本。分支版本是用于提供特定于供应商的信息的版本控制组件。分支版本可在打包元数据发生更改时增大，独立于组件版本。分支版本可能包含内部版本号或其他信息。</para>
+<para>版本的第四个部分（如果存在）必须跟在冒号 (:) 后面，是一个时间戳。时间戳表示软件包的发布时间。</para>
+<para>在版本之间进行比较时，不考虑完整版本的任何组件，除非左侧的组件与其相同。因此，<literal>4.3-1</literal> 大于 <literal>4.2-7</literal>，因为 <literal>4.3</literal> 大于 <literal>4.2</literal>；<literal>4.3-3</literal> 大于 <literal>4.3-1</literal>，因为 <literal>3</literal> 大于 <literal>1</literal>。</para>
+<para><literal>pkg.human-version</literal> 属性可以用于提供人工可读的版本字符串。对于软件包 FMRI，除了上文描述的软件包版本外，还可以提供 <literal>pkg.human-version</literal> 属性值，但该值不能替代软件包 FMRI 版本。人工可读的版本字符串仅用于显示目的。请参见“设置操作”了解更多信息。</para>
+<para>系统的许多部分（如果适用）会在显示 FMRI 时缩短 FMRI 并接受简短格式的输入，以减少显示的或所需的信息量。通常，可以省略机制、发布者、内部版本和时间戳。有时可以省略所有版本控制信息。</para>
+</refsect1>
+<refsect1 role="other"><title>操作</title>
+<para>操作表示系统上的可安装对象。在软件包的清单中对操作进行了描述。每个操作主要由其名称和一个关键属性组成。这些属性共同引用一个唯一的对象，与该对象一样遵循版本历史记录。操作可以具有其他属性。某些属性由包管理系统直接解释。其他属性可能仅对系统管理员或最终用户有用。</para>
+<para>操作具有一种简单文本表示法：</para>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
+value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
+</programlisting>
+<para>属性名称中不能包含空格、引号或等号 (=)。第一个等号后的所有字符都属于值。值中可以包含所有这些符号，虽然空格必须括在单引号或双引号中。单引号处于括在双引号中的字符串内时不需要进行转义，双引号处于括在单引号中的字符串内时也不需要进行转义。可使用反斜杠 (\) 字符作为引号的前缀来避免终止带引号的字符串。反斜杠可使用反斜杠进行转义。</para>
+<para>操作可以具有多个属性。可以针对单个操作使用不同的值来多次命名某些属性。具有相同名称的多个属性将被视为无序列表。</para>
+<para>具有多个属性的操作可以在清单文件中创建长行。可以通过使用反斜杠终止每个不完整的行来对此类行进行折行。请注意，属性/值对之间必须具有此接续字符。属性、属性值及其组合均不可分离。</para>
+<para>下面列出的属性不是全部属性。事实上，任意属性都可附加到操作中，标准属性组易于扩大以合并将来的开发。</para>
+<para>某些属性会导致在打包上下文外部执行其他操作。这些属性记录在下面的“执行器”部分中。</para>
+<refsect2><title>文件操作</title>
+<para><literal>file</literal> 操作表示普通文件。<literal>file</literal> 操作引用有效负荷，具有四个标准属性：</para>
+<variablelist>
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>安装文件的文件系统路径。此属性是 <literal>file</literal> 操作的关键属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mode</literal></term>
+<listitem><para>文件的访问权限（采用数字格式）。这些只是简单权限，并非 ACL。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>owner</literal></term>
+<listitem><para>拥有文件的用户的名称。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>拥有文件的组的名称。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>有效负荷是一个位置属性，因为它未命名。它是操作名称后面的第一个词。在发布的清单中，它是文件内容的 <literal>SHA-1</literal> 散列。如果存在于尚待发布的清单中，则它表示可以找到有效负荷的路径。请参见 <command>pkgsend</command>(1)。如果值包括一个等号，则可以使用散列属性代替位置属性。这两种属性可用于同一操作中。但是，散列必须完全相同。</para>
+<para><literal>preserve</literal> 和 <literal>overlay</literal> 属性影响是否以及如何安装 <literal>file</literal> 操作。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>preserve</literal></term>
+<listitem><para>指定在软件包操作过程中何时以及如何保留文件。</para>
+<para>初始安装软件包时，如果软件包提供的文件使用任何值（<literal>abandon</literal> 或 <literal>install-only</literal> 除外）定义了 <literal>preserve</literal> 属性并且该文件已经存在于映像中，则现有文件将存储在 <filename>/var/pkg/lost+found</filename> 中并且安装打包的文件。</para>
+<para>初始安装软件包时，如果软件包提供的文件定义了 <literal>preserve</literal> 属性，但该文件尚未存在于映像中，则是否安装该文件取决于 <literal>preserve</literal> 属性的值：</para>
+<itemizedlist>
+<listitem><para>如果 <literal>preserve</literal> 的值是 <literal>abandon</literal> 或 <literal>legacy</literal>，则不安装打包的文件。</para></listitem>
+<listitem><para>如果 <literal>preserve</literal> 的值不是 <literal>abandon</literal> 或 <literal>legacy</literal>，则安装打包的文件。</para></listitem>
+</itemizedlist>
+<para>软件包降级时，如果软件包的降级版本提供的文件使用任何值（<literal>abandon</literal> 或 <literal>install-only</literal> 除外）定义了 <literal>preserve</literal> 属性，并且以下所有条件都为 true，则使用扩展名 <filename>.update</filename> 重命名映像中当前存在的文件，并安装降级软件包中的文件。</para>
+<itemizedlist>
+<listitem><para>文件存在于映像中。</para></listitem>
+<listitem><para>软件包的降级版本提供的文件的内容不同于软件包的当前安装版本提供的文件的内容。</para></listitem>
+<listitem><para>软件包的降级版本提供的文件的内容不同于映像中存在的文件的内容。</para></listitem>
+</itemizedlist>
+<para>如果以上任一条件不为 true，处理文件的方式与升级（而不是降级）软件包时相同。</para>
+<para>升级软件包时，如果软件包的升级版本提供的 <literal>file</literal> 操作使用任何值定义了 <literal>preserve</literal> 属性并且 <literal>file</literal> 操作与软件包的当前安装版本提供的 <literal>file</literal> 操作相同，则不安装文件并且不修改映像中存在的文件。将保留自安装先前版本以来进行的所有修改。</para>
+<para>升级软件包时，如果软件包的升级版本提供的 <literal>file</literal> 操作定义了 <literal>preserve</literal> 属性并且 <literal>file</literal> 操作是新的或者不同于软件包的当前安装版本提供的 <literal>file</literal> 操作，则以下面的方式执行升级：</para>
+<itemizedlist>
+<listitem><para>如果软件包的升级版本提供的文件在升级的软件包中具有的 <literal>preserve</literal> 值为 <literal>abandon</literal> 或 <literal>install-only</literal>，将不安装新文件且不修改现有文件。
+</para></listitem>
+<listitem><para>如果文件不存在于映像中，将安装新文件。
+</para></listitem>
+<listitem><para>如果软件包的升级版本提供的文件存在于映像中，不存在于软件包的当前安装版本中并且未使用 <literal>original_name</literal> 属性进行重命名或移动（请参见下文），则现有文件将存储在 <filename>/var/pkg/lost+found</filename> 中并且安装软件包的升级版本提供的文件。</para>
+</listitem>
+<listitem><para>如果软件包的升级版本提供的文件存在于映像中并且其内容不同于软件包的当前安装版本提供的文件，则根据 <literal>preserve</literal> 属性的值进行升级：</para>
+<itemizedlist>
+<listitem><para>如果软件包的升级版本提供的文件具有的 <literal>preserve</literal> 值为 <literal>renameold</literal>，将使用扩展名 <filename>.old</filename> 重命名现有文件并且使用更新的权限和时间戳（如果存在）安装新文件。请参见下文的 <literal>timestamp</literal> 属性说明。</para>
+</listitem>
+<listitem><para>如果软件包的升级版本提供的文件具有的 <literal>preserve</literal> 值为 <literal>renamenew</literal>，将使用扩展名 <filename>.new</filename> 安装新文件并且不修改现有文件。</para></listitem>
+<listitem><para>如果软件包的升级版本提供的文件具有的 <literal>preserve</literal> 值为 <literal>true</literal>，则不安装新文件，但是在现有文件中重置权限和时间戳（如果存在）。</para></listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>如果软件包的升级版本提供的文件存在于映像中，具有的内容与软件包的当前安装版本提供的文件相同并且具有的 <literal>preserve</literal> 值为 <literal>renameold</literal> 或 <literal>renamenew</literal>，则现有文件将替换为软件包的升级版本提供的文件，包括替换权限和时间戳（如果存在）。</para>
+</listitem>
+<listitem><para>如果软件包的升级版本提供的文件存在于映像中，在升级的软件包中具有的 <literal>preserve</literal> 值为 <literal>legacy</literal>，并且在软件包的当前安装版本中具有不同的 <literal>preserve</literal> 值，则使用扩展名 <literal>.legacy</literal> 重命名现有文件，并使用更新的权限和时间戳（如果存在）安装新文件。</para></listitem>
+<listitem><para>如果软件包的升级版本提供的文件存在于映像中并且在升级的软件包和软件包的当前安装版本中具有的 <literal>preserve</literal> 值为 <literal>legacy </literal>，则在现有文件中重置权限和时间戳（如果存在）。</para></listitem>
+</itemizedlist>
+<para>卸载软件包时，如果该软件包的当前安装版本所提供的 <literal>file</literal> 操作具有的 <literal>preserve</literal> 值为 <literal>abandon</literal> 或 <literal>install-only</literal> 并且文件存在于映像中，将不删除该文件。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay</literal></term>
+<listitem><para>指定操作是允许其他软件包在同一位置交付文件，还是用交付的文件覆盖其他文件。此功能设计用于不参与任何自组装（例如 <filename>/etc/motd</filename>）且可安全覆盖的配置文件。</para>
+<para>如果未指定 <literal>overlay</literal>，多个软件包将无法向同一位置提供文件。</para>
+<para><literal>overlay</literal> 属性可以使用以下值之一：</para>
+<variablelist>
+<varlistentry><term><literal>allow</literal></term>
+<listitem><para>允许另一个软件包将文件交付到同一位置。除非也设置了 <literal>preserve</literal> 属性，否则此值没有效果。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>true</literal></term>
+<listitem><para>该操作交付的文件将覆盖已指定了 <literal>allow</literal> 的任何其他操作。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>基于覆盖文件的 <literal>preserve</literal> 属性值保留对已安装文件所做的更改。在删除时，如果仍要安装将覆盖的操作，则将保留文件的内容，无论是否指定了 <literal>preserve</literal> 属性。只能一个操作覆盖另一个操作，且 <literal>mode</literal>、<literal>owner</literal> 和 <literal>group</literal> 属性必须匹配。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>dehydrate</literal></term>
+<listitem><para>指定软件包发布者的软件包已冻结时或已冻结发布者的软件包已修改时是否应删除此操作。<literal>dehydrate</literal> 属性的值可以为 <literal>true</literal> 或 <literal>false</literal>。如果 <literal>dehydrate</literal> 属性的值为 <literal>false</literal>，则冻结操作过程中将不删除该操作。否则，将删除该操作。标记有 <literal>preserve</literal> 或 <literal>overlay</literal> 属性的文件操作将从冻结操作中隐式排除且不需要此属性。
+</para>
+<programlisting>file path=etc/zones/SYSdefault.xml dehydrate=false ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>对于 ELF 文件，可识别下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>elfarch</literal></term>
+<listitem><para>ELF 文件的体系结构。此属性是 <command>uname -p</command> 查询文件所基于的体系结构后的输出。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfbits</literal></term>
+<listitem><para>此属性为 <literal>32</literal> 或 <literal>64</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfhash</literal></term>
+<listitem><para>此属性是文件中“相关”ELF 部分的散列。这些部分已在装入二进制文件时映射到内存中。在确定两个二进制文件的可执行行为是否将不同时，仅需要考虑这些部分。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>对于 <literal>file</literal> 操作，可识别下列其他属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>original_name</literal></term>
+<listitem><para>此属性用于处理可编辑文件在软件包之间或在位置之间（或在这两者之间）的移动操作。此属性采用的格式为源软件包的名称后跟一个冒号和文件的原始路径。所删除的任何文件将使用其软件包和路径或 <literal>original_name</literal> 属性的值（如果指定）进行记录。所安装的已设置 <literal>original_name</literal> 属性的任何可编辑文件将使用具有该名称的文件（如果它在同一打包操作中被删除）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>release-note</literal></term>
+<listitem><para>该属性用于指明此文件包含发行说明文本。该属性的值为软件包 FMRI。如果 FMRI 指定的软件包名称存在于原始映像中，指定的版本比原始映像中的软件包版本更高，则此文件将成为发行说明的一部分。特殊 FMRI <literal>feature/pkg/self</literal> 是指包含软件包。如果 <literal>feature/pkg/self</literal> 的版本为 0，则此文件仅在初次安装时是发行说明的一部分。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>revert-tag</literal></term>
+<listitem><para>此属性用于标记应恢复为一个组的可编辑文件。<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable>。可为单个 <literal>file</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用所指定的任意标记调用 <command>pkg revert</command> 时，文件将恢复为其清单定义的状态。有关 <command>pkg revert</command> 命令的更多信息，请参见 <command>pkg</command>(1) 手册页。</para>
+<para>还可以在目录级别指定 <literal>revert-tag</literal> 属性。请参见下文中的“目录操作”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>sysattr</literal></term>
+<listitem><para>此属性用于指定应该为此文件设置的任何系统属性。<literal>sysattr</literal> 属性的值可以是逗号分隔的详细系统属性列表，也可以是精简系统属性选项的字符串序列，如以下示例中所示。支持的系统属性在 <literal>chmod</literal>(1) 手册页中有介绍。在清单中指定的系统属性是一种额外设置，是对可能已由操作系统的其他子系统设置的系统属性的进一步设置。</para>
+<programlisting>file path=opt/secret_file sysattr=hidden,sensitive
+file path=opt/secret_file sysattr=HT</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>timestamp</literal></term>
+<listitem><para>此属性用于设置文件的访问权限和修改时间。必须以 ISO-8601 格式使用 UTC 表示 <literal>timestamp</literal> 属性值，省略冒号和连字符。</para>
+<para>为 Python 打包 <filename> .pyc</filename> 或 <filename>.pyo</filename> 文件时需要 <literal>timestamp</literal> 属性。<filename>.pyc</filename> 或 <filename>.pyo</filename> 文件的相关 <filename> .py</filename> 文件必须使用这些文件内嵌入的时间戳进行标记，如以下示例中所示：</para>
+<programlisting>file path=usr/lib/python2.7/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
+     timestamp=20130311T221521Z ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>file</literal> 操作的以下属性由系统自动生成，不能由软件包开发者指定：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>hash</literal></term>
+<listitem><para>未压缩文件的 SHA-1 散列。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>chash</literal></term>
+<listitem><para>压缩文件的 SHA-1 散列。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.size</literal></term>
+<listitem><para>未压缩文件的大小（字节）。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.csize</literal></term>
+<listitem><para>压缩文件的大小（字节）。</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>目录操作</title>
+<para><literal>dir</literal> 操作类似于 <command>file</command> 操作，因为它表示文件系统对象。但 <literal>dir</literal> 操作表示目录而不是普通文件。<literal>dir</literal> 操作具有与 <literal>file</literal> 操作相同的 <literal>path</literal>、<literal>mode</literal>、<literal>owner</literal> 和 <literal>group</literal> 属性，其中 <literal>path</literal> 是关键属性。<literal>dir</literal> 操作也接受 <literal>revert-tag</literal> 属性。<literal>revert-tag</literal> 属性的值对 <literal>file</literal> 和 <literal>dir</literal> 操作是不同的。</para>
+<para>目录是 IPS 中包括的引用。当显式或隐式引用某目录的最新软件包不再引用该目录时，将删除该目录。如果该目录包含未打包的文件系统对象，则将这些项移动到 <filename>$IMAGE_META/lost+found</filename> 中。有关 <literal>$IMAGE_META</literal> 的更多信息，请参见“文件”部分。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><literal>revert-tag</literal></term>
+<listitem>
+<para>此属性用于标识应作为一个集合删除的未打包文件。有关如何为 <literal>file</literal> 操作指定此属性的说明，请参见上文中的“文件操作”。对于目录，<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable>。可为单个 <literal>dir</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用匹配的 <replaceable>tagname</replaceable> 调用 <command>pkg revert</command> 时，将删除此 <literal>dir</literal> 目录下匹配 <replaceable>pattern</replaceable>（使用 shell glob 字符）的所有未打包文件或目录。有关 <command>pkg revert</command> 命令的更多信息，请参见 <command>pkg</command>(1) 手册页。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>salvage-from</literal></term>
+<listitem><para>此属性可用于将未打包的内容移动到一个新目录中。此属性的值是所挽救项的目录的名称。创建以 <literal>salvage-from</literal> 属性的值命名的目录的任何内容时，具有 <literal>salvage-from</literal> 属性的目录会继承。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>链接操作</title>
+<para><literal>link</literal> 操作表示符号链接。<literal>link</literal> 操作具有以下标准属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>安装符号链接的文件系统路径。此属性是 <literal>link</literal> 操作的关键属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>target</literal></term>
+<listitem><para>符号链接的目标。链接将解析到的文件系统对象。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator</literal></term>
+<listitem><para>指定由给定中介组（例如 <literal>python</literal>）中涉及的所有路径名称共享的中介名称空间中的条目。可基于 <literal>mediator-version</literal> 和/或 <literal>mediator-implementation</literal> 执行链接中介。给定路径名称的所有中介链接必须指定同一中介。但是，并非所有中介版本和实现都需要在给定路径上提供链接。如果中介不提供链接，则会在选定该中介时删除链接。<literal>mediator</literal> 与特定版本和/或实现组合起来表示可选择供包管理系统使用的中介。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-version</literal></term>
+<listitem><para>指定 <literal>mediator</literal> 属性描述的接口的版本（表示为非负整数的点分序列）。如果指定了 <literal>mediator</literal> 而未指定 <literal>mediator-implementation</literal>，则此属性是必需的。本地系统管理员可以显式设置要使用的版本。指定的值通常应与提供链接的软件包版本相匹配（例如，<literal>runtime/python-27</literal> 应使用 <literal>mediator-version=2.7</literal>），尽管这不是必需的。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-implementation</literal></term>
+<listitem><para>指定除 <literal>mediator-version</literal> 之外还使用中介实现，或使用中介实现代替 mediator-version。不认为实现字符串应进行排序，如果系统管理员未显式指定，则由 <literal>pkg</literal>(7) 任意选择一个字符串。</para>
+<para>该值可以是由字母数字字符和空格组成的任意长度的字符串。如果实现本身可被版本化或已被版本化，则应在字符串的结尾处在 @ 之后指定版本（表示为非负整数的点分序列）。如果存在实现的多个版本，则缺省行为是选择最高版本的实现。</para>
+<para>如果系统上仅安装了特定路径的实现中介链接的一个实例，则会自动选择该实例。如果以后安装了该路径的其他链接，除非应用供应商、站点或本地覆盖或者如果某一链接进行了版本中介，否则不会切换链接。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-priority</literal></term>
+<listitem><para>在解决中介链接中的冲突时，<literal>pkg</literal>(7) 通常会选择 <literal>mediator-version</literal> 值最大的链接，如果不可能，则会基于 <literal>mediator-implementation</literal> 进行选择。此属性用于为常规冲突解决方案过程指定覆盖。</para>
+<para>如果未指定此属性，则会应用缺省中介者选择逻辑。</para>
+<para>如果值为 <literal>vendor</literal>，则与未指定 <literal>mediator-priority</literal> 的链接相比，会优先选择该链接。</para>
+<para>如果值为 <literal>site</literal>，则与值为 <literal>vendor</literal> 或未指定 <literal>mediator-priority</literal> 的链接相比，会优先选择该链接。</para>
+<para>本地系统管理员可以覆盖上面所述的选择逻辑。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>硬链接操作</title>
+<para><literal>hardlink</literal> 操作表示硬链接。它具有与 <literal>link</literal> 操作相同的属性，<literal>path</literal> 也是其关键属性。</para>
+</refsect2>
+<refsect2><title>驱动程序操作</title>
+<para><literal>driver</literal> 操作表示设备驱动程序。<literal>driver</literal> 操作不引用有效负荷。驱动程序文件自身必须作为 <literal>file</literal> 操作进行安装。可识别下列属性（有关更多信息，请参见 <command>add_drv</command>(8)）：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>驱动程序的名称。这通常是（但并不总是）二进制驱动程序文件的文件名。此属性是 <literal>driver</literal> 操作的关键属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>alias</literal></term>
+<listitem><para>此属性表示驱动程序的别名。给定的驱动程序可以具有多个 <literal>alias</literal> 属性。无需任何特殊的引号规则。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>class</literal></term>
+<listitem><para>此属性表示驱动程序类。给定的驱动程序可以具有多个 <literal>class</literal> 属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>perms</literal></term>
+<listitem><para>此属性表示驱动程序的设备节点的文件系统权限。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>clone_perms</literal></term>
+<listitem><para>此属性表示此驱动程序的克隆驱动程序次要节点的文件系统权限。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>policy</literal></term>
+<listitem><para>此属性指定设备的其他安全策略。给定的驱动程序可以具有多个 <literal>policy</literal> 属性，但次要设备规范不可以存在于多个属性中。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>privs</literal></term>
+<listitem><para>此属性指定驱动程序所用的特权。给定的驱动程序可以具有多个 <literal>privs</literal> 属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>devlink</literal></term>
+<listitem><para>此属性指定 <filename>/etc/devlink.tab</filename> 中的条目。该值是定义了进入文件的确切行，带有由 <literal>\t</literal> 表示的制表符。有关更多信息，请参见 <literal>devlinks</literal>(8)。给定的驱动程序可以具有多个 <literal>devlink</literal> 属性。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>依赖操作</title>
+<para><command>depend</command> 操作表示软件包间的依赖性。一个软件包可以依赖于另一个软件包，因为第一个软件包需要第二个软件包中的功能才能运行自身包含的功能或者甚至进行安装。依赖性可以是可选的。如果安装时未满足某个依赖性，包管理系统会尝试安装或更新依赖软件包至足够新的版本（受其他约束限制）。</para>
+<para>可以识别下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>fmri</literal></term>
+<listitem><para>表示依赖软件包的 FMRI。此属性是 <literal>dependency</literal> 操作的关键属性。<literal>fmri</literal> 值不得包括发布者。假定软件包名称是完整的。<literal>group-any</literal> 和 <literal>require-any</literal> 类型的依赖性可具有多个 <literal>fmri</literal> 属性。<literal>fmri</literal> 值中的版本是可选项，虽然对于某些类型的依赖性来说，不带版本的 <literal>fmri</literal> 没有任何意义或者将忽略该版本。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>type</literal></term>
+<listitem><para>依赖性的类型。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>require</literal></term>
+<listitem><para>该依赖性是必需的，必须具有等于或高于 <literal>fmri</literal> 属性中所指定版本的版本。如果未指定版本，则任何版本都满足依赖性。如果不能满足其任一必需依赖性，则无法安装软件包。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>optional</literal></term>
+<listitem><para>该依赖性（如果存在）必须处于指定的版本级别或更高级别。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exclude</literal></term>
+<listitem><para>如果该依赖性存在于指定的版本级别或更高级别，则无法安装包含软件包。如果未指定版本，则依赖软件包无法与指定依赖性的软件包同时安装。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>incorporate</literal></term>
+<listitem><para>该依赖性是可选项，但是依赖软件包的版本会受到约束。请参见下文的“约束和冻结”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>require-any</literal></term>
+<listitem><para>多个 <literal>fmri</literal> 属性指定的软件包中的任一个都可满足依赖性（遵循与 <literal>require</literal> 依赖性类型相同的规则）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>conditional</literal></term>
+<listitem><para>该依赖性仅在系统上存在 <literal>predicate</literal> 属性定义的软件包时才是必需的。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>origin</literal></term>
+<listitem><para>在安装此软件包之前，相关项目标（如果存在）在要修改的映像上必须具有指定值或更大值。如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，则目标必须存在于根目录为 / 的映像上，才能安装此软件包。如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，并且 <literal>fmri</literal> 属性的值以 <literal>pkg:/feature/firmware/</literal> 开头，则将剩余的 <literal>fmri</literal> 值视为 <filename>/usr/lib/fwenum</filename> 中计算固件依赖项的命令。有关示例，请参见《<citetitle>在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>除非软件包出现在映像避免列表上，否则该依赖性是必需的。请注意，过时软件包会无提示地满足组依赖性。请参见 <command>pkg</command>(1) 中的 <command>avoid</command> 子命令。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-any</literal></term>
+<listitem><para>多个 <literal>fmri</literal> 属性指定的多个依赖软件包中的任一个都可满足依赖性（遵循与 <literal>group</literal> 依赖性类型相同的规则，只是非过时软件包主干优先于过时软件包主干）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>parent</literal></term>
+<listitem><para>如果映像不是子映像，会忽略该依赖性。如果映像是子映像，则依赖性必须存在于父映像中。符合 <literal>parent</literal> 依赖性的软件包版本与用于 <literal>incorporate</literal> 依赖性的软件包版本相同。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>predicate</literal></term>
+<listitem><para>表示 <literal>conditional</literal> 依赖性的谓词的 FMRI。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>root-image</literal></term>
+<listitem><para>仅对 <literal>origin</literal> 依赖性有影响，如上所述。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>许可证操作</title>
+<para><literal>license</literal> 操作表示许可证或其他与软件包内容相关联的信息文件。软件包可以通过 <literal>license</literal> 操作将许可证、免责声明或其他指南提供给软件包安装程序。</para>
+<para><literal>license</literal> 操作的有效负荷将提供到与软件包相关的映像元数据目录中，且应仅包含用户可读的文本数据。不应包含 HTML 或任何其他形式的标记。通过各属性，<literal>license</literal> 操作可以向客户端指示必须显示相关的有效负荷并/或要求接受它。显示并/或接受的方法由客户端决定。</para>
+<para>可以识别下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>license</literal></term>
+<listitem><para>此属性是 <literal>license</literal> 操作的关键属性。此属性为许可证提供有意义的描述，以帮助用户在无需阅读许可证文本本身的情况下确定内容。其中一些示例值包括：</para>
+<itemizedlist>
+<listitem><para>ABC Co. Copyright Notice</para></listitem>
+<listitem><para>ABC Co. Custom License</para></listitem>
+<listitem><para>Common Development and Distribution License 1.0 (CDDL)</para>
+</listitem>
+<listitem><para>GNU General Public License 2.0 (GPL)</para></listitem>
+<listitem><para>GNU General Public License 2.0 (GPL) Only</para></listitem>
+<listitem><para>MIT License</para></listitem>
+<listitem><para>Mozilla Public License 1.1 (MPL)</para></listitem>
+<listitem><para>Simplified BSD License</para></listitem>
+</itemizedlist>
+<para><literal>license</literal> 值在软件包内必须唯一。建议在说明中包括许可证的版本，如上面的几个示例所示。如果软件包有对应多种不同许可证的代码，请使用多个 <literal>license</literal> 操作。许可证属性值的长度不得超过 64 个字符。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-accept</literal></term>
+<listitem><para>如果为 <literal>true</literal>，则用户必须先接受此许可证，才能安装或更新相关软件包。省略此属性等效于 <literal>false</literal>。接受的方法（例如，交互式或基于配置）由客户端决定。对于软件包更新，如果未更改许可证操作或有效负荷，将忽略此属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-display</literal></term>
+<listitem><para>如果为 <literal>true</literal>，则在执行打包操作期间客户端必须显示操作的有效负荷。省略此值等效于 <literal>false</literal>。此属性不应该用于版权声明。此属性应该仅用于许可证或执行操作期间必须显示的其他材料。显示的方法由客户端决定。对于软件包更新，如果未更改许可证操作或有效负荷，将忽略此属性。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>传统操作</title>
+<para><literal>legacy</literal> 操作表示由传统包管理系统使用的软件包数据。与此操作相关联的属性将添加到传统系统的数据库中，以便查询这些数据库的工具可以像实际安装了传统软件包一样工作。需特别指出的是，这应足以使传统系统确信系统上已安装了 <literal>pkg</literal> 属性指定的软件包，如此便可使用软件包来满足依赖性。</para>
+<para>可识别根据 <literal>pkginfo</literal>(4) 上的参数指定的下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>category</literal></term>
+<listitem><para><literal>CATEGORY</literal> 参数的值。缺省值为 <literal>system</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>desc</literal></term>
+<listitem><para><literal>DESC</literal> 参数的值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>hotline</literal></term>
+<listitem><para><literal>HOTLINE</literal> 参数的值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para><literal>NAME</literal> 参数的值。缺省值为 <literal>none provided</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg</literal></term>
+<listitem><para>要安装的软件包的缩写。缺省值为软件包的 FMRI 中的名称。此属性是 <literal>legacy</literal> 操作的关键属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>vendor</literal></term>
+<listitem><para><literal>VENDOR</literal> 参数的值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>version</literal></term>
+<listitem><para>VERSION 参数的值。缺省值为软件包的 FMRI 中的版本。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>设置操作</title>
+<para><literal>set</literal> 操作表示软件包级别的属性或元数据，例如软件包描述。</para>
+<para>可以识别下列属性：</para>
+<variablelist>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>属性的名称。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>value</literal></term>
+<listitem><para>提供给属性的值。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>set</literal> 操作可以提供软件包作者选择的任何元数据。但是，存在大量定义明确的对包管理系统具有特定意义的属性名称。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>info.classification</literal></term>
+<listitem><para>一个 <literal>pkg</literal>(7) 客户端可以使用一个或多个标记对软件包进行分类。该值应具有一个机制（例如 "org.opensolaris.category.2008" 或 "org.acm.class.1998"）和实际分类（例如 "Applications/Games"），由冒号 (:) 分隔。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.description</literal></term>
+<listitem><para>软件包的内容和功能的详细说明，长度通常约为一个段落。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.fmri</literal></term>
+<listitem><para>包含方软件包的名称和版本。请参见“说明”部分中的“软件包 FMRI 和版本”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.human-version</literal></term>
+<listitem><para>IPS 使用的版本方案很严格。请参见“说明”部分中的“软件包 FMRI 和版本”。较灵活的版本可以 <literal>pkg.human-version</literal> 属性值提供。IPS 工具显示该值，例如 <command>pkg info</command>、<command>pkg contents</command> 和 <command>pkg search</command>。<literal>pkg.human-version</literal> 值不用作版本比较的基准，并且不能用来替代 <literal>pkg.fmri</literal> 版本。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.obsolete</literal></term>
+<listitem><para>如果为 <literal>true</literal>，则将软件包标记为过时。过时的软件包除了设置操作外不能具有任何其他操作，且不得标记为已重命名。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.renamed</literal></term>
+<listitem><para>如果为 <literal>true</literal>，则软件包已被重命名。软件包中还必须存在一个或多个 <literal>depend</literal> 操作，且指向此软件包已重命名到的软件包版本。软件包不能同时标记为已重命名和过时，但在其他情况下可以具有任意多个设置操作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.summary</literal></term>
+<listitem><para>软件包的一行简短描述。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>组操作</title>
+<para><literal>group</literal> 操作定义 UNIX 组，如 <literal>group</literal>(4) 中所定义。不存在对于组口令的支持。使用此操作定义的组最初不具有用户列表。可以使用 <literal>user</literal> 操作添加用户。可以识别下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>groupname</literal></term>
+<listitem><para>组名的值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gid</literal></term>
+<listitem><para>组的唯一数字 ID。缺省值为 100 之下的第一个自由组。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>用户操作</title>
+<para><literal>user</literal> 操作定义 UNIX 用户，如 <filename>/etc/passwd</filename>、<filename>/etc/shadow</filename>、<filename>/etc/group</filename> 和 <filename>/etc/ftpd/ftpusers</filename> 文件中所定义。将为使用此 <literal>user</literal> 操作定义的用户向相应文件添加条目。</para>
+<para><literal>user</literal> 操作用于为要使用的守护进程或其他软件定义用户。不使用 <literal>user</literal> 操作定义管理帐户或交互式帐户。</para>
+<para>可以识别下列属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>username</literal></term>
+<listitem><para>用户的唯一名称</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>password</literal></term>
+<listitem><para>用户的加密口令。缺省值为 <literal>*LK*</literal>。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>uid</literal></term>
+<listitem><para>用户的唯一 UID。缺省值为 100 之下的第一个自由值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>用户的主组名称。必须可在 <filename>/etc/group</filename> 中找到。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gcos-field</literal></term>
+<listitem><para><filename>/etc/passwd</filename> 中 <literal>gcos</literal> 字段的值。缺省值为 <literal>username</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>home-dir</literal></term>
+<listitem><para>用户的起始目录。此目录必须位于系统映像目录中，不在 <filename>/home</filename> 等其他挂载点下。缺省值为 <literal>/</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>login-shell</literal></term>
+<listitem><para>用户的缺省 shell。缺省值为空。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-list</literal></term>
+<listitem><para>用户所属的辅助组。请参见 <literal>group</literal>(4)。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>ftpuser</literal></term>
+<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。缺省值 <literal>true</literal> 指示允许用户通过 FTP 登录。请参见 <literal>ftpusers</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>lastchg</literal></term>
+<listitem><para>1970 年 1 月 1 日至上次修改口令的日期之间的天数。缺省值为空。请参见 <literal>shadow</literal>(4)。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>min</literal></term>
+<listitem><para>所需的相邻两次更改口令之间的最小天数。必须将此字段设置为 0 或更大值才能启用口令有效期。缺省值为空。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>max</literal></term>
+<listitem><para>口令的最大有效天数。缺省值为空。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>warn</literal></term>
+<listitem><para>用户在口令到期之前多少天收到警告。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>inactive</literal></term>
+<listitem><para>允许该用户不活动的天数。按每台计算机对此进行计数。可从计算机的 <filename>lastlog</filename> 文件获取有关上次登录的信息。请参见 <literal>shadow</literal>(4)。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>expire</literal></term>
+<listitem><para>表示为自 UNIX 纪元（1970 年 1 月 1 日）后的天数的绝对日期。达到此数字时，将无法再进行登录。例如，到期值为 13514 指定登录将在 2007 年 1 月 1 日失效。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>flag</literal></term>
+<listitem><para>设置为空。请参见 <literal>shadow</literal>(4)。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="other"><title>执行器</title>
+<para>在某些上下文中，附加操作可能适合在为特定操作做准备时执行或者在引入特定操作后执行。这些附加操作特定于操作系统，通常仅在实时系统映像上才需要。实时映像是在当前区域的活动的、正在运行的引导环境的 <literal>/</literal> 处挂载的映像。当软件包安装或删除过程中涉及的多个操作具有相同的执行器时，会为该安装或删除过程执行一次与执行器存在情况相对应的操作。</para>
+<para>错误指定的执行器可能会导致软件包安装失败，如果该执行器无法确定进行安全安装的方法。</para>
+<para>系统定义了以下执行器：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>reboot-needed</literal></term>
+<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。此执行器声明：如果软件包系统在实时映像上操作，则必须在新引导环境中更新或删除标记的操作。<literal>be-policy</literal> 映像属性控制新引导环境的创建。有关 <literal>be-policy</literal> 属性的更多信息，请参见 <literal>pkg</literal>(1) 手册页的“映像属性”部分。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
+<listitem><para>其中每个执行器在软件包安装或删除过程中均使用服务实例的 FMRI 值进行操作。根据 <literal>svcadm</literal>(8) 的 <literal>disable</literal> 子命令，<literal>disable_fmri</literal> 会导致给定的 FMRI 在删除操作之前被禁用。根据 <literal>svcadm</literal>(8) 的各个子命令，<literal>refresh_fmri</literal> 和 <literal>restart_fmri</literal> 会导致给定的 FMRI 在安装、更新或删除操作后被刷新或重新启动。最后，<literal>suspend_fmri</literal> 会导致给定的 FMRI 在安装操作阶段之前被临时禁用，并在该阶段完成后被重新启用。</para>
+<para>该值可以包含与多个服务实例匹配的模式。但是，它必须使用 <literal>svcs</literal>(1) 所接受的 glob 显式执行此操作，而不是通过不指示任何实例来隐式执行此操作。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>中介</title>
+<para>中介是代表一组相关符号链接或硬链接的名称。如果两个或更多个链接操作拥有相同的路径和中介名称，则用户或软件包系统会根据版本、实现或优先级选择链接目标。有关中介属性的信息，请参见“链接操作”。</para>
+<para>以下示例显示名为 <literal>java</literal> 的中介的两个不同实例（其中，链接选择的区别为版本）。这两个 <literal>link</literal> 操作会显示在两个不同软件包中。</para>
+<programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
+link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
+<para>有关如何为此链接路径选择所需版本的信息，请参见 <command>pkg</command>(1) 手册页中的 <command>set-mediator</command> 子命令。要选择版本，必须安装两个软件包。</para>
+</refsect1>
+<refsect1 role="other"><title>约束和冻结</title>
+<para>在将软件包转换为新版本、添加到系统中或从系统中删除时，所选的版本或是否允许删除由对软件包施加的各种约束确定。这些约束可由其他软件包以依赖性的形式进行定义，或者由管理员以冻结的形式进行定义。</para>
+<para>最常见的约束形式由 <literal>require</literal> 依赖性提供，如上面的“依赖操作”中所述。此类约束可防止软件包被降级或删除。</para>
+<para>操作系统的大多数部分由名为 <emphasis> incorporation</emphasis> 的软件包进行封装。这些软件包主要提供由 <literal>incorporate</literal> 依赖性表示的约束。</para>
+<para>如上所述，合并的软件包不需要存在于系统上，但如果存在，它将同时指定一个非独占最低版本和一个独占最高版本。例如，如果依赖性的 FMRI 具有版本 1.4.3，则低于 1.4.3 的版本不能满足依赖性，且任何高于或等于 1.4.4 的版本也不能满足依赖性。但是，可以允许仅仅扩展了点分序列的版本，如 1.4.3.7。</para>
+<para>Incorporation 用于强制系统的各部分进行同步升级。对于某些组件（例如 C 库和内核），这是一项基本要求。对于其他组件（例如，不具有任何其他依赖性的简单用户级组件），同步升级仅仅用来提供一组经过测试的已知软件包版本，这些软件包版本可由 incorporation 的特定版本进行引用。</para>
+<para>因为 incorporation 只是一个软件包，所以可将其删除，它提供的所有约束也将随之解除。但是，Oracle Solaris 提供的许多 incorporation 是合并软件包所必需的，因为解除其约束可能会不安全。</para>
+<para>尝试将软件包升级到已安装的 incorporation 所不允许的版本，将不会尝试查找更高的 incorporation 版本来满足该请求，反而会失败。如果必须移动约束本身，而又无法删除指定它的 incorporation，则必须将 incorporation 升级到指定所需约束版本的版本。升级 incorporation 会导致不能满足新版本提供的约束的所有合并软件包也进行升级。</para>
+<para>系统管理员可以使用 <command>pkg freeze</command> 命令约束软件包。在未提供版本的情况下，将指定软件包约束为系统上已安装的版本。如果提供了版本化软件包，则此管理约束或冻结会像已安装了合并依赖性（其中 <literal>fmri</literal> 属性具有所提供的软件包版本值）一样进行操作。</para>
+<para>包管理系统永远不会自动解除冻结。要解除约束，请使用 <command>pkg unfreeze</command> 命令。</para>
+</refsect1>
+<refsect1 role="other"><title>发布者和系统信息库</title>
+<para>如上所述，发布者只是软件包客户端用来标识软件包提供者的一个名称。发布者可使用软件包系统信息库和/或软件包归档来发行其软件包。软件包系统当前支持以下两种类型的系统信息库：源系统信息库和镜像系统信息库。</para>
+<para><emphasis>源</emphasis>是包含一个或多个软件包的所有元数据（例如，目录、清单和搜索索引）和内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了多个源，则软件包客户端 API 会尝试选择从其检索软件包数据的最佳源。这是最常见的系统信息库类型，当每次在软件包系统信息库上使用 <command>pkgsend</command> 或 <command>pkgrecv</command> 时进行隐式创建。</para>
+<para><emphasis>mirror</emphasis> 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 <command>pkg.depotd</command>(8) 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 <literal>https</literal> 源，以及提供软件包内容的 <literal>http</literal> 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 <filename>file</filename> 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 <command>pkg.depotd</command>(8) 的镜像模式还可将源系统信息库置备为镜像。</para>
+</refsect1>
+<refsect1 role="other"><title>全局和非全局区域更新</title>
+<para><literal>pkg</literal> 系统会强制使非全局区域与全局区域保持同步。这表示某些软件包在全局区域和所有非全局区域中必须处于同一版本，以确保运行相同的内核。为此，<literal>pkg</literal> 会使用 <literal>parent</literal> 依赖性对非全局区域施加某些约束。有关 <literal>parent</literal> 依赖性的更多信息，请参见“依赖操作”。</para>
+<para>由于全局区域对非全局区域施加的限制，非全局区域必须可以访问全局区域的软件包且必须具有相似的发布者配置。使用<emphasis role="strong">系统信息库</emphasis>可实现上述两个目标（请参见 <literal>pkg.sysrepo</literal>(8) 手册页）。系统信息库可提供全局区域中配置的发布者的访问权，以及有关如何配置这些发布者的信息。要阻止非全局区域在安装或更新期间选择不同软件包，在发布者搜索顺序中系统发布者的排列顺序需要高于非全局区域中配置的发布者的顺序。有关发布者搜索顺序的信息，请参见 <literal>pkg</literal>(1) 手册页中的 <command>pkg set-publisher</command> 命令。</para>
+<para>要更新系统上的所有非全局区域，请使用不带全局区域中参数的 <command>pkg update</command> 命令。此命令会在全局区域上执行并以递归方式在每个非全局区域上执行。将对非全局区域仅进行最少的必要更改，以使其与全局区域中所进行的更改同步。例如，假设全局区域和非全局区域中都安装了版本 1 的软件包 <literal>foo</literal>，并假设系统信息库中存在版本 2。如果 <literal>foo</literal> 具有父项依赖性，则 <command>pkg update foo</command> 会在全局区域和非全局区域中将 <literal>foo</literal> 更新至版本 2，这是因为 <literal>parent</literal> 依赖性会强制使软件包保持同步。如果 <literal>foo</literal> 不具有父项依赖性，则 <literal>foo</literal> 在全局区域中会更新至版本 2，但在非全局区域中仍为版本 1。</para>
+</refsect1>
+<refsect1 role="other"><title>侧面和变量</title>
+<para>软件可以具有可选组件和互斥组件。可选组件的示例包括语言环境和文档。互斥组件的示例包括 SPARC 或 x86 和调试或非调试二进制文件。</para>
+<para>在 IPS 中，可选组件称为<emphasis>侧面</emphasis>，互斥组件称为<emphasis>变量</emphasis>。侧面和变量指定为软件包操作中的标记。每个侧面和变量标记都有一个名称和值。单个操作可以具有多个侧面和变量标记。具有多个侧面和变量标记的组件有多种，例如供开发者使用的特定于体系结构的头文件，或仅用于 SPARC 全局区域的组件。</para>
+<para>以下是变量标记的一个示例 <literal>variant.arch=sparc</literal>。以下是侧面标记的一个示例 <literal>variant.arch=sparc</literal>。引用侧面和变量时，通常不带前导字符串 <literal>facet.</literal> 和 <literal>variant.</literal>。</para>
+<para>侧面和变量是映像的特殊属性，无法在单个软件包上设置。要查看映像上设置的侧面和变量的当前值，请按 <command>pkg</command>(1) 手册页中所示，使用 <command>pkg facet</command> 和 <command>pkg variant</command> 命令。要修改映像上设置的侧面和变量的值，请使用 <command>pkg change-facet</command> 和 <command>pkg change-variant</command> 命令。</para>
+<para>软件包客户机将侧面处理为布尔值：侧面在映像中仅能设置为 <literal>true</literal>（启用）或 <literal>false</literal>（禁用）。缺省情况下，以 'facet.debug.' 或 'facet.optional.' 开头的所有侧面在映像中均被视为设置为 <literal>false</literal>；所有其他侧面在映像中均被视为设置为 <literal>true</literal>。</para>
+<para>可以使用 <command>pkg change-facet</command> 命令在映像内本地设置侧面，也可从父映像继承侧面。例如，非全局区域可从全局区域继承侧面。继承的侧面会在本地设置的侧面之前计算结果，并且优先于本地设置的侧面。如果同一个侧面既是继承的，又是本地设置的，则继承的侧面值会屏蔽本地设置的值。屏蔽的侧面不会影响侧面计算结果和软件包操作。使用 <command>pkg change-facet</command> 命令所做的侧面更改仅影响本地设置的侧面。只能通过更改父映像来更改继承的侧面。缺省情况下，<command>pkg facet</command> 命令不显示屏蔽的侧面。</para>
+<para>操作的侧面标记值可以设置为 <literal>all</literal> 或 <literal> true</literal>，以控制客户机如何过滤有侧面标记的操作。除 <literal>all</literal> 或 <literal>true</literal> 之外的所有值都具有未定义的行为。有关要安装具有侧面标记的操作而必须在镜像中存在的条件的说明，请参见下文。</para>
+<para>需要多个级别的过滤时，侧面的 <literal>all</literal> 值非常有用。在以下示例中，仅当 <literal>doc</literal> 侧面和至少一个 <literal>locale</literal> 侧面在映像中为 <literal>true</literal> 时，才安装 <literal>foo.txt </literal>。这样允许管理员排除文档，但是仍启用或禁用特定语言环境支持。此外，仅当 <literal>doc</literal> 和 <literal>devel</literal> 侧面在映像中都为 <literal>true</literal> 时，才安装 <literal>api.txt</literal>。</para>
+<programlisting>file path=usr/share/doc/foo/foo.txt facet.doc=all facet.locale.en_GB=true facet.locale.en_US=true
+file path=usr/share/doc/foo/api.txt facet.doc=all facet.devel=all</programlisting>
+<para>映像上设置的侧面可以为完整侧面（如 <literal>doc.man</literal>）或模式（如 <literal>locale.*</literal>）。要禁用侧面名称空间的一部分，仅启用其中的几个侧面时，此方式很有用。例如，您可以禁用所有语言环境，然后仅启用一个或两个特定语言环境，如以下示例所示：</para>
+<screen># <userinput>pkg change-facet locale.*=false</userinput>
+[output about packages being updated]
+# <userinput>pkg change-facet locale.en_US=true</userinput>
+[output about packages being updated]</screen>
+<para>大多数变量可以具有任意数量的值。例如，<literal>arch</literal> 变量可以设置为 <literal>i386</literal>、<literal>sparc</literal>、<literal>ppc</literal>、<literal>arm</literal> 或分发支持的任何体系结构。（Oracle Solaris 中仅使用 <literal>i386</literal> 和 <literal>sparc</literal>。）但 <literal>debug</literal> 变量例外。<literal>debug</literal> 变量应只设置为 <literal>true</literal> 或 <literal>false</literal>；其他值的行为不确定。如果文件操作同时具有非调试和调试版本，则必须针对这两个版本明确设置适用的 <literal>debug</literal> 变量，如以下示例所示：</para>
+<programlisting>file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=115 pkg.size=103 preserve=true &bsol;
+  variant.debug.osnet=true
+
+file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=68 pkg.size=48 preserve=true &bsol;
+  variant.debug.osnet=false</programlisting>
+<para>要安装使用该变量的软件包，必须在映像上设置变量值；缺省情况下所有未指定的变量均具有值 'false'，这不一定使软件包可安装。<literal>arch</literal> 和 <literal>zone</literal> 变量由创建映像和安装其初始内容的程序设置。</para>
+<itemizedlist>
+<para>映像中设置的侧面和变量会影响是否安装特定操作。</para>
+<listitem><para>始终会安装不带侧面或变量标记的操作。</para>
+</listitem>
+<listitem><para>如果以下条件存在于映像中，将安装具有侧面标记的操作：</para>
+<itemizedlist>
+<listitem><para>操作上值为 <literal>all</literal> 的所有侧面标记在映像中均为 <literal>true</literal>（<literal>false</literal> 是以 'facet.debug.' 或 'facet.optional.' 开头的所有侧面的缺省设置；<literal>true</literal> 是所有其他侧面的缺省设置）。</para>
+</listitem>
+<listitem><para>如果操作上的任何侧面标记具有值 <literal>true</literal>，则这些侧面中的至少一个侧面在映像中为 <literal>true</literal>。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>仅当所有变量标记的值与映像中设置的值相同时，才会安装带这些变量标记的操作。</para>
+</listitem>
+<listitem><para>如果侧面和变量都允许安装操作，则会安装带有这两种标记的操作。</para>
+</listitem>
+</itemizedlist>
+<para>可以创建定制侧面标记和变量标记。有关更多信息，请参见《<citetitle>在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》。以下是 Oracle Solaris 中的常用标记。</para>
+<informaltable frame="topbot">
+<textobject><simpara>变量及其可能值。</simpara></textobject>
+<tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*" /><colspec colwidth="50*" /><thead>
+<row rowsep="1">
+<entry>
+<para>变量名</para>
+</entry>
+<entry>
+<para>可能值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<para><literal>variant.arch</literal></para>
+</entry>
+<entry>
+<para><literal>sparc</literal>, <literal>i386</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.opensolaris.zone</literal></para>
+</entry>
+<entry>
+<para><literal>global</literal>, <literal>nonglobal</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.debug.*</literal></para>
+</entry>
+<entry>
+<para><literal>true</literal>、<literal>false</literal></para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>以下列表描述了 Oracle Solaris 中使用的一小部分侧面标记：</para>
+<programlisting>facet.devel             facet.doc
+facet.doc.html          facet.doc.info
+facet.doc.man           facet.doc.pdf
+facet.locale.de         facet.locale.en_GB
+facet.locale.en_US      facet.locale.fr
+facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
+</refsect1>
+<refsect1 role="other"><title>映像策略</title>
+<para>映像策略由具有布尔值的映像属性所定义。有关 <literal>flush-content-cache-on-success</literal> 和 <literal>send-uuid</literal> 属性的说明以及如何查看和修改其值的信息，请参见 <literal>pkg</literal>(1) 手册页中的“映像属性”。</para>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para>因为 <literal>pkg</literal>(7) 映像可位于任意一个较大的文件系统内，需要使用标记 <literal>$IMAGE_ROOT</literal> 来区分相对路径。对于典型的系统安装，<literal>$IMAGE_ROOT</literal> 等效于 /。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
+<listitem><para>完整或部分映像的元数据目录。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_ROOT/.org.opensolaris,pkg</filename></term>
+<listitem><para>用户映像的元数据目录。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>在特定映像的元数据中，某些文件和目录可能包含修复和恢复期间有用的信息。标记 <literal>$IMAGE_META </literal> 用于指示包含元数据的顶层目录。<literal> $IMAGE_META</literal> 通常是以上给出的两个路径之一。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_META/lost+found</filename></term>
+<listitem><para>在软件包操作期间移动的有冲突目录和文件的位置。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_META/publisher</filename></term>
+<listitem><para>为每个发布者包含一个目录。每个目录存储特定于发布者的元数据。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>$IMAGE_META</literal> 目录分层结构中的其他路径是专用的，但可以进行更改。</para>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.2 中添加和更新软件</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

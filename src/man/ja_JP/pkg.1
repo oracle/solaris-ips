@@ -1,0 +1,1771 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkg-1">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 20 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkg [<replaceable>options</replaceable>] command [<replaceable>
+cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
+<synopsis>/usr/bin/pkg refresh [-q] [--full] [<replaceable>publisher</replaceable> ...]
+</synopsis>
+<synopsis>/usr/bin/pkg install [-nvq] [-C <replaceable>n</replaceable>] [-g <replaceable>path_or_uri</replaceable>]...
+    [-r [[-z <replaceable>zonename</replaceable>]... | [-Z <replaceable>zonename</replaceable>]... ]]
+    [--accept] [--licenses] [--no-index] [--no-refresh]
+    [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--reject <replaceable>pkg_fmri_pattern</replaceable>]...
+    [--sync-actuators | --sync-actuators-timeout <replaceable>timeout</replaceable>]
+    <replaceable>pkg_fmri_pattern</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg exact-install [-nvq] [-C <replaceable>n</replaceable>] [-g <replaceable>path_or_uri</replaceable>]...
+    [--accept] [--licenses] [--no-index] [--no-refresh]
+    [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--reject <replaceable>pkg_fmri_pattern</replaceable>]...  <replaceable>pkg_fmri_pattern</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg uninstall [-nvq] [-C <replaceable>n</replaceable>]
+    [-r [[-z <replaceable>zonename</replaceable>]... | [-Z <replaceable>zonename</replaceable>]... ]]
+    [--ignore-missing] [--no-index] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--sync-actuators | --sync-actuators-timeout <replaceable>timeout</replaceable>]
+    <replaceable>pkg_fmri_pattern</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg update [-fnvq] [-C <replaceable>n</replaceable>] [-g <replaceable>path_or_uri</replaceable>]...
+    [-r [[-z <replaceable>zonename</replaceable>]... | [-Z <replaceable>zonename</replaceable>]... ]]
+    [--accept] [--ignore-missing] [--licenses]
+    [--no-index] [--no-refresh] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--reject <replaceable>pkg_fmri_pattern</replaceable>]...
+    [--sync-actuators | --sync-actuators-timeout <replaceable>timeout</replaceable>]
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg list [-Hafnqsuv] [-g <replaceable>path_or_uri</replaceable>]...
+    [--no-refresh] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg info [-lqr] [-g <replaceable>path_or_uri</replaceable>]... [--license]
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg contents [-Hmr] [-a <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]...
+    [-g <replaceable>path_or_uri</replaceable>]... [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]...
+    [-s <replaceable>sort_key</replaceable>] [-t <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]...
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg search [-HIaflpr]
+    [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
+<synopsis>/usr/bin/pkg verify [-Hqv] [-p <replaceable>path</replaceable>]... [--parsable <replaceable>version</replaceable>]
+    [--unpackaged] [--unpackaged-only] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    (--tagged <replaceable>tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</synopsis>
+<synopsis>/usr/bin/pkg mediator [-aH] [-F <replaceable>format</replaceable>] [<replaceable>mediator</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg set-mediator [-nv] [-I <replaceable>implementation</replaceable>]
+    [-V <replaceable>version</replaceable>] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    <replaceable>mediator</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    <replaceable>mediator</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg variant [-Haiv] [-F <replaceable>format</replaceable>] [<replaceable>variant_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg change-variant [-nvq] [-C <replaceable>n</replaceable>] [-g <replaceable>path_or_uri</replaceable>]...
+    [-r [[-z <replaceable>zonename</replaceable>]... | [-Z <replaceable>zonename</replaceable>]... ]]
+    [--accept] [--licenses] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--sync-actuators | --sync-actuators-timeout <replaceable>timeout</replaceable>]
+    <replaceable>variant_name</replaceable>=<replaceable>value</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg facet [-Haim] [-F <replaceable>format</replaceable>] [<replaceable>facet_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg change-facet [-nvq] [-C <replaceable>n</replaceable>] [-g <replaceable>path_or_uri</replaceable>]...
+    [-r [[-z <replaceable>zonename</replaceable>]... | [-Z <replaceable>zonename</replaceable>]... ]]
+    [--accept] [--licenses] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name <replaceable>name</replaceable>]
+    [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
+    [--sync-actuators | --sync-actuators-timeout <replaceable>timeout</replaceable>]
+    <replaceable>facet_name</replaceable>=(True|False|None) ...</synopsis>
+<synopsis>/usr/bin/pkg avoid [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg unavoid [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg freeze [-n] [-c <replaceable>reason</replaceable>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg unfreeze [-n] [<replaceable>pkg_name_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg property [-H] [<replaceable>propname</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg set-property <replaceable>propname</replaceable> <replaceable>propvalue</replaceable></synopsis>
+<synopsis>/usr/bin/pkg add-property-value <replaceable>propname</replaceable> <replaceable>propvalue</replaceable></synopsis>
+<synopsis>/usr/bin/pkg remove-property-value <replaceable>propname</replaceable> <replaceable>propvalue</replaceable></synopsis>
+<synopsis>/usr/bin/pkg unset-property <replaceable>propname</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg publisher [-HPn] [-F <replaceable>format</replaceable>] [<replaceable>publisher</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkg set-publisher [-Ped] [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>]
+    [-g <replaceable>origin_to_add</replaceable> | --add-origin <replaceable>origin_to_add</replaceable>]...
+    [-G <replaceable>origin_to_remove</replaceable> | --remove-origin <replaceable>origin_to_remove</replaceable>]...
+    [-m <replaceable>mirror_to_add</replaceable> | --add-mirror <replaceable>mirror_to_add</replaceable>]...
+    [-M <replaceable>mirror_to_remove</replaceable> | --remove-mirror <replaceable>mirror_to_remove</replaceable>]...
+    [--disable] [--enable] [--no-refresh] [--reset-uuid]
+    [--non-sticky] [--sticky] [--search-after <replaceable>publisher</replaceable>]
+    [--search-before <replaceable>publisher</replaceable>] [--search-first]
+    [--approve-ca-cert <replaceable>path_to_CA</replaceable>]
+    [--revoke-ca-cert <replaceable>hash_of_CA_to_remove</replaceable>]
+    [--unset-ca-cert <replaceable>hash_of_CA_to_remove</replaceable>]
+    [--set-property <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>]
+    [--add-property-value <replaceable>name_of_property</replaceable>=<replaceable>value_to_add</replaceable>]
+    [--remove-property-value <replaceable>name_of_property</replaceable>=<replaceable>value_to_remove</replaceable>]
+    [--unset-property <replaceable>name_of_property_to_delete</replaceable>]
+    [--proxy <replaceable>proxy_to_use</replaceable>] <replaceable>publisher</replaceable></synopsis>
+<synopsis>/usr/bin/pkg set-publisher -p <replaceable>repo_uri</replaceable> [-Ped]
+    [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>] [--non-sticky] [--sticky]
+    [--search-after <replaceable>publisher</replaceable>] [--search-before <replaceable>publisher</replaceable>]
+    [--search-first] [--approve-ca-cert <replaceable>path_to_CA</replaceable>]
+    [--revoke-ca-cert <replaceable>hash_of_CA_to_remove</replaceable>]
+    [--unset-ca-cert <replaceable>hash_of_CA_to_remove</replaceable>]
+    [--set-property <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>]
+    [--add-property-value <replaceable>name_of_property</replaceable>=<replaceable>value_to_add</replaceable>]
+    [--remove-property-value <replaceable>name_of_property</replaceable>=<replaceable>value_to_remove</replaceable>]
+    [--unset-property <replaceable>name_of_property_to_delete</replaceable>]
+    [--proxy <replaceable>proxy_to_use</replaceable>] [<replaceable>publisher</replaceable>]</synopsis>
+<synopsis>/usr/bin/pkg unset-publisher <replaceable>publisher</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkg history [-HNl]
+    [-n <replaceable>number</replaceable>] [-o <replaceable>column</replaceable>[,<replaceable>column</replaceable>]...]...
+    [-t <replaceable>time</replaceable> | <replaceable>time</replaceable>-<replaceable>time</replaceable>[,<replaceable>time</replaceable> | <replaceable>time</replaceable>-<replaceable>time</replaceable>]...]...</synopsis>
+<synopsis>/usr/bin/pkg purge-history</synopsis>
+<synopsis>/usr/bin/pkg rebuild-index</synopsis>
+<synopsis>/usr/bin/pkg update-format</synopsis>
+<synopsis>/usr/bin/pkg version</synopsis>
+<synopsis>/usr/bin/pkg help [-v]</synopsis>
+<synopsis>/usr/bin/pkg image-create [-FPUfz] [--force]
+    [--full | --partial | --user] [--zone]
+    [-c <replaceable>ssl_cert</replaceable>] [-k <replaceable>ssl_key</replaceable>]
+    [-g <replaceable>path_or_uri</replaceable> | --origin <replaceable>path_or_uri</replaceable>]...
+    [-m <replaceable>uri</replaceable> | --mirror <replaceable>uri</replaceable>]...
+    [--facet <replaceable>facet_name</replaceable>=(True|False)]... [--no-refresh]
+    [--set-property <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>]
+    [--variant <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]...
+    [(-p | --publisher) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> dehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkg -R <replaceable>dir</replaceable> rehydrate [-nvq] [-p <replaceable>publisher</replaceable>]...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkg-1-desc" role="description"><title></title>
+<para><command>pkg</command> は Image Packaging System 用の取得クライアントです。有効な構成では、<command>pkg</command> を呼び出すことにより、パッケージをインストールする場所を作成し、イメージを呼び出し、パッケージをイメージにインストールすることができます。パッケージはパブリッシャーによって公開され、パブリッシャーはそれらのパッケージを 1 つ以上のリポジトリまたはパッケージアーカイブで利用可能にすることができます。<command>pkg</command> はパブリッシャーのリポジトリまたはパッケージアーカイブからパッケージを取得し、パッケージをイメージにインストールします。</para>
+<para>パッケージは、BE の一部であるファイルシステムにのみインストールできます。たとえば、デフォルトの Oracle Solaris 11 インストール環境では、パッケージ操作がサポートされるのは、<filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> の下のデータセットのみです。</para>
+<para>パブリッシャーの名前によって、人、人のグループ、または組織が 1 つ以上のパッケージのソースとして識別されます。パブリッシャーの名前の競合を避け、パブリッシャーを識別しやすくするために、パッケージを公開するエンティティーを表すドメイン名をパブリッシャーの名前として使用することがベストプラクティスです。</para>
+<para>リポジトリは、クライアントがパッケージの内容 (プログラムやドキュメントなど、パッケージの内部に含まれるファイル) とメタデータ (パッケージの名前や説明など、パッケージについての情報) を公開および取得できる場所です。たとえば、<literal>example.org</literal> という名前のパブリッシャーは、<literal>http://example.org/repository</literal> という URI にリポジトリを配置することができます。</para>
+<para><command>pkg</command> では、パッケージをアンインストールしたり、(利用可能なパッケージの一覧などの) パブリッシャーメタデータをリフレッシュしたり、イメージにインストールされたパッケージを検証したり、イメージからさまざまなトークンを照会したりすることもできます。これらのクエリーは <literal>pkg</literal>(7) リポジトリで構成することもできます。</para>
+<para>イメージには 3 つの種類があります。完全なシステムを提供できるフルイメージ、フルイメージ (親イメージ) にリンクされるがそれ自身では完全なシステムを提供しない部分イメージ、およびユーザーイメージです。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
+<listitem><para><replaceable>dir</replaceable> をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」のセクションを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-network-cache</option></term>
+<listitem><para>操作中に使用されるプロキシなどのネットワークサーバーがキャッシュされたデータを無視するように要求します。このオプションを使用して、パッケージクライアントとネットワークベースのパッケージリポジトリ間のプロキシのキャッシュによって発生する可能性がある問題のトラブルシューティングを行います。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>サポートされているサブコマンドは次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkg refresh</command> [<option>q</option>] [<option> -full</option>] [<replaceable>publisher</replaceable> ...]</term>
+<listitem><para>クライアントの利用可能パッケージの一覧およびすべてのパブリッシャーのパブリッシャーメタデータを更新します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>publisher</replaceable></term>
+<listitem><para>クライアントの利用可能パッケージの一覧、および指定されたパブリッシャーのパブリッシャーメタデータのみを更新します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>リクエストされた操作の実行中、進捗状況メッセージを表示しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-full</option></term>
+<listitem><para>増分更新を試みる代わりにすべての発行元メタデータを強制的に完全取得し、操作中に使用されるすべてのプロキシでキャッシュデータを無視するようにリクエストします。このオプションはトラブルシューティング目的に用意されており、通常時は使用しないでください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
+<listitem><para>指定されたパッケージをインストールし、イメージにインストールされたパッケージで許容されている <replaceable>pkg_fmri_pattern</replaceable> と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<para>すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。</para>
+<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、<command>pkg publisher</command> および <command>pkg set-publisher</command> コマンドを参照してください。<replaceable>pkg_fmri_pattern </replaceable> が発行元を指定しない場合、一致するパッケージを提供する最初の発行元がインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、<command>pkg list -a</command> コマンドを使用します。</para>
+<para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。</para>
+<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>パッケージが回避リストにある場合は、インストールすると回避リストから削除されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>C</option> <replaceable>n</replaceable></term>
+<listitem><para>同時に更新する子イメージの数を指定します。子イメージ (通常はインストールされている <literal>solaris</literal> ブランドの非大域ゾーン) 内への再帰時に、最大 <replaceable>n</replaceable> 個の子イメージを同時に更新します。更新する子イメージのデフォルト数は、1 です。<replaceable>n</replaceable> が 0 または負数の場合は、すべての子イメージが同時に更新されます。「環境変数」セクションの「<envar>PKG_CONCURRENCY</envar>」も参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>g</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para>指定されたパッケージリポジトリまたはアーカイブを、パッケージデータの取得元になるイメージ内のソースリストに一時的に追加します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。</para>
+<para>どのバージョンのパッケージを使用するかを決定するときは、イメージ内に構成されているが、指定された <replaceable>path_or_uri</replaceable> ソースに見つからない発行元が優先されます。インストールするパッケージのバージョンが、イメージ内で構成されている発行元および <replaceable>path_or_uri</replaceable> ソースから提供されている場合、クライアントはそのパッケージの内容を <replaceable>path_or_uri </replaceable> ソースから取得します。インストールまたは更新のあとに、発行元によって提供され、イメージ内で構成されていないパッケージがある場合は、起点なしでイメージ構成に追加されます。イメージ内で構成されている発行元を表示するには、<command>pkg publisher</command> コマンドを使用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>パッケージの変更は行わずに試しに操作を実行します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>リクエストされた操作の実行中、進捗状況メッセージを表示しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>大域ゾーンおよびインストールされているすべての <literal>solaris</literal> ブランドの非大域ゾーンで、この操作を実行します。非大域ゾーンへの影響は、各非大域ゾーンにログインして、コマンドを直接実行した場合と似ています。このオプションを指定しないと、大域ゾーンで <literal>pkg</literal> コマンドを実行した場合、非大域ゾーンは大域ゾーンと互換性を保つために必要な程度でのみ変更されます。このオプションを指定すると、<literal>pkg</literal> 操作は、<option>z</option> および <option>Z</option> オプションで制限されているものを除く、インストールされているすべての非大域ゾーンに適用されます。<option>z</option> および <option>Z</option> オプションによって除外されたゾーンは、大域ゾーンと同期を保つために更新が必要な場合、変更される可能性があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>z</option> <replaceable>zonename</replaceable></term>
+<listitem><para>指定された非大域ゾーンでのみこの操作を実行します。<option>z</option> オプションは複数回指定できます。<option>z</option> オプションは、<option>r</option> オプションと同時に指定した場合のみ使用できます。<option>z</option> オプションは <option>Z</option> オプションと一緒に使用できません。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>Z</option> <replaceable>zonename</replaceable></term>
+<listitem><para>指定されたゾーンを除くすべての非大域ゾーンでこの操作を実行します。<option>Z</option> オプションは複数回指定できます。<option>Z</option> オプションは、<option>r</option> オプションと同時に指定した場合のみ使用できます。<option>Z</option> オプションは <option>z</option> オプションと一緒に使用できません。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>リクエストされた操作の実行中に詳細な進捗状況メッセージを出力し、詳細な計画情報 (ファセット、メディエータ、バリアントの変更など) を表示します。このオプションを複数回指定して、表示される計画情報の量を増やすことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-accept</option></term>
+<listitem><para>更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、インストール操作は失敗します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-licenses</option></term>
+<listitem><para>この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。更新されるパッケージの場合、ライセンスが変更された場合のみライセンスを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>操作が正常に完了したあとに検索インデックスを更新しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-refresh</option></term>
+<listitem><para>入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-be-activate</option></term>
+<listitem><para>ブート環境が作成される場合に、それを次回ブート時にアクティブなブート環境として設定しません。詳細は、<command>beadm</command>(8) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-backup-be</option></term>
+<listitem><para>バックアップブート環境を作成しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-require-backup-be</option></term>
+<listitem><para>新しいブート環境が作成されない場合に、常にバックアップブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてバックアップブート環境が作成されます。バックアップブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の <literal>be-policy</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-backup-be-name</option> <replaceable>name</replaceable></term>
+<listitem><para>指定された引数を使って、作成されたバックアップブート環境に名前を付けます。<option>-backup-be-name</option> を使用すると <option>-require-backup-be</option> が暗黙的に指定されます。<command>beadm</command>(8) のマニュアルページも参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-deny-new-be</option></term>
+<listitem><para>新しいブート環境を作成しません。新しいブート環境が必要な場合、この操作は実行されません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-require-new-be</option></term>
+<listitem><para>常に新しいブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてブート環境が作成されます。ブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の <literal>be-policy</literal> を参照してください。このオプションを <option>-require-backup-be</option> と組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-be-name</option> <replaceable>name</replaceable></term>
+<listitem><para>新たに作成されたブート環境の名前を、指定された引数になるように変更します。<option>-be-name</option> の使用は、暗黙的に <option>-require-new-be</option> を示します。<command>beadm</command>(8) のマニュアルページも参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定されたパターンと一致する名前を持つパッケージはインストールされません。一致するパッケージがすでにインストールされている場合、それらはこの操作の一環として削除されます。グループ依存関係のターゲットである拒否対象パッケージは回避リストに登録されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sync-actuators</option></term>
+<listitem><para>SMF アクチュエータを同期的に実行します。<command>pkg</command>(1) コマンドは、<command>pkg</command> が呼び出されたゾーン (大域ゾーンまたは非大域ゾーン) ですべての SMF アクチュエータが完了するまで戻りません。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable></term>
+<listitem><para>SMF アクチュエータを同期的に実行します。アクチュエータが指定された <replaceable>timeout</replaceable> (秒単位) までに完了しない場合、<command>pkg</command>(1) は操作を継続し、リターンコード 8 で終了します。</para></listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg exact-install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... <replaceable>pkg_fmri_pattern</replaceable> ...</term>
+<listitem><para>指定されたパッケージを、空のシステムにインストールする場合と同じようにインストールまたは更新します。以前にインストールされたパッケージのうち、コマンド行で指定されず、指定されたパッケージの依存関係でもないものは、削除されます。このコマンドは、回避リストに含まれるパッケージのインストールや凍結リストに含まれるパッケージの更新を行わないようにする制約を無視します。それ以外については、この <command>exact-install</command> サブコマンドは <command>install</command> サブコマンドと同じように動作します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。</para>
+<para>パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、<command>pkg publisher</command> および <command>pkg set-publisher</command> コマンドを参照してください。<replaceable>pkg_fmri_pattern</replaceable> でパブリッシャーを指定しない場合は、一致するパッケージを提供する最初のパブリッシャーがインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、<command>pkg list -a</command> コマンドを使用します。</para>
+<para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。</para>
+<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>パッケージが回避リストにある場合は、インストールすると回避リストから削除されます。</para>
+<para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg uninstall</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-ignore-missing</option>] [<option>-no-index</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
+<listitem><para><replaceable>pkg_fmri_pattern</replaceable> に一致するインストール済みパッケージを削除します。</para>
+<para>パッケージがグループ依存関係の対象である場合、パッケージをアンインストールするとそのパッケージは回避リストに登録されます。後述する <command>avoid</command> サブコマンドを参照してください。</para>
+<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回リブート時のデフォルトのブート環境になります。ブート環境の管理については、<command>beadm</command>(8) のマニュアルページを参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-ignore-missing</option></term>
+<listitem><para>インストールされていないパッケージを無視します。このオプションを使用すると、<command>pkg uninstall</command> で現在インストールされていないパッケージをアンインストールしようとしたときに、失敗しなくなります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg update</command> [<option>fnvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-ignore-missing</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>現在のイメージ内のすべてのインストール済みパッケージを、インストール済みパッケージと発行元構成によりシステムに適用される制約で許可される最新のバージョンに更新します。</para>
+<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回、<option>-no-be-activate</option> オプションを指定しない場合のリブート時のデフォルトブート環境になります。ブート環境の管理については、<command>beadm</command>(8) のマニュアルページを参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>現在のイメージにインストール済みの、指定されたパッケージのみを更新します。指定された <replaceable>pkg_fmri_pattern</replaceable> パターンの 1 つがアスタリスク (*) である場合は、<replaceable>pkg_fmri_pattern</replaceable> を指定しなかった場合と同じ方法で現在のイメージ内のすべてのインストール済みパッケージを更新します。</para>
+<para>パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。</para>
+<para>すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。</para>
+<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、<literal>pkg</literal>(7) のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージに更新できない場合、指定されたパッケージは一切更新されません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>f</option></term>
+<listitem><para>すべてのインストール済みパッケージを更新するときにクライアントに対する最新状態チェックを実行しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ignore-missing</option></term>
+<listitem><para>インストールされていないパッケージを無視します。このオプションを使用すると、<command>pkg update</command> で現在インストールされていないパッケージを更新しようとしたときに、失敗しなくなります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg list</command> [<option>Hafnqsuv</option>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>-no-refresh</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>バージョンやインストール状態などの情報を含む、現在のイメージ内のインストール済みの全パッケージのリストを表示します。デフォルトでは、異なるアーキテクチャーまたはゾーンタイプのパッケージバリアントは除外されます。通常の出力は 3 列形式です。</para>
+<programlisting>NAME (PUBLISHER)       VERSION                IFO
+system/core-os         0.5.11-0.175.0.0.0.2.1 i--
+x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
+<para>最初の列にはパッケージの名前が表示されます。パッケージのインストール元 (または、インストールされていない場合は提供元) であるパブリッシャーがパブリッシャー検索順で先頭でない場合、パッケージ名のあとに一覧表示されるパブリッシャー名は括弧で囲まれています。2 番目の列にはパッケージのリリースバージョンとブランチバージョンが表示されます。リリースバージョンとブランチバージョンについて、およびバリアントについては、<literal>pkg</literal>(7) のマニュアルページを参照してください。</para>
+<itemizedlist>
+<para>最後の列には、パッケージのステータスを示す一連のフラグが表示されます。</para>
+<listitem><para><literal>I</literal> 列の <literal>i</literal> は、パッケージがインストールされていることを示します。</para></listitem>
+<listitem><para><literal>F</literal> 列の <literal>f</literal> は、パッケージが凍結されていることを示します。</para></listitem>
+<listitem><para><literal>O</literal> 列の <literal>o</literal> は、パッケージが廃止されていることを示します。<literal>O</literal> 列の <literal>r</literal> は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。</para>
+</listitem>
+</itemizedlist>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定したパッケージのみを一覧表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>このイメージにインストールされているパッケージと、インストールされていないが、インストール可能なパッケージの最新バージョンを一覧表示します。パッケージがインストール済みの incorporation およびイメージのバリアントによって許可されている場合は、それらをインストールできます。1 つ以上のパターンを指定した場合、指定されたパターンに一致し、インストール済みの incorporation およびイメージのバリアントによって許可されている最新バージョンが一覧表示されます。<option>a</option> を指定しない場合、インストール済みパッケージのみを一覧表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>af</option></term>
+<listitem><para>incorporation の制約またはインストール状態に関係なく、すべてのバリアントについてすべてのパッケージのすべてのバージョンを一覧表示します。これらのオプションを使用するとき、パッケージの最新バージョンを明示的に一覧表示するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>g</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para>指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。<option>n</option> を指定しない場合、<option>g</option> を使用すると <option>a</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>インストール状態に関係なく、すべての既知のパッケージの最新バージョンを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>q</option></term>
+<listitem>
+<para>パッケージを一覧表示しませんが、致命的エラーが発生した場合は失敗を返します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option></term>
+<listitem><para>パッケージ名とサマリーを示す 1 行の短縮形式を表示します。このオプションは <option>a</option>、<option>n</option>、または <option>u</option> とともに使用できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>u</option></term>
+<listitem><para>新しいバージョンが入手可能なインストール済みパッケージを一覧表示します。このオプションは <option>g</option> とともに使用できません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>発行元と完全バージョンを含む、フルパッケージ FMRI をすべて最初の列に表示します (VERSION 列は消えます)。このオプションは <option>a</option>、<option>n</option>、または <option>u</option> とともに使用できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-refresh</option></term>
+<listitem><para>入手可能パッケージの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg info</command> [<option>lqr</option>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>-license</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>現在のイメージにインストールされているすべてのパッケージについての情報を、人間が判読できる形式で表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定したパッケージの情報のみを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>g</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para>指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。<option>g</option> を使用すると <option>r</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option></term>
+<listitem><para>インストール済みのパッケージの情報だけを表示します。これはデフォルトです。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>q</option></term>
+<listitem>
+<para>パッケージ情報を表示しませんが、致命的エラーが発生した場合は失敗を返します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>最新の入手可能バージョンに基づいてパッケージを照合し、イメージの構成済みパブリッシャーのリポジトリから、現在インストールされていないパッケージの情報を取得します (必要な場合)。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。<option>r</option> を指定しない場合、デフォルトでインストール済みパッケージのみが表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-license</option></term>
+<listitem><para>パッケージのライセンステキストを表示します。このオプションは、<option>l</option>、<option>q</option>、または <option>r</option> と組み合わせることができます。すべての <replaceable>pkg_fmri_pattern</replaceable> パターンが既知の問題のパッケージと一致し、ライセンスを持つ場合、成功を返します。1 つ以上のパターンが一致しないか、ライセンスを持たないパッケージと一致した場合、失敗を返します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg contents</command> [<option>Hmr</option>] [<option>a</option> <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]... [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>o</option> <replaceable> attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable> sort_key</replaceable>] [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable> action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
+<listitem><para>イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの <literal>path</literal> 属性の値をアルファベット順で並べ替えて表示します。<option>o</option> オプションが指定されていない場合、<literal>pkg</literal>(7) で説明されている、関連するアクション名のキー属性が代わりに表示されます。さらに、「depend」アクションには「type」属性も含められ、「set」アクションには「value」属性が含められます。</para>
+<para>複数のアクション名が指定されている場合、デフォルトの属性は、前述のように、指定されたすべてのアクションのすべての属性セットです。アクションとそれらの属性については、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。下の疑似属性名のリストも参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定したパッケージの内容のみを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>出力からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option> <replaceable>attribute</replaceable>=<replaceable> pattern</replaceable></term>
+<listitem><para>名前がオプション引数で指定され、値がオプション引数の (glob) <replaceable>pattern</replaceable> に一致する <replaceable>attribute</replaceable> を持つアクションに出力を限定します。このオプションは複数回指定できます。複数の <option>a</option> オプションを指定した場合、それらのいずれかに一致するアクションが表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>g</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para>指定されたパッケージリポジトリまたはアーカイブからこのイメージにインストール可能なパッケージの情報を表示します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。インストール可能なパッケージには、現在インストールされているパッケージと、バリアントやファセットの制限などのこのイメージへのインストールの条件を満たすその他のパッケージが含まれます。このオプションは複数回指定できます。<option>g</option> を使用すると <option>r</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>このイメージにインストールできないアクションを含めて、指定されたパッケージのすべてのアクションのすべての属性を表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option> <replaceable>attribute</replaceable></term>
+<listitem><para>指定された属性を、リストの先頭属性の値に従って並べ替えて表示します。<option>o</option> オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの <option>o</option> オプションの引数として複数の属性を指定できます。要求された属性を持つアクションのみが表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>このイメージ内で構成された発行元のリポジトリからこのイメージにインストール可能なパッケージの最新バージョンの情報を表示します。インストール可能なパッケージには、現在インストールされているパッケージと、バリアントやファセットの制限などのこのイメージへのインストールの条件を満たすその他のパッケージが含まれます。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>sort_key</replaceable></term>
+<listitem><para>指定されたアクション属性で、アクションをソートします。このオプションを指定しない場合、デフォルトではパスによって、または <option>o</option> オプションで最初に指定された属性によってソートします。<option>s</option> オプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
+<listitem><para>指定されたアクションのみを一覧表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(7) のマニュアルページの「アクション」内に一覧表示されているアクションのいずれかで、<literal>file</literal>、<literal>directory</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> などです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>利便性のために、いくつかの特殊な疑似属性名を使用できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>action.hash</literal></term>
+<listitem><para>アクションがペイロードを伝送する場合、アクションのハッシュの値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>action.key</literal></term>
+<listitem><para>アクションのキー属性の値です。たとえば、<literal>file</literal> アクションの場合、鍵属性はファイルのパスです。キー属性のないアクションもあります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>action.name</literal></term>
+<listitem><para>アクションの名前です。たとえば、ファイルアクションの場合、これは <literal>file</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>action.raw</literal></term>
+<listitem><para>一致するアクションのすべての属性。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.fmri</literal></term>
+<listitem><para>アクションを包含しているパッケージのフル形式 FMRI (たとえば、<literal>pkg://solaris/group/feature/amp@0.5.11,5.11-0.175.0.0.0.2.1:20120705T153434Z</literal>) です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.name</literal></term>
+<listitem><para>アクションを包含しているパッケージの名前 (たとえば、<literal>web/amp</literal>) です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.publisher</literal></term>
+<listitem><para>アクションを包含しているパッケージの発行元 (たとえば、<literal>solaris</literal>) です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.shortfmri</literal></term>
+<listitem><para>アクションを包含しているパッケージのショート形式 FMRI (<literal>pkg://solaris/group/feature/amp@0.5.11,5.11-0.175</literal> など) です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>関連するサブコマンドは <command>contents</command> および <command>search</command> であり、どちらもパッケージの内容についてシステムをクエリーします。<command>contents</command> サブコマンドは、1 つまたは複数のインストールされているか、インストール可能なパッケージ内のアクションを、指定されたオプションに基づいて出力をフィルタ処理して表示します。<command>search</command> サブコマンドは逆方向からクエリーを行い、ユーザーが指定したトークンを含むすべてのパッケージの名前を表示します。</para>
+<para>各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行なってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg search</command> [<option>HIaflpr</option>] [<option>o</option> <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></term>
+<listitem><para><replaceable>query</replaceable> と一致するアクションを検索し、一致した検索インデックス、アクション名、アクション値、およびパッケージ名を表示します。次の <replaceable>query</replaceable> の説明を参照してください。場合によっては、検索結果が重複して生成されることがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>H</option> </term>
+<listitem><para>出力からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>I</option></term>
+<listitem><para>大文字/小文字を区別する検索を使用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>検索を実行して、一致するアクションに関する情報を表示します。これはデフォルトです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>f</option></term>
+<listitem><para>パッケージのバージョンに関係なく、すべての結果を表示します。<command>search</command> はデフォルトで、現在インストールされているバージョンよりも古いパッケージ、および現在の incorporation によって除外されているパッケージバージョンからの結果を取り除きます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option></term>
+<listitem><para>イメージのインストール済みパッケージを検索します。</para>
+<para><option>l</option> と <option>r</option> (または <option>s</option>) の両方を同時に指定できます。この場合、ローカル検索とリモート検索の両方が実行されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option> <replaceable>attribute</replaceable></term>
+<listitem><para>出力に含める列を指定します。<option>o</option> オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの <option>o</option> オプションの引数として複数の属性を指定できます。前述した疑似属性に加えて、検索結果用の次の属性が定義されています。これらの属性は、特定の結果が一致する理由をわかりやすく示しています。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>search.match</literal></term>
+<listitem><para>検索クエリーに一致した文字列。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>search.match_type</literal></term>
+<listitem><para>検索クエリーに一致した文字列を含む属性。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option></term>
+<listitem><para>一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (<literal>&lt;&gt;</literal>) で囲むことと等価です。<literal>&lt;></literal> 演算子の詳細は、次の <replaceable>query</replaceable> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>イメージのパブリッシャーに対応するリポジトリを検索します。これはデフォルトです。</para>
+<para><option>l</option> と <option>r</option> (または <option>s</option>) の両方を同時に指定できます。この場合、ローカル検索とリモート検索の両方が実行されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri</replaceable></term>
+<listitem><para>指定された URI に位置する <literal>pkg</literal>(7) リポジトリを検索します。これは複数回指定できます。パッケージアーカイブはサポートされていません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>query</replaceable></term>
+<listitem><para>デフォルトでは、<replaceable>query</replaceable> は完全一致する一連の条件として解釈され、複数の条件は AND でつながれます。</para>
+<para>AND と OR がサポートされています。</para>
+<para><literal>?</literal> および <literal>*</literal> 文字を <literal>glob</literal>(3C) 形式のワイルドカードとして使用でき、より柔軟なクエリー一致が可能になります。</para>
+<para>単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (<literal>'</literal> または <literal>"</literal>) を使用することにより、語句を検索できます。<command>pkg</command> が実際に <literal>'</literal> または <literal>"</literal> を認識するように、必ずシェルを考慮に入れてください。</para>
+<para>どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。アクションとそれらの属性については、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。前述の <command>pkg contents</command> および <option> o</option> 内の擬似属性名のリストも参照してください。</para>
+<para>構造化されたクエリーは、次の構文でサポートされます:</para>
+<programlisting><replaceable>pkg_name</replaceable>:<replaceable>action_name</replaceable>:<replaceable>
+index</replaceable>:<replaceable>token</replaceable></programlisting>
+<para><replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(7) マニュアルページの「アクション」に一覧表示されているアクションのいずれかです。<replaceable>index</replaceable> は、アクションの属性です。<replaceable>index</replaceable> の値は、<replaceable>token</replaceable> と一致している必要があります。</para>
+<para>すべてのアクション属性が検索可能なわけではありません。たとえば、<literal>mode</literal> は <literal>file</literal> アクションの属性ですが、<literal>mode</literal> は <replaceable>index</replaceable> の有効な値ではありません。</para>
+<para><replaceable>index</replaceable> の一部の値は、アクション属性ではなく、ほかの属性から派生した値です。たとえば、パスの最後のコンポーネントを取ることにより、<replaceable>index</replaceable> を、どのアクションの属性でもないが、<literal>file</literal> または <literal> dir</literal> アクションの <literal>path</literal> 属性から派生した <literal>basename</literal> にできます。</para>
+<para>アクションタイプが異なると、有効な <replaceable>index</replaceable> 値も異なります。このドキュメントには、使用可能な値がすべて含まれているわけではありません。より有用な <replaceable> index</replaceable> 値には、ファイルシステムアクションの <literal>basename</literal> および <literal>path</literal>、<literal>depend</literal> アクションの依存性タイプ (たとえば、<literal>require</literal>、<literal> optional</literal>、<literal>group</literal>)、および <literal>driver </literal> アクションの <literal>driver_name</literal> および <literal>alias</literal> などがあります。</para>
+<para>特殊な <replaceable>index</replaceable> 値の 1 つに、<literal>set</literal> アクションの <literal>name</literal> 属性の値があります。この場合、<replaceable>token</replaceable> が、指定された <literal> name</literal> 属性に対応する <literal>value</literal> 属性の値と照合されます。たとえば、次の検索により、Development/Databases または System/Databases のいずれかに分類されるパッケージを検索します。「使用例」セクションで、SMF サービスを検索する例を参照してください。</para>
+<screen>$ <userinput>pkg search info.classification:databases</userinput></screen>
+<para>構造化クエリー内の欠落したフィールドは、暗黙的にワイルドカード化されます。<literal>basename:pkg</literal> の検索は、<literal>basename</literal> の <replaceable>index</replaceable> を持ち、次の部分出力に示すような <replaceable>token</replaceable> <literal>pkg</literal> に一致するすべてのパッケージ内のすべてのアクションに一致します:</para>
+<screen>$ <userinput>pkg search basename:pkg</userinput>
+INDEX    ACTION VALUE         PACKAGE
+basename dir    usr/share/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1
+basename dir    var/sadm/pkg  pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1
+basename dir    var/spool/pkg pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1
+basename file   usr/bin/pkg   pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1</screen>
+<para>次の完全な出力に示すように、別のフィールドを追加すると検索が絞り込まれます:</para>
+<screen>$ <userinput>pkg search file:basename:pkg</userinput>
+INDEX    ACTION VALUE       PACKAGE
+basename file   usr/bin/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1</screen>
+<para><replaceable>pkg_name</replaceable> および <replaceable>token</replaceable> フィールドでは明示的ワイルドカードがサポートされます。<replaceable>action_name</replaceable> および <replaceable> index</replaceable> は、正確に一致する必要があります。</para>
+<para>ファイルと依存関係の検索例については、「使用例」セクションを参照してください。</para>
+<para>アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、<literal> &lt;></literal> を使用します:</para>
+<screen>$ <userinput>pkg search &bsol;&lt;pkg&bsol;></userinput>
+PACKAGE                                  PUBLISHER
+pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1  solaris
+pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
+<para><option>a</option> オプションを使用する場合 (デフォルト)、<literal>token</literal> を検索した結果は <literal>token</literal> に一致するアクションについての情報である一方で、<literal>&lt;token></literal> を検索した結果は、<literal>token</literal> に一致するアクションを包含しているパッケージの一覧です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg verify</command> [<option>Hqv</option>] [<option>p</option> <replaceable>path</replaceable>]... [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<option>-unpackaged-only</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>現在のイメージ内で、インストールされているすべてのパッケージのインストールを検証します。関連する発行元の現在の署名ポリシーが <literal>ignore</literal> でない場合、各パッケージの署名がポリシーに基づいて検証されます。署名ポリシーが適用されるしくみについては、後述する「イメージプロパティー」の <literal>signature-policy</literal> で説明します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>現在のイメージ内で、指定されたインストール済みパッケージのインストールのみを検証します。<option>p</option> とともに使用する場合、指定されたパッケージからの一致するアクションのみが検証されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>検証の出力からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>パッケージに関する情報メッセージを含めます。前述の install コマンドの <option>v</option> オプションの説明も参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>path</replaceable></term>
+<listitem><para>パスを指定して、個々のファイル、リンク、またはディレクトリを検証します。指定されたパスは、検証が実行されるイメージの <literal>/</literal> の相対パスであると見なされます。ディレクトリまたはリンクが指定されている場合、そのディレクトリまたはリンクの一致するアクションのみが検証されます。</para>
+<para>パスの指定時に <replaceable>pkg_fmri_pattern</replaceable> を指定しないと、イメージにインストールされているパッケージから一致するすべてのアクションが検証されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>一般的な出力に加えて展開されたパッケージ内容が報告されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged-only</option></term>
+<listitem><para>展開されたパッケージ内容のみを報告します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg fix</command> [<option>HnvqP</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-accept</option>] [<option>-licenses</option>] [<option>-parsable</option> <replaceable>version</replaceable>] [<option>-unpackaged</option>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para><command>pkg verify</command> で報告されたエラーをすべて修正します。インストール済みパッケージの内容は、独自の内容解析に基づいて検証されるため、ほかのプログラムの場合とは異なる結果が返されることがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>現在のイメージ内で、指定されたインストール済みパッケージに対する <command>pkg verify</command> により報告されたエラーを修正します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>検証の出力からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>パッケージに関する情報メッセージを含めます。前述の install コマンドの <option>v</option> オプションの説明も参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-accept</option></term>
+<listitem><para>更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、操作は失敗します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-licenses</option></term>
+<listitem><para>この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。更新されるパッケージの場合、ライセンスが変更された場合のみライセンスを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unpackaged</option></term>
+<listitem><para>一般的な出力に加えて展開されたパッケージ内容が報告されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg revert</command> [<option>nv</option>] [<option> -no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable> tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
+<listitem><para><literal>pkg</literal>(7) パッケージにより配布されたパッケージを、配布時の状態に戻します。ファイルの所有権および保護も復元されます。</para>
+<caution><para>一部の編集可能ファイルをデフォルト値に戻すと、システムがブート不可になったり、その他の異常動作の原因になったりする可能性があります。</para></caution>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-tagged</option> <replaceable>tag-name</replaceable></term>
+<listitem><para><replaceable>tag-name</replaceable> でタグ付けされたすべてのファイルを元に戻し、このタグが付けられているディレクトリの下に <replaceable>pattern</replaceable> と一致するパッケージ解除されたファイルまたはディレクトリがある場合は削除します。<literal>tag-name</literal> および <replaceable>pattern</replaceable> の詳細については、<literal>pkg</literal>(7) のマニュアルページの「ファイルアクション」および「ディレクトリアクション」で <literal>revert-tag</literal> 属性の説明を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>path-to-file</replaceable></term>
+<listitem><para>指定されたファイルを元に戻します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg mediator</command> [<option>aH</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>mediator</replaceable> ...] </term>
+<listitem><para>現在選択されているバージョンやすべてのメディエータの実装を表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>mediator</replaceable></term>
+<listitem><para>現在選択されているバージョンや指定されたメディエータの実装のみを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>代替出力形式を指定します。<replaceable>format</replaceable> の値は、<literal>tsv</literal> (Tab Separated Values)、<literal>json</literal> (単一行としての JavaScript Object Notation)、または json-formatted (読みやすい形式にされた JavaScript Object Notation) にできます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>現在インストールされているパッケージに設定可能なメディエーションを一覧表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg set-mediator</command> [<option>nv</option>] [<option>I</option> <replaceable>implementation</replaceable>] [<option>V</option> <replaceable>version</replaceable>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] <replaceable>mediator</replaceable> ...</term>
+<listitem><para>現在のイメージ内の指定されたメディエータのバージョンと実装を設定します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>I</option> <replaceable>implementation</replaceable></term>
+<listitem><para>使用するメディエート対象インタフェースの実装を設定します。デフォルトでは、バージョンが指定されない場合、すべての実装バージョンが許可されます。バージョンなしで実装を指定するには、アット記号 (@) を付加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>V</option> <replaceable>version</replaceable></term>
+<listitem><para>使用するメディエート対象インタフェースのバージョンを設定します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>指定されたメディエータのバージョンと実装のどちらかまたは両方が現在入手できない場合、指定されたメディエータを使用するリンクはすべて削除されます。</para>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg unset-mediator</command> [<option>nvIV</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] <replaceable>mediator</replaceable> ... </term>
+<listitem><para>指定されたメディエータのバージョンと実装をシステムデフォルトに戻します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>I</option></term>
+<listitem><para>メディエート対象インタフェースの実装のみを元に戻します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>V</option> </term>
+<listitem><para>メディエート対象インタフェースのバージョンのみを元に戻します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg variant</command> [<option>Haiv</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>variant_pattern</replaceable> ...]</term>
+<listitem><para>このイメージに設定されているすべてのバリアントの現在値を表示します。バリアントの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>variant_pattern</replaceable></term>
+<listitem><para>このイメージで設定されている、指定されたバリアントのみの現在値を表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>代替出力形式を指定します。詳細は、<command>pkg mediator</command> コマンドを参照してください。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>a</option></term>
+<listitem>
+<para>イメージに明示的に設定されたすべてのバリアントとインストール済みパッケージに指定されたすべてのバリアントを表示します。<option>a</option> オプションを <option>i</option> オプションと組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>i</option></term>
+<listitem>
+<para>インストール済みパッケージに指定されたすべてのバリアントを表示します。<option>i</option> オプションを <option>a</option> オプションと組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>v</option></term>
+<listitem>
+<para>インストール済みパッケージに設定できるバリアント値を表示します。<option>v</option> オプションは、<option>a</option> または <option>i</option> オプションと組み合わせることができます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg change-variant</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>variant_name</replaceable>=<replaceable>value</replaceable> ...</term>
+<listitem><para>現在のイメージに設定され、指定されているバリアントの値を変更します。</para>
+<para>バリアントの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。バリアントの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。バリアントの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg facet</command> [<option>Haim</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>facet_pattern</replaceable> ...]</term>
+<listitem><para><command>pkg change-facet</command> コマンドを使用してこのイメージにローカルで設定されたか、(大域ゾーンからファセット設定を継承する非大域ゾーンなどで) 親イメージから継承されたすべてのファセットの現在の値とソースを表示します。ファセットの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>facet_pattern</replaceable></term>
+<listitem><para>このイメージに設定されている、指定されたファセットのみの現在値を表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>代替出力形式を指定します。詳細は、<command>pkg mediator</command> コマンドを参照してください。</para></listitem>
+</varlistentry>
+<varlistentry>
+<term><option>H</option> </term>
+<listitem>
+<para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>a</option></term>
+<listitem>
+<para>イメージに明示的に設定されたすべてのファセットとインストール済みパッケージに指定されたすべてのファセットを表示します。<option>a</option> オプションを <option>i</option> オプションと組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>i</option></term>
+<listitem>
+<para>インストール済みパッケージに指定されたすべてのファセットを表示します。<option>i</option> オプションを <option>a</option> オプションと組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>m</option></term>
+<listitem>
+<para>マスクされたファセットを出力に含めます。ファセットが (あれば) マスクされているかどうかを示す列を表示します。マスクされたファセットは、(<command>pkg change-facet</command> コマンドを使用して) イメージにローカルで設定されたファセットのうち、同じ名前を持つ継承されたファセットによって隠されるものです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg change-facet</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>|<literal>None</literal>) ...</term>
+<listitem><para>現在のイメージに設定され、指定されたファセットの値を変更します。これらの変更は、これらのファセットを継承するイメージ (非大域ゾーンなど) にも現れます。</para>
+<para>ファセットは <literal>True</literal> または <literal>False</literal> に設定できます。ファセットを <literal>None</literal> に設定すると、デフォルト値の <literal>True</literal> がそのファセットに適用されるため、ファセットに依存するすべてのアクションがインストールされます。アクションについては、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。</para>
+<para>ファセットの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。ファセットの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。ファセットの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg avoid</command> [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
+<listitem><para>回避対象の各パッケージを、そのパッケージにグループ依存関係を持つパッケージとともに表示します。</para>
+<para>回避リストに登録されているパッケージは、要求された依存関係を満たすために必要であればインストールされます。その依存関係が削除された場合、パッケージはアンインストールされます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定されたパターンに現在一致するパッケージ名を回避リストに登録することにより、それらがグループ依存関係のターゲットである場合にそれらを回避します。現在インストールされていないパッケージのみを回避できます。パッケージが現在グループ依存関係のターゲットである場合、パッケージをアンインストールするとそのパッケージは回避リストに登録されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg unavoid</command> [<replaceable>pkg_fmri_pattern </replaceable> ...]</term>
+<listitem><para>回避対象のパッケージのリストを表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定されたパッケージを回避リストから削除します。回避リストに登録されており、インストール済みパッケージのグループ依存関係に一致するパッケージは、このサブコマンドを使用して削除できません。グループ依存性に一致するパッケージを回避リストから削除するには、パッケージをインストールします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg freeze</command> [<option>n</option>] [<option>c </option> <replaceable>reason</replaceable>] [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
+<listitem><para>現在凍結されているパッケージについての情報 (パッケージ名、バージョン、パッケージがいつ凍結されたか、パッケージの凍結に関連付けられた理由があればその理由) が表示されます。</para>
+<para>パッケージを凍結しても、そのパッケージを削除できなくなるわけではありません。パッケージが削除される場合に警告は表示されません。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>指定されたパッケージを指定されたバージョンに凍結します。バージョンを指定しない場合、パッケージがインストールされている必要があり、そのインストール済みバージョンで凍結されます。すでに凍結されているパッケージを凍結すると、新しく指定されたバージョンによって凍結バージョンが置き換えられます。</para>
+<para>凍結されているパッケージをインストールまたは更新するときは、凍結された時点のバージョンと一致するバージョンである必要があります。たとえば、パッケージが 1.2 で凍結された場合、1.2.1、1.2.9、1.2.0.0.1 などのバージョンに更新することはできます。そのパッケージは 1.3 または 1.1 で終了することはできません。<replaceable>pkg_fmri_pattern</replaceable> で提供されるパブリッシャーは、一致するパッケージを検索するために使用されます。ただし、パブリッシャー情報は凍結の一環として記録されません。パッケージは発行元ではなくバージョンのみに関して凍結されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>reason</replaceable></term>
+<listitem><para>凍結されるパッケージとともに理由を記録します。<replaceable></replaceable>凍結が原因でインストールまたは更新に失敗する場合、その理由が示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>凍結操作を試しに実行し、凍結されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結しません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg unfreeze</command> [<option>n</option>] [<replaceable> pkg_name_pattern</replaceable> ...]</term>
+<listitem><para>現在凍結されているパッケージについての情報 (パッケージ名、バージョン、パッケージがいつ凍結されたか、パッケージの凍結に関連付けられた理由があればその理由) が表示されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>凍結によって適用される制約を、指定されたパッケージから削除します。バージョンを提供しても無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>凍結解除操作を試しに実行し、凍結解除されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結解除しません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg property</command> [<option>H</option>] [<replaceable> propname</replaceable> ...]</term>
+<listitem><para>すべてのイメージプロパティーの名前と値を表示します。イメージプロパティーの説明については、下の「イメージプロパティー」を参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>propname</replaceable></term>
+<listitem><para>指定されたプロパティーのみの名前と値を表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg set-property</command> <replaceable>propname</replaceable> <replaceable> propvalue</replaceable></term>
+<listitem><para>既存のイメージプロパティーを更新するか、または新しいイメージプロパティーを追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg add-property-value</command> <replaceable>propname </replaceable> <replaceable>propvalue</replaceable></term>
+<listitem><para>既存のイメージプロパティーに値を追加するか、または新しいイメージプロパティーを追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg remove-property-value</command> <replaceable>propname </replaceable> <replaceable>propvalue</replaceable></term>
+<listitem><para>既存のイメージプロパティーから値を削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg unset-property</command> <replaceable>propname</replaceable> ... </term>
+<listitem><para>既存のイメージプロパティーを削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg publisher</command> [<option>HPn</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>publisher</replaceable> ...] </term>
+<listitem><para>すべてのパブリッシャーの一覧を、検索の優先順に従って表示します。パブリッシャーごとに次の情報が表示されます。名前、非固定的や無効などの属性、種類 (起点またはミラー)、オンラインステータス、プロキシ、場所の URI。プロキシ情報は、P というラベルが付いた列に T (true) または F (false) と表示されるだけです。P 列が T のパブリッシャーのプロキシ値を表示するには、<literal>-F tsv</literal> オプションを使用するか、パブリッシャー名の引数を使用します。<command>pkg publisher</command> コマンドによって表示されるプロキシは、<command>pkg set-publisher</command> コマンドの <option>-proxy</option> オプションを使用して設定されました。<envar>http_proxy</envar> 環境変数を使用して設定されるプロキシは、<command>pkg publisher</command> コマンドによって表示されません。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元のみの詳細な構成を表示します。表示される追加情報には、プロキシ URI、各起点またはミラー URI 用の鍵および証明書、クライアント UUID、カタログが最後に更新された時間などがあります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>代替出力形式を指定します。<replaceable>format</replaceable> の値には、<literal>tsv</literal> (タブ区切り値) のみを指定できます。</para></listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option></term>
+<listitem><para>発行元検索順の先頭の発行元のみを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>有効な発行元のみを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg set-publisher</command> [-Ped] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable>ssl_key</replaceable>] [<option>g</option> <replaceable>origin_to_add</replaceable> | <option>-add-origin</option> <replaceable>origin_to_add</replaceable>]... [<option>G</option> <replaceable>origin_to_remove</replaceable> | <option>-remove-origin</option> <replaceable>origin_to_remove</replaceable>]... [<option>m</option> <replaceable>mirror_to_add</replaceable> | <option>-add-mirror</option> <replaceable>mirror_to_add</replaceable>]... [<option>M</option> <replaceable>mirror_to_remove</replaceable> | <option>-remove-mirror</option> <replaceable>mirror_to_remove</replaceable>]... [<option>-disable</option>] [<option>-enable</option>] [<option>-no-refresh</option>] [<option>-reset-uuid</option>] [<option>-non-sticky</option>] [<option>-sticky</option>] [<option>-search-after</option> <replaceable>publisher</replaceable>] [<option>-search-before</option> <replaceable>publisher</replaceable>] [<option>-search-first</option>] [<option>-approve-ca-cert</option> <replaceable>path_to_CA</replaceable>] [<option>-revoke-ca-cert</option> <replaceable>hash_of_CA_to_remove</replaceable>] [<option>-unset-ca-cert</option> <replaceable>hash_of_CA_to_remove</replaceable>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-add-property-value</option> <replaceable>name_of_property</replaceable>=<replaceable>value_to_add</replaceable>] [<option>-remove-property-value</option> <replaceable>name_of_property</replaceable>=<replaceable>value_to_remove</replaceable>] [<option>-unset-property</option> <replaceable>name_of_property_to_delete</replaceable>] [<option>-proxy</option> <replaceable>proxy_to_use</replaceable>] <replaceable>publisher</replaceable></term>
+<listitem><para>既存の発行元を更新するか、発行元を追加します。検索順に影響するオプションを指定しない場合、新しいパブリッシャーは検索順の末尾に付加され、最後に検索されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>G</option> <replaceable>origin_to_remove</replaceable></term> <term><option>-remove-origin</option> <replaceable>origin_to_remove</replaceable></term>
+<listitem><para>指定された発行元の起点のリストから URI またはパスを削除します。特殊値 <literal>*</literal> を使用して、すべての起点を削除することができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>M</option> <replaceable>mirror_to_remove</replaceable></term> <term><option>-remove-mirror</option> <replaceable>mirror_to_remove</replaceable></term>
+<listitem><para>指定された発行元のミラーのリストから URI を削除します。特殊値 <literal>*</literal> を使用して、すべてのミラーを削除することができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option></term><term><option>-search-first</option></term>
+<listitem><para>指定された発行元を、検索順の先頭に設定します。新しいパッケージをインストールするとき、このパブリッシャーが最初に検索されます。インストール済みパッケージの更新は、そのパブリッシャーが sticky であるかぎり、そのパッケージを最初に提供した同じパブリッシャーから取得されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>クライアント SSL 証明書を指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term><term><option>-disable</option></term>
+<listitem><para>発行元を無効にします。無効にされたパブリッシャーは、パッケージリストの生成時に、または特定のパッケージ操作 (インストール、アンインストール、および更新) で使用されません。ただし、無効なパブリッシャーのプロパティーを設定または表示することはできます。発行元が 1 つだけの場合は、無効にすることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>e</option></term><term><option>-enable</option></term>
+<listitem><para>発行元を有効にします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>g</option> <replaceable>origin_to_add</replaceable></term> <term><option>-add-origin</option> <replaceable>origin_to_add</replaceable></term>
+<listitem><para>指定された URI またはパスを、特定の発行元の起点として追加します。これはパッケージのリポジトリまたはアーカイブの場所にしてください。<option>-enable</option> または <option>-disable</option> と組み合わせた場合、指定されたされたとおりに起点が有効または無効にされます。この場合、すべての起点を有効または無効にするために <literal>*</literal> を使用できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>ssl_key</replaceable></term>
+<listitem><para>クライアント SSL 鍵を指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option> <replaceable>mirror_to_add</replaceable></term> <term><option>-add-mirror</option> <replaceable>mirror_to_add</replaceable></term>
+<listitem><para>URI を指定された発行元のミラーとして追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-add-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_add</replaceable></term>
+<listitem><para>既存の発行元プロパティーに値を追加するか、または新しい発行元プロパティーを追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-approve-ca-cert</option> <replaceable>path_to_CA</replaceable></term>
+<listitem><para>署名付きパッケージを検証するために、信頼できる CA 証明書として指定された証明書を追加します。ユーザーが承認した CA 証明書の PEM 表現のハッシュは、<command>pkg publisher</command> コマンドの詳細出力に一覧表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-refresh</option></term>
+<listitem><para>入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-non-sticky</option></term>
+<listitem><para>この発行元よりも上位にランクされる発行元が、この発行元から最初にインストールされたパッケージに更新を提供できます。このパブリッシャーまたは兄弟に隣接するすべての非固定パブリッシャーが、ランクに関係なく、更新を提供して、このパブリッシャーによって提供されるパッケージの依存関係を満たすことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
+<listitem><para>指定したプロキシ URI を使用して、指定した起点 (<option>g</option>) またはミラー (<option>m</option>) のコンテンツを取得します。プロキシ値は、パブリッシャーの構成の一部として格納されます。つまり、子イメージが使用するシステムリポジトリは自動的に更新されます。このオプションを使用して認証済みプロキシを設定することはできません。<replaceable>proxy_to_use</replaceable> の値を <literal>protocol://user:password@host</literal> の形式にすることはできません。</para>
+<para>実行時には、<literal>$http_proxy</literal> または関連する環境変数がこのプロキシ設定をオーバーライドします。受け入れられる環境変数名のリストについては、<literal>curl</literal>(1) のマニュアルページの「環境」セクションを参照してください。環境変数を使用してプロキシ URI を設定する場合は、<literal>svc:/application/pkg/system-repository</literal> SMF サービスの該当するプロキシプロパティーも同じ値に設定する必要があります。<citetitle>Oracle Solaris 11.2 でのソフトウェアの追加と更新に関するドキュメント</citetitle>の、プロキシの指定に関する説明を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
+<listitem><para>既存の発行元プロパティーから値を削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-reset-uuid</option></term>
+<listitem><para>このイメージをその発行元に対して識別する新しい一意識別子を選択します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-revoke-ca-cert</option> <replaceable>hash_of_CA_to_remove </replaceable></term>
+<listitem><para>署名付きパッケージを検証するために、指定された PEM 表現のハッシュを持つ証明書を失効済みとして扱います。ユーザーが失効させた CA 証明書のハッシュは、<command>pkg publisher</command> コマンドの詳細出力に一覧表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-search-after</option> <replaceable>publisher</replaceable></term>
+<listitem><para>追加または変更される発行元が、このオプションで指定された発行元のあとに検索されるように、発行元検索順序を変えます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-search-before</option> <replaceable>publisher</replaceable></term>
+<listitem><para>追加または変更される発行元が、このオプションで指定された発行元の前に検索されるように、発行元検索順序を変えます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>既存の発行元プロパティーを更新するか、または新しい発行元プロパティーを追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sticky</option></term>
+<listitem><para>この発行元からインストールされたパッケージへの更新も、この発行元から取得する必要があります。これはデフォルトの動作です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unset-ca-cert</option> <replaceable>hash_of_CA_to_remove </replaceable></term>
+<listitem><para>署名付きパッケージを検証するために、指定されたハッシュを持つ証明書を、承認済み証明書のリストおよび失効済み証明書のリストから削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-unset-property</option> <replaceable>name_of_property_to_delete </replaceable></term>
+<listitem><para>既存の発行元プロパティーを削除します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg set-publisher</command> <option>p</option> <replaceable>repo_uri</replaceable> [-Ped] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable>ssl_key</replaceable>] [<option>-non-sticky</option>] [<option>-sticky</option>] [<option>-search-after</option> <replaceable>publisher</replaceable>] [<option>-search-before</option> <replaceable>publisher</replaceable>] [<option>-search-first</option>] [<option>-approve-ca-cert</option> <replaceable>path_to_CA</replaceable>] [<option>-revoke-ca-cert</option> <replaceable>hash_of_CA_to_remove</replaceable>] [<option>-unset-ca-cert</option> <replaceable>hash_of_CA_to_remove</replaceable>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-add-property-value</option> <replaceable>name_of_property</replaceable>=<replaceable>value_to_add</replaceable>] [<option>-remove-property-value</option> <replaceable>name_of_property</replaceable>=<replaceable>value_to_remove</replaceable>] [<option>-unset-property</option> <replaceable>name_of_property_to_delete</replaceable>] [<option>-proxy</option> <replaceable>proxy_to_use</replaceable>] [<replaceable>publisher</replaceable>]</term>
+<listitem><para><replaceable>repo_uri</replaceable> リポジトリ URI からパブリッシャー構成情報を取得します。</para>
+<para>発行元オペランドがこの <command>set-publisher</command> サブコマンドに指定されている場合、その発行元のみが追加または更新されます。発行元を指定しない場合、<replaceable>repo_uri</replaceable> 内のすべての発行元が必要に応じて追加または更新されます。</para>
+<para>オプションの説明については、前述の <command>set-publisher</command> コマンドを参照してください。<option>p</option> と同時に使用する場合、<option>P</option>、<option>-search-first </option>、<option>-search-before</option>、および <option>-search-after</option> オプションは追加された発行元のみに適用され、更新された発行元には適用されません。</para>
+<para><option>p</option> オプションは、<option>g</option>、<option>-add-origin</option>、<option>G</option>、<option>-remove-origin</option>、<option>m</option>、<option>-add-mirror</option>、<option>M</option>、<option>-remove-mirror</option>、<option>-disable</option>、<option>-enable</option>、<option>-no-refresh</option>、または <option>-reset-uuid</option> オプションと組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg unset-publisher</command> <replaceable>publisher </replaceable> ...</term>
+<listitem><para>指定された発行元に関連付けられた構成を削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg history</command> [<option>HNl</option>] [<option>n</option> <replaceable>number</replaceable>] [<option>o</option> <replaceable>column</replaceable>[,<replaceable>column</replaceable>]...]... [<option>t</option> <replaceable>time</replaceable> | <replaceable>time</replaceable>-<replaceable>time</replaceable>[,<replaceable>time</replaceable> | <replaceable>time</replaceable>-<replaceable>time</replaceable>]...]...</term>
+<listitem><para>該当するイメージのコマンド履歴を表示します。操作の開始時間、操作の名前 (<literal>install</literal> など)、クライアント (<literal>pkg</literal> など)、および操作の結果 (成功または失敗) が表示されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option></term>
+<listitem><para>イメージの長形式のコマンド履歴を表示します。表示される追加情報は、クライアントのバージョン、操作を実行したユーザーの名前、新しいブート環境が作成されたかどうか、操作が完了した時間および費やした合計時間、発行された完全なコマンド、およびコマンドの実行中に発生したすべてのエラーなどがあります。<command>update</command> などの操作では、変更されたパッケージの完全な FMRI が表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>N</option></term>
+<listitem><para>リリースノートのテキストを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option> <replaceable>number</replaceable></term>
+<listitem><para>最新のものから順に指定された数のエントリのみを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option> <replaceable>column</replaceable></term>
+<listitem><para>指定された列名を使用して出力を表示します。<option>o</option> オプションは複数回指定できます。または、列名をコンマで区切ることにより、1 つの <option>o</option> オプションの引数として複数の列名を指定できます。有効な列名は次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>be</literal></term>
+<listitem><para>この操作が開始されたブート環境の名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>be_uuid</literal></term>
+<listitem><para>この操作が開始されたブート環境の <literal>UUID</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>client</literal></term>
+<listitem><para>クライアントの名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>client_ver</literal></term>
+<listitem><para>クライアントのバージョン。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>command</literal></term>
+<listitem><para>この操作のために使用されたコマンド行。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>finish</literal></term>
+<listitem><para>この操作が完了した日時。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>id</literal></term>
+<listitem><para>この操作を開始したユーザー ID。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>new_be</literal></term>
+<listitem><para>この操作によって作成された新しいブート環境。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>new_be_uuid</literal></term>
+<listitem><para>この操作によって作成された新しいブート環境の <literal>UUID</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>operation</literal></term>
+<listitem><para>操作の名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>outcome</literal></term>
+<listitem><para>この操作の結果のサマリー。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>reason</literal></term>
+<listitem><para>この操作の結果に関する追加情報。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>release_note</literal></term>
+<listitem><para>この操作によってリリースノートが生成されたかどうかを示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>snapshot</literal></term>
+<listitem><para>この操作中に作成されたスナップショット。これは、操作が正常に完了したあとにスナップショットが自動削除されなかった場合にのみ記録されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>start</literal></term>
+<listitem><para>この操作が開始した日時。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>time</literal></term>
+<listitem><para>この操作の実行にかかった合計時間。1 秒未満の操作については 0:00:00 と表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>user</literal> </term>
+<listitem><para>この操作を開始したユーザー名。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>command</literal> または <literal>reason</literal> 列を指定する場合、出力フィールドの区切りを維持するためには、それらの列が <option>o</option> リストの最終項目である必要があります。同じ <command>history</command> コマンドでこれら 2 つの列を表示することはできません。</para>
+<para>ブート環境がシステムに存在しなくなった場合、<literal>be</literal> または <literal>new_be</literal> の値のあとにアスタリスク (*) が表示されます。</para>
+<para><literal>be</literal> および <literal>new_be</literal> の値は、<literal>be_uuid</literal> または <literal>new_be_uuid</literal> フィールドを使用して現在のブート環境名を検索することによって取得されます。その後、ブート環境の名前が変更されたあとにその環境が削除された場合、<literal>be</literal> および <literal>new_be</literal> に表示される値は、<command>pkg</command> 操作の時点で記録された値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>time</replaceable></term> <term><option>t</option> <replaceable>time</replaceable>-<replaceable>time</replaceable></term>
+<listitem><para><literal>%Y-%m-%dT%H:%M:%S</literal> 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (<literal>strftime</literal>(3C) マニュアルページを参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (<literal>-</literal>) を使用します。キーワード <literal>now</literal> は、現在の日時の別名として使用できます。このオプションは複数回指定できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントは表示されません。各履歴イベントの 1 つのインスタンスのみが表示されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg purge-history</command></term>
+<listitem><para>既存の履歴情報をすべて削除します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg rebuild-index</command></term>
+<listitem><para><command>pkg search</command> によって使用されるインデックスを再構築します。これは復旧操作であり、一般的に使用することは想定されていません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg update-format</command></term>
+<listitem><para>イメージの形式を現在のバージョンに更新します。この操作が完了したあとは、古いバージョンの <literal>pkg</literal>(7) システムと組み合わせてイメージを使用することはできなくなります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg version</command></term>
+<listitem><para><command>pkg</command> のバージョンを識別する一意な文字列を表示します。この文字列は、バージョン間で何らかの方法で比較可能であることは保証されていません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkg help</command> [<option>v</option>]</term>
+<listitem><para>サブコマンドの完全なリストを表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>サブコマンドの詳細な使用法のメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><command>pkg image-create</command> [<option>FPUfz</option>] [<option>-force</option>] [<option>-full</option> | <option>-partial</option> | <option>-user</option>] [<option>-zone</option>] [<option>c</option> <replaceable>ssl_cert</replaceable>] [<option>k</option> <replaceable> ssl_key</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable> | <option>-origin</option> <replaceable>path_or_uri</replaceable>]... [<option>m</option> <replaceable>uri</replaceable> | <option>-mirror</option> <replaceable>uri</replaceable>]... [<option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>)]... [<option>-no-refresh</option>] [<option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable>value</replaceable>] [<option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>value</replaceable>]... [(<option>p</option> | <option>-publisher</option>) [<replaceable>name</replaceable>=]<replaceable>repo_uri</replaceable>] <replaceable>dir</replaceable></term>
+<listitem><para><replaceable>dir</replaceable> によって指定された場所に、パッケージ操作に適したイメージを作成します。<command>image-create</command> サブコマンドを使用して作成されたイメージは、ブート可能ではありません。ほとんどのユーザーは、<option>-be-name</option> または <option>-require-new-be</option> オプションを <command>pkg</command> コマンドで使用したり、<command>beadm</command> コマンドまたは <command>zoneadm</command> コマンドを使用してイメージを作成したりする必要があります。<command>pkg image-create</command> コマンドは、パッケージおよびオペレーティングシステムのディストリビューションを維持するといったタスク向けに使用されています。</para>
+<para>デフォルトのイメージタイプは user で、<option>U</option> オプションまたは <option>-user</option> オプションを使用して指定できます。あるいは、イメージタイプはフルイメージ (<option>-F</option> または <option>-full</option>)、または指定された <replaceable>dir</replaceable> パスを包含するフルイメージにリンクされた部分イメージ (<option>P</option> または <option>-partial</option>) に設定できます。</para>
+<para><option>g</option> または <option>-origin</option> を使用して追加の起点を指定できます。<option>m</option> または <option>-mirror</option> を使用して追加のミラーを指定できます。</para>
+<para>パッケージリポジトリの URI は、<option>p</option> または <option>-publisher</option> オプションを使用して提供する必要があります。パブリッシャーの名前も提供した場合、イメージの作成時にそのパブリッシャーのみが追加されます。パブリッシャーの名前を提供しない場合、指定されたリポジトリによって認識されているすべてのパブリッシャーがイメージに追加されます。このパブリッシャーに関連付けられたカタログは、初期作成操作に続いて取得が試みられます。</para>
+<para>クライアント SSL 認証を使用するパブリッシャーの場合、クライアント鍵およびクライアント証明書は <option>c</option> および <option>k</option> オプションを通して登録できます。この鍵と証明書は、イメージ作成中に追加されるすべてのパブリッシャーのために使用されます。</para>
+<para>イメージが非大域ゾーンコンテキストの内部で実行される予定の場合、<option>z</option> (<option>-zone</option>) オプションを使用して適切なバリアントを設定できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>f</option></term><term><option>-force</option></term>
+<listitem><para>既存のイメージ上にイメージを強制的に作成します。このオプションは慎重に使用してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-facet</option> <replaceable>facet_name</replaceable>=(<literal> True</literal>|<literal>False</literal>)</term>
+<listitem><para>指定されたファセットを指定された値に設定します。ファセットの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-refresh</option></term>
+<listitem><para>入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-set-property</option> <replaceable>name_of_property</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>指定されたイメージプロパティーを指定された値に設定します。イメージプロパティーの説明については、下の「イメージプロパティー」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>指定されたバリアントを指定された値に設定します。バリアントの詳細については、<literal>pkg</literal>(7) のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> dehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para><option>R</option> オプションで指定されたイメージから、編集できないパッケージされたファイルおよびパッケージされたハードリンクをすべて削除して、完全にデハイドレートされたイメージを作成します。パッケージされたファイルおよびパッケージされたハードリンクは、現在インストールされているパッケージのバージョンによって提供されたファイルおよびハードリンクです。編集できないファイルは、<literal>preserve</literal> または <literal>overlay</literal> 属性を持つことはできず、値が <literal>false</literal> に設定された <literal>dehydrate</literal> 属性を持つこともできません。</para>
+<para><command>pkg dehydrate</command> コマンドは、代替ルートに対してのみ処理を実行します。代替ルートを指定するには、<option>R</option> オプションを使用します。代替ルートがブート環境に属している場合、デハイドレーションによってブート不可になります。</para>
+<para><command>pkg dehydrate</command> コマンドが成功すると、<option>R</option> オプションで指定された <replaceable>dir</replaceable> イメージに <command>dehydrated</command> というプロパティーが設定されます。<command>dehydrated</command> プロパティーの値は、構成済みのパッケージリポジトリを持っている、<replaceable>dir</replaceable> イメージ内に設定されたパブリッシャーのリストです。</para>
+<para>デハイドレートされたパブリッシャーからのパッケージに対するパッケージインストール操作は、自動的にデハイドレートされます。デハイドレートされたイメージにパッケージをインストールする場合、パッケージの内容はインストールされたあとでデハイドレートされます。パッケージインストール操作には、<command>install</command> だけでなく、<command>update</command> や <command>change-facet</command> などの操作も含まれます。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーから提供された、編集できないファイルおよびハードリンクだけを削除して、部分的にデハイドレートされたイメージを作成します。イメージ内の構成済みパブリッシャーがすべて指定された場合は、前述の完全にデハイドレートされたイメージが作成されます。</para>
+<para>1 つ以上のパブリッシャーが指定された場合で、そのいずれかがイメージ内に構成されていないときは、イメージからは何も削除されません。</para>
+<para><command>pkg dehydrate</command> コマンドが成功すると、<option>R</option> オプションで指定された <replaceable>dir</replaceable> イメージに <command>dehydrated</command> というプロパティーが設定されます。<command>dehydrated</command> プロパティーの値は、<option>p</option> オプションで指定されたすべてのパブリッシャーのリストです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> rehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
+<listitem><para><command>pkg dehydrate</command> コマンドで削除されたすべてのファイルおよびハードリンクを再インストールします。</para>
+<para><command>pkg rehydrate</command> コマンドは、代替ルートに対してのみ処理を実行します。代替ルートを指定するには、<option>R</option> オプションを使用します。</para>
+<para><command>pkg rehydrate</command> コマンドが成功すると、イメージの <command>dehydrated</command> プロパティーの値は空になります。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーに関して <command>pkg dehydrate</command> コマンドで削除されたすべてのファイルおよびハードリンクを再インストールします。</para>
+<para>1 つ以上のパブリッシャーが指定された場合で、そのいずれかがイメージ内に構成されていないときは、何もインストールされません。</para>
+<para><command>pkg rehydrate</command> コマンドが成功すると、イメージに設定されている <command>dehydrated</command> プロパティーの値から、指定されたパブリッシャーの名前が削除されます。<command>rehydrate</command> コマンドで指定されていないパブリッシャーは <command>dehydrated</command> プロパティーのリストに残り、それらのパブリッシャーからインストールされた内容はデハイドレートされたままになります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>イメージプロパティー</title>
+<para>次のプロパティーはイメージの特性を定義します。これらのプロパティーは、イメージの目的、内容、および動作に関する情報を格納します。イメージ内のこれらのプロパティーの現在の値を表示するには、<command>pkg property</command> コマンドを使用します。これらのプロパティーの値を変更するには、<command>pkg set-property</command> コマンドおよび <command>pkg unset-property</command> コマンドを使用します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>be-policy</literal></term>
+<listitem><para>(文字列) パッケージ操作中にいつブート環境が作成されるかを指定します。次の値が許可されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>default</literal></term>
+<listitem><para>デフォルトブート環境作成ポリシー <literal>create-backup</literal> を適用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>always-new</literal></term>
+<listitem><para>次のブート時にアクティブに設定されている新しいブート環境でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
+<para>このポリシーはもっとも安全ですが、リブートしないとパッケージを追加できないため、ほとんどのサイトの要求よりも厳格です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>create-backup</literal></term>
+<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響を及ぼす可能性のある内容がインストールされて、ライブブート環境がこの操作の影響を受ける場合、バックアップブート環境は作成されますが、アクティブには設定されません。バックアップブート環境を明示的にリクエストすることもできます。</para>
+<para>このポリシーは、新しくインストールされたソフトウェアによりシステムが不安定になっている場合にのみ潜在的に危険です。この可能性はありますが、比較的まれです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>when-required</literal></term>
+<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
+<para>ライブブート環境へのパッケージ変更によりそれ以上の変更が不可能になる場合、フォールバック可能な最近のブート環境が存在しない可能性があるため、このポリシーには最大の危険が伴います。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>ca-path</literal></term>
+<listitem><para>(文字列) SSL 操作用の CA 証明書が格納されたディレクトリを指すパス名。このディレクトリの形式は、ベースとなる SSL 実装に固有です。信頼できる CA 証明書のために別の場所を使用するには、別のディレクトリを指すようにこの値を変更します。CA ディレクトリの要件については、<literal>SSL_CTX_load_verify_locations</literal>(3openssl) の <literal>CApath</literal> に関する項目を参照してください。</para>
+<para>デフォルト値: <literal>/etc/openssl/certs</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>check-certificate-revocation</literal></term>
+<listitem><para>(ブール型) <literal>True</literal> に設定されている場合、パッケージクライアントは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。</para>
+<para>デフォルト値: <literal>False</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>content-update-policy</literal></term>
+<listitem><para>(文字列) パッケージング操作中に、パッケージシステムが、編集できないファイルを更新するときに指定します。次の値が許可されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>default</literal></term>
+<listitem><para>デフォルトの内容更新ポリシーを常に適用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>always</literal></term>
+<listitem><para>変更された編集できないファイルを常にダウンロードおよび更新します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>when-required</literal></term>
+<listitem><para>パッケージシステムで更新が必要であると判断された場合にのみ、変更された編集できないファイルをダウンロードおよび更新します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>デフォルト値: <literal>always</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>flush-content-cache-on-success</literal></term>
+<listitem><para>(ブール型) これが <literal>True</literal> に設定されている場合、パッケージクライアントはイメージ変更操作が正常に完了したときに内容キャッシュ内のファイルを削除します。ブート環境を作成する操作の場合は、ソースと出力先の両方のブート環境から内容が削除されます。</para>
+<para>このプロパティーを使用して、ディスク容量の限られたシステムで内容キャッシュを小さく保つことができます。このプロパティーを使用すると、操作が完了するまでの時間が長くなる可能性があります。</para>
+<para>デフォルト値: <literal>True</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mirror-discovery</literal></term>
+<listitem><para>(ブール型) このプロパティーは、mDNS および DNS-SD を使用してリンクローカル内容ミラーを検出するようにクライアントに命令します。このプロパティーを <literal>True</literal> に設定すると、クライアントはミラーを動的に検出し、そのミラーからパッケージ内容のダウンロードを試みます。mDNS を介してその内容を通知するミラーの実行方法については、<command>pkg.depotd</command>(8) のマニュアルページを参照してください。</para>
+<para>デフォルト値: <literal>False</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>send-uuid</literal></term>
+<listitem><para>(ブール型) ネットワーク操作の実行時にイメージの汎用一意識別子 (UUID) を送信します。ユーザーはこのオプションを無効にできますが、一部のネットワークリポジトリは UUID を供給しないクライアントとのやり取りを拒否する場合があります。</para>
+<para>デフォルト値: <literal>True</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>signature-policy</literal></term>
+<listitem><para>(文字列) イメージ内のパッケージのインストール、更新、修正、または検証時にマニフェストに対してどのチェックが実行されるかを決定します。パッケージに適用される最終的なポリシーは、イメージポリシーと発行元ポリシーの組み合わせに依存します。この組み合わせの厳格さは、少なくとも、この 2 つのポリシーが個別に適用された場合の厳格な方と同じです。デフォルトでは、パッケージクライアントは証明書が失効済みかどうかをチェックしません。そのようなチェック (クライアントから外部インターネットサイトへのアクセスが必要な場合がある) を有効にするには、<literal>check-certificate-revocation</literal> イメージプロパティーを <literal>True</literal> に設定します。次の値が許可されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>ignore</literal></term>
+<listitem><para>すべてのマニフェストの署名を無視します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>verify</literal></term>
+<listitem><para>署名が含まれているすべてのマニフェストが有効に署名されていることを確認しますが、インストール済みパッケージがすべて署名されている必要はありません。これがデフォルト値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>require-signatures</literal></term>
+<listitem><para>新しくインストールされたすべてのパッケージに、有効な署名が少なくとも 1 つ含まれている必要があります。インストール済みパッケージに有効な署名が含まれていない場合は、<command>pkg fix</command> および <command>pkg verify</command> コマンドでも警告が表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>require-names</literal></term>
+<listitem><para><literal>require-signatures</literal> と同じ要件に従いますが、<literal>signature-required-names</literal> プロパティーで一覧表示される文字列が、署名の信頼のチェーンを検証するために使用される証明書の共通名としても表示される必要があります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>signature-required-names</literal></term>
+<listitem><para>(文字列のリスト) パッケージの署名の検証中に、証明書の共通名として表示される必要のある名前の一覧です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>trust-anchor-directory</literal></term>
+<listitem><para>(文字列) イメージの信頼アンカーを格納するディレクトリのパス名です。このパスはイメージに対して相対的です。デフォルト値は <literal>ignore</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>use-system-repo</literal></term>
+<listitem><para>(ブール型) このプロパティーではシステムリポジトリを、イメージおよびパブリッシャー構成のソースとして、および提供されたパブリッシャーと通信するためのプロキシとしてイメージで使用するべきかどうかを指定します。デフォルト値は <literal>False</literal> です。システムリポジトリについては、<command>pkg.sysrepo</command>(8) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>パブリッシャープロパティー</title>
+<para>次のプロパティーは、特定の発行元の署名ポリシーを定義します。同じ名前のイメージプロパティーはイメージの署名ポリシーを定義します。特定の発行元のこれらのプロパティーの現在の値を表示するには、<command>pkg publisher</command> <replaceable>publisher_name</replaceable> コマンドを使用します。これらの発行元の署名ポリシープロパティーの値を変更するには、<command>pkg set-publisher</command> コマンドの <option>-set-property</option> オプションと <option>-unset-property</option> オプションを使用します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>signature-policy</literal></term>
+<listitem><para>(文字列) このプロパティーの機能は、特定のパブリッシャーからのパッケージのみに適用されることを除いて、同じ名前のイメージプロパティーと同じです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>signature-required-names</literal></term>
+<listitem><para>(文字列のリスト) このプロパティーの機能は、特定のパブリッシャーからのパッケージのみに適用されることを除いて、同じ名前のイメージプロパティーと同じです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>パブリッシャーを構成してイメージを作成する</title>
+<para>パブリッシャーを <literal>example.com</literal> として新しいフルイメージを作成し、<literal>/aux0/example_root</literal> に格納します。</para>
+<screen>$ <userinput>pkg image-create -F -p example.com=http://pkg.example.com:10000 &bsol;</userinput>
+<userinput>/aux0/example_root</userinput></screen>
+</example>
+<example id="GLGIN"><title>追加の起点とミラーを指定してイメージを作成する</title>
+<para>パブリッシャーを <literal>example.com</literal> として新しいフルイメージを作成し、1 つのミラーと 2 つの起点を追加し、<literal>/aux0/example_root</literal> に格納します。</para>
+<screen>$ <userinput>pkg image-create -F -p example.com=http://pkg.example.com:10000 &bsol;</userinput>
+<userinput>-g http://alternate1.example.com:10000/ &bsol;</userinput>
+<userinput>-g http://alternate2.example.com:10000/ &bsol;</userinput>
+<userinput>-m http://mirror.example.com:10000/ &bsol;</userinput>
+<userinput>/aux0/example_root</userinput></screen>
+</example>
+<example><title>パブリッシャーを構成せずにイメージを作成する</title>
+<para>パブリッシャーを構成せずに、新しいフルイメージを <literal>/aux0/example_root</literal> に作成します。</para>
+<screen>$ <userinput>pkg image-create -F /aux0/example_root</userinput></screen>
+</example>
+<example><title>パッケージのインストール</title>
+<para><literal>widget</literal> パッケージの最新バージョンを現在のイメージにインストールします。</para>
+<screen>$ <userinput>pkg install application/widget</userinput></screen>
+</example>
+<example><title>パッケージの指定された内容を一覧表示する</title>
+<para><literal>system/file-system/zfs</literal> パッケージの内容を一覧表示します。アクション名、ファイルのモード (定義されている場合)、サイズ (定義されている場合)、パス、およびターゲット (リンクの場合) を表示します。すべてのアクションで利用可能な <literal>action.name</literal> 属性を指定するとすべてのアクションの行が表示されますが、ここでは望ましくないため、<literal>dir</literal>、<literal>file</literal>、<literal>link</literal>、および <literal>hardlink</literal> の各タイプにアクションを限定します。</para>
+<screen>$ <userinput>pkg contents -t dir,file,link,hardlink &bsol;</userinput>
+<userinput>-o action.name,mode,pkg.size,path,target system/file-system/zfs</userinput>
+ACTION.NAME MODE PKG.SIZE PATH                 TARGET
+dir         0755          etc
+dir         0755          etc/fs
+dir         0755          etc/fs/zfs
+link                      etc/fs/zfs/mount     ../../../usr/sbin/zfs
+link                      etc/fs/zfs/umount    ../../../usr/sbin/zfs
+dir         0755          etc/zfs
+dir         0755          kernel
+dir         0755          kernel/drv
+dir         0755          kernel/drv/amd64
+file        0755  1706744 kernel/drv/amd64/zfs
+file        0644      980 kernel/drv/zfs.conf
+dir         0755          kernel/fs
+dir         0755          kernel/fs/amd64
+hardlink                  kernel/fs/amd64/zfs  ../../../kernel/drv/amd64/zfs
+...</screen>
+</example>
+<example><title>2 つのパッケージの指定された内容を一覧表示する</title>
+<para><literal>web/browser/firefox</literal> および <literal>mail/thunderbird</literal> の内容を一覧表示します。<literal>path</literal> 属性の末尾が <filename>.desktop</filename> または <filename>.png</filename> であるアクションのパッケージ名属性およびパス属性のみに表示を限定します。</para>
+<screen>$ <userinput>pkg contents -o pkg.name,path -a path=&bsol;*.desktop &bsol;</userinput>
+<userinput>-a path=&bsol;*.png web/browser/firefox mail/thunderbird</userinput>
+PKG.NAME            PATH
+web/browser/firefox usr/share/applications/firefox.desktop
+mail/thunderbird    usr/share/applications/thunderbird.desktop
+web/browser/firefox usr/share/pixmaps/firefox-icon.png
+mail/thunderbird    usr/share/pixmaps/thunderbird-icon.png
+...</screen>
+</example>
+<example><title>パッケージを検索する</title>
+<para>パッケージデータベースからトークン <literal>bge</literal> を検索します。</para>
+<screen>$ <userinput>pkg search bge</userinput>
+INDEX       ACTION VALUE                                 PACKAGE
+driver_name driver bge                                   pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   kernel/drv/sparcv9/bge                pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   kernel/drv/amd64/bge                  pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   platform/sun4v/kernel/drv/sparcv9/bge pkg:/system/kernel/platform@0.5.11-0.175.0.0.0.2.1
+pkg.fmri    set    solaris/driver/network/bge            pkg:/driver/network/bge@0.5.11-0.173.0.0.0.1.0
+pkg.fmri    set    solaris/driver/network/ethernet/bge   pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+</screen>
+<para>このトークンはパッケージ <literal>driver/network/bge</literal> 内に、<filename>/kernel/drv/<replaceable> arch</replaceable>/bge</filename> を表すファイルアクションのベース名として、およびドライバ名として存在します。</para>
+</example>
+<example id="GMEDQ"><title>ファイルの検索</title>
+<para>先頭のスラッシュ文字を含むファイルのフルパス名を指定して、ファイルを提供するパッケージを検索します。</para>
+<screen>$ <userinput>pkg search -o path,pkg.name -l /usr/bin/vim</userinput>
+PATH         PKG.NAME
+usr/bin/vim  editor/vim/vim-core</screen>
+<para><replaceable>action_name</replaceable> に <literal> file</literal> を指定し、<replaceable>index</replaceable> に <literal>path</literal> または <literal>basename</literal> を指定し、<replaceable>token</replaceable> に完全または部分的なファイル名を指定することにより、ファイルおよびそのファイルを提供するパッケージを検索します。</para>
+<screen>$ <userinput>pkg search -o path,pkg.name -l file:basename:vim</userinput>
+PATH         PKG.NAME
+usr/bin/vim  editor/vim/vim-core</screen>
+</example>
+<example id="GMECW"><title>ファイルとディレクトリの検索</title>
+<para><replaceable> index</replaceable> に <literal>path</literal> または <literal>basename</literal> を、<replaceable>token</replaceable> に完全または部分的なファイル名を指定することにより、ファイルとディレクトリ、およびそれらを提供するパッケージを検索します。使用するシェルによっては、ワイルドカードをエスケープする必要があります。</para>
+<screen>$ <userinput>pkg search -o path,pkg.name -l path:*/vim</userinput>
+PATH           PKG.NAME
+usr/bin/vim    editor/vim/vim-core
+usr/share/vim  editor/vim
+usr/share/vim  editor/vim/vim-core
+$ <userinput>pkg search -o path,pkg.name -l basename:vim</userinput>
+PATH           PKG.NAME
+usr/share/vim  editor/vim
+usr/share/vim  editor/vim/vim-core
+usr/bin/vim    editor/vim/vim-core</screen>
+</example>
+<example id="GMEGA"><title>どのパッケージがどの SMF サービスを提供するかを表示する</title>
+<para>構造化された検索内で <replaceable>index</replaceable> に値 <literal>org.opensolaris.smf.fmri</literal> を指定し、<replaceable> token</replaceable> に検索対象のサービスの名前を指定することにより、特定の SMF サービスを提供するのはどのパッケージかを表示します。値 <literal>org.opensolaris.smf.fmri</literal> は、<literal>set</literal> アクションの属性の名前です。サービスの名前では、「:」を確実にエスケープしてください。</para>
+<para>たとえば、使用可能な HTTP サーバーを表示するには、<replaceable>token</replaceable> に値 <literal>svc:/network/http</literal> を指定します。</para>
+<screen>$ <userinput>pkg search 'org.opensolaris.smf.fmri:svc&bsol;:/network/http*'</userinput>
+INDEX                    ACTION VALUE                        PACKAGE
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/squid@3.1.18-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/java-servlet/tomcat@6.0.35-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/apache-22@2.2.22-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:apache22   pkg:/web/server/apache-22@2.2.22-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:lighttpd14 pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:privoxy    pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:squid      pkg:/web/proxy/squid@3.1.18-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:tomcat6    pkg:/web/java-servlet/tomcat@6.0.35-0.175.0.0.0.2.1
+</screen>
+</example>
+<example><title>指定されたパッケージに依存するパッケージを検索する</title>
+<para><literal>package/pkg</literal> に依存するインストール済みパッケージを検索します。</para>
+<screen>$ <userinput>pkg search -l depend::package/pkg</userinput>
+INDEX       ACTION VALUE                                    PACKAGE
+incorporate depend package/pkg@0.5.11-0.175.0.0.0.2.1      pkg:/consolidation/ips/ips-incorporation@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/install@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/boot-management@0.5.11-0.175.0.0.0.2.1
+require     depend package/pkg                             pkg:/system/zones/brand/brand-solaris@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/install/distribution-constructor@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/boot-environment-utilities@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/system-repository@0.5.11-0.175.0.0.0.2.1
+</screen>
+</example>
+<example><title>依存関係を検索する</title>
+<para>インストール済みパッケージ内のすべての <literal>incorporate</literal> 依存関係を検索します。</para>
+<screen>$ <userinput>pkg search -l depend:incorporate:</userinput>
+INDEX       ACTION VALUE                                PACKAGE
+incorporate depend pkg:/BRCMbnx@0.5.11-0.175.0.0.0.2.1  pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.175.0.0.0.2.1
+incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.175.0.0.0.2.1
+...</screen>
+</example>
+<example><title>発行元を追加</title>
+<para>新しいパブリッシャー <literal>example.com</literal> を追加し、リポジトリの場所を <literal>http://www.example.com/repo</literal> に設定します。</para>
+<screen>$ <userinput>pkg set-publisher -g http://www.example.com/repo example.com</userinput></screen>
+</example>
+<example><title>鍵と証明書を指定してパブリッシャーを追加する</title>
+<para>新しいパブリッシャー <literal>example.com</literal> を追加し、セキュリティー保護されたリポジトリの場所を <literal>https://secure.example.com/repo</literal> に設定し、鍵および証明書をディレクトリ <literal>/root/creds</literal> に格納します。</para>
+<screen>$ <userinput>pkg set-publisher -k /root/creds/example.key &bsol;</userinput>
+<userinput>-c /root/creds/example.cert -g https://secure.example.com/repo &bsol;</userinput>
+<userinput>example.com</userinput></screen>
+</example>
+<example><title>パブリッシャーを追加して自動構成する</title>
+<para>自動構成を使用して新しいパブリッシャーを追加し、リポジトリの場所を <literal>/export/repo</literal> に構成します。</para>
+<screen>$ <userinput>pkg set-publisher -p /export/repo</userinput></screen>
+</example>
+<example><title>パブリッシャーを追加して手動構成する</title>
+<para>手動構成を使用して新しいパブリッシャー <literal>example.com</literal> を追加し、リポジトリの場所を <literal>/export/repo/example.com</literal> に構成します。</para>
+<screen>$ <userinput>pkg set-publisher -g /export/repo example.com</userinput></screen>
+</example>
+<example id="GMFJM"><title>発行元を追加してプロキシを構成する</title>
+<para>起点 <literal>http://server/repo </literal> とプロキシ <literal>http://webcache:8080</literal> を使用して新しい発行元 <literal>mypub</literal> を追加します。</para>
+<screen>$ <userinput>pkg set-publisher -g http://server/repo &bsol;</userinput>
+<userinput>--proxy http://webcache:8080 mypub</userinput></screen>
+</example>
+<example><title>すべての署名付きパッケージを検証する</title>
+<para>すべての署名付きパッケージを検証するようにイメージを構成します。</para>
+<screen>$ <userinput>pkg set-property signature-policy verify</userinput></screen>
+</example>
+<example><title>すべてのパッケージで署名を必須にする</title>
+<para>すべてのパッケージで署名を必須とするように、また、いずれかの証明書で文字列 <literal>example.com</literal> が共通名として信頼チェーンに出現することを必須とするようにイメージを構成します。</para>
+<screen>$ <userinput>pkg set-property signature-policy require-names example.com</userinput></screen>
+</example>
+<example><title>指定したパブリッシャーからのすべてのパッケージで署名を必須にする</title>
+<para>パブリッシャー <literal>example.com</literal> からインストールされるすべてのパッケージで署名を必須とするようにイメージを構成します。</para>
+<screen>$ <userinput>pkg set-publisher --set-property signature-policy=require-signatures &bsol;</userinput>
+<userinput>example.com</userinput></screen>
+</example>
+<example><title>信頼チェーンで指定された文字列を必須にする</title>
+<para>有効とみなされるために署名の信頼チェーンに存在する必要がある文字列 <literal>foo</literal> をイメージの共通名の一覧に追加します。</para>
+<screen>$ <userinput>pkg add-property-value signature-require-names foo</userinput></screen>
+</example>
+<example><title>指定されたパブリッシャーの信頼チェーンから文字列を削除する
+</title>
+<para>パブリッシャー <literal>example.com</literal> の署名を検証するために存在する必要がある文字列 <literal>foo</literal> を共通名の一覧から削除します。</para>
+<screen>$ <userinput>pkg set-publisher --remove-property-value signature-require-names=foo &bsol;</userinput>
+<userinput>example.com</userinput></screen>
+</example>
+<example><title>信頼できる CA 証明書を追加する</title>
+<para><literal>/tmp/example_file.pem</literal> に格納された証明書を、パブリッシャー <literal>example.com</literal> の信頼できる CA 証明書として追加します。</para>
+<screen>$ <userinput>pkg set-publisher --approve-ca-cert /tmp/example_file.pem &bsol;</userinput>
+<userinput>example.com</userinput></screen>
+</example>
+<example><title>証明書を失効させる</title>
+<para><literal>a12345</literal> というハッシュを持つ、パブリッシャー <literal>example.com</literal> 用の証明書を失効させ、<literal>example.com</literal> からのパッケージの署名をその証明書で検証しないようにします。</para>
+<screen>$ <userinput>pkg set-publisher --revoke-ca-cert a12345 example.com</userinput></screen>
+</example>
+<example><title>証明書を抹消する</title>
+<para>証明書 <literal>a12345</literal> がユーザーによって追加または失効させられたことを <command>pkg</command> から抹消します。</para>
+<screen>$ <userinput>pkg set-publisher --unset-ca-cert a12345 example.com</userinput></screen>
+</example>
+<example><title>パッケージをダウングレードする</title>
+<para>インストール済みパッケージ <literal>foo@1.1</literal> を古いバージョンにダウングレードします。</para>
+<screen>$ <userinput>pkg update foo@1.0</userinput></screen>
+</example>
+<example><title>競合するパッケージインストールを切り替える</title>
+<para>2 つのパッケージが競合している場合に、どちらのパッケージがインストールされるかを切り替えます。パッケージ A がパッケージ B または C のどちらかに依存し、B および C は相互排他であるとします。A と B がインストールされる場合に、次のコマンドを使用して、A をアンインストールせずに B の代わりに C を使用するように切り替えます。</para>
+<screen>$ <userinput>pkg install --reject B C</userinput></screen>
+</example>
+<example><title>パッケージアーカイブ内のパッケージを一覧表示する</title>
+<para>パッケージアーカイブ内のすべてのパッケージのすべてのバージョンを一覧表示します。</para>
+<screen>$ <userinput>pkg list -f -g /my/archive.p5p</userinput></screen>
+</example>
+<example><title>パッケージリポジトリ内のパッケージを一覧表示する</title>
+<para>リポジトリ内のすべてのパッケージのすべてのバージョンを一覧表示します。</para>
+<screen>$ <userinput>pkg list -f -g http://example.com:10000</userinput></screen>
+</example>
+<example><title>パッケージアーカイブ内のパッケージについての情報を表示する</title>
+<para>パッケージアーカイブ内のパッケージの最新バージョンのパッケージ情報を表示します。パッケージが現在インストールされていてもいなくてもかまいません。</para>
+<screen>$ <userinput>pkg info -g /my/archive.p5p pkg_name</userinput></screen>
+</example>
+<example><title>パッケージアーカイブ内のパッケージの内容を表示する</title>
+<para>パッケージアーカイブ内のパッケージの内容を表示します。パッケージは現在インストールされていません。</para>
+<screen>$ <userinput>pkg contents -g /my/archive.p5p pkg_name</userinput></screen>
+</example>
+<example><title>パブリッシャーの起点とミラーをすべて削除する</title>
+<para>パブリッシャーのすべての起点およびミラーを削除し、新しい起点を追加します。</para>
+<screen>$ <userinput>pkg set-publisher -G '*' -M '*' -g http://example.com:10000 &bsol;</userinput>
+<userinput>example.com</userinput></screen>
+</example>
+<example><title>イメージをデハイドレートおよびリハイドレートする</title>
+<para>次の例で、<literal>/tmp/test_image</literal> はデハイドレートおよびリハイドレートしようとしているイメージです。</para>
+<para>パブリッシャーが指定されていないため、次のコマンドは <literal>/tmp/test_image</literal> イメージ内で有効になっているすべてのパブリッシャーに対して処理を実行し、<literal>/tmp/test_image</literal> イメージを完全にデハイドレートします。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate</userinput></screen>
+<para>パブリッシャーが指定されていないため、次のコマンドは <literal>/tmp/test_image</literal> イメージ内に構成されているすべてのパブリッシャーに対して処理を実行し、<literal>/tmp/test_image</literal> イメージを完全に復元します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate</userinput></screen>
+</example>
+<example><title>パブリッシャーを指定してイメージをデハイドレートおよびリハイドレートする</title>
+<para>次の例で、<literal>/tmp/test_image</literal> はデハイドレートおよびリハイドレートしようとしているイメージです。<literal>test1</literal> および <literal>test2</literal> は <literal>/tmp/test_image</literal> イメージ内で有効になっているパブリッシャーで、その起点からは必要な内容が提供されます。</para>
+<para>次のコマンドは、<literal>test1</literal> パブリッシャーから提供されたファイルおよびハードリンクに対してのみ処理を実行します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image dehydrate -p test1</userinput></screen>
+<para>次のコマンドは、<literal>test1</literal> パブリッシャーから提供されたファイルおよびハードリンクだけをリハイドレートします。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image rehydrate -p test1</userinput></screen>
+</example>
+<example><title>イメージ内の個々のパスの検証</title>
+<para>パス <literal>/tmp/test_image/usr/bin/ls</literal> にある個々のファイルを検証して、冗長結果を表示します。</para>
+<screen>$ <userinput>pkg -R /tmp/test_image verify -v -p /usr/bin/ls</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>パッケージ操作に使用するイメージが含まれるディレクトリ。<option>R</option> を指定した場合は無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。</para>
+<para>デフォルト値: 60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>クライアントが操作を中止するまでの、トランスポート操作中に <literal>lowspeed</literal> 制限 (1024 バイト/秒) を下回っていられる秒数。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CONCURRENCY</envar></term>
+<listitem><para>同時に更新する子イメージの数。<option>C</option> オプションが指定されている場合には、無視されます。</para>
+<para>子イメージ (通常はインストールされている <literal>solaris</literal> ブランドの非大域ゾーン) 内への再帰時に、最大 <envar>$PKG_CONCURRENCY </envar> 個の子イメージを同時に更新します。<envar>$PKG_CONCURRENCY</envar> が 0 または負数の場合は、すべての子イメージが同時に更新されます。</para>
+<para>デフォルト値: 1</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
+<listitem><para>HTTP または HTTPS プロキシサーバー。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>複数の操作が要求されましたが、それらの一部のみが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>4</returnvalue></term>
+<listitem><para>変更が行われませんでした - 何もしません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>要求された操作はライブイメージでは実行できません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>6</returnvalue></term>
+<listitem><para>インストールまたは更新中のパッケージのライセンスが受け入れられなかったため、要求された操作を完了できません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>7</returnvalue></term>
+<listitem><para>イメージは現在別のプロセスによって使用されているため、変更できません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>8</returnvalue></term>
+<listitem><para>1 つ以上の SMF アクチュエータがタイムアウトしました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para><literal>pkg</literal>(7) イメージは、より大きなファイルシステム内の任意の場所に置くことができます。次のファイル説明で、トークン <envar>$IMAGE_ROOT</envar> は相対パスを区別するために使用されています。一般的なシステムインストールでは、<envar> $IMAGE_ROOT</envar> は <literal>/</literal> と等価です。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
+<listitem><para>完全または部分的なイメージのメタデータディレクトリ。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_ROOT/.org.opensolaris,pkg</filename></term>
+<listitem><para>ユーザーイメージのメタデータディレクトリ。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>特定のイメージのメタデータ内のファイルやディレクトリによっては、修復および復旧中に役立つ情報が含まれている可能性があります。トークン <envar>$IMAGE_META</envar> は、メタデータが含まれる最上位ディレクトリを参照します。<envar>$IMAGE_META</envar> は通常、上に示した 2 つのパスのいずれかです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_META/lost+found</filename></term>
+<listitem><para>パッケージ操作中に移動された、競合するディレクトリおよびファイルの場所。削除されたディレクトリのパッケージ化されない内容の場所。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_META/publisher</filename></term>
+<listitem><para>パブリッシャーごとに 1 つのディレクトリが含まれます。各ディレクトリにはパブリッシャー固有のメタデータが格納されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><envar>$IMAGE_META</envar> ディレクトリ階層内のほかのパスは非公開であり、変更される可能性があります。</para>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<literal>glob</literal>(3C)、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>

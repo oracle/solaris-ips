@@ -1,0 +1,56 @@
+
+pkg
+FILTERING
+
+We start with all actions in a manifest.
+
+We apply each element in the filter chain in order.  For each element, we
+eliminate all remaining actions which don't match the element.
+
+Simple elements have a single filter:
+
+    arch=i386
+
+means eliminate all actions which have an "arch" attribute that isn't
+"i386".
+
+More complicated elements can represent an intersection of filters:
+
+    arch=i386 & debug=true
+
+means eliminate all actions which have both "arch" and "debug" attributes,
+but whose values, respectively, aren't "i386" and "true" (e.g., eliminate
+all non-debug i386 actions and all sparc actions, debug and non-debug);
+
+    doc=true & locale=fr
+
+means eliminate all actions which have both "doc" and "locale" attributes
+and which aren't "true" and "fr", respectively (no, I'm not sure what
+"doc=false" means, other than a reason to refactor).  That is, strip out
+all documentation that isn't French (but keep other localized actions, such
+as message files, images, etc.).
+
+Elements can also represent a union of filters:
+
+    locale=fr | locale=sv
+
+means eliminate all actions which have a "locale" attribute that isn't
+either "fr" or "sv".
+
+We'll probably want to mix intersection and union, too:
+
+    doc=true & (locale=fr | locale=sv)
+
+And we want a fallback mechanism, allowing us to get the "best of" a
+particular attribute.  Four examples:
+
+    locale=fr_FR.UTF-8;fr_FR;fr;C
+    platform=SUNW,Sun-Fire-V240;sun4u
+    debug=true;false
+    debug=false;true
+
+Any actions that haven't been eliminated by the end of the chain remain to
+be installed.  At that point in time, if more than one action exists for
+any given object, the evaluation fails (can't have two copies of
+/usr/bin/ls just because you remembered to specify architecture but not
+debug-ness).

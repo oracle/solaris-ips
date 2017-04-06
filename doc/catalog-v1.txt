@@ -1,0 +1,1177 @@
+pkg(5): image packaging system
+
+CATALOG FORMAT AND CACHING PROPOSAL
+
+1.  Overview
+
+    The pkg(5) server and client catalogs currently provides a summary
+    view of the packages provided by a repository: the FMRIs of each
+    package, the last time the set of available packages changed, and
+    the total number of packages.  The server uses this information
+    for publication checks, to fulfill client requests, for search
+    indexing and analysis, and to enable browser-based access to the
+    repository via the BUI (Browser User Interface).  pkg(5) clients
+    use this information to determine what packages are available, to
+    validate user input, and to fulfill packaging operation requests.
+
+1.1  History
+
+    As development of the Image Packaging System has progressed, both
+    the server and client have increasingly required access to more
+    packaged metadata as fixes and various improvements have been
+    implemented.  This has resulted in increased demand on server and
+    client system resources when analyzing package metadata, and
+    increased processing times as well.
+
+    To address catalog performance issues, a client-side unified
+    catalog cache was implemented, and initially contained all known
+    package stems from the set of publishers defined within the image
+    configuration.  The caching mechanism was then replaced, using a
+    Python dict structure designed for efficient lookups of package
+    information by stem or FMRI and providing an ordered list of
+    versions, that was then serialized to disk.
+
+    Recently, the caching was revised to use a custom, delta-encoded
+    text format that avoided object serialization as that created an
+    implicit dependency on object versions and definitions, as well as
+    significant overhead in the on-disk footprint.  To improve package
+    metadata performance, a new cache format was created that factored
+    package manifests by the types of actions contained within, and
+    then stored each type of action in a separate file for each
+    manifest.
+
+1.2  Challenges
+
+    Despite past improvements, significant performance improvements
+    are still needed for both the server and client when processing
+    and analyzing package metadata.  The work done so far has also
+    only benefited the client, leaving server performance behind.
+    Specifically, the underlying catalog data, caching mecahnisms,
+    and catalog retrieval operations suffer from the following
+    issues:
+
+    - the catalog format used for the server and client is not
+      consistent and the server uses local time instead of UTC
+
+    - the client does not maintain a 1:1 copy of the server's catalog
+      and attributes making it difficult to verify its integrity and
+      complicates the logic needed to obtain updates
+
+    - the caching mechanisms implemented are not granular enough,
+      causing some operations to run slower than necessary as more
+      information than is needed is loaded and processed
+
+    - no efficient lookup mechanism exists for some of the metadata,
+      causing operations such as dependency calculation to require a
+      linear scan and retrieval of manifests
+
+    - the existing caching mechanisms require clients to retrieve
+      manifests for all known packages to be able to perform summary
+      listings of available packages (at least 65 MiB for a new build
+      of OpenSolaris) -- which is especially harmful to GUI clients
+      such as packagemanager(1)
+
+    - the existing caching mechanisms do not provide the information
+      needed to determine (ahead of time) what package manifests need
+      to be retrieved during packaging operations, which leaves pkg(5)
+      clients unable to provide sufficient feedback to the user during
+      plan creation such as number of bytes to be transferred, time
+      estimates, etc.
+
+    - the catalog operation and caching mechanisms offered by the
+      depot server are not extensible, and cannot accommodate new
+      metadata that may be needed to perform client operations
+      without a client and server revision
+
+    - the catalog and caching mechanisms do not account for
+      future localization needs
+
+1.3  Goals
+
+    So then, the changes proposed within this document have the
+    following goals:
+
+    - unification of the server and client catalog format and code
+
+    - simplification of catalog update and retrieval mechanisms
+
+    - improved granularity and transparency in caching mechanisms
+      allowing operations to only retrieve the information they need
+
+    - reduction of resource requirements and processing time forserver
+      and client
+
+    - increase of available metadata before long-running package
+      operations to enable improved progress and user feedback
+
+    - improved extensibility of the catalog depot operation and the
+      caching mechanisms used by the client
+
+    - unification and implementation of caching mechanisms and code
+      for client and server
+
+2.  Proposed Changes
+
+    The changes needed to accomplish the goals listed in section 1.3
+    are grouped below by the type of change.  It should be noted that
+    what is described in this document is dependent on an upcoming image
+    and repository format versioning proposal since these changes will
+    require a change to the structure of both images and repositories.
+
+2.1 Catalog Format Changes
+
+2.1.1  Current Catalog Format
+
+    To better understand the proposed changes, it may first be helpful
+    to understand the current catalog format and how it is composed.
+    Currently, the catalog could be viewd as being composed of three
+    files:
+
+    - attrs
+
+        The attrs file contains metadata about the catalog.  The
+        server and client attrs file are text/plain, and currently
+        have the following content:
+
+         S Last-Modified: 2009-06-23T07:58:35.686485
+         S prefix: CRSV
+         S npkgs: 40802
+
+        The client adds this content:
+         S origin: <repository_uri>
+
+        The Last-Modified value is an ISO-8601 date and time in server
+        local time (not UTC).
+
+    - catalog
+
+        The server catalog file currently contains entries of this
+        format:
+
+        <type> <fmri><newline>
+
+        Where type can be 'V' (version), 'C' (critical; not used), or
+        'R' (renamed).
+
+        As a special exception, the format of 'R' entries is:
+
+        R <src_stem> <src_version> <dest_stem> <dest_version><newline>
+
+        If a destination package is not provided for 'R', then 'NULL'
+        is used for the destination values.
+
+        Examples:
+
+        C pkg:/foo@0.5.11,5.11-0.111:20090507T161015Z
+        V pkg:/foo@0.5.11,5.11-0.111:20090508T161015Z
+        R foo 1.0:20090508T161015Z bar 1.0:20090509T161015Z
+        R baz 1.0:20090508T161015Z NULL NULL
+
+        The client catalog file contains entries of this format:
+
+        <type> pkg <fmri_stem> <fmri_version><newline>
+
+        As a special exception, the format of 'R' entries is:
+
+        R <src_stem> <src_version> <dest_stem> <dest_version><newline>
+
+        If a destination package is not provided for 'R', then 'NULL'
+        is used for the destination values.
+
+        Example:
+
+        V pkg foo 0.5.11,5.11-0.111:20090508T161015Z
+
+    - update log
+
+        While not strictly a part of the catalog, the update logs serve
+        as a record of changes to the catalog allowing clients to otbain
+        incremental updates to a catalog instead of retrieving the
+        entire catalog each time.
+
+        It only exists on the server, and contains entries of this
+        format:
+
+        <update_type><type><space><fmri><newline>
+
+        Where 'update_type' can be '+' (there were comments at one
+        time referring to a '-' operation, but they were removed and
+        the code for it was never implemented).
+
+        Where 'type' can be 'V' (version), 'C' (critical; not used),
+        or 'R' (renamed).
+
+        As a special exception, the format of 'R' entries is:
+
+        R <src_stem> <src_version> <dest_stem> <dest_version><newline>
+
+2.1.2  Proposed Catalog Format
+
+    To accomplish the goals listed in section 2.1, a new catalog
+    format will be adopted.  This format will be used by the client
+    to store catalog data locally, regardless of the format used by
+    the repository (e.g. the repository only provides older catalog
+    format).  All data is assumed to be encodable using Unicode as
+    the JSON format specification requires this.
+
+    The new catalog format splits the contents of the catalog into
+    multiple parts, per-locale, but treats them as a unified set.
+    That is, all of the parts have a common base, but can easily be
+    merged at load time if access to multiple parts is needed.
+
+    The catalog will be composed of the following files:
+
+    - catalog.attrs
+        This file will contain a python dict structure serialized in
+        JSON (JavaScript Object Notation) format.  The metadata within
+        is used to describe the catalog and its contents using the
+        following attributes:
+
+        _SIGNATURE:
+            An optional dict of digest and/or cryptograhic values which
+            can be used by clients to verify the integrity of the
+            catalog.attrs data.  Each key should represent the name of
+            the signature or digest used, and each value the signature
+            itself.
+
+        created:
+            The value is an ISO-8601 'basic format' date in UTC time
+            indicating when the catalog was created.  This value is
+            provided by the server.
+
+        last-modified:
+            The value is an ISO-8601 'basic format' date in UTC time
+            indicating when the catalog was last updated.  This value
+            is provided by the server.
+
+        package-count:
+            An integer value indicating the total number of unique
+            FMRI stems in the catalog.
+
+        package-version-count:
+            An integer value indicating the total number of unique
+            FMRI versions in the catalog.
+
+        parts:
+            A dict of available catalog parts.  This is to enable
+            clients to quickly determine what locale-specific catalog
+            data might be available to them.  Each entry contains the
+            date and time a part was created and last modified.  It
+            may also contain digest signature entries for the part (if
+            available) so that clients can verify parts after applying
+            incremental updates.
+
+        updates:
+            A dict of available catalog updates.  Each entry corresponds
+            to the filename of an update log named after the time the
+            update occurred using an ISO-8601 'reduced accuracy basic
+            format'.  Each entry also contains a last-modified date in
+            ISO-8601 basic format to allow clients to determine when an
+            update log was last changed without checking the repository.
+
+        version:
+            An integer value representing the version of the structure
+            used within the attrs, update log, and catalog part files.
+
+        Example:
+
+        {
+            "_SIGNATURE": {
+              "sha-1": "8f5c22fd8218f7a0982d3e3fdd01e40671cb9cab"
+            },
+            "created": "20050614T080000.234231Z",
+            "last-modified": "20090508T161025.686485Z",
+            "package-count": 40802,
+            "package-version-count": 1706,
+            "parts": {
+              "catalog.base.C": {
+                "last-modified": "20090508T161025.686485Z",
+                "signature-sha-1": "9b37ef267ae6aa8a31b878aad4e9baa234470d45",
+              },
+              "catalog.dependency.C": {
+                "last-modified": "20090508T161025.686485Z",
+                "signature-sha-1": "0c896321c59fd2cd4344fec074d55ba9c88f75e8",
+              },
+              "catalog.summary.C": {
+                "last-modified": "20090508T161025.686485Z",
+                "signature-sha-1": "b3a6ab53677c7b5f94c9bd551a484d57b54ed6f7",
+              },
+              "catalog.summary.FR": {
+                "last-modified": "20081002T080903.235212Z",
+                "signature-sha-1": "d2b6cb03677c725f94c9ba551a454d56b54ea2f8",
+              },
+            },
+            "updates": {
+              "update.20081002T08Z.C": {
+                "last-modified": "20081002T080903.235212Z",
+                "signature-sha-1": "a2b6cb03277c725a94c9ba551a454d56b54ea2f8",
+              },
+              "update.20090508T16Z.C": {
+                "last-modified": "20090508T161025.686485Z",
+                "signature-sha-1": "c2b6ca03473c725f94c8ba201a454d56b54ea2f8",
+              },
+            },
+            "version": 1,
+        }
+
+    - catalog.<part_name>.<locale_name>
+
+        Each part of the catalog will contain a python dict structure
+        serialized in JSON format.  <locale_name> is an OpenSolaris
+        system locale name, and should be 'C' if the file applies to
+        all locales.  Version entries for each package stem are kept
+        in ascending version order to allow fast lookups by the client
+        and avoid sort overhead on load.  Also note that any top-level
+        entry key in the structure starting with '_' will be treated
+        as metadata related to the catalog or version entry and must
+        be ignored unless the client can use it.
+
+        Finally, each catalog entry can also contain an optional set
+        of digest and signature key/value pairs that can be used to
+        verify the content of the related package manifest.  Clients
+        must ignore any key/value pairs that are unknown to them within
+        the structure.  The catalog structure can be described as
+        follows:
+
+        {
+          "<optional-signature-dict": {
+            "<signature-name>": "<signature-value>",
+          },
+          "<publisher-prefix>": {
+            "<FMRI package stem>": [
+              {
+                "version": <FMRI version string>,
+                "<optional-actions>": <optional-actions-data>
+                "<optional-signature-name>": "<signature-value>",
+              }
+            ]
+          }
+        }
+
+    Initially, the server will offer the following catalog 'parts'.
+    Each has its content based on a tradeoff between memory usage,
+    load times, and bandwidth needs which depend on the client being
+    used to perform packaging operations or the operation being
+    performed.
+
+    - catalog.base.C
+        This catalog part contains the FMRIs of the packages that the
+        repository contains, and an optional digest value that can be
+        used for verifying the contents of retrieved manifests.  Loading
+        just this content is useful when performing basic listing opera-
+        tions using the cli, or when simply checking to see if a given
+        package FMRI is valid.  Note that since this information is com-
+        mon to all locales, this part of the catalog is only offered for
+        the 'C' locale.  An example of its contents is shown below:
+
+        {
+          "_SIGNATURE": {
+            "sha-1": "9b37ef267ae6aa8a31b878aad4e9baa234470d45",
+          },
+          "opensolaris.org":{
+            "SUNWipkg":[
+              {
+                "version":"0.5.11,5.11-0.117:20090623T135937Z",
+                "signature-sha-1": "596f26c4fc725b486faba089071d2b3b35482114"
+              },
+              {
+                "version":"0.5.11,5.11-0.118:20090707T220625Z",
+                "signature-sha-1": "ab6f26c4fc725b386faca089071d2b3d35482114"
+              }
+            ],
+            "SUNWsolnm":[
+              {
+                "version":"0.5.11,5.11-0.117:20090623T144046Z",
+                "signature-sha-1": "fe6f26c4fc124b386faca089071d2b3a35482114"
+              },
+              {
+                "version":"0.5.11,5.11-0.118:20090707T224654Z",
+                "signature-sha-1": "696f26c4fc124b386facb089071d2b3f35482114"
+              }
+            ]
+          }
+        }
+
+    - catalog.dependency.C
+        This catalog part contains the FMRIs of the packages that the
+        repository contains, any 'depend' actions, and any 'set' actions
+        for facets or variants.  This information is intended to be used
+        during dependency calculation by install, uninstall, etc.  It is
+        anticipated that package size summary information, and actions
+        for set pkg.renamed and pkg.obsolete will be stored in this part
+        as well when they become available.  Note that since this infor-
+        mation is common to all locales, this part of the catalog is
+        only offered for the 'C' locale.  An example of its contents is
+        shown below:
+
+        {
+          "_SIGNATURE": {
+            "sha-1": "0c896321c59fd2cd4344fec074d55ba9c88f75e8",
+          },
+          "opensolaris.org":{
+            "SUNWdvdrw":[
+              {
+                "version":"5.21.4.10.8,5.11-0.108:20090218T042840Z",
+                "actions":[
+                  "set name=variant.zone value=global value=nonglobal",
+                  "set name=variant.arch value=sparc value=i386",
+                  "depend fmri=SUNWlibms@0.5.11-0.108 type=require",
+                  "depend fmri=SUNWlibC@0.5.11-0.108 type=require",
+                  "depend fmri=SUNWcsl@0.5.11-0.108 type=require"
+                ]
+              }
+            ],
+            "SUNWthunderbirdl10n-extra":[
+              {
+                "version":"0.5.11,5.11-0.75:20071114T205327Z",
+              }
+            ]
+          }
+        }
+
+    - catalog.summary.<locale_name>
+        This catalog part contains the FMRIs of the packages that the
+        repository contains and any 'set' actions (excluding those for
+        facets or variants).  This information is intended to be used
+        primarily by GUI clients such as packagemanager(1), or the BUI
+        (Browser UI) provided by pkg.depotd(1m) for quick, efficient
+        access to package metadata for listing.  An example is shown
+        below:
+
+        {
+          "_SIGNATURE": {
+            "catalog-sha-1": "b3a6ab53677c7b5f94c9bd551a484d57b54ed6f7",
+          },
+          "opensolaris.org":{
+            "SUNWdvdrw":[
+              {
+                "version":"5.21.4.10.8,5.11-0.108:20090218T042840Z",
+                "actions":[
+                  "set name=description value=\"DVD creation utilities\"",
+                  "set name=info.classification value=org.opensolaris.category.2008:System/Media",
+                ]
+              }
+            ],
+            "SUNWthunderbirdl10n-extra":[
+              {
+                "version":"0.5.11,5.11-0.75:20071114T205327Z",
+                "actions":[
+                  "set name=description value=\"Thunderbird localization - other 15 lang\"",
+                  "set name=srcpkgs value=SUNWthunderbirdl10n-extra"
+                ]
+              }
+            ]
+          }
+        }
+
+    - update.<logdate>.<locale_name>
+
+        This file will contain a python dict structure serialized in
+        JSON (JavaScript Object Notation) format.  Where <logdate> is
+        a UTC date and time in  ISO-8601 'reduced accuracy basic
+        format'. <locale_name> is an OpenSolaris system locale name,
+        and should be 'C' if the update log applies to all locales.
+
+        The structure of catalog update files is similar to that of
+        of catalog files, with a few exceptions.  First, each version
+        entry contains additional elements indicating the catalog
+        operation and the time of the operation.  Second, each entry
+        also contains a set of dicts keyed by catalog part name
+        indicating which catalog parts the package was added to
+        contents of each of these dicts is the exact contents of the
+        package's catalog part entry (excluding version).
+
+        The supported types (<op-type> in the example below) of catalog
+        operations are:
+
+        'add'       Indicates that the corresponding FMRI and metadata
+                    (if present) has been added to the catalog.
+
+        'remove'    Indicates that the corresponding FMRI has been
+                    removed from the catalog.
+
+        The structure can be described as follows:
+
+        {
+          <optional-signature-or-signature-dict>: {
+            <signature-or-signature-name>: <signature-or-signature-value>,
+          },
+          <publisher-prefix>: {
+            <FMRI package stem>: [
+              {
+                "op-type": <type-of-operation>
+                "op-time": <ISO-8601 Date and Time>
+                "version": <FMRI version string>,
+                "<catalog.part.name>": <catalog-type-metadata>,
+              }
+            ]
+          }
+        }
+
+        An example update log might consist of the following:
+
+        {
+          "_SIGNATURE": {
+            "sha-1": "0c896321c59fd2cd4344fec074d55ba9c88f75e8",
+          },
+          "opensolaris.org":{
+            "SUNWthunderbirdl10n-extra":[
+              {
+                "op-type": "remove",
+                "op-time": "20090218T042838Z"
+                "version":"0.5.11,5.11-0.75:20071114T205327Z",
+              }
+            ],
+            "SUNWdvdrw":[
+              {
+                "op-type": "add",
+                "op-time": "20090524T042841Z",
+                "version":"5.21.4.10.8,5.11-0.111:20090524T042840Z",
+                "catalog.dependency.C": {
+                  "actions": [
+                    "depend fmri=SUNWlibms@0.5.11-0.111 type=require",
+                    "depend fmri=SUNWlibC@0.5.11-0.111 type=require",
+                    "depend fmri=SUNWcsl@0.5.11-0.111 type=require"
+                  ],
+                },
+                "catalog.summary.C": {
+                  "actions": [
+                    "set name=description value=\"DVD creation utilities\"",
+                    "set name=info.classification value=org.opensolaris.category.2008:System/Media",
+                  ],
+                ],
+                "signature-sha-1": "fe6f26c4fc124b386faca089071d2b3a35482114",
+              }
+            ]
+          }
+        }
+
+    Please note that the digest and cryptographic information is
+    optional since older repositories won't have the information and
+    some users of the depot software may choose to not provide it.
+    For a detailed discussion on the choice of data format and a
+    performance analysis, see section 3.
+
+2.2  Server Changes
+
+    To enable clients to retrieve the new catalog files and incremental
+    updates to them, the following changes will be made:
+
+    - The new catalog files will be stored in the <repo_dir>/catalog
+      directory using the filenames described in section 2.1.2.  Any
+      existing catalog files will be converted to the new format upon
+      load (using writable-root if present) and the old ones removed
+      (unless readonly operation is in effect).
+
+    - Operations that modify the catalog file will be changed to write
+      out all of the new catalogs only; the version 0 catalog will no
+      longer be stored or used.
+
+    - The depot server will be changed to offer an additional catalog
+      operation "/catalog/1/" which will be added to the output of the
+      "/versions/0/" operation as well.  It will provide a simple GET-
+      based HTTP/1.1 interface for retrieving catalog and update log
+      files from the server.  It will not require or use any headers
+      other than those normally present within a standard HTTP/1.1
+      transaction.  However, the client api will continue to provide
+      the uuid, intent, and user agent headers that are provided today
+      for the existing "/catalog/0/" operation.
+
+    - The existing "/catalog/0/" operation will continue to be offered
+      by the depot server for compatibility with older clients.
+
+    - The depot server will be changed to perform a simple sanity check
+      when starting to verify that the packages in the catalog are
+      physically present in the repository and that the catalog attrs
+      files match the catalog files.  Likewise, the update logs will
+      be checked to verify that they are valid for the catalogs.  If
+      any of these files are found to be not valid, a warning will be
+      logged and the catalog files rewritten (using writable-root if
+      applicable).  In addition, any of the corrections made will
+      result in corresponding update log entries so that incremental
+      updates will not be broken for existing clients.
+
+2.3 Client Changes
+
+    To take advantage of the new catalog format, and to improve the
+    performance of clients, a number of changes will need to be made
+    to the pkg.client.api and its supporting classes.  All of the
+    changes proposed here should be transparent to client api
+    consumers.
+
+2.3.1  Image Changes
+
+    - The image object, upon initialization, will remove the
+      /var/pkg/catalog directory and its contents if possible.
+      If this cannot be done (due to permissions), the client
+      will continue on.  If it can be removed, a new directory
+      named /var/pkg/publisher be created, and publisher objects
+      will be told to store and retrieve their metadata from it.
+
+    - Publisher objects will store their catalog data within the
+      directory <meta_root>/<prefix>/catalog/.
+
+    - Any functions contained within the image class for the
+      direct storage, retrieval, updating, etc. of publisher
+      metadata will be moved to the pkg.client.publisher and
+      Catalog classes.
+
+    - A new "Catalog" object reference will be added to the
+      image class, which will be used to allow the api access
+      to catalog metadata.  This object will allow callers to
+      ask for a specific set of catalog data for an operation
+      (where the allowed sets match the names of the catalogs
+      described in section 2.1.2).  The data will then be
+      retrieved and stored for usage by callers as needed.
+
+    - The existing catalog caching mechanism will be removed
+      completely as it has been superseded by the new catalog
+      format.
+
+    - For performance reasons, the client api will also store
+      versions of each of the catalogs proposed that only
+      contain entries for installed FMRIs to accelerate common
+      client functions such as info, list, uninstall, etc. This
+      change will also result in the obsoletion of the current
+      /var/pkg/state directory and /var/pkg/pkg/<stem>/<ver>/
+      installed files, which will be removed and converted
+      during the image initialization process if possible.
+
+    - All api functions will be changed to retrieve the catalog
+      data they need instead of depending upon api consumers to
+      do so.
+
+2.3.2  Catalog Retrieval and Update Changes
+
+    - If a repository only offers version 0 of the catalog format,
+      then the client API will retrieve it, but transform and store
+      the catalog in version 1 format using the times the server
+      provides.
+
+    - If version 1 catalog data is not available, the client api will
+      fallback to retrieving catalog metadata by retrieving package
+      manifests (as it does today).  This will be transparent to
+      clients.
+
+    - When checking for catalog updates, the api(s) will follow this
+      process for version 1 catalogs when determining if a full or
+      incremental update should be performed for each catalog in the
+      image:
+
+      * If the repository now offers a version 1 catalog, but did not
+        do so previously, a full catalog retrieval will be performed.
+
+      * A conditional retrieval of the catalog.attrs file will be
+        performed using the last-modified date contained within it.
+        If a 304 (or not modififed status) is returned, then the
+        catalog will be skipped during the update process.
+
+      * The resulting file will then be loaded and the integrity of the
+        attrs file verified by omitting the '_SIGNATURE' portion of the
+        data structure and using the information that was present within
+        to verify the integrity of the attrs file.  If the integrity
+        check fails, a transport exception will be raised.
+
+      * If the attrs file was retrieved successfully, it will be checked
+        as follows:
+
+        - If the created date in the retrieved attrs file does not
+          match the stored attrs file, a full catalog retrieval will be
+          performed as the catalog has been rebuilt.  In addition, a
+          warning will be provided to the client that there may be
+          something wrong with the repository (packages may be missing,
+          etc.).
+
+        - If the created date matches, then the version in the new attrs
+          file will be compared to the original, if they do not match a
+          full catalog retrieval will be performed as the format of the
+          catalog has changed (unless the client is unable to parse that
+          format in which case an error will be raised).
+
+        - If the version was valid, then the last modified date in the
+          new catalog.attrs file will be compared to the original attrs
+          file.  If the original attrs date is newer, then a full
+          catalog retrieval will be performed and the user will be
+          warned that there may be something wrong with the repository
+          (packages may no longer be available, etc.).  If the last
+          modified date in the original attrs file is the same as the
+          new attrs file, then no updates are available and the catalog
+          will be skipped.  If the original attrs last modified date is
+          older than the new attrs last modified date, then the 'update-
+          logs' property will be checked to see if there are incremental
+          updates available.  
+
+        - If the update-logs property is empty, a full catalog retrieval
+          will be performed with the assumption that the repository has
+          intentionally discarded all of its incremental update
+          information.  If the oldest update log listed in the new attrs
+          file is newer than the last modified date of the original
+          attrs file, then this client has not performed an incremental
+          for a period long enough that the repository no longer offers
+          incremental updates for their version of the catalog, and a
+          full catalog retrieval will be performed.
+
+        - Finally, if all of the above was successful, the api will then
+          start the incremental update process.
+
+    - When attempting to determine what incremental catalog updates
+      for version 1 catalogs are available, and the repository offers
+      version 1 catalogs, the client api(s) will use the following
+      process:
+
+        * The modified date and time of the update log the client last
+          retrieved will compared against the corresponding entry in
+          catalog.attrs.  If it has not been modified, the update log
+          will be skipped.  Otherwise it will be retrieved, and added
+          to the incremental update queue. This is necessary since
+          update logs are per-hour and a change may have occurred since
+          the last time the update log was retrieved.
+
+        * The api will then retrieve any remaining update logs listed in
+          the catalog.attrs file that have a <logdate> newer than the
+          last time the client's local copy of the catalog was updated.
+          Each will be added to the update queue after retrieval.
+
+        * Each update log file will then loaded and verified by omitting
+          the '_SIGNATURE' portion of the structures and using the
+          information that was present within it to verify the integrity
+          of the update log.  If the integrity check fails, a transport
+          exception will be raised.
+
+    - When applying the queued catalog updates, the client api will
+      use this process for each update log:
+
+        * each corresponding catalog part present in the image will be
+          loaded, and then any update log entries newer than the last
+          modified date of the catalog (based on op-time) will be
+          applied to the catalog as dicated by op-type
+
+        * if at any point, an update log entry cannot be applied as
+          directed, then a full catalog retrieval will be forced, and
+          the user will be warned that something may be wrong with the
+          repository (missing packages, etc.)
+
+        * if the update log is the last in the queue for a given set of
+          catalogs, then all previous ones will be removed as they are
+          no longer needed
+
+    - When attempting to verify the integrity of a full catalog part
+      retrieval, the api will use this process:
+
+      * The catalog parts will be loaded into memory and the
+        '_SIGNATURE' portion of the data structure removed.
+
+      * The api will then check the catalog.attrs file for digest
+        and/or cryptographic information related to the catalog.
+        If the information is present, it will then be used to
+        verify the integrity of the retrieved catalog parts.
+
+3.  Appendix
+
+3.1  Overview
+
+    During the development of this proposal, a number of different
+    approaches to the storage and retrieval of catalog data were
+    considered.  Specifically, the following formats were considered
+    and/or evaluated:
+
+    - manifest
+        A pure "manifest-style" format similar to the existing package
+        manifest.
+
+    - JSON
+        The portable JavaScript Object Notation-based format.
+
+    Size and performance characteristics for each of these formats can
+    be found in section 3.3.
+
+3.2  Evaluations
+
+3.2.1  manifest-style format evaluation
+
+    Initially, the "manifest-style" format seemed promising from a
+    performance and disk footprint standpoint when compared to using
+    JSON.  A few variations of this format were attempted, and examples
+    of this can be seen below:
+
+    - variation 1
+        pkg://opensolaris.org/SUNWlang-cs-extra@0.5.11,5.11-0.86:20080422T230436Z require=SUNWlang-common@0.5.11-0.86,SUNWcsl@0.5.11-0.86
+
+    - variation 2
+        pkg://opensolaris.org/SUNWlang-cs-extra@0.5.11,5.11-0.86:20080422T230436Z
+        depend fmri=pkg:/SUNWlang-common@0.5.11-0.86 type=require
+        depend fmri=pkg:/SUNWcsl@0.5.11-0.86 type=require
+
+    - variation 3
+        After realising that variant and facet information was needed,
+        and that additional attributes might need to be accounted for in
+        the future, variation 3 was chosen for evaluation.
+
+        pkg://opensolaris.org/SUNWlang-cs-extra@0.5.11,5.11-0.106:20090131T184044Z
+        set name=variant.zone value=global value=nonglobal
+        set name=variant.arch value=sparc value=i386
+        depend fmri=SUNWcsl@0.5.11-0.106 type=require
+        depend fmri=SUNWlang-common@0.5.11-0.106 type=require
+
+3.2.2  JSON format evaluation
+
+    When first evaluating JSON, results on x86-based systems were very
+    comparable or significantly better than the manifest-based format
+    from both a file size and performance perspective.  The following
+    structural variations were evaluated:
+
+    - variation 1
+        Variation one attempted to combine the catalog and attrs files,
+        but this approach was abandoned for simplicity and performance
+        reasons in later variations.
+
+    {
+        "attributes": {
+            "id": "556599b2-aae8-4e67-94b3-c58a07dbd91b",
+            "last-modified: "2009-05-08T16:10:25.686485",
+            "locale": "C",
+            "package-count: 40802,
+            "version: 1,
+        },
+        "packages": {
+            "SUNWipkg": {
+                "publisher": "opensolaris.org",
+            "versions": [
+                    "0.5.11,5.11-0.111:20090331T083235Z",
+                    "0.5.11,5.11-0.111:20090418T191601Z",
+                    "0.5.11,5.11-0.111:20090508T161025Z",
+                ],
+            },
+        },
+    } 
+
+    - variation 2
+    {
+      "packages":{
+        "SUNWlang-cs-extra":{
+          "publisher":"opensolaris.org",
+          "versions":[
+            [
+              "0.5.11,5.11-0.86:20080422T230436Z",
+              {
+                "depend":{
+                  "require":[
+                    {
+                      "fmri":"foo"
+                    },
+                    {
+                      "fmri":"bar"
+                    }
+                  ],
+                  "optional":[
+                    {
+                      "fmri":"baz"
+                    },
+                    {
+                      "fmri":"quux"
+                    }
+                  ]
+                }
+              }
+            ],
+          ]
+        }
+      }
+    }
+
+    - variation 3
+        This variation was attempted due to extreme performance issues
+        that were seen on some lower-memory bandwidth SPARC systems
+        when writing JSON files.  It was discovered that the simplejson
+        library uses a recursive call structure for iterative encoding
+        of python data structures and this does not perform well on many
+        SPARC systems.
+        
+        By changing the structure to a list of lists, a decrease om
+        write times of 20-30 seconds was realised.  However, this was
+        less than desirable as it meant the resulting data structure
+        would have to be significantly tranformed after load for use
+        by the package system.
+
+    [['pkg://opensolaris.org/SUNWstc@0.5.11,5.11-0.111:20090508T163711Z'],
+    ['pkg://opensolaris.org/SUNWsongbird@0.5.11,5.11-0.99:20081002T152038Z',
+      [['require',
+        ['SUNWlibms@0.5.11-0.99',
+         'SUNWdbus-libs@0.5.11-0.99',
+         'SUNWgnome-vfs@0.5.11-0.99',
+         'SUNWgnome-media@0.5.11-0.99',
+         'SUNWjpg@0.5.11-0.99',
+         'SUNWfirefox@0.5.11-0.99',
+         'SUNWxwrtl@0.5.11-0.99',
+         'SUNWgnome-component@0.5.11-0.99',
+         'SUNWfontconfig@2.5.0-0.99',
+         'SUNWgnome-base-libs@0.5.11-0.99',
+         'SUNWgnome-config@0.5.11-0.99',
+         'SUNWcsl@0.5.11-0.99',
+         'SUNWlibC@0.5.11-0.99',
+         'SUNWzlib@1.2.3-0.99',
+         'SUNWfreetype2@2.3.7-0.99',
+         'SUNWdbus-bindings@0.5.11-0.99',
+         'SUNWgnome-libs@0.5.11-0.99',
+         'SUNWxwplt@0.5.11-0.99']]]]
+    ]
+
+    - variation 4
+        This variation was struck upon after the failure of the last
+        with the attempt to have a data structure that was immediately
+        useful to the packaging system after load:
+
+    {
+      'opensolaris.org': {
+        'SUNWsongbird': [
+          {
+            'depend': {
+              'require': [
+                'SUNWlibms@0.5.11-0.99',
+                'SUNWdbus-libs@0.5.11-0.99',
+                'SUNWgnome-vfs@0.5.11-0.99',
+                'SUNWgnome-media@0.5.11-0.99',
+                'SUNWjpg@0.5.11-0.99',
+                'SUNWfirefox@0.5.11-0.99',
+                'SUNWxwrtl@0.5.11-0.99',
+                'SUNWgnome-component@0.5.11-0.99',
+                'SUNWfontconfig@2.5.0-0.99',
+                'SUNWgnome-base-libs@0.5.11-0.99',
+                'SUNWgnome-config@0.5.11-0.99',
+                'SUNWcsl@0.5.11-0.99',
+                'SUNWlibC@0.5.11-0.99',
+                'SUNWzlib@1.2.3-0.99',
+                'SUNWfreetype2@2.3.7-0.99',
+                'SUNWdbus-bindings@0.5.11-0.99',
+                'SUNWgnome-libs@0.5.11-0.99',
+                'SUNWxwplt@0.5.11-0.99'
+              ]
+            },
+            'version': '0.5.11,5.11-0.99:20081002T152038Z'
+          },
+        ],
+        'SUNWstc': [
+          {
+            'version': '0.5.11,5.11-0.106:20090131T191239Z'
+          },
+        ],
+      },
+    }
+
+    - variation 5
+        The final variation is what was chosen for final evaluation for
+        JSON after discussions with other team members centered around
+        a key point: that the catalog is essentially an action pipeline
+        for the client.  In addition, the prior variations were either
+        hampered by poor serialization performance on SPARC systems or
+        lacked the extensibility needed for possible future attribute
+        additions to actions.
+        
+        {
+          "opensolaris.org":{
+            "SUNWdvdrw":[
+              {
+                "version":"5.21.4.10.8,5.11-0.108:20090218T042840Z",
+                "actions":[
+                  "set name=description value=\"DVD creation utilities\"",
+                ]
+              }
+            ],
+          }
+        }
+
+3.2.3  Performance Analysis
+
+    While a performance analysis was done for each variation during the
+    evaluation process, only the results for the chosen variation are
+    shown here.  Analyis was performed using a dump of the /dev repo
+    for builds 118 and prior consisting of 42,565 unique FMRIs.
+
+    Each format that was evaluated presented unique challenges.  While
+    the manifest-style provided simplicity and familiarity, it became
+    increasingly apparent during testing that any code that was used
+    to parse and write it would have to be changed significantly each
+    time changes were made to any in-memory structures that were used
+    as the source.  In contrast, the JSON format made it easy to re-use
+    the in-memory python structure as the same format to be written to
+    disk.
+
+    The uncompressed and gzip-compressed (provided because both Apache
+    and cherrypy are capable of gzip compressing requests) are shown
+    below for comparison.  Of special note is the 'all' catalog shown
+    below which was created to evaluate the feasbility of having a
+    single catalog that provided access to all commonly needed metadata
+    by combining the base, dependency, and summary catalogs proposed in
+    section 2.1.2.
+
+    =================================================================
+    Size Comparison
+    =================================================================
+    Catalog     Mfst. Sz.   JSON Sz.    Mfst. CSz.  JSON CSz.
+    -----------------------------------------------------------------
+    current     2.25  MiB   -           327 KiB     -
+    base        2.86  MiB   2.00  MiB   305 KiB     246 KiB
+    dependency  16.44 MiB   16.45 MiB   1.4 MiB     1.4 MiB
+    summary     7.58  MiB   7.36  MiB   483 KiB     475 KiB
+    all         21.16 MiB   21.47 MiB   1.6 MiB     1.6 MiB
+
+    The time needed to read and write each format is shown below for
+    comparison.  Several runs for each catalog were performed to verify
+    that the timings were consistent, and the load of each system was
+    checked to verify that timings were not skewed.
+
+    =================================================================
+    Base Catalog Timings
+    =================================================================
+    System          Mfst. Wr.   JSON Wr.    Mfst. Rd.   JSON Rd.
+    -----------------------------------------------------------------
+    mine            0.13s       0.41s       0.19s       0.05s
+    ipkg.sfbay      0.19s       0.58s       0.29s       0.08s
+    kodiak.eng      0.30s       0.99s       0.37s       0.08s
+    cuphead.sfbay   1.18s       3.41s       1.54s       0.33s
+    jurassic.eng    1.37s       3.77s       1.31s       0.46s
+    -----------------------------------------------------------------
+    Mean            0.63s       1.83s       0.74s       0.20s
+
+    =================================================================
+    Dependency Catalog Timings
+    =================================================================
+    System          Mfst. Wr.   JSON Wr.    Mfst. Rd.   JSON Rd.
+    -----------------------------------------------------------------
+    mine            0.42s       1.06s       1.13s       0.24s
+    ipkg.sfbay      0.98s       1.65s       1.70s       0.39s
+    kodiak.eng      0.91s       2.61s       2.22s       0.40s
+    cuphead.sfbay   6.05s       9.00s       8.57s       1.57s
+    jurassic.eng    3.87s       10.46s      6.48s       2.13s
+    -----------------------------------------------------------------
+    Mean            2.45s       4.96s       4.02s       0.95s
+
+    =================================================================
+    Summary Catalog Timings
+    =================================================================
+    System          Mfst. Wr.   JSON Wr.    Mfst. Rd.   JSON Rd.
+    -----------------------------------------------------------------
+    mine            0.16s       0.78s       0.58s       0.14s
+    ipkg.sfbay      0.33s       1.09s       0.86s       0.22s
+    kodiak.eng      0.35s       1.90s       1.10s       0.25s
+    cuphead.sfbay   2.02s       6.55s       4.41s       0.92s
+    jurassic.eng    1.35s       7.24s       3.34s       1.25s
+    -----------------------------------------------------------------
+    Mean            0.84s       3.51s       2.06s       0.56s
+
+    =================================================================
+    'all' Catalog Timings
+    =================================================================
+    System          Mfst. Wr.   JSON Wr.    Mfst. Rd.   JSON Rd.
+    -----------------------------------------------------------------
+    mine            0.51s       1.22s       1.48s       0.31s
+    ipkg.sfbay      1.22s       1.89s       2.30s       0.51s
+    kodiak.eng      1.09s       3.05s       2.93s       0.53s
+    cuphead.sfbay   7.35s       10.38s      11.15s      2.02s
+    jurassic.eng    4.57s       12.20s      8.28s       2.74s
+    -----------------------------------------------------------------
+    Mean            2.95s       5.75s       5.23s       1.22s
+
+    System Notes:
+    - 'mine' is an Intel Core 2 DUO E8600 with 8GiB RAM
+    - ipkg.sfbay is a dual Opteron 2218 with 16GiB RAM
+    - kodiak.eng is a SPARC64-VI box with 32GiB RAM
+    - cuphead.sfbay is an UltraSparc-T2 with 3GiB RAM
+      (likely ldom or zone)
+    - jurassic.eng is an UltraSPARC-III+ with 32GiB RAM
+
+    From the timings seen above, it should become apparent that JSON
+    serialization performance is, on average, noticeably slower when
+    compared to a simple manifest-style format.  In particular, this
+    is very noticeable on lower memory-bandwidth SPARC systems.
+    
+    It was discovered that the likely reason for poor serialization on
+    some SPARC systems is that simplejson uses a recursive function-
+    based iterative encoder that does not perform well on SPARC systems
+    (due to register windows?).
+
+    This is likely because the call stack depth for the encoder will
+    match that of any python structure that it encodes.  During the
+    evaluation of possible format variations, this resulted in a
+    hybrid approach that combined a python dict with a simple list
+    of actions with the hope that further improvements could be made
+    to simplejson at some future date.  Without this approach,
+    significant increases in write times were seen (20-30 seconds)
+    when using a pure dict-based structure.
+
+    Conversely though, JSON read performance, on average, is noticeably
+    faster compared a manifest-style format.  In part, this is because
+    more work has to be performed to transform the manifest-style format
+    into an equivalent python data structure.  Notably, there is a large
+    cost to sorting package versions after load (having the version data
+    in ascending order is extremely useful to the client).
+
+    Finally, a comparison of the heap size overhead (defined as the
+    difference between the size of the heap before loading a catalog
+    and after as measured on my x86 system) is shown for comparison
+    below:
+
+    =================================================================
+    'Heap' Overhead Comparison
+    =================================================================
+    Catalog     Mfst. Sz.   JSON Sz.    Increase Sz.    Inc. %
+    -----------------------------------------------------------------
+    base        9.16  MiB   12.45 MiB   +3.29  MiB      +35.92%
+    dependency  32.34 MiB   51.48 MiB   +19.14 MiB      +59.19%
+    summary     16.84 MiB   27.41 MiB   +10.57 MiB      +62.76%
+    all         39.87 MiB   63.88 MiB   +24.01 MiB      +60.22%
+
+3.3  Conclusion
+
+    When comparing the numbers alone, it seems as though the manifest-
+    style format should have been chosen based solely on:
+
+    - lower memory usage (43.6% less than JSON on average)
+
+    - faster write times (1.71s on average compared to 4.01s on average
+      for JSON)
+
+    However, ultimately, the manifest-style format was rejected for
+    reasons beyond simple numbers:
+
+    - desire for a defined grammar and syntax
+
+    - required maintaining custom parsing and storage code
+
+    - not easily extensible such that if additional metadata
+      was needed that a protocol or file format revision might
+      be required
+
+    - when weighing read performance vs. write performance,
+      read performance was considered more important as updates
+      to the catalog will happen far less freqeuntly than loads
+      of package data (loads took 3.01s on average for manifest-
+      style compared to 0.73s on average for JSON or about 75.75%
+      longer)
+
+    Instead, the JSON format was selected for the following reasons:
+
+    - full unicode support
+
+    - well-defined grammar and structure
+
+    - supported data types almost exactly mirror python's own
+      native data types
+
+    - allowed easy storage of existing action data of which
+      catalogs are essentially a summarized view of
+
+    - a python library for the parsing and writing of JSON is
+      part of python 2.6+
+
+    - JSON is easily portable to other systems and myriad
+      tools are available to parse and write it
+
+    - it is anticipated that the performance of simplejson will
+      only improve over time
+
+    As a final note, the approach of using separate catalogs for each
+    set of data instead of a single, merged catalog was used to reduce
+    memory usage and the amount of data that needs to be transferred
+    for clients.
+

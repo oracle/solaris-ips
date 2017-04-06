@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgrepo-1">
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgrepo</refname><refpurpose>Image Packaging System リポジトリ管理ユーティリティー</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgrepo create [--version <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo add-publisher -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>publisher</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo remove-publisher [-n] [--synchronous]
+    -s <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo get [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [<replaceable>section/property</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkgrepo info [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkgrepo list [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkgrepo contents [-m]
+    [-t <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]... -s <replaceable>repo_uri_or_path</replaceable>
+    [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable>...]</synopsis>
+<synopsis>/usr/bin/pkgrepo rebuild [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [--no-catalog] [--no-index]</synopsis>
+<synopsis>/usr/bin/pkgrepo refresh [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [--no-catalog] [--no-index]</synopsis>
+<synopsis>/usr/bin/pkgrepo remove [-n] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</synopsis>
+<synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</synopsis>
+<synopsis>/usr/bin/pkgrepo verify [-d] [-p <replaceable>publisher</replaceable>]...
+    [-i <replaceable>ignored_dep_file</replaceable>]...  [--disable <replaceable>verification</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo fix [-v] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo diff [-vq] [--strict] [--parsable] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>first_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    -s <replaceable>second_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkgrepo help</synopsis>
+<synopsis>/usr/bin/pkgrepo version</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgrepo-1-desc" role="description"><title></title>
+<para><command>pkgrepo</command> を使用すると、<literal>pkg</literal>(7) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの発行クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>サポートされているサブコマンドは次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
+<listitem><para>指定された場所に <literal>pkg</literal>(7) リポジトリを作成します。</para>
+<para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-version</option></term>
+<listitem><para>指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。サポートされるバージョンは次のとおりです。</para>
+<variablelist>
+<varlistentry><term>3</term>
+<listitem><para>1 つのパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>4</term>
+<listitem><para>複数のパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo add-publisher</command> <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</term>
+<listitem><para>指定された発行元をリポジトリに追加します。新しいパブリッシャーにパッケージや内容は含まれていません。</para>
+<para>このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo remove-publisher</command> [<option>n</option>] [<option>-synchronous</option>] <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</term>
+<listitem><para>指定されたパブリッシャーをリポジトリから削除します。指定されたパブリッシャーのすべてのパッケージとすべてのほかのデータを削除します。</para>
+<para>デフォルトパブリッシャーが削除され、リポジトリ内にパブリッシャーが 1 つだけ残った場合は、その残りのパブリッシャーがデフォルトになります。リポジトリの <literal>publisher/prefix</literal> プロパティーは、その残りのパブリッシャーに設定されます。</para>
+<para>デフォルトパブリッシャーが削除され、リポジトリ内に複数のパブリッシャーが残った場合、またはリポジトリ内の最後のパブリッシャーが削除された場合、<literal>publisher/prefix</literal> プロパティーは未設定になります。</para>
+<para>このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>n</option></term>
+<listitem><para>パブリッシャーの変更は行わずに試しに操作を実行します。終了する前に、パブリッシャーごとに削除されるパッケージの数が表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-synchronous</option></term>
+<listitem><para>操作が完了するのを待ってから戻ります。このオプションが指定されなかった場合、このコマンドはただちに戻りますが、パブリッシャーはバックグラウンドで非同期的に削除されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo get</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>section/property</replaceable> ...]</term>
+<listitem><para>リポジトリまたはその発行元のプロパティー情報を表示します。</para>
+<para>デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (<literal>""</literal>) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (<literal>\</literal>) でエスケープする必要があります。</para>
+<programlisting>; &amp; ( ) | ^ &lt; > &bsol; " ' `</programlisting>
+<para>発行元とリポジトリプロパティーの表示例については、「使用例」セクションを参照してください。</para>
+<para>プロパティーのリスト、および各プロパティーの目的と値については、下の <command>set</command> サブコマンドを参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>代替出力形式を指定します。<replaceable>format</replaceable> の値は、<literal>tsv</literal> (Tab Separated Values)、<literal>json</literal> (単一行としての JavaScript Object Notation)、または <literal>json-formatted</literal> (読みやすい形式にされた JavaScript Object Notation) にできます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option> </term>
+<listitem><para>一覧からヘッダーを省略します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元のプロパティー情報を表示します。特殊な値 <literal>all</literal> により、すべてのパブリッシャーのプロパティーが表示されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para><option>-key</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。<option>-cert</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section/property</replaceable></term>
+<listitem><para><literal> publisher/prefix</literal> や <literal>repository/version</literal> などの、指定されたプロパティーの値のみを表示します。プロパティーの完全な一覧については、<command> set</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo info</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>リポジトリで認識されているパッケージ発行元のリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元のデータのみを表示します。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ほかのすべてのオプションの説明については、前述の <command>pkgrepo get</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>指定された <replaceable>pkg_fmri_pattern</replaceable> にマッチする <replaceable>repo_uri_or_path</replaceable> リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<para>デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の <literal>o</literal> の値は、パッケージが廃止されていることを示します。ステータス列の <literal>r</literal> の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、<literal>pkg</literal>(7) を参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが一覧表示されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ほかのすべてのオプションの説明については、前述の <command>pkgrepo get</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo contents</command> [<option>m</option> [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable>...]</term>
+<listitem><para><replaceable>repo_uri_or_path</replaceable> リポジトリ内のすべてのパッケージを一覧表示します。<replaceable>pkg_fmri_pattern</replaceable> が指定された場合は、リポジトリ内の一致するすべてのパッケージの内容 (アクション属性) を表示します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>m</option></term>
+<listitem><para>指定されたパッケージ内のアクションのすべての属性を表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
+<listitem><para>指定されたパッケージ内の指定されたアクションのみを表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<literal>pkg</literal>(7) のマニュアルページの「アクション」に一覧表示されているアクションのいずれか (<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> など) です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ほかのすべてのオプションの説明については、前述の <command>pkgrepo get</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo rebuild</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>]</term>
+<listitem><para>リポジトリ内に見つかったすべてのカタログ、検索、およびその他のキャッシュされた情報を破棄し、それをリポジトリの現在の内容に基づいて再作成します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>パッケージデータを再構築しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>検索インデックスを再構築しません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ほかのすべてのオプションの説明については、前述の <command>pkgrepo get</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo refresh</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>] </term>
+<listitem><para>リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延発行 (<command>pkgsend</command> の <option>-no-catalog</option> または <option>-no-index</option> オプション) で使用されることを目的にしています。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>新しいパッケージを追加しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>検索インデックスを更新しません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ほかのすべてのオプションの説明については、前述の <command>pkgrepo get</command> コマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo remove</command> [<option>n</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</term>
+<listitem><para>リポジトリから、指定された <replaceable>pkg_fmri_pattern</replaceable> パターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<note><para>関連するパブリッシャーのすべての検索インデックスデータが削除されます。</para>
+</note>
+<para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
+<caution><para>この操作は元に戻せません。また、ほかのクライアントがそのリポジトリにアクセスしている間に使用すべきではありません。使用すると、それらのクライアントが取得操作中に失敗する可能性があります。</para></caution>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>n</option></term>
+<listitem><para>パッケージの変更は行わずに試しに操作を実行します。終了する前に、削除されるパッケージのリストが表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元の一致するパッケージのみを削除します。指定されていない場合は、すべてのパブリッシャーの一致するパッケージがすべて削除されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo set</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</term><term><command>pkgrepo set</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</term>
+<listitem><para>リポジトリまたは発行元の指定されたプロパティーの値を設定します。</para>
+<para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定された発行元のプロパティーデータのみを設定します。パブリッシャーがまだ存在しない場合は、追加されます。特殊な値 <literal>all</literal> を使用すると、すべての発行元のプロパティーを設定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>プロパティーと値は、次のいずれかの形式を使用して指定できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=</term>
+<listitem><para>プロパティー値をクリアーします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=<replaceable>value</replaceable></term>
+<listitem><para>プロパティー値を指定された値に置き換えます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=(<replaceable>value1</replaceable> <replaceable>value2</replaceable> <replaceable>valueN</replaceable>)</term>
+<listitem><para>プロパティー値を値のリストに置き換えます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>リポジトリバージョン 3 および 4 の場合は、リポジトリの次のプロパティーを設定できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>publisher/prefix</literal></term>
+<listitem><para>デフォルトのパブリッシャーの名前を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。この値は、複数のパブリッシャーのパッケージが存在するとき、またはパッケージがリポジトリに公開されているが、パブリッシャーが指定されていないときに使用されるべきパブリッシャーを示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>リポジトリバージョン 3 および 4 の場合は、リポジトリ内の個々のパブリッシャーの次のプロパティーを設定できます。これらのプロパティーを設定するときは、<option>p</option> オプションを使用して 1 つ以上のパブリッシャーを指定します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>publisher/alias</literal></term>
+<listitem><para>リポジトリの構成データを使用してパブリッシャーを追加するときにクライアントが使用すべきデフォルトの別名を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/check-certificate-revocation</literal></term>
+<listitem><para>証明書が失効したかどうかを検査する boolean。このプロパティーを <literal>True</literal> に設定すると、<command>pkgrepo verify</command> および <command>pkgrepo fix</command> コマンドは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。デフォルト値は <literal>False</literal> です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する <literal>pkg</literal>(1) プロパティー値と同じである必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/collection_type</literal></term>
+<listitem><para>このリポジトリで提供されるパッケージのタイプを示す値 <literal>core</literal> または <literal>supplemental</literal> を持つことができます。</para>
+<para><literal>core</literal> タイプは、このリポジトリにはリポジトリ内のパッケージによって宣言されたすべての依存関係が含まれていることを示します。<literal>core</literal> タイプは主に、オペレーティングシステムリポジトリに使用されます。</para>
+<para><literal>supplemental</literal> タイプは、このリポジトリには、別のリポジトリ内に配置されているパッケージに依存するか、またはそれらのパッケージとともに使用されるためのパッケージが含まれていることを示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/description</literal></term>
+<listitem><para>リポジトリの目的と内容を説明した標準テキストの段落。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/detailed_url</literal></term>
+<listitem><para>リポジトリに関する追加情報を提供するドキュメント (Web ページなど) の場所を表す URI。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/legal_uris</literal></term>
+<listitem><para>リポジトリに関する追加の使用条件情報を提供するドキュメントの場所 (URI) のリスト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/mirrors</literal></term>
+<listitem><para>リポジトリのパッケージ内容のコピーを含むが、パッケージのメタデータは含まないリポジトリの場所 (URI) のリスト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/name</literal></term>
+<listitem><para>リポジトリの名前を含む標準テキスト文字列。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/origins</literal></term>
+<listitem><para>リポジトリのパッケージのメタデータと内容の完全なコピーを含むリポジトリの場所 (URI) のリスト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/refresh_seconds</literal></term>
+<listitem><para>クライアントが、更新されたパッケージデータがあるかどうかを調べるためにリポジトリをチェックする際に、各更新チェックのあとに待つべき秒数を表す整数値。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/registration_uri</literal></term>
+<listitem><para>リポジトリへのアクセスのための資格を取得するために使用する必要のあるリソースの場所を表す URI。この 1 つの例に、登録 Web ページがあります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/related_uris</literal></term>
+<listitem><para>ユーザーが関心を持っている可能性があるパッケージを含むリポジトリの場所 (URI) のリスト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/signature-required-names</literal></term>
+<listitem><para>パッケージの署名の検証中に、証明書の共通名として表示される必要のある名前の一覧です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。これらの値は、対応する <literal>pkg</literal>(1) プロパティー値と同じである必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/trust-anchor-directory</literal></term>
+<listitem><para>このリポジトリ内のパッケージのトラストアンカーを含むディレクトリの絶対パス名。指定しない場合、<filename>/etc/certs/CA/</filename> が使用されます。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する <literal>pkg</literal>(1) プロパティー値と同じである必要があります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ここには記載されていないが <command>get</command> サブコマンドの出力に一覧表示されるプロパティーは、内部使用のために予約されているため、設定しないようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo verify</command> [<option>d</option>] [<option>p</option> <replaceable>publisher</replaceable>]... [<option>i</option> <replaceable>ignored_dep_file</replaceable>]... [<option>-disable</option> <replaceable>verification</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>パッケージリポジトリの内容の次の属性が正しいことを検証します。</para>
+<itemizedlist>
+<listitem><para>ファイルのチェックサム</para></listitem>
+<listitem><para>ファイルのアクセス権</para><para><literal>pkg5srv</literal> ユーザーがリポジトリの内容を読み取ることができることを確認するために、リポジトリへのパスも検査されます。この検査は、<literal>svc:/application/pkg/server</literal> サービスを使用するか、システムに非大域ゾーンがある場合に <literal>svc:/application/pkg/system-repository</literal> サービスを使用することによって使用できるようになるリポジトリに対して必要になることがあります。</para>
+</listitem>
+<listitem><para>パッケージマニフェストのアクセス権</para></listitem>
+<listitem><para>パッケージマニフェストの内容</para></listitem>
+<listitem><para>パッケージ署名</para><para>パッケージマニフェスト署名は、<literal>repository/signature-required-names</literal>、<literal>repository/trust-anchor-directory</literal>、および <literal>repository/check-certificate-revocation </literal> プロパティーの値に基づいて計算されます。</para>
+</listitem>
+</itemizedlist>
+<para>エラーは <literal>stdout</literal> に出力されます。何らかのエラーが出力された場合、<command>pkgrepo</command> コマンドはゼロ以外の戻りコードで終了します。</para>
+<para>このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>完全な依存関係の検証を実行します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
+<listitem><para>依存関係の検証を実行しますが、ファイル内で指定された依存関係は無視します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
+<listitem><para>指定された検証を無効にします。現在の使用可能な値: <literal>dependency</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>最初にリポジトリを検証し、無効なリポジトリの内容をリポジトリ内の検疫ディレクトリに移動することによって、リポジトリの内容を修正します。</para>
+<para>リポジトリエラーが見つかった場合は、リポジトリの再構築が自動的に実行されます。エラーが見つかった場合は、メッセージが <literal>stdout</literal> に出力され、リポジトリ内容を復元するために <literal>pkgsend</literal>(1) または <literal>pkgrecv</literal>(1) を使用して再インポートする必要があるパッケージが示されます。</para>
+<para>このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>リポジトリの検証時に見つかったエラーを詳述する出力が含まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo diff</command> [<option>vq</option>] [<option>-strict</option>] [<option>-parsable</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>first_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... <option>s</option> <replaceable>second_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>2 つのリポジトリを比較し、差異を示します。</para>
+<para>出力行の先頭にある <literal>-</literal> 記号は最初のリポジトリにのみ見つかった項目を示すのに対し、<literal>+</literal> 記号は 2 つ目のリポジトリにのみ見つかった項目を示します。先頭に記号がないものは、共通項目を意味します。
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>per-fmri 出力を含む比較の詳細の出力を含めます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>非出力比較を実行します。出力は生成されません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-strict</option></term>
+<listitem><para>カタログの最後の変更時のタイムスタンプを比較します。これは 1 つのリポジトリがもう 1 つの正確なクローンであるかどうかを判断するために役立ちます。</para>
+</listitem>
+<varlistentry><term><option>-parsable</option></term>
+<listitem><para>解析可能な出力を JSON 形式で生成します。</para>
+</listitem>
+</varlistentry>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>指定された URI またはファイルシステムのパスにあるリポジトリを操作します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para><option>-key</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。<option>-cert</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。最初の <option>s</option> のあとで、2 つ目の <option>s</option> の前に指定されたペアは、最初のリポジトリに適用されます。2 つ目の<option>s</option> のあとに指定されたペアは 2 つ目のリポジトリに適用されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo help</command></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo version</command></term>
+<listitem><para><literal>pkg</literal>(7) システムのバージョンを識別する一意の文字列を表示します。<command>version</command> 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>パッケージリポジトリを作成する</title>
+<screen>$ <userinput>pkgrepo create /my/repository</userinput></screen>
+</example>
+<example><title>情報を表示する</title>
+<para>パブリッシャーのサマリーと、リポジトリ内のパッケージの数を表示します。
+</para>
+<screen>$ <userinput>pkgrepo info -s /my/repository</userinput>
+PUBLISHER   PACKAGES STATUS UPDATED
+example.com 5        online 2011-07-22T18:09:09.769106Z
+$ <userinput>pkgrepo info -s http://pkg.oracle.com/solaris/release/</userinput>
+PUBLISHER PACKAGES STATUS UPDATED
+solaris   3941     online 2010-11-12T19:24:25.967246Z</screen>
+</example>
+<example><title>カタログと検索データを再構築する</title>
+<para>リポジトリのカタログと検索データを再構築します。</para>
+<screen>$ <userinput>pkgrepo rebuild -s /my/repository</userinput></screen>
+</example>
+<example><title>カタログと検索データを再表示する</title>
+<para>リポジトリのカタログと検索データを再表示します。</para>
+<screen>$ <userinput>pkgrepo refresh -s /my/repository</userinput>
+$ <userinput>pkgrepo refresh -s http://example.com/repository</userinput></screen>
+</example>
+<example><title>すべてのリポジトリプロパティーを表示する</title>
+<screen>$ <userinput>pkgrepo get -s /export/repoSolaris11</userinput>
+SECTION    PROPERTY    VALUE
+publisher  prefix      solaris
+repository description Local&bsol; copy&bsol; of&bsol; the&bsol; Oracle&bsol; Solaris&bsol; 11&bsol; repository
+repository name        Oracle&bsol; Solaris&bsol; 11
+repository version     4
+$ <userinput>pkgrepo get -s http://pkg.oracle.com/solaris/release/</userinput>
+SECTION    PROPERTY VALUE
+deployment content  s11_11-11
+deployment pubdate  20111102T222051Z
+publisher  prefix   solaris
+repository version  4</screen>
+</example>
+<example><title>すべてのパブリッシャープロパティーを表示する</title>
+<screen>$ <userinput>pkgrepo get -s http://pkg.oracle.com/solaris/release/ -p all</userinput>
+PUBLISHER SECTION    PROPERTY         VALUE
+solaris   publisher  alias
+solaris   publisher  prefix           solaris
+solaris   repository collection-type  core
+solaris   repository description      This&bsol; repository&bsol; serves&bsol; the&bsol; Oracle&bsol;
+Solaris&bsol; 11&bsol; Package&bsol; repository.
+solaris   repository legal-uris       ()
+solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
+solaris   repository name             Oracle&bsol; Solaris&bsol; 11&bsol; Package&bsol; Repository
+solaris   repository origins          ()
+solaris   repository refresh-seconds
+solaris   repository registration-uri ""
+solaris   repository related-uris     ()</screen>
+</example>
+<example><title>デフォルトのパブリッシャーを設定する</title>
+<screen>$ <userinput>pkgrepo set -s /my/repository publisher/prefix=example.com</userinput></screen>
+</example>
+<example><title>パブリッシャープロパティーを設定する</title>
+<screen>$ <userinput>pkgrepo set -s /my/repository -p example.com &bsol;</userinput>
+<userinput>repository/origins=http://example.com/repository</userinput></screen>
+</example>
+<example><title>新しいパブリッシャーをリポジトリに追加する</title>
+<screen>$ <userinput>pkgrepo add-publisher -s /my/repository example.com</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドは成功しました (または pkgrepo diff での差異がありませんでした)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>複数の操作が要求されましたが、それらの一部のみが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>4</returnvalue></term>
+<listitem><para>変更は行われませんでした。処理がありません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>pkgrepo diff で差異が見つかりました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para><command>pkgrepo</command> のほとんどの操作は、パッケージアーカイブでは使用できません。パッケージアーカイブは、<literal>pkgrecv</literal>(1) のマニュアルページの <option>a</option> オプションで説明されているように、通常は <filename>.p5p</filename> 拡張子を持つファイルです。パッケージアーカイブには、パッケージが含まれていますが、リポジトリ構成は含まれていません。ただし、<command>pkgrepo list</command>、<command>pkgrepo info</command>、および <command>pkgrepo contents</command> コマンドは、パッケージアーカイブに対して動作します。</para>
+</refsect1>
+</refentry>

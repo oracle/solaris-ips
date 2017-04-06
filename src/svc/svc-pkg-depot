@@ -1,0 +1,290 @@
+#!/usr/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+#
+
+. /lib/svc/share/smf_include.sh
+
+APACHE_HOME=/usr/apache2/2.4
+APACHE_ETC_ROOT=/etc/pkg/depot
+APACHE_BIN=${APACHE_HOME}/bin
+
+HTTPD=${APACHE_BIN}/apachectl
+
+
+function check_prop {
+	if [ -z "$1" ]; then
+		echo "ERROR: SMF property for $2 was empty"
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+}
+
+function get_pair {
+        NAME=$1
+        shift 2
+        echo "${NAME}=\"$@\""
+        echo "export ${NAME}"
+}
+
+# A function to pull in the config properties from the FMRI given
+# as the first argument. This allows us to make a single call
+# to svcprop, rather than calling svcprop for each value we
+# want to retrieve.
+function get_smf_props {
+
+	IFS="
+"
+	SMF_PROPS="$(svcprop -t -p config $1 |\
+        	sed -e 's#config/#depot_#g' -e 's/$/,/g')"
+	IFS=,
+	for line in $SMF_PROPS ; do
+        	IFS=' 
+'
+        	eval $(get_pair $line)
+	done
+}
+
+
+function check_failure {
+	RESULT=$1
+	MESSAGE=$2
+	NON_FATAL=$3
+	if [ $RESULT -ne 0 ]; then
+		echo $MESSAGE
+		if [ -n "$NON_FATAL" ]; then
+			return
+		fi
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+}
+
+function check_apache_failure {
+	RESULT=$1
+	MESSAGE=$2
+	if [ $RESULT -ne 0 ]; then
+		echo $MESSAGE
+		kill_apache
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+}
+
+function abspath {
+	# print a normalized version of a path, needed because
+	# many utilities will not dereference non-existent directories
+	# in path names, e.g. cat /etc/no-such-dir/../motd will fail.
+	echo $1 | /usr/bin/python -c \
+    'import os.path ; import sys ; print os.path.normpath(sys.stdin.read())'
+}
+
+function run_depot {
+        if [ "${depot_https}" == "true" ]; then
+                https_cmd="--https"
+                smf_fmri_cmd="--smf-fmri ${SMF_FMRI}"
+                if ! [ -z "${depot_ssl_cert_file}" ]; then
+                        ssl_cert_file_cmd="--cert ${depot_ssl_cert_file}"
+                fi
+                if ! [ -z "${depot_ssl_key_file}" ]; then
+                        ssl_key_file_cmd="--key ${depot_ssl_key_file}"
+                fi
+                if ! [ -z "${depot_ssl_ca_cert_file}" ]; then
+                        ssl_ca_cert_file_cmd="--ca-cert ${depot_ssl_ca_cert_file}"
+                fi
+                if ! [ -z "${depot_ssl_ca_key_file}" ]; then
+                        ssl_ca_key_file_cmd="--ca-key ${depot_ssl_ca_key_file}"
+                fi
+                if ! [ -z "${depot_ssl_cert_key_dir}" ]; then
+                        ssl_cert_key_dir_cmd="--cert-key-dir ${depot_ssl_cert_key_dir}"
+                fi
+                if ! [ -z "${depot_ssl_cert_chain_file}" ]; then
+                        ssl_cert_chain_file_cmd="--cert-chain ${depot_ssl_cert_chain_file}"
+                fi
+        fi
+        /usr/lib/pkg.depot-config \
+            -S \
+            -c ${depot_cache_dir} \
+            -h ${depot_host} \
+            -l ${depot_log_dir} \
+            -p ${depot_port} \
+            -r ${depot_runtime_dir} \
+            -s ${depot_cache_max} \
+            -T ${depot_template_dir} \
+            -t apache2 ${https_cmd} \
+            ${smf_fmri_cmd} \
+            ${ssl_cert_file_cmd} \
+            ${ssl_key_file_cmd} \
+            ${ssl_ca_cert_file_cmd} \
+            ${ssl_ca_key_file_cmd} \
+            ${ssl_cert_key_dir_cmd} \
+            ${ssl_cert_chain_file_cmd} \
+            ${depot_allow_refresh}
+	failure=$?
+	if [ ${failure} -ne 0 ] ; then
+		# make sure we leave nothing behind
+		kill_apache
+		kill_htcacheclean
+	        check_failure $failure \
+	            "pkg.depot-config: failed to create Apache config"
+	fi
+}
+
+function run_htcacheclean {
+	# if we dropped to maintenance and are in the process of
+	# clearing that state,  we may have htcacheclean processes
+	# hanging around.
+	kill_htcacheclean
+	if [ "${depot_cache_max}" != "0" ] ; then
+		# Start a cache cleaning daemon, scanning every 2 weeks,
+		# being intelligent about only running if the cache has
+		# changed, limiting the cache to ${depot_cache_max}
+		# megabytes, being nice about scheduling and removing
+		# empty directories if necessary.
+	       interval=$((60 * 24 * 14))
+               /usr/apache2/2.4/bin/htcacheclean \
+                       -d${interval} -i -l ${depot_cache_max}M -n \
+                       -p ${depot_cache_dir} \
+                       -P ${depot_cache_dir}/../depot_htcacheclean.pid \
+                       -t
+               check_failure $? "htcacheclean failed to run cleanly"
+       fi
+}
+
+function kill_htcacheclean {
+	pid_file=$(abspath ${depot_cache_dir}/../depot_htcacheclean.pid)
+	if [ -f $pid_file ]; then
+                PID=$(< $pid_file)
+                /usr/bin/kill -TERM $PID
+                check_failure $? "failed to kill htcacheclean process\
+ $PID" "not_fatal"
+        fi
+}
+
+function kill_apache {
+	# We go to lengths to kill remaining httpd processes: if we kill
+	# just the pid, then child httpd processes become zombies,
+	# hanging onto the server port, which causes problems
+	# when trying to start a service that is transitioning from
+	# maintenance.
+	# This function should only be called when the service is
+	# transitioning to maintenance: normal Apache shutdown is
+	# preferable.
+	pid_file=$(abspath ${depot_runtime_dir}/../depot_httpd.pid)
+	if [ -f $pid_file ]; then
+		PID=$(< $pid_file)
+		/usr/bin/ptree $PID | /usr/bin/awk '{print $1}' | \
+		    /usr/bin/xargs /usr/bin/kill -TERM
+		check_failure $? "failed to kill apache process $PID" \
+		    "not_fatal"
+		/usr/bin/rm $pid_file
+	fi
+}
+
+function server_ping {
+	# Ping the service, ensuring the index gets built if does
+	# not exist.
+	# Since curl --retry uses an exponential backoff algorithm, this
+	# can result in us waiting 40 seconds, which ought to be long
+	# enough for Apache to come online. (index refreshes are run in
+	# the background on the server after it has returned a response)
+	url="http://${depot_host}:${depot_port}"
+	ipv6=$(echo ${depot_host} | /usr/bin/grep :)
+	if [ -n "$ipv6" ] ; then
+		url="http://\[${depot_host}\]:${depot_port}"
+	fi
+	/usr/bin/curl -s --max-time 5 --retry 4 -o /dev/null ${url} \
+2> /dev/null
+	check_failure $? "Unable to access the server at ${url}. Check\
+ the SMF service log or the error log at ${depot_log_dir}/error_log for\
+ more information, if any."
+}
+
+get_smf_props $SMF_FMRI
+check_prop ${depot_host} config/host
+check_prop ${depot_port} config/port
+check_prop ${depot_log_dir} config/log_dir
+check_prop ${depot_template_dir} config/template_dir
+check_prop ${depot_runtime_dir} config/runtime_dir
+check_prop ${depot_cache_dir} config/cache_dir
+check_prop ${depot_cache_max} config/cache_max
+check_prop ${depot_https} config/https
+check_prop ${depot_allow_refresh} config/allow_refresh
+if [ "${depot_allow_refresh}" == "true" ] ; then
+	depot_allow_refresh="-A"
+else
+	depot_allow_refresh=""
+fi
+
+FAILED_TO_RUN="Server failed to %s. Check the SMF service log or the\
+ error log at ${depot_log_dir}/error_log for more information, if any."
+
+
+case "$1" in
+"start")
+	cmd="start"
+	run_depot
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
+	run_htcacheclean
+        emsg=$(/usr/bin/printf ${FAILED_TO_RUN} start)
+	${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
+            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+ 	check_apache_failure $? $emsg
+        server_ping
+	;;
+"refresh")
+	cmd="graceful"
+	run_depot
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
+	kill_htcacheclean
+	run_htcacheclean
+        emsg=$(/usr/bin/printf ${FAILED_TO_RUN} refresh)
+	${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
+            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+	check_apache_failure $? $emsg
+        server_ping
+	;;
+"stop")
+	cmd="stop"
+	kill_htcacheclean
+        emsg=$(/usr/bin/printf ${FAILED_TO_RUN} stop)
+        # If https service is on and user blindly deleted the certificate dir,
+        # then the stop method will cause error due to not find certificate
+        # and key files. Instead of causing this error, we kill the apache
+        # instance manually.
+        if [[ "${depot_https}" == "true" && \
+            ! ( -f "${depot_ssl_cert_file}" && \
+            -f "${depot_ssl_key_file}" ) ]]; then
+                kill_apache
+        else
+	        ${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
+                    ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+        fi
+	check_apache_failure $? $emsg
+	;;
+*)
+	echo "Usage: $0 {start|stop|refresh}"
+	exit $SMF_EXIT_ERR_CONFIG
+	;;
+esac
+
+exit $SMF_EXIT_OK

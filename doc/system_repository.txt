@@ -1,0 +1,106 @@
+System Repository and Publishers
+
+Introduction: 
+
+Linked images, and zones in particular, must keep certain packages
+in sync with the global zone in order to be functional. The global zone will
+constrain packages within the non-global zones and configure special publishers
+in the non-global zone (NGZ). These publishers (henceforth called system
+publishers) are special because the non-global zone cannot make certain kinds of
+modifications to them. Among the forbidden operations for the non-global zone on
+the system publishers are deleting, disabling, removing or replacing origins
+provided by the system repository, and any other operations which might prevent
+the solver from meeting the constraints imposed by the constraint package. The
+global zone must provide the means for the non-global zone to configure itself
+with system publishers by providing information like origins. The global zone
+also has to provide a connection to the system publishers' repositories which is
+available even in a scratch zone.
+
+
+The Data path:
+
+The pkg client in the NGZ uses the system repository in the global zone as a
+proxy to the system publishers.  To ensure that a communication path between the
+pkg client in the NGZ and the system repository in the global zone always
+exists, the zone proxy client and the zone proxy daemon were created.
+
+The zone proxy client runs in the NGZ. When started, it creates a socket which
+listens on an inet port on 127.0.0.1 in the NGZ. It passes the file descriptor
+for this socket to the zone proxy daemon in the global zone via a door call. The
+zone proxy daemon listens for connections on the file descriptor. When zone
+proxy daemon receives a connection, it proxies the connection to the system
+depot.  The system depot is an Apache instance running in the global zone which
+provides connectivity to and configuration of publishers.
+
+The system depot acts as a proxy for the http and https repositories for
+the publishers it provides.  When proxying to https repositories, it uses the
+keys and certificates in the global zone to identify itself and verify the
+server's identity.  It also provides a http interface to the file repositories
+for the publishers it provides as well as serving publisher and image
+configuration via the syspub/0 response.
+
+
+Configuration:
+
+The syspub/0 response is a p5s file.  The p5s file contains publisher
+configuration and image configuration.  Currently, the only image configuration
+it contains is the publisher search order for the provided publishers, but other
+information may be added to the response as needed.  In addition to the basic
+collection of publisher information, the p5s file also contains a list of URIs
+which the pkg client should proxy to via the system depot instead of contacting
+them directly.  When creating a p5s file, the URI for origins and mirrors can
+be transformed.  HTTPS URIs are transformed to HTTP URIs since the system depot
+will be doing the SSL communication, not the pkg client.  File URIs are
+transformed into HTTP URIs with a special format.  The URIs contain the special
+token "<sysrepo>" which the p5s parser knows to replace with the URI of the zone
+proxy client.  The rest of the URI contains the prefix of the publisher, then
+the sha1 hash of the global zone path to the file repository.
+
+The information for the syspub/0 response comes from the global zone's image's
+configuration.  The application/pkg/system-repository service is responsible for
+transforming the image configuration into an Apache configuration file and
+causing the system depot to reread its configuration.  The global zone
+pkg client restarts the application/pkg/system-repository service whenever the
+image's publisher configuration changes.
+
+The Apache configuration file, written by sysrepo.py using the Mako template
+sysrepo_httpd.conf.mako does two things:
+
+ * enables an Apache proxy accepting only requests to the configured
+   publisher http URIs (and utilizes a file-based proxy cache) only listening
+   on the loopback interface by default.
+
+ * adds a series of mod_rewrite RewriteRule and Alias directives to allow
+   the Apache instance to gain access to configured file:// publishers.
+
+The Apache URIs are accessible from the system repository configured at
+'<sysrepo>' for a given publisher '<publisher>' are below.
+
+We serve static responses to the following URIs, the content being either
+a known versions file, or the p5s file mentioned above:
+
+  http://<sysrepo>/versions/0/
+  http://<sysrepo>/syspub/0
+
+For access to file:// repositories, we use rewrite rules and Alias directives to
+access the file repository contents.  In order to allow repositories with
+different paths, yet prevent exposing those paths to system repository clients,
+we use an SHA-1 hash of the path, and include that in the URI (below, this hash
+is represented by "HASH")  The URIs we accept for file:// repositories are:
+
+  http://<sysrepo>/<publisher>/HASH/file/1/<file hash>
+  http://<sysrepo>/<publisher>/HASH/manifest/0/<package name@version>
+  http://<sysrepo>/<publisher>/HASH/publisher/0
+  http://<sysrepo>/<publisher>/HASH/versions/0
+
+The system publisher also responds to 'OPTIONS * HTTP/1.0' requests.
+
+When we detect that a request to a given <publisher>/HASH refers to a GZ
+publisher within a .p5p archive, that request is rewritten so that a custom WSGI
+application, sysrepo_p5p.py handles the request.  That application accepts URIs
+of the form:
+
+  http://<sysrepo>/wsgi_p5p?pub=<publisher>&hash=HASH&path=<path>
+
+where path is the remainder of the original system repository file:// URI, after
+the <publisher> and HASH components have been removed.

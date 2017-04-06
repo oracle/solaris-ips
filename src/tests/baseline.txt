@@ -1,0 +1,8 @@
+testsuite.t_setup_teardown.py TestSetupFailing.test_shoulderror1|error
+testsuite.t_setup_teardown.py TestSetupFailing.test_shoulderror2|error
+testsuite.t_setup_teardown.py TestSetupFailingEarly.test_shoulderror1|error
+testsuite.t_setup_teardown.py TestSetupFailingEarlyP.test_shoulderror1|error
+testsuite.t_setup_teardown.py TestSetupFailingP.test_shoulderror1|error
+testsuite.t_setup_teardown.py TestSetupFailingP.test_shoulderror2|error
+testsuite.t_setup_teardown.py TestTeardownFailing.test_shoulderror1|error
+testsuite.t_setup_teardown.py TestTeardownFailing.test_shoulderror2|error

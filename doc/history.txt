@@ -1,0 +1,221 @@
+
+pkg
+HISTORY
+
+1. Summary
+
+The intent of history is to enable pkg clients to maintain a record of all
+image-modifying operations that they perform.
+
+2. Discussion
+
+2.1 Operations
+
+    The following operations are currently recorded by the clients that are
+    part of pkg(5):
+
+        add-publisher
+        image-create
+        image-set-attributes
+        update
+        install
+        purge-history
+        rebuild-index
+        refresh-publisher
+        remove-publisher
+        set-publisher
+        set-preferred-publisher
+        uninstall
+        update-publisher
+
+    These operations were chosen because they have the potential to alter the
+    behavior of pkg(5) operations or because they modify an image.
+
+3. History Entries
+
+3.1 Information Recorded
+
+    Each history entry contains a record of basic information about the client
+    performing the operation, along with a mix of required and optional
+    information about the operation performed.
+
+    The following information about the client is always recorded:
+
+        client_name     - The name of the client performing the operation
+                          (e.g. pkg, packagemanager)
+
+        client_version  - The value of pkg.VERSION at the time the client
+                          performed the operation (e.g. 2e5300c4f0a4+)
+
+        client_args     - The command-line arguments used when executing the
+                          client (e.g. /usr/bin/pkg install foo)
+
+    The following information about the operation performed is always recorded:
+
+        operation_name  - The name of the operation performed (refer to 2.1)
+
+        start_time      - When the operation started (e.g. 20080916T214726Z)
+
+        end_time        - When the operation ended (e.g. 20080916T214800Z)
+
+        userid          - The id of the user that performed the operation
+                          (e.g. 0)
+
+        username        - The username of the user that performed the operation
+                          (e.g. root)
+
+        result          - The outcome of the operation and the reason for it
+                          (e.g. Failed, Transport) This maps to the pkg history
+                          output columns of 'outcome' and 'reason'.
+
+    The following information about the operation will be recorded if provided
+    by the client or api:
+
+        start_state     - Information about the operation requested before any
+                          evaluation of that request is performed (e.g. an
+                          image plan before evaluation)
+
+        end_state       - Information about the operation requested after
+                          evaluation of that request has been performed (e.g.
+                          image plan after evaluation)
+
+        errors          - Any errors that were encountered while performing the
+                          operation (i.e. tracebacks, exceptions, etc.)
+
+        be              - The name of the boot environment on which the
+                          operation was performed
+
+        be_uuid         - The uuid corresponding to the boot environment
+
+        new_be          - The name of any new boot environment that was created
+                          while performing the operation.
+
+        new_be_uuid     - The uuid corresponding to the new boot environment
+
+        snapshot        - The name of the snapshot that was taken as a result of
+                          this operation.  If the operation completed
+                          successfully and the snapshot was destroyed, this
+                          this information is not stored.
+
+3.2 Storage
+
+    Each history entry is recorded in a XML file located in the metadata
+    directory of an image (e.g. /var/pkg) in a directory named "history".
+    Each XML file is named after the pattern %Y%m%dT%H%M%SZ-sequence.xml.
+    Where sequence is a numeric value appended so that when multiple
+    operations are performed on an image within the same second (e.g. -02,
+    -03, etc.) entries are still written correctly.
+
+3.3 File Format
+
+    It should be noted that this format description is that of a private
+    interface and is subject to change.
+
+    History entries are recorded in a XML file with a fairly simplistic
+    structure.  The format is as follows:
+
+        The first line of each file is a standard xml header along with the
+        encoding used to save the information.  This allows the pkg history
+        command to correctly display this information if the client changes
+        locales later.
+
+        <?xml version="1.0" encoding="ascii"?>
+
+        The second element of every history XML file is a root element used to
+        contain the client and operation information.  Only one per file ever
+        occurs.
+
+        <history>
+
+            The client element has a name and version attribute used to record
+            client_name and client_version.  Only one per file ever occurs.
+
+            <client name="pkg" version="2e5300c4f0a4+">
+
+                The args element contains one or more "arg" (argument) elements
+                that match each element of the system argument list used to
+                execute the client.  It has no attributes.  Only one per file
+                ever occurs.
+
+                <args>
+
+                    Each arg element contains a CDATA element to encapsulate
+                    the raw information for the argument.  It has no attributes.
+
+                    <arg>
+                        <![CDATA[/usr/bin/pkg]]>
+                    </arg>
+                    <arg>
+                        <![CDATA[-R]]>
+                    </arg>
+                    <arg>
+                        <![CDATA[/tmp/test-image]]>
+                    </arg>
+                    <arg>
+                        <![CDATA[install]]>
+                    </arg>
+                    <arg>
+                        <![CDATA[SUNWvim]]>
+                    </arg>
+                </args>
+            </client>
+
+            The operation element has the following attributes: name,
+            start_time, end_time, userid, and username.  Optional attributes
+            are be, snapshot and new_be, indicating the boot environment the
+            operation was applied to, the snapshot taken during this operation,
+            and any new boot environment created as a result.
+            It can also contain the following, optional elements: start_state,
+            end_state, and errors.  It only occurs once per file.
+
+            <operation end_time="20080912T225513Z" name="install" result="Succeeded"
+                start_time="20080912T225327Z" userid="101" be="solaris" username="username">
+
+                The start_state element is used to store information about the
+                operation performed before a request is evaluated (e.g. image
+                plan before evaluation).  It always contains a CDATA element with
+                the related information and only occurs once per file.  It has no
+                attributes.
+
+                <start_state>
+                    <![CDATA[UNEVALUATED:
+                    +pkg:/SUNWvim@7.1.284,5.11-0.96:20080825T192756Z
+                    ]]>
+                </start_state>
+
+                The end_state element is used to store information about the
+                operation performed after a request is evaluated (e.g. image
+                plan after evaluation).  It always contains a CDATA element with
+                the related information and only occurs once per file.  It has no
+                attributes.
+
+                <end_state>
+                    <![CDATA[None -> pkg:/SUNWvim@7.1.284,5.11-0.96:20080825T192756Z
+                    None -> pkg:/SUNWcsl@0.5.11,5.11-0.96:20080825T183047Z
+                    None -> pkg:/SUNWpool@0.5.11,5.11-0.96:20080825T191747Z
+                    None -> pkg:/SUNWlxml@2.6.31,5.11-0.96:20080825T191518Z
+                    None -> pkg:/SUNWzlib@1.2.3,5.11-0.96:20080825T193230Z
+                    None -> pkg:/SUNWlibms@0.5.11,5.11-0.96:20080825T191411Z
+                    None -> pkg:/SUNWopenssl@0.9.8,5.11-0.96:20080825T194948Z
+                    None -> pkg:/SUNWlibsasl@0.5.11,5.11-0.96:20080825T191417Z
+                    None -> pkg:/SUNWpr@0.5.11,5.11-0.96:20080825T192030Z
+                    None -> pkg:/SUNWtls@0.5.11,5.11-0.96:20080825T192639Z
+                    ]]>
+
+                The errors element contains one or more "error" elements
+                that encapsulate the information about each error that was
+                recorded during the operation.  It has no attributes, and
+                only occurs once per file.
+
+                <errors>
+
+                    Each error element contains a CDATA element to encapsulate
+                    the raw information about the error.  It has no attributes.
+
+                    <error>
+                        <![CDATA[]]>
+                    </error>
+                </errors>
+            </operation>
+        </history>
+

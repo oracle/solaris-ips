@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkg.sysrepo-8">
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum>
+<refmiscinfo class="date">21 May 2013</refmiscinfo>
+<refmiscinfo class="sectdesc">&man8;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.sysrepo</refname><refpurpose>Image Packaging System system repository configuration</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.sysrepo -p <replaceable>port</replaceable> [-c <replaceable>
+cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
+    [-w <replaceable>http_proxy</replaceable>] [-W <replaceable>https_proxy</replaceable>]
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsysrepo-8-desc" role="description"><title></title>
+<para><command>pkg.sysrepo</command> is used to generate the configuration
+files for the Image Packaging System (IPS) system repository. <command>pkg.sysrepo
+</command> is called by the <literal>svc:/application/pkg/system-repository</literal> Service
+Management Facility (SMF) service. Changes in configuration should be made
+to the properties in the SMF service.</para>
+<para>The system repository is responsible for providing access to the package
+repositories configured in a reference image through a centralized proxy.
+Publisher configuration changes made to that reference image are seen immediately
+by any clients configured to use the system repository.</para>
+<para>The system repository is primarily used in the global zone to allow
+non-global zones to access the repositories configured in the global zone.
+The SMF services <literal>svc:/application/pkg/zones-proxyd</literal> and <literal>
+svc:/application/pkg/zones-proxy-client</literal> are responsible for providing
+the transport between non-global zones and the global zone. This transport
+is only used by <literal>pkg</literal>(7).</para>
+<para>Note that only <literal>http</literal>, <literal>https</literal>, and <literal>
+v4</literal> file repositories and <literal>p5p</literal> archives are supported.
+Older file repository formats are not supported. See <command>pkgrepo</command>(1)
+for more information about repository versions.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>Specify the absolute path to a directory that should be used
+by the system repository for caching responses from the publishers configured.</para>
+<para>By default, a file-cache is used. However, the special value <literal>memory
+</literal> can be used to indicate the an in-memory cache should be used.
+The special value <literal>None</literal> can be used to indicate that the
+system repository should not perform any caching. This setting should be configured
+using the <literal>config/cache_dir</literal> SMF property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>Specify the port that the system repository should use to
+listen for requests. This setting should be configured using the <literal>config/port
+</literal> SMF property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
+<listitem><para>An integer value in megabytes that defines the maximum cache
+size of the system repository. This setting should be configured using the <literal>
+config/cache_max</literal> SMF property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>w</option> <replaceable>http_proxy</replaceable></term>
+<listitem><para>A string of the form <literal><replaceable>scheme</replaceable>://<replaceable>
+hostname</replaceable>[:<replaceable>port</replaceable>]</literal> that defines
+a web proxy that the system repository can use to access http-based package
+repositories. This setting can be configured using the <literal>config/http_proxy
+</literal> SMF property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>W</option> <replaceable>https_proxy</replaceable></term>
+<listitem><para>A string of the form <literal><replaceable>scheme</replaceable>://<replaceable>
+hostname</replaceable>[:<replaceable>port</replaceable>]</literal> that defines
+a web proxy that the system repository can use to access https-based package
+repositories. This setting can be configured using the <literal>config/https_proxy
+</literal> SMF property.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Enabling the System Repository</title>
+<screen>$ <userinput>svcadm enable svc:/application/pkg/system-repository</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>Command failed to write a valid configuration.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

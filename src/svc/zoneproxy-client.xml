@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+
+ Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+
+ CDDL HEADER START
+
+ The contents of this file are subject to the terms of the
+ Common Development and Distribution License (the "License").
+ You may not use this file except in compliance with the License.
+
+ You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ or http://www.opensolaris.org/os/licensing.
+ See the License for the specific language governing permissions
+ and limitations under the License.
+
+ When distributing Covered Code, include this CDDL HEADER in each
+ file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ If applicable, add the following below this CDDL HEADER, with the
+ fields enclosed by brackets "[]" replaced with your own identifying
+ information: Portions Copyright [yyyy] [name of copyright owner]
+
+ CDDL HEADER END
+
+    NOTE:  This service manifest is not editable; its contents will
+    be overwritten by package or patch operations, including
+    operating system upgrade.  Make customizations in a different
+    file.
+
+-->
+
+<service_bundle type='manifest' name='application/pkg/zones-proxy-client'>
+
+<service
+	name='application/pkg/zones-proxy-client'
+	type='service'
+	version='1'>
+	<create_default_instance enabled="true"/>
+	<single_instance/>
+
+	 <dependency
+	 	name='fs'
+	 	grouping='require_any'
+	 	restart_on='none'
+	 	type='service'>
+	 	<service_fmri value='svc:/system/filesystem/minimal' />
+	 </dependency>
+
+        <dependency name='network'
+                grouping='require_any'
+                restart_on='error'
+                type='service'>
+                <service_fmri value='svc:/milestone/network' />
+        </dependency>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec='/usr/lib/zones/zoneproxy-client -s %{config/listen_host}:%{config/listen_port}'
+		timeout_seconds='300'>
+		<method_context>
+			<method_credential user='root'/>
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':kill'
+		timeout_seconds='300'>
+		<method_context>
+			<method_credential user='root'/>
+		</method_context>
+	</exec_method>
+
+	<property_group name='config' type='application'>
+		<propval name='listen_host' type='astring' value='localhost' />
+		<propval name='listen_port' type='integer' value='1008' />
+	 </property_group>
+
+	<stability value='Unstable' />
+
+	<template>
+		<common_name>
+			<loctext xml:lang='C'>
+			Zones Proxy Client
+			</loctext>
+		</common_name>
+		<documentation>
+			<manpage title='pkg.sysrepo' section='8'
+			     manpath='/usr/share/man' />
+		</documentation>
+	</template>
+</service>
+
+</service_bundle>

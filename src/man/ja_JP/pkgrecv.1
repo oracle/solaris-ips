@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgrecv-1">
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 10 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgrecv</refname><refpurpose>Image Packaging System 内容取得ユーティリティー</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
+    [-m <replaceable>match</replaceable>] [--mog-file <replaceable>file_path</replaceable> ...] [--raw]
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
+    [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
+    (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
+<synopsis>/usr/bin/pkgrecv [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)] --newest</synopsis>
+<synopsis>/usr/bin/pkgrecv [-nv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-p <replaceable>publisher</replaceable>]...
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>] --clone
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgrecv-1-desc" role="description"><title></title>
+<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
+<para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
+<para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
+<para>取得対象に <literal>'*'</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
+<note><para>同じ公開先リポジトリまたはアーカイブにパッケージを再発行するために、<command>pkgrecv</command> の複数インスタンスを同時に使用しないでください。この場合、新しく受け取ったパッケージに、重複するアクションが含まれる可能性があります。</para></note>
+<para><replaceable>dest_uri</replaceable> に対してパッケージを取得する <command>pkgrecv</command> 操作後に、<replaceable>dest_uri</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、そのリポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>h</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <literal>pkg</literal>(7) アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>ダウンロードされた内容をキャッシュするために使用されるディレクトリのパスを指定します。このディレクトリが指定されていない場合は、クライアントによってキャッシュディレクトリが自動的に選択されます。ダウンロードが中断されたときに、キャッシュディレクトリが自動的に選択されていた場合は、このオプションを使用してダウンロードを再開します。一時的なデータストレージに使用される場所を設定する方法についての詳細は、下の「環境変数」のセクションを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)</term>
+<listitem><para>取得したパッケージを再発行する必要があるファイルシステムのパスまたは URI を指定します。<option>a</option> を指定する場合、この宛先は、まだ存在しないパッケージアーカイブである必要があります。<option>a</option> を指定しない場合、この宛先は、すでに存在するパッケージリポジトリである必要があります。<command>pkgrepo</command> コマンドを使用して、新規パッケージリポジトリを作成します。<option>d</option> が指定されていない場合は、<envar>PKG_DEST</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option></term>
+<listitem><para>取得されたパッケージの内容を圧縮されたままにします。このオプションは、再公開時には無視されます。圧縮されたパッケージの内容を <command>pkgsend</command> で使用しないようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option> <replaceable>match</replaceable></term>
+<listitem><para><replaceable>pattern</replaceable> が指定された場合、または <replaceable>fmri</replaceable> が完全に指定されていない場合に、取得するパッケージのバージョンを制御します。これを説明するため、<option>s</option> オプションで指定されたソース内に例として次の 4 つのパッケージが存在するとします。これらの FMRI で、<literal>@</literal> と <literal>:</literal> の間にある文字は番号付きのパッケージバージョンを表し、<literal>:</literal> から末尾までの文字はバージョン文字列のタイムスタンプ部分を表します。</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z</programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>all-timestamps</literal></term>
+<listitem><para>一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得します (<literal>all-versions</literal> を暗黙的に意味します)。これは、<option>m</option> オプションが指定されなかった場合のデフォルト動作です。前述の例では、4 つのパッケージがすべて取得されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>all-versions</literal></term>
+<listitem><para>一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> の各バージョンの最新のタイムスタンプを取得します。前述の例では、次の 2 つのパッケージが取得されます。</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>latest</literal></term>
+<listitem><para>一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> の最新バージョンのみを取得します。前述の例では、次のパッケージのみが取得されます。</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>変更を行うことなく、試験実行を行います。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>指定されたパブリッシャーのみをクローニングします。このオプションは複数回指定できます。<option>p</option> オプションは、<option>-clone</option> オプションと組み合わせた場合にのみ有効です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>一致する <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> ごとのすべての依存関係を再帰的に取得します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
+<listitem><para>パッケージデータ受信先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>詳細出力を表示します。これには、取得したパッケージ数とそれらの完全な FMRI、取得したファイル数、および推定転送サイズが含まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>src_key</replaceable></term>
+<listitem><para>ソース HTTPS リポジトリからパッケージを取得するために使用するクライアント SSL キーファイルを指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert</option> <replaceable>src_cert</replaceable></term>
+<listitem><para>ソース HTTPS リポジトリからパッケージを取得するために使用するクライアント SSL 証明書ファイルを指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dkey</option> <replaceable>dest_key</replaceable></term>
+<listitem><para>宛先の HTTPS リポジトリにパッケージを発行するために使用するクライアント SSL キーファイルを指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dcert</option> <replaceable>dest_cert</replaceable></term>
+<listitem><para>宛先の HTTPS リポジトリにパッケージを発行するために使用するクライアント SSL 証明書ファイルを指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-clone</option></term>
+<listitem><para>ソースリポジトリの正確なコピーを作成します。デフォルトでは、ソースリポジトリ内のパブリッシャーが公開先にも存在する場合にのみ、クローン操作が成功します。クローン操作を指定されたパブリッシャーに制限するには、<option>p</option> オプションを使用します。<option>p</option> オプションを使用して指定されたパブリッシャーが公開先リポジトリにまだ存在しない場合は、公開先リポジトリに追加されます。公開先リポジトリに存在するがソースリポジトリに存在しないパッケージは、削除されます。クローン操作でエラーが発生した場合、公開先リポジトリは変更されたままになります。このため、公開先リポジトリを専用の ZFS データセットに配置し、クローン操作を実行する前にスナップショットを作成するようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mog-file</option></term>
+<listitem><para>pkgmogrify(1) 変換を含むファイルを、出力先のパッケージリポジトリにコピーされる前に、各パッケージのマニフェストに適用されるように指定します。&#39;-&#39; を指定すると stdin を入力として使用できます。ファイルと &#39;-&#39; の両方が一緒に指定された場合、&#39;-&#39; は無視され、指定されたファイルのみが使用されます。このオプションを使用すると、自動的に既存のパッケージ署名がパッケージから削除されます。ファイルおよびライセンスなどの新しいハッシュ可能アクションの追加は許可されません。このオプションは複数回指定できます。このオプションは --clone と組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-newest</option></term>
+<listitem><para><option>s</option> オプションで指定されたリポジトリから使用可能な最新バージョンのパッケージを一覧表示します。その他のすべてのオプションは無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-raw</option></term>
+<listitem><para>raw パッケージデータを取得し、<option>d</option> で指定された場所に、幹およびバージョンごとの一連のディレクトリ構造内に格納します。<option>-raw</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。このパッケージデータを使用すると、一般にはファイルの内容を修正するか、または追加のパッケージメタデータを提供することによって、パッケージを便利に変更して再公開することができます。<option>-raw</option> オプションを <option>a</option> と組み合わせることはできません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>最新のパッケージを一覧表示する</title>
+<para><literal>test</literal> という名前のシステム上のリポジトリから使用可能な最新のパッケージを一覧表示します。</para>
+<screen>$ <userinput>pkgrecv -s http://test --newest</userinput>
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z</screen>
+</example>
+<example><title>raw パッケージデータを取得する</title>
+<para>例 1 から <literal>c++-runtime</literal> パッケージを <command>pkgsend publish</command> で使用するために適した形式で受け取ります。</para>
+<screen>$ <userinput>pkgrecv -s http://test &bsol;</userinput>
+<userinput>-d /local/repo --raw &bsol;</userinput>
+<userinput>c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z</userinput>
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND (MB)
+Completed       1/1      3.5/3.5      0.0/0.0
+$ <userinput>ls /local/repo</userinput>
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
+</example>
+<example><title>システムから依存関係を取得する</title>
+<para><literal>test</literal> という名前のシステムから、パッケージ <literal>editor/vim</literal> とそのすべての依存関係を受け取ります。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -r editor/vim</userinput></screen>
+</example>
+<example><title>最新バージョンのみを取得する</title>
+<para><literal>test</literal> という名前のシステムから、パッケージ <literal>editor/vim</literal> の最新バージョンのみを受け取ります。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -m latest -v &bsol;</userinput>
+<userinput>editor/vim</userinput>
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+
+Retrieving packages ...
+        Packages to add:       1
+      Files to retrieve:    1557
+Estimated transfer size: 9.21 MB
+
+Packages to transfer:
+editor/vim@7.3.600,5.11-0.175.1.0.0.24.0:20120904T172128Z
+
+PROCESS                                     ITEMS    GET (MB) SEND (MB)
+Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
+</example>
+<example><title>すべてのバージョンを取得し、リモートから再公開する</title>
+<para><literal>test</literal> という名前のシステムから、パッケージ <literal>library/zlib</literal> のすべてのバージョンを受け取り、それを <literal>remote</literal> という名前のシステム上のリモートリポジトリに再公開します。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d http://remote:10000 &bsol;</userinput>
+<userinput>-m all-versions library/zlib</userinput></screen>
+</example>
+<example><title>リポジトリから依存関係を取得する</title>
+<para><filename>/export/repo</filename> にあるリポジトリから、パッケージ <literal>editor/gnu-emacs</literal> とそのすべての依存関係を受け取ります。</para>
+<screen>$ <userinput>pkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>追加パッケージおよび変更された内容の取得</title>
+<para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>http://pkg.oracle.com/solaris/release/</literal> にあるリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。</para>
+<screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
+<para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>https://pkg.oracle.com/solaris/support/</literal> にあるセキュアなリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。 </para>
+<screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
+<userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
+<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'</userinput></screen>
+</example>
+<example><title>パッケージアーカイブを作成する</title>
+<para><literal>http://example.com:10000</literal> にあるリポジトリから、パッケージ <literal>editor/gnu-emacs</literal> とそのすべての依存関係を含むパッケージアーカイブを作成します。</para>
+<screen>$ <userinput>pkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a &bsol;</userinput>
+<userinput>-r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>パッケージをアーカイブからリポジトリにコピーする</title>
+<para>パッケージアーカイブ内のすべてのパッケージを <filename>/export/repo</filename> にある既存のリポジトリにコピーします。</para>
+<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+</example>
+<example><title>パブリッシャー名を変更する</title>
+<para>再公開時に、パッケージ &#39;foo&#39; とそのすべての依存関係のパブリッシャー名を &#39;extra&#39; に変更します。</para>
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>次の環境変数がサポートされています。</para>
+<variablelist>
+<varlistentry><term><envar>PKG_DEST</envar></term>
+<listitem><para>取得されたパッケージを保存する先のディレクトリのパス、またはパッケージがコピーされるリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_SRC</envar></term>
+<listitem><para>パッケージ取得先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>TMPDIR</envar></term>
+<listitem><para>プログラム実行中に一時データが格納されるディレクトリの絶対パス。設定されていない場合、一時データはデフォルトで <filename>/var/tmp</filename> に格納されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>複数の操作が要求されましたが、それらの一部のみが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(8) を参照してください。</para>
+</refsect1>
+</refentry>

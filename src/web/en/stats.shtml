@@ -1,0 +1,102 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
+##
+<%inherit file="layout.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        config = g_vars["config"]
+        request = g_vars["request"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return "Depot Statistics"
+%></%def>\
+<div id="yui-main" class="yui-b">
+        <div class="yui-gb">
+% if not config.mirror and request.publisher:
+                <div class="yui-u first">
+                <table class="stats" summary="A summary of high-level statistics
+ about the package repository's catalog.">
+                        <tr class="first">
+                                <th scope="row" class="last" colspan="2">Catalog</th>
+                        </tr>
+                        <tr>
+                                <td scope="row" class="label">Packages</td>
+                                <td class="value">${catalog.package_count}</td>
+                        </tr>
+                        <tr>
+                                <td scope="row" class="label">Last Modified</td>
+<%
+        # Note: last_modified() is in local time relative to the timezone where
+        # catalog was last modified.
+        lm = catalog.last_modified
+        if lm:
+                lm = lm.replace(microsecond=0)
+        else:
+                lm = "Never"
+%>
+                                <td class="value">${lm}</td>
+                        </tr>
+                </table>
+                </div>
+% endif
+                <div class="yui-u">
+                <table class="stats" summary="A summary of high-level statistics
+ about this depot server.">
+                        <tr class="first">
+                                <th scope="row" class="last" colspan="2">Depot</th>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td scope="row" class="label">In-flight Transactions</td>
+                                <td class="value">${config.in_flight_transactions}</td>
+                        </tr>
+% endif
+                </table>
+                </div>
+                <div class="yui-u">
+                <table class="stats" summary="A list of the number of requests
+ made to the depot server by operation.">
+                        <tr class="first">
+                                <th scope="row" class="last" colspan="2">Operations</th>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td scope="row" class="label">catalog</td>
+                                <td class="value">${config.catalog_requests}</td>
+                        </tr>
+% endif
+                        <tr>
+                                <td scope="row" class="label">file</td>
+                                <td class="value">${config.file_requests}</td>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td scope="row" class="label">manifest</td>
+                                <td class="value">${config.manifest_requests}</td>
+                        </tr>
+% endif
+                </table>
+                </div>
+        </div>
+</div>

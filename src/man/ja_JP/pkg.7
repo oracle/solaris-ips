@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkg-7">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
+</refnamediv>
+<refsect1 id="GLHDA" role="description"><title></title>
+<para>Image Packaging System、<literal>pkg</literal>(7) は、ソフトウェアのライフサイクル管理 (インストール、アップグレード、および削除) のために提供されるフレームワークです。Image Packaging System は、一連のキーと値のペアおよび (場合によっては) データペイロードで定義されたアクションのコレクションである、パッケージの単位でソフトウェアを管理します。多くの場合、アクションはファイルシステム内に存在するファイルですが、ドライバ、サービス、ユーザーなどのその他のインストール可能オブジェクトも表します。</para>
+</refsect1>
+<refsect1 role="other"><title>パッケージの FMRI とバージョン</title>
+<para>各パッケージは、スキーム <literal>pkg:</literal> を使用して、障害管理リソース識別子 (FMRI) によって表されます。パッケージの完全な FMRI は、次の形式のスキーム、パブリッシャー、パッケージ名、およびバージョン文字列で構成されます。</para>
+<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+</screen>
+<para><literal>solaris</literal> は発行元です。<literal>system/library/c++-runtime</literal> はパッケージ名です。名前空間は階層的であり、その深さは任意ですが、適用される包含関係は存在しません。名前は基本的に任意です。発行元情報はオプションですが、存在する場合は <literal>pkg://</literal> を前に付ける必要があります。パブリッシャーを含む FMRI は、しばしば「完全修飾」されていると言われます。パブリッシャー情報が存在しない場合、通常はパッケージ名の前に <literal>pkg:/</literal> が付けられます。</para>
+<para>クライアントをパッケージ化すると、通常、FMRI にパブリッシャー情報が含まれていない場合に FMRI のスキームを省略できます。たとえば、<literal>pkg:/system/library/c++-runtime</literal> は <literal>system/library/c++-runtime</literal> と書くことができます。スキームが省略される場合、クライアントは照合の目的で、パッケージ名の最後のコンポーネントを除くすべてのコンポーネントを省略することもできます。たとえば、<literal>system/library/c++-runtime</literal> は <literal>library/c++-runtime</literal> または <literal>c++-runtime</literal> と書くことができ、これらは <literal>c++-runtime</literal> という名前のパッケージまたは <literal>/c++-runtime</literal> で終わるパッケージ名に一致します。</para>
+<para>パブリッシャーの名前によって、人、人のグループ、または組織が 1 つ以上のパッケージのソースとして識別されます。パブリッシャーの名前の競合を避け、パブリッシャーを識別しやすくするために、パッケージを公開するエンティティーを表すドメイン名をパブリッシャーの名前として使用することがベストプラクティスです。</para>
+<para>パッケージ名のあとに、アットマーク記号 (@) で区切られたバージョンが続きます。バージョンは、句読文字で区切られた 4 つの数字の並びで構成されます。最初の 3 つの並びに含まれる要素はドットで区切られ、これらの並びの長さは任意です。バージョンコンポーネント内の先頭のゼロ (たとえば、01.1 または 1.01) は許可されません。末尾のゼロ (たとえば、1.10) は許可されます。</para>
+<para>バージョンの最初の部分はコンポーネントバージョンです。オペレーティングシステムに緊密に結合されたコンポーネントの場合、これは通常、そのバージョンのオペレーティングシステムでの <command>uname -r</command> の値です。独自の開発ライフサイクルを持つコンポーネントの場合、この並びはドットで区切られたリリース番号 (2.4.10 など) です。</para>
+<para>バージョンの 2 番目の部分 (存在する場合はコンマ (,) に続いている必要があります) はビルドバージョンです。ビルドバージョンは、パッケージの内容が構築されたオペレーティングシステムのバージョンを指定し、その内容が正常に実行されることを予測できるオペレーティングシステムのバージョンに関する最小の境界が提供されます。</para>
+<para>バージョンの 3 番目の部分 (存在する場合はハイフン (<literal>-</literal>) に続いている必要があります) はブランチバージョンです。ブランチバージョンは、ベンダー固有の情報を提供するバージョン管理コンポーネントです。ブランチバージョンは、コンポーネントバージョンとは独立に、パッケージ化のメタデータが変更されたときに 1 増やすことができます。ブランチバージョンには、ビルド番号やその他の情報が含まれていることがあります。</para>
+<para>バージョンの 4 番目の部分 (存在する場合はコロン (:) に続いている必要があります) はタイムスタンプです。タイムスタンプは、そのパッケージがいつ公開されたかを表します。</para>
+<para>バージョン間の比較を実行する場合、その左側にあるコンポーネントが同じでないかぎり、バージョン全体のコンポーネントは考慮されません。したがって、<literal>4.3</literal> が <literal>4.2</literal> より大きいため、<literal>4.3-1</literal> は <literal>4.2-7</literal> より大きく、<literal>3</literal> が <literal>1</literal> より大きいため、<literal>4.3-3</literal> は <literal>4.3-1</literal> より大きくなります。</para>
+<para><literal>pkg.human-version</literal> 属性は、人間が読むことのできるバージョンの文字列を表示するために使用できます。<literal>pkg.human-version</literal> 属性の値は、パッケージ FMRI の前述のパッケージバージョンに追加して指定できますが、パッケージ FMRI バージョンを置き換えることはできません。人間が読むことのできるバージョンの文字列は、表示目的でのみ使用されます。詳細は、「設定アクション」を参照してください。</para>
+<para>システムの多くの部分では、表示される情報量や必要な情報量を減らすために、必要に応じて FMRI を表示するときには短縮し、入力も短い形式を受け入れます。通常、スキーム、パブリッシャー、ビルドバージョン、およびタイムスタンプは省略できます。すべてのバージョン管理情報を省略できることもあります。</para>
+</refsect1>
+<refsect1 role="other"><title>アクション</title>
+<para>アクションはシステム上のインストール可能オブジェクトを表します。アクションはパッケージのマニフェストに記述されます。すべてのアクションは、最初に名前とキー属性を含みます。また、これらはバージョン履歴をたどる過程で一意のオブジェクトを参照します。アクションには、このほかの属性も含まれます。一部の属性は、パッケージシステムによって直接解釈されます。その他の属性は、システム管理者またはエンドユーザーにのみ役立つ可能性があります。</para>
+<para>アクションには、次の単純なテキスト表現があります。</para>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
+value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
+</programlisting>
+<para>属性の名前に、空白、引用符、または等号 (=) を含めることはできません。最初の等号のあとの文字はすべて、値に属します。値にはすべての文字を含めることができますが、スペースは単一引用符または二重引用符で囲む必要があります。二重引用符で囲まれている文字列の内部で単一引用符をエスケープする必要はなく、単一引用符で囲まれている文字列の内部で二重引用符をエスケープする必要はありません。引用符の前にバックスラッシュ (\) 文字を付けて、引用文字列が終了しないようにすることができます。バックスラッシュは、バックスラッシュでエスケープできます。</para>
+<para>アクションは複数の属性を含むことができます。一部の属性は、単一のアクションに対して異なる値を使用して、複数回名前を付けることができます。同じ名前を持つ複数の属性は、順序付けされていないリストとして扱われます。</para>
+<para>多くの属性を持つアクションによって、マニフェストファイル内に長い行が作成されることがあります。このような行は、不完全な各行をバックスラッシュで終了することにより折り返すことができます。この継続文字は、属性と値のペアの間に置く必要があることに注意してください。属性も、その値も、さらにその組み合わせも分割することはできません。</para>
+<para>下に示されている属性セットは、これがすべてではありません。実際、アクションに付加できる属性は任意であるため、標準の属性セットは、将来の開発を実装するために容易に拡張できます。</para>
+<para>一部の属性によって、パッケージングコンテキストの外部で追加の操作が実行されます。これらの属性は、下の「アクチュエータ」のセクションで説明されています。</para>
+<refsect2><title>ファイルアクション</title>
+<para><literal>file</literal> アクションは、通常ファイルを表します。<literal>file</literal> アクションはペイロードを参照し、次の 4 つの標準属性があります。</para>
+<variablelist>
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>ファイルがインストールされているファイルシステムのパス。これは <literal>file</literal> アクションのキー属性です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mode</literal></term>
+<listitem><para>ファイルのアクセス権 (数値形式)。これらは ACL ではなく、単純なアクセス権のみです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>owner</literal></term>
+<listitem><para>ファイルを所有するユーザーの名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal> </term>
+<listitem><para>ファイルを所有するグループの名前。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ペイロードは、名前が付けられないという点で位置属性です。これは、アクション名のあとの最初の単語です。公開されたマニフェストでは、これはファイルの内容の <literal>SHA-1</literal> ハッシュです。これから公開する必要のあるマニフェスト内に存在する場合は、ペイロードを見つけることのできるパスを表します。<command>pkgsend</command>(1) を参照してください。値に等号が含まれている場合は、位置属性の代わりにハッシュ属性を使用できます。この両方を同じアクションで使用できます。ただし、ハッシュは同じである必要があります。</para>
+<para><literal>preserve</literal> 属性および <literal>overlay</literal> 属性は、<literal>file</literal> アクションがインストールされるかどうか、およびその方法に影響を及ぼします。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>preserve</literal></term>
+<listitem><para>パッケージ操作中にファイルを保持する時期と方法を指定します。</para>
+<para>パッケージが最初にインストールされるとき、パッケージによって提供されるファイルが持つ <literal>preserve</literal> 属性が、<literal>abandon</literal> または <literal>install-only</literal> 以外の何らかの値で定義されており、ファイルがイメージ内にすでに存在する場合、既存のファイルが <filename>/var/pkg/lost+found</filename> に格納され、パッケージされたファイルはインストールされます。</para>
+<para>パッケージが最初にインストールされるとき、パッケージによって提供されるファイルの <literal>preserve</literal> 属性が定義済みで、ファイルがイメージ内に存在しない場合、ファイルがインストールされるかどうかは <literal>preserve</literal> 属性の値によって決まります。</para>
+<itemizedlist>
+<listitem><para><literal>preserve</literal> の値が <literal>abandon</literal> または <literal>legacy</literal> である場合、パッケージされたファイルはインストールされません。</para></listitem>
+<listitem><para><literal>preserve</literal> の値が <literal>abandon</literal> または <literal>legacy</literal> でない場合、パッケージされたファイルはインストールされます。</para></listitem>
+</itemizedlist>
+<para>パッケージがダウングレードされるとき、ダウングレードされるバージョンのパッケージによって提供されるファイルの <literal>preserve</literal> 属性が、<literal>abandon</literal> または <literal>install-only</literal> 以外の何らかの値で定義されており、次のすべての条件が真の場合、イメージ内に現在存在するファイルは拡張子 <filename>.update</filename> で名前変更され、ダウングレードされたパッケージからのファイルがインストールされます。</para>
+<itemizedlist>
+<listitem><para>ファイルがイメージ内に存在する。</para></listitem>
+<listitem><para>ダウングレードされるバージョンのパッケージによって提供されるファイルの内容が、現在インストールされているバージョンのパッケージによって提供されるファイルの内容と異なる。</para></listitem>
+<listitem><para>ダウングレードされるバージョンのパッケージによって提供されるファイルの内容が、イメージ内に存在するファイルの内容と異なる。</para></listitem>
+</itemizedlist>
+<para>上の条件のいずれかが真でない場合、このファイルは、パッケージがダウングレードでなくアップグレードされる場合と同様に処理されます。</para>
+<para>パッケージがアップグレードされるとき、アップグレードされるバージョンのパッケージによって提供される <literal>file</literal> アクションの <literal>preserve</literal> 属性が何らかの値で定義されており、<literal>file</literal> アクションが、現在インストールされているバージョンのパッケージによって提供される <literal>file</literal> アクションと同じである場合、ファイルはインストールされず、イメージ内に存在するファイルは変更されません。以前のバージョンをインストールしたあとに加えられたすべての変更が保持されます。</para>
+<para>パッケージがアップグレードされるとき、アップグレードされるバージョンのパッケージによって提供される <literal>file</literal> アクションの <literal>preserve</literal> 属性が定義済みで、<literal>file</literal> アクションが新しいか、現在インストールされているバージョンのパッケージによって提供される <literal>file</literal> アクションとは異なる場合、アップグレードは次の方法で実行されます。</para>
+<itemizedlist>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルの <literal>preserve</literal> 値が、アップグレードされるパッケージ内で <literal>abandon</literal> または <literal>install-only</literal> の場合、新しいファイルはインストールされず、既存のファイルは変更されません。
+</para></listitem>
+<listitem><para>イメージ内にファイルが存在しない場合は、新しいファイルがインストールされます。
+</para></listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、現在インストール済みのバージョンのパッケージ内に存在せず、<literal>original_name</literal> 属性 (以下を参照) を使用した名前変更または移動を行わなかった場合、既存のファイルは <filename>/var/pkg/lost+found</filename> に格納され、アップグレードされたバージョンのパッケージによって提供されるファイルがインストールされます。</para>
+</listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、現在インストール済みのバージョンのパッケージによって提供されるファイルと内容が異なる場合、アップグレードは <literal>preserve</literal> 属性の値に従って実行されます。</para>
+<itemizedlist>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルの <literal>preserve</literal> 値が <literal>renameold</literal> の場合、既存のファイルは拡張子 <filename>.old</filename> を使用して名前変更され、新しいファイルは更新されたアクセス権およびタイムスタンプ (存在する場合) を使用してインストールされます。下の <literal>timestamp</literal> 属性の説明を参照してください。</para>
+</listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルの <literal>preserve</literal> 値が <literal>renamenew</literal> の場合、新しいファイルは拡張子 <filename>.new</filename> を使用してインストールされ、既存のファイルは変更されません。</para></listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルの <literal>preserve</literal> 値が <literal>true</literal> の場合、新しいファイルはインストールされませんが、既存のファイルのアクセス権およびタイムスタンプ (存在する場合) がリセットされます。</para></listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、現在インストール済みのバージョンのパッケージによって提供されるファイルと同じ内容を持ち、<literal>preserve</literal> 値が <literal>renameold</literal> または <literal>renamenew</literal> の場合、既存のファイルはアップグレードされたバージョンのパッケージによって提供されるファイルによって置き換えられ、アクセス権およびタイムスタンプ (存在する場合) も置き換えられます。</para>
+</listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、アップグレードされるパッケージ内の <literal>preserve</literal> 値が <literal>legacy</literal> で、現在インストール済みのバージョンのパッケージとは <literal>preserve</literal> 値が異なる場合、既存のファイルは拡張子 <literal>.legacy</literal> を使用して名前変更され、新しいファイルは、更新されたアクセス権およびタイムスタンプ (存在する場合) を使用してインストールされます。</para></listitem>
+<listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、アップグレードされるパッケージと、現在インストール済みのバージョンのパッケージの両方で <literal>preserve</literal> 値が <literal>legacy</literal> の場合、既存のファイルのアクセス権およびタイムスタンプ (存在する場合) がリセットされます。</para></listitem>
+</itemizedlist>
+<para>パッケージがアンインストールされるとき、現在インストール済みのバージョンのパッケージによって提供される <literal>file</literal> アクションの持つ <literal>preserve</literal> 値が <literal>abandon</literal> または <literal>install-only</literal> で、ファイルがイメージ内に存在する場合、ファイルは削除されません。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay</literal></term>
+<listitem><para>このアクションによってほかのパッケージが同じ場所にファイルを提供できるか、またはそれによって別のファイルをオーバーレイすることを目的にしたファイルが提供されるかを指定します。この機能は、どの自己アセンブリにも参加しておらず (たとえば、<filename>/etc/motd</filename>)、かつ安全に上書きできる構成ファイルで使用されることを目的にしています。</para>
+<para><literal>overlay</literal> が指定されていない場合は、複数のパッケージが同じ場所にファイルを提供することはできません。</para>
+<para><literal>overlay</literal> 属性は、次のいずれかの値を持ちます。</para>
+<variablelist>
+<varlistentry><term><literal>allow</literal></term>
+<listitem><para>もう 1 つのパッケージが同じ場所にファイルを配布できるようになります。<literal>preserve</literal> 属性も同時に設定されていないかぎり、この値は意味を持ちません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>true</literal></term>
+<listitem><para>このアクションによって配布されたファイルは、<literal>allow</literal> を指定したほかのすべてのアクションを上書きします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>インストールされたファイルへの変更は、オーバーレイしているファイルの <literal>preserve</literal> 属性の値に基づいて保持されます。削除時、ファイルの内容は、<literal>preserve</literal> 属性が指定されたかどうかには関係なく、オーバーレイされているアクションがまだインストールされている場合は保持されます。別のファイルをオーバーレイできるのは 1 つのアクションだけであり、<literal>mode</literal>、<literal>owner</literal>、および <literal>group</literal> 属性が一致している必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>dehydrate</literal></term>
+<listitem><para>パッケージパブリッシャーのパッケージがデハイドレートされるとき、またはデハイドレートされたパブリッシャーのパッケージが変更されるときに、このアクションを削除するかどうかを指定します。<literal>dehydrate</literal> 属性の値は <literal>true</literal> または <literal>false</literal> です。<literal>dehydrate</literal> 属性の値が <literal>false</literal> の場合、デハイドレート操作中にアクションは削除されません。それ以外の場合、アクションは削除されます。<literal>preserve</literal> または <literal>overlay</literal> 属性がタグ付けされているファイルアクションは、デハイドレート操作から暗黙的に除外されるため、この属性を必要としません。
+</para>
+<programlisting>file path=etc/zones/SYSdefault.xml dehydrate=false ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>ELF ファイルの場合、次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>elfarch</literal></term>
+<listitem><para>ELF ファイルのアーキテクチャー。これは、そのファイルが構築されたアーキテクチャー上での <command>uname -p</command> の出力です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfbits</literal></term>
+<listitem><para>これは <literal>32</literal> または <literal>64</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfhash</literal></term>
+<listitem><para>これは、そのファイル内の「興味深い」ELF セクションのハッシュです。これらは、バイナリがロードされるときにメモリーにマップされるセクションです。これらは、2 つのバイナリの実行可能ファイルの動作が異なるかどうかを判定するときに考慮する必要のある唯一のセクションです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>file</literal> アクションの場合、次の追加属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>original_name</literal></term>
+<listitem><para>この属性は、パッケージからパッケージに、または場所から場所に、あるいはその両方で移動している編集可能なファイルを処理するために使用されます。この形式は、元のパッケージの名前のあとに、コロンとこのファイルの元のパスが続きます。削除されているファイルはすべて、そのパッケージとパス、または <literal>original_name</literal> 属性の値 (指定されている場合) のどちらかを使用して記録されます。<literal>original_name</literal> 属性が設定された、インストールされている編集可能なファイルはすべて、それが同じパッケージ化の操作の一部として削除されている場合は、その名前のファイルを使用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>release-note</literal></term>
+<listitem><para>この属性は、このファイルにリリースノートテキストが含まれていることを示すために使用されます。この属性の値は、パッケージ FMRI です。元のイメージに存在し、元のイメージ内のパッケージよりも新しいバージョンのパッケージ名が FMRI で指定されている場合、このファイルはリリースノートに含まれます。特別な FMRI (<literal>feature/pkg/self</literal>) は、含まれるパッケージを指します。<literal>feature/pkg/self</literal> のバージョンが 0 の場合、このファイルは初期インストールのリリースノートにのみ含まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>revert-tag</literal></term>
+<listitem><para>この属性は、セットとして元に戻すべき編集可能なファイルをタグ付けするために使用されます。<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable> です。単一の <literal>file</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。これらのいずれかのタグを指定して <command>pkg revert</command> が呼び出されると、ファイルはマニフェストで定義された状態に戻ります。<command>pkg revert</command> コマンドの詳細については、<command>pkg</command>(1) マニュアルページを参照してください。</para>
+<para><literal>revert-tag</literal> 属性は、ディレクトリレベルでも指定できます。後述の「ディレクトリアクション」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>sysattr</literal></term>
+<listitem><para>この属性は、このファイルに設定する必要があるシステム属性を指定するために使用されます。<literal>sysattr</literal> 属性の値は、次の例に示すように、詳細システム属性のカンマ区切りリストまたはコンパクトシステム属性オプションの文字列シーケンスの場合があります。サポートされるシステム属性は、<literal>chmod</literal>(1) マニュアルページで説明されています。マニフェストに指定されるシステム属性は、オペレーティングシステムのほかのサブシステムによって設定される場合があるシステム属性に追加で設定されます。</para>
+<programlisting>file path=opt/secret_file sysattr=hidden,sensitive
+file path=opt/secret_file sysattr=HT</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>timestamp</literal></term>
+<listitem><para>この属性は、ファイルに対するアクセスおよび変更時間を設定するために使用します。<literal>timestamp</literal> 属性値は、コロンおよびハイフンを省略した、ISO-8601 形式の UTC で表現する必要があります。</para>
+<para><literal>timestamp</literal> 属性は、Python 用の <filename>.pyc</filename> または <filename>.pyo</filename> ファイルをパッケージングする場合に不可欠です。<filename>.pyc</filename> または <filename>.pyo</filename> ファイルに関連する <filename>.py</filename> ファイルは、次の例で示すように、これらのファイル内に埋め込まれたタイムスタンプを使用してマーク付けする必要があります。</para>
+<programlisting>file path=usr/lib/python2.7/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
+     timestamp=20130311T221521Z ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>file</literal> アクションに対する次の属性はシステムによって自動的に生成されるため、パッケージ開発者によって指定しないでください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>hash</literal></term>
+<listitem><para>非圧縮ファイルの SHA-1 ハッシュ。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>chash</literal></term>
+<listitem><para>圧縮ファイルの SHA-1 ハッシュ。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.size</literal></term>
+<listitem><para>非圧縮ファイルのバイト単位のサイズ。</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.csize</literal></term>
+<listitem><para>圧縮ファイルのバイト単位のサイズ。</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>ディレクトリアクション</title>
+<para><literal>dir</literal> アクションは、ファイルシステムオブジェクトを表すという点で <command>file</command> アクションに似ています。<literal>dir</literal> アクションは、通常ファイルの代わりにディレクトリを表します。<literal>dir</literal> アクションには、<literal>file</literal> アクションが持つのと同じ <literal>path</literal>、<literal>mode</literal>、<literal>owner</literal>、および <literal>group</literal> 属性があり、<literal>path</literal> がキー属性です。<literal>dir</literal> アクションは <literal>revert-tag</literal> 属性も受け入れます。<literal>revert-tag</literal> 属性の値は、<literal>file</literal> アクションと <literal>dir</literal> アクションで異なります。</para>
+<para>ディレクトリは、IPS でカウントされる参照です。あるディレクトリを明示的または暗黙的に参照している最後のパッケージが参照を行わなくなると、そのディレクトリは削除されます。そのディレクトリにパッケージ解除されたファイルシステムオブジェクトが含まれている場合、それらの項目は <filename>$IMAGE_META/lost+found</filename> に移動されます。<literal>$IMAGE_META</literal> についての詳細は、「ファイル」のセクションを参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><literal>revert-tag</literal></term>
+<listitem>
+<para>この属性は、セットとして削除する必要があるパッケージ解除されたファイルを識別するために使用します。<literal>file</literal> アクションに対してこの属性を指定する方法についての説明は、上記の「ファイルアクション」を参照してください。ディレクトリの場合、<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable> です。単一の <literal>dir</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。マッチングする <replaceable>tagname</replaceable> を指定して <command>pkg revert</command> が呼び出されると、<replaceable>pattern</replaceable> に一致する (シェルグロビング文字を使用)、この <literal>dir</literal> ディレクトリの下にあるパッケージ解除されたファイルまたはディレクトリが削除されます。<command>pkg revert</command> コマンドの詳細については、<command>pkg</command>(1) マニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>salvage-from</literal></term>
+<listitem><para>この属性は、パッケージ解除された内容を新しいディレクトリに移動する場合に使用できます。この属性の値は、回収された項目のディレクトリの名前です。<literal>salvage-from</literal> 属性を持つディレクトリは、作成時に、<literal>salvage-from</literal> 属性の値に指定されたディレクトリのすべての内容を継承します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>リンクアクション</title>
+<para><literal>link</literal> アクションはシンボリックリンクを表します。<literal>link</literal> アクションには、次の標準属性があります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>シンボリックリンクがインストールされるファイルシステムのパス。これは <literal>link</literal> アクションのキー属性です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>target</literal> </term>
+<listitem><para>シンボリックリンクのターゲット。リンクの解決先のファイルシステムオブジェクト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator</literal></term>
+<listitem><para>特定のメディエーショングループ (たとえば、<literal>python</literal>) に参加しているすべてのパス名によって共有されているメディエーション名前空間内のエントリを指定します。<literal>mediator-version</literal> または <literal>mediator-implementation</literal>、あるいはその両方に基づいてリンクメディエーションを実行できます。特定のパス名に対してメディエートされたリンクはすべて、同じメディエータを指定する必要があります。ただし、すべてのメディエータバージョンおよび実装が、特定のパスでリンクを提供する必要はありません。メディエーションがリンクを提供していない場合は、そのメディエーションが選択されたときにリンクが削除されます。特定のバージョンまたは実装、あるいはその両方と組み合わせた <literal>mediator</literal> は、パッケージシステムで使用するために選択できるメディエーションを表します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-version</literal></term>
+<listitem><para><literal>mediator</literal> 属性で記述されたインタフェースの (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。この属性は、<literal>mediator</literal> が指定され、<literal>mediator-implementation</literal> は指定されていない場合に必要です。ローカルシステム管理者は、使用するバージョンを明示的に設定できます。指定された値は一般に、リンクを提供しているパッケージのバージョンに一致するようにしてください (たとえば、<literal>runtime/python-27</literal> は <literal>mediator-version=2.7</literal> を使用します)。ただし、これは必須ではありません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-implementation</literal></term>
+<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<literal>pkg </literal>(7) によって文字列が任意に選択されます。</para>
+<para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後の @ のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
+<para>特定のパスにある実装メディエーションリンクの 1 つのインスタンスだけがシステムにインストールされている場合は、その 1 つのインスタンスが自動的に選択されます。このパスにある将来のリンクがインストールされても、ベンダー、サイト、またはローカルのオーバーライドが適用されないかぎり、またはいずれかのリンクのバージョンがメディエートされた場合、このリンクは切り替えられません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-priority</literal></term>
+<listitem><para>メディエートされたリンクの競合を解決する場合、<literal>pkg</literal>(7) は通常、<literal>mediator-version</literal> の最大の値を持つリンクを選択するか、またはそれが不可能な場合は <literal>mediator-implementation</literal> に基づいて選択します。この属性は、正常な競合解決処理のためのオーバーライドを指定するために使用されます。</para>
+<para>この属性が指定されていない場合は、デフォルトのメディエータ選択ロジックが適用されます。</para>
+<para>この値が <literal>vendor</literal> である場合は、このリンクが、<literal>mediator-priority</literal> が指定されていないリンクより優先されます。</para>
+<para>この値が <literal>site</literal> である場合は、このリンクが、<literal>vendor</literal> の値を持つリンクや、<literal>mediator-priority</literal> が指定されていないリンクより優先されます。</para>
+<para>ローカルシステム管理者は、上で説明した選択ロジックをオーバーライドできます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>ハードリンクのアクション</title>
+<para><literal>hardlink</literal> アクションは、ハードリンクを表します。このアクションは <literal>link</literal> アクションと同じ属性を持ち、そのキー属性も同じく <literal>path</literal> です。</para>
+</refsect2>
+<refsect2><title>ドライバのアクション</title>
+<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <command>add_drv</command>(8) を参照)。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>ドライバの名前。多くの場合はドライババイナリのファイル名ですが、必ずしもそうとは限りません。これは <literal>driver</literal> アクションのキー属性です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>alias</literal></term>
+<listitem><para>これはドライバの別名を表します。特定のドライバが複数の <literal>alias</literal> 属性を持つことができます。特殊な引用符の規則は必要ありません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>class</literal></term>
+<listitem><para>これはドライバクラスを表します。特定のドライバが複数の <literal>class</literal> 属性を持つことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>perms</literal></term>
+<listitem><para>これは、ドライバのデバイスノードのファイルシステムアクセス権を表します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>clone_perms</literal></term>
+<listitem><para>これは、このドライバに対する複製ドライバのマイナーノードのファイルシステムアクセス権を表します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>policy</literal></term>
+<listitem><para>これは、デバイスのための追加のセキュリティーポリシーを指定します。特定のドライバが複数の <literal>policy</literal> 属性を持つことができますが、マイナーデバイスの指定が複数の属性に存在することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>privs</literal></term>
+<listitem><para>これは、ドライバで使用される特権を指定します。特定のドライバが複数の <literal>privs</literal> 属性を持つことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>devlink</literal></term>
+<listitem><para>これは <filename>/etc/devlink.tab</filename> 内のエントリを指定します。この値はファイルに書き込まれる行そのものであり、タブは <literal>\t</literal> で示されます。詳細は <literal>devlinks</literal>(8) を参照してください。特定のドライバが複数の <literal>devlink</literal> 属性を持つことができます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>依存アクション</title>
+<para><command>depend</command> アクションは、パッケージ間の依存関係を表します。あるパッケージが別のパッケージに依存することがあります。たとえば、最初のパッケージの機能を有効にする (場合によってはインストールする) ために、2 番目のパッケージの機能が必要な場合があります。依存関係はオプションです。インストール時に依存関係が満たされない場合、パッケージシステムはほかの制約に応じて、依存パッケージをインストールするか、または十分に新しいバージョンに更新しようとします。</para>
+<para>次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>fmri</literal></term>
+<listitem><para>依存パッケージを表す FMRI。これは <literal>dependency</literal> アクションのキー属性です。<literal>fmri</literal> 値にパブリッシャーを含めることはできません。パッケージ名は完全であると見なされます。タイプ <literal>group-any</literal> および <literal>require-any</literal> の依存関係は、複数の <literal>fmri</literal> 属性を持つことができます。<literal>fmri</literal> 値でバージョンはオプションですが、依存関係のタイプによっては、バージョンのない <literal>fmri</literal> は無意味であるか、バージョンは無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>type</literal></term>
+<listitem><para>依存関係のタイプ。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>require</literal></term>
+<listitem><para>依存関係が必要であり、かつ <literal>fmri</literal> 属性で指定されたバージョン以上のバージョンを持っている必要があります。バージョンが指定されていない場合は、任意のバージョンが依存関係を満たします。パッケージの必要な依存関係のいずれかを満たすことができない場合、そのパッケージはインストールできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>optional</literal></term>
+<listitem><para>依存関係が存在する場合は、指定されたバージョンレベル以上である必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exclude</literal></term>
+<listitem><para>指定されたバージョンレベル以上という依存関係が存在する場合は、含んでいるパッケージをインストールできません。バージョンが指定されていない場合、依存パッケージは、依存関係を指定しているパッケージと同時にインストールできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>incorporate</literal></term>
+<listitem><para>依存関係はオプションですが、依存するパッケージのバージョンは制約されます。以下の「制約と凍結」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>require-any</literal></term>
+<listitem><para>複数の <literal>fmri</literal> 属性で指定されたパッケージのうちのいずれか 1 つが、依存関係のタイプ <literal>require</literal> と同じ規則に従って依存関係を満たすことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>conditional</literal></term>
+<listitem><para>依存関係は、<literal>predicate</literal> 属性で定義されたパッケージがシステム上に存在する場合にのみ必要です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>origin</literal></term>
+<listitem><para>このパッケージのインストールの前に、依存関係のターゲット (存在する場合) は変更されるイメージ上の指定された値以上である必要があります。<literal>root-image</literal> 属性の値が <literal>true</literal> である場合、このパッケージをインストールするには、/ をルートとするイメージ上にターゲットが存在する必要があります。<literal>root-image</literal> 属性の値が <literal>true</literal> で、<literal>fmri</literal> 属性の値が <literal>pkg:/feature/firmware/</literal> で始まる場合、<literal>fmri</literal> 値の残りの部分は、ファームウェアの依存関係を評価する <filename>/usr/lib/fwenum</filename> 内のコマンドとして扱われます。例については、「<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal> </term>
+<listitem><para>依存関係は、パッケージがイメージ回避リスト上にないかぎり必要です。廃止されたパッケージは、暗黙のうちにグループの依存関係を満たすことに注意してください。<command>pkg</command>(1) の <command>avoid</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-any</literal></term>
+<listitem><para>廃止されていないパッケージの語幹が廃止されたパッケージの語幹よりも優先されるという点を除き、依存関係のタイプ <literal>group</literal> と同じ規則に従って、複数の <literal>fmri</literal> 属性で指定された複数の依存パッケージのうちのいずれか 1 つが、依存関係を満たすことができます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>parent</literal></term>
+<listitem><para>依存関係は、イメージが子イメージでない場合は無視されます。このイメージが子イメージである場合は、親イメージ内に依存関係が存在する必要があります。<literal>parent</literal> 依存関係でのパッケージバージョンの照合は、<literal>incorporate</literal> 依存関係で使用されるものと同じです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>predicate</literal></term>
+<listitem><para><literal>conditional</literal> 依存関係の述語を表す FMRI。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>root-image</literal></term>
+<listitem><para>先に説明した <literal>origin</literal> 依存関係に対してのみ有効です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>ライセンスアクション</title>
+<para><literal>license</literal> アクションは、パッケージの内容に関連したライセンスやその他の情報ファイルを表します。パッケージは <literal>license</literal> アクションの使用を通して、ライセンス、免責条項、またはその他のガイダンスをパッケージインストーラに提供できます。</para>
+<para><literal>license</literal> アクションのペイロードは、パッケージに関連したイメージメタデータディレクトリに提供され、人間が読める形式のテキストデータのみが含まれているべきです。HTML やその他の形式のマークアップが含まれていてはいけません。<literal>license</literal> アクションは、属性を通して、関連するペイロードが表示または同意、あるいはその両方を必要としていることをクライアントに示すことができます。表示または同意、あるいはその両方の方法は、クライアントに任されています。</para>
+<para>次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>license</literal></term>
+<listitem><para>これは <literal>license</literal> アクションのキー属性です。この属性は、ユーザーがライセンスのテキスト自体を読まなくてもその内容を判断できるように支援するための、ライセンスの意味のある説明を提供します。この値のいくつかの例を次に示します。</para>
+<itemizedlist>
+<listitem><para>ABC Co. Copyright Notice</para></listitem>
+<listitem><para>ABC Co. Custom License</para></listitem>
+<listitem><para>Common Development and Distribution License 1.0 (CDDL)</para>
+</listitem>
+<listitem><para>GNU General Public License 2.0 (GPL)</para></listitem>
+<listitem><para>GNU General Public License 2.0 (GPL) Only</para></listitem>
+<listitem><para>MIT License</para></listitem>
+<listitem><para>Mozilla Public License 1.1 (MPL)</para></listitem>
+<listitem><para>Simplified BSD License</para></listitem>
+</itemizedlist>
+<para><literal>license</literal> 値は、パッケージ内で一意である必要があります。上のいくつかの例に示すように、説明にライセンスのバージョンを含めることをお勧めします。パッケージに複数のライセンスに基づくコードが含まれる場合、複数の <literal>license</literal> アクションを使用します。ライセンス属性値の長さは、64 文字以下にしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-accept</literal></term>
+<listitem><para><literal>true</literal> の場合は、関連するパッケージをインストールまたは更新するには、ユーザーがこのライセンスに同意する必要があります。この属性を省略すると、<literal>false</literal> と同等になります。同意の方法 (たとえば、対話型または構成ベース) は、クライアントに任されています。パッケージの更新については、ライセンスアクションまたはペイロードが変更されていない場合、この属性は無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-display</literal></term>
+<listitem><para><literal>true</literal> の場合は、パッケージ化の操作中に、クライアントがこのアクションのペイロードを表示する必要があります。この値を省略すると、<literal>false</literal> と同等になります。この属性は、コピーライト表示に使用しないでください。この属性は、操作中に表示する必要のある実際のライセンスまたはその他の素材にのみ使用してください。表示の方法は、クライアントに任されています。パッケージの更新については、ライセンスアクションまたはペイロードが変更されていない場合、この属性は無視されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>レガシーアクション</title>
+<para><literal>legacy</literal> アクションは、従来のパッケージシステムで使用されるパッケージデータを表します。このアクションに関連付けられた属性は、従来のシステムのデータベースに追加されます。そのため、これらのデータベースに問い合わせを行なっているツールは、従来のパッケージが実際にインストールされているかのように動作できます。特にこれにより、<literal>pkg</literal> 属性で指定されたパッケージがシステムにインストールされていることを従来のシステムに十分に確信させることができるため、このパッケージを、依存関係を満たすために使用できるようになります。</para>
+<para><literal>pkginfo</literal>(4) のパラメータに従って指定された次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>category</literal></term>
+<listitem><para><literal>CATEGORY</literal> パラメータの値。デフォルト値は <literal>system</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>desc</literal></term>
+<listitem><para><literal>DESC</literal> パラメータの値。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>hotline</literal></term>
+<listitem><para><literal>HOTLINE</literal> パラメータの値。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para><literal>NAME</literal> パラメータの値。デフォルト値は <literal>none provided</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg</literal></term>
+<listitem><para>インストールされるパッケージの略語。デフォルト値は、パッケージの FMRI の名前です。これは <literal>legacy</literal> アクションのキー属性です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>vendor</literal></term>
+<listitem><para><literal>VENDOR</literal> パラメータの値。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>version</literal></term>
+<listitem><para>VERSION パラメータの値。デフォルト値は、パッケージの FMRI のバージョンです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>設定アクション</title>
+<para><literal>set</literal> アクションは、パッケージの説明などの、パッケージレベルの属性 (またはメタデータ) を表します。</para>
+<para>次の属性が認識されます。</para>
+<variablelist>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>属性の名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>value</literal></term>
+<listitem><para>属性に与えられた値。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>set</literal> アクションは、パッケージ作成者が選択した任意のメタデータを提供できます。ただし、パッケージシステムにとって特別な意味を持つ、適切に定義された属性名がいくつか存在します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>info.classification</literal></term>
+<listitem><para><literal>pkg</literal>(7) クライアントがパッケージを分類するために使用できる 1 つ以上のトークン。この値には、スキーム (「org.opensolaris.category.2008」や「org.acm.class.1998」など) と実際の分類 (「アプリケーション/ゲーム」など) がコロン (:) で区切られて含まれています。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.description</literal></term>
+<listitem><para>パッケージの内容と機能の詳細な説明。通常は、1 つの段落程度の長さです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.fmri</literal></term>
+<listitem><para>含まれるパッケージの名前とバージョン。「説明」セクションの「パッケージの FMRI とバージョン」を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.human-version</literal></term>
+<listitem><para>IPS によって使用されるバージョンスキームは厳格です。「説明」セクションの「パッケージの FMRI とバージョン」を参照してください。より柔軟性のあるバージョンを <literal>pkg.human-version</literal> 属性の値として指定できます。値は IPS ツール (<command>pkg info</command>、<command>pkg contents</command>、<command>pkg search</command> など) によって表示されます。<literal>pkg.human-version</literal> の値はバージョン比較のベースとして使用されず、<literal>pkg.fmri</literal> バージョンの代わりに使用することはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.obsolete</literal></term>
+<listitem><para><literal>true</literal> の場合、パッケージは廃止としてマークされています。廃止されたパッケージには、ほかの設定アクション以外のアクションは存在せず、また名前変更としてマークすることはできません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.renamed</literal></term>
+<listitem><para><literal>true</literal> の場合は、パッケージの名前が変更されました。このパッケージには、このパッケージの名前が変更された先のパッケージバージョンを指す 1 つ以上の <literal>depend</literal> アクションも存在する必要があります。パッケージを名前変更と廃止の両方としてマークすることはできませんが、それ以外は任意の数の設定アクションが存在できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.summary</literal></term>
+<listitem><para>パッケージの短い、1 行の説明。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>グループアクション</title>
+<para><literal>group</literal> アクションは、<literal>group</literal>(4) で定義されるのと同様の UNIX グループを定義します。グループパスワードのサポートはありません。このアクションで定義されたグループには最初、ユーザーリストがありません。ユーザーは、<literal>user</literal> アクションを使用して追加できます。次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>groupname</literal></term>
+<listitem><para>グループの名前の値。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gid</literal></term>
+<listitem><para>グループの一意の数値 ID。デフォルト値は、100 未満の最初に空いているグループです。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>ユーザーアクション</title>
+<para><literal>user</literal> アクションは、<filename>/etc/passwd</filename>、<filename>/etc/shadow</filename>、<filename>/etc/group</filename>、および <filename>/etc/ftpd/ftpusers</filename> ファイルで定義されるのと同様の UNIX ユーザーを定義します。この <literal>user</literal> アクションで定義されたユーザーについて、エントリが適切なファイルに追加されます。</para>
+<para><literal>user</literal> アクションは、デーモンまたは使用するほかのソフトウェアのためにユーザーを定義することを目的としています。管理または対話アカウントを定義する目的で <literal>user</literal> アクションを使用しないでください。</para>
+<para>次の属性が認識されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>username</literal></term>
+<listitem><para>ユーザーの一意の名前。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>password</literal></term>
+<listitem><para>ユーザーの暗号化パスワード。デフォルト値は <literal>*LK*</literal> です。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>uid</literal></term>
+<listitem><para>ユーザーの一意の UID。デフォルト値は、100 未満の最初に空いている値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal> </term>
+<listitem><para>ユーザーのプライマリグループの名前。<filename>/etc/group</filename> に存在する必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gcos-field</literal></term>
+<listitem><para><filename>/etc/passwd</filename> 内の <literal>gcos</literal> フィールドの値。デフォルト値は <literal>username</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>home-dir</literal></term>
+<listitem><para>ユーザーのホームディレクトリ。このディレクトリはシステムイメージディレクトリ内にある必要があり、<filename>/home</filename> などの別のマウントポイントの下であってはいけません。デフォルト値は <literal>/</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>login-shell</literal></term>
+<listitem><para>ユーザーのデフォルトのシェル。デフォルト値は空です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-list</literal></term>
+<listitem><para>ユーザーが属しているセカンダリグループ。<literal>group</literal>(4) を参照してください。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>ftpuser</literal></term>
+<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。<literal>true</literal> のデフォルト値は、ユーザーが FTP 経由のログインを許可されていることを示します。<literal>ftpusers</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>lastchg</literal></term>
+<listitem><para>1970 年 1 月 1 日と、パスワードが最後に変更された日付の間の日数。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>min</literal> </term>
+<listitem><para>パスワード変更の間の必要な最小日数。パスワードの有効期限を有効にするには、このフィールドを 0 以上に設定する必要があります。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>max</literal> </term>
+<listitem><para>パスワードが有効な最大日数。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>warn</literal></term>
+<listitem><para>パスワードの期限が切れる前にユーザーに警告が表示される日数。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>inactive</literal></term>
+<listitem><para>そのユーザーに許可されている非活動の日数。これはマシンごとにカウントされます。最終ログインに関する情報は、そのマシンの <filename>lastlog</filename> ファイルから取得されます。<literal>shadow</literal>(4) を参照してください。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>expire</literal></term>
+<listitem><para>UNIX エポック (1970 年 1 月 1 日) 以降の日数として表される絶対的な日付。この日数に達すると、ログインを使用できなくなります。たとえば、13514 の期限切れの値は、ログインの有効期限が 2007 年 1 月 1 日であることを指定します。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>flag</literal></term>
+<listitem><para>空に設定されています。<literal>shadow</literal>(4) を参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="other"><title>アクチュエータ</title>
+<para>コンテキストによっては、特定のアクションの準備として、またはその導入のあとに、追加の操作を実行することが適している場合があります。これらの追加の操作はオペレーティングシステムに固有のもので、一般にライブシステムイメージ上でのみ必要です。ライブイメージは、現在のゾーンのアクティブな実行中のブート環境の <literal>/</literal> にマウントされたイメージです。パッケージのインストールまたは削除に関与する複数のアクションのアクチュエータが同一である場合、アクチュエータの存在に対応する操作は、そのインストールまたは削除に対して 1 回実行されます。</para>
+<para>アクチュエータを誤って指定すると、そのアクチュエータがインストールを安全に進めるための手段を決定できない場合、パッケージのインストールが失敗することがあります。</para>
+<para>次のアクチュエータが定義されています。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>reboot-needed</literal></term>
+<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。このアクチュエータは、パッケージシステムがライブイメージ上で動作している場合、タグ付きアクションの更新または削除を新しいブート環境で実行する必要があることを宣言します。新しいブート環境の作成は、<literal>be-policy</literal> イメージプロパティーによって制御されます。<literal>be-policy</literal> プロパティーについての詳細は、<literal>pkg</literal>(1) のマニュアルページの「イメージプロパティー」セクションを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
+<listitem><para>これらの各アクチュエータは、パッケージのインストールまたは削除時に操作するサービスインスタンスの FMRI の値を取得します。<literal>disable_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の <literal>disable</literal> サブコマンドに従って、アクションの削除の前に特定の FMRI が無効になります。<literal>refresh_fmri</literal> および <literal>restart_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の対応するサブコマンドに従って、アクションのインストール、更新、または削除のあとに特定の FMRI が更新または再起動されます。最後に、<literal>suspend_fmri</literal> を指定すると、アクションのインストールフェーズの前に特定の FMRI が一時的に無効になり、そのフェーズが完了したあとに有効になります。</para>
+<para>この値には、複数のサービスインスタンスに一致するパターンを含めることができます。ただし、それをインスタンスを示さずに暗黙的に行うのではなく、<literal>svcs</literal>(1) によって受け入れられた glob を使用して明示的に行う必要があります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>メディエーション</title>
+<para>メディエータは、一連の関連するシンボリックリンクまたはハードリンクを表す名前です。2 つ以上のリンクアクションが同じパスとメディエータ名を持つ場合、ユーザーまたはパッケージシステムは、バージョン、実装、または優先度に基づいてリンクターゲットを選択します。メディエータ属性については、「リンクアクション」を参照してください。</para>
+<para>次の例は、リンクがバージョンによって選択される、<literal>java</literal> という名前のメディエータの 2 つの異なるインスタンスを示しています。これらの 2 つの <literal>link</literal> アクションは 2 つの異なるパッケージに出現します。</para>
+<programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
+link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
+<para>このリンクパスのバージョンを選択する方法については、<command>pkg</command>(1) のマニュアルページの <command>set-mediator</command> サブコマンドを参照してください。バージョンを選択するには、両方のパッケージがインストールされている必要があります。</para>
+</refsect1>
+<refsect1 role="other"><title>制約と凍結</title>
+<para>パッケージが新しいバージョンに移行される場合、またはシステムに追加されたり、システムから削除されたりする場合、選択されるバージョンや、削除が許可されるかどうかは、そのパッケージに対するさまざまな制約によって決定されます。これらの制約は、依存関係の形式でほかのパッケージが定義するか、または凍結の形式で管理者が定義できます。</para>
+<para>制約のもっとも一般的な形式は、上の「依存アクション」で説明したように、<literal>require</literal> 依存関係によって提供されます。このような制約によって、パッケージがダウングレードまたは削除されることが回避されます。</para>
+<para>オペレーティングシステムのほとんどの部分は、<emphasis>incorporation</emphasis> と呼ばれるパッケージによってカプセル化されています。これらのパッケージは主に、<literal>incorporate</literal> 依存関係によって表される制約を提供します。</para>
+<para>上で説明したように、組み込まれたパッケージがシステム上に存在する必要はありませんが、存在する場合は、包括的な最小バージョンと排他的な最大バージョンの両方を指定します。たとえば、依存する FMRI のバージョンが 1.4.3 の場合、1.4.3 未満のバージョンは依存関係を満たさず、1.4.4 以上のバージョンでも依存関係を満たしません。ただし、1.4.3.7 など、単にドット形式の数列を拡張したバージョンは許可されます。</para>
+<para>incorporation は、システムの各部の同期的なアップグレードを強制的に行うために使用されます。C ライブラリやカーネルなどの一部のコンポーネントでは、これは基本的な要件です。ほかには依存関係が存在しない単純なユーザーランドコンポーネントなどのその他のコンポーネントでは、incorporation の特定のバージョンから参照できるテストされた、既知の一連のパッケージバージョンを提供するためだけに、同期アップグレードが使用されます。</para>
+<para>incorporation は単なるパッケージであるため、削除することができ、それが提供しているすべての制約がそれによって緩和されます。ただし、その緩和は安全ではないため、Oracle Solaris によって提供される多くの incorporation が、それらの incorporation によって組み込まれているパッケージには必要です。</para>
+<para>パッケージを、インストール済みの incorporation によって許可されていないバージョンにアップグレードしようとしても、要求を満たすためにその incorporation の新しいバージョンを見つけようとする試みは行われず、そのアップグレードは失敗します。制約自体を移動する必要があるが、それを指定している incorporation を削除できない場合は、その incorporation を、制約の目的のバージョンを指定するバージョンにアップグレードする必要があります。incorporation をアップグレードすると、その新しいバージョンによって提供される制約を満たさない組み込まれたパッケージもすべてアップグレードされます。</para>
+<para>システム管理者は、<command>pkg freeze</command> コマンドを使用してパッケージを制約できます。バージョンが指定されていない場合、指定されたパッケージは、システムにインストールされているバージョンに制約されます。バージョン管理されたパッケージが指定された場合、この管理上の制約 (つまり、凍結) は、<literal>fmri</literal> 属性が指定されたパッケージバージョンの値を持った状態で incorporate 依存関係がインストールされているかのように機能します。</para>
+<para>凍結がパッケージシステムによって自動的に解除されることはありません。制約を緩和するには、<command>pkg unfreeze</command> コマンドを使用します。</para>
+</refsect1>
+<refsect1 role="other"><title>パブリッシャーとリポジトリ</title>
+<para>上で詳細に説明したように、パブリッシャーとは単に、パッケージクライアントがパッケージのプロバイダを識別するために使用する名前です。パブリッシャーは、パッケージリポジトリまたはパッケージアーカイブ、あるいはその両方を使用してパッケージを配布できます。現在パッケージシステムでサポートされているリポジトリのタイプには、起点リポジトリとミラーリポジトリの 2 つがあります。</para>
+<para><emphasis>起点</emphasis>は、1 つ以上のパッケージのすべてのメタデータ (カタログ、マニフェスト、検索インデックスなど) と内容 (ファイル) を含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して複数の起点が構成されている場合、パッケージクライアント API は、パッケージデータの取得元として最適な起点を選択しようとします。これはもっとも一般的なタイプのリポジトリであり、パッケージリポジトリ上で <command>pkgsend</command> または <command>pkgrecv</command> が使用された場合は常に、暗黙的に作成されます。</para>
+<para><emphasis>ミラー</emphasis>は、パッケージの内容 (ファイル) のみを含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して 1 つ以上のミラーが構成されている場合、クライアント API はパッケージ内容の取得のためのミラーを優先し、パッケージの内容の取得元として最適なミラーを選択しようとします。ミラーが到達不可能か、必要な内容が含まれていないか、またはより低速な場合、クライアント API は、構成されているいずれかの起点リポジトリから内容を取得します。ミラーは、<command>pkg.depotd</command>(8) の動的ミラー機能を使用している、信頼できる一連のクライアント間の内容共有に使用されることを目的にしています。ミラーはまた、パッケージのメタデータへのアクセスを認証するために使用されることも目的にしています。ただし、パッケージの内容は認証なしで配布します。たとえば、あるクライアントが、アクセスするには SSL キーと証明書のペアが必要な <literal>https</literal> 起点と、パッケージの内容を提供する <literal>http</literal> ミラーを使用して構成される可能性があります。このようにして、認可クライアントだけがパッケージをインストールまたは更新できるようにしながら、パッケージ内容の取得のための認証のオーバーヘッドが回避されます。ミラーは、<filename>file</filename> という名前のサブディレクトリとその親を除く、リポジトリのすべてのサブディレクトリを削除することによって作成できます。また、<command>pkg.depotd</command>(8) のミラーモードを使用すると、起点リポジトリもミラーとしてプロビジョニングできます。</para>
+</refsect1>
+<refsect1 role="other"><title>大域ゾーンと非大域ゾーンの更新</title>
+<para><literal>pkg</literal> システムは、非大域ゾーンを強制的に大域ゾーンと同期された状態に保持します。つまり、同じカーネルが確実に実行されるようにするために、特定のパッケージを大域ゾーンとすべての非大域ゾーンで同じバージョンにする必要があります。このために、<literal>pkg</literal> は <literal>parent</literal> 依存関係を使用して、非大域ゾーンに特定の制約を課します。<literal>parent</literal> 依存関係についての詳細は、上の「依存アクション」を参照してください。</para>
+<para>大域ゾーンが非大域ゾーンに課す制限のため、非大域ゾーンは大域ゾーンのパッケージにアクセスできる必要があり、かつ同様の発行元構成にする必要があります。これらの目的はどちらも、<emphasis role="strong">システムリポジトリ</emphasis> を使用して実現されます (<literal>pkg.sysrepo</literal>(8) のマニュアルページを参照)。システムリポジトリは、大域ゾーン内で構成された発行元へのアクセスと、これらの発行元が構成されている方法に関する情報を提供します。インストールまたは更新中に非大域ゾーンで別のパッケージが選択されないようにするために、発行元の検索順序で、システム発行元には非大域ゾーン内で構成された発行元より高くランク付けされます。発行元の検索順序については、<literal>pkg</literal>(1) のマニュアルページの <command>pkg set-publisher</command> コマンドを参照してください。</para>
+<para>システム上のすべての非大域ゾーンを更新するには、大域ゾーン内で <command>pkg update</command> コマンドを引数なしで使用します。このコマンドは大域ゾーンに対して、また各非大域ゾーンに対して再帰的に動作します。非大域ゾーンを大域ゾーン内で行われた変更と同期された状態にするために、非大域ゾーンに対して必要な最小の変更が加えられます。たとえば、パッケージ <literal>foo</literal> が大域ゾーンと非大域ゾーンの両方にバージョン 1 でインストールされており、システムリポジトリ内でバージョン 2 が使用可能であると想定します。<literal>foo</literal> に親の依存関係が存在する場合、<literal>parent</literal> 依存関係によってパッケージは強制的に同期された状態に保持されるため、<command>pkg update foo</command> は <literal>foo</literal> を大域ゾーンと非大域ゾーンの両方でバージョン 2 に更新します。<literal>foo</literal> に親の依存関係が存在しない場合、<literal>foo</literal> は大域ゾーンでバージョン 2 に更新されますが、非大域ゾーンではバージョン 1 のままになります。</para>
+</refsect1>
+<refsect1 role="other"><title>ファセットとバリアント</title>
+<para>ソフトウェアには、省略可能なコンポーネントや、相互に排他的なコンポーネントが含まれることがあります。省略可能なコンポーネントの例には、ロケールやドキュメントがあります。相互に排他的なコンポーネントの例には、SPARC バイナリと x86 バイナリや、デバッグバイナリと非デバッグバイナリなどがあります。</para>
+<para>IPS では、省略可能なコンポーネントを<emphasis>ファセット</emphasis>、相互に排他的なコンポーネントを<emphasis>バリアント</emphasis>と呼びます。ファセットとバリアントはパッケージアクションのタグとして指定します。各ファセットタグおよびバリアントタグには名前と値があります。1 つのアクションに複数のファセットタグおよびバリアントタグを付けることができます。複数のファセットおよびバリアントタグのあるコンポーネントの例には、開発者によって使われるアーキテクチャー固有のヘッダーファイルや SPARC 大域ゾーン専用のコンポーネントなどがあります。</para>
+<para>バリアントタグの例は <literal>variant.arch=sparc</literal> です。ファセットタグの例は <literal>facet.devel=true</literal> です。ファセットとバリアントは、<literal>facet.</literal> や <literal> variant.</literal> を先頭に付けずに参照されることがよくあります。</para>
+<para>ファセットとバリアントはイメージの特殊なプロパティーであり、個々のパッケージには設定できません。イメージに設定されたファセットおよびバリアントの現在の値を表示するには、<command>pkg</command>(1) のマニュアルページに示すように、<command>pkg facet</command> コマンドと <command>pkg variant</command> コマンドを使用します。イメージに設定されたファセットおよびバリアントの値を変更するには、<command>pkg change-facet</command> コマンドと <command> pkg change-variant</command> コマンドを使用します。</para>
+<para>ファセットは、パッケージクライアントによってブール値として扱われ、ファセットは、イメージ内で <literal>true</literal> (有効) または <literal>false</literal> (無効) にのみ設定できます。デフォルトでは、「facet.debug.」または「facet.optional.」で始まるファセットはすべて、イメージ内で <literal>false</literal> に設定されているとみなされます。その他はすべて、イメージ内で <literal>true</literal> に設定されているとみなされます。</para>
+<para>ファセットは、<command>pkg change-facet</command> コマンドを使用してイメージ内でローカルに設定するか、親イメージから継承することができます。たとえば、非大域ゾーンは大域ゾーンからファセットを継承できます。継承されたファセットは、ローカルで設定されたファセットよりも先に評価され、優先されます。同じファセットが、継承もローカル設定もされた場合、継承されたファセット値によって、ローカルで設定された値がマスクされます。マスクされたファセットは、ファセットの評価とパッケージアクションに影響しません。<command>pkg change-facet</command> コマンドを使用して行われるファセット変更は、ローカルで設定されたファセットにのみ影響します。継承されたファセットは、親イメージ内で変更を行うことによってのみ変更できます。デフォルトでは、<command>pkg facet</command> コマンドはマスクされたファセットを表示しません。</para>
+<para>ファセットが設定されたアクションをクライアントがフィルタ処理する方法を制御するために、アクションのファセットタグの値を <literal>all</literal> または <literal>true</literal> に設定できます。<literal>all</literal> または <literal>true</literal> 以外のすべての値では、未定義の動作が発生します。ファセットタグを持つアクションをインストールするために、イメージ内に存在する必要のある条件の説明については以下を参照してください。</para>
+<para>ファセットに対する <literal>all</literal> 値は、単一レベルを超えるフィルタリングが必要な場合に便利です。次の例で、<literal>doc</literal> ファセットと、<literal>locale</literal> ファセットの少なくとも 1 つが、イメージ内で <literal>true</literal> の場合のみ、<literal>foo.txt</literal> がインストールされます。これにより、管理者はドキュメントを除外しつつ、特定のロケールのサポートを有効化または無効化できます。さらに、<literal>doc</literal> ファセットと <literal>devel</literal> ファセットの両方がイメージ内で <literal>true</literal> の場合のみ、<literal>api.txt</literal> がインストールされます。</para>
+<programlisting>file path=usr/share/doc/foo/foo.txt facet.doc=all facet.locale.en_GB=true facet.locale.en_US=true
+file path=usr/share/doc/foo/api.txt facet.doc=all facet.devel=all</programlisting>
+<para>イメージに設定されるファセットは、<literal>doc.man</literal> などの完全なファセットか、<literal>locale.*</literal> などのパターンになります。これは、ファセット名前空間の一部を無効にし、その中の個々のファセットのみを有効にする場合に役立ちます。たとえば、次の例に示すように、すべてのロケールを無効にしてから、1 つか 2 つの特定のロケールのみを有効にすることができます。</para>
+<screen># <userinput>pkg change-facet locale.*=false</userinput>
+[output about packages being updated]
+# <userinput>pkg change-facet locale.en_US=true</userinput>
+[output about packages being updated]</screen>
+<para>ほとんどのバリアントは任意の数の値を設定できます。たとえば、<literal>arch</literal> バリアントには、<literal>i386</literal>、<literal>sparc</literal>、<literal>ppc</literal>、<literal>arm</literal>、またはディストリビューションでサポートされているどんなアーキテクチャーでも設定できます。(Oracle Solaris では <literal>i386</literal> と <literal>sparc</literal> のみが使用されます。)例外は <literal>debug</literal> バリアントです。<literal>debug</literal> バリアントには、<literal>true</literal> または <literal>false</literal> のみを設定でき、ほかの値では動作が不確定になります。ファイルアクションに非デバッグバージョンとデバッグバージョンの両方がある場合、次の例に示すように、両方のバージョンに該当する <literal>debug</literal> バリアントが明示的に設定されている必要があります。</para>
+<programlisting>file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=115 pkg.size=103 preserve=true &bsol;
+  variant.debug.osnet=true
+
+file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=68 pkg.size=48 preserve=true &bsol;
+  variant.debug.osnet=false</programlisting>
+<para>バリアント値を指定するパッケージをインストールするために、バリアント値をイメージに設定する必要があります。デフォルトで、指定されていないすべてのバリアントの値は「false」になり、これにより、パッケージがインストール可能になる場合とならない場合があります。<literal>arch</literal> および <literal>zone</literal> バリアントは、イメージを作成し、その初期コンテンツをインストールするプログラムによって設定されます。</para>
+<itemizedlist>
+<para>イメージに設定されたファセットとバリアントは、特定のアクションがインストールされるかどうかに影響します。</para>
+<listitem><para>ファセットまたはバリアントタグのないアクションは常にインストールされます。</para>
+</listitem>
+<listitem><para>ファセットタグのあるアクションは、次の条件がイメージ内に存在する場合にインストールされます。</para>
+<itemizedlist>
+<listitem><para>アクションのファセットタグのうち、値 <literal>all</literal> を持つものはすべて、イメージ内では <literal>true</literal> です (デフォルトでは、「facet.debug.」または「facet.optional.」で始まるファセットはすべて <literal>false</literal>、その他はすべて <literal>true</literal> です)。</para>
+</listitem>
+<listitem><para>アクションのいずれかのファセットタグが、<literal>true</literal> の値を持つ場合、イメージ内のこれらのファセットの少なくとも 1 つが <literal>true</literal> である。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>バリアントタグのあるアクションは、すべてのバリアントタグの値がイメージに設定されている値と同じ場合にのみインストールされます。</para>
+</listitem>
+<listitem><para>ファセットタグとバリアントタグの両方があるアクションは、ファセットとバリアントの両方でアクションのインストールが許可されている場合にインストールされます。</para>
+</listitem>
+</itemizedlist>
+<para>カスタムのファセットタグとバリアントタグを作成できます。詳細については、「<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>」を参照してください。Oracle Solaris では、次のタグが一般に使用されます。</para>
+<informaltable frame="topbot">
+<textobject><simpara>バリアントとそれらの取り得る値。</simpara></textobject>
+<tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*" /><colspec colwidth="50*" /><thead>
+<row rowsep="1">
+<entry>
+<para>バリアント名</para>
+</entry>
+<entry>
+<para>取り得る値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<para><literal>variant.arch</literal></para>
+</entry>
+<entry>
+<para><literal>sparc</literal>、<literal>i386</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.opensolaris.zone</literal></para>
+</entry>
+<entry>
+<para><literal>global</literal>、<literal>nonglobal</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.debug.*</literal></para>
+</entry>
+<entry>
+<para><literal>true</literal>、<literal>false</literal></para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>次のリストに、Oracle Solaris で使用される小さなファセットタグの例を示します。</para>
+<programlisting>facet.devel             facet.doc
+facet.doc.html          facet.doc.info
+facet.doc.man           facet.doc.pdf
+facet.locale.de         facet.locale.en_GB
+facet.locale.en_US      facet.locale.fr
+facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
+</refsect1>
+<refsect1 role="other"><title>イメージポリシー</title>
+<para>イメージポリシーはブール値を持つイメージプロパティーによって定義されます。<literal>flush-content-cache-on-success</literal> および <literal>send-uuid</literal> プロパティーについてとそれらの値の表示および変更方法については、<literal>pkg</literal>(1) のマニュアルページのイメージプロパティーに関する項目を参照してください。</para>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para><literal>pkg</literal>(7) イメージはより大きなファイルシステム内に任意に配置できるため、トークン <literal>$IMAGE_ROOT</literal> を使用して相対パスが区別されます。標準的なシステムインストールでは、<literal>$IMAGE_ROOT</literal> は / と同等です。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
+<listitem><para>完全または部分的なイメージのメタデータディレクトリ。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_ROOT/.org.opensolaris,pkg</filename></term>
+<listitem><para>ユーザーイメージのメタデータディレクトリ。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>特定のイメージのメタデータ内の特定のファイルおよびディレクトリに、修復や復旧中に役立つ情報を含めることができます。トークン <literal>$IMAGE_META </literal> は、メタデータが含まれる最上位ディレクトリを参照するために使用されます。通常、<literal> $IMAGE_META</literal> は前述の 2 つのパスのいずれかです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_META/lost+found</filename></term>
+<listitem><para>パッケージ操作中に移動された、競合するディレクトリおよびファイルの場所。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_META/publisher</filename></term>
+<listitem><para>パブリッシャーごとに 1 つのディレクトリが含まれます。各ディレクトリにはパブリッシャー固有のメタデータが格納されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>$IMAGE_META</literal> ディレクトリ階層内のその他のパスは非公開であり、変更される可能性があります。</para>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

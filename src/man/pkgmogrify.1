@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkgmogrify-1">
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">8 Mar 2016</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgmogrify</refname><refpurpose>Image Packaging System manifest transmogrifier
+</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgmogrify [-vi] [-I <replaceable>includedir</replaceable>]...
+    [-D <replaceable>macro</replaceable>=<replaceable>value</replaceable>]... [-O <replaceable>
+outputfile</replaceable>]
+    [-P <replaceable>printfile</replaceable>] [<replaceable>inputfile</replaceable> ...]
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GKVND" role="description"><title></title>
+<para><command>pkgmogrify</command> provides for programmatic editing of package
+manifests to simplify the typical transformations needed when automating software
+builds and package publication.</para>
+<para>It reads all of the file(s) in the order specified and then will
+apply any embedded directives found within as detailed in the
+&ldquo;Embedded Directives&rdquo; section below. If no files are named,
+input will be read from stdin. '-' can also be specified as a filename to
+use stdin as input, alone, or in combination with other files.</para>
+<itemizedlist>
+<para><command>pkgmogrify</command> provides the following:</para>
+<listitem><para>Macro replacement to facilitate sharing of a single manifest
+across various architectures and platforms.</para></listitem>
+<listitem><para>Inclusion of other manifests or manifest fragments such as
+standard components and transforms.</para></listitem>
+<listitem><para>Transformation of package actions, including the modification,
+deletion, or addition of action attributes.</para></listitem>
+</itemizedlist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>macro</replaceable>=<replaceable>
+value</replaceable></term>
+<listitem><para>Define <replaceable>macro</replaceable> as a macro, with the
+value <replaceable>value</replaceable>. This option can be specified multiple
+times. Macros appear in the input file as <literal>$(macro)</literal>. Substitution
+is repeated until no more translations are found. Common idioms include:</para>
+<itemizedlist>
+<listitem><para>Elimination of lines in a manifest on other architectures
+by using an architecture-specific tag at the beginning of the line:</para>
+<programlisting>$(sparc_ONLY)file ...</programlisting>
+<para>When processing the SPARC architecture, this macro would be set to the
+empty string. When processing other architectures, this macro would be set
+to <literal>#</literal> on the command line, thus eliminating this action
+from the manifest on the current architecture.</para>
+</listitem>
+<listitem><para>Specifying platform-specific portions of path names, such
+as the name of the 64-bit architecture directory for executables and libraries:</para>
+<programlisting>file path=usr/bin/$(ARCH64)/cputrack ...</programlisting>
+<para>These macros should be set to the desired value on the command line.
+There are no predefined macro values.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>I</option> <replaceable>includedir</replaceable></term>
+<listitem><para>Add the specified directory to the search path, both for files
+specified on the command line and for embedded include directives. This option
+can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>O</option> <replaceable>outputfile</replaceable></term>
+<listitem><para>Write manifest output to the specified file. The file is not
+written if an error occurs or if a transform directive causes an abort operation.
+By default, manifest output is written to <filename>stdout</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option> <replaceable>printfile</replaceable></term>
+<listitem><para>Write output resulting from transform directive print operations
+to the specified file. The file is not written if an error occurs or if a
+transform directive causes an abort operation. By default, print output is
+written to <filename>stdout</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option></term>
+<listitem><para>Ignore include directives in files. Only files specified on
+the command line (or <filename>stdin</filename>) are processed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>Write comments into the output manifest showing the effect
+of transforms. This information can aid in debugging.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>Embedded Directives</title>
+<para>Two types of directives are supported in manifest files: include directives
+and transform directives.</para>
+<para>Include directives are of the form:</para>
+<programlisting>&lt;include <replaceable>file</replaceable>></programlisting>
+<para>This directive causes <command>pkgmogrify</command> to search for a
+file named <literal>file</literal> first in the current directory and then
+in the directories specified with the <option>I</option> option. If found,
+the contents of the file are inserted into the manifest at the point at which
+the directive is encountered. If not found, <command>pkgmogrify</command> exits
+with an error.</para>
+<para>Transform directives are of the form:</para>
+<programlisting>&lt;transform <replaceable>matching-criteria</replaceable> -> <replaceable>
+operation</replaceable>></programlisting>
+<para>These directives are accumulated until all inputs have been read into
+memory, and then applied to the actions in the order in which they were encountered.
+</para>
+<para>Matching criteria are of the form:</para>
+<programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
+</replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
+<para>At least one specified <replaceable>action-name</replaceable> must match.
+Every specified <replaceable>attribute</replaceable> must match. Action names
+and attributes are listed in &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7)
+man page. The regular expression syntax used is that of Python. For more information
+about Python regular expression syntax, use the command <command>pydoc re</command> or
+see more complete documentation at <literal>http://docs.python.org/dev/howto/regex.html
+</literal>. The regular expression is anchored at the beginning but not at
+the end. Therefore, a regular expression matching files by their extensions
+must include a leading <literal>.*</literal> and should include a trailing <literal>
+$</literal>.</para>
+<para>Multiple criteria can be specified, separated by spaces.</para>
+<para>The following operations are available:</para>
+<variablelist>
+<varlistentry><term><literal>add</literal></term>
+<listitem><para>Add a value to an attribute. This operation takes two arguments.
+The first argument is the name of the attribute, and the second is the value.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>default</literal></term>
+<listitem><para>Set the value of an attribute if it doesn't already exist.
+This operation takes the same two arguments as the <command>add</command> operation.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>delete</literal></term>
+<listitem><para>Remove attribute values. This operation takes two arguments.
+The first argument is the name of the attribute. The second argument is a
+regular expression to match the attribute values deleted. Unlike the regular
+expression used to match an action, this expression is unanchored.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>drop</literal></term>
+<listitem><para>Discards this action.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>edit</literal></term>
+<listitem><para>Modifies an attribute of the action. This operation takes
+three arguments. The first argument is the name of the attribute, and the
+second is a regular expression matching the attribute value. The third argument
+is the replacement string substituted for the portion of the value matched
+by the regular expression. Unlike the regular expression used to match an
+action, this expression is unanchored. Normal regular expression backreferences,
+of the form <literal>&bsol;1</literal>, <literal>&bsol;2</literal>, and so
+on, are available in the replacement string if groups are defined in the regular
+expression.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>emit</literal></term>
+<listitem><para>Emit a line to the manifest output stream. This must be a
+valid action string, empty (resulting in a blank line), or a comment (a <literal>
+#</literal> followed by arbitrary text).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exit</literal></term>
+<listitem><para>Terminate manifest processing. No manifest is output and no <literal>
+print</literal> operations are applied. If one argument is given, it must
+be an integer, and it is used as the exit code. The default is 0. If two arguments
+are given, the first is the exit code, and the second is a message to be printed
+to <filename>stderr</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>print</literal></term>
+<listitem><para>Print a message to the output file specified with <option>P</option>.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>set</literal></term>
+<listitem><para>Set the value of an attribute. This operation takes the same
+two arguments as the <command>add</command> operation.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>All operations except for <literal>delete</literal> and <literal>drop</literal> take
+(possibly optional) arguments whose contents go to the output stream. These
+strings can contain three different kinds of special tokens which allow the
+output to contain information that is not based on a fixed transformation
+of each action.</para>
+<para>The first kind of substitution allows the operation to refer to the
+values of attributes of the current action by putting the name of the attribute
+inside parentheses following a percent sign. For example, <literal>%(alias)</literal> refers
+to the value of the action's <literal>alias</literal> attribute.</para>
+<itemizedlist>
+<para>Several synthetic attributes exist. Two are unique to <command>pkgmogrify</command>:
+</para>
+<listitem><para><literal>pkg.manifest.filename</literal> refers to the name
+of the file in which the action was found.</para></listitem>
+<listitem><para><literal>pkg.manifest.lineno</literal> refers to the line
+on which the action was found.</para></listitem>
+</itemizedlist>
+<itemizedlist>
+<para>Three synthetic attributes are similar to ones used in <command>pkg</command>:
+</para>
+<listitem><para><literal>action.hash</literal> refers to the hash value of
+the action if the action carries a payload. For actions with payloads, the <literal>
+set</literal> operation can change the hash of the action by operating on
+the <literal>action.hash</literal> attribute.</para></listitem>
+<listitem><para><literal>action.key</literal> refers to the value of the key
+attribute.</para></listitem>
+<listitem><para><literal>action.name</literal> refers to the name of the action.</para>
+</listitem>
+</itemizedlist>
+<para>If the attribute whose value is requested does not exist, <command>pkgmogrify
+</command> exits with an error. To prevent exiting with an error, follow the
+attribute name with <literal>;notfound=</literal> and a value to substitute
+in place of the attribute value. For example, <literal>%(alias;notfound='no
+alias')</literal> prints the value of the attribute <literal>alias</literal> if
+it exists, and prints <literal>no alias</literal> otherwise.</para>
+<para>If the attribute whose value is requested is multi-valued, each value
+is printed, separated by spaces. Similarly to the <literal>notfound</literal> token,
+the tokens <literal>prefix</literal>, <literal>suffix</literal>, and <literal>sep
+</literal> can be used to change this behavior. The string denoted by <literal>prefix
+</literal> is prepended to each value, the string denoted by <literal>suffix</literal> is
+appended to each value, and <literal>sep</literal> is placed in between the
+suffix of one value and the prefix of the next.</para>
+<para>Similarly to action attributes, <command>pkgmogrify</command> directives
+can reference package attributes using braces instead of parentheses: <literal>%{pkg.fmri}
+</literal>. At the point at which the transform directive is applied, the
+attribute must have been defined in a <literal>set</literal> action, or it
+is treated as <literal>notfound</literal>, described above. When the processing
+reaches the end of the manifest file describing the package, the attributes
+are cleared for the next package.</para>
+<para>It is useful not only to reference package attributes as if they were
+action attributes, but also to match on them, and even temporarily modify
+them. Therefore a synthetic action name, <literal>pkg</literal>, is available
+(only in the context of <command>pkgmogrify</command>) for use in these situations.
+</para>
+<para>When <command>pkgmogrify</command> finishes reading a manifest specified
+on the command line and that manifest defined a <literal>pkg.fmri</literal> package
+attribute, <command>pkgmogrify</command> creates this synthetic <literal>pkg</literal> action,
+whose attributes are the package's attributes. A <literal>&lt;transform></literal> directive
+can then match on this action, just as it can match on any other action.</para>
+<para>Operations on a <literal>pkg</literal> action are special in that they
+take place only in memory and do not directly affect the emitted manifest.
+For instance, trying to set an attribute on a <literal>pkg</literal> action
+via the <literal>add</literal>, <literal>default</literal>, or <literal>set</literal> operations
+does not result in a <literal>set</literal> action being added to the manifest,
+though it will be available for other <literal>&lt;transform></literal> directives
+to match on. Attempting to <literal>emit</literal> a <literal>pkg</literal> action
+causes an error. To add a package attribute, <literal>emit</literal> a <literal>set
+</literal> action instead.</para>
+<para>The third kind of substitution is a backreference. This substitution
+is not like the ones usable in the <literal>edit</literal> operation, but
+is a reference to groups listed in the transformation match on the left-hand
+side of the <literal>-></literal>. These are indicated by <literal>%&lt;1></literal>, <literal>
+%&lt;2></literal>, and so on, in the order seen in the matching criteria.</para>
+<orderedlist>
+<para>The order of processing is as follows:</para>
+<listitem><para>Lines are read from input files.</para></listitem>
+<listitem><para>Macros are applied.</para></listitem>
+<listitem><para><literal>&lt;include ...></literal> and <literal>&lt;transform></literal> directives
+are processed, causing additional files to be found and read.</para></listitem>
+<listitem><para>Once all input has been accumulated, each line in the input
+is converted into actions and all transforms applied.</para></listitem>
+<listitem><para>Once processing is complete and successful, the output is
+written.</para></listitem>
+</orderedlist></refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Add Tags To SMF Manifests</title>
+<para>Add tags to Service Management Facility (SMF) manifests so they get
+imported when the package is installed on a live system.</para>
+<programlisting>&lt;transform file path=(var|lib)/svc/manifest/.*&bsol;.xml -> &bsol;
+    add restart_fmri svc:/system/manifest-import:default></programlisting>
+</example>
+<example><title>Move Files</title>
+<para>Move files from <filename>usr/sfw/bin</filename> to <filename>usr/bin</filename>.
+</para>
+<programlisting>&lt;transform file -> edit path usr/sfw/bin usr/bin></programlisting>
+</example>
+<example><title>Specify Reboot Needed</title>
+<para>Add <literal>reboot-needed</literal> tags to files under <filename>/kernel</filename> that
+are not <filename>.conf</filename> files. Note that this example leverages
+how transforms are applied to each action in the order seen in the input files.</para>
+<programlisting>&lt;transform file path=kernel/.* -> set reboot-needed true>
+&lt;transform file path=kernel/.*&bsol;.conf -> delete reboot-needed .*></programlisting>
+<para>This can also be done in a single transform rule with regular expressions.</para>
+</example>
+<example><title>Convert FMRI Attribute To Depend Action</title>
+<para>Convert the package attribute <literal>pkg.fmri</literal> into a <literal>depend
+</literal> action to become part of an incorporation.</para>
+<programlisting>&lt;transform set name=pkg.fmri -> &bsol;
+    emit depend type=incorporate fmri=%(value)>
+&lt;transform set name=pkg.fmri -> drop></programlisting>
+</example>
+<example><title>Print a List of Bug Numbers</title>
+<para>Print a comma-separated list of quoted and prefixed bug numbers.</para>
+<programlisting>set name=bugs value=12345 value=54321 value=13579 value=97531
+&lt;transform set name=bugs -> &bsol;
+    print %(value;sep=",";prefix="bug='";suffix="'")></programlisting>
+</example>
+<example><title>Allow For Missing Attributes</title>
+<para>Safely print a message even when an attribute is missing.</para>
+<programlisting>&lt;transform driver -> print Found aliases: %(alias;notfound=&lt;none>)>
+</programlisting>
+</example>
+<example><title>Set Default Values</title>
+<para>Set default owner, group, and permission values.</para>
+<programlisting>&lt;transform file dir -> default owner root>
+&lt;transform file dir -> default group bin>
+&lt;transform file -> default mode 0444>
+&lt;transform dir -> default mode 0755></programlisting>
+</example>
+<example><title>Add Dependencies To Packages That Are Not Marked Obsolete</title>
+<para>For any package that is not marked obsolete, add a dependency on the
+incorporation for the consolidation that delivers the package. This set of
+transforms must occur after the manifest has been read in, or the dependency
+will always be emitted. Because modifying a <literal>pkg</literal> action
+has no permanent effect, there is no need to clean up attributes matching <literal>
+pkg.obsolete=false</literal>.</para>
+<programlisting>&lt;transform pkg -> default pkg.obsolete false>
+&lt;transform pkg pkg.obsolete=false -> emit depend &bsol;
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require></programlisting>
+</example>
+<example><title>Exit and Print a Message When an Error Is Found</title>
+<para>Error out with a message when an obsolete attribute is found in a manifest.
+</para>
+<programlisting>&lt;transform file dir link hardlink opensolaris.zone=.* -> &bsol;
+    exit 1 The opensolaris.zone attribute is obsolete.></programlisting>
+</example>
+<example><title>Set the Appropriate Locale Facet</title>
+<para>Set the locale facet appropriate for the path name under consideration.</para>
+<programlisting>&lt;transform dir file link hardlink path=.*/locale/([^/]+).* -> &bsol;
+    default facet.locale.%&lt;1> true></programlisting>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Everything worked.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>Something bad but anticipated happened.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>Unexpected processing error.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/pkg/transforms</filename></term>
+<listitem><para>This directory contains files with useful transforms to set
+facets, actuators, and other attributes.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg
+</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink
+targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle>
+<manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

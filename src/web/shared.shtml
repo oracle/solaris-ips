@@ -1,0 +1,94 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+##
+<%!
+        import six
+        import operator
+%>
+## Returns the value of the named respository configuration property in the
+## given section.
+<%def name="dcval(g_vars, section, name)"><%
+        return g_vars["config"].get_depot_property_value(section, name)
+%></%def>\
+<%def name="rcval(g_vars, section, name)"><%
+        return g_vars["config"].get_repo_property_value(section, name)
+%></%def>\
+## Returns the relative URI path to the named resource.
+<%def name="rpath(g_vars, name)"><%
+        return g_vars["request"].get_rel_path(name)
+%></%def>\
+## Returns path relative to the current request path for the current locale
+## and region.
+<%def name="lrelpath(g_vars, path)"><%
+        return g_vars["request"].get_rel_path(path)[len("../"):]
+%></%def>\
+## Returns a list of tuples containing a pkg.Version object, a string
+## representing the version, and a label for that version.  Entries are
+## sorted by release and branch in descending order.
+<%def name="get_releases(g_vars)"><%
+        catalog = g_vars["catalog"]
+        request = g_vars["request"]
+        versions = {}
+	for f, states, attrs in catalog.gen_packages(patterns=["/entire",
+	    "/solaris"],
+            return_fmris=True):
+                br = str(f.version.branch).replace(".", "").strip()
+                ver_label = "{0}-{1}".format(f.version.release,
+                    f.version.branch)
+                if br == "086":
+                        ver_label = "2008.05 ({0})".format(ver_label)
+                elif br == "0101":
+                        ver_label = "2008.11 ({0})".format(ver_label)
+                elif br == "0111":
+                        ver_label = "2009.06 ({0})".format(ver_label)
+
+                entry = "{0}@{1},{2}-{3}".format(f.pkg_name, f.version.release,
+                    f.version.build_release, f.version.branch)
+
+                versions[entry] = (f.version, entry, ver_label)
+
+        return [
+                ver[1] for ver in
+                sorted(six.iteritems(versions), key=operator.itemgetter(1),
+                    reverse=True)
+        ]
+%></%def>\
+## Returns a uri, relative to the current request path to the given resource
+## based on the current theme, that is not locale or region specific.
+<%def name="tpath(g_vars, resource)"><%
+        return g_vars["request"].get_rel_path("_themes/{0}/{1}".format(
+            g_vars["web_config"]["theme"], resource))
+%></%def>\
+## Returns the %include path to the given resource based on the current theme,
+## locale, and region information.
+<%def name="ltipath(g_vars, resource)"><%
+        return "/_themes/{0}/{1}/{2}".format(g_vars["web_config"]["theme"],
+            g_vars["web_config"]["locale-region"], resource)
+%></%def>\
+## Returns a uri, relative to the current request path, to the given resource
+## based on the current locale and region information.
+<%def name="ltupath(g_vars, resource)"><%
+        path = "_themes/{0}/{1}/{2}".format(g_vars["web_config"]["theme"],
+            g_vars["web_config"]["locale-region"], resource)
+        return g_vars["request"].get_rel_path(path)
+%></%def>\

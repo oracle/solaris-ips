@@ -1,0 +1,452 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 10
+----------
+
+Advanced Update
+................
+
+This chapter deals with more complex package update issues, and describes
+several features in IPS designed to simplify these problems.
+
+For most update operations, IPS will automatically do exactly what is
+needed to install updated packages.  There are some cases, however,
+that require the developer to provide additional information to IPS.
+
+For performance reasons, the solver works purely on the dependency
+information included in packages.  Packages whose dependencies indicate
+that they can be installed at the same time but whose content conflicts
+cause conflict checking to fail in pre-installation.
+
+An example of conflicting content is two packages installing the same
+file. If conflict checking fails, the user must try different package
+versions and then manually specify acceptable versions.
+
+Ensuring that conflicting packages cannot be installed due to constraining
+dependencies is a responsibility of the package developer.  As mentioned in
+*Chapter 4*, |pkglint| can assist with this task.
+
+Renaming, Merging and Splitting Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Often, the desired organization of a software component changes, whether because
+of mistakes in the original packages, changes in the product or its usage over
+time, or changes in the surrounding software environment.  Also, sometimes
+just the name of a package needs to change.  When contemplating such changes,
+thought must be given to the customer who is upgrading their system to ensure
+that unintended side effects do not occur.
+
+Three types of package reorganization are discussed in this section, in order of
+increasingly complex considerations for pkg update:
+
+1. Renaming single packages
+2. Merging two packages
+3. Splitting a package
+
+Renaming a Single Package
+`````````````````````````
+
+Simple renames are straightforward.  IPS provides a mechanism
+to indicate that a package has been renamed.  To rename a package, publish a
+new version of the existing package with the following two actions:
+
+* A ``set`` action in the following form::
+
+     set name=pkg.renamed value=true
+
+* A ``require`` dependency on the new package
+
+A renamed package cannot deliver contents other than depend or set actions.
+
+The new package **must** ensure that it cannot be installed at the same
+time as the original package before the rename.  If both packages are
+covered by the same incorporation dependency, this is automatic.
+
+If not, the new package must contain an ``optional`` dependency on the old
+package at the renamed version.  This ensures that the solver will not
+select both packages, which would fail conflict checking.
+
+Anyone installing this renamed package will automatically receive the
+new named package, since it is a dependency of the old version.  If a
+renamed package is not depended upon by any other packages, it is
+automatically removed from the system.  The presence of older software
+can cause a number of renamed packages to be shown as ``installed``; when
+that older software is removed the renamed packages are automatically
+removed as well.
+
+Packages can be renamed multiple times without issue, although this is not
+recommended as it can be confusing to users.
+
+Merging Two Packages
+````````````````````
+
+Merging packages is straightforward as well.  The following two cases are
+examples of merging packages:
+
+ * One package absorbs another package at the renamed version.
+ * Two packages are renamed to the same new package name.
+
+
+One Package Absorbs Another
+,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+Suppose package *A@2* will absorb package *B@3*.  Simply
+rename package *B* to package *A@2*; remember to include an optional
+dependency in *A@2* on *B@3* unless both packages are incorporated so
+they update in lockstep as above.  A user upgrading *B* to *B@3*
+will now get *A* installed, which has absorbed *B*.
+
+
+Two Packages Are Renamed
+,,,,,,,,,,,,,,,,,,,,,,,,
+
+In this case, simply rename both packages to the name of the new merged
+package, including two ``optional`` dependencies on the old packages in
+the new one if they are not otherwise constrained.
+
+Splitting a Package
+```````````````````
+
+When you split a package, rename each resulting new package as described in
+`Renaming a Single Package`_. If one of the resulting new packages is not
+renamed, the pre-split and post-split versions of that package are not
+compatible and might violate dependency logic when the end user tries to update
+the package.
+
+Rename the original package, including multiple ``require`` dependencies on all
+new packages that resulted from the split. This ensures that any package that
+had a dependency on the original package will get all the new pieces.
+
+Some components of the split package can be absorbed into existing packages as a
+merge. See `One Package Absorbs Another`_.
+
+Obsoleting Packages
+~~~~~~~~~~~~~~~~~~~
+
+Package obsoletion is the mechanism by which packages are emptied of
+contents and are removed from the system.  Such a package does not
+satisfy ``require`` dependencies, so an installed package with a ``require``
+dependency on a package that becomes obsolete will prevent update
+unless a newer version of the installed package is available that does
+not contain the ``require`` dependency.
+
+A package is made obsolete by publishing a new version with no content except
+for the following ``set`` action:
+
+::
+
+    set name=pkg.obsolete value=true
+
+A package can be made non-obsolete by publishing newer versions.
+Users who updated through the obsoletion will lose this package, while those
+who did not will not.
+
+Preserving Editable Files During Package Renaming or Path Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One common issue with updating packages is the migration of editable files,
+either in the file system or between packages.  IPS attempts to migrate
+editable files that move between packages (for example, as the result of a
+rename) if the file is not renamed and the path of the file has not changed.
+However, if the path changes, the following must be done for the user's
+customizations to be preserved:
+
+If the ``file`` action in the old package does not contain the attribute
+``original_name``, that attribute must be added.  Set the value to the
+original name of the package, followed by a colon and then the path to
+the file without a leading '/'. Once this is present on an editable file,
+it must not be changed.  This value acts as a unique identifier for all
+moves going forward so that regardless of the number of versions
+skipped on an update, the user's content is properly preserved.
+
+Moving Unpackaged Contents on Directory Removal or Rename
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally, unpackaged contents are salvaged when the containing
+directory is removed, because the last reference to it disappears.
+
+When a directory changes names, the packaging system treats this
+as the removal of the old directory and the creation of a new one.
+Any editable files that are still in the directory when the directory
+is renamed or removed are salvaged.
+
+If the old directory has unpackaged content such as log files that
+should be moved to the new directory, this can be done with the
+``salvage-from`` attribute if placed on the new directory.
+
+For example, suppose we want to rename a directory from::
+
+    /opt/mydata/log
+
+to::
+
+    /opt/yourdata/log
+
+In the same package version that removes the former directory and
+introduces the latter directory, include the following attribute on the ``dir``
+action that creates ``/opt/yourdata/log``:
+
+::
+
+    salvage-from=opt/mydata/log
+
+Any unpackaged contents of any time are migrated to the new location.
+
+The ``salvage-from`` attribute is covered later in this chapter, when
+discussing data that should be shared between boot environments.
+
+Delivering Multiple Implementations of a Given Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some cases, it can be desirable to deliver multiple implementations of a
+given application, having all implementations available on the system,
+but with one implementation set as the *preferred* implementation.
+
+The preferred implementation would have symlinks to its binaries
+installed, say, to ``/usr/bin`` for ease of discovery.  We would also like to
+allow the administrator to change the preferred implementation as required,
+without having to add or remove any additional packages.
+
+A good example of this would be where we have several versions of GCC
+installed, each in their own package, but would like ``/usr/bin/gcc``
+to always point to our preferred version.
+
+IPS uses the concept of *mediated links* for this purpose.  A mediated link
+is a symbolic link that is controlled by the ``pkg set-mediator`` and
+``pkg unset-mediator`` commands, documented in the |pkg| man page.
+
+The ``link`` actions in the packages that deliver different implementations
+of that application are said to participate in a *mediation*.
+
+.. raw:: pdf
+
+    PageBreak
+
+The following attributes can be set on ``link`` actions to control how
+mediated links are delivered:
+
+     mediator
+          Specifies the entry in the mediation namespace shared by all
+          path names participating in a given mediation group (for example
+          ``python``).
+
+          Link mediation can be performed based on ``mediator-version`` and
+          ``mediator-implementation``.  All mediated links for a given path name
+          must specify the same ``mediator``.  However, not all mediator versions
+          and implementations need to provide a link at a given path.  If a
+          mediation does not provide a link, then the link is removed when that
+          mediation is selected.
+
+          A mediator, in combination with a specific version and/or
+          implementation represents a *mediation* that can be selected for use
+          by the packaging system.
+
+     mediator-version
+          Specifies the version (expressed as a dot-separated sequence
+          of non-negative integers) of the interface described by the
+          ``mediator`` attribute.  This attribute is required if ``mediator``
+          is specified and ``mediator-implementation`` is not.  A local
+          system administrator can explicitly set the version to use.  The
+          value specified should generally match the version of the package
+          delivering the link (for example, ``runtime/python-26`` should use
+          ``mediator-version=2.6``), although this is not required.
+
+     mediator-implementation
+          Specifies the implementation of the mediator for use in addition to
+          or instead of the ``mediator-version``.  Implementation strings are
+          not considered to be ordered.  A string is arbitrarily selected by
+          |pkg5| if not explicitly specified by a system administrator.
+
+          The value can be a string of arbitrary length composed of
+          alpha-numeric characters and spaces.  If the implementation itself can
+          be or is versioned, then the version should be specified at the
+          end of the string, after a '@' (expressed as a dot-separated
+          sequence of non-negative integers).  If multiple versions of an
+          implementation exist, the default behavior is to select the
+          implementation with the highest version.
+
+          If only one instance of an implementation-mediation link at a
+          particular path is installed on a system, then that one is
+          chosen automatically.  If future links at the path are installed,
+          the link will not be switched unless a vendor, site, or local
+          override applies, or if one of the links is version-mediated.
+
+     mediator-priority
+          When resolving conflicts in mediated links, |pkg5| normally
+          chooses the link with the greatest value of ``mediator-version`` or
+          based on ``mediator-implementation`` if that is not possible.  This
+          attribute is used to specify an override for the normal conflict
+          resolution process.
+
+          If this attribute is not specified, the default mediator selection
+          logic is applied.
+
+          * If the value is ``vendor``, the link is preferred over those
+            that do not have a ``mediator-priority`` specified.
+
+          * If the value is ``site``, the link is preferred over those that
+            have a value of ``vendor`` or that do not have a
+            ``mediator-priority`` specified.
+
+          A local system administrator can override the selection logic
+          described above.
+
+Here are two sample manifests that participate in a mediation for the link
+``/usr/bin/myapp``::
+
+    set name=pkg.fmri value=pkg://test/myapp-impl-1@1.0,5.11:20111021T035233Z
+    file path=usr/myapp/5.8.4/bin/myapp group=sys mode=0755 owner=root
+    link path=usr/bin/myapp target=usr/myapp/5.8.4/bin/myapp mediator=myapp mediator-version=5.8.4
+
+::
+
+    set name=pkg.fmri value=pkg://test/myapp-impl-2@1.0,5.11:20111021T035239Z
+    file path=usr/myapp/5.12/bin/myapp group=sys mode=0755 owner=root
+    link path=usr/bin/myapp target=usr/myapp/5.12/bin/myapp mediator=myapp mediator-version=5.12
+
+.. raw:: pdf
+
+    PageBreak
+
+We can install both of these packages to the same image::
+
+    $ pkg list myapp-impl-1 myapp-impl-2
+    NAME (PUBLISHER)                                  VERSION                    IFO
+    myapp-impl-1                                      1.0                        i--
+    myapp-impl-2                                      1.0                        i--
+
+Using the ``pkg mediator`` command, we can see the mediations in use::
+
+    $ pkg mediator
+    MEDIATOR VER. SRC. VERSION IMPL. SRC. IMPLEMENTATION
+    myapp    local     5.12    system
+    $ ls -al usr/bin/myapp
+    lrwxrwxrwx   1 root     sys         23 Oct 21 16:58 usr/bin/myapp -> usr/myapp/5.12/bin/myapp
+
+We can see which other packages participate in the ``myapp`` mediation using
+``pkg search``::
+
+    $ pkg search -ro path,target,mediator,mediator-version,pkg.shortfmri ::mediator:myapp
+    PATH          TARGET                    MEDIATOR MEDIATOR-VERSION PKG.SHORTFMRI
+    usr/bin/myapp usr/myapp/5.12/bin/myapp  myapp    5.12             pkg:/myapp-impl-2@1.0
+    usr/bin/myapp usr/myapp/5.8.4/bin/myapp myapp    5.8.4            pkg:/myapp-impl-1@1.0
+
+We can also change the mediation as desired::
+
+    # pkg set-mediator -V 5.8.4 myapp
+                Packages to update:  2
+               Mediators to change:  1
+           Create boot environment: No
+    Create backup boot environment: No
+
+
+    PHASE                                          ITEMS
+    Indexing Packages                                2/2
+    PHASE                                        ACTIONS
+    Update Phase                                     1/1
+
+    PHASE                                          ITEMS
+    Image State Update Phase                         2/2
+    Reading Existing Index                           8/8
+    Indexing Packages                                2/2
+
+    # ls -al usr/bin/myapp
+    lrwxrwxrwx   1 root     sys         24 Oct 21 17:02 usr/bin/myapp -> usr/myapp/5.8.4/bin/myapp
+
+
+Delivering Directories To Be Shared Across Boot Environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In general, IPS doesn't support delivery of packaged contents to datasets that
+span boot environments (BEs).  This is because such shared contents, if updated in
+one boot environment, might not meet the definitions for other boot environments.
+For example, we could foresee a case where a ``pkg verify`` of packaged content
+that was delivered with different attributes by packages in two separate boot
+environments, yet shared between them, would result in in errors.
+
+However, some of the unpackaged files (the files stored in the file system that
+were not delivered by any IPS package) found in a boot environment must be shared
+across boot environments to preserve normal system operation in the
+face of multiple boot environments.
+
+Some examples include ``/var/mail``, ``/var/log`` and the like.  Customers are
+likely to place such data on separate datasets as well, or on remote file
+servers. However, creating per-directory datasets would mean that many datasets
+would be created per zone, which is not desirable.
+
+The goal can be achieved using a shared dataset, mounted into the BE during boot,
+with symbolic links from locations inside the BE pointing into that dataset.
+Inside the BE, applications deliver primordial directory structure to a *.migrate*
+staging directory.
+
+As noted above, no packaged file content should be shared between boot
+environments, furthermore, it is not possible or desirable to share any
+file system objects other than files.
+
+Update is supported from older versions of a package that did not share
+content. Use a ``salvage-from`` attribute as discussed in
+`Moving Unpackaged Contents on Directory Removal or Rename`_ and shown in
+the example below.
+
+The package should no longer deliver the old directory.
+
+During boot, a script can be run as part of an SMF method script to move file
+content from the *.migrate* directory into the shared dataset.  This script is
+responsible for recreating the directory structure that it finds under the
+*.migrate* directory in the boot environment, and moving file contents from the
+*.migrate* directory to the shared dataset.
+
+For example, for a package that previously delivered the action::
+
+    dir path=opt/myapplication/logs owner=daemon group=daemon mode=0755
+
+we first create a dataset ``rpool/OPTSHARE`` (which can be used by other shared
+content from ``/opt``)  This dataset creation could alternatively be done by the
+SMF method script during boot::
+
+    # zfs create rpool/OPTSHARE
+    # zfs set mountpoint=/opt/share rpool/OPTSHARE
+
+A package can then deliver a symbolic link from their previously packaged
+directory to an as-yet nonexistent target beneath ``/opt/share``::
+
+    link path=opt/myapplication/logs target=../../opt/share/myapplication/logs
+
+Packages can now deliver the directory into this *.migrate* area::
+
+    dir path=opt/.migrate/myapplication/logs owner=daemon group=daemon \
+        mode=0755 reboot-needed=true salvage-from=/opt/myapplication/logs
+
+We use the ``salvage-from`` attribute to move files from the old location into
+the *.migrate* directory.
+
+We require a ``reboot-needed`` actuator for these directory entries in order to
+properly support updates of |Immutable Zones| mentioned in *Chapter 1*, which
+boot as far as the ``svc:/milestone/self-assembly-complete:default`` milestone
+in read/write mode if self-assembly is required, before rebooting read-only.
+See the discussion of ``file-mac-profile`` in the |zonecfg| manual page for more
+on |Immutable Zones|.
+
+Our SMF service, on reboot, will then move any salvaged directory content into
+the shared dataset, and the symbolic links from ``/opt/myapplication`` point
+into that shared dataset.
+

@@ -1,0 +1,147 @@
+
+pkg
+Expressing versions
+
+  A package is a labelled time series of collections of objects.
+  That is, over time, we expect to see something like
+
+  pkg:///sunos/coreutils@5.11,1:[hex-timestamp-1]
+                |
+		| on-branch transition
+		V
+  pkg:///sunos/coreutils@5.11,1:[hex-timestamp-2] --> additional on-branch transitions
+                |
+		| branch upgrade
+		V
+  pkg:///sunos/coreutils@5.11,2:[hex-timestamp-3] --> additional branch upgrades
+                |
+		| micro release upgrade
+		V
+  pkg:///sunos/coreutils@5.11.1,1:[hex-timestamp-4] --> additional micro release upgrades
+                |
+		| minor release upgrade
+		V
+  pkg:///sunos/coreutils@5.12:[hex-timestamp-5]
+
+  In this sequence, we've assumed that the client's requirement to
+  remain with binaries associated with a particular build is implicit
+  with the client.  As discussed in the tags and attributes note, we
+  need to handle the distinction between a package built on one release
+  and the same package's binaries built on another release.
+
+  XXX Need a full example with the build_version in place.
+
+  Each transition is constrained by the local client's decision to "stay
+  on branch", "move to a newer branch", "move to a newer release".
+  Both the release, the required build, and the branch can be
+  "dot-separated vectors".  The timestamp is not.  That is, a full
+  version is
+
+  version -> dot_vector(,dot_vector)?-dot_vector:timestamp
+
+  dot_vector -> digit+ ( "." digit+ )*
+
+  timestamp -> hexdigit+
+
+  Rollback is expected to be handled by image management.  Rollback is
+  expected to be made convenient through use of ZFS.
+
+  If we had
+
+  sunos/coreutils@5.11,1:[hex-timestamp]
+
+  and wanted to go to the latest revision on this branch, we would
+  invoke
+
+  pkg get coreutils
+
+  which could upgrade other components.
+
+  If we wanted to go from 5.11,1.x to 5.11,2 we would invoke
+
+  pkg get coreutils@5.11,2
+
+  (which might be the result of displaying a cosmetic version string,
+  like "GNU coreutils 6.8" or something).  This operation might cause
+  other components to be updated.
+
+  If we instead did
+
+  pkg get coreutils@5.11.1
+
+  or
+
+  pkg get coreutils@5.12
+
+  we would get a release constraint, which should tell us that we need
+  to request an update to base/minimal@5.11.1.  This release constraint
+  comes from the fact that release ownership is held by a restricted set
+  of packages.
+
+  If coreutils had been frozen by another package, we would get, in
+  response a message like
+
+  pkg:  sunos/coreutils frozen at 5.11,1 by site/workstation-cfg@5.11,1.12
+
+  The administrator can then pkg delete site/workstation-cfg (or pull
+  down an updated version lacking the "incorporate coreutils@5.11,1"
+  statement, with its implied freeze).
+
+  pkg delete on groups removes leaf packages in the group (included via
+  "pkg" statements) but leaves package dependencies untouched.
+
+  The "pkg freeze" subcommand can place an administrative freeze on a
+  specific package.  "pkg unfreeze" (pkg thaw?) can remove a freeze,
+  either an administrative freeze or a freeze placed by another package.
+
+
+Co-requisite packages
+
+  We need to support a@1 <-> b@2.  This is handled as two transactions,
+  so we need to allow unresolved dependencies to exist in the
+  repository, _but_ the R = (a@1, ...) repository cannot offer a@1 until
+  it also has b@2.  And also G (a@1, b@2) group package cannot be
+  submitted.
+
+  This requirement becomes a hint for our order of operations:
+  individual package transactions, group (base and stack) transactions.
+
+
+When to increment the branch number?
+
+  On incompatible change to a private interface.
+
+  On addition of new private interfaces.
+
+  On addition of new public interfaces where the release version is
+  constrained.
+
+  Potentially on the addition of a newly delivered platform or ISA?
+
+
+Using the (hex) timestamp as the sequence ID
+
+  We can source a package, category/pkg, from any repository we choose
+  to trust.  That is, we can do
+
+  pkg update pkg://rosseau.sfbay/base/developer
+
+  on a system that had a default base FMRI of pkg://opensolaris.org
+
+  As long as the two repositories agree on the forward use of the
+  release and branch version components, then the timestamp approach
+  allows us to allow a system to move back and forth between multiple
+  repositories.
+
+
+On-build release freezes
+
+  We may need an expression format that allows us to pin the on-build
+  portion of the version space, in addition to specifying the release
+  and/or branch portion of the FMRI as frozen.  Otherwise, we could jump
+  from a binary compiled from one environment to that from a completely
+  different compilation environment, based on only a timestamp change.
+
+
+
+

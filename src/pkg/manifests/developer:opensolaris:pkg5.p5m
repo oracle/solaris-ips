@@ -1,0 +1,69 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
+set name=pkg.summary value="Dependencies required to build the pkg(7) project"
+set name=pkg.description \
+    value="This package should be installed on systems used for development of the pkg(7) project"
+set name=info.classification \
+    value="org.opensolaris.category.2008:Development/Distribution Tools"
+depend type=require fmri=pkg:/developer/assembler
+depend type=require fmri=pkg:/developer/base-developer-utilities
+depend type=require fmri=pkg:/developer/build/make
+depend type=require fmri=pkg:/developer/build/onbld
+depend type=require fmri=pkg:/developer/documentation-tool/xml2roff
+depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
+depend type=require fmri=pkg:/developer/intltool
+depend type=require fmri=pkg:/developer/python/pylint
+depend type=require fmri=pkg:/developer/versioning/mercurial
+depend type=require fmri=pkg:/library/python/cffi-27@1.4.2
+depend type=require fmri=pkg:/library/python/cffi-34@1.4.2
+depend type=require fmri=pkg:/library/python/coverage-27
+depend type=require fmri=pkg:/library/python/coverage-34
+depend type=require fmri=pkg:/library/python/cryptography-27
+depend type=require fmri=pkg:/library/python/cryptography-34
+depend type=require fmri=pkg:/library/python/jsonrpclib-27
+depend type=require fmri=pkg:/library/python/jsonrpclib-34
+depend type=require fmri=pkg:/library/python/jsonschema-27
+depend type=require fmri=pkg:/library/python/jsonschema-34
+depend type=require fmri=pkg:/library/python/locale-services
+depend type=require fmri=pkg:/library/python/pep8
+depend type=require fmri=pkg:/library/python/prettytable-27
+depend type=require fmri=pkg:/library/python/prettytable-34
+depend type=require fmri=pkg:/library/python/six-27
+depend type=require fmri=pkg:/library/python/six-34
+depend type=require fmri=pkg:/package/svr4
+depend type=require fmri=pkg:/runtime/python-27
+depend type=require fmri=pkg:/runtime/python-34
+depend type=require fmri=pkg:/system/header
+depend type=require fmri=pkg:/system/linker
+depend type=require fmri=pkg:/system/locale
+depend type=require fmri=pkg:/system/locale/extra
+depend type=require fmri=pkg:/text/gnu-diffutils
+depend type=require fmri=pkg:/text/gnu-gettext
+depend type=require fmri=pkg:/text/locale
+depend type=require fmri=pkg:/text/tidy
+depend type=require fmri=pkg:/web/server/apache-24
+depend type=require fmri=pkg:/web/server/apache-24/module/apache-ssl
+depend type=require fmri=pkg:/web/server/apache-24/module/apache-wsgi-27
+depend type=require fmri=pkg:/web/server/apache-24/module/apache-wsgi-34

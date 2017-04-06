@@ -1,0 +1,39 @@
+
+pkg
+ELF (AND MAYBE JAR) DEPENDENCY HANDLING
+
+ELF files give us ISA information, required libraries with versions, and
+potentially provided interface versions.  This latter information is
+missing from a large set of libraries on OpenSolaris, built without
+versioned interfaces.
+
+It seems that an ELF file, on upload, can be tested for its ELF
+dependencies, and that these files in turn can be tested for presence.
+If any of the latter file's revisions provide versions, then these can
+be tested and translated into a minimum package requirement for the
+package containing the introduced ELF file.
+
+We always want the latest version surface, so we don't want to send a
+new header file without the corresponding ELF objects its changes caused
+to be generated.
+
+It seems that ELF differences are only useful for determining whether an
+incoming transaction is significant.  For instance, RE delivers a group
+of change that actually contains no change to the non-ELF files, and the
+change to the ELF files is non-ELF significant.  In this case, perhaps
+the delivery should fail/warn.
+
+XXX Can we do something similar for JAR files?  Tasting JAR files is
+outlined in $SRC/cmd/file/file.c:zipfile(), since a JAR file is a zip
+file with extra header information. [1]
+
+XXX Can we do something similar for Perl or Python (or any language with
+internal versioning statements)?
+
+XXX There's really no way to tie the kernel to libc in the current
+system, or in pkg(1M).  Should we be adding a simple signature, or
+reusing library versioning, or must it be left to a human (expressing it
+via pkg(1M) dependencies)?
+
+[1] Sun Microsystems, Inc., JAR File Specification,
+    http://java.sun.com/j2se/1.4.2/docs/guide/jar/jar.html

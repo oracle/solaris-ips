@@ -1,0 +1,147 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 14
+----------
+
+Republishing Packages
+.....................
+
+This chapter describes how administrators can modify existing packages for local
+conditions.
+
+Occasionally administrators need to override attributes or modify packages they
+did not produce.  This might be to replace a portion of the package with an
+internal implementation, or something as simple as removing binaries not
+permitted on systems.
+
+While other packaging systems provide various mechanisms to "force"
+installation, IPS focuses instead on making it easy to republish an
+existing package with the desired modifications. This makes upgrade
+much easier since new versions can be re-published with the same
+modifications.  It also enables the rest of the packaging system
+to function normally since instead of forcing IPS to ignore changes,
+packages reflect the correct, installed state of the system.
+
+Of course, running a system with a republished package can cause
+issues with the support organization if any connection is suspected
+between observed problems and the modified package.
+
+The basic steps are as follows:
+
+ 1. Use |pkgrecv| to download the package to be re-published in a *raw* format
+    to a specified directory.  All of the files are named by their hash value,
+    and the manifest is named ``manifest``.  Remember to set any required
+    proxy configuration in the ``http_proxy`` environment variable.
+
+ 2. Use |pkgmogrify| to modify the manifest in the desired manner.  Any
+    timestamp from the internal package FMRI should be removed to prevent
+    confusion during publication as it is ignored.
+
+    If changes are significant, running the resulting package through |pkglint|,
+    as shown in *Chapter 4*, is a good idea.
+
+ 3. Republish the package with |pkgsend|.  Note that this republication
+    will strip the package of any signatures that are present and will
+    ignore any timestamp specified by ``pkg.fmri``.  To prevent a warning
+    message you might want to remove signature actions in the |pkgmogrify| step.
+
+    If the administrator doesn't have permission to publish to the
+    original source of the package, they can create a repository with
+    |pkgrepo|, then use ``pkg set-publisher --search-before=<original>``
+    to have the client look for packages from the new repository before
+    falling back to the original publisher.
+
+ 4. Optionally, sign the package using |pkgsign| so that internal processes can
+    be followed. Packages should be signed before they are installed (even
+    during testing) to prevent client caching issues.
+
+.. raw:: pdf
+
+    PageBreak
+
+Example 1: Change Package Metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here's a simple example, where we change the ``pkg.summary`` field
+to be ‘"IPS has lots of features"’ instead of whatever was there originally,
+and republish to our new repository::
+
+    $ mkdir republish; cd republish
+    $ pkgrecv -d . --raw -s http://pkg.oracle.com/solaris/release package/pkg
+    $ cd package*    # package name contains a '/', and is url-encoded.
+    $ cd *           # we pulled down just the latest package by default
+    $ cat > fix-pkg
+    # change value of pkg.summary
+    <transform set name=pkg.summary -> edit value '.*' "IPS has lots of features">
+    # delete any signature actions
+    <transform signature -> drop>
+    # remove timestamp from fmri so we get our own
+    <transform set name=pkg.fmri -> edit value ":20.+" "">
+    ^D
+    $ pkgmogrify manifest fix-pkg > new-manifest
+    $ pkgrepo create ./mypkg
+    $ pkgsend -s ./mypkg publish -d . new-manifest
+
+Example 2: Change Package Publisher
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another common use case is to republish packages under a new publisher
+name.
+
+This can be useful, for example, when consolidating the packages from several
+different development teams' repositories into a single repository for
+integration testing, a model that was used during development of Oracle Solaris.
+
+Again, this can be achieved using the steps in *Example 1*, using
+``pkgrecv --raw``, running a |pkgmogrify| transform on the resulting
+manifest, then republishing the transformed manifest.
+
+A sample transform to change the publisher to "mypublisher" is::
+
+    <transform set name=pkg.fmri -> edit value pkg://[^/]+/ pkg://mypublisher/>
+
+Iterating over all packages in the repository can be done with a simple shell
+script, that uses the output from ``pkgrecv --newest`` to process only the
+newest packages from the repository.
+
+In the script below, we've saved the transform above in a file called
+``change-pub.mog``, and want to in republish from ``development-repo``
+to a new repository ``mypublisher``, changing the package publisher along the
+way::
+
+    #!/usr/bin/ksh93
+    pkgrepo create mypublisher
+    pkgrepo -s mypublisher set publisher/prefix=mypublisher
+    mkdir incoming
+    for package in $(pkgrecv -s ./development-repo --newest); do
+        pkgrecv -s development-repo -d incoming --raw $package
+    done
+
+    for pdir in incoming/*/* ; do
+        pkgmogrify $pdir/manifest change-pub.mog > $pdir/manifest.newpub
+        pkgsend -s mypublisher publish -d $pdir $pdir/manifest.newpub
+    done
+
+If necessary, we could modify this script to select only certain packages,
+make additional changes to the versioning scheme of the packages, and show
+progress as it republishes each package, for example.
+

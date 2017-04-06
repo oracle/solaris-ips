@@ -1,0 +1,89 @@
+#!/usr/bin/python2.7
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+
+
+# Create a dictionary (timestamps) mapping paths of python files in the modules
+# directory to their timestamps.  If a file is modified, its timestamp is the
+# filesystem timestamp.  If it's unchanged, its timestamp is the timestamp of
+# the last changeset which modified it.
+
+from __future__ import print_function
+import os
+import time
+import mercurial.cmdutil as cmdutil
+import mercurial.match as matchmod
+from mercurial.localrepo import localrepository
+from mercurial.ui import ui
+
+myui = ui()
+repo = localrepository(myui, cmdutil.findrepo(os.getcwd()))
+
+# Match only python files in src/modules.
+matchfn = matchmod.match(repo.root, os.getcwd(), patterns=["re:src/modules/.*\.py$"])
+
+# Dummy prep function.
+def prep(ctx, fns):
+        pass
+
+# Get the set of matching files in the working directory parent.
+manifest = set(
+    f
+    for f in repo["."]
+    if f.startswith("src/modules/") and f.endswith(".py")
+)
+
+# Find out which files have changed.
+status = repo.status(match=matchfn)
+
+timestamps = {}
+
+# Handle the modified files first: get their timestamps from the filesystem.
+# Remove the filenames from "manifest" so that we don't look for their changeset
+# timestamps in the next loop.
+for f in status[0] + status[1]:
+        if f in manifest:
+                timestamps[f] = \
+                    os.stat(os.path.join(repo.root, f)).st_mtime
+                manifest.remove(f)
+
+# Now walk backwards through the changesets from the working directory parent
+# (making sure we don't look at changesets that aren't ancestors), and for each
+# file that still needs a timestamp, grab it from the changeset and make sure we
+# don't look at it again.
+revs = ['reverse(ancestors(.))']
+for ctx in cmdutil.walkchangerevs(repo, matchfn, {'rev': revs}, prep):
+        for f in ctx.files():
+                if f in manifest:
+                        timestamps[f] = ctx.date()[0]
+                        manifest.remove(f)
+
+for name, stamp in timestamps.iteritems():
+        print(stamp, name)
+
+# Get the timestamp of the workspace.  If it's unmodified, then use the
+# timestamp of the parent of the working directory, and the latest timestamp of
+# the modified and added files if not.  (We would do removed, but we don't know
+# when they were removed.)
+s = repo.status()
+modadd = s[0] + s[1]
+if any(modadd):
+        print(max((
+            os.stat(os.path.join(repo.root, f)).st_mtime
+            for f in modadd
+        )), ".")
+else:
+        print(repo["."].date()[0], ".")

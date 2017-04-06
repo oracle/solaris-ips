@@ -1,0 +1,33 @@
+
+pkg
+PUBLICATION AND TRANSACTIONS
+
+:vim set expandtab:
+
+1.  Problem
+
+    We prefer having "fat" packages, to having a plurality of speciated
+    nodes in our version tree.  That is, we hope to have exception
+    packages have a single platform attribute.  This means that we have
+
+    build files on platform A and B
+    commit fat package containing (A, B) files
+
+    as the gross ordering of operations.  Taken strictly, this ordering
+    would be too restrictive, particularly once the set of platforms
+    which might participate in a package goes beyond two.
+
+2.  Ways to handle multi-platform transactions
+
+    Treat every transaction on v as an update to the version, v.  A
+    platform-specific update would include both common files and the
+    platform-tagged or architecture-tagged files.  If common files
+    differed between v:t_1 and v:t_2, then this transaction isn't
+    valid--it's branch modifying.
+
+    Otherwise, the v:t_2 package contains the common files and the set
+    of flavoured files submitted so far.
+
+    (This approach evades the problem of expecting a platform-specific
+    update to only replace files with alternate versions.)
+

@@ -1,0 +1,237 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 5
+---------
+
+Installing, Removing, and Updating Software Packages
+....................................................
+
+This chapter describes how the IPS client works internally when installing,
+updating and removing the software installed in an image.
+
+Understanding basically how |pkg| works will help administrators and developers
+better understand the various errors that can occur, and allow them to more
+quickly resolve package dependency problems.
+
+
+How package changes are performed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following steps are executed when |pkg| is invoked to modify the software
+installed on the machine:
+
+  * Check input for errors
+  * Determine the system end-state
+  * Run basic checks
+  * Run the solver
+  * Optimize the solver results
+  * Evaluate actions
+  * Download content
+  * Execute actions
+  * Process actuators
+
+When operating on the global zone, during execution of the steps above, |pkg|
+can execute operations on any non-global zones on the machine, for example
+to ensure that dependencies are correct between the global and non-global zones,
+or to download content or execute actions for non-global zones.  *Chapter 12*
+has more detail about zones.
+
+In the following sections, we'll describe each of these steps.
+
+Check Input for Errors
+``````````````````````
+
+   We perform basic error checking on the options presented on the command line.
+
+Determine the System End State
+``````````````````````````````
+
+   A description of the desired end state of the system is
+   constructed. In the case of updating all packages in the image this
+   might be something like *"all the packages currently installed, or
+   newer versions of them"*.  In the case of package removal, it would
+   be *"all the packages currently installed without this one"*.
+
+   IPS tries hard to determine what the user intends this end state to look
+   like. In some cases, IPS might determine an end state that is not what the
+   user intended, even though that end state does match what the user requested.
+
+   When troubleshooting, it is best to be as *specific* as possible. The
+   following command is not specific::
+
+       # pkg update
+
+   If this command fails with a message such as ``No updates available for this
+   image``, then you might want to try a more specific command such as the
+   following command::
+
+       # pkg update "*@latest"
+
+   This command defines the end state more exactly, and can produce more
+   directed error messages.
+
+Run Basic Checks
+````````````````
+
+   The desired end state of the system is reviewed to make sure that a 
+   solution appears possible.  During this basic review, |pkg| checks that a
+   plausible version exists of all dependencies, and that desired packages
+   do not exclude each other.
+
+   If an obvious error exists, then |pkg| will print an appropriate error
+   message and exit.
+
+Run the Solver
+``````````````
+
+   The solver forms the core of the computation engine used by |pkg5|
+   to determine the packages that can be installed, updated or removed,
+   given the constraints in the image and constraints introduced by any
+   new packages for installation.
+
+   This problem is an example of a *Boolean satisfiability problem*,
+   and can be solved by a |SAT solver|.
+
+   The various possible choices for all the packages are assigned
+   boolean variables, and all the dependencies between those packages,
+   any required packages, etc. are cast as boolean expressions in 
+   conjunctive normal form.
+
+   The set of expressions generated is passed to |MiniSAT|. If MiniSAT
+   cannot find any solution, the error handling code attempts to walk
+   the set of installed packages and the attempted operation, and print
+   the reasons that each possible choice was eliminated.
+
+   If the currently installed set of packages meet the requirements but
+   no other does, |pkg| will report that there is nothing to do.
+
+   As mentioned in a previous section, the error message generation and
+   specificity is determined by the inputs to |pkg|.  Being as specific as
+   possible in commands issued to |pkg| will produce the most useful error
+   messages.
+
+   If on the other hand  MiniSAT finds a possible solution, we begin
+   optimization.
+
+Optimize the Solver Results
+```````````````````````````
+
+   The optimization phase is necessary because there is no way of
+   describing some solutions as more desirable than others to a SAT
+   solver.
+
+   Instead, once a solution is found, IPS adds constraints
+   to the problem to separate less desirable choices,
+   and to separate the current solution as well.  We then repeatedly
+   invoke MiniSAT and repeat the above operation until no more
+   solutions are found.  The last successful solution is taken as the
+   best one.
+
+   Clearly, the difficulty of finding a solution is proportional to
+   the number of possible solutions.  Being more specific about the desired
+   result will produce solutions more quickly.
+
+Evaluate Actions
+````````````````
+
+   Once the set of package FMRIs that best satisfy the posed
+   problem is found, the evaluation phase begins.
+
+   In this phase, we compare the packages currently installed on the
+   system with the end state, and compare package manifests
+   of old and new packages to determine three lists:
+
+   * Actions that are being removed
+   * Actions that are being added
+   * Actions that are being updated
+
+   The action lists are then updated so that:
+
+   * directory and link actions are reference counted, mediated link
+     processing is done
+
+   * hardlinks are marked for repair if their target file is updated.
+     This is done because updating a target of a hardlink in a manner that
+     is safe for currently executing processes breaks the hard links.
+
+   * editable files moving between packages are correctly handled
+     so that any user edits are not lost.
+
+   * the action lists are sorted so that removals, additions and 
+     updates occur in the correct order.
+ 
+   All the currently installed packages are then cross-checked to
+   make sure that no packages conflict.  That is, ensuring that two
+   packages do not attempt to deliver a file to the same location, 
+   ensuring that directory attributes for the same directory agree
+   between packages, etc.
+
+   If conflicts exist, these are reported and |pkg| exits with an error message.
+
+   Finally, the action lists are scanned to determine if any
+   SMF services need to be restarted if this operation is performed,
+   whether or not this change can be applied to a running system,
+   whether the boot archive needs to be rebuilt and whether the
+   amount of space required is available, etc.
+
+Download Content
+````````````````
+
+   If |pkg| is running without the ``-n`` flag, processing continues
+   to the download phase.
+
+   For each action that requires content, we download any required
+   files by hash and cache them.  This step can take some time if
+   the amount of content to be retrieved is large.
+
+   Once downloading is complete, if the change is to be applied to
+   a live system (image is rooted at '/') and a reboot is required,
+   the running system is cloned and the target image is switched to
+   the clone.
+
+Execute Actions
+```````````````
+
+   Executing actions involves actually performing the install or
+   remove methods specific to each action type on the image.
+
+   Execution begins with all the removal actions being executed.  If
+   any unexpected content is found in directories being removed from
+   the system, that content is placed in ``/var/pkg/lost+found``.
+
+   Execution then proceeds to install and update actions.  Note that all
+   the actions have been blended across all packages.  Thus all the
+   changes in a single package operation are applied to the system at once
+   rather than package by package.  This permits packages to depend on each
+   other, exchange content, etc. safely.  For details on how files
+   are updated, see the description of the ``file`` action in *Chapter 3*.
+
+Process Actuators
+`````````````````
+
+   If we're updating a live system, any pending actuators are executed
+   at this point.  These are typically SMF service restarts and refreshes.
+   Once these are launched, we update the local search indicies.   We discuss
+   actuators in more detail in *Chapter 9*
+
+   Lastly, if needed, we update the boot archive.
+

@@ -1,0 +1,213 @@
+
+PSARC/2008/190
+pkg(5): image packaging system
+
+SUPPORTED ACTIONS
+
+  We need to support an extensible set of "actions", which we define as
+  reversible operations that a package can request to enable its later
+  function on the target image.
+
+  Packages need a limited set of operations on individual files to
+  manipulate the configuration.  The current class actions are given in
+  Appendix A.  It appears that if "manifest" and "rbac" were supported,
+  along with some management of editable files (preserve, renamenew,
+  initd, renameold), then the remaining operations could be deferred to
+  image instantiation.
+
+  From the legacy packaging system, we can inspect the class action
+  scripts and the postinstall scripts to identify the set of common
+  actions.
+
+  depend        Declare dependency on other packages.
+  directory     All directories.
+  driver        Package contains device driver
+                        Module loading will be disabled during
+                        operations on live images.
+  file          All other files.  Preservation and rename handling are
+                managed as optional tags.
+  hardlink,
+  link          All hard and symbolic links.
+  service       Package contains service description
+                        Inventoried services will be temporarily
+                        disabled during operations on live images.
+  set           Set a package attribute.
+  user,
+  group         Package requires user, group, or other package-reference
+                managed resource.
+
+  XXX Is this set sufficient to boot?  Should we somehow discriminate
+  them from non-booting actions?
+
+  legacy        Record package attributes into legacy packaging
+                metadata.
+  license       License files, which deliver into the image metadata
+                rather than the image's filesystems.
+
+  XXX Do we have a hard-reboot, reconfigure-reboot, and/or soft-reboot
+  action?  Otherwise we are going to build path knowledge somewhere else
+  in the packaging system.
+
+  <interface>
+        <action name="dependency" payload="false" commitment="Committed" />
+        <action name="directory" payload="false" commitment="Committed" />
+        <action name="hardlink" payload="false" commitment="Committed" />
+        <action name="legacy" payload="false" commitment="Committed" />
+        <action name="license" payload="true" commitment="Committed" />
+        <action name="link" payload="false" commitment="Committed" />
+        <action name="driver" payload="false" commitment="Committed" />
+        <action name="file" payload="true" commitment="Committed" />
+        <action name="group" payload="false" commitment="Committed" />
+        <action name="service" payload="true" commitment="Committed" />
+        <action name="user" payload="false" commitment="Committed" />
+  </interface>
+
+1.  Custom actions
+
+  It is discouraged, but certainly possible to deliver custom actions
+  into the appropriate $PYTHONROOT/vendor-packages/pkg directory, by
+  including those actions in a separate package that the new package
+  requires, and invoking the pkg(1) client twice--once to deliver the
+  custom actions and once to use them to install the new package.
+  (Rescanning pkg.actions would complicate the image plan/package plan
+  evaluations.)
+
+  The deployer may wish to deny such actions from operating.  For this
+  case, the set of known actions is fixed elsewhere in the pkg modules
+  and updated with subsequent versions.  A global and per-image policy,
+  known-actions-only, allows the deployer to disallow operations on
+  packages utilizing actions of unknown provenance.
+
+  <interface>
+        <policy name="known-actions-only" scope="global,image"
+            type="boolean" commitment="Committed">
+        Deployer control over execution of unknown actions.
+        </policy>
+  <interface>
+
+
+Appendix A.  Current class actions on Solaris NV.
+
+$ grep -v none /tmp/summary | egrep 1\ \[ef\]\  | cut -d \  -f 3 | sort | uniq -c | sort -nr
+ 152 manifest
+ 129 preserve
+  45 renamenew
+  32 rbac
+  30 initd
+  30 fontsdir
+  17 fontsalias
+  16 appservenv
+  10 ttmapsdir
+  10 encodingsdir
+   8 renameold
+   6 build
+   5 tiservices
+   5 master
+   5 asenv
+   4 smfyes
+   4 services
+   4 immodules
+   4 fontsupr
+   4 fontsscale
+   4 fontenc
+   3 OWconfig
+   2 smfno
+   2 smf
+   2 sendmail
+   2 sed
+   2 owfontpath
+   2 fonttmap
+   2 devlink
+   2 append
+   1 ypnicknames
+   1 vfstab
+   1 ttysrch
+   1 ttydefs
+   1 ttmapkoi8
+   1 ttmap13
+   1 syslogconf
+   1 svmpreserve
+   1 sshdconfig
+   1 sock2path
+   1 shadow
+   1 sdconf
+   1 scsivhciconf
+   1 scsa2usbconf
+   1 sampleslist
+   1 rOWconfig
+   1 qlc
+   1 publickey
+   1 powerconf
+   1 policyconf
+   1 pkcs11confbase
+   1 passwd
+   1 papersize
+   1 pamconf
+   1 opensslcnf
+   1 nsswitch
+   1 nscd
+   1 nfssecconf
+   1 netconfig
+   1 ncalogd
+   1 ncakmod
+   1 nametomajor
+   1 minorperm
+   1 mailxrc
+   1 mach
+   1 logindevperm
+   1 logadmconf
+   1 localprofile
+   1 locallogin
+   1 krbconf
+   1 keytable
+   1 kclasses
+   1 kcfconfbase
+   1 iuap
+   1 iscsiconf
+   1 ipsecalgsbase
+   1 initupdate
+   1 inittab
+   1 init
+   1 inetdconf
+   1 ibnexconf
+   1 hosts
+   1 group
+   1 ftpusers
+   1 ftpaccess
+   1 fstypes
+   1 fpconf
+   1 fonttmap9
+   1 fonttmap7
+   1 fonttmap5
+   1 fonttmap4
+   1 fonttmap2
+   1 fonttmap15
+   1 fontenc9
+   1 fontenc7
+   1 fontenc5
+   1 fontenc4
+   1 fontenc13
+   1 etcsystem
+   1 etcrpc
+   1 etcremote
+   1 etcprofile
+   1 EtcDefLu
+   1 drvalias
+   1 dialers
+   1 dhcpinittab
+   1 devpolicy
+   1 devlinktab
+   1 defsu
+   1 defrpcnisd
+   1 defpasswd
+   1 defnfs
+   1 deflogin
+   1 definit
+   1 cronroot
+   1 configmapconf
+   1 bootenvrc
+   1 automaster
+   1 ataconf
+   1 adpconf
+   1 AddNoUpdate
+

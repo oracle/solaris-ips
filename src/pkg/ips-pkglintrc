@@ -1,0 +1,61 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+[pkglint]
+
+# Whether to show the progress tracker during lint runs
+use_progress_tracker = True
+
+# The default log level at which to start emitting messages
+# log levels are, in order of increasing priority,
+# DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_level = WARNING
+
+# Perform checks that may only make sense for published packages.
+do_pub_checks = True
+
+# pkglint.ext.* keys indicate python modules that should be
+# automatically loaded and check methods exectuted during
+# each lint run.
+
+# key = python package implementing those checks
+# pkglint.ext.other = org.foo.barcheck
+
+# List modules or methods which should be excluded from
+# execution during each lint run.
+pkglint.exclude =
+pkglint.ext.opensolaris = pkg.lint.opensolaris
+
+# The version pattern we use when searching for manifests
+# for a given build (only when using the -b flag to pkglint)
+version.pattern = *,5.11-0.
+
+# The path used for info.classification attribute checks
+info_classification_path = /usr/share/lib/pkg/opensolaris.org.sections
+
+# Whether to ignore publisher differences when comparing package versions
+ignore_different_publishers = True
+
+# For the pkg build, we don't want info messages reported about any
+# actions/manifests that are marked as pkg.linted
+pkglint001.5.report-linted = False

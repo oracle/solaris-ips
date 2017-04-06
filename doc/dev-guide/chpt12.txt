@@ -1,0 +1,156 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 12
+----------
+
+Handling Non-Global Zones
+.........................
+
+This chapter describes how IPS handles zones and discusses those cases where
+package developers should be aware of zones.
+
+
+Packaging Considerations For Non-Global Zones
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Developing packages which work consistently with zones usually involves little to
+no additional work.   However, a few situations call for close attention from
+developers.  When considering zones and packaging there are two questions which
+need to be answered:
+
+  * Does anything in my package have an interface which crosses the boundary
+    between the global zone and non-global zones?
+  * How much of the package should be installed in the non-global zone?
+
+Does The Package Cross the Global, Non-Global Zone boundary?
+````````````````````````````````````````````````````````````
+
+If a package delivers both kernel and userland functionality, and both sides
+of that interface must be updated accordingly, then the package must be updated
+in any zones that contain that package whenever the package in the non-global
+zone gets updated.
+
+This can be done using a ``parent`` dependency in the package being developed.
+If a single package delivers both sides of the interface, then a ``parent``
+dependency on ``feature/package/dependency/self`` will ensure that the global
+zone and the non-global zones contain the same version of the package,
+preventing version skew across the interface.
+
+The dependency will also ensure that if the package is in a non-global zone,
+then it is also present in the global zone.
+
+If the interface spans multiple packages, then the package containing the
+non-global zone side of the interface must contain a ``parent`` dependency on
+the package which delivers the global zone side of the interface.  The
+``parent`` dependency is also discussed in *Chapter 6*.
+
+
+How Much of a Package Should Be Installed in a Non-Global Zone?
+```````````````````````````````````````````````````````````````
+
+If the answer to this question is "all of it" (and that's typically the case)
+then nothing needs to be done to the package to enable it to function properly.
+
+For consumers of the package, though, it can be reassuring to see that the
+package author properly considered zone installation and decided that this
+package can function in a zone.
+
+For that reason, developers should explicitly state that their
+package functions in both global and non-global zones.  This is done by adding
+the following action to the manifest::
+
+    set name=variant.opensolaris.zone value=global value=nonglobal
+
+If no content in the package can be installed in a non-global zone (for example
+a package which only delivers kernel modules or drivers), then the package
+should specify that it cannot be installed in a zone.  This is done by adding
+the following action to the manifest::
+
+    set name=variant.opensolaris.zone value=global
+
+If some but not all of the content in the package can be installed in a
+non-global zone, then take the following steps:
+
+  1. Use the following ``set`` action to state that the package can be installed
+     in both global and non-global zones:
+     ::
+     
+       set name=variant.opensolaris.zone value=global value=nonglobal
+
+  2. Identify the actions that are only relevant in either the global or
+     non-global zone. The global-zone-only actions should have the attribute
+     ``variant.opensolaris.zone=global``. Similarly, actions that only apply in
+     non-global zones should have the attribute
+     ``variant.opensolaris.zone=nonglobal``.
+
+If a package has a ``parent`` dependency or has pieces which are different in
+global and non-global zones, it's important to test that the package works as
+expected in the non-global zone as well as the global zone.  If the package has
+a ``parent`` dependency on itself, then the global zone should configure the
+repository which delivers the package as one of its origins.  The package should
+be installed in the global zone first, and then in the non-global zone for
+testing.
+
+
+Troubleshooting Zones
+~~~~~~~~~~~~~~~~~~~~~
+
+Occasionally problems might be encountered when trying to install the package in
+the non-global zone.
+
+Typically the first steps to take to attack the problem are to ensure that the
+following services are online in the global zone:
+
+  * ``svc:/application/pkg/zones-proxyd:default``
+  * ``svc:/application/pkg/system-repository:default``
+
+and that the following service is online in the non-global zone:
+
+  * ``svc:/application/pkg/zones-proxy-client:default``
+
+These three services provide publisher configuration to the non-global zone and
+a communication channel that the non-global zone can use to make requests to the
+repositories assigned to the system publishers served from the global zone.
+
+Remember that you won't be able to update the package in the non-global zone,
+since it has a ``parent`` dependency on itself.  Initiating the update from the
+global zone and allowing the linked image code in |pkg| to update the non-global
+zone is the right solution.
+
+Once the package is installed in the non-global zone, testing its functionality
+can begin.
+
+If the package does not have a ``parent`` dependency on itself, then it's not
+necessary to configure the publisher in the global zone nor install the package
+there.  Further, updating the package in the global zone will not update it in
+the non-global zone, causing potentially unexpected results when testing the
+older non-global zone package.
+
+The simplest solution in this situation is to make the publisher available to
+the non-global zone and install and update the package from within the zone.
+
+If the zone cannot access the publisher's repositories, then configuring the
+publisher in the global zone will allow the ``zones-proxy-client`` and
+``system-repository`` services to proxy access to the publisher for the
+non-global zone.  In that case, it's still best to install and update
+the package in the non-global zone.
+

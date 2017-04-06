@@ -1,0 +1,189 @@
+<?xml version="1.0"?>
+<!--
+	CDDL HEADER START
+
+	The contents of this file are subject to the terms of the
+	Common Development and Distribution License (the "License").
+	You may not use this file except in compliance with the License.
+
+	You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+	or http://www.opensolaris.org/os/licensing.
+	See the License for the specific language governing permissions
+	and limitations under the License.
+
+	When distributing Covered Code, include this CDDL HEADER in each
+	file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+	If applicable, add the following below this CDDL HEADER, with the
+	fields enclosed by brackets "[]" replaced with your own identifying
+	information: Portions Copyright [yyyy] [name of copyright owner]
+
+	CDDL HEADER END
+
+	Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+
+	NOTE:  This service manifest is not editable; its contents will
+	be overwritten by package or patch operations, including
+	operating system upgrade.  Make customizations in a different
+	file.
+-->
+
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<service_bundle type='manifest' name='pkg:system-repository'>
+
+<service
+	name='application/pkg/system-repository'
+	type='service'
+	version='1'>
+
+	<instance name='default' enabled='false'>
+		<!--
+		  Wait for network interfaces to be initialized.
+		-->
+		<dependency name='network'
+		    grouping='require_all'
+		    restart_on='error'
+		    type='service'>
+		    <service_fmri value='svc:/milestone/network:default'/>
+		</dependency>
+
+		<!--
+		  Wait for all local filesystems to be mounted.
+		-->
+		<dependency name='filesystem-local'
+		    grouping='require_all'
+		    restart_on='none'
+		    type='service'>
+		    <service_fmri
+			value='svc:/system/filesystem/local:default'/>
+		</dependency>
+
+		<!--
+		  Wait for automounting to be available, as we may be
+		  serving data from home directories or other remote
+		  filesystems.
+		-->
+		<dependency name='autofs'
+		    grouping='optional_all'
+		    restart_on='error'
+		    type='service'>
+		    <service_fmri
+			value='svc:/system/filesystem/autofs:default'/>
+		</dependency>
+
+		<!--
+		  Restrict privileges to basic,net_privaddr and the paths
+		  that are allowed to operate on.
+		-->
+		<exec_method
+			type='method'
+			name='start'
+			exec='/lib/svc/method/svc-pkg-sysrepo start'
+			timeout_seconds='300'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv'
+				privileges='basic,net_privaddr,{zone}:/system/volatile/pkg*' />
+			</method_context>
+		</exec_method>
+
+
+		<!-- basic,net_privaddr are suffient for 'stop' -->
+		<exec_method
+			type='method'
+			name='stop'
+			exec='/lib/svc/method/svc-pkg-sysrepo stop'
+			timeout_seconds='60' >
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv'
+				privileges='basic,net_privaddr' />
+			</method_context>
+		</exec_method>
+
+
+		<exec_method
+			type='method'
+			name='refresh'
+			exec='/lib/svc/method/svc-pkg-sysrepo refresh'
+			timeout_seconds='60' >
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv'
+				privileges='{zone}:/system/volatile/pkg*' />
+			</method_context>
+		</exec_method>
+
+
+		<property_group name='config' type='application'>
+			<stability value='Evolving' />
+			<!-- The port we listen on -->
+			<propval name='port' type='count' value='1008' />
+			<!-- The host we're running on -->
+			<propval name='host' type='astring' value='127.0.0.1' />
+			<!-- Where we store apache logs -->
+			<propval name='log_dir' type='astring'
+				value='/var/log/pkg/sysrepo' />
+			<!-- Where we store runtime versions of our
+			 configuration -->
+			<propval name='runtime_dir' type='astring'
+				value='/system/volatile/pkg/sysrepo' />
+			<!-- Where we store our Mako templates for generating
+			 runtime configuration -->
+			<propval name='template_dir' type='astring'
+				value='/etc/pkg/sysrepo' />
+			<!-- Where we store our sysrepo apache cache
+			If cache_dir is set to the special value "None" then we
+			do not perform caching.  If cache_dir is set to the
+			special value "memory" we use an in-memory cache.
+
+			Note that this property is consumed by
+			svc:/application/pkg/sysrepo-cache-compact
+			-->
+			<propval name='cache_dir' type='astring'
+				value='/var/cache/pkg/sysrepo' />
+			<!-- Our maximum cache size, expressed in MB
+
+			Note that this property is consumed by
+			svc:/application/pkg/sysrepo-cache-compact
+			-->
+			<propval name='cache_max' type='count' value='2048' />
+			<propval name='value_authorization' type='astring'
+				value='solaris.smf.value.pkg-sysrepo' />
+
+			<!-- If the system-repository itself should use web
+			proxies to gain access to pkg(7) repositories,
+			specify those here in, the form http://<host>:[port]
+			-->
+			<propval name='http_proxy' type='astring' value='' />
+			<propval name='https_proxy' type='astring' value='' />
+
+		</property_group>
+
+		<property_group name='general' type='framework'>
+			<propval name='action_authorization'
+				type='astring'
+				value='solaris.smf.manage.pkg-sysrepo' />
+			<propval name='value_authorization'
+				type='astring'
+				value='solaris.smf.value.pkg-sysrepo' />
+		</property_group>
+
+		<template>
+			<common_name>
+				<loctext xml:lang='C'>
+				IPS System Repository
+				</loctext>
+			</common_name>
+			<documentation>
+				<manpage title='pkg.sysrepo' section='8' />
+			</documentation>
+		</template>
+
+	</instance>
+
+	<stability value='Evolving' />
+
+</service>
+
+</service_bundle>

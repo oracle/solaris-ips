@@ -1,0 +1,118 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+# Set some specific permissions
+<transform dir path=(etc|usr|var)$ -> set group sys>
+<transform dir path=etc/(brand|gconf|pkg|user_attr.d|zones)$ -> set group sys>
+<transform dir path=var/log$ -> set group sys>
+<transform dir path=var/log/pkg/mirror -> set group pkg5srv>
+<transform dir path=var/log/pkg/mirror -> set owner pkg5srv>
+<transform dir path=var/cache$ -> set group bin>
+<transform dir path=var/cache/pkg/mirror -> set group pkg5srv>
+<transform dir path=var/cache/pkg/mirror -> set owner pkg5srv>
+<transform dir file path=etc/gconf/schemas -> set group sys>
+<transform dir file path=etc/(security|xdg) -> set group sys>
+<transform dir path=usr/share$ -> set group sys>
+<transform dir path=usr/share/doc$ -> set group other>
+<transform file dir path=usr/share/locale -> default group other>
+<transform dir path=usr/share/lib -> set group sys>
+<transform file dir path=usr/share/mime -> default group root>
+<transform dir path=lib/svc$ -> default group bin>
+<transform dir file path=lib/svc/manifest -> default group sys>
+<transform dir file path=lib/svc/method -> default group bin>
+<transform file path=(usr/bin|lib/svc/method) -> default mode 0755>
+<transform file path=$(PYDIR)/.*\.so -> default mode 0755>
+
+# For what's left, go with root:bin 0444, u+wx for directories
+<transform file dir -> default owner root>
+<transform file dir -> default group bin>
+<transform file -> default mode 0444>
+<transform dir -> default mode 0755>
+
+# For non-obsolete packages, add a dependency on the consolidation
+# incorporation
+<transform pkg -> default pkg.obsolete false>
+<transform pkg pkg.obsolete=false -> emit depend fmri=consolidation/ips/ips-incorporation type=require>
+
+# This package attribute is just for internal bookkeeping and shouldn't be
+# propagated
+<transform set name=nopublish.after -> drop>
+
+# Don't bother specifying each .py file.  Allow individual actions to
+# override this by setting pkg.tmp.autopyc to false.
+<transform file path=.*\.py$ -> default pkg.tmp.autopyc true>
+<transform file hardlink pkg.tmp.autopyc=true path=usr/lib/python2\.(.*)\.py$ -> default pkg.tmp.pyversion 2.X>
+<transform file hardlink pkg.tmp.autopyc=true path=usr/lib/python3\.(.*)/.*\.py$ -> default pkg.tmp.pyversion 3.%<1>>
+
+<transform file pkg.tmp.pyversion=2\.X -> emit file path=%(path)c>
+<transform hardlink pkg.tmp.pyversion=2\.X -> emit hardlink path=%(path)c target=%(target)c>
+
+<transform file pkg.tmp.pyversion=3\.([0-9])(.*) path=.*/(.*)\.py$ -> emit file path=/usr/lib/python3.%<1>%<2>/__pycache__/%<3>.cpython-3%<1>.pyc>
+<transform file pkg.tmp.pyversion=3\.([0-9])(.*) path=.*/(.*)\.py$ -> emit dir path=/usr/lib/python3.%<1>%<2>/__pycache__>
+<transform hardlink pkg.tmp.pyversion=3\.(.*) -> emit hardlink path=%(path)c target=%(target)c>
+
+<transform file pkg.tmp.autopyc=.* -> delete pkg.tmp.autopyc .*>
+<transform pkg.tmp.pyversion=.* -> delete pkg.tmp.pyversion .*>
+ 
+# Add actuators
+<transform file path=(var|lib)/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
+
+# Add locale facets
+<transform dir file \
+    path=usr/share/locale/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
+    default facet.locale.%<1> true>
+<transform dir file \
+    path=usr/share/man/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
+    default facet.locale.%<1> true>
+# locale dir, section dir, and manpages (add zh_SG to zh_CN)
+<transform dir file link path=usr/share/man/zh_CN([/.@].+)?$ -> \
+    default facet.locale.zh_SG true>
+
+# Add manpage facets
+<transform dir file link hardlink path=usr.*/man(/.+){0,1}$ -> \
+    default facet.doc.man all>
+
+# Default values for legacy actions
+<transform legacy -> default name %{pkg.summary}>
+<transform legacy -> default desc %{pkg.description}>
+<transform legacy -> default vendor "Sun Microsystems, Inc.">
+<transform legacy -> default hotline "Please contact your local service provider">
+<transform legacy -> default category system>
+<transform legacy -> default arch $(ARCH)>
+# add a ,REV= string to any version attributes that don't have a REV=
+<transform legacy -> edit version (^(?!.*?,REV=).*) \\1,REV=$(REV)>
+
+# only set the info.repository-* values for packages we're responsible for
+<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
+<transform pkg pkg.fmri=pkg:/system/zones.*-> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/system/zones.* -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
+<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
+# now emit those values
+<transform pkg info.repository-changeset=(.*) -> emit set name=info.repository-changeset value=%<1>>
+<transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
+set name=org.opensolaris.consolidation value=ips
+set name=variant.opensolaris.zone value=global value=nonglobal
+
+# vim: ft=pkg5manifest

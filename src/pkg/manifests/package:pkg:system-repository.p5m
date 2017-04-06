@@ -1,0 +1,82 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
+set name=pkg.summary value="IPS System Repository"
+set name=pkg.description \
+    value="A service that provides a publisher proxy to pkg(7) clients."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=etc
+dir  path=etc/pkg
+dir  path=etc/pkg/sysrepo
+dir  path=etc/pkg/sysrepo/apache22
+file path=etc/pkg/sysrepo/apache22/sysrepo_httpd.conf.mako
+file path=etc/pkg/sysrepo/apache22/sysrepo_publisher_response.mako
+file path=etc/pkg/sysrepo/sysrepo_httpd.conf.mako
+file path=etc/pkg/sysrepo/sysrepo_p5p.py pkg.tmp.autopyc=false
+file path=etc/pkg/sysrepo/sysrepo_publisher_response.mako
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+dir  path=lib/svc/manifest/application/pkg
+file path=lib/svc/manifest/application/pkg/pkg-sysrepo-cache.xml
+file path=lib/svc/manifest/application/pkg/pkg-system-repository.xml
+file path=lib/svc/method/svc-pkg-sysrepo
+file path=lib/svc/method/svc-pkg-sysrepo-cache
+dir  path=usr
+#
+# Don't worry about the "from x.y.z" six imports since pkgdepend has some issues
+# with the python importer. Instead, we force a dependency on the six package.
+#
+file path=usr/lib/pkg.sysrepo mode=0755 pkg.depend.bypass-generate=.*six.*
+dir  path=usr/share/man/ja_JP.UTF-8/man8
+file path=usr/share/man/ja_JP.UTF-8/man8/pkg.sysrepo.8
+dir  path=usr/share/man/man8
+file path=usr/share/man/man8/pkg.sysrepo.8
+dir  path=usr/share/man/zh_CN.UTF-8/man8
+file path=usr/share/man/zh_CN.UTF-8/man8/pkg.sysrepo.8
+dir  path=var
+dir  path=var/cache
+dir  path=var/cache/pkg owner=pkg5srv
+dir  path=var/cache/pkg/sysrepo owner=pkg5srv
+dir  path=var/log
+dir  path=var/log/pkg
+dir  path=var/log/pkg/sysrepo owner=pkg5srv
+# we deliver 0-byte log file stubs
+file path=var/log/pkg/sysrepo/access_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
+license cr_Oracle license=cr_Oracle
+# force a dependency on the six package because we bypass dependency check for it
+depend type=require fmri=library/python/six-27
+#
+# The manual dependency on apache results from our calling apachectl from
+# our method script, and can't be detected by pkgdepend.
+#
+depend type=require fmri=web/server/apache-24
+depend type=require fmri=web/server/apache-24/module/apache-ssl
+# p5p support in the system repository requires mod_wsgi
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-27

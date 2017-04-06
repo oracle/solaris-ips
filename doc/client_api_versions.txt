@@ -1,0 +1,1408 @@
+Version 83:
+Compatible with clients using versions 72-82.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * Introduced new non-linked image interfaces:
+                gen_plan_verify()
+
+        * Changed methods:
+                add_item_message()
+                extend_item_messages()
+                gen_item_messages()
+
+        * Added method:
+                get_parsable_item_messages()
+
+Version 82:
+Compatible with clients using versions 72-81.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * added a new field 'last_install' to record the package last install time
+        * added a new field 'last_update' to record the package last update time
+
+Version 81:
+Compatible with clients using versions 72-80.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * Introduced new non-linked image interfaces:
+                gen_plan_dehydrate()
+                gen_plan_rehydrate()
+                gen_plan_fix()
+
+        * Added a new function to get the list of dehydrated publishers:
+                get_dehydrated_publishers()
+
+    pkg.client.api_errors has changed as follows:
+        * Added a no_repo_pubs property to PlanCreationException
+          that contains a list of publishers that have no package
+          repository configured.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * Added methods:
+                add_item_message()
+                extend_item_messages()
+                gen_item_messages()
+
+    pkg.client.progress has changed as follows:
+        * Removed methods from ProgressTracker:
+                verify_start()
+                verify_start_pkg()
+                verify_add_progress()
+                verify_yield_error()
+                verify_yield_warning()
+                verify_yield_info()
+                verify_end_pkg()
+                verify_done()
+
+Version 80:
+Compatible with clients using versions 72-79.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* Added optional 'implicit' parameter to gen_facets() and
+	  gen_variants() methods to get effective value of facets and
+	  boolean variants.
+
+Version 79:
+Compatible with clients using versions 72-78.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * Added get_editable_changes() function to return the list of
+	  "editable" files that will be moved, removed, installed, or
+	  updated during the planned operation.
+
+Version 78:
+Compatible with clients using versions 72-77.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Added 'li_recurse' parameter to
+            - gen_plan_update()
+            - gen_plan_uninstall()
+            - gen_plan_install()
+            - gen_plan_change_varcets()
+
+          These allow to run the above operations recursively in linked images.
+
+        * Added 'ignore_missing' parameter to
+             - gen_plan_uninstall()
+             - gen_plan_update()
+
+          This changes the behavior of uninstall and update to not fail if a
+          package for the requested operation is not found.
+
+Version 77:
+Compatible with clients using versions 72-76.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Added 'act_timeout' parameter to
+            - gen_plan_update()
+            - gen_plan_uninstall()
+            - gen_plan_install()
+            - gen_plan_change_varcets()
+
+          These allow to use synchronous SMF actuators including a timeout. 
+
+
+Version 76:
+Compatible with clients using versions 72-75 [1].
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* The generator functions 'gen_facets()' has been updated to
+	  give more information about what facets are changing.
+	  Previously a 2 value tuple was returned, now a 4 value tuple
+	  is returned.
+
+	* [1] This is actually an incompatible change to the old
+	  'gen_facets()' behavior, but since gen_facets was only
+	  introduced in the previous version of the client API it's
+	  unlikely that anyone outside of the pkg gate has adopted it's
+	  use.  But since we'd like to avoid an incompatible client API
+	  change we're going to ignore this issue.
+
+	* The parsable package plan output format for facet changes has
+	  been changed.  Previously a tuple with 2 values was returned;
+	  now a tuple with 6 values is returned.
+
+	* Added 'li_parent_sync' parameter to 'gen_plan_uninstall()'.
+
+	* Added 'li_md_only' and 'li_pkg_updates' parameters to
+	  'gen_plan_detach()' and 'detach_linked_children()'
+
+Version 75:
+Compatible with clients using versions 72-74.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* New generator functions 'gen_variants()' and 'gen_facets()' to
+	  retrieve the current list of facets or variants currently
+	  (implicitly or explicitly) set in the image.  See 'pydoc
+	  pkg.client.api' for details.
+
+Version 74:
+Compatible with clients using versions 72-74.
+     The PlanDescription now has interfaces to
+     determine whether or not release notes were generated
+     for this operation, whether or not they must be displayed,
+     and a method of retrieving the release notes line by
+     line.
+
+Version 73:
+Compatible with clients using version 72.
+
+     A per-origin/mirror property has been added, and the transport
+     updated to allow for multiple paths to a given URI.
+
+     pkg.client.publisher.RepositoryURI has changed as follows:
+
+        * proxies attribute has been added, allowing origins
+          and mirrors to be specified with individual HTTP proxies,
+          each represented by a pkg.client.publisher.ProxyURI object.
+          Multiple proxies for the same URI may not be configured
+          at present.
+
+        * proxy attribute is now deprecated, and attempts to set
+          both 'proxies' and 'proxy' in the constructor will result
+          in an error.
+
+    pkg.client.api_errors has changed as follows:
+
+        * UnknownRepositoryOrigin and UnknownRepositoryMirror
+          exceptions have been changed to include a message
+          when a RepositoryURI with a proxy is being used,
+          printing that proxy.
+
+        * The Exceptions DuplicateSyspubOrigin and
+          DuplicateSyspubMirror have been added for cases where we
+          attempt to add a user-origin or user-mirror that is already
+          provided by the system publisher.
+
+        * The Exceptions RemoveSyspubOrigin and RemoveSyspubMirror
+          have been added for cases where we attempt to remove origins
+          or mirrors that are proxied by the system publisher.
+
+Version 72:
+Incompatible with clients using versions 0-71.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * New functions added: img_plandir(), is_active_liveroot_be(),
+            isparent(), linked_publisher_check(), load_plan(), set_alt_repos()
+        * Functions removed: set_stage()
+        * Removed "runid" parameter from: __init__()
+        * Removed "accept" parameter from: gen_plan_*()
+        * Removed "show_licenses" parameter from: gen_plan_*()
+        * Added "pubcheck" parameter to:
+            gen_plan_sync(), gen_plan_update()
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * Removed __init__() parameters: img, backup_be, backup_be_name,
+            new_be, be_activate, be_name
+        * Added __init__() parameters: op
+        * Removed methods: get_parsable_mediators(), get_parsable_varcets(),
+            get_salvaged(), get_services()
+        * Removed properties: is_active_root_be
+        * Added methods: getstate(), setstate(), fromstate()
+        * Added properties: executed, services, mediators, varcets,
+            plan_desc, salvaged, plan_type, update_index
+
+Version 71:
+Compatible with clients using versions 66-70.
+
+    pkg.client.api_errors has changed as follows:
+
+        * Added UnprivilegedUserError to indicate when the current user
+          does not have sufficient privileges to modify the image.
+
+Version 70:
+Compatible with clients using versions 66-69.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * A new boolean property named is_liveroot has been added to
+          allow API consumers to determine if the image to be modified
+          is for the live system root.
+
+Version 69:
+Compatible with clients using versions 66-68.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * get_pkg_list() and info() now have an optional boolean
+          parameter named 'ranked' that controls whether only
+          packages for the highest-ranked matching publisher should
+          be returned. See 'pydoc pkg.client.api' for details.
+
+Version 68:
+Compatible with clients using versions 66-67.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * New functions for managing client history have been added:
+          abort(), gen_history(), clear_history(), and purge_history().
+          See 'pydoc pkg.client.api' for details.
+
+        * New constants for decoding history entries have been added
+          named after the pattern RESULT_*.  See 'pydoc pkg.client.api'
+          for details.
+
+    pkg.client.api_errors has changed as follows:
+
+        * New exceptions for bad history requests or history parsing
+          errors have been added. (HistoryLoadException, etc.)
+
+Version 67:
+Compatible with clients using version 66.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * planning functions such as gen_plan_install that allow
+          specifying a be_name now also support specifying a
+          backup_be_name, and the ability to create a backup BE
+          by setting backup_be=True.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * New properties named 'backup_be' and 'backup_be_name' have been
+          added to allow callers to determine whether a backup BE will be
+          created and what name was specified for it.
+
+        * The new property 'is_active_root_be' has been added to allow
+          consumers to determine if the image being modified is for the
+          live, active root BE.
+
+Version 66:
+Incompatible with clients using versions 0-63.
+
+    The incompatible change is that attach_linked_child, audit_linked,
+    audit_linked_children, and detach_linked_children now return a tuple
+    containing the return value, any errors, and either None or a dictionary
+    representing the parsable output for the operation. All the *_rvdict2rv
+    functions have been changed similar except they return a list of
+    dictionaries.
+
+    The following are the compatible changes:
+    pkg.client.api.ImageInterface has changed as follows:
+        * gen_plan_* now takes an optional argument, parsable version, which is
+          either None or contains the version of parsable output to generate.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * get_parsable_mediators and get_parsable_varcets have been added as
+          functions which return the raw structures for mediators, variants, and
+          facets rather than the formatted strings which get_mediators and
+          get_varcets do.
+
+Version 65:
+Incompatible with clients using versions 0-64.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * get_pkg_list() yields five values instead of four; the fifth is a
+          dictionary of package attributes.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * added get_attr_values() to return the values of named package
+          attributes.
+
+Version 64:
+Incompatible with clients using versions 0-63.
+
+    pkg.client.api_errors has changed as follows:
+       * The ImageLocationAmbiguous exception has been removed.  The client
+         API no longer requires the image to be found at '/' on Solaris.
+         Clients are free to enforce whatever restrictions on image root
+         they desire.
+
+Version 63:
+Compatible with clients using version 62.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * added new 'mediators' property has been added
+          to get a dictionary of the configured mediation
+          information.
+
+        * added gen_available_mediators() to get the list of
+          available mediations for installed packages.
+
+        * added gen_plan_set_mediators() for planning an
+          operation to set link mediation.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * added get_mediators() method to get a list of
+          strings describing the mediation changes for a plan.
+
+    pkg.client.api_errors has changed as follows:
+        * added an invalid_mediations property to PlanCreationException
+          that contains a dictionary of any mediations found to be
+          invalid for the plan with a key set for each aspect that was
+          faulty.
+
+Version 62:
+Incompatible with clients using versions 0-61.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * the 'fmri' property is now a PkgFmri object instead of a
+          string.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * get_services() now returns a list of tuples of strings,
+          see pkg.client.api for details.
+
+Version 61:
+Compatible with clients using version 60.
+    pkg.client.api.PlanDescription has changed as follows:
+        * Added the following new interfaces
+                get_bytes_added()
+                get_cbytes_added()
+                get_bytes_avail()
+                get_cbytes_avail()
+    pkg.client.api.prepare has changed as follows:
+        * may now raise api_errors.ImageInsufficientSpace exception
+
+    pkg.client.api.execute has changed as follows:
+        * may now raise api_errors.ImageInsufficientSpace exception
+
+Version 60:
+Incompatible with clients using versions 0-59.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Uninstall no longer supports recursive removal.  As such,
+          the recursive_removal parameter of plan_uninstall and
+          gen_plan_uninstall has been removed.
+
+Version 59:
+Compatible with clients using versions 57-59.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * introduced new linked image interfaces:
+                attach_linked_child()
+                audit_linked()
+                audit_linked_children()
+                audit_linked_rvdict2rv()
+                detach_linked_children()
+                detach_linked_rvdict2rv()
+                gen_plan_attach()
+                gen_plan_detach()
+                gen_plan_sync()
+                get_linked_name()
+                get_linked_props()
+                ischild()
+                list_linked()
+                parse_linked_name()
+                parse_linked_name_list()
+                sync_linked_children()
+                sync_linked_rvdict2rv()
+        * introduced new non-linked image interfaces:
+                gen_plan_change_varcets()
+                gen_plan_install()
+                gen_plan_revert()
+                gen_plan_uninstall()
+                gen_plan_update()
+                solaris_image()
+        * deprecated:
+                plan_change_varcets()
+                plan_install()
+                plan_revert()
+                plan_uninstall()
+                plan_update()
+                plan_update_all()
+
+    pkg.client.api_errors has changed as follows:
+        * introduced LinkedImageException
+        * updated PlanCreationException
+
+Version 58:
+Compatible with clients using version 57:
+
+     pkg.client.api.ImageInterface has changed as follows:
+
+        * added a 'be_activate' parameter to all plan_*() functions to
+          allow clients to control whether any new BE created during
+          operations is set as the active one on next boot.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * added 'activate_be' boolean property so clients can determine
+          whether be activation was requested at planning time.
+
+Version 57:
+Incompatible with clients using versions 0-56:
+     pkg.client.api.ImageInterface has changed as follows:
+        * get_preferred_publisher has been replaced with
+          get_highest_ranked_publisher
+
+        * set_pub_search_after has been removed
+
+        * set_pub_search_before has been removed
+
+        * search_after, search_before, and search_first have been added as
+          options to add_publisher and update_publisher
+
+        * The write_syspub_0 function has been added.
+
+     pkg.client.publisher.RepositoryURI has changed as follows:
+        * proxy and system attributes have been added
+
+        * The get_host function has been added.
+
+        * The change_scheme function has been added.
+
+     pkg.client.publisher.Repository has changed as follows:
+        * a proxy attribute has been added and may be set during initialization
+
+     pkg.client.publisher.Publisher has changed as follows:
+        * The repositories attribute which contained a list of Repository
+          objects has been replaced by the repository attribute which contains a
+          single Repository object.
+
+        * The selected_repository attribute has been removed.
+
+        * A sys_pub attribute has been added which indicates whether a publisher
+          is a system publisher.
+
+        * The add_repository function has been replaced with the set_repository
+          function.
+
+        * The has_configuration function has been added which attempts to
+          determine whether a publisher has been configured by a user.
+
+        * The remove_repository function has had its arguments removed.
+
+        * The set_selected_repository function has been removed.
+
+Version 56:
+Compatible with clients using version 55:
+
+     pkg.client.api.ImageInterface has changed as follows:
+
+        * added a get_salvaged() method to the PlanDescription class to
+          get the list of files or directories that were salvaged during
+          the executed package operation
+
+Version 55:
+Incompatible with clients using versions 0-54:
+
+     pkg.client.publisher.Publisher has changed as follows:
+
+        * The following functions have been removed:
+          get_intermediate_certs
+          verify_ca_certs
+
+        * verify_chain has had the mandatory parameter cur_pathlen added which
+          indicates how many certificates exist between cert and the leaf cert.
+
+        * approve_ca_cert has had the 'manual' parameter removed as only the
+          user can approve a certificate now.
+
+Version 54:
+Compatible with clients using versions 53-54:
+
+     pkg.client.api.ImageInterface has changed as follows:
+        * added avoid_pkgs, get_avoid_list functions to client
+          interface to manage group dependency behavior.
+
+
+Version 53:
+Incompatible with clients using versions 0-52:
+
+    General changes:
+        * Support for pkg(5) archives has been added; a file URI
+          containing the location of an archive can be used anywhere
+          that a repository location is (except for search).
+
+        * Publishers are no longer required to have origins or mirrors
+          so that sticky state and search order can be retained when
+          installing packages from temporary sources.
+
+        * The client API now supports the use of temporary sources of
+          package during during operations.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * get_pkg_list() is now a locking operation and cannot be used
+          at the same time as other functions (such as a multi-threaded
+          scenario)
+
+        * get_pkg_categories() is now a locking operation and cannot be
+          used at the same time as other functions (such as a multi-
+          threaded scenario)
+
+        * add_publisher() now permits publishers with no repository
+          origins or mirrors to be added.
+
+        * update_publisher() now permits publishers to be updated even
+          if the new object has no origins or mirrors.
+
+        * info(), get_pkg_categories(), get_pkg_list(), get_manifest(),
+          plan_install(), plan_update(), plan_update_all(), and
+          plan_change_varcets() now have a 'repos' parameter for
+          specifying temporary package repositories for use during
+          the operation.
+
+    pkg.client.progress has changed as follows:
+        * There are new methods for tracking the progress of archive
+          creation: archive_set_goal(), archive_add_progress(),
+          and archive_done().  See 'pydoc pkg.client.progress' for
+          details.
+
+    pkg.client.api_errors has changed as follows:
+        * The PublisherOriginRequired exception class has been removed.
+
+        * The new Exception NoPublisherRepositories was added.  It is
+          raised whenever an attempt to perform a transport operation
+          for a publisher with no transport configuration is made.
+
+Version 52:
+Incompatible with clients using versions 0-51:
+    pkg.client.publisher.Publisher has changed as follows:
+        * The following functions have been made private:
+            add_cert, get_certs_by_name, get_crl, check_extensions
+        * check_critical was removed.
+        * verify_chain had an additional, optional, argument added to it.  The
+          usages paramter defines what uses the certificate needs to allow.
+          If this parameter isn't set, then it's assumed that the certificate
+          should be able to be used for all known uses.
+        * The following constants were added to be used as values to the usages
+          parameter for verify chain.
+
+Version 51:
+Compatible with clients using versions 46-50:
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * get_solver_errors() was added to allow retrieval of extended
+          error information for plan_*() functions.  See 'pydoc
+          pkg.client.api' for details.
+
+Version 50:
+Compatible with clients using versions 46-49:
+
+    pkg.client.api.ImageInterface changed as follows:
+        * The new function plan_revert() was added to allow planning
+          an operation for reverting specific or tagged packaged
+          files.
+
+Version 49:
+Compatible with clients using versions 46-48:
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * plan_install and plan_update take an optional
+          argument to reject packages in solution.
+
+Version 48:
+Compatible with clients using versions 46-47.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * The ImageInterface class constructor now accepts an
+          exact_match parameter that allows consumers to control
+          whether an attempt to find an image starting from the
+          specified directory is made.  See 'pydoc pkg.client.api'
+          for detailed usage.
+
+        * If the exact_match parameter of the class constructor is
+          False, an ImageLocationAmbiguous exception will be raised
+          on Solaris if the image is not found at '/'.  Other platforms
+          will continue to accept an image found at any location.
+
+        * A new property named 'progresstracker' was added to allow
+          consumers to change the ProgressTracker object used by the
+          API object instance after class initialization.  See 'pydoc
+          pkg.client.api' for detailed usage.
+
+    pkg.client.api_errors has changed as follows:
+
+        * A new ImageLocationAmbiguous exception was added.
+
+Version 47:
+Compatible with clients using version 46.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new function named 'update_format' has been added to allow
+          clients to upgrade images in older formats to the newest one.
+          By default, images rooted at '/' or that are for a zone are
+          automatically upgraded to the newest format if the user of
+          the client has sufficient privileges.
+
+    pkg.client.api_errors has changed as follows:
+
+        * A new exception named 'ImageFormatUpdateNeeded' has been added
+          that may be raised by the API whenever an API operation
+          requires that the image be updated to a new format before
+          the operation can be performed.
+
+Version 46:
+Incompatible with clients using versions 0-45.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * The actual_cmd parameter is no longer a parameter to the
+          plan_update_all function.  Instead that information is stored in the
+          global_settings object.  It's used when looking for the trust anchors
+          of the image from which pkg was run.
+
+Version 45:
+Compatible with clients using versions 43-44.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new planning function, plan_update, has been added which
+          allows in place downgrades of packages.
+
+Version 44:
+Compatible with clients using version 43.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new property 'last_modified' was added that returns a UTC
+          datetime object representing the time the image's metadata
+          was last changed.
+
+Version 43:
+Incompatible with clients using versions 0-42.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new boot environment will now only be created if required
+          for image-modifying operations (except for plan_update_all
+          which continues to always create one by default).
+
+        * The verbose parameter has been removed from the plan_*
+          functions.
+
+        * All plan_* functions now accept an additional boolean named
+          'new_be' that indicates whether a new boot environment should
+          be created for the operation.  This overrides the deafult
+          behaviour that only creates one if needed.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * get_services(), get_varcets(), and get_actions() were added
+          to allow clients more access to plan information.
+
+        * A boolean property named new_be was added that indicates
+          whether the planned operation will requires a new boot
+          environment.
+
+Version 42:
+Incompatible with clients using versions 0-41.
+
+    pkg.client.api_errors has changed as follows:
+
+        * The MainDictParsingException class was removed
+
+        * The BadPublisherAlias and IndexLockedException
+          exceptions were added.
+
+    pkg.client.publisher has changed as follows:
+
+        * The inter_certs property was renamed to intermediate_certs.
+
+Version 41:
+Compatible with clients using versions 40-41.
+
+    Allows the client to handle signed packages.  This includes the
+    addition of a large number of optional parameters to the
+    client/publisher class.  It also makes changes to image creation to
+    allow image properties to be set during the process.  New subclasses
+    of ApiException were created to indicate different error conditions
+    associated with signing failures.
+
+Version 40:
+Incompatible with clients using versions 0-39.
+
+    The pkg.client.api ImageInterface has changed as follows:
+
+        * The info() method no longer detects and returns multiple
+          matches for patterns and instead will return all matches
+          for a given pattern.
+
+        * The ImageInterface.INFO_MULTI_MATCH property has been
+          removed.
+
+        * The PackageInfo.PREF_PUBLISHER attribute and data has been
+          removed.
+
+        * Illegal patterns will cause info() to raise an exception
+          immediately.
+
+Version 39:
+Compatible with clients using versions 36-38.
+
+    Introduces the notion of a system repository to the publisher
+    heirarchy.  This specific type of repository is a subclass of
+    RepositoryURI.  A few new api exceptions are added, too.
+
+Version 38:
+Compatible with clients using versions 36-37.
+
+    The pkg.client.api now supports file-based repository access for all
+    operations.  All related classes have been updated to support URIs
+    that use the 'file' scheme.
+
+Version 37:
+Compatible with clients using version 36.
+
+    The pkg.client.api ImageInterface has changed as follows:
+        * Whenever an unexpected change in the state or structure
+          of the image is encountered during install, remove, or
+          update operations (such as a missing file, directory,
+          or inability to remove an item) and it cannot be
+          recovered from without user intervention, an
+          ActionExecutionError exception is raised.
+
+Version 36:
+Incompatible with clients using versions 0-35.
+
+    The interface for pkg.client.api.remote_search has changed as follows:
+        * A new parameter, prune_versions, has been added which, when true,
+          causes remote search to remove versions a user is unlikely to be
+          interested in.
+
+        * The return type of remote_search and local_search has changed.  Where
+          the string representation used to be returned, a FMRI object is now
+          returned.
+
+Version 35:
+Compatible with clients using version 34.
+
+    The ImageInterface class has changed as follows:
+        * A new method named parse_fmri_patterns has been added to
+          help clients parse user input and transform any valid patterns
+          into FMRI objects that can be used for comparison.  See pydoc
+          'pkg.client.api' for details.
+
+        * New constants for the parse_fmri_patterns method were added:
+          MATCH_EXACT, MATCH_FMRI, and MATCH_GLOB.
+
+Version 34:
+Incompatible with clients using versions 0-33.
+
+    The pkg.client.publisher.Publisher class has changed as follows:
+        * The deprecated get_ssl_creds() and set_origin() methods
+          were removed.  These functions have been marked as
+          deprecated since the client API was first versioned
+          and should not have been used by any clients.
+
+Version 33:
+Compatible with clients using version 32.
+
+    The ImageInterface class has changed as follows:
+        * file and directory actions will now have their mode validated
+          if failure occurs during plan execution to determine if bad
+          package metadata was the cause of execution failure.  In
+          addition, the client API will catch failures due to corrupt
+          or invalid package metadata and re-raise them as an
+          InvalidPackageErrors exception.
+
+    The pkg.client.api_errors module has changed as follows:
+        * The InvalidPackageErrors exception was added.  See 'pydoc
+          pkg.client.api_errors' for details.
+
+Version 32:
+Incompatible with clients using versions 0-31.
+
+    The ImageInterface class has changed as follows:
+        * The add_publisher and update_publisher methods now validate
+          the image's publisher configuration against the origins of
+          the publisher.  If any of the origins are found to not match,
+          an UnknownRepositoryPublishers exception will be raised.
+          If one of the new repository origins does not provide
+          publisher configuration information or it is incomplete,
+          a RepoPubConfigUnavailable exception will be raised.
+
+    The pkg.client.api module has changed as follows:
+        * A new method named image_create has been added.  See 'pydoc
+          pkg.client.api' for details.
+
+    The pkg.client.api_errors module has changed as follows:
+        * UnknownRepositoryPublishers, RepoPubConfigUnavailable, and
+          UnknownErrors expections have been added for use by the
+          pkg.client.api.  API consumers are reminded that they should
+          catch all ApiException class exceptions, although catching
+          specific exception subclasses for case-by-case handling in
+          addition to that is acceptable.
+
+Version 31:
+Compatible with clients using version 30.
+    All image-modifying operations now lock the image for exclusive use
+    by the current thread and process.  If the lock cannot be obtained,
+    an ImageLockedError exception will be raised.
+
+    The ImageInterface class has changed as follows:
+        * A new property named 'blocking_locks' has been added to allow
+          clients to control image locking behaviour.  See 'pydoc
+          pkg.client.api.ImageInterface' for details.
+
+        * The prepare() and execute_plan() methods will now raise an
+          InvalidPlanError if the image state has changed since the
+          plan was originally created.  This is likely the result of
+          another client or process modifying the image.
+
+Version 30:
+Incompatible with clients using versions 0-29:
+    The ProgressTracker class has changed as follows:
+        * ver_output_warning() and ver_output_info() were added so that
+          callers can choose to output warning and info verification
+          messages separately from errors.
+
+Version 29:
+Incompatible with clients using versions 0-28:
+    The ImageInterface class has changed as follows:
+        * set_plan_license_status() was added.  This is used to indicate
+          whether licenses for the packages being operated on have been
+          accepted or displayed.  Clients must do this if the related
+          license requires acceptance or display.
+
+    The LicenseInfo class has changed as follows:
+        * get_text() may now trigger a remote retrieval of the license
+          payload if needed to return the text.
+
+        * The related package FMRI and license attributes are now
+          properties: fmri, license, must_accept, and must_display.
+
+    The PlanDescription class has changed as follows:
+        * get_changes() is now a generator function.
+
+        * get_licenses() was added to allow clients to retrieve the
+          list of licenses related to the plan's operations as well
+          as the current accepted and displayed status of each.
+
+Version 28:
+Incompatible with clients using versions 0-27:
+    CatalogRefreshException.message was changed to
+    CatalogRefreshException.errmessage to work around a change
+    introduced in python2.5 and removed in python2.6 (Exception.message,
+    if used, triggers a deprecation warning).
+
+Version 27:
+Compatible with clients using versions 25-26:
+    The get_manifest function has been added to the api to allow clients
+    to retrieve the manifest directly.
+
+Version 26:
+Compatible with clients using version 25.
+    The client API has changed such that an immediate refresh is always
+    performed when the 'refresh_catalogs' parameter is True for install,
+    update, and change variant operations.
+
+Version 25:
+Incompatible with clients using versions 0-24:
+Changes:
+    The PackageInfo class has changed as follows:
+        * The NOT_INSTALLED constant has been removed as checking
+          for the presence of INSTALLED should be sufficient.
+
+        * A new constant named 'KNOWN' has been added.  It indicates
+          that the package is currently available from a publisher's
+           repository.
+
+         * A new constant named 'UPGRADABLE' has been added. It
+           indicates that a new version of the package is available.
+
+     The following new api functions were added to ImageInterface (see
+     'pydoc pkg.client.api.ImageInterface' for more information):
+         * get_pkg_categories
+
+         * get_pkg_list
+
+Version 24:
+Incompatible with clients using versions 0-23.
+    The pkg.client.api module has changed as follows:
+        * plan_install no longer takes a filters argument
+        * plan_change_variant changed to plan_change_varcets.
+          w/ argument list changes.
+        * Added get_pub_search_order
+        * Added set_pub_search_after
+        * Added set_pub_search_before
+
+Version 23:
+Incompatible with clients using versions 0-22.
+    The pkg.client.api module has changed as follows:
+        * PackageInfo objects no longer take a "state" parameter, but a
+          "states" parameter, and the corresponding "state" member is now
+          "states", and is a list of states, rather than a single value.
+
+Version 22:
+Compatible with clients using version 21.
+Changes:
+        Adds the description field to the PackageInfo class.
+
+Version 21:
+Incompatible with clients using versions 0-20.
+Changes:
+    The pkg.client.api_errors module has changed as follows:
+        * All CatalogCacheError class exceptions were removed as the
+          catalog cache no longer exists.
+
+Version 20:
+Compatible with clients using version 19.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+
+   class ReadOnlyFileSystemException(PermissionsException):
+   """Used to indicate that the operation was attempted on a
+   read-only filesystem"""
+
+Version 19:
+Incompatible with clients using versions 0-18.
+Changes:
+    The ImageInterface class changed as follows:
+        * plan_update_all no longer returns a third value, the exception
+          caught.  This value was never set.
+
+        * plan_install no longer returns a second value, the exception
+          caught.  This value was never set.
+
+Version 18:
+Compatible with clients using versions 15-17.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+
+    class SetDisabledPublisherPreferred(PublisherError):
+        """Used to indicate an attempt to set a disabled publisher as
+        the preferred publisher was made."""
+
+Version 17:
+Compatible with clients using versions 15-16.
+Changes:
+    The following properties were added to pkg.client.api
+    ImageInterface class:
+
+        root
+            The absolute pathname of the filesystem root of the image.
+            This property is read-only.
+
+Version 16:
+Compatible with clients using version 15.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+
+    class NoSuchKey(CertificateError):
+        """Used to indicate that a key could not be found."""
+
+Version 15:
+Incompatible with clients using versions 0-14.
+Changes:
+    The unfound_fmris variable in the
+    pkg.client.api_errors.PlanCreationException class is now called
+    unmatched_fmris.
+
+Version 14:
+Compatible with clients using versions 12-14.
+Changes:
+    The following methods were added to pkg.client.publisher.Publisher:
+
+        def create_meta_root(self):
+                """Create the publisher's meta_root."""
+
+        def remove_meta_root(self):
+                """Removes the publisher's meta_root."""
+
+Version 13:
+Compatible with clients using version 12.
+Changes:
+    By default, publisher repositories will be checked for new metadata no more
+    than once every four hours unless otherwise requested.  Each time a
+    publisher's selected repository is checked for updates, the client will
+    store a timestamp (in UTC) marking when the refresh was performed.
+
+    ImageInterface.refresh() has changed as follows:
+        * Changed 'full_refresh' to an optional keyword argument that defaults
+          to False.
+
+        * Added optional boolean keyword 'immediate' that allows the client to
+          request that a publisher be checked for updates even if a check is
+          not yet needed.
+
+        * Changed to properly use progress tracker for refreshing of publisher
+          metadata.
+
+        * Now only refreshes publisher metadata based on the update interval
+          specified by the refresh_seconds property on the publisher's
+          selected_repository.
+
+    ImageInterface.update_publisher() has changed as follows:
+        * When updating a publisher with 'refresh_allowed' set to False, its
+          catalog will no longer be removed.  Instead, it is marked as needing
+          refresh, and the next time the client can do so, it will.
+
+    pkg.client.publisher.Publisher has changed as follows:
+        * New property 'last_refreshed':
+                A datetime object representing the time (in UTC) the
+                publisher's selected repository was last refreshed for new
+                metadata (such as catalog updates).  'None' if the publisher
+                hasn't been refreshed yet or the time is not available.
+
+          The above property will be automatically set by the api as needed
+          although api consumers are free to retrieve its value.  Manually
+          setting this value is not recommended.
+
+        * New property 'meta_root':
+                The absolute pathname of the directory where the publisher's
+                metadata should be written to and read from.
+
+          The above property will be automatically set by the api as needed
+          although api consumers are free to retrieve its value.  Manually
+          setting this value is not recommended.
+
+        * New property 'needs_refresh':
+                A boolean value indicating whether the publisher's metadata for
+                the currently selected repository needs to be refreshed.
+
+Version 12:
+Incompatible with clients using versions 0-12
+Changes:
+    This versions adds local_search and remote_search to the api and removes
+    those functions from pkg.client.image.
+
+Version 11:
+Incompatible with clients using versions 0-10
+Changes:
+   This version changes all parameter names and property names from 'authority'
+   to 'publisher'.  For example, parameters named 'auths' were changed to
+   'pubs'; parameters named 'authent' were changed to 'pubent' and so forth.
+
+   In addition, the following new api functions were added to ImageInterface:
+        def add_publisher(self, pub, refresh_allowed=True):
+                """Add the provided publisher object to the image
+                configuration."""
+
+        def get_preferred_publisher(self):
+                """Returns the preferred publisher object for the image."""
+
+        def get_publisher(self, prefix=None, alias=None, duplicate=False):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias.
+
+                'duplicate' is an optional boolean value indicating whether
+                a copy of the publisher object should be returned instead
+                of the original.
+                """
+
+        def get_publishers(self, duplicate=False):
+                """Returns a list of the publisher objects for the current
+                image.
+
+                'duplicate' is an optional boolean value indicating whether
+                copies of the publisher objects should be returned instead
+                of the originals.
+                """
+
+        def get_publisher_last_update_time(self, prefix=None, alias=None):
+                """Returns a datetime object representing the last time the
+                catalog for a publisher was modified or None."""
+
+        def has_publisher(self, prefix=None, alias=None):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias."""
+
+        def remove_publisher(self, prefix=None, alias=None):
+                """Removes a publisher object matching the provided prefix
+                (name) or alias."""
+
+        def set_preferred_publisher(self, prefix=None, alias=None):
+                """Sets the preferred publisher for the image."""
+
+        def update_publisher(self, pub, refresh_allowed=True):
+                """Replaces an existing publisher object with the provided one
+                using the _source_object_id identifier set during copy."""
+
+        def update_publisher(self, pub, refresh_allowed=True):
+                """Replaces an existing publisher object with the provided one
+                using the _source_object_id identifier set during copy.
+
+                'refresh_allowed' is an optional boolean value indicating
+                whether a refresh of publisher metadata (such as its catalog)
+                should be performed if transport information is changed for a
+                repository, mirror, or origin.  If False, no attempt will be
+                made to retrieve publisher metadata."""
+
+
+        def log_operation_end(self, error=None, result=None):
+                """Marks the end of an operation to be recorded in image
+                history.
+
+                'result' should be a pkg.client.history constant value
+                representing the outcome of an operation.  If not provided,
+                and 'error' is provided, the final result of the operation will
+                be based on the class of 'error' and 'error' will be recorded
+                for the current operation.  If 'result' and 'error' is not
+                provided, success is assumed."""
+
+        def log_operation_error(self, error):
+                """Adds an error to the list of errors to be recorded in image
+                history for the current opreation."""
+
+        def log_operation_start(self, name):
+                """Marks the start of an operation to be recorded in image
+                history."""
+
+        def parse_p5i(self, fileobj=None, location=None):
+                """Reads the pkg(5) publisher json formatted data at 'location'
+                or from the provided file-like object 'fileobj' and returns a
+                list of tuples of the format (publisher object, pkg_names).
+                pkg_names is a list of strings representing package names or
+                FMRIs.  If any pkg_names not specific to a publisher were
+                provided, the last tuple returned will be of the format (None,
+                pkg_names).
+
+                'fileobj' is an optional file-like object that must support a
+                'read' method for retrieving data.
+
+                'location' is an optional string value that should either start
+                with a leading slash and be pathname of a file or a URI string.
+
+                'fileobj' or 'location' must be provided."""
+
+        def write_p5i(self, fileobj, pkg_names=None, pubs=None):
+                """Writes the publisher, repository, and provided package names
+                to the provided file-like object 'fileobj' in json p5i format.
+
+                'fileobj' is only required to have a 'write' method that accepts
+                data to be written as a parameter.
+
+                'pkg_names' is a dict of lists, tuples, or sets indexed by
+                publisher prefix that contain package names, FMRI strings, or
+                package info objects.  A prefix of "" can be used for packages
+                that are not specific to a publisher.
+
+                'pubs' is an optional list of publisher prefixes or Publisher
+                objects.  If not provided, the information for all publishers
+                (excluding those disabled) will be output."""
+
+Version 10:
+Incompatible with clients using versions 0-9
+Changes:
+    This version changes the interface to info. It removes the action info
+    and licenses flag and replaces them with a set of options to allow
+    the caller control over which information is retrieved.
+
+Version 9:
+Compatible with clients using versions 0-8
+Changes:
+    This version adds an optional argument to plan_update_all to allow the
+    specification of a name for the clone of the BE which is made. It also
+    exposes check_be_name as part of the api.
+
+Version 8:
+Compatible with clients using versions 0-7
+Changes:
+    This version introduces InvalidDepotResponseException.  The
+    exception is thrown when operations that refresh the catalog
+    discover that the server is not a pkg depot.  Clients of the api
+    should catch this exception and respond appropriately.
+
+Version 7:
+Compatible with clients using versions 0-6
+Changes:
+    Ignore the pkg_client_name parameter passed to api.ImageInterface() if
+    pkg.client.global_settings.client_name isn't None.  This latter object
+    is now the preferred way to set the client name, and the
+    pkg_client_name parameter may be ignored or removed in the future.
+
+Version 6:
+Compatible with clients using versions 0-5
+Changes:
+Adds a new field to PackageInfo, category_info_list, which is a list of
+     PackageCategory objects. These objects contain the scheme and category
+     information for packages.
+
+Version 5:
+Compatible with clients using versions 0-4 as long as they have a generic
+APIException. This is the case for PackageManager and UpdateManaget.
+Changes:
+plan_install and plan_update_all can now raise PermissionsException.
+
+Version 4:
+Compatible with clients using versions 1, 2, and 3
+Changes:
+Modifies where certain progress tracking calls were made, calling
+    evaluate_start much sooner.
+Adds refresh tracking to progress.py. This allows for active feedback when
+    the catalogs of authorities are being refreshed.
+
+Version 3:
+Compatible with clients using Versions 1 and 2
+Changes:
+Adds an optional argument to info which determines whether detailed information
+    about actions will be returned
+Adds the following new fields to PackageInfo objects: links, hardlinks,
+    files, dirs, dependencies
+
+Version 2:
+Compatible with clients using Version 1
+Changes:
+Adds the optional argument update_index to plan_install, plan_uninstall, and
+    plan_update_all. When the argument is false, no automatic update to the
+    index occurs. By default, the argument is true.
+
+Version 1:
+Incompatible with clients using Version 0
+Changes:
+plan_install now returns a tuple of whether there is anything to do and
+    a catalog refresh exception, if one was caught. In this, it mirrors the
+    first and third return values from plan_update_all.
+
+Version 0:
+        def __init__(self, img_path, version_id, progesstracker,
+            cancel_state_callable, pkg_client_name):
+                """Constructs an ImageInterface. img_path should point to an
+                existing image. version_id indicates the version of the api
+                the client is expecting to use. progesstracker is the
+                progresstracker the client wants the api to use for UI
+                callbacks. cancel_state_callable is a function which the client
+                wishes to have called each time whether the operation can be
+                canceled changes. It can raise VersionException and
+                ImageNotFoundException."""
+
+        def plan_install(self, pkg_list, filters, refresh_catalogs=True,
+            noexecute=False, verbose=False):
+                """Contructs a plan to install the packages provided in
+                pkg_list. pkg_list is a list of packages to install. filters
+                is a list of filters to apply to the actions of the installed
+                packages. refresh_catalogs controls whether the catalogs will
+                automatically be refreshed. noexecute determines whether the
+                history will be recorded after planning is finished. verbose
+                controls whether verbose debugging output will be printed to the
+                terminal. Its existence is temporary. If there are things to do
+                to complete the install, it returns True, otherwise it returns
+                False. It can raise InvalidCertException, PlanCreationException,
+                NetworkUnavailableException, and InventoryException. The
+                noexecute argument is included for compatibility with
+                operational history. The hope is it can be removed in the
+                future."""
+
+        def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
+            verbose=False):
+                """Contructs a plan to uninstall the packages provided in
+                pkg_list. pkg_list is a list of packages to install.
+                recursive_removal controls whether recursive removal is
+                allowed. noexecute determines whether the history will be
+                recorded after planning is finished. verbose controls whether
+                verbose debugging output will be printed to the terminal. Its
+                existence is temporary. If there are things to do to complete
+                the uninstall, it returns True, otherwise it returns False. It
+                can raise NonLeafPackageException and PlanCreationException."""
+
+        def plan_update_all(self, actual_cmd, refresh_catalogs=True,
+            noexecute=False, force=False, pkgs_must_be_up_to_date=None,
+            verbose=False):
+                """Creates a plan to update all packages on the system to the
+                latest known versions. actual_cmd is the command used to start
+                the client. It is used to determine the image to check whether
+                SUNWipkg is up to date. refresh_catalogs controls whether the
+                catalogs will automatically be refreshed. noexecute determines
+                whether the history will be recorded after planning is finished.
+                force controls whether update should proceed even if ipkg is not
+                up to date. verbose controls whether verbose debugging output
+                will be printed to the terminal. Its existence is temporary. It
+                returns a tuple of three things. The first is a boolean which
+                tells the client whether there is anything to do. The second
+                tells whether the image is an opensolaris image. The third is
+                either None, or an exception which indicates partial success.
+                This is currently used to indicate a failure in refreshing
+                catalogs. It can raise CatalogRefreshException,
+                IpkgOutOfDateException, NetworkUnavailableException, and
+                PlanCreationException."""
+
+        def describe(self):
+                """Returns None if no plan is ready yet, otherwise returns
+                a PlanDescription"""
+
+        def prepare(self):
+                """Takes care of things which must be done before the plan
+                can be executed. This includes downloading the packages to
+                disk and preparing the indexes to be updated during
+                execution. It can raise ProblematicPermissionsIndexException,
+                and PlanMissingException. Should only be called once a
+                plan_X method has been called."""
+
+        def execute_plan(self, be_name=None):
+                """Executes the plan. This is uncancelable one it begins. It
+                can raise  CorruptedIndexException,
+                ProblematicPermissionsIndexException, ImageplanStateException,
+                ImageUpdateOnLiveImageException, and PlanMissingException.
+                Should only be called after the prepare method has been
+                called."""
+
+        def refresh(self, full_refresh, auths=None):
+                """Refreshes the catalogs. full_refresh controls whether to do
+                a full retrieval of the catalog from the publisher or only
+                update the existing catalog. auths is a list of authorities to
+                refresh. Passing an empty list or using the default value means
+                all known authorities will be refreshed. While it currently
+                returns an image object, this is an expedient for allowing
+                existing code to work while the rest of the API is put into
+                place."""
+
+        def info(self, fmri_strings, local, get_licenses):
+                """Gathers information about fmris. fmri_strings is a list
+                of fmri_names for which information is desired. local
+                determines whether to retrieve the information locally.
+                get_licenses determines whether to retrieve the text of
+                the licenses. It returns a dictionary of lists. The keys
+                for the dictionary are the constants specified in the class
+                definition. The values are lists of PackageInfo objects or
+                strings."""
+
+        def can_be_canceled(self):
+                """Returns true if the API is in a cancelable state."""
+
+        def reset(self):
+                """Resets the API back the the initial state. Note:
+                this does not necessarily return the disk to its initial state
+                since the indexes or download cache may have been changed by
+                the prepare method."""
+
+        def cancel(self):
+                """Used for asynchronous cancelation. It returns the API
+                to the state it was in prior to the current method being
+                invoked.  Canceling during a plan phase returns the API to
+                its initial state. Canceling during prepare puts the API
+                into the state it was in just after planning had completed.
+                Plan execution cannot be canceled. A call to this method blocks
+                until the canelation has happened. Note: this does not
+                necessarily return the disk to its initial state since the
+                indexes or download cache may have been changed by the
+                prepare method."""
+
+class PlanDescription(object):
+        """A class which describes the changes the plan will make. It
+        provides a list of tuples of PackageInfo's. The first item in the
+        tuple is the package that is being changed. The second item in the
+        tuple is the package that will be in the image after the change."""
+
+        def get_changes(self):
+
+class LicenseInfo(object):
+        """A class representing the license information a package
+        provides."""
+
+        def get_text(self):
+
+class PackageInfo(object):
+        """A class capturing the information about packages that a client
+        could need. The fmri is guaranteed to be set. All other values may
+        be None, depending on how the PackageInfo instance was created."""
+
+        # Possible package installation states
+        INSTALLED = 1
+        NOT_INSTALLED = 2
+
+        self.pkg_stem
+        self.summary
+        self.state
+        self.authority
+        self.preferred_authority
+        self.version
+        self.build_release
+        self.branch
+        self.packaging_date
+        self.size
+        self.fmri
+        self.licenses
+
+        def __str__(self):

@@ -1,0 +1,92 @@
+
+Requirements gathering for new packaging system
+-----------------------------------------------
+
+Some of these requirements will be satisfied in part by the use of ZFS
+as a root filesystem.
+
+In no particular order:
+
+A new packaging system must:
+
+* replace existing patching/upgrade/live upgrade/Jumpstart/Jet/SUC/... 
+  functionality; there should be one way of managing all software change on
+  Solaris 11.
+
+* allow fine grain control of installation contents to support minimization
+  A customer should be able to select the desired functionality, and have the
+  system bring in the closure of the dependency graph.
+  
+* support the installation of packages to a directory for diskless and Xen
+  configs.
+
+* be repository based to faciltate efficient software distribution.
+
+* support the user's connection to multiple repositories to provide
+  different types of software, newer software, different vendors/suppliers,
+  etc.
+  
+* deal with zones:
+	* maintain global zone, whole root zones in sync
+	* cope w/ directory level split between global and local zones, or
+	  eliminate them.
+
+* allow a package to be installed in alternative (non default) locations.
+
+* allow the installation of multiple instances/revisions of the same package
+  in different locations.
+
+* manage package dependencies in multiple ways:
+	* allow a set of packages to be managed as a group; all packages
+	  must transition together.  Groups may include other groups.
+        * allow specification of a minimum version level
+	* dependency graphs need not be acyclic
+	
+* permit the selection of alternative software streams available from a single
+  repository.
+
+* permit the "tagging" of packages with interesting information such as
+  external packaging version number, features provided (at least partially)
+  by this packages, etc.
+
+* permit the creation of alternative package branches to represent either early
+  platform introduction or customer-specific fixes that are later merged into
+  the mainline.
+
+* manage updates to client system in a transactional fashion; either we run the
+  old bits or the new bits, never some of each.
+
+* support secure upgrading through firewalls, etc, w/o special handling,
+  ports opened, etc, on the client side.  It must be possible to both allow
+  and disallow anonymous access to the repository, and offer fine grain access
+  controls.
+
+* be robust in the face of filesystem damage on the client side.  It must be
+  possible to identify where the system doesn't match the packaging information,
+  and to be able to repair any damage by restoring damaged components from the
+  repository.
+
+* be open source, and included in OpenSolaris.  All the tools necessary to build
+  and distribute OpenSolaris via a repository should be part of OpenSolaris.
+  
+* support interactive development.  A developer should be readily able to 
+  create a new repository, make changes, build, commit the changes to the
+  repository and update his machine with those changes and reboot.  
+  
+* be of acceptable performance.  Upgrade operations should not reacquire files
+  already in place on the system.  As much as possible, packaging operations 
+  should be order (1) rather then order(number of zones).  Packaging operations
+  should not be significantly affected by the number of packages already 
+  installed on the system
+    
+A new packaging system must not:
+
+* require changing the build system of consolidations contributing to 
+  software respository.  Different parts of OpenSolaris build in many different
+  ways; forcing them all to be the same is unacceptable.
+
+* require the use of non-local resources for clients; security conscious 
+  companies must be able to run their own repositories completely disconnected
+  from any external networks.
+  
+ 

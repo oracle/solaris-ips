@@ -1,0 +1,934 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 3
+---------
+
+Basic Terminology
+.................
+
+This chapter defines IPS terms and describes the IPS components.
+
+Image
+~~~~~
+
+IPS is designed to install packages in an image.  An image is a directory
+tree, and can be mounted in a variety of locations as needed.  Images
+are of three types:
+
+  Full 
+         in a full image,  all dependencies are resolved within the 
+         image itself and IPS maintains the dependencies in a consistent
+         manner;
+
+  Zone 
+         in a zone image, IPS maintains the zone consistent with its
+         global zone as defined by dependencies in the packages;
+
+  User
+         not yet fully functional for Oracle Solaris.
+
+In general, images are created or cloned by other software (installers,
+|beadm|, |zonecfg|, etc) rather than directly by the user.  
+
+Package
+~~~~~~~
+
+IPS deals with all software installed on a system in the granularity of
+packages.  Every package is represented by a *fault management resource
+identifier* (FMRI), consisting of a publisher, a name, and a version, with
+the scheme ‘``pkg``’.  For example::
+
+    pkg://solaris/system/library@0.5.11,5.11-0.175.0.0.0.2.1:20111019T082311Z
+
+Here, ‘``solaris``’ is the publisher, ‘``system/library``’ is the package
+name, and ‘``0.5.11,5.11-0.175.0.0.0.2.1:20111019T082311Z``’ is the version.
+
+Package names are hierarchical with an arbitrary number of components
+separated by forward slash (‘``/``’) characters.  Package names form a
+single namespace across publishers; packages with the same name and
+version but different publishers are assumed to be interchangeable in terms
+of external dependencies and interfaces.  Package name components are case
+sensitive and  must start with a letter or number, but can include
+underscores (‘``_``’), dashes (‘``-``’), periods (‘``.``’), and plus signs
+(‘``+``’) in later positions.
+
+FMRIs can appear and can be referred to in abbreviated form.  The scheme
+is typically unnecessary, leaving the FMRI to start with either a double
+slash (‘``//``’) or a single slash (‘``/``’).  When the first slash is
+doubled, the first word following the slash is the publisher name.  When
+there is only a single leading slash, no publisher name is present, and the
+package name is considered complete, or ‘rooted’.
+
+Further abbreviation is possible by eliding leading components of package
+names.  For instance, ``/driver/network/ethernet/e1000g`` can be reduced to
+``network/ethernet/e1000g``, ``ethernet/e1000g``, or even simply
+``e1000g``.  Note that such abbreviation mighy cause the packaging client to
+complain about ambiguous package names, in which case disambiguation can
+always be achieved by specifying the full, rooted name.  Typically package
+names are chosen to reduce possible ambiguities, even when referred to
+solely by their last component.  Some trailing components are common,
+however; in such cases, the last two components should be unambiguous.
+Scripts should generally refer to packages by their full, rooted names.
+
+It is not possible to construct an abbreviated FMRI that contains a
+publisher name and only trailing package name components.
+
+The version is also often unnecessary; packages referred to without version
+will generally resolve to the latest version of the package that can be
+installed.  As explained below, versions themselves need not be complete.
+
+FMRIs can also be referred to with patterns, where an asterisk (‘``*``’)
+can match any portion of a package name.  Thus ``/driver/*/e1000g`` will
+expand to ``/driver/network/ethernet/e1000g``, as will ``/dri*00g``.
+
+
+Version
+```````
+
+A package version consists of four sequences of integer numbers,
+separated by punctuation.  The elements in the first three sequences
+are separated by dots, and the sequences are arbitrarily long.
+Leading zeros in version components (e.g. ‘``01.1``’ or ‘``1.01``’) are
+forbidden, to allow for unambiguous sorting by package version.
+
+An example version is::
+
+    0.5.11,5.11-0.175.0.0.0.2.1:20111019T082311Z
+
+The first part is the component version.  For components that are
+are developed as part of Oracle Solaris, this will represent the point
+in the release when this package last changed.  For a component with its
+own development life cycle, this sequence is the dotted release
+number, such as ‘``2.4.10``’.
+
+The second part, which if present must follow a comma, is the build
+version.  Oracle Solaris uses this to denote the release of the OS for
+which the package was compiled.
+
+The third part, which if present must follow a dash, is the branch version,
+providing vendor-specific information.  This can be incremented when the
+packaging metadata is changed, independently of the component; can contain
+a build number; or provide some other information.
+
+The fourth part, which if present must follow a colon, is a timestamp.
+It represents when the package was published in the GMT timezone, and is
+automatically updated when the package is published.
+
+The package versions are ordered using left-to-right precedence; thus
+the timestamp is the least significant part of the version space; the
+number immediately after the ‘``@``’ is the most significant.
+
+If required, ``pkg.human-version`` can be used to hold a human-readable
+version string, however the versioning scheme described above must
+also be present.   The human-readable version string is only used for
+display purposes, and is documented later in this chapter.
+
+By allowing arbitrary version lengths, IPS can accommodate a variety
+of different models for supporting software. Within the confines
+of a given component version, a package author can use the build or branch
+versions and assign one portion of the versioning scheme to security
+updates, another for paid vs. unpaid support updates, another for minor bug
+fixes, etc.
+
+A version can also be the token ‘``latest``’, which is substituted for the
+latest version known.
+
+We discuss how Oracle Solaris implements versioning in *Chapter 13*.
+
+Publisher
+~~~~~~~~~
+
+A publisher is an entity that develops and constructs packages.  A
+publisher name, or prefix, is used to identify this source in a unique
+manner.  The use of Internet domains or registered trademarks is
+encouraged, since it provides a natural namespace partitioning.
+
+Package clients combine all specified sources of packages for a given
+publisher when computing packaging solutions.  Publisher names can
+include upper and lower case letters, numbers, dashes and periods; the same
+characters as a valid hostname.
+
+.. raw:: pdf
+
+    PageBreak
+
+Action
+~~~~~~
+
+Actions are used to define the software that comprises a package; they
+define the data needed to create this software component.  When creating
+packages, the developer expresses the package contents as a set of actions
+then saves those to a *package manifest* file.
+
+Actions look like this:
+
+.. parsed-literal::
+
+    *action_name* *attribute1*\=\ *value1* *attribute2*\=\ *value2* ...
+
+As a concrete example::
+
+    dir path=a/b/c group=sys mode=0755 owner=root
+
+The first field identifies this as a ``dir`` (or directory) action; the
+``name=value`` attributes describe the familiar properties of that
+directory.  In the cases where the action has data associated with it,
+such as a file, the action looks like this::
+
+    file 11dfc625cf4b266aaa9a77a73c23f5525220a0ef path=etc/release owner=root \
+        group=sys mode=0444 chash=099953b6a315dc44f33bca742619c636cdac3ed6 \
+        pkg.csize=139 pkg.size=189 variant.arch=i386
+
+Here the second attribute (without a ``name=`` prefix), called the
+payload, is the SHA-1 hash of the file.  This attribute can alternatively
+appear as a regular attribute with the name ``hash``; if both forms are
+present they must have the same value.
+
+Action metadata is freely extensible; additional attributes can be
+added to actions as desired.  Attribute names cannot include spaces,
+quotes, or equals signs (‘``=``’).  Attribute values can have all of those,
+although values with spaces must be enclosed in single or double quotes.  Single
+quotes need not be escaped inside of a double-quoted string, and vice
+versa, though a quote can be prefixed with a backslash (‘``\``’) so as not
+to terminate the quoted string.  Backslashes can be escaped with
+backslashes.  It is recommended that custom attributes use a reverse
+domain name or similar unique prefix to prevent accidental namespace
+overlap.
+
+Multiple attributes with the same name can be present and are
+treated as unordered lists.
+
+Note that manifests are largely created using programs; it is not
+expected that that developers produce complete manifests by hand, but
+rather create skeletons with the minimal non-redundant information, and
+have the rest filled in with tools such as |pkgmogrify| and |pkgdepend|.
+
+Most actions have key attributes; this attribute is what makes this
+action unique from all others in the image.  For file system
+objects, this is the path for that object.
+
+
+Types of Actions
+~~~~~~~~~~~~~~~~
+
+There are currently twelve action types in IPS.  The following
+sections describe each action type, and the attributes that
+define these actions.  The action types are detailed in the |pkg5| man
+page, and are repeated here for reference.
+
+Each section contains an example action, as it would appear in a manifest
+during package creation.  Other attributes might be automatically added
+to the action during publication.
+
+File Actions
+````````````
+     The ``file`` action is by far the most common action, and represents an
+     ‘ordinary file’. The file action references a payload, and has four
+     standard attributes:
+
+     path
+              The file system path where the file  is  installed.
+              This is a file action's key attribute.  These are relative
+              to the root of the image.
+
+     mode
+              The access permissions (in  numeric  form)  of  the
+              file. These are simple permissions only, not ACLs.
+
+     owner
+              The name of the user that owns the file.
+
+     group
+              The name of the group that owns the file.
+
+     The payload is a positional attribute  in  that  it  is  not
+     named. It is the first word after the action name. In a published
+     manifest, it is the SHA-1 hash of the file  contents.
+     If  present  in  a manifest that has yet to be published, it
+     represents the path where the  payload  can  be  found.  See
+     |pkgsend|.  The  ``hash``  attribute can be used instead of the
+     positional attribute, should the  value  include  an  equals
+     sign.  Both  can  be  used  in the same action. However, the
+     hashes must be identical.
+
+
+     Other attributes include:
+
+     preserve
+                 This specifies that the file's  contents  should
+                 not  be  overwritten  on upgrade if the contents
+                 are determined to have changed  since  the  file
+                 was  installed  or  last  upgraded.  On  initial
+                 installs, if an existing file is found, the file
+                 is salvaged (stored in ``/var/pkg/lost+found``).
+
+                 * If the value of ``preserve`` is ``renameold``, then  the
+                   existing  file  is  renamed  with  the extension
+                   ``.old``, and the new file is put in its place.
+
+                 * If the value of ``preserve`` is ``renamenew``, then  the
+                   existing file is left alone, and the new file is
+                   installed with the extension ``.new``.
+
+                 * If the value of ``preserve`` is ``legacy``,  then  this
+                   file   is  not  installed  for  initial  package
+                   installs. On  upgrades,  any  existing  file  is
+                   renamed with the extension ``.legacy``, and then the
+                   new file is put in its place.
+
+                 * If the value of ``preserve`` is ``true`` (or a value not
+                   listed  above,  such  as  ``strawberry``),  then the
+                   existing file is left alone, and the new file is
+                   not installed.  Other values with specific meanings might
+                   be added in future, so using ``true`` should be used if
+                   this functionality is required.
+
+     overlay
+                 This specifies whether the action  allows  other
+                 packages  to deliver a file at the same location
+                 or whether it delivers a file intended to  overlay
+                 another. This functionality is intended for
+                 use with configuration files that do not  participate
+                 in   any  self-assembly  (for  example,
+                 ``/etc/motd``) and that can be safely overwritten.
+
+                 * If ``overlay`` is not specified,  multiple  packages
+                   cannot deliver files to the same location.
+
+                 * If the value of ``overlay`` is  ``allow``,  one  other
+                   package is allowed to deliver a file to the same
+                   location. This value has no  effect  unless  the
+                   ``preserve`` attribute is also set.
+
+                 * If the  value  of  ``overlay``  is  ``true``,  the  file
+                   delivered  by  the  action  overwrites any other
+                   action that has specified ``allow``.
+
+                   Changes to  the installed  file are preserved based on the
+                   value of the  ``preserve``  attribute  of  the  overlaying
+                   file.  On  removal, the contents of the file are
+                   preserved if the action being overlaid is  still
+                   installed,  regardless  of  whether the ``preserve``
+                   attribute was specified.  Only  one  action  can
+                   overlay  another, and the ``mode``, ``owner``, and ``group``
+                   attributes must match.
+
+     original_name
+              This attribute is used to  handle  editable
+              files  moving  from  package  to package or
+              from place to place, or both. The form this
+              takes  is the name of the originating package,
+              followed by a colon and  the  original
+              path to the file. Any file being deleted is
+              recorded either with its package and  path,
+              or  with  the  value  of  the ``original_name``
+              attribute if specified. Any  editable file
+              being  installed that has the ``original_name``
+              attribute set uses the file of that name if
+              it is deleted as part of the same packaging
+              operation.
+
+              Note that once set, this attribute should never
+              change even if the package or file are repeatedly renamed;
+              this will permit upgrade to occur from all previous versions.
+
+     revert-tag
+              This attribute  is  used  to  tag  editable
+              files  that  should  be  reverted as a set.
+              Multiple ``revert-tag`` values  can  be  specified
+              The  file  reverts  to its manifest-defined
+              state when ``pkg revert``  is  invoked
+              with  any  of  those  tags  specified.  See
+              |pkg|.
+
+     Specific types of file can have additional attributes.  For ELF files,
+     the following attributes are recognized:
+
+     elfarch
+              The architecture of the ELF file.  This will is the output of
+              ``uname -p`` on the architecture for which the file is built.
+
+     elfbits
+              This is ``32`` or ``64``.
+
+     elfhash
+              This is the hash of the  ‘interesting’  ELF
+              sections  in  the  file. These are the sections
+              that are mapped into memory when the binary is loaded.
+
+              These are the only sections necessary to consider when
+              determining whether the executable behavior of two binaries
+              will differ.
+
+     An example ``file`` action is::
+
+         file path=usr/bin/pkg owner=root group=bin mode=0755
+
+
+Directory Actions
+`````````````````
+
+     The ``dir`` action is like the ``file`` action in that it represents
+     a  file system object, except that it represents a directory
+     instead of an ordinary file. The ``dir``  action  has  the  same
+     four standard attributes as the ``file`` action (``path``, ``owner``,
+     ``group`` and ``mode``), and ``path`` is the key attribute.
+
+     Directories are reference counted  in  IPS.  When  the  last
+     package  that  either  explicitly or implicitly references a
+     directory no longer does so, that directory is  removed.  If
+     that  directory  contains  unpackaged  file  system objects,
+     those items are moved into ``/var/pkg/lost+found``.
+
+     To move unpackaged contents into a new directory,  the  following
+     attribute might be useful:
+
+     salvage-from
+                     This names a directory of salvaged items.  A
+                     directory with such an attribute inherits on
+                     creation the salvaged directory contents  if
+                     they exist.
+
+     During installation, |pkg| will check that all instances of a given
+     directory action on the system have the same owner, group and mode
+     attributes, and will not install the action if conflicting actions
+     will exist on the system as a result of the operation.
+
+     An example of a ``dir`` action is::
+
+         dir  path=usr/share/lib owner=root group=sys mode=0755
+
+Link Actions
+````````````
+
+     The ``link`` action represents a symbolic link. The ``link`` action
+     has the following standard attributes:
+
+     path
+         The file system path where the symbolic link is
+         installed. This is a ``link`` action's key attribute.
+
+     target
+         The target of the symbolic link. The file system object
+         to which the link resolves.
+
+     The ``link`` action also takes attributes that allow for multiple
+     versions or implementations of a given piece of software to be
+     installed on the system at the same time.  Such links are *mediated*,
+     and allow administrators to easily toggle which links point to which
+     version or implementation as desired.  These *mediated links* are
+     discussed in *Chapter 10*.
+
+     An example of a ``link`` action is::
+
+         link path=usr/lib/libpython2.6.so target=libpython2.6.so.1.0
+
+Hardlink Actions
+````````````````
+
+     The ``hardlink`` action represents a hard link.  It has the same
+     attributes as the link action, and ``path`` is also its key attribute.
+
+     An example of a ``hardlink`` action is::
+
+         hardlink path=opt/myapplication/hardlink target=foo
+
+Set Actions
+```````````
+
+     The ``set`` action represents a package-level attribute, or metadata,
+     such as the package description.
+
+     The following attributes are recognized:
+
+     name
+              The name of the attribute.
+
+     value
+              The value given to the attribute.
+
+     The ``set`` action can deliver any metadata the package author chooses.
+     However, there are a number of well-defined attribute names that have
+     specific meaning to the packaging system.
+
+
+     pkg.fmri
+                           The name and version of the containing package.
+
+     info.classification
+                           One or more tokens that a |pkg5| client can use
+                           to classify the package.  The value should have
+                           a scheme (such as ``org.opensolaris.category.2008``
+                           or ``org.acm.class.1998``) and the actual
+                           classification, such as ``Applications/Games``,
+                           separated by a colon (‘``:``’).  The scheme is
+                           used by the |packagemanager| GUI.  A set of
+                           ``info.classification`` values is included in
+                           *Appendix A*.
+
+     pkg.summary
+                           A brief synopsis of the description.  This is
+                           output with ``pkg list -s`` at the end of each
+                           line, as well as in one line of the output of
+                           ``pkg info``, so it should be no longer than
+                           sixty characters.  It should describe *what* a
+                           package is, and should refrain from repeating
+                           the name or version of the package.
+
+     pkg.description
+                           A detailed description of the contents and
+                           functionality of the package, typically a
+                           paragraph or so in length.  It should describe
+                           *why* someone might want to install the package.
+
+     pkg.obsolete
+                           When ``true``, the package is marked obsolete.  An
+                           obsolete package can have no actions other than
+                           more ``set`` actions, and must not be marked renamed.
+                           Package obsoletion is covered in *Chapter 10*
+
+     pkg.renamed
+                           When ``true``, the package has been renamed.
+                           There must be one or more ``depend`` actions in
+                           the package as well which point to the package
+                           versions to which this package has been renamed.
+                           A package cannot be marked both renamed and
+                           obsolete, but otherwise can have any number of
+                           ``set`` actions.  Package renaming is covered in
+                           *Chapter 10*.
+
+     pkg.human-version
+                           The version scheme used by IPS is strict, and
+                           does not allow for letters or words in the
+                           ``pkg.fmri`` version field.  If there is a commonly
+                           used human-readable version available for a given
+                           package, that can be set here, and is displayed
+                           by IPS tools.  It does not get used as a basis for
+                           version comparison and cannot be used in place of
+                           the ``pkg.fmri`` version.
+
+     Some additional informational attributes, as well as some used by
+     Oracle Solaris are described in *Chapter 13*.
+
+     An example of a ``set`` action is::
+
+         set name=pkg.summary value="Image Packaging System"
+
+.. raw:: pdf
+
+    PageBreak
+
+Driver Actions
+``````````````
+
+     The driver action represents a  device  driver.  The  driver
+     action  does not reference a payload. The driver files themselves
+     must be installed as ``file`` actions.  The  following
+     attributes are recognized (see ``add_drv(1M)`` for more information):
+
+     name
+                    The name of the driver. This is usually,  but
+                    not  always, the file name of the driver
+                    binary.  This is the ``driver`` action's  key
+                    attribute.
+
+     alias
+                    This represents an alias for  the  driver.  A
+                    given  driver  can  have  more than one ``alias``
+                    attribute.  No special quoting rules are
+                    necessary.
+
+     class
+                    This represents a driver class.  A given
+                    driver can have more than one ``class`` attribute.
+
+     perms
+                    This represents the file system permissions
+                    for the driver's device nodes.
+
+     clone_perms
+                    This represents the file system permissions
+                    for the clone driver's minor nodes for this
+                    driver.
+
+     policy
+                    This specifies additional security policy for
+                    the device. A given driver can have more than
+                    one ``policy`` attribute, but no minor device
+                    specification can be present in more than one
+                    attribute.
+
+     privs
+                    This specifies privileges used by the driver.
+                    A given driver can have more than one ``privs``
+                    attribute.
+
+     devlink
+                    This specifies an entry in ``/etc/devlink.tab``.
+                    The value is the exact line to go into the
+                    file, with tabs denoted by ‘``\t``’. See
+                    ``devlinks(1M)`` for more information. A given
+                    driver can have more than one ``devlink``
+                    attribute.
+
+     An example of a driver action is::
+
+         driver name=vgatext \
+             alias=pciclass,000100 \
+             alias=pciclass,030000 \
+             alias=pciclass,030001 \
+             alias=pnpPNP,900 variant.arch=i386 variant.opensolaris.zone=global
+
+Depend Actions
+``````````````
+
+     The ``depend`` action represents an inter-package dependency.  A package
+     can depend on another package because the first requires functionality
+     in the second for the functionality in the first to work, or even to
+     install.  Dependencies are covered in more detail in *Chapter 6*.
+
+     The following attributes are recognized:
+
+     fmri
+           The FMRI representing the target of the dependency.  This is the
+           dependency action’s key attribute.  The FMRI value must not
+           include the publisher.  The  package  name  is assumed to be
+           complete (that is, rooted), even if it does not begin with a forward
+           slash (‘``/``’).
+           Dependencies of type ``require-any`` can have multiple ``fmri``
+           attributes.  A version is optional on the ``fmri`` value, though
+           for some types of dependencies, an FMRI with no version has no
+           meaning.
+
+           The FMRI value cannot use asterisks, and cannot use the
+           ``latest`` token for a version.
+
+     type
+           The type of the dependency.
+
+           * If the value is ``require``, then the target package
+             is required  and must have a version equal to
+             or greater than the version specified in the
+             ``fmri`` attribute.  If the version is not specified,
+             any version satisfies the dependency.  A
+             package cannot be installed if any of its
+             required dependencies cannot be satisfied.
+
+           * If the value is ``optional``, then the target, if present, must
+             be at the specified version level or greater.
+
+           * If the value is ``exclude``, then the containing package cannot
+             be installed if the target is present at the specified
+             version level or greater.  If no version is specified, the
+             target package cannot be installed concurrently with the
+             package specifying the dependency.
+
+           * If the value is ``incorporate``, then the dependency is
+             optional, but the version of the target package is
+             constrained.  See *Chapter 6* for a discussion of
+             constraints and freezing.
+
+           * If the value is ``require-any``, then any one of multiple target
+             packages as specified by multiple ``fmri`` attributes can satisfy
+             the dependency, following the same rules as the ``require``
+             dependency type.
+
+           * If the value is ``conditional``, the target is required
+             only if the package defined by the ``predicate`` attribute is present
+             on the system.
+
+           * If the value is ``origin``, the target must, if present,
+             be at the specified value or better on the image to be modified
+             prior to installation.  If the value of the ``root-image`` attribute
+             is ``true``, the target must be present on the image rooted at
+             ‘``/``’ in order to install this package.
+
+           * If the value is ``group``, the target is required unless the
+             package is on the image avoid list.  Note that obsolete packages
+             silently satisfy the ``group`` dependency.  See the ``avoid``
+             subcommand in the |pkg| man page.
+
+           * If the value is ``parent``, then the dependency is ignored if
+             the image is not a child image, such as a zone.  If the image
+             is a child image then the target is required to be present
+             in the parent image.  The version matching for a ``parent``
+             dependency is the same as that used for ``incorporate``
+             dependencies.
+
+     predicate
+           The FMRI representing the predicate for ``conditional``
+           dependencies.
+
+     root-image
+           Has an effect only for ``origin`` dependencies as mentioned above.
+
+     An example of a ``depend`` action is::
+
+         depend fmri=crypto/ca-certificates type=require
+
+
+License Actions
+```````````````
+
+    The ``license`` action represents a license or other informational
+    file associated with the package contents.  A package can deliver
+    licenses, disclaimers, or other guidance to the package installer
+    through the use of the license action.
+
+    The payload of the license action is delivered into the image
+    metadata directory related to the package, and should only contain
+    human-readable text data.  It should not contain HTML or any
+    other form of markup. Through attributes, license actions can
+    indicate to clients that the related payload must be displayed
+    and/or require acceptance of it.  The method of display and/or
+    acceptance is at the discretion of clients.
+
+
+    The following attributes are recognized:
+
+    license
+                    This attribute provides a meaningful description
+                    for the license to assist users in determining
+                    the contents without reading the license text
+                    itself.  Some example values include:
+
+                    * ABC Co. Copyright Notice
+                    * ABC Co. Custom License
+                    * Common Development and Distribution License 1.0 (CDDL)
+                    * GNU General Public License 2.0 (GPL)
+                    * GNU General Public License 2.0 (GPL) Only
+                    * MIT License
+                    * Mozilla Public License 1.1 (MPL)
+                    * Simplified BSD License
+
+                    Wherever possible, including the version of the
+                    license in the description is recommended as shown
+                    above. The license value must be unique within a package.
+    must-accept
+                    When ``true``, this license must be accepted by a
+                    user before the related package can be installed
+                    or updated.  Omission of this attribute is
+                    equivalent to ``false``.  The method of
+                    acceptance (interactive or configuration-based,
+                    for example) is at the discretion of clients.
+
+    must-display
+                    When ``true``, the action's payload must be displayed
+                    by clients during packaging operations.  Omission of
+                    this value is considered equivalent to ``false``.
+                    This attribute should not be used for copyright
+                    notices, only actual licenses or other material
+                    that must be displayed during operations.  The
+                    method of display is at the discretion of
+                    clients.
+
+    The ``license`` attribute is the key attribute for the license action.
+
+    An example of a ``license`` action is::
+
+        license license="Apache v2.0"
+
+Legacy Actions
+``````````````
+
+    The ``legacy`` action represents package data used by the legacy SVR4
+    packaging system.  The attributes associated with this action are
+    added into the legacy system’s databases so that the tools
+    querying those databases can operate as if the legacy package were
+    actually installed.  In particular, this should be sufficient to
+    convince the legacy system that the package named by the ``pkg``
+    attribute is installed on the system, so that the package can be used to
+    satisfy SVR4 dependencies.
+
+    The following attributes, named in accordance with the parameters in
+    |pkginfo|, are recognized:
+
+    category
+              The value for the CATEGORY parameter.  The default value
+              is ``system``.
+
+    desc
+              The value for the DESC parameter.
+
+    hotline
+              The value for the HOTLINE parameter.
+
+    name
+              The value for the NAME parameter.  The default value is
+              ‘``none provided``’.
+
+    pkg
+              The abbreviation for the package being installed.  The
+              default value is the name from the FMRI of the package.
+
+    vendor
+              The value for the VENDOR parameter.
+
+    version
+              The value for the VERSION parameter.  The default value is
+              the version from the FMRI of the package.
+
+    The ``pkg`` attribute is the key attribute for the legacy action.
+
+    An example of a  ``legacy`` action is::
+
+        legacy pkg=SUNWcsu arch=i386 category=system \
+            desc="core software for a specific instruction-set architecture" \
+            hotline="Please contact your local service provider" \
+            name="Core Solaris, (Usr)" vendor="Oracle Corporation" \
+            version=11.11,REV=2009.11.11 variant.arch=i386
+
+Signature Actions
+`````````````````
+    Signature actions are used as part of the support for package signing in
+    IPS.  They are covered in detail in *Chapter 11*.
+
+
+User Actions
+````````````
+
+     The user action defines a UNIX user as defined in ``/etc/passwd``,
+     ``/etc/shadow``, ``/etc/group``, and ``/etc/ftpd/ftpusers`` files.
+     Users defined with this action have entries added to the
+     appropriate files.
+
+     The following attributes are recognized:
+
+     username
+                    The unique name of the user.
+
+     password
+                    The encrypted password of the user.  The default
+                    value is ‘``*LK*``’.
+
+     uid
+                    The unique numeric ID of the user.  The default value
+                    is the first free value under 100.
+
+     group
+                    The name of the user's primary group.  This must be
+                    found in ``/etc/group``.
+
+     gcos-field
+                    The real name of the user, as represented in the GECOS
+                    field in ``/etc/passwd``.  The default value is the
+                    value of the ``username`` attribute.
+
+     home-dir
+                    The user's home directory.  The default value is
+                    ‘``/``’.
+
+     login-shell
+                    The user's default shell.  The default value is
+                    empty.
+
+     group-list
+                    Secondary groups to which the  user  belongs.
+                    See ``group(4)``.
+
+     ftpuser
+                    Can be set to ``true`` or ``false``.  The default
+                    value of ``true`` indicates that the user is
+                    permitted to login via FTP. See ``ftpusers(4)``.
+
+     lastchg
+                    The number of days between January  1,  1970,
+                    and the date that the password was last modified.
+                    The default value is empty.
+
+     min
+                    The minimum number of days  required  between
+                    password changes. This field must be set to 0
+                    or above to enable  password  aging.  The default
+                    value is empty.
+
+     max
+                    The maximum number of days  the  password  is
+                    valid.  The default value is empty.  See ``shadow(4)``.
+
+     warn
+                    The number of days  before  password  expires
+                    that the user is warned.
+
+     inactive
+                    The number of days of inactivity allowed  for
+                    that  user.  This is counted on a per-machine
+                    basis. The information about the  last  login
+                    is taken from the machine's lastlog file.
+
+     expire
+                    An absolute date expressed as the  number  of
+                    days  since the UNIX Epoch (January 1, 1970).
+                    When this number is reached, the login can no
+                    longer  be used. For example, an ``expire`` value
+                    of 13514  specifies  a  login  expiration  of
+                    January 1, 2007.
+
+     flag
+                    Set to empty.
+
+     For more information on the values of these attributes, see
+     the ``shadow(4)`` man page.
+
+     A example of a user action is::
+
+        user gcos-field="pkg(5) server UID" group=pkg5srv uid=97 username=pkg5srv
+
+
+Group Actions
+`````````````
+
+     The  group  action  defines  a  UNIX  group  as  defined  in
+     ``group(4)``.  No support is present for group passwords. Groups
+     defined with this action initially have no user list.  Users
+     can  be added with the user action. The following attributes
+     are recognized:
+
+     groupname
+                  The value for the name of the group.
+
+     gid
+                  The group's unique numeric id.  The default
+                  value is the first free group under 100.
+
+     An example of a group action is::
+
+         group groupname=pkg5srv gid=97
+
+Repository
+~~~~~~~~~~
+
+A software repository contains packages for one or more publishers.
+Repositories can be configured for access in a variety of different
+ways: HTTP, HTTPS, file (on local storage or via NFS or SMB) and as a
+self-contained package archive file, usually with the ``.p5p`` extension.
+
+Package archives allow for convenient distribution of IPS packages,
+and are discussed further in *Chapter 4*.
+
+A repository accessed via HTTP or HTTPS has a server process (|pkg.depotd|)
+associated with it; in the case of file repositories, the repository
+software runs as part of the accessing client.
+
+Repositories are created with the |pkgrepo| command, and package archives
+are created with the |pkgrecv| command.
+

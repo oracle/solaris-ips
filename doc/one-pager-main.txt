@@ -1,0 +1,427 @@
+Template Version: @(#)onepager.txt 1.31 07/08/08 SMI
+
+This information is Copyright 2008 Sun Microsystems
+
+1. Introduction
+   1.1. Project/Component Working Name:
+
+        pkg(5): image packaging system
+
+   1.2. Name of Document Author/Supplier:
+
+        Stephen Hahn, Sun Microsystems,
+          on behalf of the pkg(5) project team
+
+   1.3. Date of This Document:
+
+        03/10/2008
+
+   1.4. Name of Major Document Customer(s)/Consumer(s):
+        1.4.1. The Community you expect to review your project:
+
+        Install and Packaging CG
+
+        1.4.2. The ARC(s) you expect to review your project:
+
+        PSARC
+
+   1.5. Email Aliases:
+        1.5.2. Responsible Engineer:
+
+        stephen.hahn@sun.com
+
+        1.5.4. Interest List:
+
+        pkg-discuss@opensolaris.org
+
+2. Project Summary
+   2.1. Project Description:
+
+        The image packaging system, pkg(5), is a portable software
+        packaging and delivery system intended to allow efficient,
+        observable, and controllable transitions between known
+        configurations of software content.  pkg(5) will subsume the
+        functionality of the of the packaging and patching utilities
+        included in historical Solaris releases.  A primary goal for
+        this project is to improve and extend the usability and
+        functionality of our packaging system.
+
+        The project includes a set of recommended changes to the
+        existing software groupings--the package definitions--in an
+        attempt to produce a more rational and flexible organization of
+        the current components.
+
+   2.2. Risks and Assumptions:
+
+        We intend to preserve the legacy packaging system functionality
+        to support compatibility of existing packages.  We believe that,
+        if migration and compatibility practices are made available, the
+        provision of a new packaging mechanism will be followed by
+        adoption.
+
+        We strongly believe that the refactoring and renaming of the
+        existing package graph is not achievable with reasonable cost
+        and duration with the existing packaging/patching/installation
+        software.  We also believe compatibility with the existing graph
+        can be preserved, to support the earlier assumption about
+        preserving legacy package operations.
+
+        We also believe that, for the majority of the operating system's
+        development and deployment needs, binary software delivery is
+        preferred over source-based build delivery.
+
+3. Business Summary
+   3.1. Problem Area:
+
+        Deficits in the current packaging, patching, and installation
+        tool set affect potentially all parties interacting with the
+        historical Solaris releases and successors.  Such deficits
+        include:
+
+        - lack of support for dependency-based retrieval during package
+          installation, from one or more network repositories,
+
+        - coarse and incorrect dependencies, limiting use for
+          construction of appliances or other specific-purpose systems,
+
+        - lack of versioning and control over change,
+
+        - forced interactivity,
+
+        - integration with virtualized systems, particularly patching
+          performance,
+
+        - reliance of the installer on hidden information, limiting
+          participation in system upgrade scenarios,
+
+        - lack of safety, specifically around package completeness and
+          alternate package contexts,
+
+        - high developer costs around package and patch creation and
+          maintenance,
+
+        - lack of support for unprivileged package and patch
+          installation,
+
+        - lack of awareness of ZFS and smf(5),
+
+        - late or no correctness checking, and
+
+        - minimal ease of use.
+
+        Additionally, the absence of a portable and efficient
+        cross-platform software delivery system places additional costs
+        upon teams that must deliver software for multiple platforms,
+        such as enterprise middleware vendors.
+
+   3.2. Market/Requester:
+
+        Distribution providers and software content providers have
+        requested substantial changes to the legacy packaging system.
+        The requested changes focus on reducing maintenance costs and
+        increasing development efficiencies.
+
+        Various customers of the historical Solaris release have asked
+        for substantial capabilities not present in the legacy packaging
+        system.
+
+        Finally, multiplatform packaging capabilities are of interest to
+        a number of software content providers.
+
+   3.3. Business Justification:
+
+        See 3.1 and 3.2.
+
+   3.4. Competitive Analysis:
+
+        Every major operating system vendor--and most upcoming new
+        vendors--offers a form of networked software delivery and
+        updates.  Well known companies with such technologies are
+        Microsoft, Red Hat, Apple, and Canonical; new companies include
+        rPath.  Non-profit entities with equivalent technology include
+        the Debian Project.
+
+   3.5. Opportunity Window/Exposure:
+
+        In order for OpenSolaris-based systems to remain competitive in
+        software delivery functionality, Solaris 10 should be the last
+        Minor release with a packaging system that fails to meet the
+        needs stated in 3.1 and 3.2.
+
+   3.6. How will you know when you are done?:
+
+        In terms of basic capabilities, we can examine each component.
+        Project completion on the retrieval side can be measured by
+        achieving the capability of managing mixed content from a
+        variety of publishers, with potentially distinct entitlement
+        regimes.  On the publication side, completion of the initial
+        project is reached once the goals around dependency and
+        correctness checking (and failure handling) are met for both the
+        server and the publication client.  Finally, ease of use (or
+        familiarity) must match or exceed that of other leading
+        packaging systems.
+
+        In terms of the product as a whole, we must be able to upgrade,
+        with some statement about limitations on fidelity, a system
+        installed using the legacy packaging components such that it can
+        be further updated using the image packaging system.
+
+4. Technical Description:
+    4.1. Details:
+
+        pkg(5) is a network-oriented binary packaging system.  Although
+        it will have on-disk representations for versioned packages, the
+        primary expected use for installation of software will be
+        between an intelligent client and one or more relatively simple
+        servers.
+
+        The project defines a client-server publication mechanism.  The
+        publication client offers up transactions on packages.  The
+        server evaluates transactions from the publication client.
+        Transations that are deemed to be complete and/or safe by the
+        server are then made available to the retrieval client.
+
+        The initial transport will be HTTP and HTTPS, protocols around
+        which most sites have developed mature access policies.  Support
+        for most common HTTP/HTTPS load-balancing, redirection, and
+        proxying techniques will be implemented, making the system easy
+        to deploy in a variety of scenarios.  Additional transports may
+        be investigated during the course of the project or as future
+        work.
+
+        The project does not define a default mechanism for building
+        software as part of the packaging process.  The project team
+        believes strongly that software builds are a separate function,
+        and probably also agrees that different kinds of software may
+        require different build techniques.
+
+        More controversially, the project, in an attempt to increase
+        system safety and to reduce developer burden, removes the notion
+        of arbitrary context scripting from packaging.  (This removal
+        means that the legacy packaging system must remain on the system
+        for long-term compatibility.)  Empirical evidence from the
+        prototype phase has so far borne out this decision.
+
+    4.2. Bug/RFE Number(s):
+
+        As an example of the kinds of defects and RFEs intended to be
+        resolved by this project, we present the following selection of
+        bug IDs from the past 15 years:
+
+1105830 pkgadd and pkgrm should be able to handle dependency ordering
+1149607 Package dependencies hidden within a cluster.
+1165888 RFE: allow non-root users to install software using the package mechanis
+1184238 patches should be fully managed by package utilites
+1208431 pkgrm with no arguments defaults to all
+1249015 pkgadd requires root access
+4202113 pkginfo command is ridiculously slow
+4240078 pkgadd should not allow an intel package to install on Sparc and visa-ve
+4385316 RFE Support pkgadd of clusters
+4480153 Improvements desired for pkg management
+4762470 pkgadd: soft dependencies
+4795539 pkgadd should check dependencies of all packages provided on the command
+4847723 rem_drv in preremove scripts should have consistent usage model
+4939605 grep-friendly pkgchk -l variant desired
+5012345 request for tool to list package dependencies
+6208580 pkgadd/pkgrm should be smarter about dependancies
+6246595 Sun's package management needs improvement
+6491381 Create audit log for packaging and patch commads
+
+        In contrast,
+
+1181241 wants to split large binary across multiple floppies with pkgmk
+
+        will not be addressed by this proposal.
+
+    4.3. In Scope:
+
+        Package-service delivery and containment relationships.
+
+        Package installation behaviour in virtualized environments.
+
+    4.4. Out of Scope:
+
+        Specific operational scenarios for repositories operated by Sun
+        Microsystems.
+
+        Provision of a GUI/BUI for package management.
+
+        Specific package contents and manifests.
+
+    4.5. Interfaces:
+
+        pkg(5) will present a substantial set of new and modified interfaces
+        to the core system.  In particular, documented definitions of
+
+        - retrieval client CLI,
+
+        - publication client CLI,
+
+        - administrative and server CLIs,
+
+        - client metadata representations,
+
+        - server metadata representations,
+
+        - retrieval and publication protocol operations,
+
+        - a dynamic language API to access packaging functions, 
+
+        - an on-disk package format,
+
+        - package metadata conventions,
+
+        - available package constituents ("actions"), and
+
+        - package naming and versioning conventions,
+
+        will be presented as interfaces introduced by this project.
+
+        It is possible that some of the nominally private interfaces
+        associated with legacy packaging will be affected; at a minimum,
+        files previously delivered via legacy packaging will no longer
+        be tracked by the legacy system.  This outcome could result in a
+        correctly functioning system that presents very differently in
+        terms of file-package membership when interrogated using the
+        legacy packaging API.
+
+        Various components of the project will be introduced at each
+        stability and/or commitment level.  The components are being
+        engineered such that the public interfaces can be evolved
+        compatibly, once the initial development is complete.  (In fact,
+        the prototype is expected to support this evolution during the
+        development phase.)
+
+        The components are currently implemented in Python
+        (PSARC/2005/532, PSARC/2005/555, PSARC/2006/666).
+
+    4.6. Doc Impact:
+
+        The project expects to provide reference manual pages for each
+        of the groups of interface identified above.  Furthermore, the
+        project expects to provide a Developer's Guide to replace the
+        current Application Packager's Guide.
+
+    4.7. Admin/Config Impact:
+
+        Substantial new capabilities in software installation will
+        become available.
+
+        A related project to produce a package manipulation GUI is being
+        pursued.
+
+    4.8. HA Impact:
+
+        None known; dependent on specific impacts of legacy packaging on
+        these capabilities.
+
+    4.9. I18N/L10N Impact:
+
+        Commands will require localization, as will any publically
+        committed library or equivalent APIs.
+
+    4.10. Packaging & Delivery:
+
+        All package, cluster, and metacluster boundaries will be
+        examined in the course of the project.
+
+        The primary upgrade mechanism for operating systems using pkg(5)
+        will be achieved via pkg(5) components; this mechanism is
+        expected to replace the current standalone upgrade and
+        LiveUpgrade paths.  The replacement is expected, in concert with
+        the SnapUpgrade project, to present capabilities that equal or
+        exceed those of LiveUpgrade.
+
+    4.11. Security Impact:
+
+        In the current implementation, the protocol is built atop access
+        to HTTP and/or HTTPS.  Accordingly, the server side will
+        potentially listen on ports associated with those services.
+
+        The server and client side will require access to key and
+        certificate management interfaces.
+
+        A mechanism for signing repository catalogs and package
+        manifests will be a part of the publication interface.  A
+        corresponding mechanism for verifying signed catalogs and
+        manifests will be implemented for the installation client.
+        These mechanisms will apply to both packages in a network
+        package repository and packages in their on-disk representation.
+        
+    4.12. Dependencies:
+
+        The project is dependent on SnapUpgrade for coherent collection,
+        organization, and activation of filesystem snapshots.
+
+5. Reference Documents:
+        Project site:
+
+        http://opensolaris.org/os/project/pkg/
+
+        Project team members have written a number of informal essays on
+        various goals--problems to solve, outcomes to avoid, hopes to
+        realize--on aspects of the project:
+
+        - General observations:
+
+          http://blogs.sun.com/sch/entry/observations_on_packaging
+
+        - On testability and complexity costs with the current patching
+          methods:
+
+          http://blogs.sun.com/barts/entry/rethinking_patching
+
+        - Eliminating scripting in a packaging system
+
+          http://blogs.sun.com/sch/entry/pkg_1_a_no_scripting
+
+        - Keep software builds separate from software delivery:
+
+          http://blogs.sun.com/sch/entry/pkg_leaving_the_build_system
+
+        - Keeping critical metadata back the packaging system, rather
+          than in the installer:
+
+          http://blogs.sun.com/sch/entry/pkg_no_more_installer_magic
+
+        Related efforts in the Caiman project:
+
+        - Snap Upgrade,
+          http://opensolaris.org/os/project/caiman/Snap_Upgrade/
+
+        - Distribution Constructor,
+          http://opensolaris.org/os/project/caiman/Constructor/
+
+6. Resources and Schedule:
+   6.1. Projected Availability:
+
+        2008
+
+   6.2. Cost of Effort:
+
+        Unable to estimate at present time.
+
+   6.4. Product Approval Committee requested information:
+        6.4.1. Consolidation or Component Name:
+
+        ON
+
+   6.5. ARC review type:
+
+        Standard.
+
+   6.6. ARC Exposure: open
+       6.6.1. Rationale: Part of OpenSolaris
+
+7. Prototype Availability:
+
+   7.1. Prototype Availability:
+
+        Prototype exit criteria are:  ability to support multiple transports,
+        some access control capability, constrained dependency support,
+        bulk of OpenSolaris-specific actions.
+
+   7.2. Prototype Cost:
+
+        Unable to estimate.
+

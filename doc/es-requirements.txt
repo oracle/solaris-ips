@@ -1,0 +1,38 @@
+
+pkg
+ENTERPRISE SYSTEM REQUIREMENTS
+
+1.  High level requirements.
+
+In no particular order.
+
+- multi-install  Some packages must be able to be installed multiple
+times (in separate locations) on the filesystem.
+
+- non-root install
+
+- multi-platform  Includes Windows.
+
+2.  Initial assessment.
+
+Multi-install and non-root install are handled by the user image
+type, which allows a per-user install with a separate pkg client cache.
+The user image is defined by an image configuration specifying its type,
+its root directory, and its parent image (for satisfying non-relocatable
+packages).
+
+Question for ES folks: does "the system" need to (or want to) know about
+non-root installs in order to be able to patch / upgrade them along with
+normal installs (or send out reminders to do so), or will non-root installs
+be completely up to the user to manage?  I can see a site policy that
+requires security patches even for non-root installs; this would require
+such installations to register with the system so they can be found.
+
+	Meeting of 07/04/05 suggested that ES does not consider this as
+	a requirement.  It might be a best practice for the user to
+	register each user image with an update service (privileged as
+	the user, and not necessarily global).
+
+Not sure how to proceed on the Windows requirement.  Most of the current
+design is portable across POSIX/ELF systems.
+

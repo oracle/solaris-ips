@@ -1,0 +1,5930 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+#
+msgid ""
+msgstr ""
+       "Project-Id-Version: Package Manager\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2010-01-15 08:56+0900\n"
+       "PO-Revision-Date: 2010-01-20 20:31+0100\n"
+       "Last-Translator: Kristyna Kitzbergerova\n"
+       "Language-Team: Czech language team <i18n-discuss@opensolaris.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
+       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. The full usage message isn't desired.
+#: ../client.py:138
+msgid "Try `pkg --help or -?' for more information."
+msgstr "Pro více informací, zkuste `pkg --help nebo -?'"
+
+#: ../client.py:141
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-Hafnsuv] [--no-refresh] [package...]\n"
+"        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [publisher ...]\n"
+"        pkg version\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-alprI] [-s server] query\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
+"            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
+"            [--variant <variant_spec>=<instance>] \n"
+"            [--facet <facet_spec>=[True,False]]\n"
+"            (-p|--publisher) name=uri dir\n"
+"        pkg change-variant [-nvq] [--be-name name] "
+"<variant_spec>=<instance>\n"
+"            [<variant_spec>=<instance> ...]\n"
+"        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|"
+"None] ...\n"
+"        pkg variant -H [<variant_spec>]\n"
+"        pkg facet -H [<facet_spec>]\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-g origin_to_add | --add-origin=origin_to_add]\n"
+"            [-G origin_to_remove | --remove-origin=origin_to_remove]\n"
+"            [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+"            [--non-sticky] [--sticky] [--search-after=publisher]\n"
+"            [--search-before=publisher] publisher\n"
+"        pkg unset-publisher publisher ...\n"
+"        pkg publisher [-HPn] [publisher ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Použití:\n"
+       "        pkg [možnosti] příkaz [možnosti_příkazu] [operandy]\n"
+       "\n"
+       "Základní podpříkazy:\n"
+       "        pkg install [-nvq] [--no-refresh] [--no-index] balíček...\n"
+       "        pkg uninstall [-nrvq] [--no-index] balíček...\n"
+       "        pkg list [-Hafnsuv] [--no-refresh] [balíček...]\n"
+       "        pkg update [-fnvq] [--be-name jméno] [--no-refresh] [--no-"
+       "index]\n"
+       "        pkg refresh [--full] [vydavatel ...]\n"
+       "        pkg version\n"
+       "\n"
+       "Pokročilé podpříkazy:\n"
+       "        pkg info [-lr] [--license] [pkg_fmri_vzor ...]\n"
+       "        pkg search [-alprI] [-s server] dotaz\n"
+       "        pkg verify [-Hqv] [pkg_fmri_vzor ...]\n"
+       "        pkg fix [pkg_fmri_vzor ...]\n"
+       "        pkg contents [-Hmr] [-a attribute=vzor ...] [-o attribute ...]\n"
+       "            [-s klíč_seřazení] [-t typ_akce ... ] [pkg_fmri_vzor ...]\n"
+       "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+       "zone]\n"
+       "            [-k ssl_klíč] [-c ssl_cert] [--no-refresh]\n"
+       "            [--variant <variant_spec>=<instance>] \n"
+       "            [--facet <facet_spec>=[True,False]]\n"
+       "            (-p|--publisher) name=uri adr\n"
+       "        pkg change-variant [-nvq] [--be-name jméno] "
+       "<variant_spec>=<instance>\n"
+       "            [<variant_spec>=<instance> ...]\n"
+       "        pkg change-facet -nvq [--be-name jméno] <facet_spec>=[True|False|"
+       "None] ...\n"
+       "        pkg variant -H [<variant_spec>]\n"
+       "        pkg facet -H [<facet_spec>]\n"
+       "        pkg set-property prop_jméno prop_hodnota\n"
+       "        pkg unset-property prop_jméno ...\n"
+       "        pkg property [-H] [prop_jméno ...]\n"
+       "\n"
+       "        pkg set-publisher [-Ped] [-k ssl_klíč] [-c ssl_cert]\n"
+       "            [-g zdroj_k_přidání | --add-origin=zdroj_k_přidání]\n"
+       "            [-G zdroj_k_odstranění | --remove-origin=zdroj_k_odstranění]\n"
+       "            [-m mirror_k_přidání | --add-mirror=mirror_k_přidání]\n"
+       "            [-M mirror_k_odstranění | --remove-mirror=mirror_k_odstranění]\n"
+       "            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+       "            [--non-sticky] [--sticky] [--search-after=vydavatel]\n"
+       "            [--search-before=publisher] vydavatel\n"
+       "        pkg unset-publisher vydavatel ...\n"
+       "        pkg publisher [-HPn] [vydavatel ...]\n"
+       "        pkg history [-Hl]\n"
+       "        pkg purge-history\n"
+       "        pkg rebuild-index\n"
+       "\n"
+       "Možnosti:\n"
+       "        -R adresář\n"
+       "        --help nebo -?\n"
+       "\n"
+       "Prostředí:\n"
+       "        PKG_IMAGE"
+
+#: ../client.py:262
+msgid "-f may only be used in combination with -a"
+msgstr "-f je možno použít pouze v kombinaci s -a"
+
+#: ../client.py:281
+#, python-format
+msgid "%(opts)s may not be used with %(opt)s"
+msgstr "%(opts)s nelze použít spolu s %(opt)s"
+
+#: ../client.py:285
+msgid "-s and -v may not be combined"
+msgstr "-s a -v se nemohou kombinovat"
+
+#: ../client.py:383 ../client.py:439
+msgid "installed"
+msgstr "nainstalované"
+
+#: ../client.py:385 ../client.py:435
+msgid "known"
+msgstr "známé"
+
+#: ../client.py:405 ../client.py:1548 ../client.py:1946
+msgid "no packages installed"
+msgstr "žádné balíčky nejsou nainstalovány"
+
+#: ../client.py:411
+msgid "No specified packages have newer versions available."
+msgstr "Žádné z uvedených balíčků nemají k dispozici novější verze."
+
+#: ../client.py:414
+msgid "No installed packages have newer versions available."
+msgstr "Žádné z nainstalovaných balíčků nemají k dispozici novějšíverze."
+
+#: ../client.py:437
+msgid "known or installed"
+msgstr "známé nebo nainstalované"
+
+#: ../client.py:441
+#, python-format
+msgid "no packages matching '%(pattern)s' %(state)s"
+msgstr "žádný balíček neopovídá '%(pattern)s' %(state)s"
+
+#: ../client.py:495
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "Vytvořen snímek ZFS: %s"
+
+#: ../client.py:506
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be repaired: "
+msgstr ""
+       "Následující balíčky požadují, aby byla akceptována jejich licence před tím, než budou opraveny: "
+
+#: ../client.py:510 ../client.py:684
+msgid ""
+"To indicate that you agree to and accept the terms of the licenses of the "
+"packages listed above, use the --accept option.  To display all of the "
+"related licenses, use the --licenses option."
+msgstr ""
+       "Pro naznačení, že souhlasíte a přijímáte licenční podmínky balíčků na seznamu výše, použijte možnost --accept. Pro zobrazení všech licencí, použijte možnost --licenses."
+
+#: ../client.py:517
+msgid ""
+"Requested \"fix\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Požadovaná operace \"fix\" bude mít za následek, že soubory nebudou moci být měneny"
+       "v live obraze disku.\n"
+       "Prosím, zkuste tuto operaci na jiném bootovacím prostředí."
+
+#: ../client.py:549 ../client.py:1016 ../client.py:1092 ../client.py:1156
+msgid "-v and -q may not be combined"
+msgstr "-v a -q se nemohou kombinovat"
+
+#: ../client.py:602
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+       "pkg: žádné balíčky odpovídající Vámi zadanému vzoru\n"
+       "nejsou na Vašem systému nainstalovány.\n"
+
+#: ../client.py:612
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+       "\n"
+       "Všechny ostatní vzory odpovídají nainstalovaným balíčkům. %s"
+
+#: ../client.py:650 ../modules/client/image.py:865
+#, python-format
+msgid "Package: %s"
+msgstr "Balíček: %s"
+
+#: ../client.py:651 ../modules/client/api_errors.py:129
+#: ../modules/client/image.py:867
+#, python-format
+msgid "License: %s\n"
+msgstr "Licence: %s\n"
+
+#: ../client.py:680
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be installed or updated: "
+msgstr ""
+       "Následující balíčky požadují, aby byla akceptována jejich licence před tím, než budou naistalovány nebo aktualizovány. "
+
+#: ../client.py:692
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened while preparing for %s:"
+msgstr ""
+       "\n"
+       "Vyskytla se neočekávaná chyba při přípravě %s:"
+
+#: ../client.py:701
+#, python-format
+msgid "%s failed: %s"
+msgstr "%s selhalo: %s"
+
+#: ../client.py:704
+#, python-format
+msgid "%s cannot be done on live image"
+msgstr "%s nemůže být provedeno na live obrazu disku"
+
+#: ../client.py:707
+#, python-format
+msgid ""
+"Requested \"%s\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Požadovaná operace \"%s\" bude mít za následek, že soubory nebudou moci být měneny"
+       "v live obraze disku.\n"
+       "Prosím, zkuste tuto operaci na jiném bootovacím prostředí."
+
+#: ../client.py:739 ../client.py:743
+#, python-format
+msgid "An unexpected error happened during %s: %s"
+msgstr "Vyskytla se neočekávaná chyba během %s: %s"
+
+#: ../client.py:755 ../client.py:764
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "Žádný obraz nemá kořen v '%s'"
+
+#: ../client.py:767
+#, python-format
+msgid ""
+"%s failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "%s selhalo (kromě katalogu):\n"
+       "%s"
+
+#: ../client.py:770
+#, python-format
+msgid ""
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
+"SUNWipkg' and then retry the %s."
+msgstr ""
+       "VAROVÁNÍ: pkg(7) se zdá být zastaralý a měl by být aktualizován před \n "
+       "spuštěním %s. Prosím, aktualizujte pkg(7) pomocí příkazu 'pfexec pkg install\n "
+       "SUNWipkg' a poté spusťe  %s znovu. "
+
+#: ../client.py:777
+#, python-format
+msgid "Cannot remove '%s' due to the following packages that depend on it:"
+msgstr "Nelze odstranit  '%s' kvůli následujím balíčkům, které na něm závisí:"
+
+#: ../client.py:832 ../client.py:913
+#, python-format
+msgid "%s: -v and -q may not be combined"
+msgstr "%s: -v a -q nemohou být kombinovány"
+
+#: ../client.py:835
+#, python-format
+msgid "%s: no variants specified"
+msgstr "%s: žádné varianty nebyly aktualizovány"
+
+#: ../client.py:841
+#, python-format
+msgid "%s: variants must to be of the form '<name>=<value>'."
+msgstr "%s: varianty musí být ve formátu  '<jméno>=<hodnota>'."
+
+#: ../client.py:851
+#, python-format
+msgid "%s: duplicate variant specified: %s"
+msgstr "%s: definovány duplicitní varianty: %s"
+
+#: ../client.py:869 ../client.py:1111
+msgid "No updates necessary for this image."
+msgstr "Aktualizace není nezbytně nutná pro tento obraz."
+
+#: ../client.py:916
+#, python-format
+msgid "%s: no facets specified"
+msgstr "%s: nespecifikovány žádné další aspekty"
+
+#: ../client.py:929
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
+msgstr "%s: aspekty musí být ve formě 'facet....=[True|False|None]'"
+
+#: ../client.py:938
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
+msgstr "%s: aspekty musí být ve formě 'facet....=[True|False|None]'"
+
+#: ../client.py:962
+msgid "Facet change has no effect on image"
+msgstr "Změna aspektů nemá vliv na obraz"
+
+#: ../client.py:1019 ../client.py:2962
+#, python-format
+msgid "command does not take operands ('%s')"
+msgstr "příkaz nemá tento operand ('%s')"
+
+#: ../client.py:1037
+msgid "No updates available for this image."
+msgstr "Nejsou dostupné aktualizace pro tento obraz."
+
+#: ../client.py:1054
+msgid "NOTE: Please review release notes posted at:\n"
+msgstr "POZNÁMKA: Prosím prohlédněte si poznámky k vydání na:\n"
+
+#: ../client.py:1089 ../client.py:1153
+msgid "at least one package name required"
+msgstr "je požadováno alespoň jedno jméno balíčku"
+
+#: ../client.py:1262
+#, python-format
+msgid ""
+"The server returned a malformed result.\n"
+"The problematic structure:%r"
+msgstr ""
+       "Server vrátil poškozený výsledek.\n"
+       "Problematická struktura:%r"
+
+#: ../client.py:1268
+#, python-format
+msgid ""
+"The server returned an invalid action.\n"
+"%s"
+msgstr ""
+       "Server vrátil neplatnou akci. \n "
+       "%s"
+
+#: ../client.py:1324
+#, python-format
+msgid "%s is not a valid server URL."
+msgstr "%s je neplatná URL serveru."
+
+#: ../client.py:1336
+msgid "at least one search term must be provided"
+msgstr "musí být uveden alespoň jeden výraz, který se má vyhledat"
+
+#: ../client.py:1347
+#, python-format
+msgid "action level options ('%s') to -o cannot be used with the -p option"
+msgstr "možnost -o na úrovni ('%s') nemůže být použita s možností -p"
+
+#: ../client.py:1399
+#, python-format
+msgid "The server returned a malformed result:%r"
+msgstr "Server vrátil poškozený výsledek.%r"
+
+#: ../client.py:1410
+msgid ""
+"action level options to -o cannot be used with the queries that return "
+"packages"
+msgstr ""
+       "možnost -o na úrovni nemůže být použita s dotazy, které vrací balíčky"
+
+#: ../client.py:1467 ../client.py:1477
+msgid ""
+"The search index appears corrupted.  Please rebuild the index with 'pkg "
+"rebuild-index'."
+msgstr ""
+       "Index hledání se zdá být poškozený.  Prosím obnovte index s 'pkg "
+       "rebuild-index'."
+
+#: ../client.py:1511 ../client.py:1908
+msgid "-l and -r may not be combined"
+msgstr "-l a -r nemohou být kombinovány"
+
+#: ../client.py:1514
+msgid "must request remote info for specific packages"
+msgstr "vyžaduje stažení vzdálených informací pro specifikovaný balíček"
+
+#: ../client.py:1566
+msgid "Obsolete"
+msgstr "Zastaralé"
+
+#: ../client.py:1568
+msgid "Renamed"
+msgstr "Přejmenováno"
+
+#: ../client.py:1576 ../packagemanager.py:1694 ../packagemanager.py:3163
+msgid "Installed"
+msgstr "Nainstalováno"
+
+#: ../client.py:1578 ../packagemanager.py:3165
+msgid "Not installed"
+msgstr "Nenainstalováno"
+
+#: ../client.py:1580
+msgid "          Name:"
+msgstr "         Jméno:"
+
+#: ../client.py:1582
+msgid "       Summary:"
+msgstr "       Shrnutí:"
+
+#: ../client.py:1584
+msgid "   Description:"
+msgstr "         Popis:"
+
+#: ../client.py:1594
+msgid "      Category:"
+msgstr "     Kategorie:"
+
+#: ../client.py:1601
+msgid "         State:"
+msgstr "          Stav:"
+
+#: ../client.py:1604
+msgid "    Renamed to:"
+msgstr "    Přejmenováno na:"
+
+#. XXX even more info on the publisher would be nice?
+#: ../client.py:1609
+msgid "     Publisher:"
+msgstr "     Vydavatel:"
+
+#: ../client.py:1610
+msgid "       Version:"
+msgstr "         Verze:"
+
+#: ../client.py:1611
+msgid " Build Release:"
+msgstr "  Verze vydání:"
+
+#: ../client.py:1612
+msgid "        Branch:"
+msgstr "       Odvětví:"
+
+#: ../client.py:1613
+msgid "Packaging Date:"
+msgstr "Datum vytvoření:"
+
+#: ../client.py:1614
+msgid "          Size:"
+msgstr "      Velikost:"
+
+#: ../client.py:1615
+msgid "          FMRI:"
+msgstr "          FMRI:"
+
+#: ../client.py:1623
+msgid ""
+"pkg: info: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: info: žádný nainstalovaný balíček neodpovídá hledanému výrazu.\n"
+       "Zkuste požadavek blíže specifikovat dotazem na vzdálený server pomocí volby -r:  "
+
+#: ../client.py:1627
+msgid ""
+"pkg: info: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: info: žádný balíček neodpovídá hledanému výrazu v katalogu \n"
+       "Zkuste pozměnit hledaný výraz nebo obnovit katalog:"
+
+#: ../client.py:1643 ../modules/client/api_errors.py:278
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s' odpovídá více balíčkům"
+
+#: ../client.py:1649
+msgid "no license information could be found for the following packages:"
+msgstr "žádné licenční informace nemohou být nalezeny pro následující balíčky:"
+
+#: ../client.py:1865
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "Neplatný atribut '%s'"
+
+#: ../client.py:1911
+msgid "contents: must request remote contents for specific packages"
+msgstr "obsah: vyžaduje stažení obsahu pro specifikovaný balíček ze vzdáleného serveru"
+
+#: ../client.py:1925
+#, python-format
+msgid "-m and %s may not be specified at the same time"
+msgstr "-m a %s nemohou být použity současně"
+
+#: ../client.py:1988 ../client.py:1994
+#, python-format
+msgid "pkg: contents: '%s' matches multiple packages"
+msgstr "pkg: contents: '%s' odpovídá více balíčkům"
+
+#: ../client.py:2074
+msgid "pkg: contents: no matching actions found in the listed packages"
+msgstr ""
+
+#: ../client.py:2086
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: contents: žádný nainstalovaný balíček neodpovídá hledanému výrazu.\n"
+       "Zkuste požadavek blíže specifikovat dotazem na vzdálený server pomocí volby -r:  "
+
+#: ../client.py:2090
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: contents: žádný balíček neodpovídá hledanému výrazu v katalogu \n"
+       "Zkuste pozměnit hledaný výraz nebo obnovit katalog:"
+
+#: ../client.py:2107
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg:  %s/%s katology úspěšně aktualizovány:"
+
+#: ../client.py:2175
+msgid "'pkg publisher' will show a list of publishers."
+msgstr "'pkg publisher' zobrazí seznam vydavatelů"
+
+#: ../client.py:2252
+msgid "requires a publisher name"
+msgstr "vyžaduje jméno vydavatele"
+
+#: ../client.py:2254
+msgid "only one publisher name may be specified"
+msgstr "pouze jedno jméno vydavatele může být specifikováno"
+
+#: ../client.py:2260
+msgid "the -p and -d options may not be combined"
+msgstr "-p a -d volby se nemohou kombinovat"
+
+#: ../client.py:2264
+msgid ""
+"the -O and -g, --add-origin, -G, or --remove-origin options may not be "
+"combined"
+msgstr ""
+       "volby -O a -g, --add-origin, -G, nebo --remove-origin nemohou být kombinovány"
+
+#: ../client.py:2268
+msgid "search_before and search_after may not be combined"
+msgstr "search_before a search_after nemohou být kombinovány"
+
+#: ../client.py:2287
+msgid ""
+"publisher does not exist. Use -g to define origin URI for new publisher."
+msgstr ""
+       "vydavatel neexistuje. Použijte -g pro definici zdroje URI nového vydavatele."
+
+#: ../client.py:2391
+#, python-format
+msgid ""
+"The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
+"server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(details)s"
+msgstr ""
+       "Původní URI pro '%(pubname)s' se neobjevila v ukazateli na platný pkg server.\n"
+       "Prosím zkontrolujte serverovou adresu a konfiguraci klientské sítě.\n"
+       "Další podrobnosti:\n"
+       "\n"
+       "%(details)s"
+
+#: ../client.py:2419
+msgid "at least one publisher must be specified"
+msgstr "alespoň jeden vydavatel musí být specifikován"
+
+#: ../client.py:2449
+#, python-format
+msgid "Removal failed for '%(pub)s': %(msg)s"
+msgstr "Odstranění selhalo pro '%(pub)s': %(msg)s"
+
+#: ../client.py:2517
+msgid "PUBLISHER"
+msgstr "VYDAVATEL"
+
+#: ../client.py:2517
+msgid "TYPE"
+msgstr "TYP"
+
+#: ../client.py:2517
+msgid "STATUS"
+msgstr "STAV"
+
+#: ../client.py:2518
+msgid "URI"
+msgstr "URI"
+
+#: ../client.py:2543
+msgid "non-sticky"
+msgstr "non-sticky"
+
+#: ../client.py:2548
+msgid "preferred"
+msgstr "preferovaný"
+
+#: ../client.py:2550
+msgid "disabled"
+msgstr "zakázaný"
+
+#. XXX get the real origin status
+#: ../client.py:2561
+msgid "origin"
+msgstr "zdroj"
+
+#. XXX get the real mirror status
+#: ../client.py:2565
+msgid "mirror"
+msgstr "mirror"
+
+#: ../client.py:2571
+msgid "              SSL Key:"
+msgstr "              SSL Klíč:"
+
+#: ../client.py:2572
+msgid "             SSL Cert:"
+msgstr "              SSL Certifikát:"
+
+#: ../client.py:2584
+msgid " Cert. Effective Date:"
+msgstr " Datum Účinnosti Certifikátu:"
+
+#: ../client.py:2586
+msgid "Cert. Expiration Date:"
+msgstr "Datum Vypršení Certifikátu:"
+
+#: ../client.py:2593
+msgid "           Origin URI:"
+msgstr "           Zdrojové URI:"
+
+#: ../client.py:2599
+msgid "           Mirror URI:"
+msgstr "           Obraz URI:"
+
+#: ../client.py:2613
+msgid "            Publisher:"
+msgstr "            Vydavatel:"
+
+#: ../client.py:2614
+msgid "                Alias:"
+msgstr "                Alias:"
+
+#: ../client.py:2624
+msgid "          Client UUID:"
+msgstr "          Klientské UUID:"
+
+#: ../client.py:2625
+msgid "      Catalog Updated:"
+msgstr "      Katalog aktualizován:"
+
+#: ../client.py:2627 ../client.py:2629
+msgid "              Enabled:"
+msgstr "              Povolený:"
+
+#. Not Installed
+#: ../client.py:2627 ../gui/modules/misc.py:285 ../gui/modules/misc.py:287
+#: ../gui/modules/misc.py:345 ../gui/modules/misc.py:354
+#: ../packagemanager.py:3650
+msgid "No"
+msgstr "Ne"
+
+#: ../client.py:2629
+msgid "Yes"
+msgstr "Ano"
+
+#: ../client.py:2640
+msgid "requires a property name and value"
+msgstr "vyžaduje jméno a hodnotu"
+
+#: ../client.py:2644 ../client.py:2672
+msgid "set-publisher must be used to change the preferred publisher"
+msgstr "set-publisher musí být použit pro změnu preferovaného vydavatele"
+
+#: ../client.py:2667
+msgid "requires at least one property name"
+msgstr "vyžaduje alespoň jedno jméno"
+
+#: ../client.py:2679
+#, python-format
+msgid "no such property: %s"
+msgstr "žádná taková vlastnost: %s"
+
+#: ../client.py:2701
+#, python-format
+msgid "property: no such property: %s"
+msgstr "property: žádná taková vlastnost: %s"
+
+#: ../client.py:2732
+#, python-format
+msgid "no such variant: %s"
+msgstr "žádná taková varianta: %s"
+
+#: ../client.py:2819 ../client.py:2890
+msgid "publisher argument must be of the form '<prefix>=<url>'."
+msgstr "argument vydavatel musí být ve formátu '<prefix>=<url>'."
+
+#: ../client.py:2850
+msgid "variant arguments must be of the form '<name>=<value>'."
+msgstr "argumenty varianty musí být ve formátu '<jméno>=<hodnota>'."
+
+#: ../client.py:2860
+msgid "Facet arguments must beform 'facet..=[True|False]'"
+msgstr "Aspekty musí být ve formě 'facet..=[True|False]'"
+
+#: ../client.py:2866
+msgid "only one image directory path may be specified"
+msgstr "pouze jedna adresářová cesta obrazu může být specifikována"
+
+#: ../client.py:2887
+msgid "a publisher must be specified"
+msgstr "vydavatel musí být specifikován"
+
+#: ../client.py:2894
+#, python-format
+msgid "a publisher's prefix may not start with the text: %s"
+msgstr "prefix vydavatele nemůže začínat textem:  %s"
+
+#: ../client.py:2899
+msgid "publisher prefix contains invalid characters"
+msgstr "prefix vydavatele obsahuje neplatné znaky"
+
+#: ../client.py:2917
+#, python-format
+msgid "cannot create image at %(image_dir)s: %(reason)s"
+msgstr "nelze vytvořit obraz v %(image_dir)s: %(reason)s"
+
+#: ../client.py:2934
+#, python-format
+msgid ""
+"The URI '%(pub_url)s' does not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(error)s"
+msgstr ""
+       "URI adresa '%(pub_url)s' se neobjevila v ukazateli na platný pkg server.\n"
+       "Prosím zkontrolujte adresu serveru a konfiguraci klientské sítě.\n"
+       "Další podrobnosti:\n"
+       "\n"
+       "%(error)s"
+
+#: ../client.py:2999
+msgid "-H and -l may not be combined"
+msgstr "-H a -l se nemůžou kombinovat"
+
+#: ../client.py:3003
+msgid "TIME"
+msgstr "ČAS"
+
+#: ../client.py:3004
+msgid "OPERATION"
+msgstr "OPERACE"
+
+#: ../client.py:3004
+msgid "CLIENT"
+msgstr "KLIENT"
+
+#: ../client.py:3004
+msgid "OUTCOME"
+msgstr "VÝSTUP"
+
+#: ../client.py:3085
+msgid "History purged."
+msgstr "Historie smazána."
+
+#: ../client.py:3099
+msgid ""
+"\n"
+"The following proxy configuration is set in the environment:\n"
+msgstr ""
+       "\n"
+       "Je nastavena následující konfigurace proxy v prostředí:\n"
+
+#: ../client.py:3102
+#, python-format
+msgid "http_proxy: %s\n"
+msgstr "http_proxy: %s\n"
+
+#: ../client.py:3104
+#, python-format
+msgid "https_proxy: %s\n"
+msgstr "https_proxy: %s\n"
+
+#: ../client.py:3119 ../pkgdep.py:98 ../pkgdep.py:194 ../pkgdep.py:444
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "neplatná globální volba -- %s"
+
+#: ../client.py:3131
+#, python-format
+msgid "%(opt)s takes argument of form name=value, not %(arg)s"
+msgstr "%(opt)s má argument ve formátu jméno=hodnota, a ne %(arg)s"
+
+#: ../client.py:3149
+msgid "no subcommand specified"
+msgstr "žádný podpříkaz není specifikován"
+
+#: ../client.py:3160 ../client.py:3171
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R není povoleno pro příkaz %s"
+
+#: ../client.py:3167 ../client.py:3256
+#, python-format
+msgid "illegal option -- %s"
+msgstr "neplatná volba -- %s"
+
+#: ../client.py:3174
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "version: příkaz nemá operátor ('%s')"
+
+#: ../client.py:3199 ../pkgdep.py:236
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+       "Nelze nalést obraz. Použijte volbu -R nebo nastavte proměnnou $PKG_IMAGE, aby odkazovala na obraz nebo změňte pracovní adresář na adresář obsahující obraz."
+
+#: ../client.py:3213
+msgid "No image found."
+msgstr "Obraz nenalezen."
+
+#: ../client.py:3249 ../pkgdep.py:472 ../publish.py:509
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "neznámý příkaz '%s'"
+
+#: ../client.py:3263 ../pkgdep.py:505 ../publish.py:535 ../pull.py:811
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(7) is '%s'."
+msgstr ""
+       "\n"
+       "\n"
+       "Toto je vnitřní chyba. Prosím, oznamte vývojářům tento\n"
+       "problém vyplněním formuláře na http://defect.opensolaris.org a připojte traceback a tuto zprávu. Verze pkg(7) je '%s'."
+
+#: ../client.py:3306
+msgid ""
+"\n"
+"Errors were encountered while attempting to retrieve package or file data "
+"for\n"
+"the requested operation."
+msgstr ""
+       "\n"
+       "Objevila se chyba při pokusu stáhnout balíček nebo data souboru "
+       "pro \n"
+       "požadovanou operaci."
+
+#: ../client.py:3309
+#, python-format
+msgid ""
+"Details follow:\n"
+"\n"
+"%s"
+msgstr ""
+       "Další informace:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3315
+msgid ""
+"\n"
+"Unable to contact a valid package depot. This may be due to a problem with "
+"the server, network misconfiguration, or an incorrect pkg client "
+"configuration.  Please check your network settings and attempt to contact "
+"the server using a web browser."
+msgstr ""
+       "\n"
+       "Nelze se připojit k platnému repozitáři balíčku. Toto může být zapříčiněno problémem na serveru, špatnou síťovou konfigurací nebo nesprávně nastaveným pkg klientem. Prosím zkontrolujte Vaše síťové nastavení a pokuste se kontaktovat server pomocí webového prohlížeče."
+
+#: ../client.py:3320
+#, python-format
+msgid ""
+"\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "Další informace:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3328
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+       "Vyskytla se chyba při nahrávání historie\n"
+       "o minulých operacích klienta."
+
+#: ../client.py:3337
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+       "Vyskytla se chyba při pokusu uložit informace \n"
+       "o současných operacích v historii klienta."
+
+#: ../client.py:3347
+msgid "An error was encountered while attempting to purge client history."
+msgstr "Vyskytla se chyba při pokusu odstranit historii klienta."
+
+#: ../client.py:3354
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "Pkg příkaz se objeví při synchonizaci s knihovnami, které jsou poskytovány SUNWipkg. Verze klienta je %(client)s, zatímco verze API knihovny je %(api)s"
+
+#: ../client.py:3369
+#, python-format
+msgid ""
+"\n"
+"%s%s"
+msgstr ""
+       "\n"
+       "%s%s"
+
+#: ../client.py:3371
+msgid ""
+"\n"
+"\n"
+"Despite the error while indexing, the update, install, or uninstall\n"
+"has completed successfuly."
+msgstr ""
+       "\n"
+       "\n"
+       "I přes chybu při indexování, aktualizace obrazu, instalace nebo odstranění bylo dokončeno úspěšně."
+
+#. The full usage message isn't desired.
+#: ../depot.py:131
+msgid "Try `pkg.depotd --help or -?' for more information."
+msgstr "Pro více informací, zkuste `pkg.depotd --help nebo -?'"
+
+#: ../depot.py:396 ../publish.py:115
+msgid "property arguments must be of the form '<section.property>=<value>'."
+msgstr "argument property musí být ve formátu '<section.property>=<value>'"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "Nainstalovat další software"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:2
+#: ../gui/data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "Instalovat, aktualizovat a odebrat balíčky"
+
+#: ../gui/data/l10n.py:31
+msgid "AMP Stack"
+msgstr "AMP zásobník"
+
+#: ../gui/data/l10n.py:32
+msgid "Accessories"
+msgstr "Doplňky"
+
+#: ../gui/data/l10n.py:33
+msgid "Administration and Configuration"
+msgstr "Administrace a Konfigurace"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "Aplikace a Webové Servery"
+
+#: ../gui/data/l10n.py:35
+msgid "Builds"
+msgstr "Verze"
+
+#: ../gui/data/l10n.py:36
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:37
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:38
+msgid "Communications"
+msgstr "Komunikace"
+
+#: ../gui/data/l10n.py:39
+msgid "Configuration and Preferences"
+msgstr "Konfigurace a Nastavení"
+
+#: ../gui/data/l10n.py:40
+msgid "Core"
+msgstr "Core"
+
+#: ../gui/data/l10n.py:41
+msgid "Databases"
+msgstr "Databáze"
+
+#: ../gui/data/l10n.py:42
+msgid "Developer Tools"
+msgstr "Nástroje vývojářů"
+
+#: ../gui/data/l10n.py:43
+msgid "Display"
+msgstr "Display"
+
+#: ../gui/data/l10n.py:44
+msgid "Distribution Tools"
+msgstr "Nástroje pro distribuci"
+
+#: ../gui/data/l10n.py:45
+msgid "Documentation"
+msgstr "Dokumentace"
+
+#: ../gui/data/l10n.py:46
+msgid "Editors"
+msgstr "Editory"
+
+#: ../gui/data/l10n.py:47
+msgid "Enterprise Management"
+msgstr "Správa Enterprise"
+
+#: ../gui/data/l10n.py:48
+msgid "File Managers"
+msgstr "Správci souborů"
+
+#: ../gui/data/l10n.py:49
+msgid "File System"
+msgstr "Souborový systém"
+
+#: ../gui/data/l10n.py:50
+msgid "Fonts"
+msgstr "Fonty"
+
+#: ../gui/data/l10n.py:51
+msgid "GNOME and GTK+"
+msgstr "GNOME a GTK+"
+
+#: ../gui/data/l10n.py:52
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:53
+msgid "Games"
+msgstr "Hry"
+
+#: ../gui/data/l10n.py:54
+msgid "Graphics and Imaging"
+msgstr "Grafika a Obrázky"
+
+#: ../gui/data/l10n.py:55
+msgid "Hardware"
+msgstr "Hardware"
+
+#: ../gui/data/l10n.py:56
+msgid "High Performance Computing"
+msgstr "High Performance Computing"
+
+#: ../gui/data/l10n.py:57
+msgid "Integrated Development Environments"
+msgstr "Integrované Vývojové prostředí"
+
+#: ../gui/data/l10n.py:58
+msgid "Internationalization"
+msgstr "Internacionalizace"
+
+#: ../gui/data/l10n.py:59
+msgid "Internet"
+msgstr "Internet"
+
+#: ../gui/data/l10n.py:60
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:61
+msgid "Libraries"
+msgstr "Knihovny"
+
+#: ../gui/data/l10n.py:62
+msgid "Localizations"
+msgstr "Lokalizace"
+
+#: ../gui/data/l10n.py:63
+msgid "Media"
+msgstr "Média"
+
+#: ../gui/data/l10n.py:64
+msgid "Multimedia Libraries"
+msgstr "Knihovna multimédií"
+
+#: ../gui/data/l10n.py:65
+msgid "Networking"
+msgstr "Síť"
+
+#: ../gui/data/l10n.py:66
+msgid "Office"
+msgstr "Kancelář"
+
+#: ../gui/data/l10n.py:67
+msgid "Office Tools"
+msgstr "Nástroje kanceláře"
+
+#: ../gui/data/l10n.py:68
+msgid "Other Languages"
+msgstr "Jiné jazyky"
+
+#: ../gui/data/l10n.py:69
+msgid "Other Peripherals"
+msgstr "Jiné periférie"
+
+#: ../gui/data/l10n.py:70
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:71
+msgid "Packaging"
+msgstr "Balíčkování"
+
+#: ../gui/data/l10n.py:72
+msgid "Panels and Applets"
+msgstr "Panely a Aplety"
+
+#: ../gui/data/l10n.py:73
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:74
+msgid "Plug-ins and Run-times"
+msgstr "Doplňky"
+
+#: ../gui/data/l10n.py:75
+msgid "Ports"
+msgstr "Porty"
+
+#: ../gui/data/l10n.py:76
+msgid "Printing"
+msgstr "Tisk"
+
+#: ../gui/data/l10n.py:77
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:78
+msgid "Releases"
+msgstr "Vydání"
+
+#: ../gui/data/l10n.py:79
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:80
+msgid "Scripts"
+msgstr "Skripty"
+
+#: ../gui/data/l10n.py:81
+msgid "Security"
+msgstr "Zabezpečení"
+
+#: ../gui/data/l10n.py:82
+msgid "Services"
+msgstr "Služby"
+
+#: ../gui/data/l10n.py:83
+msgid "Sessions"
+msgstr "Sezení"
+
+#: ../gui/data/l10n.py:84
+msgid "Shells"
+msgstr "Shell"
+
+#: ../gui/data/l10n.py:85
+msgid "Software Management"
+msgstr "Správa Softwaru"
+
+#: ../gui/data/l10n.py:86
+msgid "Sound and Video"
+msgstr "Zvuk a Video"
+
+#: ../gui/data/l10n.py:87
+msgid "Source Code Management"
+msgstr "Správa Zdrojových Kódů"
+
+#: ../gui/data/l10n.py:88
+msgid "Storage"
+msgstr "Paměť"
+
+#: ../gui/data/l10n.py:89 ../packagemanager.py:1827
+msgid "System"
+msgstr "Systém"
+
+#: ../gui/data/l10n.py:90
+msgid "System Utilities"
+msgstr "Systémové nástroje"
+
+#: ../gui/data/l10n.py:91
+msgid "Text Tools"
+msgstr "Nástroje Textu"
+
+#: ../gui/data/l10n.py:92
+msgid "Theming"
+msgstr "Téma"
+
+#: ../gui/data/l10n.py:93
+msgid "Trusted"
+msgstr "Trusted"
+
+#: ../gui/data/l10n.py:94
+msgid "Trusted Extensions"
+msgstr "Trusted Extensions"
+
+#: ../gui/data/l10n.py:95
+msgid "Universal Access"
+msgstr "Univerzální Přístup"
+
+#: ../gui/data/l10n.py:96
+msgid "Virtualization"
+msgstr "Virtualizace"
+
+#: ../gui/data/l10n.py:97
+msgid "Window Managers"
+msgstr "Správce Oken"
+
+#: ../gui/data/l10n.py:98
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:1
+msgid ""
+"A boolean which determines if the Start Page should be shown on startup or "
+"the initial list view."
+msgstr ""
+       "Boolean hodnota, která určí, zda má být zobrazena Úvodní stránka při spuštění nebo pohled na původní zobrazení."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:2
+msgid ""
+"A boolean which determines if the search is executed dynamically as user "
+"types or only when user hits the return key."
+msgstr ""
+       "Boolean hodnota, která určí, zda je hledání vykonáno dynamicky podle toho, co uživatel píše, nebo až poté, co uživatel stiskne klávesu enter."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:3
+msgid ""
+"A boolean which determines whether Package Manager should save its state on "
+"exit and use it on restart. The state is the selected publisher and the size "
+"and position of horizontal and vertical dividers."
+msgstr ""
+       "Boolean hodnota, která určí, zda Správce balíčků uloží stav při ukončení a použije ho při dalším spuštění. Stavem se myslí vybraný vydavatel, velikost a pozice vodorovného a svislého rozdělovače."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:4
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the updates are found after performing Updates operation (Checks "
+"if updates are available) or it should go straight to the update all "
+"operation."
+msgstr ""
+       "Boolean hodnota, která určí, zda Správce Balíčků zobrazí potvrzovací dialog, pokud jsou nalezeny aktualizace po vykonání operace Uktualizace (Zkontroluje, zda jsou dostupné aktualizace) nebo, zda se má přejít rovnou k aktualizaci všeho"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:5
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for installation or update."
+msgstr ""
+       "Boolean hodnota, která určí, zda Správce Balíčků zobrazí potvrzovací dialog, pokud uživatel vybere některé balíčky pro instalaci nebo aktualizaci."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:6
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for removal."
+msgstr ""
+       "Boolean hodnota, která určí, zda Správce Balíčků zobrazí potvrzovací dialog, pokud uživatel vybere některé balíčky pro odstranění."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid ""
+"A boolean which determines whether Package Manager should start in search "
+"mode."
+msgstr ""
+       "Boolean hodnota, která určí, zda se Správce balíčků spustí v módu hledání. "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid ""
+"A string which determines if the repository is shown or not in the error "
+"dialog."
+msgstr ""
+       "Řetězec, který určí, zda bude nebo nebude repozitář zobrazen v chybovém okně."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+msgid "A string which stores the last publisher used by package manager."
+msgstr "Řetězec, který uloží posledního vydavatele použitého správcem balíčků."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+msgid ""
+"An integer which identifies the initial show filter value to be displayed "
+"when packagemanager starts. 0 corresponds to All Packages."
+msgstr ""
+       "Celočíselná hodnota, která určí počáteční hodnotu pole Ukázat filtr při startu správce balíčků. 0 odpovídá všem balíčkům."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:11
+msgid ""
+"An integer which identifies the initial toplevel section to be expanded when "
+"packagemanager starts. 0 = \"All Categories\", 2 = \"Applications\" (the "
+"default)"
+msgstr ""
+       "Celočíselná hodnota, která určí, že má být roztažena úvodní horní sekce "
+       "při startu správce balíčků.   0 = \"Všechny kategorie\", 2 = \"Aplikace\" (výchozí)"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+msgid ""
+"An integer which specifies the initial height of the application main "
+"window, overridden if there is not enough screen available."
+msgstr ""
+       "Celočíselná hodnota, která určí počáteční výšku okna aplikace, tato hodnota je přepsána při nedostatku místa na obrazovce."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:13
+msgid ""
+"An integer which specifies the initial horizonatal divider position of the "
+"application, which separates the category panel from the list panel."
+msgstr ""
+       "Celočíselná hodnota, která určí výchozí pozici vodorovného děliče okna aplikace, který odděluje panel s kategoriemi a panel se seznamem."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:14
+msgid ""
+"An integer which specifies the initial vertical divider position of the "
+"application, which separates the details panel from the list panel."
+msgstr ""
+       "Celočíselná hodnota, která specifikuje počáteční pozici svislého děliče aplikace, který odděluje panel s podrobnostmi od panelu se seznamem."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:15
+msgid ""
+"An integer which specifies the initial width of the application main window, "
+"overridden if there is not enough screen available."
+msgstr ""
+       "Celočíselná hodnota, která specifikuje počáteční šířku okna aplikace, je přepsána, pokud není dostatek místa na obrazovce."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:16
+msgid ""
+"An integer which specifies the maximum number of entries to store for search "
+"completion."
+msgstr ""
+       "Celočíselná hodnota, která specifikuje maximální počet vstupů pro uložení hledaného řetězce."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:17
+msgid ""
+"Comma separated list of repositories which we show if there are API errors "
+"when searching them"
+msgstr ""
+       "Čárkou oddělený seznam repozitářů, který se zobrazí, pokud se při hledání narazí na chyby v API"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:18
+msgid "Display confirmation dialog after Check for updates"
+msgstr "Zobrazit potvrzovací dialog po operaci Zkontrolovat Aktualizace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:19
+msgid "Display install/update packages confirmation dialog"
+msgstr "Zobrazit potvrzovací dialog instalace/aktualizace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:20
+msgid "Display remove packages confirmation dialog"
+msgstr "Zobrazit potvrzovací dialog odstranění"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:21
+msgid "Display selected publisher at startup"
+msgstr "Zobrazit vybraného vydavatele při spuštění"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:22
+msgid "Enable type ahead search"
+msgstr "Povolit našeptávání při hledání"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:23
+msgid "Initial application height"
+msgstr "Počáteční výška aplikace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:24
+msgid "Initial application horizonatal divider position"
+msgstr "Počáteční pozice vodorovného děliče aplikace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:25
+msgid "Initial application vertical divider position"
+msgstr "Počáteční pozice svislého děliče aplikace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:26
+msgid "Initial application width"
+msgstr "Počáteční šířka aplikace"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:27
+msgid "Initial section value"
+msgstr "Počáteční hodnota sekce"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:28
+msgid "Initial show filter value"
+msgstr "Počáteční hodnota okna Ukázat filtr"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:29
+msgid "Last Export Selections Path"
+msgstr "Poslední výběr cesty pro export"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:30
+msgid "Last publisher used by package manager"
+msgstr "Poslední vydavatel použitý správcem balíčků"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:31
+msgid "Maximum entries for Search Completion"
+msgstr "Maximální počet vstupů pro našeptávání při hledání"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:32
+msgid "Show Start Page on startup"
+msgstr "Zobrazit Úvodní Stránku při spuštění"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:33
+msgid "Start Page Update URL"
+msgstr "URL adresa Aktualizace Úvodní Stránky "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:34
+msgid "Start in serach mode"
+msgstr "Spuštění v módu hledání"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:35
+msgid ""
+"The location from which to fetch updates to the Package Manager Start Page."
+msgstr ""
+       "Umístění, odkud se čerpají aktualizace pro Úvodní Stránku Správce Balíčků."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:36
+msgid "The path for the last set of selections exported from packagemanager."
+msgstr "Cesta poslední sady výběru, která byla exportována ze správce balíčků"
+
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:77 ../gui/modules/webinstall.py:428
+#: ../packagemanager.py:281 ../packagemanager.py:3761
+#: ../packagemanager.py:5264
+msgid "Package Manager"
+msgstr "Správce balíčků"
+
+#: ../gui/data/packagemanager.glade.h:1
+msgid "<b>Add, modify and remove publishers</b>"
+msgstr "<b>Přidat změnit a odstranit vydavatele</b>"
+
+#: ../gui/data/packagemanager.glade.h:2
+msgid "<b>Apply the following changes:</b>"
+msgstr "<b>Použít následující změny:</b>"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid "<b>Delete, rename and activate boot environments</b>"
+msgstr "<b>Smazat, přejmenovat a aktivovat bootovací prostředí</b>"
+
+#: ../gui/data/packagemanager.glade.h:4
+msgid "<b>Exit</b>"
+msgstr "<b>Konec</b>"
+
+#: ../gui/data/packagemanager.glade.h:5
+msgid "<b>General</b>"
+msgstr "<b>Obecné</b>"
+
+#: ../gui/data/packagemanager.glade.h:6 ../packagemanager.py:3600
+msgid "<b>Installable Version:</b>"
+msgstr "<b>Instalovatelná verze:</b>"
+
+#: ../gui/data/packagemanager.glade.h:7
+msgid "<b>Installed:</b>"
+msgstr "<b>Nainstalované:</b>"
+
+#: ../gui/data/packagemanager.glade.h:8
+msgid "<b>Name:</b>"
+msgstr "<b>Jméno:</b>"
+
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Origins</b>"
+msgstr "<b>Zdroj:</b>"
+
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Publisher added successfully</b>"
+msgstr "<b>Vydavatel byl úspěšně přidán</b>"
+
+#: ../gui/data/packagemanager.glade.h:11
+msgid "<b>Publisher</b>"
+msgstr "<b>Vydavatel</b>"
+
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Recent Searches</b>"
+msgstr "<b>Naposledy hledané</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Review the packages to be installed or udpated</b>"
+msgstr "<b>Kontrola balíčků před instalací nebo aktualizací</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Show Confirmation Dialog</b>"
+msgstr "<b>Zobrazit potvrzující dialog</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>Startup</b>"
+msgstr "<b>Spuštění</b>"
+
+#: ../gui/data/packagemanager.glade.h:16
+msgid "<b>Update All completed successfully</b>"
+msgstr "<b>Proces Aktualizovat Vše dokončen úspěšně.</b>"
+
+#: ../gui/data/packagemanager.glade.h:17
+msgid "<b>View Package Manager Logs</b>"
+msgstr "<b>Zobrazit Logy Správce Balíčků</b>"
+
+#: ../gui/data/packagemanager.glade.h:18
+msgid "<b>_Mirrors</b>"
+msgstr "<b>_Mirror</b>"
+
+#: ../gui/data/packagemanager.glade.h:19
+msgid "<b>_SSL Key and Certificate</b>"
+msgstr "<b>_SSL klíč a certifikát</b>"
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "<big><b>Package Manager Web Installer</b></big>"
+msgstr "<big><b>Webový Instalér Správce Balíčlů</b></big>"
+
+#: ../gui/data/packagemanager.glade.h:21
+msgid "<span foreground=\"blue\"><u>What's this?</u></span>"
+msgstr "<span foreground=\"blue\"><u>Co je toto?</u></span>"
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid ""
+"A boot environment (BE) contains the operating\n"
+"system image and updated packages. The\n"
+"system will boot into the new BE on restart."
+msgstr ""
+       "Bootovací prostředí (BE) obsahuje obraz\n"
+       "operačního systému a aktualizované balíčky\n"
+       "Systém nabootuje do nového BE po restartu."
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid ""
+"A new boot environment has been created and will be given the\n"
+"following name."
+msgstr ""
+       "Nové bootovací prostředí bylo vytvořeno a bude mu dáno \n"
+       "následující jméno."
+
+#: ../gui/data/packagemanager.glade.h:27
+msgid "A_dd"
+msgstr "P_řidat"
+
+#: ../gui/data/packagemanager.glade.h:28
+msgid "A_lias:"
+msgstr "A_lias"
+
+#: ../gui/data/packagemanager.glade.h:29
+msgid "About Glade"
+msgstr "O Glade"
+
+#: ../gui/data/packagemanager.glade.h:30 ../gui/modules/repository.py:1348
+msgid "Add Publisher"
+msgstr "Přidat Vydavatele"
+
+#: ../gui/data/packagemanager.glade.h:31
+msgid "Adding Publisher Complete"
+msgstr "Přídávání Vydavatele Dokončeno"
+
+#: ../gui/data/packagemanager.glade.h:32 ../gui/modules/repository.py:1451
+#: ../gui/modules/repository.py:1465
+msgid "Applying Changes"
+msgstr "Provádění Změn"
+
+#: ../gui/data/packagemanager.glade.h:33
+msgid "Applying changes..."
+msgstr "Provádění změn..."
+
+#: ../gui/data/packagemanager.glade.h:34
+msgid "B_rowse..."
+msgstr "P_rocházet..."
+
+#: ../gui/data/packagemanager.glade.h:35
+msgid "Bro_wse..."
+msgstr "Pro_cházet..."
+
+#: ../gui/data/packagemanager.glade.h:36
+msgid "Browse for SSL Certificate"
+msgstr "Procházet SSL certifikáty"
+
+#: ../gui/data/packagemanager.glade.h:37
+msgid "Browse for SSL Key"
+msgstr "Procházet SSL klíče"
+
+#: ../gui/data/packagemanager.glade.h:38
+msgid "C_lear Search"
+msgstr "V_yčistit vyhledávání"
+
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Cancel current operation"
+msgstr "Zrušit aktuální operaci"
+
+#: ../gui/data/packagemanager.glade.h:40 ../um/data/updatemanager.glade.h:4
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "Kontroluji nejnovější verze SUNWipkg a SUNWipkg-gui, čekejte prosím ..."
+
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Checking package dependencies..."
+msgstr "Kontroluji závislosti balíčků..."
+
+#: ../gui/data/packagemanager.glade.h:42
+msgid "Checks if updates are available"
+msgstr "Zkontroluje, zda jsou dostupné aktualizace"
+
+#: ../gui/data/packagemanager.glade.h:43
+msgid "Clear Recent Searc_hes"
+msgstr "Vymazat Naposledy hle_dané"
+
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Confirmation"
+msgstr "Potvrzení"
+
+#: ../gui/data/packagemanager.glade.h:45
+msgid ""
+"Copyright 2010 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+       "Copyright 2008 Sun Microsystems, Inc.\n"
+       "Všechna práva vyhrazena. Použití podléhá licenčním ujednáním."
+
+#: ../gui/data/packagemanager.glade.h:48
+msgid "Currently active boot environment"
+msgstr "Právě aktivní bootovací prostředí"
+
+#: ../gui/data/packagemanager.glade.h:49
+msgid "D_eselect All"
+msgstr "O_dznačit Vše"
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid "D_etails"
+msgstr "Po_drobnosti"
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Dependencies"
+msgstr "Závislosti"
+
+#: ../gui/data/packagemanager.glade.h:52 ../gui/modules/misc.py:257
+msgid "Description:"
+msgstr "Popis:"
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Details"
+msgstr "Podrobnosti"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Do not notify me about these publishers again."
+msgstr "Nechci již informovat o tomto vydavateli."
+
+#: ../gui/data/packagemanager.glade.h:55 ../gui/modules/installupdate.py:95
+#: ../um/data/updatemanager.glade.h:6
+msgid "Download"
+msgstr "Stahování"
+
+#: ../gui/data/packagemanager.glade.h:56 ../gui/modules/misc.py:235
+msgid "Error"
+msgstr "Chyba"
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Errors and Warnings"
+msgstr "Chyby a Varování"
+
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Files"
+msgstr "Soubory"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Go to package _list"
+msgstr "Jít na seznam _balíčků"
+
+#: ../gui/data/packagemanager.glade.h:60
+msgid "Information"
+msgstr "Informace"
+
+#: ../gui/data/packagemanager.glade.h:61 ../gui/modules/installupdate.py:96
+msgid "Install"
+msgstr "Instalovat"
+
+#: ../gui/data/packagemanager.glade.h:62 ../gui/modules/installupdate.py:280
+msgid "Install/Update"
+msgstr "Instalovat/Aktualizovat"
+
+#: ../gui/data/packagemanager.glade.h:63
+msgid "Install/Upgrade Check"
+msgstr "Zkontrolovat Instalaci/Aktualizaci"
+
+#: ../gui/data/packagemanager.glade.h:64
+msgid "License"
+msgstr "Licence:"
+
+#: ../gui/data/packagemanager.glade.h:65 ../packagemanager.py:3473
+#: ../packagemanager.py:3475
+msgid "Loading ..."
+msgstr "Nahrávám ..."
+
+#: ../gui/data/packagemanager.glade.h:66
+msgid "M_irror:"
+msgstr "M_irror:"
+
+#: ../gui/data/packagemanager.glade.h:67
+msgid "Manage Boot Environments"
+msgstr "Správa Bootovacích Prostředí"
+
+#: ../gui/data/packagemanager.glade.h:68
+msgid "Manage Publishers"
+msgstr "Správa vydavatelů"
+
+#: ../gui/data/packagemanager.glade.h:69
+msgid "Manage _Boot Environments..."
+msgstr "Správa _Bootovacích Prostředí..."
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Modify Publisher"
+msgstr "Upravit Vydavatele"
+
+#: ../gui/data/packagemanager.glade.h:71 ../gui/modules/misc.py:256
+msgid "Name:"
+msgstr "Jméno:"
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "Name: "
+msgstr "Jméno: "
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "O_rigin:"
+msgstr "Z_droj:"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "On Package _Install/Update"
+msgstr "_Instalalce/Aktualizace Balíčku"
+
+#: ../gui/data/packagemanager.glade.h:75
+msgid "On Package _Remove"
+msgstr "_Odstranění Balíčku"
+
+#: ../gui/data/packagemanager.glade.h:76
+msgid "On _Updates"
+msgstr "_Aktualizovat"
+
+#: ../gui/data/packagemanager.glade.h:78
+msgid "Package Version Info"
+msgstr "Informace o verzi balíčku"
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid "Preferences"
+msgstr "Nastavení"
+
+#: ../gui/data/packagemanager.glade.h:80 ../gui/modules/installupdate.py:94
+msgid "Preparation"
+msgstr "Příprava"
+
+#: ../gui/data/packagemanager.glade.h:81 ../um/data/updatemanager.glade.h:9
+msgid "Processing"
+msgstr "Zpracování"
+
+#: ../gui/data/packagemanager.glade.h:82
+msgid "Pu_blisher:"
+msgstr "Vy_davatel:"
+
+#: ../gui/data/packagemanager.glade.h:83
+msgid "Publisher Name:"
+msgstr "Jméno Vydavatele:"
+
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Re_fresh"
+msgstr "Ob_novit"
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Re_gistration Details"
+msgstr "Podrobnosti o Re_gistraci"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Read the release notes before restarting the system."
+msgstr "Přečtěte si poznámky k vydání než restartujete systém."
+
+#: ../gui/data/packagemanager.glade.h:87
+msgid "Read the release notes."
+msgstr "Přečtěte si poznámky k vydání."
+
+#: ../gui/data/packagemanager.glade.h:88
+msgid "Refresh"
+msgstr "Obnovit"
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Refresh list of packages and package status"
+msgstr "Obnovit seznam balíčků a jejich stav"
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Release notes"
+msgstr "Poznámky k vydání"
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid "Remember current state on _exit"
+msgstr "Pamatovat si současný stav při _ukončení"
+
+#: ../gui/data/packagemanager.glade.h:92
+msgid "Remo_ve"
+msgstr "Odstra_nit"
+
+#: ../gui/data/packagemanager.glade.h:93
+msgid "Remov_e"
+msgstr "Odstra_nit"
+
+#: ../gui/data/packagemanager.glade.h:94 ../gui/modules/installupdate.py:243
+#: ../gui/modules/installupdate.py:246
+msgid "Remove"
+msgstr "Odstranit"
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "Restart _Now"
+msgstr "Restartovat _Nyní"
+
+#: ../gui/data/packagemanager.glade.h:96
+msgid "SSL C_ertificate: "
+msgstr "SSL C_ertifikát: "
+
+#: ../gui/data/packagemanager.glade.h:97
+msgid "SSL Certi_ficate:"
+msgstr "SSL Certi_fikát:"
+
+#: ../gui/data/packagemanager.glade.h:98
+msgid "SSL _Key:"
+msgstr "SSL _Klíč:"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "SSL _Key: "
+msgstr "SSL _Klíč: "
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "Search"
+msgstr "Hledat"
+
+#: ../gui/data/packagemanager.glade.h:101
+msgid "Search Publisher Errors"
+msgstr "Chyba při vyhledávání vydavatele"
+
+#: ../gui/data/packagemanager.glade.h:102
+msgid "Search Repositories Error"
+msgstr "Chyba při vyhledávání repozitáře"
+
+#: ../gui/data/packagemanager.glade.h:103
+msgid "Search errors with the following publishers:"
+msgstr "Chyba při vyhledávání následujících vydavatelů:"
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "Select _Updates"
+msgstr "Vybrat _Aktualizace"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "Select packages by marking the checkbox and click to Install/Update"
+msgstr "Vyberte balíčky označením zaškrtávacích políček a klikněte na Instalovat/Aktualizovat"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "Select packages by marking the checkbox and click to Remove selected"
+msgstr "Vyberte balíčky označením zaškrtávacích políček a klikněte na Odstranit"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "Set publisher priorities using arrows."
+msgstr "Nastavte prioritu vydavatele pomocí šipek."
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "Show Start Page on _startup"
+msgstr "Ukázat Úvodní stránku při _startu"
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "Show _all publisher results"
+msgstr "Ukázat výsledek _všech vydavatelů"
+
+#: ../gui/data/packagemanager.glade.h:110
+msgid "Specify the publisher name and URI"
+msgstr "Specifikujte jméno a URI vydavatele"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "Start _Page"
+msgstr "Úvodní _Stránka"
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "The following will be added to your system:"
+msgstr "Následující bude přidáno do systému:"
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "This is a secure publisher."
+msgstr "Toto je zabezpečený vydavatel"
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid ""
+"This publisher requires an SSL key and an SSL certificate.\n"
+"Specify the location of these files."
+msgstr ""
+       "Tento vydavatel požaduje SSL klíč a SSL certifikát.\n"
+       "Specifikujte umístění těchto souborů."
+
+#: ../gui/data/packagemanager.glade.h:116
+msgid "Type text to search for the package."
+msgstr "Napište text, který se má vyhledat pro balíček."
+
+#: ../gui/data/packagemanager.glade.h:117
+msgid "URI:"
+msgstr "URI:"
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "Update All Complete"
+msgstr "Proces Aktualizovat Vše dokončen"
+
+#: ../gui/data/packagemanager.glade.h:119 ../packagemanager.py:330
+msgid "Updates"
+msgstr "Aktualizovat"
+
+#: ../gui/data/packagemanager.glade.h:120
+msgid "Vie_w:"
+msgstr "Náhle_d:"
+
+#: ../gui/data/packagemanager.glade.h:121
+msgid "_Accept"
+msgstr "_Přijmout"
+
+#: ../gui/data/packagemanager.glade.h:122
+msgid "_Add"
+msgstr "_Přidat"
+
+#: ../gui/data/packagemanager.glade.h:123
+msgid "_Add Publisher..."
+msgstr "_Přidat Vydavatele"
+
+#: ../gui/data/packagemanager.glade.h:124
+msgid "_Add..."
+msgstr "_Přidat..."
+
+#: ../gui/data/packagemanager.glade.h:125
+msgid "_Browse..."
+msgstr "_Procházet..."
+
+#: ../gui/data/packagemanager.glade.h:126
+msgid "_Contents"
+msgstr "_Obsah"
+
+#: ../gui/data/packagemanager.glade.h:127 ../um/data/updatemanager.glade.h:13
+msgid "_Details"
+msgstr "_Podrobnosti"
+
+#: ../gui/data/packagemanager.glade.h:128
+msgid "_Do not show this confirmation dialog again"
+msgstr "Příště již _nezobrazovat tento dialog"
+
+#: ../gui/data/packagemanager.glade.h:129
+msgid "_Down"
+msgstr "_Dolů"
+
+#: ../gui/data/packagemanager.glade.h:130
+msgid "_Edit"
+msgstr "_Upravit"
+
+#: ../gui/data/packagemanager.glade.h:131
+msgid "_Export Selections..."
+msgstr "_Exportovat Výběr"
+
+#: ../gui/data/packagemanager.glade.h:132
+msgid "_File"
+msgstr "_Soubor"
+
+#: ../gui/data/packagemanager.glade.h:133
+msgid "_Help"
+msgstr "_Nápověda"
+
+#: ../gui/data/packagemanager.glade.h:134
+msgid "_Install Details"
+msgstr "_Podrobnosti o Instalaci"
+
+#: ../gui/data/packagemanager.glade.h:135
+msgid "_Install/Update"
+msgstr "_Instalovat/Aktualizovat"
+
+#: ../gui/data/packagemanager.glade.h:136
+msgid "_Logs"
+msgstr "_Logy"
+
+#: ../gui/data/packagemanager.glade.h:137
+msgid "_Manage Publishers..."
+msgstr "_Správa Vydavatelů..."
+
+#: ../gui/data/packagemanager.glade.h:138
+msgid "_Modify..."
+msgstr "_Upravit..."
+
+#: ../gui/data/packagemanager.glade.h:139
+msgid "_Name:"
+msgstr "_Jméno:"
+
+#: ../gui/data/packagemanager.glade.h:140
+msgid "_Package"
+msgstr "_Balíček"
+
+#: ../gui/data/packagemanager.glade.h:141
+msgid "_Package Version Info"
+msgstr "_Informace o verzi balíčku"
+
+#: ../gui/data/packagemanager.glade.h:142
+msgid "_Recent Searches"
+msgstr "_Naposledy hledané"
+
+#: ../gui/data/packagemanager.glade.h:143
+msgid "_Registration Details"
+msgstr "_Podrobnosti o Registraci"
+
+#: ../gui/data/packagemanager.glade.h:144
+msgid "_Remove"
+msgstr "_Odstranit"
+
+#: ../gui/data/packagemanager.glade.h:145
+msgid "_Remove Details"
+msgstr "_Odstranit Podrobnosti"
+
+#: ../gui/data/packagemanager.glade.h:146
+msgid "_Search"
+msgstr "_Hledat"
+
+#: ../gui/data/packagemanager.glade.h:147
+msgid "_URI:"
+msgstr "_URI:"
+
+#: ../gui/data/packagemanager.glade.h:148
+msgid "_Up"
+msgstr "_Nahoru"
+
+#: ../gui/data/packagemanager.glade.h:149
+msgid "_Update Details"
+msgstr "_Podrobnosti o aktualizaci"
+
+#: ../gui/data/packagemanager.glade.h:150
+msgid "_Updates"
+msgstr "_Aktualizace"
+
+#: ../gui/data/packagemanager.glade.h:151
+msgid "_View"
+msgstr "_Náhled"
+
+#: ../gui/data/packagemanager.glade.h:152 ../gui/modules/repository.py:75
+msgid "e.g. http://pkg.opensolaris.org/release"
+msgstr "např. http://pkg.opensolaris.org/release"
+
+#: ../gui/data/packagemanager.glade.h:153
+msgid "label"
+msgstr "označení"
+
+#: ../gui/modules/beadmin.py:73
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "Knihovna <b>libbe</b> nebyla nalezena na Vašem systému.\n Všechny funkce pro správu bootovacích prostředí byly zakázány"
+
+#: ../gui/modules/beadmin.py:81
+msgid "BE management"
+msgstr "Správa BE"
+
+#: ../gui/modules/beadmin.py:161
+#, python-format
+msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
+msgstr "GUI nebude reagovat na žádnou událost! %s. Zkontrolujte beadmin.py signály "
+
+#: ../gui/modules/beadmin.py:170
+msgid "Boot Environment Confirmation"
+msgstr "Potvrzení Bootovacího Prostředí"
+
+#: ../gui/modules/beadmin.py:173
+msgid "Loading Boot Environment Information"
+msgstr "Nahrávám informace o bootovacích prostředí"
+
+#: ../gui/modules/beadmin.py:175
+msgid "Fetching BE entries..."
+msgstr "Získávám BE ..."
+
+#: ../gui/modules/beadmin.py:202
+msgid "Boot Environment"
+msgstr "Bootovací prostředí"
+
+#: ../gui/modules/beadmin.py:213
+msgid "Created"
+msgstr "Vytvořený"
+
+#: ../gui/modules/beadmin.py:222
+msgid "Size"
+msgstr "Velikost"
+
+#: ../gui/modules/beadmin.py:230
+msgid "Active on Reboot"
+msgstr "Aktivovat po restartu"
+
+#: ../gui/modules/beadmin.py:241
+msgid "Delete"
+msgstr "Smazat"
+
+#: ../gui/modules/beadmin.py:256
+msgid "Applying changes"
+msgstr "Provádění změn"
+
+#: ../gui/modules/beadmin.py:258
+msgid "Applying changes, please wait ..."
+msgstr "Provádění změn, čekejte prosím..."
+
+#: ../gui/modules/beadmin.py:287
+msgid "Active on reboot\n"
+msgstr "Aktivovat po restartu\n"
+
+#: ../gui/modules/beadmin.py:288
+msgid "Delete\n"
+msgstr "Smazat\n"
+
+#: ../gui/modules/beadmin.py:289
+msgid "Rename\n"
+msgstr "Přejmenovat\n"
+
+#: ../gui/modules/beadmin.py:330
+msgid " to "
+msgstr " na "
+
+#: ../gui/modules/beadmin.py:384
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>Nelze změnit Aktivní Bootovací Prostředí na:</b>\n"
+
+#: ../gui/modules/beadmin.py:389
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>Nelze smazat Bootovací Prostředí:</b>\n"
+
+#: ../gui/modules/beadmin.py:396
+msgid "<b>Couldn't rename Boot Environments:</b>\n"
+msgstr "<b>Nelze přejmenovat Bootovací Prostředí:</b>\n"
+
+#: ../gui/modules/beadmin.py:399
+#, python-format
+msgid "%s <b>to</b> %s\n"
+msgstr "%s <b>na</b> %s\n"
+
+#: ../gui/modules/beadmin.py:416
+msgid "BE error"
+msgstr "Chyba BE"
+
+#: ../gui/modules/beadmin.py:501
+msgid ""
+"The <b>libbe</b> library couldn't prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "Knihovna <b>libbe</b> nemůže připravit seznam Bootovacích Prostředí.\n"
+       "Všechny funkce pro řízení Bootovacího Prostředí jsou zakázány"
+
+#: ../gui/modules/beadmin.py:531 ../gui/modules/beadmin.py:547
+msgid "%m/%d/%y %H:%M"
+msgstr "%m/%d/%y %H:%M"
+
+#: ../gui/modules/installupdate.py:94
+msgid "Preparing..."
+msgstr "Příprava..."
+
+#: ../gui/modules/installupdate.py:95 ../gui/modules/installupdate.py:632
+msgid "Downloading..."
+msgstr "Stahování..."
+
+#: ../gui/modules/installupdate.py:96
+msgid "Installing..."
+msgstr "Instalace..."
+
+#: ../gui/modules/installupdate.py:166 ../gui/modules/webinstall.py:216
+msgid "_Proceed"
+msgstr "_Zpracovat"
+
+#: ../gui/modules/installupdate.py:190
+msgid "_Reject"
+msgstr "_Odmítnout"
+
+#: ../gui/modules/installupdate.py:232
+#, python-format
+msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
+msgstr "GUI nebude reagovat na žádnou událost! %s. Zkontrolujte signály  installupdate.py "
+
+#. For the remove, we are not showing the download stage
+#: ../gui/modules/installupdate.py:243
+msgid "Removing..."
+msgstr "Odstraňování..."
+
+#: ../gui/modules/installupdate.py:249
+msgid "Remove Confirmation"
+msgstr "Potvrzení Odstranění"
+
+#: ../gui/modules/installupdate.py:252
+msgid "Review the package to be removed"
+msgid_plural "Review the packages to be removed"
+msgstr[0] "Zkontrolujte balíčky, které budou odstraněny"
+msgstr[1] "Zkontrolujte balíčky, které budou odstraněny"
+
+#: ../gui/modules/installupdate.py:274
+msgid "Update All"
+msgstr "Aktualizovat Vše"
+
+#: ../gui/modules/installupdate.py:299
+msgid "Install/Update Confirmation"
+msgstr "Potvrzení Instalalce/Aktualizace"
+
+#: ../gui/modules/installupdate.py:301
+msgid "Review the package to be Installed/Updated"
+msgid_plural "Review the packages to be Installed/Updated"
+msgstr[0] "Zkontrolujte balíčky, které budou nainstalovány/aktualizovány"
+msgstr[1] "Zkontrolujte balíčky, které budou nainstalovány/aktualizovány"
+
+#: ../gui/modules/installupdate.py:306
+msgid "Update Confirmation"
+msgstr "Potvrzení Aktualizace"
+
+#: ../gui/modules/installupdate.py:308
+msgid "Review the package to be Updated"
+msgid_plural "Review the packages to be Updated"
+msgstr[0] "Zkontrolujte balíčky, které budou aktualizovány"
+msgstr[1] "Zkontrolujte balíčky, které budou aktualizovány"
+
+#: ../gui/modules/installupdate.py:313
+msgid "Install Confirmation"
+msgstr "Potvrzení instalace"
+
+#: ../gui/modules/installupdate.py:315
+msgid "Review the package to be Installed"
+msgid_plural "Review the packages to be Installed"
+msgstr[0] "Zkontrolujte balíčky, které budou nainstalovány"
+msgstr[1] "Zkontrolujte balíčky, které budou nainstalovány"
+
+#: ../gui/modules/installupdate.py:350 ../packagemanager.py:1492
+#: ../packagemanager.py:1600 ../updatemanager.py:297
+msgid "Name"
+msgstr "Jméno"
+
+#: ../gui/modules/installupdate.py:357 ../gui/modules/repository.py:386
+#: ../packagemanager.py:1512
+msgid "Publisher"
+msgstr "Vydavatel"
+
+#: ../gui/modules/installupdate.py:365 ../packagemanager.py:1528
+msgid "Description"
+msgstr "Popis"
+
+#: ../gui/modules/installupdate.py:410
+msgid "Canceling..."
+msgstr "Rušení..."
+
+#: ../gui/modules/installupdate.py:446
+#, python-format
+msgid "Ensuring %s is up to date..."
+msgstr "Ujištování, že %s je aktuální..."
+
+#: ../gui/modules/installupdate.py:481
+msgid "Inventory exception:\n"
+msgstr "Katalogová vyjímka:\n"
+
+#: ../gui/modules/installupdate.py:490
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+       "Zkontrolujte, prosím, připojení k síti.\n"
+       "Je repositář dostupný?"
+
+#: ../gui/modules/installupdate.py:497
+#, python-format
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?\n"
+"\n"
+"%s"
+msgstr ""
+       "Zkontrolujte, prosím, připojení k síti.\n"
+       "Je repositář dostupný?\n"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:503
+#, python-format
+msgid ""
+"\n"
+"Unable to contact a valid package depot. Please check your network\n"
+"settings and attempt to contact the server using a web browser.\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "Nelze kontaktovat platný repozitář balíčků. Prosím zkontrolujte Vaše síťové \n"
+       "nastavení a pokuste se připojit k serveru pomocí webového prohlížeče.\n"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:510
+msgid ""
+"pkg(7) appears to be out of date and should be updated.\n"
+"Please update SUNWipkg package"
+msgstr ""
+       "pkg(7) se zdá být zastaralý a měl by být aktualizován.\n"
+       "Prosím aktualizujte balíček SUNWipkg"
+
+#: ../gui/modules/installupdate.py:516
+#, python-format
+msgid ""
+"Cannot remove:\n"
+"\t%s\n"
+"Due to the following packages that depend on it:\n"
+msgstr ""
+       "Nelze odstranit:\n"
+       "\t%s\n"
+       "Z důvodu následujících balíčků, které jsou na něm závislé:\n"
+
+#: ../gui/modules/installupdate.py:525
+#, python-format
+msgid ""
+"\n"
+"Failure of consistent use of pfexec or gksu when running\n"
+"%s is often a source of this problem."
+msgstr ""
+       "\n"
+       "Selhání použití příkazu pfexec nebo gksu při spuštění\n"
+       "%s je často zdrojem totoho problému."
+
+#: ../gui/modules/installupdate.py:528
+msgid ""
+"\n"
+"To rebuild index, please use the terminal command:"
+msgstr ""
+       "\n"
+       "K předělání indexu, použijte prosím terminálový příkaz:"
+
+#: ../gui/modules/installupdate.py:529
+msgid ""
+"\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:533
+msgid ""
+"There was an error during installation. The search\n"
+"index is corrupted. You might want try to fix this\n"
+"problem by running command:\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "Vyskytla se chyba při instalaci. Vyhledávání \n"
+       "indexu je poškozeno. Můžete zkusit vyřešit tento problém \n"
+       "spuštěním příkazu:\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:540
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+       "Toto je Live Obraz. Instalaci\n nelze provést. "
+
+#: ../gui/modules/installupdate.py:545
+msgid ""
+"The requested operation would affect files that cannotbe modified in the "
+"Live Image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Požadovaná operace způsobí, že soubory nebudou moci být měněny v Live obrazu disku.\n"
+       "Prosím zopakujte tuto operaci na jiném bootovacím prostředí."
+
+#: ../gui/modules/installupdate.py:551
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "Vyskytla se chyba při instalaci.\n"
+       "Chybí plán operace a operace nemůže být \n"
+       "dokončena. Můžete zkusit vyřešit tento problém \n"
+       "restartováním %s\n"
+
+#: ../gui/modules/installupdate.py:558
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "Vyskytla se chyba při instalaci.\n "
+       "Stav obrazu je nesprávný a operace nemůže být \n"
+       "dokončena. Můžete se pokusit opravit tento problém \n"
+       "restartováním %s\n"
+
+#: ../gui/modules/installupdate.py:569
+msgid "Specifying BE Name not supported.\n"
+msgstr "Specifikování BE Jména nenní podporováno.\n"
+
+#: ../gui/modules/installupdate.py:628
+#, python-format
+msgid "Updating %s"
+msgstr "Aktualizace %s"
+
+#: ../gui/modules/installupdate.py:634
+msgid "Executing..."
+msgstr "Provádění..."
+
+#: ../gui/modules/installupdate.py:640
+msgid "Gathering package information, please wait..."
+msgstr "Shromažďuji informace o balíčku, čekejte prosím..."
+
+#: ../gui/modules/installupdate.py:642
+msgid "Gathering package information"
+msgstr "Shromažďuji informace o balíčku"
+
+#: ../gui/modules/installupdate.py:656
+msgid "All packages already installed."
+msgstr "Všechny balíčky již nainstalovány."
+
+#: ../gui/modules/installupdate.py:660
+msgid ""
+"Selected package(s) cannot be updated on their own.\n"
+"Click Updates to update all packages."
+msgstr ""
+       "Vybraný balíček (balíčky) nemohou být aktualizovány samostatně.\n"
+       "Klikněte na Aktualizovat Vše pro aktualizaci všech balíčků."
+
+#: ../gui/modules/installupdate.py:664
+msgid "No updates available"
+msgstr "Nejsou dostupné žádné aktualizace"
+
+#: ../gui/modules/installupdate.py:725
+msgid "Update All Confirmation"
+msgstr "Potvrzení operace Aktualizovat Vše"
+
+#: ../gui/modules/installupdate.py:728
+msgid "Review the package which will be affected by Update all"
+msgid_plural "Review the packages which will be affected by Update all"
+msgstr[0] "Zkontrolujte balíčky, které budou dotčeny operací Aktualizovat Vše"
+msgstr[1] "Zkontrolujte balíčky, které budou dotčeny operací Aktualizovat Vše"
+
+#: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
+msgid "No further information available"
+msgstr "Žádné další informace nejsou dostupné"
+
+#: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855
+msgid ""
+"\n"
+"Error:\n"
+msgstr ""
+       "\n"
+       "Chyba:\n"
+
+#: ../gui/modules/installupdate.py:830 ../gui/modules/installupdate.py:846
+msgid " - Failed </b>"
+msgstr " - Neúspěšný </b>"
+
+#: ../gui/modules/installupdate.py:850
+#, python-format
+msgid ""
+"An unknown error occurred in the %s stage.\n"
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:\n"
+msgstr ""
+       "Vyskytla se neznámá chyba ve fázi %s .\n"
+       "Prosím, informujte programátory o tomto problému vyplněním \n"
+       "formuláře níže a přiložte podrobné informace o tomto problému:\n"
+
+#: ../gui/modules/installupdate.py:859
+msgid "Exception traceback:\n"
+msgstr "Vyjímka:\n"
+
+#: ../gui/modules/installupdate.py:866
+msgid "pkg version: "
+msgstr "pkg verze: "
+
+#: ../gui/modules/installupdate.py:870
+msgid "List of configured publishers:"
+msgstr "Seznam nakonfigurovaných vydavatelů:"
+
+#: ../gui/modules/installupdate.py:953
+msgid "Installation completed successfully"
+msgstr "Instalace proběhla úspěšně"
+
+#: ../gui/modules/installupdate.py:955
+msgid "Packages removed successfully"
+msgstr "Odstranění balíčků úspěšné."
+
+#: ../gui/modules/installupdate.py:957
+msgid "Packages updated successfully"
+msgstr "Aktualizace balíčků úspěšná."
+
+#: ../gui/modules/installupdate.py:991
+msgid ""
+"Not enough disk space, the selected action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action."
+msgstr ""
+       "Nedostatek místa na disku, vybraná akce nemůže být provedena.\n"
+       "\n"
+       "Klikněte na OK pro správu Vašich nynějších BE a uvolněte místo na disku nebo na Zrušit pro zrušení akce."
+
+#: ../gui/modules/installupdate.py:995
+msgid "Not Enough Disk Space"
+msgstr "Nedostatek Místa na Disku"
+
+#: ../gui/modules/installupdate.py:1013
+msgid "Packages To Be Updated:\n"
+msgstr "Balíčky k Aktualizaci:\n"
+
+#: ../gui/modules/installupdate.py:1020
+msgid "Packages To Be Installed:\n"
+msgstr "Balíčky k Instalaci:\n"
+
+#: ../gui/modules/installupdate.py:1027
+msgid "Packages To Be Removed:\n"
+msgstr "Balíčky k Odebrání:\n"
+
+#: ../gui/modules/installupdate.py:1114
+msgid "A_ccept"
+msgstr "P_otvrdit"
+
+#: ../gui/modules/installupdate.py:1116
+msgid ""
+"You must accept the terms of the license before downloading this package."
+msgstr ""
+       "Musíte souhlasit s licenčními podmínky před tím, než budou balíčky staženy."
+
+#: ../gui/modules/installupdate.py:1129
+msgid "You must view the terms of the license before downloading this package."
+msgstr "Musíte shlédnout licenční podmínky před tím, než budou balíčky staženy."
+
+#: ../gui/modules/installupdate.py:1137
+#, python-format
+msgid "%s License"
+msgstr "%s Licence"
+
+#: ../gui/modules/misc.py:123
+msgid "Errors logged: click to view"
+msgstr "Chyba: klikněte pro zobrazení"
+
+#: ../gui/modules/misc.py:207
+#, python-format
+msgid "Version mismatch: expected version %d, got version %d"
+msgstr "Rozdílné verze: očekávaná verze %d, získaná verze %d"
+
+#: ../gui/modules/misc.py:210
+#, python-format
+msgid "%s is not an install image"
+msgstr "%s není obraz, který lze nainstalovat"
+
+#: ../gui/modules/misc.py:214
+msgid "API Error"
+msgstr "Chyba API"
+
+#: ../gui/modules/misc.py:258
+msgid "Size:"
+msgstr "Velikost:"
+
+#: ../gui/modules/misc.py:259
+msgid "Category:"
+msgstr "Kategorie:"
+
+#: ../gui/modules/misc.py:260
+msgid "Installed:"
+msgstr "Nainstalované:"
+
+#: ../gui/modules/misc.py:261
+msgid "Version Available:"
+msgstr "Dostupná verze:"
+
+#: ../gui/modules/misc.py:262 ../gui/modules/misc.py:278
+#: ../gui/modules/misc.py:288
+msgid "Latest Version:"
+msgstr "Poslední verze:"
+
+#: ../gui/modules/misc.py:263
+msgid "Publisher:"
+msgstr "Vydavatel:"
+
+#. Installed with later version but can't upgrade
+#. Upgradeable Version: None
+#. Not Installed with later version and can't install
+#. Installable Version: None
+#: ../gui/modules/misc.py:265 ../gui/modules/misc.py:298
+#: ../packagemanager.py:3619 ../packagemanager.py:3677
+#: ../packagemanager.py:4271
+msgid "None"
+msgstr "Žádný"
+
+#: ../gui/modules/misc.py:273 ../gui/modules/misc.py:290
+#: ../packagemanager.py:3597 ../packagemanager.py:3693
+#: ../packagemanager.py:4229
+#, python-format
+msgid "%(version)s (Build %(build)s-%(branch)s)"
+msgstr "%(version)s (Build %(build)s-%(branch)s)"
+
+#: ../gui/modules/misc.py:315
+msgid " (disabled)"
+msgstr " (zakázaný)"
+
+#: ../gui/modules/misc.py:317
+msgid " (removed)"
+msgstr " (odstraněný)"
+
+#: ../gui/modules/misc.py:438
+msgid "Catalog refresh error:\n"
+msgstr "Obnovování katalogu selhalo:\n"
+
+#: ../gui/modules/misc.py:441
+#, python-format
+msgid "Only %(suc)s out of %(tot)s catalogs successfully updated.\n"
+msgstr "Úspěšně aktualizováno pouze %(suc)s z %(tot)s katalogů. \n"
+
+#: ../gui/modules/progress.py:44
+#, python-format
+msgid "Retrieving catalog '%s'...\n"
+msgstr "Stahuji katalog  '%s'...\n"
+
+#: ../gui/modules/progress.py:52
+msgid "Caching catalogs ...\n"
+msgstr "Ukládám katalogy do paměti ... \n"
+
+#: ../gui/modules/progress.py:59
+msgid "Loading catalog cache ...\n"
+msgstr "Nahrávám katalogy z paměti ...\n"
+
+#: ../gui/modules/progress.py:70
+#, python-format
+msgid "Refreshing catalog %s\n"
+msgstr "Obnovuji katalog %s\n"
+
+#: ../gui/modules/progress.py:75
+#, python-format
+msgid "Finished refreshing catalog %s\n"
+msgstr "Obnova katalogu %s dokončena\n"
+
+#: ../gui/modules/progress.py:87
+#, python-format
+msgid "Evaluating: %s"
+msgstr "Hodnocení: %s"
+
+#: ../gui/modules/progress.py:110
+#, python-format
+msgid "Downloaded %(current)s of %(total)s"
+msgstr "Staženo %(current)s z %(total)s"
+
+#: ../gui/modules/progress.py:117
+#, python-format
+msgid "Package %d of %d: %s\n"
+msgstr "Balíčky %d z %d: %s\n"
+
+#: ../gui/modules/progress.py:127 ../gui/modules/progress.py:139
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../gui/modules/repository.py:103
+msgid "Manage Publishers Confirmation"
+msgstr "Potvrzení správy vydavatelů"
+
+#: ../gui/modules/repository.py:339
+#, python-format
+msgid "GUI will not respond to any event! %s. Check repository.py signals"
+msgstr "GUI nebude reagovat na žádnou událost! %s. Zkontrolujte repository.py signály"
+
+#: ../gui/modules/repository.py:393
+msgid "Alias"
+msgstr "Alias"
+
+#: ../gui/modules/repository.py:399
+msgid "Enabled"
+msgstr "Povolený"
+
+#: ../gui/modules/repository.py:551
+msgid "Name contains invalid characters"
+msgstr "Jméno obsahuje neplatné znaky"
+
+#: ../gui/modules/repository.py:554
+msgid "Name already in use"
+msgstr "Jméno je již používáno"
+
+#: ../gui/modules/repository.py:592 ../gui/modules/repository.py:1690
+msgid "SSL Key not found at specified location"
+msgstr "SSL klíč nenalezen na zadaném místě"
+
+#: ../gui/modules/repository.py:801
+msgid "Adding Publisher"
+msgstr "Přidávám vydavatele"
+
+#: ../gui/modules/repository.py:815
+msgid "Canceling...\n"
+msgstr "Ruším...\n"
+
+#: ../gui/modules/repository.py:836 ../gui/modules/repository.py:1051
+#, python-format
+msgid "Removing publisher %s\n"
+msgstr "Odstraňuji vydavatele %s\n"
+
+#: ../gui/modules/repository.py:840 ../gui/modules/repository.py:1055
+#, python-format
+msgid "Publisher %s succesfully removed\n"
+msgstr "Vydavatel %s úspěšně odstraněn\n"
+
+#: ../gui/modules/repository.py:867
+#, python-format
+msgid "Adding publisher %s\n"
+msgstr "Přidávám vydavatele %s\n"
+
+#: ../gui/modules/repository.py:871
+#, python-format
+msgid "Updating publisher %s\n"
+msgstr "Aktualizuji vydavatele %s\n"
+
+#: ../gui/modules/repository.py:875
+#, python-format
+msgid "Publisher %s succesfully added\n"
+msgstr "Vydavatel %s úspěšně přidán\n"
+
+#: ../gui/modules/repository.py:878
+#, python-format
+msgid "Publisher %s succesfully updated\n"
+msgstr "Vydavatel %s úspěšně aktualizován\n"
+
+#: ../gui/modules/repository.py:947
+msgid "Disable Publisher:\n"
+msgid_plural "Disable Publishers:\n"
+msgstr[0] "Zakázat vydavatele:\n"
+msgstr[1] "Zakázat vydavatele:\n"
+
+#: ../gui/modules/repository.py:949
+msgid "Enable Publisher:\n"
+msgid_plural "Enable Publishers:\n"
+msgstr[0] "Povolit vydavatele:\n"
+msgstr[1] "Povolit vydavatele:\n"
+
+#: ../gui/modules/repository.py:951
+msgid "Remove Publisher:\n"
+msgid_plural "Remove Publishers:\n"
+msgstr[0] "Odstranit vydavatele:\n"
+msgstr[1] "Odstranit vydavatele:\n"
+
+#: ../gui/modules/repository.py:953
+msgid "Change Priorities:\n"
+msgstr "Změnit Priority:\n"
+
+#: ../gui/modules/repository.py:956
+msgid "Apply the following change:"
+msgid_plural "Apply the following changes:"
+msgstr[0] "Použít následující změnu:"
+msgstr[1] "Použít následující změny:"
+
+#: ../gui/modules/repository.py:1006 ../gui/modules/repository.py:1063
+msgid "Disabling"
+msgstr "Zakazování"
+
+#: ../gui/modules/repository.py:1008 ../gui/modules/repository.py:1065
+msgid "Enabling"
+msgstr "Povolování"
+
+#: ../gui/modules/repository.py:1011 ../gui/modules/repository.py:1068
+#, python-format
+msgid "%(enable)s publisher %(name)s\n"
+msgstr "%(enable)s vydavatel %(name)s\n"
+
+#: ../gui/modules/repository.py:1038
+#, python-format
+msgid "Changing priority for publisher %s\n"
+msgstr "Měním prioritu pro vydavatele %s\n"
+
+#: ../gui/modules/repository.py:1231
+msgid ""
+"Mirrors for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Mirror zabezpečeného vydavatele \n"
+       "musí začínat https://"
+
+#: ../gui/modules/repository.py:1239
+msgid ""
+"Origins for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Zdroj zabezpečeného vydavatele \n"
+       "musí začínat https://"
+
+#: ../gui/modules/repository.py:1261
+msgid "URI already added"
+msgstr "URI již přidáno"
+
+#: ../gui/modules/repository.py:1508
+msgid "Origin:\n"
+msgid_plural "Origins:\n"
+msgstr[0] "Zdroj:\n"
+msgstr[1] "Zdroje:\n"
+
+#: ../gui/modules/repository.py:1520
+msgid "Description:\n"
+msgstr "Popis:\n"
+
+#. More Generic for WebInstall
+#: ../gui/modules/repository.py:1530
+msgid "Publisher error"
+msgstr "Chyba vydavatele"
+
+#: ../gui/modules/repository.py:1543
+msgid "Specify SSL Key File"
+msgstr "Specifikujte soubor se SSL Klíčem"
+
+#: ../gui/modules/repository.py:1565
+msgid "Specify SSL Certificate File"
+msgstr "Specifikujte soubor se SSL Certifikátem"
+
+#: ../gui/modules/repository.py:1666
+msgid "URI is not valid"
+msgstr "URI není platné"
+
+#: ../gui/modules/repository.py:1680
+msgid "SSL should not be specified"
+msgstr "SSL by nemělo být specifikováno"
+
+#: ../gui/modules/repository.py:1694
+msgid "SSL Certificate not found at specified location"
+msgstr "SSL Certifikát nenalezen na zadaném umístění"
+
+#: ../gui/modules/repository.py:1702
+msgid "Mirror URI"
+msgstr "Mirror URI"
+
+#: ../gui/modules/repository.py:1711
+msgid "Origin URI"
+msgstr "Zdrojové URI"
+
+#: ../gui/modules/repository.py:1805
+msgid "Enabling Publisher"
+msgid_plural "Enabling Publishers"
+msgstr[0] "Povoluji vydavatele"
+msgstr[1] "Povoluji vydavatele"
+
+#: ../gui/modules/repository.py:1807
+msgid "Disabling Publisher"
+msgid_plural "Disabling Publishers"
+msgstr[0] "Zakazuji vydavatele"
+msgstr[1] "Zakazuji vydavatele"
+
+#: ../gui/modules/uarenamebe.py:58
+msgid "The <b>libbe</b> library was not found on your system."
+msgstr "Knihovna <b>libbe</b> nebyla nalezena na Vašem systému."
+
+#: ../gui/modules/uarenamebe.py:65 ../gui/modules/uarenamebe.py:109
+msgid "Rename BE"
+msgstr "Přejmenovat BE"
+
+#: ../gui/modules/uarenamebe.py:110
+msgid "Renaming BE, please wait..."
+msgstr "Přejmenovávám BE, prosím čekejte..."
+
+#: ../gui/modules/uarenamebe.py:143 ../packagemanager.py:722
+#, python-format
+msgid "GUI will not respond to any event! %s. Check declare_signals()"
+msgstr "GUI nebude reagovat na žadnou událost! %s. Zkontrolujte declare_signals()"
+
+#: ../gui/modules/uarenamebe.py:220
+#, python-format
+msgid ""
+"Could not change the BE name to:\n"
+"\t%s\n"
+"\n"
+"The following name will be used instead:\n"
+"\t%s"
+msgstr ""
+       "Nelze změnit jméno BE na\n"
+       "\t%s\n"
+       "\n"
+       "Bude použito následující jméno:\n"
+       "\t%s"
+
+#: ../gui/modules/uarenamebe.py:223
+msgid "BE Name"
+msgstr "Jméno BE"
+
+#: ../gui/modules/uarenamebe.py:229
+msgid ""
+"Could not restart the system.\n"
+"Please restart the system manually."
+msgstr ""
+       "Nelze restartovat systém.\n"
+       "Prosím proveďte restart ručně."
+
+#: ../gui/modules/uarenamebe.py:231
+msgid "Restart Error"
+msgstr "Chyba při restartu"
+
+#: ../gui/modules/uarenamebe.py:245
+msgid "This name already exists."
+msgstr "Toto jméno již existuje"
+
+#: ../gui/modules/uarenamebe.py:251
+msgid "BE name contains invalid character."
+msgstr "Jméno BE obsahuje neplatné znaky."
+
+#: ../gui/modules/webinstall.py:131
+#, python-format
+msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
+msgstr "GUI nebude reagovat na žádnou událost! %s. Zkontrolujte signály webinstall.py"
+
+#: ../gui/modules/webinstall.py:143
+msgid ""
+"\n"
+" Add New Publisher\n"
+msgid_plural ""
+"\n"
+" Add New Publishers\n"
+msgstr[0] ""
+       "\n"
+       "Přidat nového vydavatele\n"
+msgstr[1] ""
+       "\n"
+       "Přidat nové vydavatele\n"
+
+#: ../gui/modules/webinstall.py:152
+msgid "All specified publishers are already on the system."
+msgstr "Všichni specifikovaní vydavatelé jsou již v systému."
+
+#: ../gui/modules/webinstall.py:162
+#, python-format
+msgid "\t%s "
+msgstr "\t%s "
+
+#: ../gui/modules/webinstall.py:166
+#, python-format
+msgid " (%s)\n"
+msgstr " (%s)\n"
+
+#: ../gui/modules/webinstall.py:172
+msgid ""
+"\n"
+" Install Package\n"
+msgid_plural ""
+"\n"
+" Install Packages\n"
+msgstr[0] ""
+       "\n"
+       " Instalovat Balíček\n"
+msgstr[1] ""
+       "\n"
+       "Instalovat Balíčky\n"
+
+#: ../gui/modules/webinstall.py:181
+#, python-format
+msgid "\t%s (disabled)\n"
+msgstr "\t%s (zakázaný)\n"
+
+#: ../gui/modules/webinstall.py:231
+msgid "Click Proceed <b>only</b> if you trust this new publisher "
+msgid_plural "Click Proceed <b>only</b> if you trust these new publishers "
+msgstr[0] "Klikněte na Zpracovat <b>pouze</b> pokud věříte tomuto vydavateli "
+msgstr[1] "Klikněte na Zpracovat <b>pouze</b> pokud věříte těmto vydavatelům "
+
+#: ../gui/modules/webinstall.py:302 ../gui/modules/webinstall.py:347
+#: ../gui/modules/webinstall.py:391
+msgid "Publisher Error"
+msgstr "Chyba vydavatele"
+
+#: ../gui/modules/webinstall.py:310
+msgid "The following publisher is disabled:\n"
+msgid_plural "The following publishers are disabled:\n"
+msgstr[0] "Následující vydavatel je zakázaný:\n"
+msgstr[1] "Následující vydavatelé jsou zakázáni: \n"
+
+#: ../gui/modules/webinstall.py:314
+#, python-format
+msgid "\t<b>%s</b>\n"
+msgstr "\t<b>%s</b>\n"
+
+#: ../gui/modules/webinstall.py:317
+msgid ""
+"\n"
+"Clicking OK will enable the publisher before proceeding with install. On "
+"completion it will be disabled again."
+msgid_plural ""
+"\n"
+"Clicking OK will enable the publishers before proceeding with install.\n"
+"On completion they will be disabled again."
+msgstr[0] ""
+       "\n"
+       "Kliknutím na OK povolíte vydavatele před zpracováním instalace. Na konci instalace bude opět zakázán."
+msgstr[1] ""
+       "\n"
+       "Kliknutím na OK povolíte vydavatele před zpracováním instalace. Na konci instalace budou opět zakázáni."
+
+#: ../gui/modules/webinstall.py:329
+msgid "Disabled Publisher"
+msgid_plural "Disabled Publishers"
+msgstr[0] "Zakázat vydavatele"
+msgstr[1] "Zakázat vydavatele"
+
+#: ../gui/modules/webinstall.py:387
+#, python-format
+msgid "Failed to add %s.\n"
+msgstr "Nepodařilo se přidat %s.\n"
+
+#: ../gui/modules/webinstall.py:388 ../packagemanager.py:1349
+#: ../packagemanager.py:1361
+msgid "No URI specified"
+msgstr "Nebyla specifikována URI adresa"
+
+#: ../gui/modules/webinstall.py:469
+msgid "Web Installer Error"
+msgstr "Chyba webového instaléru"
+
+#: ../modules/actions/__init__.py:95
+#, python-format
+msgid ""
+"unknown action type '%(type)s' in package '%(fmri)s' in action '%(action)s'"
+msgstr ""
+       "neznámý typ akce '%(type)s' v balíčku '%(fmri)s' v akci '%(action)s'"
+
+#: ../modules/actions/__init__.py:99
+#, python-format
+msgid "unknown action type '%(type)s' in action '%(action)s'"
+msgstr "neznámý typ akce '%(type)s' v akci '%(action)s'"
+
+#: ../modules/actions/__init__.py:112
+#, python-format
+msgid ""
+"Malformed action in package '%(fmri)s' at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Poškozená akce v balíčku '%(fmri)s' na pozici: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:117
+#, python-format
+msgid ""
+"Malformed action at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Poškozená akce na pozici: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:144
+#, python-format
+msgid "invalid action in package %(fmri)s: %(action)s: %(error)s"
+msgstr "neplatná akce v balíčku %(fmri)s: %(action)s: %(error)s"
+
+#: ../modules/actions/__init__.py:147
+#, python-format
+msgid "invalid action, '%(action)s': %(error)s"
+msgstr "neplatná akce, '%(action)s': %(error)s"
+
+#: ../modules/actions/__init__.py:178
+#, python-format
+msgid "required attribute '%s' was not provided."
+msgstr "požadovaný atribut '%s' nebyl poskytnut."
+
+#: ../modules/actions/__init__.py:253
+#, python-format
+msgid "required attribute, '%s', was not provided."
+msgstr "požadovaný atribut '%s', nebyl poskytnut."
+
+#: ../modules/actions/depend.py:65
+msgid "Missing type attribute"
+msgstr "Chybí atribut typ"
+
+#: ../modules/actions/depend.py:69
+msgid "Missing fmri attribute"
+msgstr "Chybí atribut fmri"
+
+#: ../modules/actions/depend.py:73
+#, python-format
+msgid "Unknown type (%s) in depend action"
+msgstr "Neznámý typ (%s) "
+
+#: ../modules/actions/directory.py:54 ../modules/actions/file.py:63
+#: ../modules/actions/link.py:56
+msgid "Empty path attribute"
+msgstr "atribut cesta je prázdný"
+
+#: ../modules/actions/generic.py:139
+#, python-format
+msgid "No such file: '%s'."
+msgstr "Žádný takový soubor:  '%s'."
+
+#: ../modules/actions/generic.py:142
+#, python-format
+msgid "'%s' is not a file."
+msgstr "'%s' není soubor."
+
+#: ../modules/actions/license.py:113
+#, python-format
+msgid "License file %s does not exist."
+msgstr "Soubor s licencí %s neexistuje."
+
+#: ../modules/actions/license.py:118
+#, python-format
+msgid "Hash: '%(found)s' should be '%(expected)s'"
+msgstr "Hash: '%(found)s' měl by být '%(expected)s'"
+
+#: ../modules/catalog.py:1514
+#, python-format
+msgid "Unknown info_needed type: %s"
+msgstr "Neznámý typ info_needed:  %s"
+
+#. API consumer passed an unknown type for img_path.
+#: ../modules/client/api.py:130
+msgid "Unknown img_path type."
+msgstr "Neznámý typ img_path."
+
+#: ../modules/client/api_errors.py:126
+#, python-format
+msgid ""
+"Package: %s\n"
+"\n"
+msgstr ""
+       "Balíček: %s\n"
+       "\n"
+
+#: ../modules/client/api_errors.py:131
+msgid "  License requires acceptance."
+msgstr "  Licence vyžaduje souhlas."
+
+#: ../modules/client/api_errors.py:134
+msgid "  License must be viewed."
+msgstr "  Licensi si musíte prohlédnout."
+
+#: ../modules/client/api_errors.py:174
+#, python-format
+msgid ""
+"Invalid package state change attempted '%(states)s' for package '%(fmri)s'."
+msgstr ""
+       "Neplatný pokus o změnu stavu balíčku '%(states)s' pro  balíček '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:204
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because of insufficient permissions. Please try the command again using "
+"pfexec\n"
+"or otherwise increase your privileges."
+msgstr ""
+       "Nelze operovat na %s\n"
+       "kvůli nedostatečným právům. Prosím zkuste příkaz spustit pomocí pfexec\n"
+       "nebo si přidejte práva."
+
+#: ../modules/client/api_errors.py:209
+msgid ""
+"\n"
+"Could not complete the operation because of insufficient permissions. "
+"Please\n"
+"try the command again using pfexec or otherwise increase your privileges.\n"
+msgstr ""
+       "\n"
+       "Nelze dokončit operaci kvůli nedostatečným právům. "
+       "Prosím\n"
+       "zkuste příkaz spustit pomocí pfexec nebo si přidejte práva.\n"
+
+#: ../modules/client/api_errors.py:220
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because the file is in use. Please stop using the file and try the\n"
+"operation again."
+msgstr ""
+       "Nelze operovat na %s\n"
+       "protože soubor se teď používá. Prosím, zastavte používání souboru a \n"
+       "zkuste operaci znovu."
+
+#: ../modules/client/api_errors.py:235
+#, python-format
+msgid "Could not complete the operation on %s: read-only filesystem\n"
+msgstr "Nelze dokončit operaci na %s: souborový systém je jen ke čtení\n"
+
+#: ../modules/client/api_errors.py:237
+msgid "Could not complete the operation: read-only filesystem."
+msgstr "Nelze dokončit operaci: souborový systém je jen ke čtení."
+
+#: ../modules/client/api_errors.py:264
+msgid ""
+"The following pattern(s) did not match any packages in the current catalog.\n"
+"Try relaxing the pattern, refreshing and/or examining the catalogs:"
+msgstr ""
+       "Následující vzory neodpovídají žádnému balíčku v katalogu.\n"
+       "Zkuste opravit vzor nebo obnovit katalog:"
+
+#: ../modules/client/api_errors.py:271
+msgid ""
+"The following patterns only matched packages that are from publishers other "
+"than that which supplied the already installed version of this package"
+msgstr ""
+       "Následující výrazy odpovídají pouze balíčkům, která jsou od jiných vydavatelů než ten, který dodal verzi balíček nainstalovaného."
+
+#: ../modules/client/api_errors.py:285
+#, python-format
+msgid "'%s' matches no installed packages"
+msgstr "'%s' neodpovídá žádnému nainstalovanému balíčku."
+
+#: ../modules/client/api_errors.py:289
+#, python-format
+msgid "'%s' is an illegal fmri"
+msgstr "'%s' neplatné fmri"
+
+#: ../modules/client/api_errors.py:293
+#, python-format
+msgid "'%s' supports the following architectures: %s"
+msgstr "'%s' podporuje následující architektury: %s"
+
+#: ../modules/client/api_errors.py:294
+#, python-format
+msgid "Image architecture is defined as: %s"
+msgstr "Architektura obrazu je definována jako: %s"
+
+#: ../modules/client/api_errors.py:299
+#, python-format
+msgid "'%(p)s' depends on obsolete package '%(op)s'"
+msgstr "'%(p)s' závisí na zastaralém balíčku '%(op)s'"
+
+#: ../modules/client/api_errors.py:303
+msgid ""
+"The proposed operation can not be performed for the following package(s) as "
+"they are already installed: "
+msgstr ""
+       "Navržená operace nemůže být provedena pro následující balíčky, protože jsou nainstalované: "
+
+#: ../modules/client/api_errors.py:310
+msgid "The following different patterns specify thesame package(s):"
+msgstr "Následující různé výrazy specifikují ten samý balíček (balíčky):"
+
+#: ../modules/client/api_errors.py:320
+msgid "No solution was found to satisfy constraints"
+msgstr "Nebylo nalezeno žádné řešení, které by vyhovovalo podmínce"
+
+#: ../modules/client/api_errors.py:326
+#, python-format
+msgid "Package %s is missing a dependency: %s"
+msgstr "Balíčku %s chybí závislost: %s"
+
+#: ../modules/client/api_errors.py:398
+#, python-format
+msgid ""
+"The FMRI '%s' does not contain publisher information and cannot be used for "
+"catalog operations."
+msgstr ""
+       "FMRI '%s' neobsahuje informace o vydavateli a nemůže být použit pro operace s katalogem."
+
+#: ../modules/client/api_errors.py:407
+#, python-format
+msgid ""
+"Catalog meta_root '%(root)s' is invalid; unable to complete operation: '%(op)"
+"s'."
+msgstr ""
+       "Katalogový meta_root '%(root)s' je neplatný; operaci nelze dokončit: '%(op)"
+       "s'."
+
+#: ../modules/client/api_errors.py:424 ../modules/server/catalog.py:79
+msgid "The following catalog files have incorrect permissions:\n"
+msgstr "Následující soubory v katalogu mají nesprávná práva:\n"
+
+#: ../modules/client/api_errors.py:428 ../modules/server/catalog.py:83
+#, python-format
+msgid "\t%(fname)s: expected mode: %(emode)s, found mode: %(fmode)s\n"
+msgstr "\t%(fname)s: očekávaný mód:  %(emode)s, nalezený mód: %(fmode)s\n"
+
+#: ../modules/client/api_errors.py:438
+#, python-format
+msgid "The signature data for the '%s' catalog file is not valid."
+msgstr "Podpis pro soubory katalogu '%s' je neplatný."
+
+#: ../modules/client/api_errors.py:448
+#, python-format
+msgid ""
+"Unable to determine the updates needed for  the current catalog using the "
+"provided catalog update data in '%s'."
+msgstr ""
+       "Nelze rozpoznat potřebné aktualizace pro současný katalog pomocí poskytnutých aktualizovaných dat v '%s'."
+
+#: ../modules/client/api_errors.py:458
+#, python-format
+msgid ""
+"Unable to perform '%(op)s' operation for catalog %(name)s; completion would "
+"result in a duplicate entry for package '%(fmri)s'."
+msgstr ""
+       "Nelze provést operaci '%(op)s' pro katalog %(name)s; výsledek způsobí duplicitní zápis pro balíček '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:470
+msgid "Catalog updates can only be applied to an on-disk catalog."
+msgstr "Aktualizace katalogu může být použita pouze na katalog umístěný na disku."
+
+#: ../modules/client/api_errors.py:478
+#, python-format
+msgid "Catalog file '%s' is invalid."
+msgstr "Soubor katalogu '%s' je neplatný."
+
+#: ../modules/client/api_errors.py:486
+#, python-format
+msgid ""
+"Unable to determine the updates needed for the catalog using the provided "
+"catalog update data in '%s'. The specified catalog updates are for an older "
+"version of the catalog and cannot be used."
+msgstr ""
+       "Nelze rozpoznat aktualizace potřebné pro katalog pomocí poskytnutých aktualizovaných dat v '%s'. Specifikované aktualizace katalogu jsou pro starší verze katalogu a nemohou být tedy použity."
+
+#: ../modules/client/api_errors.py:497
+#, python-format
+msgid "'%s' could not be found in the catalog."
+msgstr "'%s' nelze nalést v katalogu."
+
+#: ../modules/client/api_errors.py:505
+#, python-format
+msgid "Unknown catalog update type '%s'"
+msgstr "Neznámý typ aktualizace katalogu '%s'"
+
+#: ../modules/client/api_errors.py:513
+#, python-format
+msgid "Unrecognized, unknown, or invalid CatalogPart '%s'"
+msgstr "Nerozpoznaná, neznámá nebo neplatná část katalogu '%s'"
+
+#: ../modules/client/api_errors.py:544
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current publishers:\n"
+msgstr ""
+       "Nelze nalézt odpovídající balíček pro následující FRMI v katalogu pro současného vydavatele:\n"
+
+#: ../modules/client/api_errors.py:549
+#, python-format
+msgid "%s (pattern did not match)\n"
+msgstr "%s (vzor neodpovídá)\n"
+
+#: ../modules/client/api_errors.py:551
+#, python-format
+msgid "%s (publisher did not match)\n"
+msgstr "%s (vydavatel neodpovídá)\n"
+
+#: ../modules/client/api_errors.py:554
+#, python-format
+msgid "%s (version did not match)\n"
+msgstr "%s (verze neodpovídá)\n"
+
+#: ../modules/client/api_errors.py:595
+#, python-format
+msgid "The search at url %s returned no results."
+msgstr "Hlednání na adrese %s nevrátilo žádný výsledek."
+
+#: ../modules/client/api_errors.py:609
+msgid "Some servers failed to respond appropriately:\n"
+msgstr "Některé servery selhaly, aby odpověděly vhodně:\n"
+
+#: ../modules/client/api_errors.py:611 ../modules/client/api_errors.py:620
+#, python-format
+msgid ""
+"%(o)s:\n"
+"%(msg)s\n"
+msgstr ""
+       "%(o)s:\n"
+       "%(msg)s\n"
+
+#: ../modules/client/api_errors.py:614
+#, python-format
+msgid "%s did not return a valid response.\n"
+msgstr "%s nevrátil platnou odpověd.\n"
+
+#: ../modules/client/api_errors.py:617
+msgid "Some servers don't support requested search operation:\n"
+msgstr "Některé servery nepodporují požadované operace hledání:\n"
+
+#: ../modules/client/api_errors.py:631
+msgid ""
+"Search performance is degraded.\n"
+"Run 'pkg rebuild-index' to improve search speed."
+msgstr ""
+       "Výkon hledání je degradován.\n"
+       "Spusťte 'pkg rebuild-index' pro zlepšení rychlosti vyhledání."
+
+#: ../modules/client/api_errors.py:645
+msgid "Search server does not support the requested protocol:"
+msgstr "Server, kde hledáte, nepodporuje požadovaný protokol:"
+
+#: ../modules/client/api_errors.py:793
+#, python-format
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information: %s"
+msgstr ""
+       "Zadaný soubor má nerozpoznaný formát nebo obsahuje neplatné informace o vydavateli: %s"
+
+#: ../modules/client/api_errors.py:796
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information."
+msgstr ""
+       "Zadaný soubor má nerozpoznaný formát nebo obsahuje neplatné informace o vydavateli."
+
+#: ../modules/client/api_errors.py:805
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Nepodporovaný datový formát pro pkg(7) vydavatele."
+
+#: ../modules/client/api_errors.py:831
+#, python-format
+msgid ""
+"Error encountered while retrieving data from '%s':\n"
+"%s"
+msgstr ""
+       "Vyskytla se chyba při stahování dat z: %s':\n"
+       "%s"
+
+#: ../modules/client/api_errors.py:833
+#, python-format
+msgid "Error encountered while retrieving data from: %s"
+msgstr "Vyskytla se chyba při stahování dat z: %s"
+
+#: ../modules/client/api_errors.py:845
+#, python-format
+msgid "'%s' is not a valid location."
+msgstr "'%s' není platné umístění."
+
+#: ../modules/client/api_errors.py:857
+#, python-format
+msgid "'%s' is not a valid boot environment name."
+msgstr "%s' není platné jméno bootovacího prostředí."
+
+#: ../modules/client/api_errors.py:869
+#, python-format
+msgid "The boot environment '%s' already exists."
+msgstr "Bootovací prostředí '%s' již existuje."
+
+#: ../modules/client/api_errors.py:878
+msgid ""
+"Boot environment naming during package install is not supported on this\n"
+"version of OpenSolaris. Please update without the --be-name option."
+msgstr ""
+       "Pojmenování bootovacího prostředí během instalace balíčku není podporováno na této\n"
+       "verzi OpenSolarisu. Prosím spusťte update bez volby --be-name."
+
+#: ../modules/client/api_errors.py:884
+msgid "Unable to clone the current boot environment."
+msgstr "Nelze vytvořit klon současného bootovacího prostředí."
+
+#: ../modules/client/api_errors.py:897
+#, python-format
+msgid ""
+"A problem occurred while attempting to rename the boot environment\n"
+"currently named %(orig)s to %(dest)s."
+msgstr ""
+       "Vyskytl se problém při pokusu přejmenovat bootovací prostředí\n"
+       "z %(orig)s na %(dest)s."
+
+#: ../modules/client/api_errors.py:908
+#, python-format
+msgid "Unable to mount %(name)s at %(mt)s"
+msgstr "Nelze připojit %(name)s do %(mt)s"
+
+#: ../modules/client/api_errors.py:917
+msgid ""
+"Naming a boot environment when operating on a non-live image is\n"
+"not allowed."
+msgstr ""
+       "Pojmenování bootovacího prostředí pracujícího na neživém obrazu není\n"
+       "povoleno."
+
+#: ../modules/client/api_errors.py:928
+msgid "Info does not recognize the following options:"
+msgstr "Info nerozpoznalo následující volby:"
+
+#: ../modules/client/api_errors.py:930
+msgid " '"
+msgstr " '"
+
+#: ../modules/client/api_errors.py:930
+msgid "'"
+msgstr "'"
+
+#: ../modules/client/api_errors.py:959
+#, python-format
+msgid ""
+"Publisher meta_root '%(root)s' is invalid; unable to complete operation: '%"
+"(op)s'."
+msgstr ""
+       "meta_root '%(root)s' vydavatele je neplatný; nelze dokončit operaci: '%"
+       "(op)s'."
+
+#: ../modules/client/api_errors.py:968
+#, python-format
+msgid "'%s' is not a valid publisher name."
+msgstr "'%s' není platné jméno vydavatele."
+
+#: ../modules/client/api_errors.py:976
+#, python-format
+msgid ""
+"'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
+msgstr ""
+       "'%(value)s' není platná hodnota pro atribut repozitáře '%(attribute)s'."
+
+#: ../modules/client/api_errors.py:989
+#, python-format
+msgid "'%s' is not a valid repository collection type."
+msgstr "'%s' není platný typ repozitáře"
+
+#: ../modules/client/api_errors.py:997
+#, python-format
+msgid "'%s' is not a valid URI."
+msgstr "'%s' není platné URI."
+
+#: ../modules/client/api_errors.py:1005
+#, python-format
+msgid "'%s' is not a valid URI priority; integer value expected."
+msgstr "'%s' není platná priorita URI; očekáváné celé číslo."
+
+#: ../modules/client/api_errors.py:1017
+#, python-format
+msgid "'%s' is not a valid repository URI sort policy."
+msgstr "'%s' není platné pravidlo pro třídění URI"
+
+#: ../modules/client/api_errors.py:1026
+#, python-format
+msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
+msgstr "Vydavatel '%s' je zakázán a nemůže být použit pro operace s balíčky."
+
+#: ../modules/client/api_errors.py:1035
+#, python-format
+msgid "A publisher with the same name or alias as '%s' already exists."
+msgstr "Vydavatel se stejným jménem nebo aliasem jako '%s'. již existuje."
+
+#: ../modules/client/api_errors.py:1044
+#, python-format
+msgid ""
+"A repository with the same name or origin URIs already exists for publisher "
+"'%s'."
+msgstr ""
+       "Repozitář se stejným jménem nebo URI již pro vydavatele '%s' existuje."
+
+#: ../modules/client/api_errors.py:1053
+#, python-format
+msgid "Mirror '%s' already exists for the specified publisher."
+msgstr "Mirror '%s' již existuje pro zadaného vydavatele."
+
+#: ../modules/client/api_errors.py:1062
+#, python-format
+msgid "Origin '%s' already exists for the specified publisher."
+msgstr "Zdroj '%s' již existuje pro zadaného vydavatele."
+
+#: ../modules/client/api_errors.py:1071
+#, python-format
+msgid ""
+"At least one origin is required for %s.  You must add a new origin before "
+"attempting to remove the specified origin(s)."
+msgstr ""
+       "Alespoň jeden zdroj je požadován pro %s. Musíte přidat nový zdroj před tím, než se pokusíte odstranit původní zdroj."
+
+#: ../modules/client/api_errors.py:1081
+msgid "The preferred publisher cannot be removed."
+msgstr "Preferovaný vydavatel nemůže být odstraněn."
+
+#: ../modules/client/api_errors.py:1088
+msgid "Cannot search a repository before or after itself"
+msgstr "Nelze hledat repozitář před nebo po sobě."
+
+#: ../modules/client/api_errors.py:1096
+msgid "Cannot remove the selected repository for a publisher."
+msgstr "Nelze odstranit vybraný repozitář pro vydavatele."
+
+#: ../modules/client/api_errors.py:1105
+#, python-format
+msgid ""
+"Publisher '%s' is disabled and cannot be set as the preferred publisher."
+msgstr ""
+       "Vydavatel '%s' je zakázán a nemůže být nastaven jako preferovaný vydavatel."
+
+#: ../modules/client/api_errors.py:1114
+msgid ""
+"The preferred publisher may not be disabled.  Another publisher must be set "
+"as the preferred publisher before this publisher can be disabled."
+msgstr ""
+       "Preferovaný vydavatel nemůže být zakázán. Musíte nastavit jiného vydavatele jako preferovaného a poté tohoto vydavatele zakázat."
+
+#: ../modules/client/api_errors.py:1124
+#, python-format
+msgid "Unknown legal URI '%s'."
+msgstr "Neznámá platná URI adresa '%s'."
+
+#: ../modules/client/api_errors.py:1132
+#, python-format
+msgid "Unknown publisher '%s'."
+msgstr "Neznámý vydavatel '%s'."
+
+#: ../modules/client/api_errors.py:1140
+#, python-format
+msgid "Unknown related URI '%s'."
+msgstr "Neznámé URI '%s'."
+
+#: ../modules/client/api_errors.py:1148
+#, python-format
+msgid "Unknown repository '%s'."
+msgstr "Neznámý repozitář '%s'."
+
+#: ../modules/client/api_errors.py:1156
+#, python-format
+msgid "Unknown repository mirror '%s'."
+msgstr "Neznámý mirror repozitáře '%s'."
+
+#: ../modules/client/api_errors.py:1170
+#, python-format
+msgid "Publisher '%s' has no repositories that support the '%s' operation."
+msgstr "Vydavatel '%s' nemá žádný repozitář, který podporuje operaci  '%s'."
+
+#: ../modules/client/api_errors.py:1178
+#, python-format
+msgid "Unknown repository origin '%s'"
+msgstr "Neznámý zdroj repozitáře '%s'"
+
+#: ../modules/client/api_errors.py:1189
+#, python-format
+msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
+msgstr "URI '%(uri)s' obsahuje nepodporované schéma '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1192
+msgid "The specified URI contains an unsupported scheme."
+msgstr "Zadané URI neobsahuje podporované schéma."
+
+#: ../modules/client/api_errors.py:1200
+#, python-format
+msgid "'%(attr)s' is not supported for '%(scheme)s'."
+msgstr "'%(attr)s' není podporované pro '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1227
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
+"has expired.  Please install a valid certificate."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vyžadující přístup do '%(uri)s', vypršel. Prosím nainstalujte si platný certifikát."
+
+#: ../modules/client/api_errors.py:1232
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
+"a valid certificate."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vypršel. Prosím, nainstalujte si platný certifikát."
+
+#: ../modules/client/api_errors.py:1237
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
+"install a valid certificate."
+msgstr ""
+       "Certifikát '%(cert)s' vyžadující přístup do '%(uri)s' vypršel. Prosím nainstalujte si platný certifikát."
+
+#: ../modules/client/api_errors.py:1240
+#, python-format
+msgid "Certificate '%s' has expired.  Please install a valid certificate."
+msgstr "Certifikát '%s' vypršel. Prosím, nainstalujte si platný certifikát."
+
+#: ../modules/client/api_errors.py:1253
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"will expire in '%(days)s' days."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vyžadující přístup do '%(uri)s' vyprší za '%(days)s' dny."
+
+#: ../modules/client/api_errors.py:1258
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
+"days."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vyprší za '%(days)s' dny."
+
+#: ../modules/client/api_errors.py:1262
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
+"s' days."
+msgstr ""
+       "Certifikát '%(cert)s' vyžadující přístup do '%(uri)s' vyprší za '%(days)s' dny."
+
+#: ../modules/client/api_errors.py:1265
+#, python-format
+msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
+msgstr "Certifikát '%(cert)s' vyprší za '%(days)s' dny."
+
+#: ../modules/client/api_errors.py:1277
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"is invalid."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vyžadující přístup do '%(uri)s' je neplatný"
+
+#: ../modules/client/api_errors.py:1281
+#, python-format
+msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
+msgstr "Certifikát '%(cert)s' pro vydavatele '%(pub)s' je neplatný."
+
+#: ../modules/client/api_errors.py:1285
+#, python-format
+msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
+msgstr "Certifikát '%(cert)s vyžadující přístup do '%(uri)s', je neplatný."
+
+#: ../modules/client/api_errors.py:1288
+#, python-format
+msgid "Invalid certificate '%s'."
+msgstr "Neplatný certifikát '%s'."
+
+#: ../modules/client/api_errors.py:1299
+#, python-format
+msgid ""
+"Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
+"(uri)s'."
+msgstr ""
+       "Nelze lokalizovat klíč '%(key)s' pro vydavatele '%(pub)s' potřebný pro přístup k %(uri)s'."
+
+#: ../modules/client/api_errors.py:1303
+#, python-format
+msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
+msgstr "Nelze lokalizovat klíč '%(key)s' pro vydavatele '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1307
+#, python-format
+msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
+msgstr "Nelze lokalizovat klíč '%(key)s' potřebný pro přístup k %(uri)s'."
+
+#: ../modules/client/api_errors.py:1310
+#, python-format
+msgid "Unable to locate key '%s'."
+msgstr "Nelze lokalizovat klíč '%s'."
+
+#: ../modules/client/api_errors.py:1321
+#, python-format
+msgid ""
+"Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
+"access '%(uri)s'."
+msgstr ""
+       "Nelze nalést certifikát '%(cert)s' pro vydavatele '%(pub)s' vyžadující přístup do '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1326
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
+msgstr "Nelze nalést certifikát '%(cert)s' pro vydavatele '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1330
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
+msgstr "Nelze nalést certifikát '%(cert)s' vyžadující přístup do '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1333
+#, python-format
+msgid "Unable to locate certificate '%s'."
+msgstr "Nelze nalést certifikát '%s'."
+
+#: ../modules/client/api_errors.py:1345
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"has a future effective date."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' vyžadující přístup do '%(uri)s', obsahuje datum v budoucnosti."
+
+#: ../modules/client/api_errors.py:1350
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
+msgstr ""
+       "Certifikát '%(cert)s' pro vydavatele '%(pub)s' obsahuje datum v budoucnosti."
+
+#: ../modules/client/api_errors.py:1354
+#, python-format
+msgid ""
+"Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
+"date."
+msgstr ""
+       "Certifikát '%(cert)s' vyžadující přístup do '%(uri)s' obsahuje datum v budoucnosti."
+
+#: ../modules/client/api_errors.py:1357
+#, python-format
+msgid "Certificate '%s' has a future effective date."
+msgstr "Certifikát '%s' obsahuje datum v budoucnosti."
+
+#: ../modules/client/api_errors.py:1370
+#, python-format
+msgid "Gave a bad response:%s"
+msgstr "Vrácena špatná odpověď: %s"
+
+#: ../modules/client/api_errors.py:1381
+#, python-format
+msgid "Could not find %s"
+msgstr "Nelze nalézt '%s'."
+
+#: ../modules/client/api_errors.py:1404
+#, python-format
+msgid "The signature data for the manifest of the '%s' package is not valid."
+msgstr "Podpis dat pro manifest balíčku '%s' není platný"
+
+#: ../modules/client/api_errors.py:1406
+msgid "The signature data for the manifest is not valid."
+msgstr "Podpis dat pro manifest není platný."
+
+#: ../modules/client/api_errors.py:1419
+#, python-format
+msgid ""
+"there is already an image at: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "obraz již existuje v: %s.\n"
+       "K přepsání použijte volbu -f (force)."
+
+#: ../modules/client/api_errors.py:1425
+#, python-format
+msgid ""
+"the specified image path is not empty: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "Zadaná cesta k obrazu není prázdná: %s.\n"
+       "K přepsání použijte volbu -f (force)."
+
+#: ../modules/client/bootenv.py:134
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg: nelze vytvořit automatický snímek. Obnova pkg je vypnuta."
+
+#: ../modules/client/bootenv.py:267
+#, python-format
+msgid "pkg: A system error %(e)s was caught executing %(cmd)s"
+msgstr "pkg: Byla zachycena systémová chyba %(e)s při vykonávání %(cmd)s"
+
+#: ../modules/client/bootenv.py:272
+#, python-format
+msgid ""
+"pkg: '%(cmd)s' failed. \n"
+"with a return code of %(ret)d."
+msgstr ""
+       "pkg: '%(cmd)s' selhalo.\n"
+       "s návratovou hodnotou  %(ret)d."
+
+#: ../modules/client/bootenv.py:284
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg: nelze aktivovat %s"
+
+#: ../modules/client/bootenv.py:294
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg: nelze odpojit %s"
+
+#: ../modules/client/bootenv.py:300
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+       "\n"
+       "Byl aktualizován a aktivován existující klon %s.\n"
+       "Bootovací prostředí %s bude při dalším restartování systému připojeno do '/'.\n"
+       "Restartujte systém, až budete připraveni přepnout do aktualizovaného BE.\n"
+
+#: ../modules/client/bootenv.py:314
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s byl úspěšně aktualizován."
+
+#: ../modules/client/bootenv.py:346
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr ""
+       " Běžící systém nebyl změněn. Změny byly provedeny pouze do klonu běžícího systému. Tento klon je připojen v %s, pokud si ho přejete prozkoumat. "
+
+#: ../modules/client/bootenv.py:357
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg: nemožné vrátit zpět BE %s a obnovit obraz"
+
+#: ../modules/client/bootenv.py:367
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s selhalo při aktualizaci. Žádné změny nebyly provedeny v %s."
+
+#: ../modules/client/bootenv.py:380
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg: nelze odstranit snímek %s"
+
+#: ../modules/client/bootenv.py:409
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg: nelze vytvořit BE %s"
+
+#: ../modules/client/bootenv.py:414
+#, python-format
+msgid "pkg: unable to mount BE %(name)s on %(clone_dir)s"
+msgstr "pkg: nelze připojit BE %(name)s na %(clone_dir)s"
+
+#: ../modules/client/bootenv.py:420
+#, python-format
+msgid ""
+"The Boot Environment %(name)s failed to be updated. A snapshot was taken "
+"before the failed attempt and is mounted here %(clone_dir)s. Use 'beadm "
+"unmount %(clone_name)s' and then 'beadm activate %(clone_name)s' if you wish "
+"to boot to this BE."
+msgstr ""
+       "Selhala aktualizace bootovacího prostředí %(name)s. Snímek. který byl vytvořen před selháním, je připojen zde %(clone_dir)s. Použijte 'beadm "
+       "unmount %(clone_name)s' a poté 'beadm activate %(clone_name)s', pokud si přejete zavést toto bootovací prostředí."
+
+#: ../modules/client/bootenv.py:435
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+       "Selhala aktualizace bootovacího prostředí %s. Před tímto selháním byl vytvořen snímek, který byl obnoven a tudíž nebyly provedy žádné změny v %s."
+
+#: ../modules/client/image.py:2436
+msgid "SUNWipkg update check failed."
+msgstr "Kontrola aktualizace SUNWipkg selhala."
+
+#: ../modules/client/imageplan.py:169
+#, python-format
+msgid "Planning for %s failed: %s\n"
+msgstr "Plánování pro %s selhalo: %s\n"
+
+#: ../modules/client/imageplan.py:861
+msgid "Removal Phase"
+msgstr "Fáze Odstraňování"
+
+#: ../modules/client/imageplan.py:871
+msgid "Install Phase"
+msgstr "Fáze Instalace"
+
+#: ../modules/client/imageplan.py:882
+msgid "Update Phase"
+msgstr "Fáze Aktualizace"
+
+#: ../modules/client/imageplan.py:938
+msgid "Index Phase"
+msgstr "Fáze Indexace"
+
+#: ../modules/client/pkg_solver.py:162
+msgid "This version excluded by specified installation version"
+msgstr "Tato verze byla vyloučena zadanou verzí instalace"
+
+#: ../modules/client/pkg_solver.py:171
+#, python-format
+msgid "This version is excluded by installed incorporation %s"
+msgstr "Tato verze byla vyloučena nainstalovanou inkorporací %s"
+
+#: ../modules/client/pkg_solver.py:181
+#, python-format
+msgid "This version is excluded by freeze %s"
+msgstr "Tato verze je vyloučen vytuhnutím %s"
+
+#: ../modules/client/pkg_solver.py:197
+#, python-format
+msgid "No matching version of %s can be installed:"
+msgstr "Žádná odpovídající verze %s nemůže být nainstalována:"
+
+#: ../modules/client/pkg_solver.py:229
+#, python-format
+msgid "No version of %s can be installed:"
+msgstr "Žádná verze %s nemůže být nainstalována:"
+
+#: ../modules/client/pkg_solver.py:917
+msgid "Publisher differs from installed or specifed version"
+msgstr "Vydavatel se liší od nainstalované a zadané verze"
+
+#: ../modules/client/pkg_solver.py:927
+msgid "Publisher is lower ranked"
+msgstr "Vydavatel má nízké hodnocení"
+
+#: ../modules/client/pkg_solver.py:962
+#, python-format
+msgid "Newer version %s is already installed"
+msgstr "Novější verze %s je již nainstalována"
+
+#: ../modules/client/pkg_solver.py:971
+msgid "Package doesn't support image architecture"
+msgstr "Balíček nepodporuje architekturu obrazu"
+
+#: ../modules/client/pkg_solver.py:973
+#, python-format
+msgid "Package doesn't support image variant %s"
+msgstr "Balíček nepodporuje variantu obrazu %s"
+
+#: ../modules/client/progress.py:592
+#, python-format
+msgid "Retrieving catalog '%s'..."
+msgstr "Získávám katalog: '%s' ..."
+
+#: ../modules/client/progress.py:599
+msgid "Caching catalogs ..."
+msgstr "Ukládám katalogy do paměti ..."
+
+#: ../modules/client/progress.py:605
+msgid "Loading catalog cache ..."
+msgstr "Nahrávám katalogy z paměti ..."
+
+#: ../modules/client/progress.py:611
+msgid "Refreshing catalog"
+msgstr "Obnovuji katalog"
+
+#: ../modules/client/publisher.py:957
+#, python-format
+msgid ""
+"\n"
+"Unable to retrieve package data for publisher '%(prefix)s' from one\n"
+"of the following origin(s):\n"
+"\n"
+"%(origins)s\n"
+"\n"
+"The catalog retrieved from one of the origin(s) listed above only\n"
+"contains package data for: %(pubs)s.\n"
+msgstr ""
+       "\n"
+       "Nelze získat data pro vydavatele '%(prefix)s' z jednoho\n"
+       "z následujících zdrojů:\n"
+       "\n"
+       "%(origins)s\n"
+       "\n"
+       "Katalog, který byl získán z jednoho ze zdrojů na seznamu výše,\n"
+       "obsahuje pouze data balíčků pro : %(pubs)s.\n"
+
+#: ../modules/client/publisher.py:969
+#, python-format
+msgid ""
+"This is either a result of invalid origin information being provided\n"
+"for publisher '%s', or because the wrong publisher name was\n"
+"provided when this publisher was added.\n"
+msgstr ""
+       "Toto je buď výsledek neplatné informace ze zdroje, která byla poskytnuta\n"
+       "pro vydavatele '%s', nebo bylo poskytnuto špatné jméno vydavatele, který se má přidat.\n"
+
+#: ../modules/client/publisher.py:977
+#, python-format
+msgid ""
+"To resolve this issue, correct the origin information provided for\n"
+"publisher '%(prefix)s' using the pkg set-publisher subcommand, or re-add\n"
+"the publisher using the correct name and remove the '%(prefix)s'\n"
+"publisher.\n"
+msgstr ""
+       "Pro vyřešení tohoto problému, opravte zdroj informací poskytovaný pro \n"
+       "vydavatele '%(prefix)s' pomocí podpříkazu pkg set-publisher nebo vydavatele\n"
+       " "
+
+#: ../modules/client/publisher.py:985
+#, python-format
+msgid ""
+"To re-add this publisher with the correct name, execute the following\n"
+"commands as a privileged user:\n"
+"\n"
+"pkg set-publisher -P -g %(origin)s %(pub)s\n"
+"pkg unset-publisher %(prefix)s\n"
+msgstr ""
+       "Pro znovu přidání vydavatele se správným jménem, proveďte následující  \n"
+       "příkazy jako root:\n"
+       "\n"
+       "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+       "pkg unset-publisher %(prefix)s\n"
+
+#: ../modules/client/publisher.py:994
+msgid ""
+"The origin(s) listed above contain package data for more than one\n"
+"publisher, but this issue can likely be resolved by executing one\n"
+"of the following commands as a privileged user:\n"
+msgstr ""
+       "Zdroje na seznamu výše obsahují data balíčků pro více než jednoho\n"
+       "vydavatele. Tento problém může být vyřešen spuštěním následujících příkazů jako uživatel root:\n"
+
+#: ../modules/client/publisher.py:1001
+#, python-format
+msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+
+#: ../modules/client/publisher.py:1005
+#, python-format
+msgid ""
+"Afterwards, the old publisher should be removed by executing the\n"
+"following command as a privileged user:\n"
+"\n"
+"pkg unset-publisher %s\n"
+msgstr ""
+       "Poté byste měli odstranit starého vydavatele spuštěním \n"
+       "následujících příkazů jako uživatel root:\n"
+       "\n"
+       "pkg unset-publisher %s\n"
+
+#: ../modules/file_layout/file_manager.py:73
+#, python-format
+msgid ""
+"The FileManager cannot %(cre)s %(ent)s because it is configured read-only."
+msgstr ""
+       "Správce souborů nemůže provést %(cre)s %(ent)s , protože je nakonfigurován pouze ke čtení."
+
+#: ../modules/file_layout/file_manager.py:93
+#, python-format
+msgid "FileManager was unable to create %s or the directories containing it."
+msgstr "Správce souborů nebyl schopný vytvořit %s nebo již adresář toto obsahuje."
+
+#: ../modules/file_layout/file_manager.py:112
+#, python-format
+msgid ""
+"The following paths were found but cannot be accounted for by any of the "
+"known layouts:\n"
+"%s"
+msgstr ""
+       "Následující cesty byly nalezeny, ale nemohou být použity pro žádné známé rozložení:n"
+       "%s"
+
+#: ../modules/flavor/base.py:51
+#, python-format
+msgid "Couldn't find %s"
+msgstr "Nebylo možné najít %s"
+
+#: ../modules/flavor/base.py:106
+#, python-format
+msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
+msgstr "Podtřídy Závislosti musí implementovat  dep_key. Současná třída je %s"
+
+#: ../modules/flavor/elf.py:46
+#, python-format
+msgid "%s had this elf error:%s"
+msgstr "%s měl tuto elf chybu:%s"
+
+#: ../modules/flavor/elf.py:60
+#, python-format
+msgid ""
+"%(pp)s (which will be installed at %(ip)s) had this token, %(tok)s, in its "
+"run path: %(rp)s.  It is not currently possible to automatically expand this "
+"token. Please specify its value on the command line."
+msgstr ""
+       "%(pp)s (který byl nainstalován do %(ip)s) obsahoval tento znak, %(tok)s, ve své "
+       "cestě: %(rp)s.  Není nyní možné automaticky rozbalit tento znak. Prosím specifikujte jeho hodnotu v příkazové řádce."
+
+#: ../modules/flavor/python.py:43
+#, python-format
+msgid "Could not find the file for %(name)s imported in %(localpath)s"
+msgstr "Nelze nalést soubor pro %(name)s importovaný do %(localpath)s"
+
+#: ../modules/fmri.py:97
+#, python-format
+msgid "FMRI '%s' is missing version information."
+msgstr "FMRI '%s' chybí informace o verzi."
+
+#: ../modules/indexer.py:158
+msgid "Reading Existing Index"
+msgstr "Čtu existující index"
+
+#: ../modules/indexer.py:673 ../modules/indexer.py:698
+msgid "Indexing Packages"
+msgstr "Indexuji balíčky"
+
+#: ../modules/manifest.py:462
+#, python-format
+msgid ""
+"%(fp)s:\n"
+"%(e)s"
+msgstr ""
+       "%(fp)s:\n"
+       "%(e)s"
+
+#: ../modules/manifest.py:473
+#, python-format
+msgid ""
+"%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
+"The action is:%(act)s"
+msgstr ""
+       "%(fp)s obsahuje akci, ve které chybí očekávaný atribut: %(at)s.\n"
+       "Jedná se o akci:%(act)s"
+
+#: ../modules/manifest.py:595
+#, python-format
+msgid "Attribute value '%s' not 'true' or 'false'"
+msgstr "hodnota atributu '%s'  není  'true' nebo 'false'"
+
+#: ../modules/misc.py:455
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:456
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:457
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:458
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:459
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:460
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:461 ../modules/misc.py:465
+msgid "EB"
+msgstr "EB"
+
+#: ../modules/p5i.py:87
+msgid "missing version"
+msgstr "chybí verze"
+
+#: ../modules/p5i.py:89
+msgid "invalid version"
+msgstr "neplatná verze"
+
+#: ../modules/publish/dependencies.py:60
+#, python-format
+msgid ""
+"The file dependency %s has paths which resolve to multiple packages. The "
+"actions are as follows:\n"
+"%s"
+msgstr ""
+       "Závislost souboru %s má cestu, která odpovídá více balíčkům. Akce jsou následující:\n"
+       "%s"
+
+#: ../modules/publish/dependencies.py:73
+#, python-format
+msgid ""
+"The file dependency %s depends on a path delivered by multiple packages. "
+"Those packages are:%s"
+msgstr ""
+       "Závislost souboru %s závisí na cestě dodané více balíčky. Těmito balíčky jsou:%s"
+
+#: ../modules/publish/dependencies.py:87
+#, python-format
+msgid ""
+"%s has unresolved dependency '%s' under the following combinations of "
+"variants:\n"
+"%s"
+msgstr ""
+       "%s má nevyřešenou závislost '%s' v následujících kombinacích variant:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:78
+#, python-format
+msgid "Unsupported scheme '%(scheme)s' in URL: '%(url)s'."
+msgstr "Nepodporované schéma '%(scheme)s' na URL: '%(url)s'."
+
+#: ../modules/publish/transaction.py:82
+#, python-format
+msgid "Malformed URL: '%s'."
+msgstr "Poškozená URL  '%s'."
+
+#: ../modules/publish/transaction.py:83
+#, python-format
+msgid "Invalid repository URL: '%(url)s': %(msg)s"
+msgstr "Neplatná URL repozitáře: '%(url)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:95
+#, python-format
+msgid ""
+"'%(op)s' failed for transaction ID '%(trans_id)s'; status '%(status)s': %"
+"(msg)s"
+msgstr ""
+       "'%(op)s'  selhalo pro ID transakce  '%(trans_id)s'; stav '%(status)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:102
+#, python-format
+msgid "'%(op)s' failed for transaction ID '%(trans_id)s': %(msg)s"
+msgstr "'%(op)s'  selhalo pro ID transakce  '%(trans_id)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:108
+#, python-format
+msgid ""
+"'%(op)s' failed; unable to initiate transaction:\n"
+"%(msg)s"
+msgstr ""
+       "'%(op)s'  selhalo; nelze inicializovat transakci:\n"
+       "%(msg)s"
+
+#: ../modules/publish/transaction.py:111
+#, python-format
+msgid ""
+"Unable to initiate transaction:\n"
+"%s"
+msgstr ""
+       "Nelze inicializovat transakci :\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:125
+#, python-format
+msgid ""
+"Unsupported operation '%(op)s' for the specified repository type '%(type)s'."
+msgstr ""
+       "Nepodporovaná operace '%(op)s'  pro zadaný typ repozitáře  '%(type)s'."
+
+#: ../modules/publish/transaction.py:147
+msgid "Not an absolute path."
+msgstr "Není absolutní cesta."
+
+#: ../modules/publish/transaction.py:156
+#, python-format
+msgid ""
+"An error occurred while trying to initialize the repository directory "
+"structures:\n"
+"%s"
+msgstr ""
+       "Vyskytla se chyba při pokusu inicializovat adresářovou strukturu repozitáře:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:294
+msgid "Unsupported or temporarily unavailable operation requested."
+msgstr "Nepodporovaná nebo dočasně nedostupná požadovaná operace."
+
+#: ../modules/publish/transaction.py:422
+#, python-format
+msgid "Unknown failure; no transaction ID provided in response: %s"
+msgstr "Neznámé selhání; není žádné ID transakce v odpovědi: %s"
+
+#: ../modules/query_parser.py:126
+#, python-format
+msgid "An unparseable character in query at position : %d"
+msgstr "Nerozpoznaný znak v dotazu na pozici: %d"
+
+#: ../modules/query_parser.py:337
+#, python-format
+msgid "In query %(query)s, %(name)s had a bad value of '%(bv)s'."
+msgstr "V dotazu %(query)s, %(name)s má špatnou hodnotu '%(bv)s'."
+
+#: ../modules/query_parser.py:352
+#, python-format
+msgid ""
+"A query is expected to have five fields: case sensitivity, return type, "
+"number of results to return, the number at which to start returning results, "
+"and the text of the query.  The query provided lacked at least one of those "
+"fields:\n"
+"%s"
+msgstr ""
+       "Dotaz očekává, že bude mít pět polí: rozlišení malých velkých písmen, : návratový typ, počet výsledků, které se mají vrátit, číslo, na kterém se mají začít vracet výsledky a text dotazu.  Dotaz poskytne alespoň jedno z těchto polí:\n"
+       "%s"
+
+#: ../modules/query_parser.py:374
+msgid "Could not parse query."
+msgstr "Nelze rozpoznat dotaz."
+
+#: ../modules/query_parser.py:375
+#, python-format
+msgid "Problem occurred with: %s"
+msgstr "Objevil se problém s:  %s"
+
+#: ../modules/query_parser.py:514
+msgid "This expression produces action results:"
+msgstr "Tento výraz má výsledek:"
+
+#: ../modules/query_parser.py:516
+msgid "This expression produces package results:"
+msgstr "Tento výraz má za výsledek balíček:"
+
+#: ../modules/query_parser.py:519
+msgid ""
+"'AND' and 'OR' require those expressions to produce the same type of results."
+msgstr ""
+       "'AND' a 'OR' požadují výrazy, které mají stejné výsledky."
+
+#: ../modules/search_errors.py:135
+#, python-format
+msgid ""
+"Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
+"was %(l)s"
+msgstr ""
+       "Získán prázdný unquote_list při indexování. split_chars byl  %(sc)s na řádce %(l)s"
+
+#: ../modules/search_errors.py:147
+#, python-format
+msgid ""
+"Had an empty line in the main dictionary. split_chars is %(sc)s and "
+"unquote_list is %(ul)s.%(s)s"
+msgstr ""
+       "Má prázdnou řádku v hlavním slovníku. split_chars je %(sc)s a unquote_list je %(ul)s.%(s)s"
+
+#: ../modules/server/api_errors.py:70
+#, python-format
+msgid "Info does not recognize the following options: %s"
+msgstr "Info nerozpozná následující možnosti:  %s"
+
+#: ../modules/server/catalog.py:225 ../modules/server/repository.py:793
+#, python-format
+msgid ""
+"Index corrupted or out of date. Removing old index directory (%s)  and "
+"rebuilding search indexes."
+msgstr ""
+       "Index je poškozen nebo vypršela doba platnosti. Odstraňuji adresář se starým indexem (%s) a obnovuji indexy hledání."
+
+#: ../modules/server/catalog.py:241 ../modules/server/repository.py:809
+msgid "writable root not writable by current user id or group."
+msgstr "současným id uživatele nebo skupiny nelze zapsat do rootu."
+
+#: ../modules/server/catalog.py:246 ../modules/server/repository.py:812
+msgid "unable to write to index directory."
+msgstr "nelze zapsat do adresáře s indexem."
+
+#: ../modules/server/depot.py:395
+msgid "Directory listing not allowed."
+msgstr "Vypsání adresářů není povoleno."
+
+#: ../modules/server/depot.py:678
+#, python-format
+msgid "The specified Action Type, '%s', is not valid."
+msgstr "Typ zadané Akce, '%s', není platný."
+
+#: ../modules/server/depot.py:941
+msgid "No matching FMRI found in repository catalog."
+msgstr "Nebyl nalezen odpovídající FMI v katalogu repozitáře."
+
+#: ../modules/server/repository.py:78
+#, python-format
+msgid "The specified catalog file '%s', could not be found."
+msgstr "Zadaný soubor katalogu '%s' nelze nalést."
+
+#: ../modules/server/repository.py:87
+#, python-format
+msgid "No file could be found for the specified hash name: '%s'."
+msgstr "Žádný odpovídající soubor zadaného hashe: '%s'."
+
+#: ../modules/server/repository.py:96
+#, python-format
+msgid "The specified repository root '%s' does not contain a valid repository."
+msgstr "Zadaný kořen repozitáře '%s' neobsahuje platný repozitář."
+
+#: ../modules/server/repository.py:108
+#, python-format
+msgid "The specified Transaction ID '%s' is invalid."
+msgstr "Zadané ID transakce '%s' není platné."
+
+#: ../modules/server/repository.py:116
+#, python-format
+msgid "No manifest could be found for the FMRI: '%s'."
+msgstr "Nenalezen manifest pro FMRI: '%s'."
+
+#: ../modules/server/repository.py:125
+msgid ""
+"The requested operation cannot be performed when the repository is used in "
+"mirror mode."
+msgstr ""
+       "Požadovaná operace nemůže být provedena, dokud je repozitář používán v módu mirror."
+
+#: ../modules/server/repository.py:134
+msgid "The repository is read-only and cannot be modified."
+msgstr "Repozitář je pouze ke čtení a nemůže být změněn."
+
+#: ../modules/server/repository.py:143
+msgid "No token was provided to search."
+msgstr "Nebyl zadán žádný vzor pro hledání."
+
+#: ../modules/server/repository.py:145
+#, python-format
+msgid "The specified search token '%s' is invalid."
+msgstr "Zadaný vzor  '%s' je neplatný."
+
+#: ../modules/server/repository.py:153
+msgid "Search functionality is temporarily unavailable."
+msgstr "Vyhledávání je dočasně nedostupné."
+
+#: ../modules/server/repository.py:162
+msgid ""
+"The format of the repository or its contents needs to be upgraded before it "
+"can be used to serve package data.  However, it is currently read-only and "
+"cannot be upgraded.  If using pkg.depotd, please restart the server without "
+"read-only so that the repository can be upgraded."
+msgstr ""
+       "Formát repozitáře nebo jeho obsah je potřeba aktualizovat, před tím než bude "
+       "poskytovat data balíčků. Tento repozitář je však pouze ke čtení a nemůže být"
+       " aktualizován.  Pokud použijete pkg.depot, prosím restartujte server s jinými"
+       " právy, než jen ke čtení, aby mohl být repozitář aktualizován. "
+
+#. To upgrade the repository, the catalog will have to
+#. be rebuilt.
+#: ../modules/server/repository.py:432
+msgid "Upgrading repository; this process will take some time."
+msgstr "Aktualizuji repozitář, tento proces chvilku potrvá."
+
+#: ../modules/server/repository.py:541
+msgid "repository directories incomplete"
+msgstr "neúplné adresáře repozitáře"
+
+#: ../modules/server/repository.py:550
+msgid ""
+"repository directories not writeable by current user id or group and are "
+"incomplete"
+msgstr ""
+       "do adresářů repozitáře nelze zapisovat se současným id uživatele nebo skupiny a jsou neúplné."
+
+#. Don't add packages with corrupt
+#. manifests to the catalog.
+#: ../modules/server/repository.py:663
+#, python-format
+msgid "Skipping %(fmri)s; invalid manifest: %(error)s"
+msgstr "Přeskakuji %(fmri)s; neplatný manifest: %(error)s"
+
+#: ../modules/server/repositoryconfig.py:406
+#, python-format
+msgid ""
+"Unable to locate or read the specified repository configuration file: '%s'."
+msgstr ""
+       "Nelze nalézt nebo číst zadaný konfigurační soubor repozitáře:  '%s'."
+
+#: ../modules/server/transaction.py:72
+#, python-format
+msgid "Unrecognized or malformed data in operation payload: '%s'."
+msgstr "Nerozpoznaná nebo poškozená data v operaci payload:  '%s'."
+
+#: ../modules/server/transaction.py:89
+#, python-format
+msgid "The specified client_release is invalid: '%s'"
+msgstr "Zadaný  client_release je neplatný:  '%s'"
+
+#: ../modules/server/transaction.py:92
+#, python-format
+msgid "'The specified FMRI, '%s', has an invalid version."
+msgstr "Zadané FMRI  '%s' nemá platnou verzi."
+
+#: ../modules/server/transaction.py:95
+#, python-format
+msgid "The specified FMRI, '%s', already exists or has been restricted."
+msgstr "Zadané FMRI  '%s' již existuje nebo bylo zakázané."
+
+#: ../modules/server/transaction.py:98
+#, python-format
+msgid ""
+"The specified FMRI, '%s', must include the publisher prefix as the "
+"repository contains package data for more than one publisher or a default "
+"publisher has not been defined."
+msgstr ""
+       "Zadané FMRI  '%s' musí obsahovat prefix vydavatele, protože repozitář"
+       " obsahuje data balíčků od více vydavatelů nebo výchozí vydavatel nebyl"
+       " definován."
+
+#: ../modules/server/transaction.py:104
+#, python-format
+msgid "The specified FMRI, '%s', is invalid."
+msgstr "Zadané FMRI '%s' je neplatné."
+
+#: ../modules/server/transaction.py:113
+#, python-format
+msgid "Transaction ID '%s' is already open."
+msgstr "ID transakce '%s' je již používané."
+
+#: ../modules/server/transaction.py:428
+msgid "An obsolete package cannot contain actions other than 'set'."
+msgstr "Zastaralý balíček neobsahuje jinou akci než 'set'."
+
+#: ../modules/server/transaction.py:436
+msgid "A renamed package cannot contain actions other than 'set' and 'depend'."
+msgstr "Přejmenovaný balíček neobsahuje jinou akci než 'set' a 'depend'."
+
+#: ../modules/server/transaction.py:451
+msgid "A package may not  be marked for both obsoletion and renaming."
+msgstr "Balíček nelze označit za zastaralý a zároveň přejmenovat."
+
+#: ../modules/server/transaction.py:454
+#, python-format
+msgid "A '%s' action cannot be present in an obsolete package: %s"
+msgstr " Akci '%s' nelze provést pro balíček, který je zastaralý : %s"
+
+#: ../modules/server/transaction.py:458
+#, python-format
+msgid "A '%s' action cannot be present in a renamed package: %s"
+msgstr "Akci '%s' nelze provést pro balíček, který byl přejmenován:  %s"
+
+#: ../modules/server/transaction.py:478
+msgid "A renamed package must contain at least one 'depend' action."
+msgstr "Přejmenovaný balíček musí obsahovat alespoň jednu akci 'depend' ."
+
+#: ../packagemanager.py:326
+msgid "All Packages"
+msgstr "Všechny balíčky"
+
+#: ../packagemanager.py:328
+msgid "Installed Packages"
+msgstr "Nainstalové balíčky"
+
+#: ../packagemanager.py:332
+msgid "Not Installed Packages"
+msgstr "Nenainstalované balíčky"
+
+#: ../packagemanager.py:336
+msgid "Selected Packages"
+msgstr "Vybrané balíčky"
+
+#: ../packagemanager.py:339
+msgid "All Publishers (Installed)"
+msgstr "Všichni Vydavatelé (Nainstalované)"
+
+#: ../packagemanager.py:340
+msgid "All Publishers (Search)"
+msgstr "Všichni Vydavatelé (Hledání)"
+
+#: ../packagemanager.py:341
+msgid "Add..."
+msgstr "Přidat..."
+
+#: ../packagemanager.py:422
+msgid "Logs"
+msgstr "Logy"
+
+#: ../packagemanager.py:815
+msgid "Export Selections Confirmation"
+msgstr "Potvrzení výběru pro export"
+
+#: ../packagemanager.py:817
+msgid "<b>Export the following to a Web Install .p5i file:</b>"
+msgstr "<b>Exportovat následující do .p5i souboru webového instaléru:</b>"
+
+#: ../packagemanager.py:859
+msgid "Export Selections Error"
+msgstr "Chyba při exportu výběru"
+
+#: ../packagemanager.py:870
+msgid "Export Selections"
+msgstr "Výběr pro export"
+
+#: ../packagemanager.py:877
+msgid "p5i Files"
+msgstr "soubory p5i"
+
+#: ../packagemanager.py:881
+msgid "All Files"
+msgstr "Všechny soubory"
+
+#: ../packagemanager.py:886
+msgid "my_packages"
+msgstr "mé_balíčky"
+
+#: ../packagemanager.py:933 ../packagemanager.py:941
+msgid "Search (Ctrl-F)"
+msgstr "Hledat (Ctrl-F)"
+
+#: ../packagemanager.py:1088
+#, python-format
+msgid ""
+"<html><head></head><body><H2>Welcome toPackageManager!</H2><br><font "
+"color='#0000FF'>Warning: Unable to load Start Page:<br>%s</font></body></"
+"html>"
+msgstr ""
+       "<html><head></head><body><H2>Vítejte ve Správci Balíčků</H2><br><font "
+       "color='#0000FF'>Varování: Nelze nahrát Úvodní stránku:<br>%s</font></body></"
+       "html>"
+
+#: ../packagemanager.py:1100
+msgid "failed to respond"
+msgstr "selhalo při odpovědi"
+
+#: ../packagemanager.py:1103
+msgid "invalid response"
+msgstr "neplatná odpověď"
+
+#: ../packagemanager.py:1104
+msgid "A valid response was not returned."
+msgstr "Platná odpověď nebyla vrácena."
+
+#: ../packagemanager.py:1107
+msgid "unsupported search"
+msgstr "nepodporované hledání"
+
+#: ../packagemanager.py:1133
+msgid "Search Errors: click to view"
+msgstr "Chyby při hledání: klikněte pro zobrazení"
+
+#: ../packagemanager.py:1188
+#, python-format
+msgid "Loading... %s"
+msgstr "Nahrávám...  %s"
+
+#: ../packagemanager.py:1194
+msgid "Stopped"
+msgstr "Zastaveno"
+
+#: ../packagemanager.py:1208
+msgid "Done"
+msgstr "Hotovo"
+
+#: ../packagemanager.py:1215
+#, python-format
+msgid ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = '%s/startpage_star."
+"png'                     style='border-style: none'></a> "
+"<br><br>                    <h2><font color='#0000FF'>Warning: Unable "
+"to                     load URL</font></h2><br>%s</body></html>"
+msgstr ""
+       "<html><head></head><body><font color='#000000'>                    <a "
+       "href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+       "s'>                    <IMG SRC = '%s/startpage_star."
+       "png'                     style='border-style: none'></a> "
+       "<br><br>                    <h2><font color='#0000FF'>Varování: Nelze "
+       "                     nahrát URL</font></h2><br>%s</body></html>"
+
+#: ../packagemanager.py:1281
+#, python-format
+msgid "View packages in %(s1)s%(pub)s%(e1)s"
+msgstr "Zobrazit balíčky v %(s1)s%(pub)s%(e1)s"
+
+#: ../packagemanager.py:1289
+#, python-format
+msgid "Search within %(s1)sAll Publishers%(e1)s"
+msgstr "Hledat ve %(s1)sVšichni Vydavatelé%(e1)s"
+
+#: ../packagemanager.py:1296
+#, python-format
+msgid "View installed packages for %(s1)sAll Publishers%(e1)s"
+msgstr "Prohlédnout nainstalované balíčky pro %(s1)sVšichni Vydavatelé%(e1)s"
+
+#: ../packagemanager.py:1303
+#, python-format
+msgid "Change View to %(s1)sAll Packages%(e1)s"
+msgstr "Změnit pohled na %(s1)sVšechny balíčky%(e1)s"
+
+#: ../packagemanager.py:1311
+#, python-format
+msgid "Display %(s1)sSearch Help%(e1)s"
+msgstr "Zobrazit %(s1)sHledat v nápovědě%(e1)s"
+
+#: ../packagemanager.py:1314
+#, python-format
+msgid "Loading %(s1)sSearch Help%(e1)s ..."
+msgstr "Nahrávám %(s1)sHledat v nápovědě%(e1)s ..."
+
+#: ../packagemanager.py:1324
+#, python-format
+msgid "View results for %s"
+msgstr "Zobrazit výsledek pro  %s"
+
+#: ../packagemanager.py:1383
+msgid "Empty Action not supported"
+msgstr "Prázdná akce není podporována"
+
+#: ../packagemanager.py:1386
+#, python-format
+msgid "Action not supported: %s"
+msgstr "Akce není podporována: %s"
+
+#: ../packagemanager.py:1487
+msgid "Click to toggle selections"
+msgstr "Kliknutím přepnete výběr"
+
+#: ../packagemanager.py:1502 ../packagemanager.py:3149
+msgid "Status"
+msgstr "Stav"
+
+#: ../packagemanager.py:1644
+msgid "all selection toggle"
+msgstr "Vybrat vše"
+
+#: ../packagemanager.py:1696
+msgid "Not Installed"
+msgstr "Nenainstalováno"
+
+#: ../packagemanager.py:1698 ../packagemanager.py:3167
+msgid "Updates Available"
+msgstr "Dostupné aktualizace"
+
+#. Only enable the first section. Later other sections are enabled
+#. in __add_category_to_section() if the section contains any categories
+#. which in turn contain some packages.
+#: ../packagemanager.py:1819 ../packagemanager.py:4951
+#: ../packagemanager.py:4952
+msgid "All Categories"
+msgstr "Všechny kategorie"
+
+#: ../packagemanager.py:1821
+msgid "Meta Packages"
+msgstr "Meta balíčky"
+
+#: ../packagemanager.py:1822
+msgid "Applications"
+msgstr "Aplikace"
+
+#: ../packagemanager.py:1823
+msgid "Desktop (GNOME)"
+msgstr "Desktop (GNOME)"
+
+#: ../packagemanager.py:1824
+msgid "Development"
+msgstr "Vývoj"
+
+#: ../packagemanager.py:1825
+msgid "Distributions"
+msgstr "Distribuce"
+
+#: ../packagemanager.py:1826
+msgid "Drivers"
+msgstr "Ovladače"
+
+#: ../packagemanager.py:1828
+msgid "Web Services"
+msgstr "Webové Služby"
+
+#: ../packagemanager.py:1956
+msgid "Search all publishers"
+msgstr "Prohledat všechny vydavatele"
+
+#: ../packagemanager.py:1958
+msgid "Search current publisher"
+msgstr "Prohledat současného vydavatele"
+
+#: ../packagemanager.py:2006
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search All Publishers</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+"Use the Search field to search for packages within the following Publishers:"
+"</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "TD><TD><h3><b>Hledat v módu Všichni Vydavatelé</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+       "Použijte hledací pole pro hledání balíčku v následujících vydavatelích:"
+       "</TD></TR>"
+
+#: ../packagemanager.py:2024
+msgid ""
+"<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Click on the Publishers below to "
+"view their list of packages:</TD></TR>"
+msgstr ""
+       "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Pro zobrazení seznamu balíčků, klikněte na vydavatele</TD></TR>"
+
+#: ../packagemanager.py:2038
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search in All Publishers (Installed)</b></h3><TD></TD></"
+"TR><TR><TD></TD><TD> Search is <b>not</b> supported in All Publishers "
+"(Installed).</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "TD><TD><h3><b>Hledání v módu Všichni Vydavatelé (Nainstalované)</b></h3><TD></TD></"
+       "TR><TR><TD></TD><TD> Hledání <b>není</b> podporováno v módu Všichni Vydavatelé (Nainstalované).</TD></TR>"
+
+#: ../packagemanager.py:2044 ../packagemanager.py:2113
+#: ../packagemanager.py:2139
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Návrhy:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+
+#: ../packagemanager.py:2049
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Return to view packages for All Publishers <a "
+"href='pm?pm-action=internal&search=%s'>(Installed)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Návrat na náhled Všichni Vydavatelé <a "
+       "href='pm?pm-action=internal&search=%s'>(Nainstalované)</a></li>"
+
+#: ../packagemanager.py:2052
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> using All Publishers "
+"<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Search)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Hledat <b>%(text)s</b> pomocí Všichni Vydavatelé "
+       "<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Hledání)</a></li>"
+
+#: ../packagemanager.py:2057 ../packagemanager.py:2180
+#: ../packagemanager.py:2209
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>See <a href='pm?pm-action=internal&search=%"
+"s'>Search Help</a></li></TD></TR>"
+msgstr ""
+       "<li style='padding-left:7px'>See <a href='pm?pm-action=internal&search=%"
+       "s'>Hledat v nápovědě</a></li></TD></TR>"
+
+#: ../packagemanager.py:2067
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Recent Searches</b></h3><TD></TD></TR><TR><TD></TD><TD> Access "
+"stored results from recent searches in this session.</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "TD><TD><h3><b>Naposledy Hledané</b></h3><TD></TD></TR><TR><TD></TD><TD> Přístup uložil výsledky naposledy hledaných v tomto sezení.</TD></TR>"
+
+#: ../packagemanager.py:2080
+msgid "results"
+msgstr "výsledky"
+
+#: ../packagemanager.py:2086
+msgid "Click on the search results link below to view the stored results:"
+msgid_plural ""
+"Click on one of the search results links below to view the stored results:"
+msgstr[0] "Klikněte na níže uvedený odkaz na výsledky hledání pro zobrazení uložených výsledků:"
+msgstr[1] ""
+       "Klikněte na jeden z níže uvedených odkazů na výsledky hledání pro zobrazení uložených výsledků:"
+
+#: ../packagemanager.py:2101
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>View "
+"Packages</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>Zobrazit Balíčky</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2104
+#, python-format
+msgid ""
+"There is one package in this category, however it is not visible in the "
+"selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgid_plural ""
+"There are a number of packages in this category, however they are not "
+"visible in the selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[0] ""
+       "V této kategorii je balíček, ale není zobrazen v tomto vybraném Náhledu:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[1] ""
+       "V této kategorii jsou balíčky, ale nejsou zobrazeny v tomto vybraném Náhledu:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+
+#: ../packagemanager.py:2117 ../packagemanager.py:2143
+#, python-format
+msgid ""
+"<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+"s'>Change View to All Packages</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+       "s'>Změnit Náhled na Všechny Balíčky</a></li>"
+
+#: ../packagemanager.py:2128
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "TD><TD><h3><b>Výsledky hledání</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2131
+#, python-format
+msgid ""
+"Found <b>%(num)s</b> package matching <b>%(text)s</b> in All Packages, "
+"however it is not listed in the <b>%(filter)s</b> View."
+msgid_plural ""
+"Found <b>%(num)s</b> packages matching <b>%(text)s</b> in All Packages, "
+"however they are not listed in the <b>%(filter)s</b> View."
+msgstr[0] ""
+       "Nalezen <b>%(num)s</b> balíček odpovídající <b>%(text)s</b> ve všech balíčcích, ale není na seznamu v náhledu  <b>%(filter)s</b>."
+msgstr[1] ""
+       "Nalezeny <b>%(num)s</b> balíčků odpovídající <b>%(text)s</b> ve Všech Balíčcích, avšak nejsou na seznamu náhledu <b>%(filter)s</b> ."
+
+#: ../packagemanager.py:2163
+#, python-format
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>No "
+"packages found in <b>%(pub)s</b> matching <b>%(text)s</b></TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "TD><TD><h3><b>Výsledky hledání</b></h3><TD></TD></TR><TR><TD></TD><TD>Źádný balíček nenalezen v <b>%(pub)s</b>, který by odpovídal <b>%(text)s</b></TD></TR>"
+
+#: ../packagemanager.py:2168
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Check your spelling</li><li style='padding-"
+"left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Návrhy:</b><br></TD></TR><TR><TD></TD><TD<TD><li"
+       "style='padding-left:7px'>Zkontrolujte pravopis</li><li style='padding-"
+       "left:7px'>Vyzkoušejte jiné výrazy</li>"
+
+#: ../packagemanager.py:2175
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> within <a href='pm?"
+"pm-action=internal&search=%(all_pubs)s'>All Publishers</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Vyhledat <b>%(text)s</b> v módu <a href='pm?"
+       "pm-action=internal&search=%(all_pubs)s'>Všichni Vydavatelé</a></li>	"
+
+#: ../packagemanager.py:2197
+#, python-format
+msgid ""
+"<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+"SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
+"title='Warning' ALIGN='bottom'></TD><TD><h3><b>Search Warning</b></h3><TD></"
+"TD></TR><TR><TD></TD><TD>Search using only the wildcard character, <b>*</b>, "
+"is not supported in All Publishers</TD></TR>"
+msgstr ""
+       "<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+       "SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
+       "title='Warning' ALIGN='bottom'></TD><TD><h3><b>Varování</b></h3><TD></"
+       "TD></TR><TR><TD></TD><TD>Hledání pouze pomocí divokého znaku, <b>*</b>, "
+       "není podporován v módu Všichni Vydavatelé</TD></TR>"
+
+#: ../packagemanager.py:2204
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Návrhy:</b><br></TD></TR><TR><TD></TD><TD<TD><li"
+       "style='padding-left:7px'>Zkuste zadat jiné výrazy</li>"
+
+#: ../packagemanager.py:2452 ../packagemanager.py:2473
+#: ../packagemanager.py:5025
+msgid "All Publishers"
+msgstr "Všichni vydavatelé"
+
+#: ../packagemanager.py:2664
+msgid "Search cleared"
+msgstr "Hledání vyčištěno"
+
+#: ../packagemanager.py:2684
+msgid "Fetching legal information..."
+msgstr "Získávám platné informace ..."
+
+#: ../packagemanager.py:3391 ../packagemanager.py:3828
+msgid "Refreshing package catalog information"
+msgstr "Obnovuji informace o balíčcích v katalogu"
+
+#: ../packagemanager.py:3438
+msgid "All"
+msgstr "Všechny"
+
+#: ../packagemanager.py:3491 ../packagemanager.py:3493
+#: ../packagemanager.py:3495 ../packagemanager.py:3508
+#: ../packagemanager.py:3510 ../packagemanager.py:3512
+msgid "None: "
+msgstr "Žádný: "
+
+#. Installed
+#: ../packagemanager.py:3604
+msgid "<b>Upgradeable Version:</b>"
+msgstr "<b>Aktualizovatelná verze:</b>"
+
+#: ../packagemanager.py:3605
+#, python-format
+msgid "Yes, %(version)s (Build %(build)s-%(branch)s)"
+msgstr "Ano, %(version)s (Build %(build)s-%(branch)s)"
+
+#. Installed and up to date
+#: ../packagemanager.py:3613
+msgid "Installed package is up-to-date"
+msgstr "Nainstalovaný balíček není nejnovější"
+
+#: ../packagemanager.py:3696
+#, python-format
+msgid ""
+"The latest version of %s cannot be installed. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "Nejnovější verze %s nemůže být nainstalována. Bude možné tak učinit po aktualizaci systému. Klikněte na \"Aktualizovat\" pro získání nejnovější verze systému."
+
+#: ../packagemanager.py:3701
+#, python-format
+msgid ""
+"Cannot upgrade to the latest version of %s. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "Nelze aktualizovat na nejnovější verzi %s. Bude možné tak učinit po aktualizaci systému. Klikněte na \"Aktualizovat\" pro získání nejnovější verze systému."
+
+#: ../packagemanager.py:3721
+msgid "Latest Version: "
+msgstr "Poslední verze: "
+
+#: ../packagemanager.py:4098
+msgid "Selected for Removal:"
+msgstr "Vybrané pro odstranění:"
+
+#: ../packagemanager.py:4106
+msgid "Selected for Install/Update:"
+msgstr "Vybrané pro Instalaci/Aktualizace:"
+
+#: ../packagemanager.py:4110
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "Vyberte balíčky označením zaškrtávacího políčka a klikněte na Instalovat/Aktualizovat"
+
+#: ../packagemanager.py:4114
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "Vyberte balíčky označením zaškrtávacího políčka a klikněte na Odstranit vybrané"
+
+#: ../packagemanager.py:4176
+msgid "Fetching information..."
+msgstr "Získávám informace ..."
+
+#: ../packagemanager.py:4248 ../packagemanager.py:4263
+msgid "(not installed)"
+msgstr "(nenainstalováno)"
+
+#: ../packagemanager.py:4301
+msgid "Name\tDependency\tInstalled Version\n"
+msgstr "Jméno\tZávislost\tNainstalovaná verze\n"
+
+#: ../packagemanager.py:4342
+msgid ""
+"\n"
+"This might be caused by network problem while accessing the repository."
+msgstr ""
+       "\n"
+       "Toto může být způsobeno problémem sítě při připojování se k repozitáři."
+
+#: ../packagemanager.py:4345
+msgid "Files Details not available for this package..."
+msgstr "Podrobnosti o souborech nejsou dostupné pro tento balíček..."
+
+#: ../packagemanager.py:4348
+msgid "Dependencies info not available for this package..."
+msgstr "Informace o závislostech nejsou dostupné pro tento balíček..."
+
+#: ../packagemanager.py:4351
+msgid "Information not available for this package..."
+msgstr "Informace nejsou dostupné pro tento balíček..."
+
+#: ../packagemanager.py:4396
+msgid "Not available"
+msgstr "Není dostupný"
+
+#: ../packagemanager.py:4404
+msgid "License could not be shown due to conversion problem."
+msgstr "Licenci nelze zobrazit kvůli problému v konverzi."
+
+#: ../packagemanager.py:4754 ../packagemanager.py:4803
+msgid "Loading package list"
+msgstr "Nahrávám seznam balíčků"
+
+#. This can happen if the repository does not
+#. contain any packages
+#: ../packagemanager.py:4767
+msgid "Selected publisher does not contain any packages."
+msgstr "Vybraný vydavatel neobsahuje žádné balíčky."
+
+#: ../packagemanager.py:5001
+msgid "Recent Searches"
+msgstr "Naposledy Hledané"
+
+#: ../packagemanager.py:5440
+#, python-format
+msgid "Total: %(total)s  Selected: %(selected)s"
+msgstr "Celkem: %(total)s  Vybráno: %(selected)s"
+
+#: ../packagemanager.py:5460
+#, python-format
+msgid ""
+"Searching %(s1)s%(active_pub)s%(e1)s for %(s1)s%(search_text)s%(e1)s ..."
+msgstr ""
+       "Vyhledávám %(s1)s%(active_pub)s%(e1)s  %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5466
+#, python-format
+msgid "Searching for %(s1)s%(search_text)s%(e1)s ..."
+msgstr "Vyhledávám %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5471
+#, python-format
+msgid "%(number)d packages found matching %(s1)s%(search_text)s%(e1)s"
+msgstr "%(number)d balíčků nalezeno, které odpovídají %(s1)s%(search_text)s%(e1)s"
+
+#: ../packagemanager.py:5591
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+       "Problém sítě.\n"
+       "\n"
+
+#: ../packagemanager.py:5592
+msgid "Details:\n"
+msgstr "Podrobnosti:\n"
+
+#: ../packagemanager.py:5593
+#, python-format
+msgid "%s/%s catalogs successfully updated:\n"
+msgstr "%s/%s katalog úspěšně aktualizován:\n"
+
+#: ../packagemanager.py:5686
+msgid "An unknown error occurred"
+msgstr "Vyskytla se neznámá chyba"
+
+#: ../packagemanager.py:5690
+msgid ""
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:"
+msgstr ""
+       "Prosím, upozorněte vývojáře na tento problém vyplněním formuláře spolu s podrobnostmi o chybě:"
+
+#: ../packagemanager.py:5694
+msgid "Unexpected Error"
+msgstr "Neočekávaná chyba"
+
+#: ../packagemanager.py:5713
+msgid "Error details:\n"
+msgstr "Podrobnosti o chybě:\n"
+
+#: ../packagemanager.py:5722
+msgid ""
+"\n"
+"List of configured publishers:"
+msgstr ""
+       "\n"
+       "Seznam nakonfigurovaných vydavatelů:"
+
+#: ../packagemanager.py:5728
+msgid ""
+"\n"
+"Please include output from:\n"
+msgstr ""
+       "\n"
+       "Prosím připojte výstupní formulář:\n"
+
+#: ../packagemanager.py:5733
+msgid ""
+"\n"
+"pkg version:\n"
+msgstr ""
+       "\n"
+       "pkg verze:\n"
+
+#: ../packagemanager.py:5766
+msgid "Save selected..."
+msgstr "Ukládám vybrané..."
+
+#: ../packagemanager.py:5767
+msgid "Save selected packages..."
+msgstr "Ukládám vybrané balíčky..."
+
+#: ../packagemanager.py:5768
+msgid ""
+"The installed package(s) require a reboot before installation can be "
+"completed."
+msgstr ""
+       "Nainstalované balíčky požadují restart systému před tím, než instalace bude dokončena."
+
+#: ../packagemanager.py:5805
+msgid "Unable to initialize gtk"
+msgstr "Nelze inicializovat gtk"
+
+#: ../pkgdep.py:75
+msgid ""
+"Usage:\n"
+"        pkgdepend [options] command [cmd_options] [operands]\n"
+"\n"
+"Subcommands:\n"
+"        pkgdepend generate [-DIkMm] manifest proto_dir\n"
+"        pkgdepend [options] resolve [-dMos] manifest ...\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Použití:\n"
+       "        pkgdepend [možnosti] příkaz [možnosti_příkazu] [operandy]\n"
+       "\n"
+       "Podpříkazy:\n"
+       "        pkgdepend generate [-DIkMm] manifest proto_dir\n"
+       "        pkgdepend [možnosti] resolve [-dMos] manifest ...\n"
+       "\n"
+       "Možnosti:\n"
+       "        -R dir\n"
+       "        --help nebo -?\n"
+       "Prostředí:\n"
+       "        PKG_IMAGE"
+
+#: ../pkgdep.py:115
+msgid "-D arguments must be of the form 'name=value'."
+msgstr "argument -D musí být v následující formě 'name=value'."
+
+#: ../pkgdep.py:134
+msgid "Generate only accepts exactly two arguments."
+msgstr "generate akceptuje přesně dva argumenty"
+
+#: ../pkgdep.py:140
+msgid ""
+"ORIGIN may not be specified using -D. It will be inferred from the\n"
+"install paths of the files."
+msgstr ""
+       "ORIGIN by neměl být specifikován pomocí -D. Bude přímo dosazen \n"
+       "z instalační cesty souborů."
+
+#: ../pkgdep.py:149 ../pkgdep.py:212
+#, python-format
+msgid "The manifest file %s could not be found."
+msgstr "Soubor s manifestem %s nelze nalézt"
+
+#: ../pkgdep.py:153
+#, python-format
+msgid "The proto directory %s could not be found."
+msgstr "proto adresář %s nelze nalézt."
+
+#: ../pkgdep.py:160
+#, python-format
+msgid ""
+"Could not parse manifest %(manifest)s because of the following line:\n"
+"%(line)s"
+msgstr ""
+       "Nelze rozpoznat manifest %(manifest)s kvůli následující řádce: \n"
+       "%(line)s"
+
+#: ../pkgdep.py:206
+msgid "-o cannot be used with -d or -s"
+msgstr "-o nemůže být použito s -d nebo -s"
+
+#: ../pkgdep.py:218
+#, python-format
+msgid "The output directory %s is not a directory."
+msgstr "Výstupní adresář %s není adresář."
+
+#: ../pkgdep.py:248
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s' není instalační obraz"
+
+#: ../pkgdep.py:254
+msgid "Could not parse one or more manifests because of the "
+msgstr "Nelze rozpoznat jeden nebo více manifestů kvůli "
+
+#: ../pkgdep.py:323 ../pkgdep.py:358
+#, python-format
+msgid "Could not open %s to echo manifest"
+msgstr "Nelze otevřít %s pro manifest"
+
+#: ../pkgdep.py:328
+msgid ""
+"\n"
+"\n"
+msgstr ""
+       "\n"
+       "\n"
+
+#: ../pkgdep.py:350
+#, python-format
+msgid "Could not open output file %s for writing"
+msgstr "Nelze otevřít výstupní soubor %s pro zápis"
+
+#: ../pkgdep.py:392
+#, python-format
+msgid "Out dir %s does not exist and could not be created. Error is: %s"
+msgstr "Výstupní soubor %s neexistuje a nemůže být vytvořen. Chyba je %s"
+
+#: ../pkgdep.py:467
+msgid "generate subcommand doesn't use -R"
+msgstr "podpříkaz generate nemá volbu -R"
+
+#: ../pkgdep.py:485
+#, python-format
+msgid ""
+"The %(cmd)s command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "Příkaz %(cmd)s se zdá, že není synchronizovaný s knihovnami poskytovanými SUNWipkg. Verze klienta je %(client)s zatímco API knihovna je verze %(api)s"
+
+#: ../publish.py:80
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend create-repository --set-property <section.property>=<value>\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments\n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] .. [manifest] ...\n"
+"        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+"        pkgsend publish [ -d basedir] ... [--no-index] \n"
+"          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...\n"
+"        pkgsend generate [-T file_pattern] bundlefile ....\n"
+"        pkgsend refresh-index\n"
+"\n"
+"Options:\n"
+"        -s repo_uri     target repository URI\n"
+"        --help or -?    display usage message\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+       "Použití:\n"
+       "        pkgsend [možnosti] příkaz [možnosti_příkazu] [operandy]\n"
+       "\n"
+       "Podpříkazy:\n"
+       "        pkgsend create-repository --set-property <section.property>=<value>\n"
+       "        pkgsend open [-en] pkg_fmri\n"
+       "        pkgsend add akce argumenty\n"
+       "        pkgsend import [-T vzor_souboru] svazeksouboru ...\n"
+       "        pkgsend include [-d zákl_adresář] .. [manifest] ...\n"
+       "        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+       "        pkgsend publish [ -d zákl_adresář] ... [--no-index] \n"
+       "          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...\n"
+       "        pkgsend generate [-T vzor_souboru] svazeksouboru ....\n"
+       "        pkgsend refresh-index\n"
+       "\n"
+       "Možnosti:\n"
+       "        -s repo_uri     cílové URI repozitáře\n"
+       "        --help or -?    zobrazí nápovědu\n"
+       "\n"
+       "Prostředí:\n"
+       "        PKG_REPO"
+
+#: ../publish.py:126
+msgid ""
+"Invalid repository configuration values were specified using --set-property "
+"or required values are missing.  Please provide the correct and/or required "
+"values using the --set-property option."
+msgstr ""
+       "Byly zadány neplatné hodnoty konfigurace pomocí --set-property nebo požadované hodnoty chybí. Prosím zadejte správné nebo požadované hodnoty pomocí volby --set-property."
+
+#: ../publish.py:149
+msgid "only -e or -n may be specified"
+msgstr "může být specifikováno pouze -e nebo -n"
+
+#: ../publish.py:152
+msgid "open requires one package name"
+msgstr "open požaduje jedno jméno balíčku"
+
+#: ../publish.py:183
+msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
+msgstr "nebylo specifikováno ID transakce pomocí -t nebo v $PKG_TRANS_ID."
+
+#: ../publish.py:198 ../publish.py:321 ../publish.py:401
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "nebylo specifikováno ID transakce v $PKG_TRANS_ID."
+
+#: ../publish.py:202 ../publish.py:413 ../publish.py:431
+msgid "No arguments specified for subcommand."
+msgstr "nebyly specifikovány argumenty pro příkaz"
+
+#: ../publish.py:230
+msgid "No fmri argument specified for subcommand"
+msgstr "Nebyl zadán argument fmri pro podpříkaz"
+
+#: ../publish.py:275 ../publish.py:365
+#, python-format
+msgid "File %s line %s: %s"
+msgstr "Soubor %s řádka %s: %s"
+
+#: ../publish.py:281
+msgid "Manifest does not set fmri and "
+msgstr "Manifest nenastavuje fmri a "
+
+#: ../publish.py:446
+msgid "command does not take operands"
+msgstr "příkaz nemá operátory"
+
+#: ../publish.py:475
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: neplatná globální volba -- %s"
+
+#: ../publish.py:511
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "neplatná volba %s -- %s"
+
+#: ../pull.py:86
+msgid ""
+"Usage:\n"
+"        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]\n"
+"            (fmri|pattern) ...\n"
+"        pkgrecv [-s src_repo_uri] -n\n"
+"\n"
+"Options:\n"
+"        -d path_or_uri  The path of a directory to save the retrieved "
+"package\n"
+"                        to, or the URI of a repository to republish it to.  "
+"If\n"
+"                        not provided, the default value is the current "
+"working\n"
+"                        directory.  If a directory path is provided, then\n"
+"                        package content will only be retrieved if it does "
+"not\n"
+"                        already exist in the target directory.  If a "
+"repository\n"
+"                        URI is provided, a temporary directory will be "
+"created\n"
+"                        and all of the package data retrieved before "
+"attempting\n"
+"                        to republish it.\n"
+"\n"
+"        -h              Display this usage message.\n"
+"        -k              Keep the retrieved package content compressed, "
+"ignored\n"
+"                        when republishing.  Should not be used with "
+"pkgsend.\n"
+"        -m match        Controls matching behaviour using the following "
+"values:\n"
+"                            all-timestamps\n"
+"                                includes all matching timestamps, not just\n"
+"                                latest (implies all-versions)\n"
+"                            all-versions\n"
+"                                includes all matching versions, not just "
+"latest\n"
+"        -n              List the most recent versions of the packages "
+"available\n"
+"                        from the specified repository and exit (all other\n"
+"                        options except -s will be ignored).\n"
+"        -r              Recursively evaluates all dependencies for the "
+"provided\n"
+"                        list of packages and adds them to the list.\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
+"                        repository to retrieve package data from.\n"
+"\n"
+"Environment:\n"
+"        PKG_DEST        Destination directory or repository URI\n"
+"        PKG_SRC         Source repository URI"
+msgstr ""
+       "Použití:\n"
+       "        pkgrecv [-s zdroj_repo_uri] [-d (cesta|cílová_uri)] [-k] [-m] [-n] [-r]\n"
+       "            (fmri|vzor) ...\n"
+       "        pkgrecv [-s zdroj_repo_uri] -n\n"
+       "\n"
+       "Options:\n"
+       "        -d cesta_nebo_uri  Cesta k adresáři, kam se má balíček uložit\n"
+       "                        nebo URI repozitáře, kde se má publikovat. \n"
+       "                        Pokud parametr není zadán, výchozí hodnotou je současný \n"
+       "                        pracovní adresář. Pokud je zadána cesta k adresáři, \n"
+       "                        obsah balíčku bude stažen do tohoto adresáře v případě, že již  \n"
+       " v tomto adresáři neexistuje\n"
+       "                        Pokud je zadána URI, vytvoří se dočasný adresář   \n"
+       "a všechny data budou stažena do tohoto adresáře před tím, než \n"
+       "budou publikována\n"
+       "\n"
+       "        -h              Zobrazí tuto nápovědu.\n"
+       "        -k              Ponechá data v kompresi , toto je ignorováno\n"
+       "                        při publikaci Nemělo by být použito s  "
+       "pkgsend.\n"
+       "        -m match        řídí odpovídající chování pomocí následujícíh hodnot\n"
+       "                            all-timestamps\n"
+       "                                zahrnuje všechny časové známky, ne pouze\n"
+       "                                nejnovější (znamená all-versions)\n"
+       "                            all-versions\n"
+       "                                zahrnuje všechny verze, ne pouze nejnovější\n"
+       "        -n              vytvoří seznam nejnovějších verzí balíčků dostupný\n"
+       "ze zadaného repozitáře a ukončí se (všechny další volby \n"
+       "kromě -s budou ignorovány).\n"
+       "        -r              Rekurzivně vyhodnotí všechny závislosti pro \n"
+       "poskytnuté balíčky a přidá je do seznamu.\n"
+       "        -s src_repo_uri A URI reprezentující umístění pkg(7)\n"
+       "                        repozitáře, ze kterého jsou stahována data.\n"
+       "\n"
+       "Prostředí:\n"
+       "        PKG_DEST        Cílový adresář nebo URI repozitáře\n"
+       "        PKG_SRC          URI zdrojového repozitáře"
+
+#: ../pull.py:167
+#, python-format
+msgid "Unable to load manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "Nelze nahrát manifest '%(mpath)s' pro balíček '%(pfmri)s'."
+
+#: ../pull.py:177
+#, python-format
+msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
+msgstr "Nelze parsovat manifest '%(mpath)s' pro balíček '%(pfmri)s'"
+
+#: ../pull.py:188
+#, python-format
+msgid "Unable to write manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "Nelze zapisovat do manifestu '%(mpath)s' pro balíček '%(pfmri)s'."
+
+#: ../pull.py:235
+#, python-format
+msgid "Unable to retrieve manifest %s from %s: %s"
+msgstr "Nelze získat manifest %s z %s: %s"
+
+#: ../pull.py:244
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "Vyskytla se chyba při čtení z:  %s"
+
+#: ../pull.py:448
+#, python-format
+msgid "Unable to retrieve content from: %s"
+msgstr "Nelze načíst obsah z: %s"
+
+#: ../pull.py:480
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "Nelze extrahovat soubor: %s"
+
+#: ../pull.py:527
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "Nelze stáhnout katalog z: %s"
+
+#: ../pull.py:538
+#, python-format
+msgid "Error: %s while reading from: %s"
+msgstr "Chyba: %s při čtení z: %s"
+
+#: ../pull.py:576
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "Neplatná volba -- %s"
+
+#: ../pull.py:597
+#, python-format
+msgid "Illegal option value -- %s"
+msgstr "Neplatná volba hodnoty -- %s"
+
+#: ../pull.py:600
+msgid "a source repository must be provided"
+msgstr "musí být poskytnut zdroj repozitáře"
+
+#: ../pull.py:605
+msgid "-n takes no options"
+msgstr "-n nemá žádné volby"
+
+#: ../pull.py:612
+msgid "must specify at least one pkgfmri"
+msgstr "musíte specifikovat alespon jedno pkgfrmi"
+
+#: ../pull.py:636
+msgid "To create a repository, use the pkgsend command."
+msgstr "Pro vytvoření repozitáře použijte příkaz pkgsend."
+
+#: ../pull.py:641
+#, python-format
+msgid ""
+"The repository configuration for the repository located at '%s' is not valid "
+"or the specified path does not exist.  Please correct the configuration of "
+"the repository or create a new one."
+msgstr ""
+       "Konfigurace repozitáře není platná pro repozitář umístěný v  '%s' nebo zadaná cesta neexistuje. Prosím opravte konfiguraci repozitáře nebo vytvořte novou."
+
+#: ../pull.py:656
+#, python-format
+msgid "Unable to create basedir '%s'."
+msgstr "Nelze vytvořit základní adresář  '%s'."
+
+#: ../pull.py:666
+msgid "Retrieving manifests for dependency evaluation ..."
+msgstr "Získávám manifest pro vyhodnocení závislostí ..."
+
+#: ../pull.py:684
+msgid "Retrieving manifests for package evaluation ..."
+msgstr "Získávám manifest pro vyhodnocení balíčků ..."
+
+#. Next, retrieve and store the content for each package.
+#: ../pull.py:704
+msgid "Retrieving package content ..."
+msgstr "Získávám obsah balíčku ..."
+
+#: ../pull.py:726
+#, python-format
+msgid "Republishing %s ..."
+msgstr "Publikuji znovu  %s ..."
+
+#: ../pull.py:782
+msgid "Refreshing repository search indices ..."
+msgstr "Obnovuji index repozitáře pro vyhledávání ..."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+       "Textová zpráva popisující aktualizace se zobrazí u panelu"
+       "Oznámení, pokud budou k dispozici aktualizace, je-li nastavena na hodnotu true."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "Jak často kontrolovat aktualizace"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+       "Jak často kontrolovat aktualizace. Platné hodnoty jsou Denně, Týdně, Měsíčně, Nikdy"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "Zpoždění startu"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "Ikona upozornění je zobrazena při startu, pokud je nastavena na true."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+       "Čas ve vteřinách, který by měl updatemanagernotifier vyčkat po startu, než začne kontrolu aktualizací"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid ""
+"The updatemanagernotifier program terminates after the user activates the "
+"icon in the notification area if set to true."
+msgstr ""
+       "Program updatemanagernotifier se ukončí poté, co uživatel aktivuje ikonu v notifikační oblasti, pokud je nastaveno na true. "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to always display the icon on startup"
+msgstr "Zda má být vždy zobrazena ikona při startu"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:9
+msgid "Whether to display text message when updates are available"
+msgstr "Zda má být zobrazena zpráva, pokud jsou k dispozici aktualizace"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:10
+msgid "Whether to terminate updatemanagernotiifer after icon activation."
+msgstr "Zda se má ukončit updatemanagernotiifer po aktivaci ikony"
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "Nainstalujte dostupné aktualizace"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:11
+#: ../updatemanager.py:563 ../updatemanagernotifier.py:329
+msgid "Update Manager"
+msgstr "Správce aktualizací"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Evaluate</b>"
+msgstr "<b>Vyhodnocení</b>"
+
+#: ../um/data/updatemanager.glade.h:2 ../updatemanager.py:283
+msgid "<b>Updates are available for the following packages</b>"
+msgstr "<b>Aktualizace jsou dostupné pro následující balíčky</b>"
+
+#: ../um/data/updatemanager.glade.h:3
+msgid "<b>_Details</b>"
+msgstr "<b>_Podrobnosti</b>"
+
+#: ../um/data/updatemanager.glade.h:5
+msgid "Close dialog when _finished"
+msgstr "Zavřít dialog po _dokončení"
+
+#: ../um/data/updatemanager.glade.h:7
+msgid "Index"
+msgstr "Index"
+
+#: ../um/data/updatemanager.glade.h:8
+msgid "Install Update"
+msgstr "Instalovat Aktualizace"
+
+#: ../um/data/updatemanager.glade.h:10
+msgid "Select the packages you want to update and click Install."
+msgstr "Vyberte balíčky, které chcete aktualizovat a klikněte na Instalovat."
+
+#: ../um/data/updatemanager.glade.h:12
+msgid "_Cancel"
+msgstr "_Zrušit"
+
+#: ../um/data/updatemanager.glade.h:14
+msgid "_Install Updates"
+msgstr "_Instalovat Aktualizace"
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "_OK"
+msgstr "_OK"
+
+#: ../um/data/updatemanager.glade.h:16
+msgid "_Select all Updates"
+msgstr "_Vybrat Všechny Aktualizace"
+
+#: ../um/data/updatemanager.glade.h:17
+msgid "_Update All"
+msgstr "_Aktualizovat Vše"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "Upozornit uživatele na nové aktualizace"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "Oznamování aktualizací"
+
+#: ../updatemanager.py:214
+#, python-format
+msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
+msgstr "GUI neodpovídá ná žádné události! %s. Zkontrolujte signály updatemanager.py"
+
+#: ../updatemanager.py:285
+msgid ""
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+       "Klikněte na Aktualizovat Vše pro vytvoření bootovacího prostředí a nainstalujte do něj všechny balíčky."
+
+#: ../updatemanager.py:312
+msgid "Current Version"
+msgstr "Současná verze"
+
+#: ../updatemanager.py:321
+msgid "Size (Meg)"
+msgstr "Velikost (MB)"
+
+#: ../updatemanager.py:409
+#, python-format
+msgid "count: %d"
+msgstr "počet: %d"
+
+#: ../updatemanager.py:429
+msgid "<b>You do not have sufficient permissions</b>"
+msgstr "<b>Nemáte dostatečná práva</b>"
+
+#: ../updatemanager.py:431
+msgid "Please restart pm-updatemanager using pfexec."
+msgstr "Prosím restartujte pm-updatemanager pomocí pfexec"
+
+#: ../updatemanager.py:435
+msgid "<b>No Updates available</b>"
+msgstr "<b>Nejsou dostupné aktualizace</b>"
+
+#: ../updatemanager.py:469
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+       "\n"
+       "Získávám informace o %s ..."
+
+#: ../updatemanager.py:524
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+       "\n"
+       "Žádné podrobnosti nejsou dostupné"
+
+#: ../updatemanager.py:582
+msgid ""
+"Not enough disc space, the Update All action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel Update All."
+msgstr ""
+       "Není dostatek místa na disku, akce Aktualizovat Vše nemůže být provedena.\n"
+       "\n"
+       "Klikněte na spravovat existující BE a uvolněte místo na disku, nebo klikněte na Zrušit pro zrušení akce Aktualizace Všeho."
+
+#: ../updatemanager.py:586
+msgid "Not Enough Disc Space"
+msgstr "Není dostatek místa na disku"
+
+#: ../updatemanager.py:734
+msgid "Checking for new software"
+msgstr "Kontroluji nový software"
+
+#: ../updatemanagernotifier.py:308
+msgid "Updates are available"
+msgstr "Aktualizace jsou dostupné"
+
+#: ../updatemanagernotifier.py:330
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+       "Dostupné aktualizace\n"
+       "Prosím, klikněte na ikonu pro spuštění aktualizace."
+
+#: ../updatemanagernotifier.py:405
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr "Jiná instance UpdateManagerNotify již běží"

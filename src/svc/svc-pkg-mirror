@@ -1,0 +1,547 @@
+#!/usr/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+#
+# This is the method script for the svc:/application/pkg/mirror service
+#
+# When called using the 'start' or 'stop'  SMF method script, it adds
+# or removes a crontab entry for the user running the service, pkg5srv
+# by default.
+#
+
+#
+# When called using the 'refresh' method, it runs pkgrecv(1) to update a
+# pkg(7) repository using configuration stored in the SMF instance.
+#
+# The following SMF properties are used to configure the service:
+#
+# config/repository		the local pkg5 repository we update.
+#
+# config/ref_image		the reference pkg5 image that contains
+#				origin information that we should update
+#				from.
+#
+# config/publishers		a comma-separated list of the publishers
+#				from ref_image that we pkgrecv from.
+#
+# config/crontab_period		the first five fields of a crontab(4)
+#				entry, with the 3rd field allowing the
+#				special value 'random'.
+#
+# config/debug			a boolean, 'true' or 'false'; whether
+#				to log more output when debugging.
+#
+
+# Load SMF constants and functions
+. /lib/svc/share/smf_include.sh
+. /lib/svc/share/fs_include.sh
+. /lib/svc/share/pkg5_include.sh
+
+AWK=/usr/bin/awk
+CAT=/usr/bin/cat
+DATE=/usr/bin/date
+GREP=/usr/bin/grep
+PKG=/usr/bin/pkg
+PKGRECV=/usr/bin/pkgrecv
+PKGREPO=/usr/bin/pkgrepo
+PYTHON=/usr/bin/python
+RM=/usr/bin/rm
+SED=/usr/bin/sed
+SORT=/usr/bin/sort
+SVCCFG=/usr/sbin/svccfg
+SVCPROP=/usr/bin/svcprop
+WC=/usr/bin/wc
+ZFS=/usr/sbin/zfs
+
+SVCNAME=svc:/application/pkg/mirror
+
+#
+# Since we deal with '*' values in crontab fields, we never want
+# globbing.
+#
+set -o noglob
+
+#
+# Multiple instances of this service should not point at the
+# same local repository, since they could step on each other's toes
+# during updates, so we check for this before enabling the service.
+#
+# Usage:
+#    check_duplicate_repos
+#
+function check_duplicate_repos {
+
+	ALL_REPOS=$($SVCPROP -p config/repository "$SVCNAME:*" \
+	    | $AWK '{print $NF}' | $SORT | $WC -l)
+	REPOS=$($SVCPROP -p config/repository "$SVCNAME:*" \
+	    | $AWK '{print $NF}' | $SORT -u | $WC -l)
+	#
+	# if the unique list of repositories is not the same as the
+	# list of repositories, then we have duplicates.
+	#
+	if [ "$ALL_REPOS" != "$REPOS" ]; then		
+		return 1
+	fi
+	return 0
+}
+
+#
+# In order that all instances don't hit the remote origins on the same
+# day, when configured with a 'config/crontab_period' containing a
+# special value 'random' in the 'day of the month' field of the crontab
+# schedule, we randomize the day, choosing a value from 1-28, storing
+# that to the service config instead. We then print the crontab period.
+#
+# Usage:
+#    add_date_jitter
+#
+function add_date_jitter {
+
+	schedule=$($SVCPROP -p config/crontab_period $SMF_FMRI \
+	    | $SED -e 's/\\//g')
+
+	#
+	# Validate the cron_period property value, checking that we have
+	# exactly 5 fields, and that 'random' only appears in the 3rd
+	# field.  We leave other validation up to cron(1).
+	#
+	echo "$schedule" | $AWK '
+		NF != 5 {
+			print "config/crontab_period property must contain 5 " \
+			    "values.";
+			exit 1
+		}
+		$1 == "random" || $2 == "random" || $4 == "random" || \
+		    $5 == "random" {
+			print "only field 3 can have the value random";
+			exit 1
+		}'
+
+	check_failure $? "invalid value for config/crontab_period." \
+	    $SMF_FMRI exit
+
+	RAND=$(( ($RANDOM % 27) + 1 ))
+	new_schedule=$(echo "$schedule" | $SED -e "s/random/$RAND/1")
+	if [ "$new_schedule" != "$schedule" ]; then
+		#
+		# Save the schedule in the instance. Note that this
+		# will not appear in the running instance until the
+		# refresh method has fired.
+		#
+		new_schedule=$(echo $new_schedule| $SED -e 's/ /\\ /g')
+		$SVCCFG -s $SMF_FMRI setprop \
+		    config/crontab_period = astring: "$new_schedule"
+	fi
+	print $new_schedule
+}
+
+#
+# Add a crontab entry that does periodic pkgrecvs from a series of
+# remote pkg5 origins to a local repository. This is run as part of the
+# SMF start method for this service. If the repository doesn't exist,
+# we create it.  We also attempt to create a zfs dataset if the parent
+# directory for the repository is the leaf of a zfs dataset.
+#
+function smf_schedule_updates {
+
+	check_duplicate_repos
+	check_failure $? "Two or more instances of $SVCNAME contain the
+same 'config/repository' value, which is not supported." $SMF_FMRI exit
+	typeset -f schedule=$(add_date_jitter | $SED -e 's/\\//g')
+	typeset repo=$($SVCPROP -p config/repository $SMF_FMRI)
+
+	SAVED_IFS="$IFS"
+	IFS=,
+	set -A publishers $($SVCPROP -p config/publishers $SMF_FMRI)
+	IFS="$SAVED_IFS"
+
+	if [ ! -f $repo/pkg5.repository ]; then
+		repo_parent=$(dirname $repo)
+		repo_base=$(basename $repo)
+		readmnttab "$repo_parent" < /etc/mnttab
+		if [ "$fstype" = "zfs" ]; then
+			#
+			# $special gets set by readmnttab in
+			# /lib/svc/share/fs_include.sh
+			#
+			DS="$special/$repo_base"
+
+			#
+			# We set canmount=noauto so that multiple bootable
+			# rpools can coexist on the same system.
+			#
+			$ZFS create -o canmount=noauto "$DS"
+			check_failure $? \
+			    "unable to create zfs dataset $DS" \
+			    $SMF_FMRI degrade
+			$ZFS mount "$DS"
+			check_failure $? \
+			    "unable to mount zfs dataset $DS" \
+			    $SMF_FMRI degrade
+		fi
+		$PKGREPO create "$repo"
+		check_failure $? "unable to create repository" \
+		    $SMF_FMRI degrade
+	fi
+	set_default_publisher "$repo" ${publishers[0]}
+	add_cronjob $SMF_FMRI "$schedule" \
+	    "/usr/sbin/svcadm refresh $SMF_FMRI"
+}
+
+#
+# Remove the crontab entry that was added by 'schedule_updates'. This is
+# run as part of the SMF stop method for this service.
+#
+function smf_unschedule_updates {
+
+	remove_cronjob $SMF_FMRI \
+	    "/usr/sbin/svcadm refresh $SMF_FMRI"
+}
+
+#
+# Checks whether the given repository has a publisher/prefix set,
+# and if not, sets it to the given publisher.
+#
+# Usage:
+#     set_default_publisher <path to repo> <publisher>
+#
+function set_default_publisher {
+	typeset repo="$1"
+	typeset pub=$2
+
+	DEFAULT=$($PKGREPO -s "$repo" get -H publisher/prefix | \
+	    $AWK '{print $NF}')
+	if [ "$DEFAULT" = '""' ]; then
+		$PKGREPO -s "$repo" set publisher/prefix=$pub
+	fi
+}
+
+#
+# Intended to be called as part of a cron job firing, this calls
+# 'pkgrecv_from_origin' for each publisher configured in the SMF
+# instance.
+#
+# Usage: 
+#     update_repository <smf fmri>
+#
+function update_repository {
+
+	typeset SMF_FMRI=$1
+	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
+	typeset lockfile=/system/volatile/pkg/mirror.$instance.lock
+
+	if [ -f $lockfile ]; then
+		pid=$(<$lockfile)
+		check_failure 1 "A mirror operation was already running
+ under process $pid when the cron job fired. Remove $lockfile to
+ override, or check the SMF property 'config/crontab_period' to ensure
+ cron schedules don't overlap." $SMF_FMRI degrade
+		return 1
+	fi
+	# write our pid into the lock file
+	echo $$ > $lockfile
+	check_failure $? "unable to create lockfile" $SMF_FMRI degrade
+
+	typeset repo=$($SVCPROP -p config/repository $SMF_FMRI \
+	    | $SED -e 's/\\//g')
+	typeset cachedir=$($SVCPROP -p config/cache_dir $SMF_FMRI \
+	    | $SED -e 's/\\//g')
+	typeset ref_image=$($SVCPROP -p config/ref_image $SMF_FMRI\
+	    | $SED -e 's/\\//g')
+
+	SAVED_IFS="$IFS"
+	IFS=,
+	set -A publishers $($SVCPROP -p config/publishers $SMF_FMRI)
+	IFS="$SAVED_IFS"
+	if [ -z "$publishers" ]; then
+		echo "ERROR: no publishers found in 'config/publishers'"
+		return $SMF_EXIT_FATAL
+	fi
+
+	set -A origins ""
+	set -A ssl_keys ""
+	set -A ssl_certs ""
+	set -A http_proxies ""
+	set -A https_proxies ""
+	set -A clones ""
+	set -A pubs ""
+
+	#
+	# Gather the details we need to connect to the origins
+	# we want to pkgrecv from.
+	#
+	i=0
+	index=0
+	while [ $i -lt ${#publishers[@]} ]; do
+		pub=${publishers[$i]}
+		sslkey=$($PKG -R $ref_image publisher $pub \
+		    | $GREP 'SSL Key:' \
+		    | $GREP -v None | $SED -e 's/.* //g')
+		sslcert=$($PKG -R $ref_image publisher $pub \
+		    | $GREP 'SSL Cert:' \
+		    | $GREP -v None | $SED -e 's/.* //g')
+		$PKG -R $ref_image publisher -F tsv > /tmp/pkg.mirror.$$
+
+		#
+		# this function depends on the output of
+		# 'pkg publisher -F tsv'. It really ought to use
+		# 'pkg publisher -o' option when that's available.
+		#
+
+		first_index=$index
+		while read publisher sticky syspub enabled ptype status \
+		    uri proxy ; do
+			if [ "$pub" != "$publisher" ]; then
+				continue
+			fi
+			if [ -z "$uri" ]; then
+				echo "WARNING: no URI \
+configured for publisher $pub"
+				continue
+			fi
+			origins[$index]=$uri
+			echo $uri | $GREP -q https://
+			if [ $? -eq 0 ]; then
+				ssl_keys[$index]=$sslkey
+				ssl_certs[$index]=$sslcert
+			else
+				ssl_keys[$index]=''
+				ssl_certs[$index]=''
+			fi
+			if [ "$proxy" = "-" ]; then
+				proxy=''
+			fi
+			https_proxies[$index]=$proxy
+			http_proxies[$index]=$proxy
+			clones[$index]=""
+			pubs[$index]=$pub
+			index=$(( $index + 1 ))
+		done < /tmp/pkg.mirror.$$
+		$RM /tmp/pkg.mirror.$$
+		i=$(( $i + 1 ))
+
+		# If only one origin for this publisher
+		if [ $first_index -eq $(( $index - 1 )) ]; then
+			clones[$first_index]="true"
+		fi
+	done
+
+	# Iterate over all configured origins
+	i=0
+	while [ $i -lt ${#origins[@]} ]; do
+		origin=${origins[$i]}
+		pub=${pubs[$i]}
+		key=${ssl_keys[$i]}
+		cert=${ssl_certs[$i]}
+		http_proxy=${http_proxies[$i]}
+		https_proxy=${https_proxies[$i]}
+		clone=${clones[$i]}
+
+		pkgrecv_from_origin "$repo" "$origin" "$key" \
+		    "$cert" $SMF_FMRI "$cachedir" "$http_proxy" \
+		    "$https_proxy" "$clone" "$pub"
+		check_failure $? \
+		    "unable to update repository $repo" $SMF_FMRI \
+		    degrade
+		if [ $? -ne 0 ]; then
+			$RM $lockfile
+			return 1
+		fi
+		i=$(( $i + 1 ))
+	done
+
+	EXIT=$?
+	$RM $lockfile
+	return $EXIT
+}
+
+#
+# When retrieving values from SMF, we can get the string '""'
+# (two quotes) returned.  For our purposes, this is equivalent to the
+# null string, so we normalize it to ''. This function reads from stdin.
+#
+function reduce_null_str {
+	while read value; do
+		if [ "$value" = '""' ]; then
+			echo ''
+		else
+			echo $value
+		fi
+	done
+}
+
+#
+# Perform a pkgrecv from the given origin to the given repository.
+# We assume that the repository exists.
+#
+# Usage:
+#    pkgrecv_from_origin <repo> <origin> <key path> <cert path> <FMRI>
+#			<cache dir> <http_proxy> <https_proxy>
+#
+function pkgrecv_from_origin {
+
+	typeset repo=$1
+	typeset origin=$2
+	typeset key=$(echo $3 | reduce_null_str)
+	typeset cert=$(echo $4 | reduce_null_str)
+	typeset SMF_FMRI=$5
+	typeset cachedir=$6
+	typeset http_proxy=$(echo $7 | reduce_null_str)
+	typeset https_proxy=$(echo $8 | reduce_null_str)
+	typeset clone=$9
+	typeset publisher=${10}
+
+	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
+	typeset debug_flag=$($SVCPROP -p config/debug $SMF_FMRI)
+	typeset LOG=/var/log/pkg/mirror/mirror.$instance.log
+
+	export http_proxy=$http_proxy
+	export https_proxy=$https_proxy
+
+	TSTAMP=$($DATE +%Y%m%dT%H%M%SZ)
+	echo "$TSTAMP: $SMF_FMRI updates to $repo from $origin :" \
+	    >> $LOG
+
+	if [ -n "$key" ] && [ -n "$cert" ]; then
+		key="--key $key"
+		cert="--cert $cert"
+	fi
+	
+	set -f
+	if [ -n "$clone" ]; then
+		cmd="$PKGRECV -s $origin -d "$repo" -p $publisher \
+		    $key $cert --clone"
+	else
+		cmd="$PKGRECV -s $origin -c "$cachedir"/$instance \
+		    -d "$repo" -m all-timestamps $key $cert *"
+	fi
+
+	# show the command we're running
+	if [ "$debug_flag" = "true" ] ; then
+		echo $cmd
+	fi
+
+	$cmd > $LOG.tmp 2>&1
+	set +f
+	EXIT=$?
+
+	if [ "$debug_flag" = "true" ]; then
+		$CAT $LOG.tmp >> $LOG
+	elif [ $EXIT -ne 0 ]; then
+		#
+		# in the case of errors, getting the full pkgrecv output
+		# can be helpful.
+		#
+		$CAT $LOG.tmp >> $LOG
+	else
+		# otherwise, we only log messages containing pkg5 FMRIs
+		$GREP 'pkg:/' $LOG.tmp >> $LOG
+		# we only destroy the cache if a pkgrecv was successful
+		$RM -rf "$cachedir"/$instance
+	fi
+	$PKGREPO -s "$repo" refresh
+	$RM $LOG.tmp
+	return $EXIT
+}
+
+# $1 start | stop | an FMRI containing configuration
+case "$1" in
+'start')
+	smf_schedule_updates
+	if [ $? -eq 0 ]; then
+	    result=$SMF_EXIT_OK
+	else
+	    echo "Problem mirroring repository for $SMF_FMRI"
+	    result=$SMF_EXIT_ERR_FATAL
+	fi
+	;;
+
+'stop')
+	smf_unschedule_updates
+	if [ $? -eq 0 ]; then
+	    result=$SMF_EXIT_OK
+	else
+	    echo "Problem mirroring repository for $SMF_FMRI"
+	    result=$SMF_EXIT_ERR_FATAL
+	fi
+	;;
+
+#
+# A note on logging.
+#
+# The following log files are created while this service is running:
+#
+# /var/log/pkg/mirror/mirror.<instance>.log
+#	This is the top-level log file for the service. This log
+#	shows a summary of each pkgrecv, listing a timestamp and the
+#	packages that were received during that run of the cron job.
+#
+# /var/log/pkg/mirror/mirror.<instance>.run.<pid>
+# 	This is a temporary log file, which should contain very little
+#       output - it exists to capture all other output from the service
+#	If 'config/debug' is set, then this file will also include the
+#       full pkgrecv(1) command that is executed.
+#
+# /var/log/pkg/mirror/mirror.<instance>.log.tmp
+#       Another temporary log file, which captures the complete output
+#       of each pkgrecv command as it runs. At the end of the pkgrecv
+#       process, we extract a summary and append it to
+#	mirror.<instance>.log. If 'config/debug' is set, the contents
+#       of this log are appended to mirror.<instance>.log. If any errors
+#	were encountered while running pkgrecv, the contents of this log
+#	are appended to mirror.<instance>.log.
+#
+
+'refresh')
+	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
+	typeset LOG=/var/log/pkg/mirror/mirror.$instance.log
+	typeset debug_flag=$($SVCPROP -p config/debug $SMF_FMRI)
+	typeset pkg_dir=/system/volatile/pkg
+
+	# Most output should get captured by update_repository, but we
+	# capture any remaining output.
+	mkdir -p $pkg_dir
+	update_repository $SMF_FMRI > $LOG.run.$$ 2>&1
+	RET=$?
+
+	if [ -s $LOG.run.$$ ]; then
+		cat $LOG.run.$$ >> $LOG
+	fi
+
+	if [ "$debug_flag" = "false" ]; then
+		$RM $LOG.run.$$
+	fi
+
+	if [ $RET -eq 0 ]; then
+		result=$SMF_EXIT_OK
+	else
+		echo "Mirror refresh failed: see $LOG for more detail."
+		# try to remove the cron job so we don't keep failing
+		smf_unschedule_updates
+		result=$SMF_EXIT_ERR_FATAL
+	fi
+	;;
+esac
+
+exit $result

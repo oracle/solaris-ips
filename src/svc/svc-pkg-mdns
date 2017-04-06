@@ -1,0 +1,146 @@
+#!/usr/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+# Load SMF constants and functions
+. /lib/svc/share/smf_include.sh
+
+if [[ -z "$SMF_FMRI" ]]; then
+	echo "this script can only be invoked by smf(7)"
+	exit $SMF_EXIT_ERR_NOSMF
+fi
+
+case "$1" in
+'start')
+	# Handles mDNS depot startup
+
+	# retrieve the pkg_root property. If the variable is left empty
+	# pkg_root is /
+	pkg_root=$(svcprop -p pkg/pkg_root $SMF_FMRI)
+	if [[ $? -ne 0 ]]; then
+		echo "service property pkg/pkg_root not defined for" \
+		    "service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	fi
+
+	# make sure pkg_root ends with a /
+	echo $pkg_root | grep /$ >/dev/null
+	if [[ $? -ne 0 ]]; then
+		pkg_root="${pkg_root}/"
+	fi
+
+	# adjust the PYTHONPATH to point to the current environment
+	# we need to make sure to adjust the PYTHONPATH accordingly
+	# to a Python 2.7 or 3.4 environment
+	python_ver=$(head -1 ${pkg_root}usr/lib/pkg.depotd 2>/dev/null |
+	    awk -F/ '{print $NF}')
+	if [[ $python_ver != *python* ]]; then
+		echo "invalid python version $python_ver found in"
+		echo "${pkg_root}usr/lib/pkg.depotd"
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+
+	PYTHONPATH=${pkg_root}usr/lib/${python_ver}/vendor-packages/:$PYTHONPATH
+
+	export PYTHONPATH
+
+	#
+	# If this process has net_privaddr, then we pass it along.
+	# If not, we ensure that we don't specify it, since that will
+	# cause ppriv to throw an error.
+	#
+	privaddr=""
+	ppriv -v $$ | grep 'E: ' | grep net_privaddr > /dev/null 2>&1
+	if [[ $? == 0 ]]; then
+		echo "Dropping net_privaddr privilege."
+		privaddr=",net_privaddr"
+	fi
+
+	#
+	# Build up the privileges available starting with "basic".  This
+	# provides some protection even when the depot runs as root.
+	#
+	wrapper="ppriv -s \
+            A=basic,-file_link_any,-proc_info,-proc_session$privaddr -e"
+
+	# Build the command to start pkg.depotd.
+	cmd="$wrapper ${pkg_root}usr/lib/pkg.depotd --llmirror --cfg $SMF_FMRI"
+	# Echo the command so that the log contains the command used to start
+	# the depot.
+	echo $cmd
+
+	exec $cmd
+
+	;;
+
+'stop')
+	#
+	# Strategy: First, try shutting down depot using polite kill.  Use up
+	# as much as possible of the allotted timeout period waiting for polite
+	# kill to take effect.  As time runs out, try a more aggressive kill.
+	#
+	SVC_TIMEOUT=`svcprop -p stop/timeout_seconds $SMF_FMRI`
+	if [[ $? -ne 0 ]]; then
+		echo "service property stop/timeout_seconds not defined" \
+		    "for service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	fi
+
+	#
+	# Note that we're working around an oddity in smf_kill_contract: it
+	# waits in 5 second chunks and can overshoot the specified timeout
+	# by as many as 4 seconds.  Example: a specified wait of 6 will result
+	# in a wait of 10 seconds in reality.  Since we may potentially do a
+	# first kill and then a second, we must ensure that at least 8 seconds
+	# of slop is left in reserve.  To be paranoid, we go for 10.
+	#
+	((POLITE=$SVC_TIMEOUT - 10))
+	if [[ $POLITE -gt 0 ]]; then
+		smf_kill_contract $2 TERM 1 $POLITE
+		ret=$?
+		# '2' indicates timeout with non-empty contract.
+		if [[ $ret -eq 2 ]]; then
+			echo "Gentle contract kill timed out after" \
+		       	    "$POLITE seconds, trying SIGKILL." >&2
+			#
+			# Again, despite the specified timeout, this will
+			# take a minimum of 5 seconds to complete.
+			#
+			smf_kill_contract $2 KILL 1 1
+			if [[ $ret -ne 0 ]]; then
+				exit $SMF_EXIT_ERR_FATAL
+			fi
+		fi
+	else
+		# If the timeout is too short, we just try once, politely.
+		smf_kill_contract $2 TERM
+	fi
+	;;
+
+*)
+	echo "Usage: $0 { start | stop }"
+	exit $SMF_EXIT_ERR_CONFIG
+	;;
+
+esac
+exit $SMF_EXIT_OK

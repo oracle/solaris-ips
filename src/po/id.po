@@ -1,0 +1,5919 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+#
+msgid ""
+msgstr ""
+       "Project-Id-Version: Package Manager\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: 2010-01-14 11:47+0900\n"
+       "Last-Translator: Indonesian l10n team <i18n-discuss@opensolaris.org>\n"
+       "Language-Team: Indonesia  <i18n-discuss@opensolaris.org>n\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
+       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. The full usage message isn't desired.
+#: ../client.py:138
+msgid "Try `pkg --help or -?' for more information."
+msgstr "Coba `pkg --help atau -?' untuk informasi lebih lanjut."
+
+#: ../client.py:141
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-Hafnsuv] [--no-refresh] [package...]\n"
+"        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [publisher ...]\n"
+"        pkg version\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-alprI] [-s server] query\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
+"            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
+"            [--variant <variant_spec>=<instance>] \n"
+"            [--facet <facet_spec>=[True,False]]\n"
+"            (-p|--publisher) name=uri dir\n"
+"        pkg change-variant [-nvq] [--be-name name] "
+"<variant_spec>=<instance>\n"
+"            [<variant_spec>=<instance> ...]\n"
+"        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|"
+"None] ...\n"
+"        pkg variant -H [<variant_spec>]\n"
+"        pkg facet -H [<facet_spec>]\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-g origin_to_add | --add-origin=origin_to_add]\n"
+"            [-G origin_to_remove | --remove-origin=origin_to_remove]\n"
+"            [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+"            [--non-sticky] [--sticky] [--search-after=publisher]\n"
+"            [--search-before=publisher] publisher\n"
+"        pkg unset-publisher publisher ...\n"
+"        pkg publisher [-HPn] [publisher ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Usage:\n"
+       "        pkg [options] command [cmd_options] [operands]\n"
+       "\n"
+       "Basic subcommands:\n"
+       "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+       "        pkg uninstall [-nrvq] [--no-index] package...\n"
+       "        pkg list [-Hafnsuv] [--no-refresh] [package...]\n"
+       "        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+       "index]\n"
+       "        pkg refresh [--full] [publisher ...]\n"
+       "        pkg version\n"
+       "\n"
+       "Advanced subcommands:\n"
+       "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+       "        pkg search [-alprI] [-s server] query\n"
+       "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+       "        pkg fix [pkg_fmri_pattern ...]\n"
+       "        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
+       "            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+       "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+       "zone]\n"
+       "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
+       "            [--variant <variant_spec>=<instance>] \n"
+       "            [--facet <facet_spec>=[True,False]]\n"
+       "            (-p|--publisher) name=uri dir\n"
+       "        pkg change-variant [-nvq] [--be-name name] "
+       "<variant_spec>=<instance>\n"
+       "            [<variant_spec>=<instance> ...]\n"
+       "        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|"
+       "None] ...\n"
+       "        pkg variant -H [<variant_spec>]\n"
+       "        pkg facet -H [<facet_spec>]\n"
+       "        pkg set-property propname propvalue\n"
+       "        pkg unset-property propname ...\n"
+       "        pkg property [-H] [propname ...]\n"
+       "\n"
+       "        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+       "            [-g origin_to_add | --add-origin=origin_to_add]\n"
+       "            [-G origin_to_remove | --remove-origin=origin_to_remove]\n"
+       "            [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+       "            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+       "            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+       "            [--non-sticky] [--sticky] [--search-after=publisher]\n"
+       "            [--search-before=publisher] publisher\n"
+       "        pkg unset-publisher publisher ...\n"
+       "        pkg publisher [-HPn] [publisher ...]\n"
+       "        pkg history [-Hl]\n"
+       "        pkg purge-history\n"
+       "        pkg rebuild-index\n"
+       "\n"
+       "Options:\n"
+       "        -R dir\n"
+       "        --help or -?\n"
+       "\n"
+       "Environment:\n"
+       "        PKG_IMAGE"
+
+#: ../client.py:262
+msgid "-f may only be used in combination with -a"
+msgstr "-f hanya bisa digunakan dengan kombinasi dengan -a"
+
+#: ../client.py:281
+#, python-format
+msgid "%(opts)s may not be used with %(opt)s"
+msgstr "%(opts)s mungkin tidak bisa digunakan dengan %(opt)s"
+
+#: ../client.py:285
+msgid "-s and -v may not be combined"
+msgstr "-s dan -v tidak dapat dikombinasikan"
+
+#: ../client.py:383 ../client.py:439
+msgid "installed"
+msgstr "terinstal"
+
+#: ../client.py:385 ../client.py:435
+msgid "known"
+msgstr "diketahui"
+
+#: ../client.py:405 ../client.py:1548 ../client.py:1946
+msgid "no packages installed"
+msgstr "tidak ada paket yang diinstal"
+
+#: ../client.py:411
+msgid "No specified packages have newer versions available."
+msgstr "Tidak ada paket sesuai spesifikasi yang mempunyai versi lebih baru tersedia."
+
+#: ../client.py:414
+msgid "No installed packages have newer versions available."
+msgstr "Tidak ada paket yang sudah terinstal mempunyai versi lebih baru."
+
+#: ../client.py:437
+msgid "known or installed"
+msgstr "diketahui atau terinstal"
+
+#: ../client.py:441
+#, python-format
+msgid "no packages matching '%(pattern)s' %(state)s"
+msgstr "tidak ada paket yang sesuai dengan '%(pattern)s' %(state)s"
+
+#: ../client.py:495
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "ZFS snapshot sudah dibuat: %s"
+
+#: ../client.py:506
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be repaired: "
+msgstr ""
+       "Paket-paket berikut memerlukan lisensi untuk dapat diterima sebelum dapat"
+       "diperbaiki: "
+
+#: ../client.py:510 ../client.py:684
+msgid ""
+"To indicate that you agree to and accept the terms of the licenses of the "
+"packages listed above, use the --accept option.  To display all of the "
+"related licenses, use the --licenses option."
+msgstr ""
+       "Untuk menunjukkan bahwa Anda setuju dan menerima syarat-syarat lisensi dari paket yang tercantum di atas, gunakan opsi - opsi menerima. Untuk menampilkan semua lisensi terkait, gunakan opsi - opsi lisensi."
+
+#: ../client.py:517
+msgid ""
+"Requested \"fix\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Meminta operasi \"fix \" akan mempengaruhi file yang tidak dapat diubah dalam live image. \n"
+       "Silakan coba lagi operasi ini di lingkungan alternatif boot."
+
+#: ../client.py:549 ../client.py:1016 ../client.py:1092 ../client.py:1156
+msgid "-v and -q may not be combined"
+msgstr "-v dan -q tidak dapat dikombinasikan"
+
+#: ../client.py:602
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+       "pkg: tidak ada paket yang sesuai dengan pola yang Anda berikan berikut \n"
+       "diinstal pada sistem. \n"
+
+#: ../client.py:612
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+       "\n"
+       "Semua paket terinstal sesuai pola. %s"
+
+#: ../client.py:650 ../modules/client/image.py:865
+#, python-format
+msgid "Package: %s"
+msgstr "Paket: %s"
+
+#: ../client.py:651 ../modules/client/api_errors.py:129
+#: ../modules/client/image.py:867
+#, python-format
+msgid "License: %s\n"
+msgstr "Lisensi: %s\n"
+
+#: ../client.py:680
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be installed or updated: "
+msgstr ""
+       "Paket-paket berikut memerlukan lisensi untuk dapat diterima sebelum dapat"
+       "diinstal atau diperbaharui: "
+
+#: ../client.py:692
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened while preparing for %s:"
+msgstr ""
+       "\n"
+       "Kesalahan yang tidak terduga terjadi ketika mempersiapkan untuk %s:"
+
+#: ../client.py:701
+#, python-format
+msgid "%s failed: %s"
+msgstr "%s gagal: %s"
+
+#: ../client.py:704
+#, python-format
+msgid "%s cannot be done on live image"
+msgstr "%s tidak dapat diselesaikan dalam kondisi live image"
+
+#: ../client.py:707
+#, python-format
+msgid ""
+"Requested \"%s\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Meminta operasi \"%s\" akan mempengaruhi file yang tidak dapat diubah dalam"
+       "live image.\n"
+       "Silakan coba lagi operasi ini di lingkungan alternatif boot."
+
+#: ../client.py:739 ../client.py:743
+#, python-format
+msgid "An unexpected error happened during %s: %s"
+msgstr "Kesalahan yang tidak terduga terjadi selama %s: %s"
+
+#: ../client.py:755 ../client.py:764
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "Tidak ada gambar yang bersumber pada '%s'"
+
+#: ../client.py:767
+#, python-format
+msgid ""
+"%s failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "%s gagal (pengecualian persediaan):\n"
+       "%s"
+
+#: ../client.py:770
+#, python-format
+msgid ""
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
+"SUNWipkg' and then retry the %s."
+msgstr ""
+       "PERINGATAN: pkg(7) tampaknya menjadi ketinggalan zaman, dan harus diperbarui sebelum \n"
+       "menjalankan %s. Silahkan perbarui pkg(7) menggunakan 'pfexec pkg install \n SUNWipkg'"
+       "dan kemudian mencoba ulang %s."
+
+#: ../client.py:777
+#, python-format
+msgid "Cannot remove '%s' due to the following packages that depend on it:"
+msgstr "Tidak dapat menghapus '%s' karena paket-paket berikut yang bergantung padanya:"
+
+#: ../client.py:832 ../client.py:913
+#, python-format
+msgid "%s: -v and -q may not be combined"
+msgstr "%s: -v dan -q tidak dapat dikombinasikan"
+
+#: ../client.py:835
+#, python-format
+msgid "%s: no variants specified"
+msgstr "%s: tidak ada varian ditentukan"
+
+#: ../client.py:841
+#, python-format
+msgid "%s: variants must to be of the form '<name>=<value>'."
+msgstr "%s: varian harus menjadi bentuk '<nama>=<nilai>'."
+
+#: ../client.py:851
+#, python-format
+msgid "%s: duplicate variant specified: %s"
+msgstr "%s: duplikasi varian ditentukan: %s"
+
+#: ../client.py:869 ../client.py:1111
+msgid "No updates necessary for this image."
+msgstr "Tidak ada pembaruan yang diperlukan untuk image ini."
+
+#: ../client.py:916
+#, python-format
+msgid "%s: no facets specified"
+msgstr "%s: tidak ada faset ditentukan"
+
+#: ../client.py:929
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
+msgstr "%s: facet harus menjadi bentuk 'facet ....=[True|False|None]'"
+
+#: ../client.py:938
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
+msgstr "%s: facet harus menjadi bentuk 'facet ....=[True|False|None]'."
+
+#: ../client.py:962
+msgid "Facet change has no effect on image"
+msgstr "Perubahan facet tidak berpengaruh pada image"
+
+#: ../client.py:1019 ../client.py:2962
+#, python-format
+msgid "command does not take operands ('%s')"
+msgstr "perintah tidak mengambil Operand ('%s')"
+
+#: ../client.py:1037
+msgid "No updates available for this image."
+msgstr "Tidak ada update yang tersedia untuk image ini."
+
+#: ../client.py:1054
+msgid "NOTE: Please review release notes posted at:\n"
+msgstr "CATATAN: Mohon periksa catatan rilis pada:\n"
+
+#: ../client.py:1089 ../client.py:1153
+msgid "at least one package name required"
+msgstr "setidaknya dibutuhkan satu nama paket"
+
+#: ../client.py:1262
+#, python-format
+msgid ""
+"The server returned a malformed result.\n"
+"The problematic structure:%r"
+msgstr ""
+       "Server mengembalikan hasil yang cacat. \n"
+       "Struktur yang bermasalah: %r"
+
+#: ../client.py:1268
+#, python-format
+msgid ""
+"The server returned an invalid action.\n"
+"%s"
+msgstr ""
+       "Server mengembalikan tindakan yang tidak sah. \n"
+       "%s"
+
+#: ../client.py:1324
+#, python-format
+msgid "%s is not a valid server URL."
+msgstr "%s URL server tidak valid."
+
+#: ../client.py:1336
+msgid "at least one search term must be provided"
+msgstr "setidaknya satu istilah pencarian harus disediakan"
+
+#: ../client.py:1347
+#, python-format
+msgid "action level options ('%s') to -o cannot be used with the -p option"
+msgstr "tingkat pilihan tindakan ('%s') ke-o  tidak dapat digunakan dengan option -p"
+
+#: ../client.py:1399
+#, python-format
+msgid "The server returned a malformed result:%r"
+msgstr "Server mengembalikan hasil yang salah:%r"
+
+#: ../client.py:1410
+msgid ""
+"action level options to -o cannot be used with the queries that return "
+"packages"
+msgstr ""
+       "tingkat tindakan pilihan -o tidak dapat digunakan dengan permintaan yang mengembalikan paket"
+
+#: ../client.py:1467 ../client.py:1477
+msgid ""
+"The search index appears corrupted.  Please rebuild the index with 'pkg "
+"rebuild-index'."
+msgstr ""
+       "Index pencarian sepertinya korup. Mohon bangun ulang index dengan 'pkg rebuild-index'."
+
+#: ../client.py:1511 ../client.py:1908
+msgid "-l and -r may not be combined"
+msgstr "-l dan -r tidak dapat dikombinasikan"
+
+#: ../client.py:1514
+msgid "must request remote info for specific packages"
+msgstr "harus meminta remote info untuk paket-paket tertentu"
+
+#: ../client.py:1566
+msgid "Obsolete"
+msgstr "Obsolete"
+
+#: ../client.py:1568
+msgid "Renamed"
+msgstr "Dinamai"
+
+#: ../client.py:1576 ../packagemanager.py:1694 ../packagemanager.py:3163
+msgid "Installed"
+msgstr "Diinstal"
+
+#: ../client.py:1578 ../packagemanager.py:3165
+msgid "Not installed"
+msgstr "Tidak diinstal"
+
+#: ../client.py:1580
+msgid "          Name:"
+msgstr "             Nama:"
+
+#: ../client.py:1582
+msgid "       Summary:"
+msgstr "        Ringkasan:"
+
+#: ../client.py:1584
+msgid "   Description:"
+msgstr "        Deskripsi:"
+
+#: ../client.py:1594
+msgid "      Category:"
+msgstr "         Kategori:"
+
+#: ../client.py:1601
+msgid "         State:"
+msgstr "          Keadaan:"
+
+#: ../client.py:1604
+msgid "    Renamed to:"
+msgstr "  Dinamai Menjadi:"
+
+#. XXX even more info on the publisher would be nice?
+#: ../client.py:1609
+msgid "     Publisher:"
+msgstr "         Penerbit:"
+
+#: ../client.py:1610
+msgid "       Version:"
+msgstr "            Versi:"
+
+#: ../client.py:1611
+msgid " Build Release:"
+msgstr "            Rilis:"
+
+#: ../client.py:1612
+msgid "        Branch:"
+msgstr "           Cabang:"
+
+#: ../client.py:1613
+msgid "Packaging Date:"
+msgstr "Tanggal Pemaketan:"
+
+#: ../client.py:1614
+msgid "          Size:"
+msgstr "           Ukuran:"
+
+#: ../client.py:1615
+msgid "          FMRI:"
+msgstr "             FMRI:"
+
+#: ../client.py:1623
+msgid ""
+"pkg: info: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: info: tidak ada paket yang sesuai dengan pola berikut yang Anda berikan \n"
+       "diinstal pada sistem. Cobalah menentukan -r untuk query jarak jauh:"
+
+#: ../client.py:1627
+msgid ""
+"pkg: info: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: info: tidak ada paket yang sesuai dengan pola yang Anda tentukan berikut \n"
+       "ditemukan di katalog. Cobalah pola relaxing, refreshing, dan/atau\n"
+       "memeriksa katalog:"
+
+#: ../client.py:1643 ../modules/client/api_errors.py:278
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s' sesuai dengan beberapa paket"
+
+#: ../client.py:1649
+msgid "no license information could be found for the following packages:"
+msgstr "tidak ada informasi lisensi dapat ditemukan untuk paket-paket berikut:"
+
+#: ../client.py:1865
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "Atribut tidak valid '%s'"
+
+#: ../client.py:1911
+msgid "contents: must request remote contents for specific packages"
+msgstr "isi: harus meminta isi jarak jauh untuk paket tertentu"
+
+#: ../client.py:1925
+#, python-format
+msgid "-m and %s may not be specified at the same time"
+msgstr "-m dan %s tidak dapat ditentukan pada waktu yang sama"
+
+#: ../client.py:1988 ../client.py:1994
+#, python-format
+msgid "pkg: contents: '%s' matches multiple packages"
+msgstr "pkg: isi: '%s' sesuai dengan beberapa paket"
+
+#: ../client.py:2074
+msgid "pkg: contents: no matching actions found in the listed packages"
+msgstr "pkg: isi: tidak ada tindakan yang sesuai yang ditemukan dalam paket yang tercantum"
+
+#: ../client.py:2086
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: isi: tidak ada paket yang sesuai dengan mengikuti pola yang Anda tentukan \n"
+       "diinstal pada sistem. Cobalah menentukan -r untuk query jarak jauh:"
+
+#: ../client.py:2090
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: isi: tidak ada paket yang sesuai dengan pola yang Anda tentukan \n"
+       "ditemukan di katalog. Cobalah pola relaxing, refreshing, dan/atau\n"
+       "memeriksa katalog:"
+
+#: ../client.py:2107
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg: %s/%s katalog berhasil diperbarui:"
+
+#: ../client.py:2175
+msgid "'pkg publisher' will show a list of publishers."
+msgstr "'pkg publisher' akan menampilkan daftar penerbit."
+
+#: ../client.py:2252
+msgid "requires a publisher name"
+msgstr "membutuhkan nama penerbit"
+
+#: ../client.py:2254
+msgid "only one publisher name may be specified"
+msgstr "hanya satu nama penerbit dapat ditentukan"
+
+#: ../client.py:2260
+msgid "the -p and -d options may not be combined"
+msgstr "pilihan -p dan -d tidak dapat digabungkan"
+
+#: ../client.py:2264
+msgid ""
+"the -O and -g, --add-origin, -G, or --remove-origin options may not be "
+"combined"
+msgstr ""
+       "pilihan -O and -g, --add-origin, -G, atau --remove-origin tidak dapat"
+       "gabungan"
+
+#: ../client.py:2268
+msgid "search_before and search_after may not be combined"
+msgstr "search_before dan search_after tidak dapat digabungkan"
+
+#: ../client.py:2287
+msgid ""
+"publisher does not exist. Use -g to define origin URI for new publisher."
+msgstr ""
+       "penerbit tidak ada. Gunakan -g untuk menentukan asal URI untuk penerbit baru."
+
+#: ../client.py:2391
+#, python-format
+msgid ""
+"The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
+"server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(details)s"
+msgstr ""
+       "URI asal untuk '%(pubname)s' tidak muncul untuk menunjukkan pkg server yang valid. \n"
+       "Harap periksa alamat server dan konfigurasi jaringan klien. \n"
+       "Rincian tambahan:\n"
+       "\n"
+       "%(details)s"
+
+#: ../client.py:2419
+msgid "at least one publisher must be specified"
+msgstr "setidaknya satu penerbit harus ditentukan"
+
+#: ../client.py:2449
+#, python-format
+msgid "Removal failed for '%(pub)s': %(msg)s"
+msgstr "Penghapusan gagal untuk '%(pub)s': %(msg)s"
+
+#: ../client.py:2517
+msgid "PUBLISHER"
+msgstr "PENERBIT"
+
+#: ../client.py:2517
+msgid "TYPE"
+msgstr "TIPE"
+
+#: ../client.py:2517
+msgid "STATUS"
+msgstr "STATUS"
+
+#: ../client.py:2518
+msgid "URI"
+msgstr "URI"
+
+#: ../client.py:2543
+msgid "non-sticky"
+msgstr "tidak lengket"
+
+#: ../client.py:2548
+msgid "preferred"
+msgstr "pilihan"
+
+#: ../client.py:2550
+msgid "disabled"
+msgstr "non-aktifkan"
+
+#. XXX get the real origin status
+#: ../client.py:2561
+msgid "origin"
+msgstr "asal"
+
+#. XXX get the real mirror status
+#: ../client.py:2565
+msgid "mirror"
+msgstr "cermin"
+
+#: ../client.py:2571
+msgid "              SSL Key:"
+msgstr "              SSL Key:"
+
+#: ../client.py:2572
+msgid "             SSL Cert:"
+msgstr "              SSL Key:"
+
+#: ../client.py:2584
+msgid " Cert. Effective Date:"
+msgstr " Sert. Tanggal Efektif:"
+
+#: ../client.py:2586
+msgid "Cert. Expiration Date:"
+msgstr "Sert. Tanggal Kadaluarsa:"
+
+#: ../client.py:2593
+msgid "           Origin URI:"
+msgstr "             Asal URI:"
+
+#: ../client.py:2599
+msgid "           Mirror URI:"
+msgstr "           Mirror URI:"
+
+#: ../client.py:2613
+msgid "            Publisher:"
+msgstr "         Penerbit:"
+
+#: ../client.py:2614
+msgid "                Alias:"
+msgstr "            Alias:"
+
+#: ../client.py:2624
+msgid "          Client UUID:"
+msgstr "           UUID Klien:"
+
+#: ../client.py:2625
+msgid "      Catalog Updated:"
+msgstr "      Katalog Diperbarui:"
+
+#: ../client.py:2627 ../client.py:2629
+msgid "              Enabled:"
+msgstr "          Aktifkan:"
+
+#. Not Installed
+#: ../client.py:2627 ../gui/modules/misc.py:285 ../gui/modules/misc.py:287
+#: ../gui/modules/misc.py:345 ../gui/modules/misc.py:354
+#: ../packagemanager.py:3650
+msgid "No"
+msgstr "Tidak"
+
+#: ../client.py:2629
+msgid "Yes"
+msgstr "Ya"
+
+#: ../client.py:2640
+msgid "requires a property name and value"
+msgstr "membutuhkan nama properti dan nilai"
+
+#: ../client.py:2644 ../client.py:2672
+msgid "set-publisher must be used to change the preferred publisher"
+msgstr "set-penerbit harus digunakan untuk mengubah pilihan penerbit"
+
+#: ../client.py:2667
+msgid "requires at least one property name"
+msgstr "membutuhkan setidaknya satu nama properti"
+
+#: ../client.py:2679
+#, python-format
+msgid "no such property: %s"
+msgstr "properti tidak ada: %s"
+
+#: ../client.py:2701
+#, python-format
+msgid "property: no such property: %s"
+msgstr "properti: tidak ada properti: %s"
+
+#: ../client.py:2732
+#, python-format
+msgid "no such variant: %s"
+msgstr "Tidak seperti varian: %s"
+
+#: ../client.py:2819 ../client.py:2890
+msgid "publisher argument must be of the form '<prefix>=<url>'."
+msgstr "argumen penerbit harus dalam bentuk '<prefix>=<url>'."
+
+#: ../client.py:2850
+msgid "variant arguments must be of the form '<name>=<value>'."
+msgstr "Argumen varian harus dalam bentuk '<name>=<value>'."
+
+#: ../client.py:2860
+msgid "Facet arguments must beform 'facet..=[True|False]'"
+msgstr "Argumen Facet harus sebelum 'facet..=[True|False]'"
+
+#: ../client.py:2866
+msgid "only one image directory path may be specified"
+msgstr "hanya satu jalur direktori gambar dapat diperinci"
+
+#: ../client.py:2887
+msgid "a publisher must be specified"
+msgstr "penerbit harus ditentukan"
+
+#: ../client.py:2894
+#, python-format
+msgid "a publisher's prefix may not start with the text: %s"
+msgstr "awalan penayang mungkin tidak dimulai dengan teks: %s"
+
+#: ../client.py:2899
+msgid "publisher prefix contains invalid characters"
+msgstr "prefix penerbit mengandung karakter yang tidak valid"
+
+#: ../client.py:2917
+#, python-format
+msgid "cannot create image at %(image_dir)s: %(reason)s"
+msgstr "tidak dapat menciptakan gambar pada %(image_dir)s: %(reason)s"
+
+#: ../client.py:2934
+#, python-format
+msgid ""
+"The URI '%(pub_url)s' does not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(error)s"
+msgstr ""
+       "URI '%(pub_url)s' tidak muncul untuk menunjuk ke server pkg yang valid. \n"
+       "Harap periksa alamat server dan konfigurasi jaringan klien. \n"
+       "Rincian tambahan:\n"
+       "\n"
+       "%(error)s"
+
+#: ../client.py:2999
+msgid "-H and -l may not be combined"
+msgstr "-H dan -l tidak dapat digabungkan"
+
+#: ../client.py:3003
+msgid "TIME"
+msgstr "WAKTU"
+
+#: ../client.py:3004
+msgid "OPERATION"
+msgstr "OPERASI"
+
+#: ../client.py:3004
+msgid "CLIENT"
+msgstr "KLIEN"
+
+#: ../client.py:3004
+msgid "OUTCOME"
+msgstr "HASIL"
+
+#: ../client.py:3085
+msgid "History purged."
+msgstr "Sejarah dibersihkan."
+
+#: ../client.py:3099
+msgid ""
+"\n"
+"The following proxy configuration is set in the environment:\n"
+msgstr ""
+       "\n"
+       "Berikut konfigurasi proxy diatur dalam lingkungan: \n"
+
+#: ../client.py:3102
+#, python-format
+msgid "http_proxy: %s\n"
+msgstr "http_proxy: %s\n"
+
+#: ../client.py:3104
+#, python-format
+msgid "https_proxy: %s\n"
+msgstr "https_proxy: %s\n"
+
+#: ../client.py:3119 ../pkgdep.py:98 ../pkgdep.py:194 ../pkgdep.py:444
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "ilegal opsi global -- %s"
+
+#: ../client.py:3131
+#, python-format
+msgid "%(opt)s takes argument of form name=value, not %(arg)s"
+msgstr "%(opt)s mengambil bentuk argumen nama=nilai, bukan %(arg)s"
+
+#: ../client.py:3149
+msgid "no subcommand specified"
+msgstr "tidak ada subcommand ditentukan"
+
+#: ../client.py:3160 ../client.py:3171
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R tidak diperbolehkan untuk %s subcommand"
+
+#: ../client.py:3167 ../client.py:3256
+#, python-format
+msgid "illegal option -- %s"
+msgstr "pilihan ilegal -- %s"
+
+#: ../client.py:3174
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "versi: perintah tidak mengambil Operand ('%s')"
+
+#: ../client.py:3199 ../pkgdep.py:236
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+       "Tidak bisa menemukan gambar. Gunakan opsi -R atau menyetel $ PKG_IMAGE ke titik \n"
+       "ke foto, atau mengubah direktori kerja ke salah satu di dalam gambar."
+
+#: ../client.py:3213
+msgid "No image found."
+msgstr "Tidak ada gambar ditemukan."
+
+#: ../client.py:3249 ../pkgdep.py:472 ../publish.py:509
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "subcommand tidak diketahui '%s'"
+
+#: ../client.py:3263 ../pkgdep.py:505 ../publish.py:535 ../pull.py:811
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(7) is '%s'."
+msgstr ""
+       "\n"
+       "\n"
+       "Ini adalah kesalahan internal.  Harap pengembang tahu tentang kesalahan ini\n"
+       "dengan mengisi bug pada http://defect.opensolaris.org dan termasuk\n"
+       "diatas traceback dan pesan ini.  Versi pkg(7) adalah '%s'."
+
+#: ../client.py:3306
+msgid ""
+"\n"
+"Errors were encountered while attempting to retrieve package or file data "
+"for\n"
+"the requested operation."
+msgstr ""
+       "\n"
+       "Kesalahan yang muncul ketika mencoba untuk mengambil paket atau berkas data "
+       "untuk\n"
+       "operasi yang diminta."
+
+#: ../client.py:3309
+#, python-format
+msgid ""
+"Details follow:\n"
+"\n"
+"%s"
+msgstr ""
+       "Rincian ikuti:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3315
+msgid ""
+"\n"
+"Unable to contact a valid package depot. This may be due to a problem with "
+"the server, network misconfiguration, or an incorrect pkg client "
+"configuration.  Please check your network settings and attempt to contact "
+"the server using a web browser."
+msgstr ""
+       "\n"
+       "Tidak dapat menghubungi depot paket yang valid. Hal ini mungkin karena masalah dengan"
+       "server, masalah konfigurasi jaringan, atau kesalahan konfigurasi pkg klien.  Silakan periksa pengaturan jaringan Anda dan coba untuk menghubungi"
+       "server menggunakan web browser."
+
+#: ../client.py:3320
+#, python-format
+msgid ""
+"\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "Rincian tambahan:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3328
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+       "Terjadi kesalahan ketika mencoba untuk memuat informasi sejarah\n"
+       "tentang operasi klien masa lalu ."
+
+#: ../client.py:3337
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+       "Terjadi kesalahan ketika mencoba untuk menyimpan informasi tentang\n"
+       "operasi saat ini pada sejarah klien."
+
+#: ../client.py:3347
+msgid "An error was encountered while attempting to purge client history."
+msgstr "Terjadi kesalahan ketika mencoba untuk membersihkan sejarah klien."
+
+#: ../client.py:3354
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "Perintah pkg tidak sinkron dengan library yang disediakan \n"
+       "oleh SUNWipkg. Versi klien %(client)s sementara versi library API adalah %(api)s"
+
+#: ../client.py:3369
+#, python-format
+msgid ""
+"\n"
+"%s%s"
+msgstr ""
+       "\n"
+       "%s%s"
+
+#: ../client.py:3371
+msgid ""
+"\n"
+"\n"
+"Despite the error while indexing, the update, install, or uninstall\n"
+"has completed successfuly."
+msgstr ""
+       "\n"
+       "\n"
+       "Meskipun kesalahan ketika pengindeksan, pembaruan image, install, atau uninstall \n"
+       "telah selesai dengan sukses."
+
+#. The full usage message isn't desired.
+#: ../depot.py:131
+msgid "Try `pkg.depotd --help or -?' for more information."
+msgstr "Coba `pkg.depotd --help or -?' untuk informasi lebih."
+
+#: ../depot.py:396 ../publish.py:115
+msgid "property arguments must be of the form '<section.property>=<value>'."
+msgstr "argumen properti harus sesuai dengan form '<section.property>=<value>'."
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "Tambahkan Perangkat Lunak"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:2
+#: ../gui/data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "Instal, perbarui dan hapus paket aplikasi."
+
+#: ../gui/data/l10n.py:31
+msgid "AMP Stack"
+msgstr "AMP Stack"
+
+#: ../gui/data/l10n.py:32
+msgid "Accessories"
+msgstr "Aksesoris"
+
+#: ../gui/data/l10n.py:33
+msgid "Administration and Configuration"
+msgstr "Administrasi dan Configurasi"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "Aplikasi dan Server Web"
+
+#: ../gui/data/l10n.py:35
+msgid "Builds"
+msgstr "Membuat"
+
+#: ../gui/data/l10n.py:36
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:37
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:38
+msgid "Communications"
+msgstr "Komunikasi"
+
+#: ../gui/data/l10n.py:39
+msgid "Configuration and Preferences"
+msgstr "Konfigurasi dan Preferensi"
+
+#: ../gui/data/l10n.py:40
+msgid "Core"
+msgstr "Inti"
+
+#: ../gui/data/l10n.py:41
+msgid "Databases"
+msgstr "Basis Data"
+
+#: ../gui/data/l10n.py:42
+msgid "Developer Tools"
+msgstr "Peralatan Pengembang"
+
+#: ../gui/data/l10n.py:43
+msgid "Display"
+msgstr "Tampilan"
+
+#: ../gui/data/l10n.py:44
+msgid "Distribution Tools"
+msgstr "Peralatan distribusi"
+
+#: ../gui/data/l10n.py:45
+msgid "Documentation"
+msgstr "Dokumentasi"
+
+#: ../gui/data/l10n.py:46
+msgid "Editors"
+msgstr "Editor"
+
+#: ../gui/data/l10n.py:47
+msgid "Enterprise Management"
+msgstr "Manajemen Enterprise"
+
+#: ../gui/data/l10n.py:48
+msgid "File Managers"
+msgstr "Pengelola File"
+
+#: ../gui/data/l10n.py:49
+msgid "File System"
+msgstr "Sistem Berkas"
+
+#: ../gui/data/l10n.py:50
+msgid "Fonts"
+msgstr "Huruf"
+
+#: ../gui/data/l10n.py:51
+msgid "GNOME and GTK+"
+msgstr "GNOME dan GTK+"
+
+#: ../gui/data/l10n.py:52
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:53
+msgid "Games"
+msgstr "Permainan"
+
+#: ../gui/data/l10n.py:54
+msgid "Graphics and Imaging"
+msgstr "Gambar dan Grafis"
+
+#: ../gui/data/l10n.py:55
+msgid "Hardware"
+msgstr "Perangkat Keras"
+
+#: ../gui/data/l10n.py:56
+msgid "High Performance Computing"
+msgstr "Perhitungan dengan kinerja tingkat tinggi"
+
+#: ../gui/data/l10n.py:57
+msgid "Integrated Development Environments"
+msgstr "Lingkungan Pengembangan Terpadu"
+
+#: ../gui/data/l10n.py:58
+msgid "Internationalization"
+msgstr "Internasionalisasi"
+
+#: ../gui/data/l10n.py:59
+msgid "Internet"
+msgstr "Internet"
+
+#: ../gui/data/l10n.py:60
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:61
+msgid "Libraries"
+msgstr "Librari"
+
+#: ../gui/data/l10n.py:62
+msgid "Localizations"
+msgstr "Local"
+
+#: ../gui/data/l10n.py:63
+msgid "Media"
+msgstr "Media"
+
+#: ../gui/data/l10n.py:64
+msgid "Multimedia Libraries"
+msgstr "Librari Multimedia"
+
+#: ../gui/data/l10n.py:65
+msgid "Networking"
+msgstr "Jaringan"
+
+#: ../gui/data/l10n.py:66
+msgid "Office"
+msgstr "Office"
+
+#: ../gui/data/l10n.py:67
+msgid "Office Tools"
+msgstr "Peralatan Office"
+
+#: ../gui/data/l10n.py:68
+msgid "Other Languages"
+msgstr "Bahasa lain"
+
+#: ../gui/data/l10n.py:69
+msgid "Other Peripherals"
+msgstr "Peripheral lain"
+
+#: ../gui/data/l10n.py:70
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:71
+msgid "Packaging"
+msgstr "Kemasan"
+
+#: ../gui/data/l10n.py:72
+msgid "Panels and Applets"
+msgstr "Panel dan Applet"
+
+#: ../gui/data/l10n.py:73
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:74
+msgid "Plug-ins and Run-times"
+msgstr "Plug-ins dan Run-times"
+
+#: ../gui/data/l10n.py:75
+msgid "Ports"
+msgstr "Port"
+
+#: ../gui/data/l10n.py:76
+msgid "Printing"
+msgstr "Cetak"
+
+#: ../gui/data/l10n.py:77
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:78
+msgid "Releases"
+msgstr "Rilis"
+
+#: ../gui/data/l10n.py:79
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:80
+msgid "Scripts"
+msgstr "Scripts"
+
+#: ../gui/data/l10n.py:81
+msgid "Security"
+msgstr "Keamanan"
+
+#: ../gui/data/l10n.py:82
+msgid "Services"
+msgstr "Layanan"
+
+#: ../gui/data/l10n.py:83
+msgid "Sessions"
+msgstr "Sesi"
+
+#: ../gui/data/l10n.py:84
+msgid "Shells"
+msgstr "Shells"
+
+#: ../gui/data/l10n.py:85
+msgid "Software Management"
+msgstr "Manajemen Perangkat Lunak"
+
+#: ../gui/data/l10n.py:86
+msgid "Sound and Video"
+msgstr "Suara dan Video"
+
+#: ../gui/data/l10n.py:87
+msgid "Source Code Management"
+msgstr "Manajemen Kode Sumber"
+
+#: ../gui/data/l10n.py:88
+msgid "Storage"
+msgstr "Penyimpanan"
+
+#: ../gui/data/l10n.py:89 ../packagemanager.py:1827
+msgid "System"
+msgstr "Sistem"
+
+#: ../gui/data/l10n.py:90
+msgid "System Utilities"
+msgstr "Sistem Utilitas"
+
+#: ../gui/data/l10n.py:91
+msgid "Text Tools"
+msgstr "Teks tool"
+
+#: ../gui/data/l10n.py:92
+msgid "Theming"
+msgstr "Tema"
+
+#: ../gui/data/l10n.py:93
+msgid "Trusted"
+msgstr "Terpercaya"
+
+#: ../gui/data/l10n.py:94
+msgid "Trusted Extensions"
+msgstr "Ekstensi terpercaya"
+
+#: ../gui/data/l10n.py:95
+msgid "Universal Access"
+msgstr "Akses Universal"
+
+#: ../gui/data/l10n.py:96
+msgid "Virtualization"
+msgstr "Virtualisasi"
+
+#: ../gui/data/l10n.py:97
+msgid "Window Managers"
+msgstr "Manajer Window"
+
+#: ../gui/data/l10n.py:98
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:1
+msgid ""
+"A boolean which determines if the Start Page should be shown on startup or "
+"the initial list view."
+msgstr ""
+       "Sebuah boolean menentukan apakah Halaman Awal harus ditampilkan pada startup atau tampilan daftar awal."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:2
+msgid ""
+"A boolean which determines if the search is executed dynamically as user "
+"types or only when user hits the return key."
+msgstr ""
+       "Sebuah boolean menentukan apakah pencarian dijalankan secara dinamis oleh pengguna atau hanya bila pengguna menekan tombol."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:3
+msgid ""
+"A boolean which determines whether Package Manager should save its state on "
+"exit and use it on restart. The state is the selected publisher and the size "
+"and position of horizontal and vertical dividers."
+msgstr ""
+       "Sebuah boolean menentukan apakah Manajer Paket harus menyimpan keaadaan pada saat keluar dan menggunakannya kembali pada saat kembali hidup. Keadaan yang dipilih penerbit dan ukuran"
+       "dan posisi jangka merupakan pembagi antara garis horizontal dan vertikal."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:4
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the updates are found after performing Updates operation (Checks "
+"if updates are available) or it should go straight to the update all "
+"operation."
+msgstr ""
+       "boolean menentukan apakah Manajer paket harus menampilkan dialog konfirmasi ketika perubahan ditemukan setelah melakukan operasi Update (Cek jika perubahan tersedia) atau langsung melakukan update semua operasi."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:5
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for installation or update."
+msgstr ""
+       "Sebuah boolean menentukan apakah Manajer Paket harus menunjukkan dialog konfirmasi"
+       "ketika pengguna memilih beberapa paket untuk di instalasi atau di update."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:6
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for removal."
+msgstr ""
+       "Sebuah boolean menentukan apakah Manajer Paket harus menunjukkan dialog konfirmasi"
+       "ketika pengguna memilih beberapa paket untuk dihapus."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid ""
+"A boolean which determines whether Package Manager should start in search "
+"mode."
+msgstr ""
+       "Sebuah boolean menentukan apakah Package Manager harus mulai pada modus pencarian."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid ""
+"A string which determines if the repository is shown or not in the error "
+"dialog."
+msgstr ""
+       "Sebuah string menentukan apakah repositori ditampilkan atau tidak dalam dialog kesalahan."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+msgid "A string which stores the last publisher used by package manager."
+msgstr "Sebuah string menyimpan penerbit terakhir yang digunakan oleh manajer paket."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+msgid ""
+"An integer which identifies the initial show filter value to be displayed "
+"when packagemanager starts. 0 corresponds to All Packages."
+msgstr ""
+       "Integer mengidentifikasi awal filter menunjukkan nilai yang akan ditampilkan ketika paket manager dimulai. 0 menunjukkan ke Semua Paket."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:11
+msgid ""
+"An integer which identifies the initial toplevel section to be expanded when "
+"packagemanager starts. 0 = \"All Categories\", 2 = \"Applications\" (the "
+"default)"
+msgstr ""
+       "Integer mengidentifikasi bagian toplevel awal yang akan diperluas ketika"
+       "manajer paket dimulai. 0 = \"All Categories\", 2 = \"Applications\" (the "
+       "default)"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+msgid ""
+"An integer which specifies the initial height of the application main "
+"window, overridden if there is not enough screen available."
+msgstr ""
+       "Integer menentukan ketinggian awal utama aplikasi pada"
+       "jendela, diganti jika tidak tersedia cukup layar yang tersedia."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:13
+msgid ""
+"An integer which specifies the initial horizonatal divider position of the "
+"application, which separates the category panel from the list panel."
+msgstr ""
+       "Integer yang menentukan awal horizonatal posisi pembagi"
+       "aplikasi, yang memisahkan kategori panel dari daftar panel."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:14
+msgid ""
+"An integer which specifies the initial vertical divider position of the "
+"application, which separates the details panel from the list panel."
+msgstr ""
+       "Integer yang menentukan posisi awal pembagi vertikal dari"
+       "aplikasi, yang memisahkan rincian panel dari daftar panel."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:15
+msgid ""
+"An integer which specifies the initial width of the application main window, "
+"overridden if there is not enough screen available."
+msgstr ""
+       "Integer yang menentukan awal lebar jendela utama aplikasi,"
+       "ditolak jika tidak tersedia cukup layar yang tersedia."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:16
+msgid ""
+"An integer which specifies the maximum number of entries to store for search "
+"completion."
+msgstr ""
+       "Integer yang menentukan jumlah entri maksimum untuk menyimpan pencarian"
+       "yang selesai dicari."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:17
+msgid ""
+"Comma separated list of repositories which we show if there are API errors "
+"when searching them"
+msgstr ""
+       "Daftar repositori dipisahkan dengan koma yang menunjukkan ada kesalahan API saat pencarian"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:18
+msgid "Display confirmation dialog after Check for updates"
+msgstr "Tampilkan dialog konfirmasi setelah Cek pembaruan"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:19
+msgid "Display install/update packages confirmation dialog"
+msgstr "Tampilkan dialog konfirmasi penginstalan/update paket"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:20
+msgid "Display remove packages confirmation dialog"
+msgstr "Menampilkan dialog konfirmasi menghapus paket"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:21
+msgid "Display selected publisher at startup"
+msgstr "Tampilkan penerbit yang dipilih saat dihidupkan"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:22
+msgid "Enable type ahead search"
+msgstr "Aktifkan jenis pencarian di depan"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:23
+msgid "Initial application height"
+msgstr "Permintaan tinggi"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:24
+msgid "Initial application horizonatal divider position"
+msgstr "Permintaan pembagi posisi horisontal"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:25
+msgid "Initial application vertical divider position"
+msgstr "Permintaan pembagi posisi vertikal"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:26
+msgid "Initial application width"
+msgstr "Permintaan lebar"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:27
+msgid "Initial section value"
+msgstr "Inisial nilai bagian"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:28
+msgid "Initial show filter value"
+msgstr "Permohonan menunjukkan nilai filter"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:29
+msgid "Last Export Selections Path"
+msgstr "Seleksi Ekspor path terakhir"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:30
+msgid "Last publisher used by package manager"
+msgstr "Penerbit terakhir yang digunakan oleh manajer paket"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:31
+msgid "Maximum entries for Search Completion"
+msgstr "Maksimum entri pada Penyelesaian Pencarian"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:32
+msgid "Show Start Page on startup"
+msgstr "Tampilkan Halaman Awal pada saat hidup"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:33
+msgid "Start Page Update URL"
+msgstr "Update URL Halaman Awal"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:34
+msgid "Start in serach mode"
+msgstr "Mulai pada modus pencarian"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:35
+msgid ""
+"The location from which to fetch updates to the Package Manager Start Page."
+msgstr ""
+       "Lokasi untuk mengambil update ke Halaman Awal Manajer Paket."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:36
+msgid "The path for the last set of selections exported from packagemanager."
+msgstr "Jalur untuk pilihan pengaturan terakhir diekspor dari pengelola paket."
+
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:77 ../gui/modules/webinstall.py:428
+#: ../packagemanager.py:281 ../packagemanager.py:3761
+#: ../packagemanager.py:5264
+msgid "Package Manager"
+msgstr "Manajer Paket"
+
+#: ../gui/data/packagemanager.glade.h:1
+msgid "<b>Add, modify and remove publishers</b>"
+msgstr "<b>Tambah, ubah dan hapus penerbit</b>"
+
+#: ../gui/data/packagemanager.glade.h:2
+msgid "<b>Apply the following changes:</b>"
+msgstr "<b>Terapkan perubahan berikut:</b>"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid "<b>Delete, rename and activate boot environments</b>"
+msgstr "<b>Hapus, ubah nama dan aktifkan boot environments</b>"
+
+#: ../gui/data/packagemanager.glade.h:4
+msgid "<b>Exit</b>"
+msgstr "<b>Keluar</b>"
+
+#: ../gui/data/packagemanager.glade.h:5
+msgid "<b>General</b>"
+msgstr "<b>Umum</b>"
+
+#: ../gui/data/packagemanager.glade.h:6 ../packagemanager.py:3600
+msgid "<b>Installable Version:</b>"
+msgstr "<b>Versi Installable:</b>"
+
+#: ../gui/data/packagemanager.glade.h:7
+msgid "<b>Installed:</b>"
+msgstr "<b>Diinstal:</b>"
+
+#: ../gui/data/packagemanager.glade.h:8
+msgid "<b>Name:</b>"
+msgstr "<b>Nama:</b>"
+
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Origins</b>"
+msgstr "<b>Asal</b>"
+
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Publisher added successfully</b>"
+msgstr "<b>Penambahas Penerbit berhasil</b>"
+
+#: ../gui/data/packagemanager.glade.h:11
+msgid "<b>Publisher</b>"
+msgstr "<b>Penerbit</b>"
+
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Recent Searches</b>"
+msgstr "<b>Pencarian Terbaru</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Review the packages to be installed or udpated</b>"
+msgstr "<b>Tinjau paket-paket yang akan di instal atau di update</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Show Confirmation Dialog</b>"
+msgstr "<b>Tampilkan Dialog Konfirmasi</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>Startup</b>"
+msgstr "<b>Hidupkan</b>"
+
+#: ../gui/data/packagemanager.glade.h:16
+msgid "<b>Update All completed successfully</b>"
+msgstr "<b>Update semua selesai dengan sukses</b>"
+
+#: ../gui/data/packagemanager.glade.h:17
+msgid "<b>View Package Manager Logs</b>"
+msgstr "<b>Lihat log paket manajer</b>"
+
+#: ../gui/data/packagemanager.glade.h:18
+msgid "<b>_Mirrors</b>"
+msgstr "<b>_Mirrors</b>"
+
+#: ../gui/data/packagemanager.glade.h:19
+msgid "<b>_SSL Key and Certificate</b>"
+msgstr "<b>Kunci _SSL dan Sertifikat</b>"
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "<big><b>Package Manager Web Installer</b></big>"
+msgstr "<big><b>Manajer Paket Web Installer</b></big>"
+
+#: ../gui/data/packagemanager.glade.h:21
+msgid "<span foreground=\"blue\"><u>What's this?</u></span>"
+msgstr "<span foreground=\"blue\"><u>Apa ini?</u></span>"
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid ""
+"A boot environment (BE) contains the operating\n"
+"system image and updated packages. The\n"
+"system will boot into the new BE on restart."
+msgstr ""
+       "Boot environment (BE) berisi operasi\n"
+       "image sistem and paket update. The\n"
+       "sistem akan ke BE baru saat di start ulang."
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid ""
+"A new boot environment has been created and will be given the\n"
+"following name."
+msgstr ""
+       "Boot environment baru sudah dibuat dan akan diberikan \n nama berikut."
+
+#: ../gui/data/packagemanager.glade.h:27
+msgid "A_dd"
+msgstr "T_ambah"
+
+#: ../gui/data/packagemanager.glade.h:28
+msgid "A_lias:"
+msgstr "A_lias:"
+
+#: ../gui/data/packagemanager.glade.h:29
+msgid "About Glade"
+msgstr "Tentang Glade"
+
+#: ../gui/data/packagemanager.glade.h:30 ../gui/modules/repository.py:1348
+msgid "Add Publisher"
+msgstr "Tambah Penerbit"
+
+#: ../gui/data/packagemanager.glade.h:31
+msgid "Adding Publisher Complete"
+msgstr "Penambahan Penerbit Berhasil"
+
+#: ../gui/data/packagemanager.glade.h:32 ../gui/modules/repository.py:1451
+#: ../gui/modules/repository.py:1465
+msgid "Applying Changes"
+msgstr "Menerapkan perubahan"
+
+#: ../gui/data/packagemanager.glade.h:33
+msgid "Applying changes..."
+msgstr "Menerapkan perubahan..."
+
+#: ../gui/data/packagemanager.glade.h:34
+msgid "B_rowse..."
+msgstr "C_ari..."
+
+#: ../gui/data/packagemanager.glade.h:35
+msgid "Bro_wse..."
+msgstr "Ca_ri..."
+
+#: ../gui/data/packagemanager.glade.h:36
+msgid "Browse for SSL Certificate"
+msgstr "Cari Sertifikat SSL"
+
+#: ../gui/data/packagemanager.glade.h:37
+msgid "Browse for SSL Key"
+msgstr "Cari Kunci SSL"
+
+#: ../gui/data/packagemanager.glade.h:38
+msgid "C_lear Search"
+msgstr "B_ersihkan Pencarian"
+
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Cancel current operation"
+msgstr "Batalkan operasi saat ini"
+
+#: ../gui/data/packagemanager.glade.h:40 ../um/data/updatemanager.glade.h:4
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "Sedang dilakukan pengecekan versi paket terakhir dari SUnWipkg dan SUNWipkg-gui, silahkan tunggu..."
+
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Checking package dependencies..."
+msgstr "Cek ketergantungan paket"
+
+#: ../gui/data/packagemanager.glade.h:42
+msgid "Checks if updates are available"
+msgstr "Cek jika update tersedia"
+
+#: ../gui/data/packagemanager.glade.h:43
+msgid "Clear Recent Searc_hes"
+msgstr "Bersihkan Pen_carian akhir"
+
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Confirmation"
+msgstr "Konfirmasi"
+
+#: ../gui/data/packagemanager.glade.h:45
+msgid ""
+"Copyright 2010 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+       "Hak Cipta 2010 Sun Microsystems, Inc.  \n"
+       "All rights reserved.\n"
+       "Use is subject to license terms."
+
+#: ../gui/data/packagemanager.glade.h:48
+msgid "Currently active boot environment"
+msgstr "Lingkungabn boot yang aktif saat ini"
+
+#: ../gui/data/packagemanager.glade.h:49
+msgid "D_eselect All"
+msgstr "J_angan Pilih Semua"
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid "D_etails"
+msgstr "D_etail"
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Dependencies"
+msgstr "Ketergantungan"
+
+#: ../gui/data/packagemanager.glade.h:52 ../gui/modules/misc.py:257
+msgid "Description:"
+msgstr "Deskripsi:"
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Details"
+msgstr "Rincian"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Do not notify me about these publishers again."
+msgstr "Jangat ingatkan saya tentang pengembang lagi."
+
+#: ../gui/data/packagemanager.glade.h:55 ../gui/modules/installupdate.py:95
+#: ../um/data/updatemanager.glade.h:6
+msgid "Download"
+msgstr "Unduh"
+
+#: ../gui/data/packagemanager.glade.h:56 ../gui/modules/misc.py:235
+msgid "Error"
+msgstr "Kesalahan"
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Errors and Warnings"
+msgstr "Kesalahan dan Peringatan"
+
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Files"
+msgstr "Berkas"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Go to package _list"
+msgstr "Pergi ke _daftar paket"
+
+#: ../gui/data/packagemanager.glade.h:60
+msgid "Information"
+msgstr "Informasi"
+
+#: ../gui/data/packagemanager.glade.h:61 ../gui/modules/installupdate.py:96
+msgid "Install"
+msgstr "Instal"
+
+#: ../gui/data/packagemanager.glade.h:62 ../gui/modules/installupdate.py:280
+msgid "Install/Update"
+msgstr "Instal/Pembaruan"
+
+#: ../gui/data/packagemanager.glade.h:63
+msgid "Install/Upgrade Check"
+msgstr "Cek Instal/Pembaruan"
+
+#: ../gui/data/packagemanager.glade.h:64
+msgid "License"
+msgstr "Lisensi"
+
+#: ../gui/data/packagemanager.glade.h:65 ../packagemanager.py:3473
+#: ../packagemanager.py:3475
+msgid "Loading ..."
+msgstr "Memuat ..."
+
+#: ../gui/data/packagemanager.glade.h:66
+msgid "M_irror:"
+msgstr "M_irror:"
+
+#: ../gui/data/packagemanager.glade.h:67
+msgid "Manage Boot Environments"
+msgstr "Kelola Boot Environment"
+
+#: ../gui/data/packagemanager.glade.h:68
+msgid "Manage Publishers"
+msgstr "Kelola Penerbit"
+
+#: ../gui/data/packagemanager.glade.h:69
+msgid "Manage _Boot Environments..."
+msgstr "Kelola _Boot Environment..."
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Modify Publisher"
+msgstr "Ubah Penerbit"
+
+#: ../gui/data/packagemanager.glade.h:71 ../gui/modules/misc.py:256
+msgid "Name:"
+msgstr "Nama:"
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "Name: "
+msgstr "Nama: "
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "O_rigin:"
+msgstr "A_sal:"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "On Package _Install/Update"
+msgstr "Saat Paket _Diinstal/Diperbaharui"
+
+#: ../gui/data/packagemanager.glade.h:75
+msgid "On Package _Remove"
+msgstr "Saat Paket _dihapus"
+
+#: ../gui/data/packagemanager.glade.h:76
+msgid "On _Updates"
+msgstr "Saat _Perbaharui"
+
+#: ../gui/data/packagemanager.glade.h:78
+msgid "Package Version Info"
+msgstr "Info versi paket"
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid "Preferences"
+msgstr "Preferensi"
+
+#: ../gui/data/packagemanager.glade.h:80 ../gui/modules/installupdate.py:94
+msgid "Preparation"
+msgstr "Persiapan"
+
+#: ../gui/data/packagemanager.glade.h:81 ../um/data/updatemanager.glade.h:9
+msgid "Processing"
+msgstr "Pemrosesan"
+
+#: ../gui/data/packagemanager.glade.h:82
+msgid "Pu_blisher:"
+msgstr "Pe_nerbit"
+
+#: ../gui/data/packagemanager.glade.h:83
+msgid "Publisher Name:"
+msgstr "Nama Penerbit"
+
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Re_fresh"
+msgstr "Se_garkan"
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Re_gistration Details"
+msgstr "De_til Pendaftaran"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Read the release notes before restarting the system."
+msgstr "Baca catatan rilis sebelum merestart sistem."
+
+#: ../gui/data/packagemanager.glade.h:87
+msgid "Read the release notes."
+msgstr "Baca catatan rilis."
+
+#: ../gui/data/packagemanager.glade.h:88
+msgid "Refresh"
+msgstr "Refresh"
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Refresh list of packages and package status"
+msgstr "Refresh daftar paket-paket dan status paket."
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Release notes"
+msgstr "Catatan rilis"
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid "Remember current state on _exit"
+msgstr "Ingat kondisi ini pada saat _keluar"
+
+#: ../gui/data/packagemanager.glade.h:92
+msgid "Remo_ve"
+msgstr "Hap_us"
+
+#: ../gui/data/packagemanager.glade.h:93
+msgid "Remov_e"
+msgstr "Hapu_s"
+
+#: ../gui/data/packagemanager.glade.h:94 ../gui/modules/installupdate.py:243
+#: ../gui/modules/installupdate.py:246
+msgid "Remove"
+msgstr "Hapus"
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "Restart _Now"
+msgstr "Restart _Sekarang"
+
+#: ../gui/data/packagemanager.glade.h:96
+msgid "SSL C_ertificate: "
+msgstr "SSL S_ertifikasi: "
+
+#: ../gui/data/packagemanager.glade.h:97
+msgid "SSL Certi_ficate:"
+msgstr "SSL Serti_fikasi:"
+
+#: ../gui/data/packagemanager.glade.h:98
+msgid "SSL _Key:"
+msgstr "SSL _Kunci:"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "SSL _Key: "
+msgstr "SSL _Kunci: "
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "Search"
+msgstr "Cari"
+
+#: ../gui/data/packagemanager.glade.h:101
+msgid "Search Publisher Errors"
+msgstr "Cari Error Penerbit"
+
+#: ../gui/data/packagemanager.glade.h:102
+msgid "Search Repositories Error"
+msgstr "Cari Error Repository-repository"
+
+#: ../gui/data/packagemanager.glade.h:103
+msgid "Search errors with the following publishers:"
+msgstr "Cari error dengan penerbit-penerbit berikut:"
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "Select _Updates"
+msgstr "Pilih _Pembaharuan"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "Select packages by marking the checkbox and click to Install/Update"
+msgstr "Pilih paket-paket dengan menandai checkbox lalu klik Install/Update"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "Select packages by marking the checkbox and click to Remove selected"
+msgstr "Pilih paket-paket dengan menandai checkbox lalu klik Hapus yang dipilih."
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "Set publisher priorities using arrows."
+msgstr "Atur prioritas penerbit dengan menggunakan tanda panah."
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "Show Start Page on _startup"
+msgstr "Lihat Halaman Awal pada _startup"
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "Show _all publisher results"
+msgstr "Lihat _semua hasil penerbit-penerbit"
+
+#: ../gui/data/packagemanager.glade.h:110
+msgid "Specify the publisher name and URI"
+msgstr "Tentukan nama dan URI penerbit"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "Start _Page"
+msgstr "Halaman _Awal"
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "The following will be added to your system:"
+msgstr "Yang berikut ini akan ditambahkan ke sistem anda:"
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "This is a secure publisher."
+msgstr "Ini adalah penerbitan yang aman."
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid ""
+"This publisher requires an SSL key and an SSL certificate.\n"
+"Specify the location of these files."
+msgstr ""
+       "Penerbit ini membutuhkan kunci SSL dan sertifikasi SSL.\n"
+       "Tentukan lokasi dari berkas-berkas tersebut."
+
+#: ../gui/data/packagemanager.glade.h:116
+msgid "Type text to search for the package."
+msgstr "Ketikan sesuatu untuk mencari paket."
+
+#: ../gui/data/packagemanager.glade.h:117
+msgid "URI:"
+msgstr "URI:"
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "Update All Complete"
+msgstr "Semua pembaruan lengkap."
+
+#: ../gui/data/packagemanager.glade.h:119 ../packagemanager.py:330
+msgid "Updates"
+msgstr "Pembaruan-pembaruan"
+
+#: ../gui/data/packagemanager.glade.h:120
+msgid "Vie_w:"
+msgstr "Liha_t:"
+
+#: ../gui/data/packagemanager.glade.h:121
+msgid "_Accept"
+msgstr "_Terima"
+
+#: ../gui/data/packagemanager.glade.h:122
+msgid "_Add"
+msgstr "_Menambah"
+
+#: ../gui/data/packagemanager.glade.h:123
+msgid "_Add Publisher..."
+msgstr "_Tambah Penerbit..."
+
+#: ../gui/data/packagemanager.glade.h:124
+msgid "_Add..."
+msgstr "_Menambah..."
+
+#: ../gui/data/packagemanager.glade.h:125
+msgid "_Browse..."
+msgstr "_Jelajahi..."
+
+#: ../gui/data/packagemanager.glade.h:126
+msgid "_Contents"
+msgstr "_Konten-konten"
+
+#: ../gui/data/packagemanager.glade.h:127 ../um/data/updatemanager.glade.h:13
+msgid "_Details"
+msgstr "_Detil"
+
+#: ../gui/data/packagemanager.glade.h:128
+msgid "_Do not show this confirmation dialog again"
+msgstr "_Jangan perlihatkan dialog konfirmasi ini lagi"
+
+#: ../gui/data/packagemanager.glade.h:129
+msgid "_Down"
+msgstr "_Turun"
+
+#: ../gui/data/packagemanager.glade.h:130
+msgid "_Edit"
+msgstr "_Ubah"
+
+#: ../gui/data/packagemanager.glade.h:131
+msgid "_Export Selections..."
+msgstr "_Export Pilihan-pilihan..."
+
+#: ../gui/data/packagemanager.glade.h:132
+msgid "_File"
+msgstr "_Berkas"
+
+#: ../gui/data/packagemanager.glade.h:133
+msgid "_Help"
+msgstr "_Bantuan"
+
+#: ../gui/data/packagemanager.glade.h:134
+msgid "_Install Details"
+msgstr "_Instal Detil"
+
+#: ../gui/data/packagemanager.glade.h:135
+msgid "_Install/Update"
+msgstr "_Instal/Perbaharui"
+
+#: ../gui/data/packagemanager.glade.h:136
+msgid "_Logs"
+msgstr "_Logs"
+
+#: ../gui/data/packagemanager.glade.h:137
+msgid "_Manage Publishers..."
+msgstr "_Kelola Penerbit..."
+
+#: ../gui/data/packagemanager.glade.h:138
+msgid "_Modify..."
+msgstr "_Ubah..."
+
+#: ../gui/data/packagemanager.glade.h:139
+msgid "_Name:"
+msgstr "_Nama:"
+
+#: ../gui/data/packagemanager.glade.h:140
+msgid "_Package"
+msgstr "_Paket"
+
+#: ../gui/data/packagemanager.glade.h:141
+msgid "_Package Version Info"
+msgstr "_Info Versi Paket"
+
+#: ../gui/data/packagemanager.glade.h:142
+msgid "_Recent Searches"
+msgstr "_Pencarian terakhir"
+
+#: ../gui/data/packagemanager.glade.h:143
+msgid "_Registration Details"
+msgstr "_Detil Pendaftaran"
+
+#: ../gui/data/packagemanager.glade.h:144
+msgid "_Remove"
+msgstr "_Hapus"
+
+#: ../gui/data/packagemanager.glade.h:145
+msgid "_Remove Details"
+msgstr "_Hapus Detil"
+
+#: ../gui/data/packagemanager.glade.h:146
+msgid "_Search"
+msgstr "_Cari"
+
+#: ../gui/data/packagemanager.glade.h:147
+msgid "_URI:"
+msgstr "_URI"
+
+#: ../gui/data/packagemanager.glade.h:148
+msgid "_Up"
+msgstr "_Atas"
+
+#: ../gui/data/packagemanager.glade.h:149
+msgid "_Update Details"
+msgstr "_Perbarui Detil"
+
+#: ../gui/data/packagemanager.glade.h:150
+msgid "_Updates"
+msgstr "_Perbarui"
+
+#: ../gui/data/packagemanager.glade.h:151
+msgid "_View"
+msgstr "_Lihat"
+
+#: ../gui/data/packagemanager.glade.h:152 ../gui/modules/repository.py:75
+msgid "e.g. http://pkg.opensolaris.org/release"
+msgstr "contoh http://pkg.opensolaris.org/release"
+
+#: ../gui/data/packagemanager.glade.h:153
+msgid "label"
+msgstr "label"
+
+#: ../gui/modules/beadmin.py:73
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "library <b>libbe</b> tidak bisa ditemukan pada sistem anda.\n"
+       "Semua fungsi-fungsi untuk mengelola Boot Environments dinonaktifkan."
+
+#: ../gui/modules/beadmin.py:81
+msgid "BE management"
+msgstr "Pengelolaan BE"
+
+#: ../gui/modules/beadmin.py:161
+#, python-format
+msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
+msgstr "GUI tidak akan merespon ke event apapun! %s. Periksa beadmin.py signals."
+
+#: ../gui/modules/beadmin.py:170
+msgid "Boot Environment Confirmation"
+msgstr "Konfirmasi Boot Environment."
+
+#: ../gui/modules/beadmin.py:173
+msgid "Loading Boot Environment Information"
+msgstr "Memuat informasi Boot Environment"
+
+#: ../gui/modules/beadmin.py:175
+msgid "Fetching BE entries..."
+msgstr "Mengambil entri BE..."
+
+#: ../gui/modules/beadmin.py:202
+msgid "Boot Environment"
+msgstr "Lingkungan Boot"
+
+#: ../gui/modules/beadmin.py:213
+msgid "Created"
+msgstr "Dibuat"
+
+#: ../gui/modules/beadmin.py:222
+msgid "Size"
+msgstr "Ukuran"
+
+#: ../gui/modules/beadmin.py:230
+msgid "Active on Reboot"
+msgstr "Aktif saat Reboot"
+
+#: ../gui/modules/beadmin.py:241
+msgid "Delete"
+msgstr "Hapus"
+
+#: ../gui/modules/beadmin.py:256
+msgid "Applying changes"
+msgstr "Menerapkan perubahan"
+
+#: ../gui/modules/beadmin.py:258
+msgid "Applying changes, please wait ..."
+msgstr "Menerapkan perubahan, mohon tunggu ..."
+
+#: ../gui/modules/beadmin.py:287
+msgid "Active on reboot\n"
+msgstr "Aktif saat reboot\n"
+
+#: ../gui/modules/beadmin.py:288
+msgid "Delete\n"
+msgstr "Hapus\n"
+
+#: ../gui/modules/beadmin.py:289
+msgid "Rename\n"
+msgstr "Merubah nama\n"
+
+#: ../gui/modules/beadmin.py:330
+msgid " to "
+msgstr " ke "
+
+#: ../gui/modules/beadmin.py:384
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>Tidak dapat mengubah Lingkungan Boot yang aktif ke:</b>\n"
+
+#: ../gui/modules/beadmin.py:389
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>Tidak dapat menghapus Lingkungan-lingkungan Boot:</b>\n"
+
+#: ../gui/modules/beadmin.py:396
+msgid "<b>Couldn't rename Boot Environments:</b>\n"
+msgstr "<b>Tidak dapat merubah nama Lingkungan-lingkungan Boot:</b>\n"
+
+#: ../gui/modules/beadmin.py:399
+#, python-format
+msgid "%s <b>to</b> %s\n"
+msgstr "%s <b>to</b> %s\n"
+
+#: ../gui/modules/beadmin.py:416
+msgid "BE error"
+msgstr "BE error"
+
+#: ../gui/modules/beadmin.py:501
+msgid ""
+"The <b>libbe</b> library couldn't prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "Library <b>libbe</b> tidak dapat mempersiapkan daftar Lingkungan-lingkungan Boot.\n"
+       "Semua fungsi-fungsi untuk mengelola Lingkungan-lingkungan Boot tidak diaktifkan"
+
+#: ../gui/modules/beadmin.py:531 ../gui/modules/beadmin.py:547
+msgid "%m/%d/%y %H:%M"
+msgstr "%m/%d/%y %H:%M"
+
+#: ../gui/modules/installupdate.py:94
+msgid "Preparing..."
+msgstr "Mempersiapkan..."
+
+#: ../gui/modules/installupdate.py:95 ../gui/modules/installupdate.py:632
+msgid "Downloading..."
+msgstr "Mengunduh..."
+
+#: ../gui/modules/installupdate.py:96
+msgid "Installing..."
+msgstr "Menginstall..."
+
+#: ../gui/modules/installupdate.py:166 ../gui/modules/webinstall.py:216
+msgid "_Proceed"
+msgstr "_Diproses"
+
+#: ../gui/modules/installupdate.py:190
+msgid "_Reject"
+msgstr "_Ditolak"
+
+#: ../gui/modules/installupdate.py:232
+#, python-format
+msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
+msgstr "GUI tidak akan merespon event apapun! %s. Cek sinyal-sinyal installupdate.py"
+
+#. For the remove, we are not showing the download stage
+#: ../gui/modules/installupdate.py:243
+msgid "Removing..."
+msgstr "Menghapus..."
+
+#: ../gui/modules/installupdate.py:249
+msgid "Remove Confirmation"
+msgstr "Hapus Konfirmasi"
+
+#: ../gui/modules/installupdate.py:252
+msgid "Review the package to be removed"
+msgid_plural "Review the packages to be removed"
+msgstr[0] "Review paket yang akan dihapus"
+msgstr[1] "Review paket-paket yang akan dihapus"
+
+#: ../gui/modules/installupdate.py:274
+msgid "Update All"
+msgstr "Perbaharui semua"
+
+#: ../gui/modules/installupdate.py:299
+msgid "Install/Update Confirmation"
+msgstr "Konfirmasi Instal/Pembaharuan"
+
+#: ../gui/modules/installupdate.py:301
+msgid "Review the package to be Installed/Updated"
+msgid_plural "Review the packages to be Installed/Updated"
+msgstr[0] "Tinjau paket yang akan diinstal/diperbaharui"
+msgstr[1] "Tinjau paket-paket yang akan diinstal/diperbaharui"
+
+#: ../gui/modules/installupdate.py:306
+msgid "Update Confirmation"
+msgstr "Konfirmasi pembaharuan"
+
+#: ../gui/modules/installupdate.py:308
+msgid "Review the package to be Updated"
+msgid_plural "Review the packages to be Updated"
+msgstr[0] "Tinjau paket yang akan diperbaharui"
+msgstr[1] "Tinjau paket-paket yang akan diperbaharui"
+
+#: ../gui/modules/installupdate.py:313
+msgid "Install Confirmation"
+msgstr "Konfirmasi instal"
+
+#: ../gui/modules/installupdate.py:315
+msgid "Review the package to be Installed"
+msgid_plural "Review the packages to be Installed"
+msgstr[0] "Tinjau paket yang akan diinstal"
+msgstr[1] "Tinjau paket-paket yang akan diinstal"
+
+#: ../gui/modules/installupdate.py:350 ../packagemanager.py:1492
+#: ../packagemanager.py:1600 ../updatemanager.py:297
+msgid "Name"
+msgstr "Nama"
+
+#: ../gui/modules/installupdate.py:357 ../gui/modules/repository.py:386
+#: ../packagemanager.py:1512
+msgid "Publisher"
+msgstr "Penerbit"
+
+#: ../gui/modules/installupdate.py:365 ../packagemanager.py:1528
+msgid "Description"
+msgstr "Deskripsi"
+
+#: ../gui/modules/installupdate.py:410
+msgid "Canceling..."
+msgstr "Membatalkan..."
+
+#: ../gui/modules/installupdate.py:446
+#, python-format
+msgid "Ensuring %s is up to date..."
+msgstr "Memastikan %s terkini..."
+
+#: ../gui/modules/installupdate.py:481
+msgid "Inventory exception:\n"
+msgstr "Inventaris pengecualian:\n"
+
+#: ../gui/modules/installupdate.py:490
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+       "Harap periksa koneksi jaringan.\n"
+       "Apakah repositori bisa diakses?"
+
+#: ../gui/modules/installupdate.py:497
+#, python-format
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?\n"
+"\n"
+"%s"
+msgstr ""
+       "Harap periksa koneksi jaringan.\n"
+       "Apakah repositori bisa diakses?"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:503
+#, python-format
+msgid ""
+"\n"
+"Unable to contact a valid package depot. Please check your network\n"
+"settings and attempt to contact the server using a web browser.\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "Tidak bisa menghubungi depot paket yang valid. Harap periksa pengaturan\n"
+       "jaringan dan coba kontak server menggunakan peramban web.\n"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:510
+msgid ""
+"pkg(7) appears to be out of date and should be updated.\n"
+"Please update SUNWipkg package"
+msgstr ""
+       "nampaknya pkg(7) harus diperbaharui.\n"
+       "Harap perbarui paket SUNWipkg. "
+
+#: ../gui/modules/installupdate.py:516
+#, python-format
+msgid ""
+"Cannot remove:\n"
+"\t%s\n"
+"Due to the following packages that depend on it:\n"
+msgstr ""
+       "Tidak bisa menghapus:\n"
+       "\t%s\n"
+
+#: ../gui/modules/installupdate.py:525
+#, python-format
+msgid ""
+"\n"
+"Failure of consistent use of pfexec or gksu when running\n"
+"%s is often a source of this problem."
+msgstr ""
+
+#: ../gui/modules/installupdate.py:528
+msgid ""
+"\n"
+"To rebuild index, please use the terminal command:"
+msgstr ""
+       "\n"
+       "Untuk rebuild index, silahkan gunakan command di terminal:"
+
+#: ../gui/modules/installupdate.py:529
+msgid ""
+"\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:533
+msgid ""
+"There was an error during installation. The search\n"
+"index is corrupted. You might want try to fix this\n"
+"problem by running command:\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "Ada kesalahan saat instalasi. Index\n"
+       "pencarian rusak. Mungkin anda bisa mencoba memperbaikin ini\n"
+
+#: ../gui/modules/installupdate.py:540
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+       "Anda sedang menggunakan Live Image. Instalasi\n"
+       "tidak bisa dilakukan."
+
+#: ../gui/modules/installupdate.py:545
+msgid ""
+"The requested operation would affect files that cannotbe modified in the "
+"Live Image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "Operasi yang hendak dilakukan bisa mempengaruhi berkas-berkas yang tidak bisa dimodifikasi di Live Image."
+
+#: ../gui/modules/installupdate.py:551
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+
+#: ../gui/modules/installupdate.py:558
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+
+#: ../gui/modules/installupdate.py:569
+msgid "Specifying BE Name not supported.\n"
+msgstr "Menentukan Nama BE yang tidak didukung. \n"
+
+#: ../gui/modules/installupdate.py:628
+#, python-format
+msgid "Updating %s"
+msgstr "Memperbaharui %s"
+
+#: ../gui/modules/installupdate.py:634
+msgid "Executing..."
+msgstr "Mengeksekusi..."
+
+#: ../gui/modules/installupdate.py:640
+msgid "Gathering package information, please wait..."
+msgstr "Pengumpulan informasi paket, mohon tunggu..."
+
+#: ../gui/modules/installupdate.py:642
+msgid "Gathering package information"
+msgstr "Pengumpulan informasi paket"
+
+#: ../gui/modules/installupdate.py:656
+msgid "All packages already installed."
+msgstr "Semua paket telah terinstal."
+
+#: ../gui/modules/installupdate.py:660
+msgid ""
+"Selected package(s) cannot be updated on their own.\n"
+"Click Updates to update all packages."
+msgstr ""
+       "Paket yang dipilih tidak dapat diperbaharui dengan sendirinya.\n"
+       "Klik perbaharui untuk memperbaharui semua paket."
+
+#: ../gui/modules/installupdate.py:664
+msgid "No updates available"
+msgstr "Tidak ada pembaharuan yang tersedia."
+
+#: ../gui/modules/installupdate.py:725
+msgid "Update All Confirmation"
+msgstr "Perbaharui Semua Konfirmasi "
+
+#: ../gui/modules/installupdate.py:728
+msgid "Review the package which will be affected by Update all"
+msgid_plural "Review the packages which will be affected by Update all"
+msgstr[0] "Review paket yang akan terpengaruh oleh Perbaharui semua"
+msgstr[1] "Review paket-paket yang akan terpengaruh oleh Perbaharui semua"
+
+#: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
+msgid "No further information available"
+msgstr "Tidak ada informasi lebih lanjut yang tersedia"
+
+#: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855
+msgid ""
+"\n"
+"Error:\n"
+msgstr ""
+       "\n"
+       "Error:\n"
+
+#: ../gui/modules/installupdate.py:830 ../gui/modules/installupdate.py:846
+msgid " - Failed </b>"
+msgstr " - Gagal </b>"
+
+#: ../gui/modules/installupdate.py:850
+#, python-format
+msgid ""
+"An unknown error occurred in the %s stage.\n"
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:\n"
+msgstr ""
+       "Sebuah error yang tidak diketahui terjadi pada stage %s.\n"
+       "Mohon beritahu para pengembang tentang masalah ini dengan\n"
+       "mengisi sebuah bug bersamaan dengan detil error yang terdaftar dibawah ini:\n"
+
+#: ../gui/modules/installupdate.py:859
+msgid "Exception traceback:\n"
+msgstr "Batasan pelacakan ulang:\n"
+
+#: ../gui/modules/installupdate.py:866
+msgid "pkg version: "
+msgstr "versi pkg: "
+
+#: ../gui/modules/installupdate.py:870
+msgid "List of configured publishers:"
+msgstr "Daftar penerbit-penerbit yang terkonfigurasi"
+
+#: ../gui/modules/installupdate.py:953
+msgid "Installation completed successfully"
+msgstr "Instalasi selesai dengan sukses"
+
+#: ../gui/modules/installupdate.py:955
+msgid "Packages removed successfully"
+msgstr "Paket dihapus dengan sukses"
+
+#: ../gui/modules/installupdate.py:957
+msgid "Packages updated successfully"
+msgstr "Paket diperbaharui dengan sukses"
+
+#: ../gui/modules/installupdate.py:991
+msgid ""
+"Not enough disk space, the selected action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action."
+msgstr ""
+       "Ruang penyimpanan tidak mencukupi, aksi yang dipilih tidak dapat dilaksanakan.\n"
+       "\n"
+       "KLik OK untuk mengelola BE-BE yang telah ada dan bebaskan ruang penyimpanan atau Batal menghentikan aksi."
+
+#: ../gui/modules/installupdate.py:995
+msgid "Not Enough Disk Space"
+msgstr "Ruang Penyimpanan Tidak Mencukupi"
+
+#: ../gui/modules/installupdate.py:1013
+msgid "Packages To Be Updated:\n"
+msgstr "Paket Yang Akan Diperbaharui:\n"
+
+#: ../gui/modules/installupdate.py:1020
+msgid "Packages To Be Installed:\n"
+msgstr "Paket Yang Akan Diinstal:\n"
+
+#: ../gui/modules/installupdate.py:1027
+msgid "Packages To Be Removed:\n"
+msgstr "Paket Yang Akan Dihapus:\n"
+
+#: ../gui/modules/installupdate.py:1114
+msgid "A_ccept"
+msgstr "T_erima"
+
+#: ../gui/modules/installupdate.py:1116
+msgid ""
+"You must accept the terms of the license before downloading this package."
+msgstr ""
+       "Anda harus menerima syarat-syarat lisensi sebelum mengunduh paket ini."
+
+#: ../gui/modules/installupdate.py:1129
+msgid "You must view the terms of the license before downloading this package."
+msgstr "Anda harus melihat syarat-syarat lisensi sebelum mengunduh paket ini."
+
+#: ../gui/modules/installupdate.py:1137
+#, python-format
+msgid "%s License"
+msgstr "%s Lisensi"
+
+#: ../gui/modules/misc.py:123
+msgid "Errors logged: click to view"
+msgstr "Error dicatat pada log: klik untuk melihat"
+
+#: ../gui/modules/misc.py:207
+#, python-format
+msgid "Version mismatch: expected version %d, got version %d"
+msgstr "Versi tidak cocok: versi yang diharapkan %d, versi yang diperoleh %d"
+
+#: ../gui/modules/misc.py:210
+#, python-format
+msgid "%s is not an install image"
+msgstr "%s bukan sebuah install image"
+
+#: ../gui/modules/misc.py:214
+msgid "API Error"
+msgstr "API Error"
+
+#: ../gui/modules/misc.py:258
+msgid "Size:"
+msgstr "Ukuran:"
+
+#: ../gui/modules/misc.py:259
+msgid "Category:"
+msgstr "Kategori:"
+
+#: ../gui/modules/misc.py:260
+msgid "Installed:"
+msgstr "Terinstal:"
+
+#: ../gui/modules/misc.py:261
+msgid "Version Available:"
+msgstr "Versi yang Tersedia:"
+
+#: ../gui/modules/misc.py:262 ../gui/modules/misc.py:278
+#: ../gui/modules/misc.py:288
+msgid "Latest Version:"
+msgstr "Versi yang Terakhir:"
+
+#: ../gui/modules/misc.py:263
+msgid "Publisher:"
+msgstr "Penerbit:"
+
+#. Installed with later version but can't upgrade
+#. Upgradeable Version: None
+#. Not Installed with later version and can't install
+#. Installable Version: None
+#: ../gui/modules/misc.py:265 ../gui/modules/misc.py:298
+#: ../packagemanager.py:3619 ../packagemanager.py:3677
+#: ../packagemanager.py:4271
+msgid "None"
+msgstr "Tak Satupun"
+
+#: ../gui/modules/misc.py:273 ../gui/modules/misc.py:290
+#: ../packagemanager.py:3597 ../packagemanager.py:3693
+#: ../packagemanager.py:4229
+#, python-format
+msgid "%(version)s (Build %(build)s-%(branch)s)"
+msgstr "%(version)s (Build %(build)s-%(branch)s)"
+
+#: ../gui/modules/misc.py:315
+msgid " (disabled)"
+msgstr " (dimatikan)"
+
+#: ../gui/modules/misc.py:317
+msgid " (removed)"
+msgstr " (dihapus)"
+
+#: ../gui/modules/misc.py:438
+msgid "Catalog refresh error:\n"
+msgstr "Refresh Katalog error:\n"
+
+#: ../gui/modules/misc.py:441
+#, python-format
+msgid "Only %(suc)s out of %(tot)s catalogs successfully updated.\n"
+msgstr "Hanya %(suc)s keluar dari %(tot)s katalog yang berhasil diperbaharui.\n"
+
+#: ../gui/modules/progress.py:44
+#, python-format
+msgid "Retrieving catalog '%s'...\n"
+msgstr "Mengambil katalog '%s'...\n"
+
+#: ../gui/modules/progress.py:52
+msgid "Caching catalogs ...\n"
+msgstr "Meng-cache katalog-katalog ...\n"
+
+#: ../gui/modules/progress.py:59
+msgid "Loading catalog cache ...\n"
+msgstr "Memuat cache katalog ...\n"
+
+#: ../gui/modules/progress.py:70
+#, python-format
+msgid "Refreshing catalog %s\n"
+msgstr "Me-refresh katalog %s\n"
+
+#: ../gui/modules/progress.py:75
+#, python-format
+msgid "Finished refreshing catalog %s\n"
+msgstr "Me-refresh katalog selesai %s\n"
+
+#: ../gui/modules/progress.py:87
+#, python-format
+msgid "Evaluating: %s"
+msgstr "Mengevaluasi: %s"
+
+#: ../gui/modules/progress.py:110
+#, python-format
+msgid "Downloaded %(current)s of %(total)s"
+msgstr "Download %(current)s dari %(total)s"
+
+#: ../gui/modules/progress.py:117
+#, python-format
+msgid "Package %d of %d: %s\n"
+msgstr "Paket %d of %d: %s\n"
+
+#: ../gui/modules/progress.py:127 ../gui/modules/progress.py:139
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../gui/modules/repository.py:103
+msgid "Manage Publishers Confirmation"
+msgstr "Mengelola Konfirmasi Penerbit-penerbit"
+
+#: ../gui/modules/repository.py:339
+#, python-format
+msgid "GUI will not respond to any event! %s. Check repository.py signals"
+msgstr "GUI tidak akan merespon event apapun! %s. Cek sinyal-sinyal repository.py"
+
+#: ../gui/modules/repository.py:393
+msgid "Alias"
+msgstr "Alias"
+
+#: ../gui/modules/repository.py:399
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#: ../gui/modules/repository.py:551
+msgid "Name contains invalid characters"
+msgstr "Nama terdiri dari karakter yang tidak valid"
+
+#: ../gui/modules/repository.py:554
+msgid "Name already in use"
+msgstr "Nama telah dipergunakan"
+
+#: ../gui/modules/repository.py:592 ../gui/modules/repository.py:1690
+msgid "SSL Key not found at specified location"
+msgstr "Kunci SSL tidak ditemukan pada lokasi yang ditentukan"
+
+#: ../gui/modules/repository.py:801
+msgid "Adding Publisher"
+msgstr "Menambah Penerbit"
+
+#: ../gui/modules/repository.py:815
+msgid "Canceling...\n"
+msgstr "Membatalkan...\n"
+
+#: ../gui/modules/repository.py:836 ../gui/modules/repository.py:1051
+#, python-format
+msgid "Removing publisher %s\n"
+msgstr "Menghapus penerbit %s\n"
+
+#: ../gui/modules/repository.py:840 ../gui/modules/repository.py:1055
+#, python-format
+msgid "Publisher %s succesfully removed\n"
+msgstr "Penerbit %s berhasil dihapus\n"
+
+#: ../gui/modules/repository.py:867
+#, python-format
+msgid "Adding publisher %s\n"
+msgstr "Menambah penerbit %s\n"
+
+#: ../gui/modules/repository.py:871
+#, python-format
+msgid "Updating publisher %s\n"
+msgstr "Memperbaharui penerbit %s\n"
+
+#: ../gui/modules/repository.py:875
+#, python-format
+msgid "Publisher %s succesfully added\n"
+msgstr "Penerbit %s berhasil ditambahkan\n"
+
+#: ../gui/modules/repository.py:878
+#, python-format
+msgid "Publisher %s succesfully updated\n"
+msgstr "Penerbit %s berhasil diperbaharui\n"
+
+#: ../gui/modules/repository.py:947
+msgid "Disable Publisher:\n"
+msgid_plural "Disable Publishers:\n"
+msgstr[0] "Penerbit Dinonaktifkan:\n"
+msgstr[1] "Penerbit-penerbit Dinonaktifkan:\n"
+
+#: ../gui/modules/repository.py:949
+msgid "Enable Publisher:\n"
+msgid_plural "Enable Publishers:\n"
+msgstr[0] "Penerbit Diaktifkan:\n"
+msgstr[1] "Penerbit-penerbit Diaktifkan:\n"
+
+#: ../gui/modules/repository.py:951
+msgid "Remove Publisher:\n"
+msgid_plural "Remove Publishers:\n"
+msgstr[0] "Penerbit Dihapus:\n"
+msgstr[1] "Penerbit-penerbit dihapus:\n"
+
+#: ../gui/modules/repository.py:953
+msgid "Change Priorities:\n"
+msgstr "Ubah Prioritas:\n"
+
+#: ../gui/modules/repository.py:956
+msgid "Apply the following change:"
+msgid_plural "Apply the following changes:"
+msgstr[0] "Menerapkan perubahan berikut:"
+msgstr[1] "Menerapkan perubahan-perubahan berikut:"
+
+#: ../gui/modules/repository.py:1006 ../gui/modules/repository.py:1063
+msgid "Disabling"
+msgstr "Menonaktifkan"
+
+#: ../gui/modules/repository.py:1008 ../gui/modules/repository.py:1065
+msgid "Enabling"
+msgstr "Mengaktifkan"
+
+#: ../gui/modules/repository.py:1011 ../gui/modules/repository.py:1068
+#, python-format
+msgid "%(enable)s publisher %(name)s\n"
+msgstr "%(enable)s penerbit %(name)s\n"
+
+#: ../gui/modules/repository.py:1038
+#, python-format
+msgid "Changing priority for publisher %s\n"
+msgstr "Merubah prioritas untuk penerbit %s\n"
+
+#: ../gui/modules/repository.py:1231
+msgid ""
+"Mirrors for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Mirror untuk penerbit yang aman\n"
+       "harus dimulai dengan https://"
+
+#: ../gui/modules/repository.py:1239
+msgid ""
+"Origins for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Asal untuk penerbit yang aman\n"
+       "perlu untuk memulai dengan https://"
+
+#: ../gui/modules/repository.py:1261
+msgid "URI already added"
+msgstr "URI sudah ditambahkan"
+
+#: ../gui/modules/repository.py:1508
+msgid "Origin:\n"
+msgid_plural "Origins:\n"
+msgstr[0] "Asal:\n"
+msgstr[1] "Asal:\n"
+
+#: ../gui/modules/repository.py:1520
+msgid "Description:\n"
+msgstr "Deskripsi:\n"
+
+#. More Generic for WebInstall
+#: ../gui/modules/repository.py:1530
+msgid "Publisher error"
+msgstr "Penerbit error"
+
+#: ../gui/modules/repository.py:1543
+msgid "Specify SSL Key File"
+msgstr "Tentukan Berkas Kunci SSL"
+
+#: ../gui/modules/repository.py:1565
+msgid "Specify SSL Certificate File"
+msgstr "Tentukan Berkas Sertifikasi SSL"
+
+#: ../gui/modules/repository.py:1666
+msgid "URI is not valid"
+msgstr "URI tidak valid"
+
+#: ../gui/modules/repository.py:1680
+msgid "SSL should not be specified"
+msgstr "SSL seharusnya tidak ditentukan"
+
+#: ../gui/modules/repository.py:1694
+msgid "SSL Certificate not found at specified location"
+msgstr "Sertifikasi SSL tidak ditemukan di lokasi yang ditentukan"
+
+#: ../gui/modules/repository.py:1702
+msgid "Mirror URI"
+msgstr "Mirror URI"
+
+#: ../gui/modules/repository.py:1711
+msgid "Origin URI"
+msgstr "Asal URI"
+
+#: ../gui/modules/repository.py:1805
+msgid "Enabling Publisher"
+msgid_plural "Enabling Publishers"
+msgstr[0] "Mengaktifkan Penerbit"
+msgstr[1] "Mengaktifkan Penerbit-penerbit"
+
+#: ../gui/modules/repository.py:1807
+msgid "Disabling Publisher"
+msgid_plural "Disabling Publishers"
+msgstr[0] "Menonaktifkan Penerbit"
+msgstr[1] "Menonaktifkan Penerbit-penerbit"
+
+#: ../gui/modules/uarenamebe.py:58
+msgid "The <b>libbe</b> library was not found on your system."
+msgstr "librari <b>libbe</b> tidak ditemukan di sistem anda."
+
+#: ../gui/modules/uarenamebe.py:65 ../gui/modules/uarenamebe.py:109
+msgid "Rename BE"
+msgstr "Ubah nama BE"
+
+#: ../gui/modules/uarenamebe.py:110
+msgid "Renaming BE, please wait..."
+msgstr "Mengubah nama BE, harap tunggu.."
+
+#: ../gui/modules/uarenamebe.py:143 ../packagemanager.py:722
+#, python-format
+msgid "GUI will not respond to any event! %s. Check declare_signals()"
+msgstr "GUI tidak akan merespon ke event apapun! %s. Periksa declare_signals()"
+
+#: ../gui/modules/uarenamebe.py:220
+#, python-format
+msgid ""
+"Could not change the BE name to:\n"
+"\t%s\n"
+"\n"
+"The following name will be used instead:\n"
+"\t%s"
+msgstr ""
+
+#: ../gui/modules/uarenamebe.py:223
+msgid "BE Name"
+msgstr "Nama BE"
+
+#: ../gui/modules/uarenamebe.py:229
+msgid ""
+"Could not restart the system.\n"
+"Please restart the system manually."
+msgstr ""
+       "Sistem tidak bisa restart.\n"
+       "Silahkan restart sistem secara manual."
+
+#: ../gui/modules/uarenamebe.py:231
+msgid "Restart Error"
+msgstr "Kesalahan restart"
+
+#: ../gui/modules/uarenamebe.py:245
+msgid "This name already exists."
+msgstr "Nama ini sudah terdaftar."
+
+#: ../gui/modules/uarenamebe.py:251
+msgid "BE name contains invalid character."
+msgstr "Nama BE mengandung karakter yang tidak valid."
+
+#: ../gui/modules/webinstall.py:131
+#, python-format
+msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
+msgstr "GUI tidak akan merespon ke event apapun! %s. Periksa webinstall.py signals()"
+
+#: ../gui/modules/webinstall.py:143
+msgid ""
+"\n"
+" Add New Publisher\n"
+msgid_plural ""
+"\n"
+" Add New Publishers\n"
+msgstr[0] ""
+       "\n"
+       "Tambahkan penerbit yang baru\n"
+msgstr[1] ""
+       "\n"
+       "Tambahkan penerbit-penerbit yang baru\n"
+
+#: ../gui/modules/webinstall.py:152
+msgid "All specified publishers are already on the system."
+msgstr "Semua penerbit yang ditentukan sudah ada di sistem."
+
+#: ../gui/modules/webinstall.py:162
+#, python-format
+msgid "\t%s "
+msgstr "\t%s "
+
+#: ../gui/modules/webinstall.py:166
+#, python-format
+msgid " (%s)\n"
+msgstr "  (%s)\n"
+
+#: ../gui/modules/webinstall.py:172
+msgid ""
+"\n"
+" Install Package\n"
+msgid_plural ""
+"\n"
+" Install Packages\n"
+msgstr[0] ""
+       "\n"
+       " Instal Paket\n"
+msgstr[1] ""
+       "\n"
+       " Instal Paket-paket\n"
+
+#: ../gui/modules/webinstall.py:181
+#, python-format
+msgid "\t%s (disabled)\n"
+msgstr "\t%s (dimatikan)\n"
+
+#: ../gui/modules/webinstall.py:231
+msgid "Click Proceed <b>only</b> if you trust this new publisher "
+msgid_plural "Click Proceed <b>only</b> if you trust these new publishers "
+msgstr[0] "Klik lanjut <b>hanya</b> jika anda mempercayai penerbit baru ini "
+msgstr[1] "Klik lanjut <b>hanya</b> jika anda mempercayai penerbit-penerbit baru ini "
+
+#: ../gui/modules/webinstall.py:302 ../gui/modules/webinstall.py:347
+#: ../gui/modules/webinstall.py:391
+msgid "Publisher Error"
+msgstr "Kesalahan Penerbit"
+
+#: ../gui/modules/webinstall.py:310
+msgid "The following publisher is disabled:\n"
+msgid_plural "The following publishers are disabled:\n"
+msgstr[0] "Penerbit berikut dinonaktifkan:\n"
+msgstr[1] "Penerbit-penerbit berikut dinonaktifkan:\n"
+
+#: ../gui/modules/webinstall.py:314
+#, python-format
+msgid "\t<b>%s</b>\n"
+msgstr "\t<b>%s</b>\n"
+
+#: ../gui/modules/webinstall.py:317
+msgid ""
+"\n"
+"Clicking OK will enable the publisher before proceeding with install. On "
+"completion it will be disabled again."
+msgid_plural ""
+"\n"
+"Clicking OK will enable the publishers before proceeding with install.\n"
+"On completion they will be disabled again."
+msgstr[0] ""
+       "\n"
+       "Klik OK akan mengaktifkan penerbit sebelum dilanjutkan dengan penginstalan. Setelah selesai maka akan dinonaktifkan kembali."
+msgstr[1] ""
+       "\n"
+       "Klik OK akan mengaktifkan penerbit-penerbit sebelum dilanjutkan dengan penginstalan. Setelah selesai maka akan dinonaktifkan kembali."
+
+#: ../gui/modules/webinstall.py:329
+msgid "Disabled Publisher"
+msgid_plural "Disabled Publishers"
+msgstr[0] "Menonaktifkan Penerbit"
+msgstr[1] "Menonaktifkan Penerbit-penerbit"
+
+#: ../gui/modules/webinstall.py:387
+#, python-format
+msgid "Failed to add %s.\n"
+msgstr "Gagal menambahkan %s.\n"
+
+#: ../gui/modules/webinstall.py:388 ../packagemanager.py:1349
+#: ../packagemanager.py:1361
+msgid "No URI specified"
+msgstr "Tidak ada URI yang ditentukan"
+
+#: ../gui/modules/webinstall.py:469
+msgid "Web Installer Error"
+msgstr "Penginstal Web Error"
+
+#: ../modules/actions/__init__.py:95
+#, python-format
+msgid ""
+"unknown action type '%(type)s' in package '%(fmri)s' in action '%(action)s'"
+msgstr ""
+       "tipe aksi tidak diketahui '%(type)s' pada paket '%(fmri)s' pada aksi '%(action)s'"
+
+#: ../modules/actions/__init__.py:99
+#, python-format
+msgid "unknown action type '%(type)s' in action '%(action)s'"
+msgstr "tipe aksi tidak diketahui '%(type)s' pada aksi '%(action)s'"
+
+#: ../modules/actions/__init__.py:112
+#, python-format
+msgid ""
+"Malformed action in package '%(fmri)s' at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Kesalahan aksi pada paket '%(fmri)s' pada posisi: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:117
+#, python-format
+msgid ""
+"Malformed action at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Kesalahan aksi pada posisi: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:144
+#, python-format
+msgid "invalid action in package %(fmri)s: %(action)s: %(error)s"
+msgstr "aksi yang tidak valid pada paket %(fmri)s: %(action)s: %(error)s"
+
+#: ../modules/actions/__init__.py:147
+#, python-format
+msgid "invalid action, '%(action)s': %(error)s"
+msgstr "aksi yang tidak valid, '%(action)s': %(error)s"
+
+#: ../modules/actions/__init__.py:178
+#, python-format
+msgid "required attribute '%s' was not provided."
+msgstr "atribut '%s' yang diperlukan tidak disediakan."
+
+#: ../modules/actions/__init__.py:253
+#, python-format
+msgid "required attribute, '%s', was not provided."
+msgstr "atribut yang diperlukan, '%s', tidak disediakan."
+
+#: ../modules/actions/depend.py:65
+msgid "Missing type attribute"
+msgstr "Tipe atribut hilang"
+
+#: ../modules/actions/depend.py:69
+msgid "Missing fmri attribute"
+msgstr "fmri atribut hilang"
+
+#: ../modules/actions/depend.py:73
+#, python-format
+msgid "Unknown type (%s) in depend action"
+msgstr "Tipe yang tidak dikenal (%s) tergantung aksi"
+
+#: ../modules/actions/directory.py:54 ../modules/actions/file.py:63
+#: ../modules/actions/link.py:56
+msgid "Empty path attribute"
+msgstr "path atribut kosong"
+
+#: ../modules/actions/generic.py:139
+#, python-format
+msgid "No such file: '%s'."
+msgstr "Tidak ada berkas: '%s'."
+
+#: ../modules/actions/generic.py:142
+#, python-format
+msgid "'%s' is not a file."
+msgstr "'%s' bukan sebuah berkas."
+
+#: ../modules/actions/license.py:113
+#, python-format
+msgid "License file %s does not exist."
+msgstr "Berkas lisensi %s tidak ada."
+
+#: ../modules/actions/license.py:118
+#, python-format
+msgid "Hash: '%(found)s' should be '%(expected)s'"
+msgstr "Hash: '%(found)s' seharusnya '%(expected)s'"
+
+#: ../modules/catalog.py:1514
+#, python-format
+msgid "Unknown info_needed type: %s"
+msgstr "Tipe info_needed yang tidak dikenal: %s"
+
+#. API consumer passed an unknown type for img_path.
+#: ../modules/client/api.py:130
+msgid "Unknown img_path type."
+msgstr "Tipe img_path tidak dikenal."
+
+#: ../modules/client/api_errors.py:126
+#, python-format
+msgid ""
+"Package: %s\n"
+"\n"
+msgstr ""
+       "Paket: %s\n"
+       "\n"
+
+#: ../modules/client/api_errors.py:131
+msgid "  License requires acceptance."
+msgstr " Lisensi memerlukan penerimaan."
+
+#: ../modules/client/api_errors.py:134
+msgid "  License must be viewed."
+msgstr " Lisensi harus dilihat."
+
+#: ../modules/client/api_errors.py:174
+#, python-format
+msgid ""
+"Invalid package state change attempted '%(states)s' for package '%(fmri)s'."
+msgstr ""
+       "Keadaan paket yang tidak valid mencoba mengubah '%(states)s' untuk paket '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:204
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because of insufficient permissions. Please try the command again using "
+"pfexec\n"
+"or otherwise increase your privileges."
+msgstr ""
+       "Tidak dapat beroperasi pada %s\n"
+       "karena izin tidak terpenuhi. Silakan coba perintah tersebut kembali dengan menggunakan perintah"
+       "pfexec \n"
+       "atau jika tidak dengan meningkatkan hak-hak akses."
+
+#: ../modules/client/api_errors.py:209
+msgid ""
+"\n"
+"Could not complete the operation because of insufficient permissions. "
+"Please\n"
+"try the command again using pfexec or otherwise increase your privileges.\n"
+msgstr ""
+       "\n"
+       "Tidak dapat menyelesaikan operasi karena izin yang tidak terpenuhi. "
+       "Mohon\n"
+       "Silakan coba perintah tersebut kembali dengan menggunakan perintah"
+       "pfexec.\n"
+
+#: ../modules/client/api_errors.py:220
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because the file is in use. Please stop using the file and try the\n"
+"operation again."
+msgstr ""
+       "Tidak dapat beroperasi pada %s\n"
+       "karena berkas tersebut sedang digunakan. Mohon berhenti menggunakan berkas tersebut dan coba\n"
+       "operasi tersebut kembali."
+
+#: ../modules/client/api_errors.py:235
+#, python-format
+msgid "Could not complete the operation on %s: read-only filesystem\n"
+msgstr "Tidak dapat menyelesaikan operasi pada %s: read-only filesystem \n"
+
+#: ../modules/client/api_errors.py:237
+msgid "Could not complete the operation: read-only filesystem."
+msgstr "Tidak dapat menyelesaikan operasi: read-only filesystem."
+
+#: ../modules/client/api_errors.py:264
+msgid ""
+"The following pattern(s) did not match any packages in the current catalog.\n"
+"Try relaxing the pattern, refreshing and/or examining the catalogs:"
+msgstr ""
+       "Pola berikut tidak cocok dengan paket-paket di katalog saat ini. \n"
+       "Cobalah lakukan refresh dan/atau memeriksa katalog:"
+
+#: ../modules/client/api_errors.py:271
+msgid ""
+"The following patterns only matched packages that are from publishers other "
+"than that which supplied the already installed version of this package"
+msgstr ""
+       "Pola berikut ini hanya cocok pada paket yang berasal dari penerbit-penerbit daripada yang menyediakan versi yang telah terinstal dari paket ini"
+
+#: ../modules/client/api_errors.py:285
+#, python-format
+msgid "'%s' matches no installed packages"
+msgstr "'%s' tidak cocok pada paket-paket apapun yang telah terinstal"
+
+#: ../modules/client/api_errors.py:289
+#, python-format
+msgid "'%s' is an illegal fmri"
+msgstr "'%s' adalah fmri yang illegal"
+
+#: ../modules/client/api_errors.py:293
+#, python-format
+msgid "'%s' supports the following architectures: %s"
+msgstr "'%s' mendukung arsitektur-arsitektur berikut: %s"
+
+#: ../modules/client/api_errors.py:294
+#, python-format
+msgid "Image architecture is defined as: %s"
+msgstr "Arsitektur image didefinisikan sebagai: %s"
+
+#: ../modules/client/api_errors.py:299
+#, python-format
+msgid "'%(p)s' depends on obsolete package '%(op)s'"
+msgstr "'%(p)s' tergantung pada paket yang tidak terpakai '%(op)s'"
+
+#: ../modules/client/api_errors.py:303
+msgid ""
+"The proposed operation can not be performed for the following package(s) as "
+"they are already installed: "
+msgstr ""
+       "Operasi yang diusulkan tidak dapat dilakukan untuk paket berikut dimana"
+       "paket tersebut sudah terinstal: "
+
+#: ../modules/client/api_errors.py:310
+msgid "The following different patterns specify thesame package(s):"
+msgstr "Berikut pola yang berbeda menetapkan paket yang sama:"
+
+#: ../modules/client/api_errors.py:320
+msgid "No solution was found to satisfy constraints"
+msgstr "Tidak ada solusi yang ditemukan untuk memenuhi kendala-kendala"
+
+#: ../modules/client/api_errors.py:326
+#, python-format
+msgid "Package %s is missing a dependency: %s"
+msgstr "Paket %s kehilangan depedensi: %s"
+
+#: ../modules/client/api_errors.py:398
+#, python-format
+msgid ""
+"The FMRI '%s' does not contain publisher information and cannot be used for "
+"catalog operations."
+msgstr ""
+       "FMRI '%s' tidak terdiri dari informasi penerbit dan tidak dapat digunakan untuk operasi-operasi katalog."
+
+#: ../modules/client/api_errors.py:407
+#, python-format
+msgid ""
+"Catalog meta_root '%(root)s' is invalid; unable to complete operation: '%(op)"
+"s'."
+msgstr ""
+       "Katalog meta_root '%(root)s' tidak valid; tidak dapat menyelesaikan operasi: '%(op)"
+       "s'."
+
+#: ../modules/client/api_errors.py:424 ../modules/server/catalog.py:79
+msgid "The following catalog files have incorrect permissions:\n"
+msgstr "Berkas katalog berikut memiliki izin tidak tepat:\n"
+
+#: ../modules/client/api_errors.py:428 ../modules/server/catalog.py:83
+#, python-format
+msgid "\t%(fname)s: expected mode: %(emode)s, found mode: %(fmode)s\n"
+msgstr "\t%(fname)s: mode yang diingikan: %(emode)s, mode yang ditemukan: %(fmode)s\n"
+
+#: ../modules/client/api_errors.py:438
+#, python-format
+msgid "The signature data for the '%s' catalog file is not valid."
+msgstr "Signature data untuk berkas katalog '%s' tidak valid."
+
+#: ../modules/client/api_errors.py:448
+#, python-format
+msgid ""
+"Unable to determine the updates needed for  the current catalog using the "
+"provided catalog update data in '%s'."
+msgstr ""
+       "Tidak dapat menentukan pembaruan yang diperlukan untuk katalog saat ini menggunakan"
+       "data update katalog yang disediakan pada '%s'."
+
+#: ../modules/client/api_errors.py:458
+#, python-format
+msgid ""
+"Unable to perform '%(op)s' operation for catalog %(name)s; completion would "
+"result in a duplicate entry for package '%(fmri)s'."
+msgstr ""
+       "Tidak dapat menjalankan operasi '%(op)s' untuk katalog %(name)s; penyelesaian akan"
+       "menghasilkan entri duplikat untuk paket '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:470
+msgid "Catalog updates can only be applied to an on-disk catalog."
+msgstr "Pembaruan katalog hanya dapat diterapkan pada katalog on-disk."
+
+#: ../modules/client/api_errors.py:478
+#, python-format
+msgid "Catalog file '%s' is invalid."
+msgstr "Berkas katalog '%s' tidak valid."
+
+#: ../modules/client/api_errors.py:486
+#, python-format
+msgid ""
+"Unable to determine the updates needed for the catalog using the provided "
+"catalog update data in '%s'. The specified catalog updates are for an older "
+"version of the catalog and cannot be used."
+msgstr ""
+       "Tidak dapat menentukan pembaruan yang diperlukan untuk katalog menggunakan data pembaruan katalog yang disediakan dalam '%s'. Pembaruan katalog yang ditetapkan adalah untuk versi katalog yang lebih lama dan tidak dapat digunakan."
+
+#: ../modules/client/api_errors.py:497
+#, python-format
+msgid "'%s' could not be found in the catalog."
+msgstr "'%s' tidak ditemukan pada katalog."
+
+#: ../modules/client/api_errors.py:505
+#, python-format
+msgid "Unknown catalog update type '%s'"
+msgstr "Tipe pembaharuan katalog tidak dikenali '%s'"
+
+#: ../modules/client/api_errors.py:513
+#, python-format
+msgid "Unrecognized, unknown, or invalid CatalogPart '%s'"
+msgstr "Tidak dikenal, tidak diketahui, atau tidak valid BagianKatalog '%s'"
+
+#: ../modules/client/api_errors.py:544
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current publishers:\n"
+msgstr ""
+       "Tidak ada paket yang cocok yang dapat ditemukan pada FMRI-FMRI pada katalog apapun pada penerbit-penerbit saat ini:\n"
+
+#: ../modules/client/api_errors.py:549
+#, python-format
+msgid "%s (pattern did not match)\n"
+msgstr "%s (pola tidak cocok)\n"
+
+#: ../modules/client/api_errors.py:551
+#, python-format
+msgid "%s (publisher did not match)\n"
+msgstr "%s (penerbit tidak cocok)\n"
+
+#: ../modules/client/api_errors.py:554
+#, python-format
+msgid "%s (version did not match)\n"
+msgstr "%s (versi tidak cocok)\n"
+
+#: ../modules/client/api_errors.py:595
+#, python-format
+msgid "The search at url %s returned no results."
+msgstr "Pencarian pada url %s tidak memberikan hasil."
+
+#: ../modules/client/api_errors.py:609
+msgid "Some servers failed to respond appropriately:\n"
+msgstr "Beberapa server gagal merespon secara tepat:\n"
+
+#: ../modules/client/api_errors.py:611 ../modules/client/api_errors.py:620
+#, python-format
+msgid ""
+"%(o)s:\n"
+"%(msg)s\n"
+msgstr ""
+       "%(o)s:\n"
+       "%(msg)s\n"
+
+#: ../modules/client/api_errors.py:614
+#, python-format
+msgid "%s did not return a valid response.\n"
+msgstr "%s tidak mengembalikan respon yang valid.\n"
+
+#: ../modules/client/api_errors.py:617
+msgid "Some servers don't support requested search operation:\n"
+msgstr "Beberapa server tidak mendukung request operasi pencarian:\n"
+
+#: ../modules/client/api_errors.py:631
+msgid ""
+"Search performance is degraded.\n"
+"Run 'pkg rebuild-index' to improve search speed."
+msgstr ""
+       "Performa pencarian menurun.\n"
+       "Jalankan 'pkg rebuild-index' untuk meningkatkan kecepatan pencarian."
+
+#: ../modules/client/api_errors.py:645
+msgid "Search server does not support the requested protocol:"
+msgstr "Server pencarian tidak mendukung protokol yang diminta:"
+
+#: ../modules/client/api_errors.py:793
+#, python-format
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information: %s"
+msgstr ""
+       "Berkas yang ditentukan adalah format yang tidak diakui atau tidak berisi informasi penerbit yang valid: %s"
+
+#: ../modules/client/api_errors.py:796
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information."
+msgstr ""
+       "Berkas yang ditentukan adalah format yang tidak diakui atau tidak berisi informasi penerbit yang valid."
+
+#: ../modules/client/api_errors.py:805
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Format data informasi penerbit pkg(7) tidak didukung."
+
+#: ../modules/client/api_errors.py:831
+#, python-format
+msgid ""
+"Error encountered while retrieving data from '%s':\n"
+"%s"
+msgstr ""
+       "Error terjadi pada saat menerima data dari '%s':\n"
+       "%s"
+
+#: ../modules/client/api_errors.py:833
+#, python-format
+msgid "Error encountered while retrieving data from: %s"
+msgstr "Error terjadi pada saat menerima data dari: %s"
+
+#: ../modules/client/api_errors.py:845
+#, python-format
+msgid "'%s' is not a valid location."
+msgstr "'%s' bukan lokasi yang valid."
+
+#: ../modules/client/api_errors.py:857
+#, python-format
+msgid "'%s' is not a valid boot environment name."
+msgstr "'%s' bukan nama lingkungan boot yang valid."
+
+#: ../modules/client/api_errors.py:869
+#, python-format
+msgid "The boot environment '%s' already exists."
+msgstr "Lingkungan boot '%s' telah ada."
+
+#: ../modules/client/api_errors.py:878
+msgid ""
+"Boot environment naming during package install is not supported on this\n"
+"version of OpenSolaris. Please update without the --be-name option."
+msgstr ""
+       "Penamaan lingkungan boot selama instalasi paket tidak didukung pada\n"
+       "versi OpenSolaris ini. Mohon update tanpa opsi --be-name."
+
+#: ../modules/client/api_errors.py:884
+msgid "Unable to clone the current boot environment."
+msgstr "Tidak dapat mengklon lingkungan boot saat ini."
+
+#: ../modules/client/api_errors.py:897
+#, python-format
+msgid ""
+"A problem occurred while attempting to rename the boot environment\n"
+"currently named %(orig)s to %(dest)s."
+msgstr ""
+       "Suatu masalah terjadi ketika mencoba untuk mengubah nama boot environment \n"
+       "Saat ini bernama %(orig)s menjadi %(dest)s."
+
+#: ../modules/client/api_errors.py:908
+#, python-format
+msgid "Unable to mount %(name)s at %(mt)s"
+msgstr "Tidak dapat melakukan mount %(name)s pada %(mt)s"
+
+#: ../modules/client/api_errors.py:917
+msgid ""
+"Naming a boot environment when operating on a non-live image is\n"
+"not allowed."
+msgstr ""
+       "Penamaan boot environment ketika beroperasi pada image non-live \n"
+       "tidak diperbolehkan."
+
+#: ../modules/client/api_errors.py:928
+msgid "Info does not recognize the following options:"
+msgstr "Informasi tidak mengakui opsi-opsi berikut:"
+
+#: ../modules/client/api_errors.py:930
+msgid " '"
+msgstr " '"
+
+#: ../modules/client/api_errors.py:930
+msgid "'"
+msgstr "'"
+
+#: ../modules/client/api_errors.py:959
+#, python-format
+msgid ""
+"Publisher meta_root '%(root)s' is invalid; unable to complete operation: '%"
+"(op)s'."
+msgstr ""
+       "Penerbit meta_root '%(root)s' tidak valid; tidak dapat menyelesaikan operasi: '%"
+       "(op)s'."
+
+#: ../modules/client/api_errors.py:968
+#, python-format
+msgid "'%s' is not a valid publisher name."
+msgstr "'%s' bukan nama penerbit yang valid."
+
+#: ../modules/client/api_errors.py:976
+#, python-format
+msgid ""
+"'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
+msgstr ""
+       "'%(value)s' nilai yang tidak valid untuk atribut repositori '%(attribute)s'."
+
+#: ../modules/client/api_errors.py:989
+#, python-format
+msgid "'%s' is not a valid repository collection type."
+msgstr "'%s' bukan tipe koleksi repository yang valid."
+
+#: ../modules/client/api_errors.py:997
+#, python-format
+msgid "'%s' is not a valid URI."
+msgstr "'%s' bukan URI yang valid."
+
+#: ../modules/client/api_errors.py:1005
+#, python-format
+msgid "'%s' is not a valid URI priority; integer value expected."
+msgstr "'%s' bukan prioritas URI yang valid; nilai integer diharapkan."
+
+#: ../modules/client/api_errors.py:1017
+#, python-format
+msgid "'%s' is not a valid repository URI sort policy."
+msgstr "'%s' bukan semacam kebijakan URI repository yang valid."
+
+#: ../modules/client/api_errors.py:1026
+#, python-format
+msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
+msgstr "Penerbit '%s' dinonaktifkan dan tidak dapat digunakan untuk operasi pempaketan."
+
+#: ../modules/client/api_errors.py:1035
+#, python-format
+msgid "A publisher with the same name or alias as '%s' already exists."
+msgstr "Sebuah penerbit dengan nama atau alias yang sama sebagai '%s' telah ada."
+
+#: ../modules/client/api_errors.py:1044
+#, python-format
+msgid ""
+"A repository with the same name or origin URIs already exists for publisher "
+"'%s'."
+msgstr ""
+       "Sebuah repositori dengan nama yang sama atau asal URI sudah ada untuk penerbit"
+       "'%s'."
+
+#: ../modules/client/api_errors.py:1053
+#, python-format
+msgid "Mirror '%s' already exists for the specified publisher."
+msgstr "Mirror '%s' sudah ada untuk penerbit tertentu."
+
+#: ../modules/client/api_errors.py:1062
+#, python-format
+msgid "Origin '%s' already exists for the specified publisher."
+msgstr "Asal '%s' sudah ada untuk penerbit tertentu."
+
+#: ../modules/client/api_errors.py:1071
+#, python-format
+msgid ""
+"At least one origin is required for %s.  You must add a new origin before "
+"attempting to remove the specified origin(s)."
+msgstr ""
+       "Setidaknya diperlukan satu asal untuk %s. Anda harus menambahkan asal baru sebelum"
+       "mencoba untuk menghapus asal yang ditentukan."
+
+#: ../modules/client/api_errors.py:1081
+msgid "The preferred publisher cannot be removed."
+msgstr "Penerbit yang dipilih tidak dapat dihapus."
+
+#: ../modules/client/api_errors.py:1088
+msgid "Cannot search a repository before or after itself"
+msgstr "Tidak dapat dicari repositori sebelum atau sesudah repositori itu sendiri"
+
+#: ../modules/client/api_errors.py:1096
+msgid "Cannot remove the selected repository for a publisher."
+msgstr "Tidak dapat menghapus repositori yang dipilih untuk penerbit."
+
+#: ../modules/client/api_errors.py:1105
+#, python-format
+msgid ""
+"Publisher '%s' is disabled and cannot be set as the preferred publisher."
+msgstr ""
+       "Penerbit '%s' dinonaktifkan dan tidak dapat ditetapkan sebagai pilihan penerbit."
+
+#: ../modules/client/api_errors.py:1114
+msgid ""
+"The preferred publisher may not be disabled.  Another publisher must be set "
+"as the preferred publisher before this publisher can be disabled."
+msgstr ""
+       "Penerbit yang dipilih tidak dapat dinonaktifkan. Penerbit lain harus diset"
+       "sebagai pilihan penerbit sebelum penerbit ini dapat dinonaktifkan."
+
+#: ../modules/client/api_errors.py:1124
+#, python-format
+msgid "Unknown legal URI '%s'."
+msgstr "URI legal tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1132
+#, python-format
+msgid "Unknown publisher '%s'."
+msgstr "Penerbit tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1140
+#, python-format
+msgid "Unknown related URI '%s'."
+msgstr "URI terkait tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1148
+#, python-format
+msgid "Unknown repository '%s'."
+msgstr "Repositori tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1156
+#, python-format
+msgid "Unknown repository mirror '%s'."
+msgstr "Mirror repositori tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1170
+#, python-format
+msgid "Publisher '%s' has no repositories that support the '%s' operation."
+msgstr "Penerbit '%s' tidak memiliki repositori yang mendukung operasi '%s'."
+
+#: ../modules/client/api_errors.py:1178
+#, python-format
+msgid "Unknown repository origin '%s'"
+msgstr "Asal repositori tidak dikenal '%s'."
+
+#: ../modules/client/api_errors.py:1189
+#, python-format
+msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
+msgstr "URI '%(uri)s' berisi skema yang tidak didukung '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1192
+msgid "The specified URI contains an unsupported scheme."
+msgstr "URI tertentu berisi skema yang tidak didukung."
+
+#: ../modules/client/api_errors.py:1200
+#, python-format
+msgid "'%(attr)s' is not supported for '%(scheme)s'."
+msgstr "'%(attr)s' tidak didukung untuk '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1227
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
+"has expired.  Please install a valid certificate."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s' dibutuhkan untuk mengakses '%(uri)s',"
+       "telah kadaluwarsa.  Silahkan install sertifikat yang valid."
+
+#: ../modules/client/api_errors.py:1232
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
+"a valid certificate."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s', telah kadaluwarsa.  Silahkan install sertifikat yang valid."
+
+#: ../modules/client/api_errors.py:1237
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
+"install a valid certificate."
+msgstr ""
+       "Sertifikat '%(cert)s', dibutuhkan untuk mengakses '%(uri)s', telah kadaluwarsa.  Silahkan install sertifikat yang valid."
+
+#: ../modules/client/api_errors.py:1240
+#, python-format
+msgid "Certificate '%s' has expired.  Please install a valid certificate."
+msgstr "Sertifikat '%s' telah kadaluwarsa. Silakan instal sertifikat yang valid."
+
+#: ../modules/client/api_errors.py:1253
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"will expire in '%(days)s' days."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s', dibutuhkan untuk mengakses '%(uri)s', "
+       "akan kadaluwarsa dalam '%(days)s' hari."
+
+#: ../modules/client/api_errors.py:1258
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
+"days."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s' akan kadaluwarsa dalam '%(days)s' "
+       "hari."
+
+#: ../modules/client/api_errors.py:1262
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
+"s' days."
+msgstr ""
+       "Sertifikat '%(cert)s', dibutuhkan untuk mengakses '%(uri)s', akan kadaluwarsa dalam '%(days)"
+       "s' hari."
+
+#: ../modules/client/api_errors.py:1265
+#, python-format
+msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
+msgstr "Sertifikat '%(cert)s' akan kadaluwarsa dalam '%(days)s' hari."
+
+#: ../modules/client/api_errors.py:1277
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"is invalid."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s', dibutuhkan untuk mengakses '%(uri)s', "
+       "tidak valid."
+
+#: ../modules/client/api_errors.py:1281
+#, python-format
+msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
+msgstr "Sertifikat '%(cert)s' untuk penerbit '%(pub)s' tidak valid."
+
+#: ../modules/client/api_errors.py:1285
+#, python-format
+msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
+msgstr "Sertifikat '%(cert)s' dibutuhkan untuk mengakses '%(uri)s' tidak valid."
+
+#: ../modules/client/api_errors.py:1288
+#, python-format
+msgid "Invalid certificate '%s'."
+msgstr "Sertifikat tidak valid '%s'."
+
+#: ../modules/client/api_errors.py:1299
+#, python-format
+msgid ""
+"Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
+"(uri)s'."
+msgstr ""
+       "Tidak dapat menemukan kunci '%(key)s' untuk penerbit '%(pub)s' yang dibutuhkan untuk mengakses '%"
+       "(uri)s '."
+
+#: ../modules/client/api_errors.py:1303
+#, python-format
+msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
+msgstr "Tidak dapat menemukan kunci '%(key)s' untuk penerbit '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1307
+#, python-format
+msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
+msgstr "Tidak dapat menemukan kunci '%(key)s' yang dibutuhkan untuk mengakses '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1310
+#, python-format
+msgid "Unable to locate key '%s'."
+msgstr "Tidak dapat menemukan kunci '%s'."
+
+#: ../modules/client/api_errors.py:1321
+#, python-format
+msgid ""
+"Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
+"access '%(uri)s'."
+msgstr ""
+       "Tidak dapat menemukan sertifikat '%(cert)s' untuk penerbit '%(pub)s' yang dibutuhkan untuk "
+       "mengakses '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1326
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
+msgstr "Tidak dapat menemukan sertifikat '%(cert)s' untuk penerbit '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1330
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
+msgstr "Tidak dapat menemukan sertifikat '%(cert)s' dibutuhkan untuk "
+       "mengakses '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1333
+#, python-format
+msgid "Unable to locate certificate '%s'."
+msgstr "Tidak dapat menemukan sertifikat '%s'."
+
+#: ../modules/client/api_errors.py:1345
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"has a future effective date."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s', dibutuhkan untuk "
+       "mengakses '%(uri)s', "
+       "memiliki tanggal efektif masa depan."
+
+#: ../modules/client/api_errors.py:1350
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
+msgstr ""
+       "Sertifikat '%(cert)s' untuk penerbit '%(pub)s' memiliki tanggal efektif masa depan."
+
+#: ../modules/client/api_errors.py:1354
+#, python-format
+msgid ""
+"Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
+"date."
+msgstr ""
+       "Sertifikat  '%(cert)s' dibutuhkan untuk "
+       "mengakses '%(uri)s' memiliki tanggal efektif masa depan."
+
+#: ../modules/client/api_errors.py:1357
+#, python-format
+msgid "Certificate '%s' has a future effective date."
+msgstr "Sertifikat '%s' memiliki tanggal efektif masa depan."
+
+#: ../modules/client/api_errors.py:1370
+#, python-format
+msgid "Gave a bad response:%s"
+msgstr "Memberikan respon yang buruk:%s"
+
+#: ../modules/client/api_errors.py:1381
+#, python-format
+msgid "Could not find %s"
+msgstr "Tidak dapat menemukan %s"
+
+#: ../modules/client/api_errors.py:1404
+#, python-format
+msgid "The signature data for the manifest of the '%s' package is not valid."
+msgstr "Data signatur untuk manifest dari paket '%s' tidak valid."
+
+#: ../modules/client/api_errors.py:1406
+msgid "The signature data for the manifest is not valid."
+msgstr "Data signatur untuk manifest tidak valid."
+
+#: ../modules/client/api_errors.py:1419
+#, python-format
+msgid ""
+"there is already an image at: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "sudah ada image di : %s. \n"
+       "Untuk override, gunakan opsi -f (force)."
+
+#: ../modules/client/api_errors.py:1425
+#, python-format
+msgid ""
+"the specified image path is not empty: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "Path image tertentu tidak kosong: %s. \n"
+       "Untuk override, gunakan opsi -f (force)."
+
+#: ../modules/client/bootenv.py:134
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg: tidak dapat membuat snapshot otomatis. pemulihan pkg dinonaktifkan."
+
+#: ../modules/client/bootenv.py:267
+#, python-format
+msgid "pkg: A system error %(e)s was caught executing %(cmd)s"
+msgstr "pkg: Sebuah sistem error %(e)s telah tertangkap mengeksekusi %(cmd)s"
+
+#: ../modules/client/bootenv.py:272
+#, python-format
+msgid ""
+"pkg: '%(cmd)s' failed. \n"
+"with a return code of %(ret)d."
+msgstr ""
+       "pkg: '%(cmd)s' gagal. \n"
+       "dengan kode kembali dari %(ret)d."
+
+#: ../modules/client/bootenv.py:284
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg: tidak bisa mengaktifkan %s"
+
+#: ../modules/client/bootenv.py:294
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg: tidak bisa melakukan unmount %s"
+
+#: ../modules/client/bootenv.py:300
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+       "\n"
+       "Sebuah klon dari %s ada dan telah diperbarui dan diaktifkan.\n"
+       "Pada boot berikutnya Boot Environment %s akan di-mount pada '/'.\n"
+       "Reboot ketika siap untuk beralih ke BE yang diperbarui.\n"
+
+#: ../modules/client/bootenv.py:314
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s telah berhasil diperbarui"
+
+#: ../modules/client/bootenv.py:346
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr ""
+       " Sistem yang sedang berjalan belum diubah. Modifikasi yang hanya dibuat untuk"
+       "klon sistem yang berjalan. Klon ini dimount di %s yang mengharuskan Anda untuk"
+       "memeriksanya."
+
+#: ../modules/client/bootenv.py:357
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg: tidak bisa rollback BE %s dan mengembalikan image"
+
+#: ../modules/client/bootenv.py:367
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s gagal diperbarui. Tidak ada perubahan yang telah dibuat untuk %s."
+
+#: ../modules/client/bootenv.py:380
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg: tidak bisa menghapus snapshot %s"
+
+#: ../modules/client/bootenv.py:409
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg: tidak bisa membuat BE %s"
+
+#: ../modules/client/bootenv.py:414
+#, python-format
+msgid "pkg: unable to mount BE %(name)s on %(clone_dir)s"
+msgstr "pkg: tidak dapat me-mount BE %(name)s pada %(clone_dir)s"
+
+#: ../modules/client/bootenv.py:420
+#, python-format
+msgid ""
+"The Boot Environment %(name)s failed to be updated. A snapshot was taken "
+"before the failed attempt and is mounted here %(clone_dir)s. Use 'beadm "
+"unmount %(clone_name)s' and then 'beadm activate %(clone_name)s' if you wish "
+"to boot to this BE."
+msgstr ""
+       "Boot Environment %(name)s gagal diperbarui. Sebuah snapshot diambil sebelum gagal dan di-mount di sini %(clone_dir)s. Gunakan 'beadm "
+       "unmount %(clone_name)s' dan kemudian 'beadm activate %(clone_name)s' jika Anda ingin"
+       "untuk boot ke BE ini."
+
+#: ../modules/client/bootenv.py:435
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+       "Boot Environment %s gagal diperbarui. Sebuah snapshot diambil sebelum gagal dan telah dipulihkan jadi tidak ada perubahan yang terjadi untuk %s."
+
+#: ../modules/client/image.py:2436
+msgid "SUNWipkg update check failed."
+msgstr "Pengecekan pembaruan SUNWipkg gagal."
+
+#: ../modules/client/imageplan.py:169
+#, python-format
+msgid "Planning for %s failed: %s\n"
+msgstr "Perencanaan untuk %s gagal: %s\n"
+
+#: ../modules/client/imageplan.py:861
+msgid "Removal Phase"
+msgstr "Fase Penghapusan"
+
+#: ../modules/client/imageplan.py:871
+msgid "Install Phase"
+msgstr "Fase Install"
+
+#: ../modules/client/imageplan.py:882
+msgid "Update Phase"
+msgstr "Fase Pembaruan"
+
+#: ../modules/client/imageplan.py:938
+msgid "Index Phase"
+msgstr "Fase Index"
+
+#: ../modules/client/pkg_solver.py:162
+msgid "This version excluded by specified installation version"
+msgstr "Versi ini dikecualikan oleh instalasi versi tertentu"
+
+#: ../modules/client/pkg_solver.py:171
+#, python-format
+msgid "This version is excluded by installed incorporation %s"
+msgstr "Versi ini dikecualikan oleh inkoporasi %s yang diinstall"
+
+#: ../modules/client/pkg_solver.py:181
+#, python-format
+msgid "This version is excluded by freeze %s"
+msgstr "Versi ini dikecualikan oleh  pembekuan %s"
+
+#: ../modules/client/pkg_solver.py:197
+#, python-format
+msgid "No matching version of %s can be installed:"
+msgstr "Tidak ditemukan versi dari %s yang dapat diinstal:"
+
+#: ../modules/client/pkg_solver.py:229
+#, python-format
+msgid "No version of %s can be installed:"
+msgstr "Tidak ada versi dari %s yang dapat diinstal:"
+
+#: ../modules/client/pkg_solver.py:917
+msgid "Publisher differs from installed or specifed version"
+msgstr "Penerbit berbeda dari versi terinstal atau versi yang spesifik"
+
+#: ../modules/client/pkg_solver.py:927
+msgid "Publisher is lower ranked"
+msgstr "Penerbit peringkat lebih rendah"
+
+#: ../modules/client/pkg_solver.py:962
+#, python-format
+msgid "Newer version %s is already installed"
+msgstr "Versi Baru %s telah terinstal"
+
+#: ../modules/client/pkg_solver.py:971
+msgid "Package doesn't support image architecture"
+msgstr "Paket tidak mendukung arsitektur image"
+
+#: ../modules/client/pkg_solver.py:973
+#, python-format
+msgid "Package doesn't support image variant %s"
+msgstr "Paket tidak mendukung varian image %s"
+
+#: ../modules/client/progress.py:592
+#, python-format
+msgid "Retrieving catalog '%s'..."
+msgstr "Mengambil katalog '%s'..."
+
+#: ../modules/client/progress.py:599
+msgid "Caching catalogs ..."
+msgstr "Caching katalog ..."
+
+#: ../modules/client/progress.py:605
+msgid "Loading catalog cache ..."
+msgstr "Loading katalog cache ..."
+
+#: ../modules/client/progress.py:611
+msgid "Refreshing catalog"
+msgstr "Refreshing katalog"
+
+#: ../modules/client/publisher.py:957
+#, python-format
+msgid ""
+"\n"
+"Unable to retrieve package data for publisher '%(prefix)s' from one\n"
+"of the following origin(s):\n"
+"\n"
+"%(origins)s\n"
+"\n"
+"The catalog retrieved from one of the origin(s) listed above only\n"
+"contains package data for: %(pubs)s.\n"
+msgstr ""
+       "\n"
+       "Tidak dapat mengambil data paket penerbit '%(prefix)s' dari salah satu\n"
+       "dari asal berikut:\n"
+       "\n"
+       "%(origins)s\n"
+       "\n"
+       "Katalog diambil dari salah satu asal yang tercantum di atas hanya \n"
+       "berisi data paket untuk: %(pubs)s.\n"
+
+#: ../modules/client/publisher.py:969
+#, python-format
+msgid ""
+"This is either a result of invalid origin information being provided\n"
+"for publisher '%s', or because the wrong publisher name was\n"
+"provided when this publisher was added.\n"
+msgstr ""
+       "Ini adalah salah satu hasil dari informasi asal tidak valid yang diberikan \n"
+       "untuk penerbit '%s', atau karena kesalahan nama penerbit\n"
+       "yang diberikan ketika penerbit ini ditambahkan. \n"
+
+#: ../modules/client/publisher.py:977
+#, python-format
+msgid ""
+"To resolve this issue, correct the origin information provided for\n"
+"publisher '%(prefix)s' using the pkg set-publisher subcommand, or re-add\n"
+"the publisher using the correct name and remove the '%(prefix)s'\n"
+"publisher.\n"
+msgstr ""
+       "Untuk mengatasi masalah ini, koreksi informasi asal yang diberikan untuk \n"
+       "penerbit '%(prefix)s' menggunakan subcommand pkg set-publisher, atau tambahkan ulang \n"
+
+#: ../modules/client/publisher.py:985
+#, python-format
+msgid ""
+"To re-add this publisher with the correct name, execute the following\n"
+"commands as a privileged user:\n"
+"\n"
+"pkg set-publisher -P -g %(origin)s %(pub)s\n"
+"pkg unset-publisher %(prefix)s\n"
+msgstr ""
+       "Untuk menambahkan kembali penerbit ini dengan nama yang benar, jalankan perintah berikut \n"
+       "sebagai pengguna istimewa: \n"
+       "\n"
+       "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+       "pkg unset-publisher %(prefix)s\n"
+
+#: ../modules/client/publisher.py:994
+msgid ""
+"The origin(s) listed above contain package data for more than one\n"
+"publisher, but this issue can likely be resolved by executing one\n"
+"of the following commands as a privileged user:\n"
+msgstr ""
+       "Asal yang tercantum di atas berisi paket data untuk lebih dari satu \n"
+       "penerbit, tetapi masalah ini mungkin dapat diselesaikan dengan mengeksekusi satu \n"
+       "dari perintah berikut sebagai pengguna istimewa:\n"
+
+#: ../modules/client/publisher.py:1001
+#, python-format
+msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+
+#: ../modules/client/publisher.py:1005
+#, python-format
+msgid ""
+"Afterwards, the old publisher should be removed by executing the\n"
+"following command as a privileged user:\n"
+"\n"
+"pkg unset-publisher %s\n"
+msgstr ""
+       "Setelah itu, penerbit yang lama harus dihapus dengan menjalankan \n"
+       "perintah berikut sebagai pengguna istimewa: \n"
+       "\n"
+       "pkg unset-publisher %s\n"
+
+#: ../modules/file_layout/file_manager.py:73
+#, python-format
+msgid ""
+"The FileManager cannot %(cre)s %(ent)s because it is configured read-only."
+msgstr ""
+       "Pengelola Berkas tidak dapat %(cre)s %(ent)s karena dikonfigurasi read-only."
+
+#: ../modules/file_layout/file_manager.py:93
+#, python-format
+msgid "FileManager was unable to create %s or the directories containing it."
+msgstr "Pengelola Berkas tidak dapat membuat %s atau direktori yang berisi itu."
+
+#: ../modules/file_layout/file_manager.py:112
+#, python-format
+msgid ""
+"The following paths were found but cannot be accounted for by any of the "
+"known layouts:\n"
+"%s"
+msgstr ""
+       "Path berikut ditemukan tetapi tidak dijelaskan untuk salah satu layout yang dikenal:\n"
+       "%s"
+
+#: ../modules/flavor/base.py:51
+#, python-format
+msgid "Couldn't find %s"
+msgstr "Tidak dapat menemukan %s"
+
+#: ../modules/flavor/base.py:106
+#, python-format
+msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
+msgstr "Subclass dari Ketergantungan harus menerapkan dep_key. Kelas saati ini adalah %s"
+
+#: ../modules/flavor/elf.py:46
+#, python-format
+msgid "%s had this elf error:%s"
+msgstr "%s memilkiki error ini :%s"
+
+#: ../modules/flavor/elf.py:60
+#, python-format
+msgid ""
+"%(pp)s (which will be installed at %(ip)s) had this token, %(tok)s, in its "
+"run path: %(rp)s.  It is not currently possible to automatically expand this "
+"token. Please specify its value on the command line."
+msgstr ""
+       "%(pp)s (yang akan diinstal pada %(ip)s) punya token, %(tok)s, pada run path: %(rp)s.  Saat ini tidak mungkin untuk secara otomatis melakukan expand"
+       "token. Silakan tentukan nilai pada command line.."
+
+#: ../modules/flavor/python.py:43
+#, python-format
+msgid "Could not find the file for %(name)s imported in %(localpath)s"
+msgstr "Tidak dapat menemukan berkas %(name)s diimport pada %(localpath)s"
+
+#: ../modules/fmri.py:97
+#, python-format
+msgid "FMRI '%s' is missing version information."
+msgstr "FMRI '%s' adalah informasi versi yang hilang"
+
+#: ../modules/indexer.py:158
+msgid "Reading Existing Index"
+msgstr "Membaca Index yang Ada"
+
+#: ../modules/indexer.py:673 ../modules/indexer.py:698
+msgid "Indexing Packages"
+msgstr "Pengindeksan Paket"
+
+#: ../modules/manifest.py:462
+#, python-format
+msgid ""
+"%(fp)s:\n"
+"%(e)s"
+msgstr ""
+       "%(fp)s:\n"
+       "%(e)s"
+
+#: ../modules/manifest.py:473
+#, python-format
+msgid ""
+"%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
+"The action is:%(act)s"
+msgstr ""
+       "%(fp)s mengandung suatu aksi yang hilang atribut yang diharapkan: %(at)s.\n"
+       "Aksi:%(act)s"
+
+#: ../modules/manifest.py:595
+#, python-format
+msgid "Attribute value '%s' not 'true' or 'false'"
+msgstr "Nilai atribut '%s' tidak 'benar' atau 'salah'"
+
+#: ../modules/misc.py:455
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:456
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:457
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:458
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:459
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:460
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:461 ../modules/misc.py:465
+msgid "EB"
+msgstr "EB"
+
+#: ../modules/p5i.py:87
+msgid "missing version"
+msgstr "versi hilang"
+
+#: ../modules/p5i.py:89
+msgid "invalid version"
+msgstr "versi yang tidak valid"
+
+#: ../modules/publish/dependencies.py:60
+#, python-format
+msgid ""
+"The file dependency %s has paths which resolve to multiple packages. The "
+"actions are as follows:\n"
+"%s"
+msgstr ""
+       "File dependensi %s memiliki path yang merubah beberapa paket . Aksinya adalah sebagai berikut:\n"
+       "%s"
+
+#: ../modules/publish/dependencies.py:73
+#, python-format
+msgid ""
+"The file dependency %s depends on a path delivered by multiple packages. "
+"Those packages are:%s"
+msgstr ""
+       "File dependensi %s tergantung pada path yang disampaikan oleh beberapa paket. "
+       "Paket tersebut adalah:%s"
+
+#: ../modules/publish/dependencies.py:87
+#, python-format
+msgid ""
+"%s has unresolved dependency '%s' under the following combinations of "
+"variants:\n"
+"%s"
+msgstr ""
+       "%s memiliki dependensi yang bersifat unresolved '%s' di bawah kombinasi varian berikut:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:78
+#, python-format
+msgid "Unsupported scheme '%(scheme)s' in URL: '%(url)s'."
+msgstr "Skema yang tidak didukung '%(scheme)s' pada URL: '%(url)s'."
+
+#: ../modules/publish/transaction.py:82
+#, python-format
+msgid "Malformed URL: '%s'."
+msgstr "Malformed URL: '%s'."
+
+#: ../modules/publish/transaction.py:83
+#, python-format
+msgid "Invalid repository URL: '%(url)s': %(msg)s"
+msgstr "URL repositori tidak valid: '%(url)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:95
+#, python-format
+msgid ""
+"'%(op)s' failed for transaction ID '%(trans_id)s'; status '%(status)s': %"
+"(msg)s"
+msgstr ""
+       "'%(op)s' gagal untuk ID transaksi '%(trans_id)s'; status '%(status)s': %"
+       "(msg)s"
+
+#: ../modules/publish/transaction.py:102
+#, python-format
+msgid "'%(op)s' failed for transaction ID '%(trans_id)s': %(msg)s"
+msgstr "'%(op)s' gagal untuk ID transaksi '%(trans_id)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:108
+#, python-format
+msgid ""
+"'%(op)s' failed; unable to initiate transaction:\n"
+"%(msg)s"
+msgstr ""
+       "'%(op)s' failed; Tidak dapat menginisiasikan transaksi:\n"
+       "%(msg)s"
+
+#: ../modules/publish/transaction.py:111
+#, python-format
+msgid ""
+"Unable to initiate transaction:\n"
+"%s"
+msgstr ""
+       "Tidak dapat menginisiasikan transaksi:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:125
+#, python-format
+msgid ""
+"Unsupported operation '%(op)s' for the specified repository type '%(type)s'."
+msgstr ""
+       "Operasi tidak didukung '%(op)s' untuk tipe repositori tertentu '%(type)s'."
+
+#: ../modules/publish/transaction.py:147
+msgid "Not an absolute path."
+msgstr "Bukan path yang absolut"
+
+#: ../modules/publish/transaction.py:156
+#, python-format
+msgid ""
+"An error occurred while trying to initialize the repository directory "
+"structures:\n"
+"%s"
+msgstr ""
+       "Sebuah kesalahan terjadi ketika mencoba untuk menginisialisasi struktur direktori repositori:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:294
+msgid "Unsupported or temporarily unavailable operation requested."
+msgstr "Operasi yang diminya tidak didukung atau sementara tidak tersedia."
+
+#: ../modules/publish/transaction.py:422
+#, python-format
+msgid "Unknown failure; no transaction ID provided in response: %s"
+msgstr "Kegagalan tidak dikenal; tidak ada ID transaksi yang disediakan pada respon:%s"
+
+#: ../modules/query_parser.py:126
+#, python-format
+msgid "An unparseable character in query at position : %d"
+msgstr "Sebuah karakter unparseable dalam query pada posisi : %d"
+
+#: ../modules/query_parser.py:337
+#, python-format
+msgid "In query %(query)s, %(name)s had a bad value of '%(bv)s'."
+msgstr "Dalam query %(query)s, %(name)s memiliki nilai yang buruk dari '%(bv)s'."
+
+#: ../modules/query_parser.py:352
+#, python-format
+msgid ""
+"A query is expected to have five fields: case sensitivity, return type, "
+"number of results to return, the number at which to start returning results, "
+"and the text of the query.  The query provided lacked at least one of those "
+"fields:\n"
+"%s"
+msgstr ""
+       "Sebuah query diharapkan untuk mempunyai lima field: case sensitivity, tipe balikan, jumlah hasil untuk kembali, jumlah di mana untuk memulai mengembalikan hasil, dan teks dari query. Query yang disediakan yang kurang setidaknya satu dari bidang tersebut:\n"
+       "%s"
+
+#: ../modules/query_parser.py:374
+msgid "Could not parse query."
+msgstr "Tidak dapat melakukan parse query."
+
+#: ../modules/query_parser.py:375
+#, python-format
+msgid "Problem occurred with: %s"
+msgstr "Masalah terjadi dengan: %s"
+
+#: ../modules/query_parser.py:514
+msgid "This expression produces action results:"
+msgstr "Ekspresi ini menghasilkan aksi:"
+
+#: ../modules/query_parser.py:516
+msgid "This expression produces package results:"
+msgstr "Ekspresi ini menghasilkan paket:"
+
+#: ../modules/query_parser.py:519
+msgid ""
+"'AND' and 'OR' require those expressions to produce the same type of results."
+msgstr ""
+       "'AND' dan 'OR' membutuhkan aksi tersebut untuk menghasilkan hasil dengan tipe yang sama."
+
+#: ../modules/search_errors.py:135
+#, python-format
+msgid ""
+"Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
+"was %(l)s"
+msgstr ""
+       "Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
+       "was %(l)s"
+
+#: ../modules/search_errors.py:147
+#, python-format
+msgid ""
+"Had an empty line in the main dictionary. split_chars is %(sc)s and "
+"unquote_list is %(ul)s.%(s)s"
+msgstr ""
+       "Mendapat unquote_list kosong sementara pengindeksan. split_chars adalah %(sc)s dan unquote_list"
+       "adalah %(ul)s.%(s)s"
+
+#: ../modules/server/api_errors.py:70
+#, python-format
+msgid "Info does not recognize the following options: %s"
+msgstr "Info tidak mengenali pilihan berikut: %s"
+
+#: ../modules/server/catalog.py:225 ../modules/server/repository.py:793
+#, python-format
+msgid ""
+"Index corrupted or out of date. Removing old index directory (%s)  and "
+"rebuilding search indexes."
+msgstr ""
+       "Indeks rusak atau usang. Menghapus indeks direktori yang lama (%s) dan"
+       "kembali melakukan pencarian indeks."
+
+#: ../modules/server/catalog.py:241 ../modules/server/repository.py:809
+msgid "writable root not writable by current user id or group."
+msgstr "writable root tidak bersifat writable oleh user id saat ini atau kelompok."
+
+#: ../modules/server/catalog.py:246 ../modules/server/repository.py:812
+msgid "unable to write to index directory."
+msgstr "Tidak dapat menulis direktori indeks."
+
+#: ../modules/server/depot.py:395
+msgid "Directory listing not allowed."
+msgstr "Listing direktori tidak diperbolehkan."
+
+#: ../modules/server/depot.py:678
+#, python-format
+msgid "The specified Action Type, '%s', is not valid."
+msgstr "Tipe aksi yang ditentukan, '%s', tidak valid."
+
+#: ../modules/server/depot.py:941
+msgid "No matching FMRI found in repository catalog."
+msgstr "Tidak menemukan fMRI yang cocok di katalog repositori."
+
+#: ../modules/server/repository.py:78
+#, python-format
+msgid "The specified catalog file '%s', could not be found."
+msgstr "File katalog '%s', tidak dapat ditemukan."
+
+#: ../modules/server/repository.py:87
+#, python-format
+msgid "No file could be found for the specified hash name: '%s'."
+msgstr "Tidak ada berkas yang dapat ditemukan untuk nama hash yang ditentukan: '%s'."
+
+#: ../modules/server/repository.py:96
+#, python-format
+msgid "The specified repository root '%s' does not contain a valid repository."
+msgstr "Root repositori '%s' tidak mengandung repositori yang valid."
+
+#: ../modules/server/repository.py:108
+#, python-format
+msgid "The specified Transaction ID '%s' is invalid."
+msgstr "ID Transaksi '%s' tidak valid."
+
+#: ../modules/server/repository.py:116
+#, python-format
+msgid "No manifest could be found for the FMRI: '%s'."
+msgstr "Tidak ada manifest yang dapat ditemukan untuk FMRI: '%s'."
+
+#: ../modules/server/repository.py:125
+msgid ""
+"The requested operation cannot be performed when the repository is used in "
+"mirror mode."
+msgstr ""
+       "Operasi yang diminta tidak dapat dilakukan ketika repositori menggunakan"
+       "modus mirror."
+
+#: ../modules/server/repository.py:134
+msgid "The repository is read-only and cannot be modified."
+msgstr "Repositori bersifat read-only dan tidak dapat dimodifikasi."
+
+#: ../modules/server/repository.py:143
+msgid "No token was provided to search."
+msgstr "Tidak ada token yang tersedia untuk pencarian."
+
+#: ../modules/server/repository.py:145
+#, python-format
+msgid "The specified search token '%s' is invalid."
+msgstr "Pencarian token '%s' tidak valid."
+
+#: ../modules/server/repository.py:153
+msgid "Search functionality is temporarily unavailable."
+msgstr "Fungsionalitas pencarian untuk sementara tidak tersedia."
+
+#: ../modules/server/repository.py:162
+msgid ""
+"The format of the repository or its contents needs to be upgraded before it "
+"can be used to serve package data.  However, it is currently read-only and "
+"cannot be upgraded.  If using pkg.depotd, please restart the server without "
+"read-only so that the repository can be upgraded."
+msgstr ""
+       "Format dari repositori atau isinya perlu ditingkatkan sebelum"
+       "dapat digunakan untuk melayani paket data. Namun, saat ini bersifat read-only dan"
+       "tidak dapat ditingkatkan. Jika menggunakan pkg.depotd, silakan start ulang server tanpa"
+       "read-only sehingga repositori dapat ditingkatkan."
+
+#. To upgrade the repository, the catalog will have to
+#. be rebuilt.
+#: ../modules/server/repository.py:432
+msgid "Upgrading repository; this process will take some time."
+msgstr "Upgrade repositori; proses ini akan memakan waktu."
+
+#: ../modules/server/repository.py:541
+msgid "repository directories incomplete"
+msgstr "Direktori repositori incomplete."
+
+#: ../modules/server/repository.py:550
+msgid ""
+"repository directories not writeable by current user id or group and are "
+"incomplete"
+msgstr ""
+       "direktori repositori tidak dapat ditulisi oleh user id atau kelompok dan"
+       "incomplete."
+
+#. Don't add packages with corrupt
+#. manifests to the catalog.
+#: ../modules/server/repository.py:663
+#, python-format
+msgid "Skipping %(fmri)s; invalid manifest: %(error)s"
+msgstr "Melangkahi %(fmri)s; manifest tidak valid: %(error)s"
+
+#: ../modules/server/repositoryconfig.py:406
+#, python-format
+msgid ""
+"Unable to locate or read the specified repository configuration file: '%s'."
+msgstr ""
+       "Tidak dapat menemukan atau membaca file konfigurasi repositori: '%s'."
+
+#: ../modules/server/transaction.py:72
+#, python-format
+msgid "Unrecognized or malformed data in operation payload: '%s'."
+msgstr "Data tidak dikenal atau cacat dalam operasi payload: '%s'."
+
+#: ../modules/server/transaction.py:89
+#, python-format
+msgid "The specified client_release is invalid: '%s'"
+msgstr "client_release yang ditentukan tidak valid: '%s'"
+
+#: ../modules/server/transaction.py:92
+#, python-format
+msgid "'The specified FMRI, '%s', has an invalid version."
+msgstr "'FMRI tertentu, '%s', memiliki versi yang tidak valid."
+
+#: ../modules/server/transaction.py:95
+#, python-format
+msgid "The specified FMRI, '%s', already exists or has been restricted."
+msgstr "FMRI tertentu, '%s', sudah ada atau telah dibatasi."
+
+#: ../modules/server/transaction.py:98
+#, python-format
+msgid ""
+"The specified FMRI, '%s', must include the publisher prefix as the "
+"repository contains package data for more than one publisher or a default "
+"publisher has not been defined."
+msgstr ""
+       "FMRI tertentu, '%s',  harus menyertakan prefiks penerbit sebagai"
+       "repositori yang berisi paket data untuk lebih dari satu penerbit atau penerbit default belum didefinisikan."
+
+#: ../modules/server/transaction.py:104
+#, python-format
+msgid "The specified FMRI, '%s', is invalid."
+msgstr "FMRI tertentu, '%s', tidak valid."
+
+#: ../modules/server/transaction.py:113
+#, python-format
+msgid "Transaction ID '%s' is already open."
+msgstr "ID Transaksi '%s' sudah terbuka."
+
+#: ../modules/server/transaction.py:428
+msgid "An obsolete package cannot contain actions other than 'set'."
+msgstr "Sebuah paket usang tidak dapat berisi tindakan selain 'set'."
+
+#: ../modules/server/transaction.py:436
+msgid "A renamed package cannot contain actions other than 'set' and 'depend'."
+msgstr "Sebuah paket yang diberi nama baru tidak dapat berisi aksi selain 'set' dan 'depend'."
+
+#: ../modules/server/transaction.py:451
+msgid "A package may not  be marked for both obsoletion and renaming."
+msgstr "Sebuah paket mungkin tidak akan ditandai baik untuk obsoletion maupun renaming."
+
+#: ../modules/server/transaction.py:454
+#, python-format
+msgid "A '%s' action cannot be present in an obsolete package: %s"
+msgstr "'%s' aksi tidak dapat saat ini dalam paket usang: %s"
+
+#: ../modules/server/transaction.py:458
+#, python-format
+msgid "A '%s' action cannot be present in a renamed package: %s"
+msgstr "'%s' aksi tidak dapat saat ini dalam mengganti nama paket: %s"
+
+#: ../modules/server/transaction.py:478
+msgid "A renamed package must contain at least one 'depend' action."
+msgstr "pergantian nama paket setidaknya harus memuat satu 'depend' aksi."
+
+#: ../packagemanager.py:326
+msgid "All Packages"
+msgstr "semua paket"
+
+#: ../packagemanager.py:328
+msgid "Installed Packages"
+msgstr "paket terinstal"
+
+#: ../packagemanager.py:332
+msgid "Not Installed Packages"
+msgstr "bukan paket terinstal"
+
+#: ../packagemanager.py:336
+msgid "Selected Packages"
+msgstr "Seleksi paket"
+
+#: ../packagemanager.py:339
+msgid "All Publishers (Installed)"
+msgstr "Semua Penerbit (Terinstal)"
+
+#: ../packagemanager.py:340
+msgid "All Publishers (Search)"
+msgstr "Semua Penerbit (Telusuri)"
+
+#: ../packagemanager.py:341
+msgid "Add..."
+msgstr "tambah..."
+
+#: ../packagemanager.py:422
+msgid "Logs"
+msgstr "Catatan"
+
+#: ../packagemanager.py:815
+msgid "Export Selections Confirmation"
+msgstr "Ekspor Seleksi Konfirmasi"
+
+#: ../packagemanager.py:817
+msgid "<b>Export the following to a Web Install .p5i file:</b>"
+msgstr "<b>Export the following to a Web Install .p5i file:</b>"
+
+#: ../packagemanager.py:859
+msgid "Export Selections Error"
+msgstr "Ekspor Seleksi Galat"
+
+#: ../packagemanager.py:870
+msgid "Export Selections"
+msgstr "Ekspor Seleksi"
+
+#: ../packagemanager.py:877
+msgid "p5i Files"
+msgstr "Berkas p5i"
+
+#: ../packagemanager.py:881
+msgid "All Files"
+msgstr "Semua Berkas"
+
+#: ../packagemanager.py:886
+msgid "my_packages"
+msgstr "Paketku"
+
+#: ../packagemanager.py:933 ../packagemanager.py:941
+msgid "Search (Ctrl-F)"
+msgstr "Telusur (Ctrl-F)"
+
+#: ../packagemanager.py:1088
+#, python-format
+msgid ""
+"<html><head></head><body><H2>Welcome toPackageManager!</H2><br><font "
+"color='#0000FF'>Warning: Unable to load Start Page:<br>%s</font></body></"
+"html>"
+msgstr ""
+       "html><head></head><body><H2>Selamat Datang di PengelolaPaket!</H2><br><font "
+       "color='#0000FF'>Peringatan: Tidak dapat memuat Halaman Awal:<br>%s</font></body></"
+       "html>"
+
+#: ../packagemanager.py:1100
+msgid "failed to respond"
+msgstr "gagal merespon"
+
+#: ../packagemanager.py:1103
+msgid "invalid response"
+msgstr "kesalahan respon"
+
+#: ../packagemanager.py:1104
+msgid "A valid response was not returned."
+msgstr "tanggapan yang valid tidak dikembalikan."
+
+#: ../packagemanager.py:1107
+msgid "unsupported search"
+msgstr "tidak mendukung penelusuran"
+
+#: ../packagemanager.py:1133
+msgid "Search Errors: click to view"
+msgstr "Telusuri Galat: klik untuk tilik"
+
+#: ../packagemanager.py:1188
+#, python-format
+msgid "Loading... %s"
+msgstr "Memuat... %s"
+
+#: ../packagemanager.py:1194
+msgid "Stopped"
+msgstr "menghentikan"
+
+#: ../packagemanager.py:1208
+msgid "Done"
+msgstr "selesai"
+
+#: ../packagemanager.py:1215
+#, python-format
+msgid ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = '%s/startpage_star."
+"png'                     style='border-style: none'></a> "
+"<br><br>                    <h2><font color='#0000FF'>Warning: Unable "
+"to                     load URL</font></h2><br>%s</body></html>"
+msgstr ""
+       "<html><head></head><body><font color='#000000'>                    <a "
+       "href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+       "s'>                    <IMG SRC = '%s/startpage_star."
+       "png'                     style='border-style: none'></a> "
+       "<br><br>                    <h2><font color='#0000FF'>Warning: Unable "
+       "to                     load URL</font></h2><br>%s</body></html>"
+
+#: ../packagemanager.py:1281
+#, python-format
+msgid "View packages in %(s1)s%(pub)s%(e1)s"
+msgstr "tilik kemasan in %(s1)s%(pub)s%(e1)s"
+
+#: ../packagemanager.py:1289
+#, python-format
+msgid "Search within %(s1)sAll Publishers%(e1)s"
+msgstr "Telusuri di %(s1)sAll Publishers%(e1)s"
+
+#: ../packagemanager.py:1296
+#, python-format
+msgid "View installed packages for %(s1)sAll Publishers%(e1)s"
+msgstr "Lihat paket terinstal untuk %(s1)sAll Publishers%(e1)s"
+
+#: ../packagemanager.py:1303
+#, python-format
+msgid "Change View to %(s1)sAll Packages%(e1)s"
+msgstr "Ubah Tampilan untuk %(s1)sAll Packages%(e1)s"
+
+#: ../packagemanager.py:1311
+#, python-format
+msgid "Display %(s1)sSearch Help%(e1)s"
+msgstr "Display %(s1)sSearch Help%(e1)s"
+
+#: ../packagemanager.py:1314
+#, python-format
+msgid "Loading %(s1)sSearch Help%(e1)s ..."
+msgstr "Memuat %(s1)sSearch Help%(e1)s ..."
+
+#: ../packagemanager.py:1324
+#, python-format
+msgid "View results for %s"
+msgstr "Tilik hasil untuk %s"
+
+#: ../packagemanager.py:1383
+msgid "Empty Action not supported"
+msgstr "Aksi Kosong tidak didukung"
+
+#: ../packagemanager.py:1386
+#, python-format
+msgid "Action not supported: %s"
+msgstr "Aksi tidak didukung: %s"
+
+#: ../packagemanager.py:1487
+msgid "Click to toggle selections"
+msgstr "Klik untuk beralih pilihan"
+
+#: ../packagemanager.py:1502 ../packagemanager.py:3149
+msgid "Status"
+msgstr "Status"
+
+#: ../packagemanager.py:1644
+msgid "all selection toggle"
+msgstr "Semua pilihan beralih"
+
+#: ../packagemanager.py:1696
+msgid "Not Installed"
+msgstr "Tidak Terinstal"
+
+#: ../packagemanager.py:1698 ../packagemanager.py:3167
+msgid "Updates Available"
+msgstr "Perbaharuan Tersedia"
+
+#. Only enable the first section. Later other sections are enabled
+#. in __add_category_to_section() if the section contains any categories
+#. which in turn contain some packages.
+#: ../packagemanager.py:1819 ../packagemanager.py:4951
+#: ../packagemanager.py:4952
+msgid "All Categories"
+msgstr "Semua Kategori"
+
+#: ../packagemanager.py:1821
+msgid "Meta Packages"
+msgstr "Meta paket"
+
+#: ../packagemanager.py:1822
+msgid "Applications"
+msgstr "Aplikasi"
+
+#: ../packagemanager.py:1823
+msgid "Desktop (GNOME)"
+msgstr "Desktop (GNOME)"
+
+#: ../packagemanager.py:1824
+msgid "Development"
+msgstr "Development"
+
+#: ../packagemanager.py:1825
+msgid "Distributions"
+msgstr "Distribusi"
+
+#: ../packagemanager.py:1826
+msgid "Drivers"
+msgstr "Drivers"
+
+#: ../packagemanager.py:1828
+msgid "Web Services"
+msgstr "Web Services"
+
+#: ../packagemanager.py:1956
+msgid "Search all publishers"
+msgstr "Terlusuri smua penerbit"
+
+#: ../packagemanager.py:1958
+msgid "Search current publisher"
+msgstr "Telusuri Penerbit"
+
+#: ../packagemanager.py:2006
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search All Publishers</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+"Use the Search field to search for packages within the following Publishers:"
+"</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Informasi' ALIGN='bottom'></"
+       "TD><TD><h3><b>Cari Semua Penerbit</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+       "Use the Search field to search for packages within the following Publishers:"
+       "</TD></TR>"
+
+#: ../packagemanager.py:2024
+msgid ""
+"<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Click on the Publishers below to "
+"view their list of packages:</TD></TR>"
+msgstr ""
+       "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Klik pada penerbit di bawah ini untuk"
+       "melihat daftar paket mereka:</TD></TR>"
+
+#: ../packagemanager.py:2038
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search in All Publishers (Installed)</b></h3><TD></TD></"
+"TR><TR><TD></TD><TD> Search is <b>not</b> supported in All Publishers "
+"(Installed).</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Informasi' ALIGN='bottom'></"
+       "TD><TD><h3><b>Cari Semua Penerbit (Terinstall)</b></h3><TD></TD></"
+       "TR><TR><TD></TD><TD> Cari <b>not</b> yang didukung pada Semua Penerbit"
+       "(Installed).</TD></TR>"
+
+#: ../packagemanager.py:2044 ../packagemanager.py:2113
+#: ../packagemanager.py:2139
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Saran:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+
+#: ../packagemanager.py:2049
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Return to view packages for All Publishers <a "
+"href='pm?pm-action=internal&search=%s'>(Installed)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Kembali untuk melihat paket-paket untuk Semua Penerbit <a "
+       "href='pm?pm-action=internal&search=%s'>(Terinstall)</a></li>"
+
+#: ../packagemanager.py:2052
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> using All Publishers "
+"<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Search)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Cari <b>%(text)s</b> menggunakan Semua Penerbit "
+       "<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Cari)</a></li>"
+
+#: ../packagemanager.py:2057 ../packagemanager.py:2180
+#: ../packagemanager.py:2209
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>See <a href='pm?pm-action=internal&search=%"
+"s'>Search Help</a></li></TD></TR>"
+msgstr ""
+       "<li style='padding-left:7px'>See <a href='pm?pm-action=internal&search=%"
+       "s'>Bantuan Pencarian</a></li></TD></TR>"
+
+#: ../packagemanager.py:2067
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Recent Searches</b></h3><TD></TD></TR><TR><TD></TD><TD> Access "
+"stored results from recent searches in this session.</TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Informasi' ALIGN='bottom'></"
+       "TD><TD><h3><b>Pencarian Saat Ini</b></h3><TD></TD></TR><TR><TD></TD><TD> Akses "
+       "stored results from recent searches in this session.</TD></TR>"
+
+#: ../packagemanager.py:2080
+msgid "results"
+msgstr "hasil"
+
+#: ../packagemanager.py:2086
+msgid "Click on the search results link below to view the stored results:"
+msgid_plural ""
+"Click on one of the search results links below to view the stored results:"
+msgstr[0] "Klik pada hasil Pencarian link di bawah ini untuk melihat hasil disimpan:"
+msgstr[1] ""
+       "Klik pada salah satu hasil pencarian link di bawah ini untuk melihat hasil disimpan:"
+
+#: ../packagemanager.py:2101
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>View "
+"Packages</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Information]' title='Informasi' ALIGN='bottom'></TD><TD><h3><b>Lihat Paket</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2104
+#, python-format
+msgid ""
+"There is one package in this category, however it is not visible in the "
+"selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgid_plural ""
+"There are a number of packages in this category, however they are not "
+"visible in the selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[0] ""
+       "Ada satu paket dalam kategori ini, namun tidak terlihat dalam"
+       "View pilihan:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[1] ""
+       "Ada beberapa paket dalam kategori ini, namun mereka tidak"
+       "terlihat dalam View pilihan:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+
+#: ../packagemanager.py:2117 ../packagemanager.py:2143
+#, python-format
+msgid ""
+"<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+"s'>Change View to All Packages</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+       "s'>Ubah View untuk Semua Paket/a></li>"
+
+#: ../packagemanager.py:2128
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Information]' title='Informadi' ALIGN='bottom'></"
+       "TD><TD><h3><b>Hasil Pencarian</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2131
+#, python-format
+msgid ""
+"Found <b>%(num)s</b> package matching <b>%(text)s</b> in All Packages, "
+"however it is not listed in the <b>%(filter)s</b> View."
+msgid_plural ""
+"Found <b>%(num)s</b> packages matching <b>%(text)s</b> in All Packages, "
+"however they are not listed in the <b>%(filter)s</b> View."
+msgstr[0] ""
+       "Menemukan <b>%(num)s</b> pencocokan paket <b>%(text)s</b> pada Semua Paket, "
+       "walaupun tidak terdaftar pada view<b>%(filter)s</b> ."
+msgstr[1] ""
+       "Menemukan <b>%(num)s</b> pencocokan paket <b>%(text)s</b>pada Semua Paket, "
+       "laupun tidak terdaftar pada view <b>%(filter)s</b>."
+
+#: ../packagemanager.py:2163
+#, python-format
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>No "
+"packages found in <b>%(pub)s</b> matching <b>%(text)s</b></TD></TR>"
+msgstr ""
+       "alt='[Information]' title='Informasi' ALIGN='bottom'></"
+       "TD><TD><h3><b>Hasil Pencarian</b></h3><TD></TD></TR><TR><TD></TD><TD>Tidak ada paket yang ditemukan pada <b>%(pub)s</b> pencocokan <b>%(text)s</b></TD></TR>"
+
+#: ../packagemanager.py:2168
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Check your spelling</li><li style='padding-"
+"left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Saran:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+       "style='padding-left:7px'>Cek ejaan Anda</li><li style='padding-"
+       "left:7px'>Coba pencarian baru</li>"
+
+#: ../packagemanager.py:2175
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> within <a href='pm?"
+"pm-action=internal&search=%(all_pubs)s'>All Publishers</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Cari <b>%(text)s</b> dengan <a href='pm?"
+       "pm-action=internal&search=%(all_pubs)s'>Semua Penerbit</a></li>"
+
+#: ../packagemanager.py:2197
+#, python-format
+msgid ""
+"<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+"SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
+"title='Warning' ALIGN='bottom'></TD><TD><h3><b>Search Warning</b></h3><TD></"
+"TD></TR><TR><TD></TD><TD>Search using only the wildcard character, <b>*</b>, "
+"is not supported in All Publishers</TD></TR>"
+msgstr ""
+       "<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+       "SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
+       "title='Peringatan' ALIGN='bottom'></TD><TD><h3><b>Peringatan Pencarian</b></h3><TD></"
+       "TD></TR><TR><TD></TD><TD>Pencarian hanya menggunakan karakter wildcard, <b>*</b>, "
+       "tidak didukung pada Semua Penerbit</TD></TR>"
+
+#: ../packagemanager.py:2204
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Saran:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+       "style='padding-left:7px'>Coba pencarian baru</li>"
+
+#: ../packagemanager.py:2452 ../packagemanager.py:2473
+#: ../packagemanager.py:5025
+msgid "All Publishers"
+msgstr "Semua Penerbit"
+
+#: ../packagemanager.py:2664
+msgid "Search cleared"
+msgstr "Pencarian bersih"
+
+#: ../packagemanager.py:2684
+msgid "Fetching legal information..."
+msgstr "Mendapatkan informasi legal"
+
+#: ../packagemanager.py:3391 ../packagemanager.py:3828
+msgid "Refreshing package catalog information"
+msgstr "Menyegarkan paket informasi katalog"
+
+#: ../packagemanager.py:3438
+msgid "All"
+msgstr "Semua"
+
+#: ../packagemanager.py:3491 ../packagemanager.py:3493
+#: ../packagemanager.py:3495 ../packagemanager.py:3508
+#: ../packagemanager.py:3510 ../packagemanager.py:3512
+msgid "None: "
+msgstr "Tak satupun: "
+
+#. Installed
+#: ../packagemanager.py:3604
+msgid "<b>Upgradeable Version:</b>"
+msgstr "<b>Upgradeable Version:</b>"
+
+#: ../packagemanager.py:3605
+#, python-format
+msgid "Yes, %(version)s (Build %(build)s-%(branch)s)"
+msgstr "Yes, %(version)s (Build %(build)s-%(branch)s)"
+
+#. Installed and up to date
+#: ../packagemanager.py:3613
+msgid "Installed package is up-to-date"
+msgstr "Paket terinstal up-to-date"
+
+#: ../packagemanager.py:3696
+#, python-format
+msgid ""
+"The latest version of %s cannot be installed. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "Versi terbaru dari %s tidak dapat terinstal.Dimungkinkan untuk melakukannya"
+       "setelah memperbarui sistem anda. Jalankan \"Perbarui\" untuk mendapatkan sistem yang up-to-date."
+
+#: ../packagemanager.py:3701
+#, python-format
+msgid ""
+"Cannot upgrade to the latest version of %s. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "Tidak dapat upgrade ke versi terbaru dari %s. Dimungkinkan untuk melakukannya"
+       "setelah memperbarui sistem anda. Jalankan \"Perbarui\" untuk mendapatkan sistem yang up-to-date."
+
+#: ../packagemanager.py:3721
+msgid "Latest Version: "
+msgstr "Versi Akhir: "
+
+#: ../packagemanager.py:4098
+msgid "Selected for Removal:"
+msgstr "Seleksi untuk Penghapusan:"
+
+#: ../packagemanager.py:4106
+msgid "Selected for Install/Update:"
+msgstr "Seleksi untuk Instal/Pembaruan:"
+
+#: ../packagemanager.py:4110
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "Pilih paket dengan menandai kotak centang dan klik untuk Instal / Update."
+
+#: ../packagemanager.py:4114
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "Pilih paket dengan menandai kotak centang dan klik untuk Hapus yang dipilih."
+
+#: ../packagemanager.py:4176
+msgid "Fetching information..."
+msgstr "Mendapatkan informasi..."
+
+#: ../packagemanager.py:4248 ../packagemanager.py:4263
+msgid "(not installed)"
+msgstr "(tidak terinstal)"
+
+#: ../packagemanager.py:4301
+msgid "Name\tDependency\tInstalled Version\n"
+msgstr "Nama\tDependensi\tVersi Terinstall\n"
+
+#: ../packagemanager.py:4342
+msgid ""
+"\n"
+"This might be caused by network problem while accessing the repository."
+msgstr ""
+       "Ini mungkin disebabkan oleh masalah jaringan sementara mengakses repositori."
+
+#: ../packagemanager.py:4345
+msgid "Files Details not available for this package..."
+msgstr "Rincian berkas tidak tersedia untuk paket ini..."
+
+#: ../packagemanager.py:4348
+msgid "Dependencies info not available for this package..."
+msgstr "Info dependensi tidak tersedia untuk paket ini..."
+
+#: ../packagemanager.py:4351
+msgid "Information not available for this package..."
+msgstr "Informasi tidak tersedia untuk paket ini ..."
+
+#: ../packagemanager.py:4396
+msgid "Not available"
+msgstr "tidak tersedia"
+
+#: ../packagemanager.py:4404
+msgid "License could not be shown due to conversion problem."
+msgstr "Lisensi tidak dapat ditampilkan karena masalah konversi."
+
+#: ../packagemanager.py:4754 ../packagemanager.py:4803
+msgid "Loading package list"
+msgstr "Memuat daftar paket"
+
+#. This can happen if the repository does not
+#. contain any packages
+#: ../packagemanager.py:4767
+msgid "Selected publisher does not contain any packages."
+msgstr "Penerbit yang dipilih tidak berisi paket-paket."
+
+#: ../packagemanager.py:5001
+msgid "Recent Searches"
+msgstr "Penulusuran baru-baru ini"
+
+#: ../packagemanager.py:5440
+#, python-format
+msgid "Total: %(total)s  Selected: %(selected)s"
+msgstr "Total: %(total)s  Dipilih: %(selected)s"
+
+#: ../packagemanager.py:5460
+#, python-format
+msgid ""
+"Searching %(s1)s%(active_pub)s%(e1)s for %(s1)s%(search_text)s%(e1)s ..."
+msgstr ""
+       "Pencarian %(s1)s%(active_pub)s%(e1)s untuk %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5466
+#, python-format
+msgid "Searching for %(s1)s%(search_text)s%(e1)s ..."
+msgstr "Pencarian untuk %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5471
+#, python-format
+msgid "%(number)d packages found matching %(s1)s%(search_text)s%(e1)s"
+msgstr "%(number)d paket yang sesuai %(s1)s%(search_text)s%(e1)s"
+
+#: ../packagemanager.py:5591
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+       "Masalah jaringan.\n"
+       "\n"
+
+#: ../packagemanager.py:5592
+msgid "Details:\n"
+msgstr "Rincian:\n"
+
+#: ../packagemanager.py:5593
+#, python-format
+msgid "%s/%s catalogs successfully updated:\n"
+msgstr "%s/%s katalog sukses diperbarui:\n"
+
+#: ../packagemanager.py:5686
+msgid "An unknown error occurred"
+msgstr "Terjadi kesalahan yang tidak diketahui"
+
+#: ../packagemanager.py:5690
+msgid ""
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:"
+msgstr ""
+       "Harap membiarkan pengembang tahu tentang masalah ini dengan \n"
+       "bug kesalahan bersama-sama dengan rincian tercantum di bawah ini di:"
+
+#: ../packagemanager.py:5694
+msgid "Unexpected Error"
+msgstr "Kesalahan tak terduga"
+
+#: ../packagemanager.py:5713
+msgid "Error details:\n"
+msgstr "Galat rincian:\n"
+
+#: ../packagemanager.py:5722
+msgid ""
+"\n"
+"List of configured publishers:"
+msgstr ""
+       "\n"
+       "daftar konfigurasi penerbit:"
+
+#: ../packagemanager.py:5728
+msgid ""
+"\n"
+"Please include output from:\n"
+msgstr ""
+       "\n"
+       "Harap sertakan output dari: \n"
+
+#: ../packagemanager.py:5733
+msgid ""
+"\n"
+"pkg version:\n"
+msgstr ""
+       "\n"
+       "pkg version:\n"
+
+#: ../packagemanager.py:5766
+msgid "Save selected..."
+msgstr "Menyimpan dipilih ..."
+
+#: ../packagemanager.py:5767
+msgid "Save selected packages..."
+msgstr "Menyimpan paket yang sudah dipilih ..."
+
+#: ../packagemanager.py:5768
+msgid ""
+"The installed package(s) require a reboot before installation can be "
+"completed."
+msgstr ""
+       "Paket yang diinstal meminta reboot sebelum instalasi dapat selesai."
+
+#: ../packagemanager.py:5805
+msgid "Unable to initialize gtk"
+msgstr "Tidak dapat menginisialisasi gtk"
+
+#: ../pkgdep.py:75
+msgid ""
+"Usage:\n"
+"        pkgdepend [options] command [cmd_options] [operands]\n"
+"\n"
+"Subcommands:\n"
+"        pkgdepend generate [-DIkMm] manifest proto_dir\n"
+"        pkgdepend [options] resolve [-dMos] manifest ...\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Usage:\n"
+       "        pkgdepend [options] command [cmd_options] [operands]\n"
+       "\n"
+       "Subcommands:\n"
+       "        pkgdepend generate [-DIkMm] manifest proto_dir\n"
+       "        pkgdepend [options] resolve [-dMos] manifest ...\n"
+       "\n"
+       "Options:\n"
+       "        -R dir\n"
+       "        --help or -?\n"
+       "Environment:\n"
+       "        PKG_IMAGE"
+
+#: ../pkgdep.py:115
+msgid "-D arguments must be of the form 'name=value'."
+msgstr "-D argumen harus dalam bentuk 'nama=nilai'."
+
+#: ../pkgdep.py:134
+msgid "Generate only accepts exactly two arguments."
+msgstr "Hasilnya hanya menerima dua argumen."
+
+#: ../pkgdep.py:140
+msgid ""
+"ORIGIN may not be specified using -D. It will be inferred from the\n"
+"install paths of the files."
+msgstr ""
+       "ASAL tidak dapat ditentukan menggunakan-D. Yang akan dilihat dari \n"
+       "lokasi penginstalan berkas."
+
+#: ../pkgdep.py:149 ../pkgdep.py:212
+#, python-format
+msgid "The manifest file %s could not be found."
+msgstr "File manifest %s tidak ditemukan."
+
+#: ../pkgdep.py:153
+#, python-format
+msgid "The proto directory %s could not be found."
+msgstr "Direktori proto %s tidak ditemukan"
+
+#: ../pkgdep.py:160
+#, python-format
+msgid ""
+"Could not parse manifest %(manifest)s because of the following line:\n"
+"%(line)s"
+msgstr ""
+       "Tidak dapat melakukan menguraikan manifest %(manifest)s karena dari baris berikut:\n %(line)s"
+
+#: ../pkgdep.py:206
+msgid "-o cannot be used with -d or -s"
+msgstr "-o tidak dapat digunakan dengan -d atau-s"
+
+#: ../pkgdep.py:218
+#, python-format
+msgid "The output directory %s is not a directory."
+msgstr "Output direktori %s bukanlah direktori."
+
+#: ../pkgdep.py:248
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s' bukan merupakan install image"
+
+#: ../pkgdep.py:254
+msgid "Could not parse one or more manifests because of the "
+msgstr "Tidak bisa menguraikan satu atau lebih manifest karena "
+
+#: ../pkgdep.py:323 ../pkgdep.py:358
+#, python-format
+msgid "Could not open %s to echo manifest"
+msgstr "Tidak dapat membuka %s untuk menampilkan manifest"
+
+#: ../pkgdep.py:328
+msgid ""
+"\n"
+"\n"
+msgstr ""
+       "\n"
+       "\n"
+
+#: ../pkgdep.py:350
+#, python-format
+msgid "Could not open output file %s for writing"
+msgstr "Tidak dapat membuka Berkas output %s untuk menulis"
+
+#: ../pkgdep.py:392
+#, python-format
+msgid "Out dir %s does not exist and could not be created. Error is: %s"
+msgstr "Out dir %s tidak ada dan tidak bisa dibuat. Kesalahan:%s"
+
+#: ../pkgdep.py:467
+msgid "generate subcommand doesn't use -R"
+msgstr "generate subcommand tidak menggunakan -R"
+
+#: ../pkgdep.py:485
+#, python-format
+msgid ""
+"The %(cmd)s command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "Perintah %(cmd)s tampaknya tidak sinkron dengan librari yang disediakan \n"
+       "oleh SUNWipkg. Versi klien adalah %(client)s sementara versi librari API"
+       "adalah %(api)s"
+
+#: ../publish.py:80
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend create-repository --set-property <section.property>=<value>\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments\n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] .. [manifest] ...\n"
+"        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+"        pkgsend publish [ -d basedir] ... [--no-index] \n"
+"          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...\n"
+"        pkgsend generate [-T file_pattern] bundlefile ....\n"
+"        pkgsend refresh-index\n"
+"\n"
+"Options:\n"
+"        -s repo_uri     target repository URI\n"
+"        --help or -?    display usage message\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+       "Usage:\n"
+       "        pkgsend [options] command [cmd_options] [operands]\n"
+       "\n"
+
+#: ../publish.py:126
+msgid ""
+"Invalid repository configuration values were specified using --set-property "
+"or required values are missing.  Please provide the correct and/or required "
+"values using the --set-property option."
+msgstr ""
+       "Nilai konfigurasi repositori yang diten tukan tidak sah --set-"
+       "properti"
+       "atau nilai yang diperlukan hilang. Harap memberikan nilai yang benar menggunakan --set-properi pilihan."
+
+#: ../publish.py:149
+msgid "only -e or -n may be specified"
+msgstr "hanya-e atau-n dapat ditentukan"
+
+#: ../publish.py:152
+msgid "open requires one package name"
+msgstr "membutuhkan satu nama paket"
+
+#: ../publish.py:183
+msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
+msgstr "Tidak ada ID transaksi yang ditentukan menggunakan-t atau di $ PKG_TRANS_ID."
+
+#: ../publish.py:198 ../publish.py:321 ../publish.py:401
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "Tidak ada ID transaksi yang ditentukan dalam $ PKG_TRANS_ID"
+
+#: ../publish.py:202 ../publish.py:413 ../publish.py:431
+msgid "No arguments specified for subcommand."
+msgstr "Tidak ada argumen yang ditentukan untuk subcommand."
+
+#: ../publish.py:230
+msgid "No fmri argument specified for subcommand"
+msgstr "Tidak ada argumen fmri yang ditentukan untuk subcommand"
+
+#: ../publish.py:275 ../publish.py:365
+#, python-format
+msgid "File %s line %s: %s"
+msgstr "Berkas %s baris %s: %s"
+
+#: ../publish.py:281
+msgid "Manifest does not set fmri and "
+msgstr "Manifest tidak mengatur fMRI dan "
+
+#: ../publish.py:446
+msgid "command does not take operands"
+msgstr "perintah tidak mengambil Operand"
+
+#: ../publish.py:475
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: opsi global illegal -- %s"
+
+#: ../publish.py:511
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "illegal %s opsi -- %s"
+
+#: ../pull.py:86
+msgid ""
+"Usage:\n"
+"        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]\n"
+"            (fmri|pattern) ...\n"
+"        pkgrecv [-s src_repo_uri] -n\n"
+"\n"
+"Options:\n"
+"        -d path_or_uri  The path of a directory to save the retrieved "
+"package\n"
+"                        to, or the URI of a repository to republish it to.  "
+"If\n"
+"                        not provided, the default value is the current "
+"working\n"
+"                        directory.  If a directory path is provided, then\n"
+"                        package content will only be retrieved if it does "
+"not\n"
+"                        already exist in the target directory.  If a "
+"repository\n"
+"                        URI is provided, a temporary directory will be "
+"created\n"
+"                        and all of the package data retrieved before "
+"attempting\n"
+"                        to republish it.\n"
+"\n"
+"        -h              Display this usage message.\n"
+"        -k              Keep the retrieved package content compressed, "
+"ignored\n"
+"                        when republishing.  Should not be used with "
+"pkgsend.\n"
+"        -m match        Controls matching behaviour using the following "
+"values:\n"
+"                            all-timestamps\n"
+"                                includes all matching timestamps, not just\n"
+"                                latest (implies all-versions)\n"
+"                            all-versions\n"
+"                                includes all matching versions, not just "
+"latest\n"
+"        -n              List the most recent versions of the packages "
+"available\n"
+"                        from the specified repository and exit (all other\n"
+"                        options except -s will be ignored).\n"
+"        -r              Recursively evaluates all dependencies for the "
+"provided\n"
+"                        list of packages and adds them to the list.\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
+"                        repository to retrieve package data from.\n"
+"\n"
+"Environment:\n"
+"        PKG_DEST        Destination directory or repository URI\n"
+"        PKG_SRC         Source repository URI"
+msgstr ""
+       "Usage:\n"
+       "        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]\n"
+
+#: ../pull.py:167
+#, python-format
+msgid "Unable to load manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "Tidak dapat memuat manifest '%(mpath)s' untuk paket '%(pfmri)s'."
+
+#: ../pull.py:177
+#, python-format
+msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
+msgstr "Tidak dapat menguraikan manifest '%(mpath)s' untuk paket '%(pfmri)s'"
+
+#: ../pull.py:188
+#, python-format
+msgid "Unable to write manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "Tidak dapat menulis manifest '%(mpath)s' untuk paket '%(pfmri)s'."
+
+#: ../pull.py:235
+#, python-format
+msgid "Unable to retrieve manifest %s from %s: %s"
+msgstr "Tidak dapat mengambil manifest%s dari %s: %s"
+
+#: ../pull.py:244
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "Kesalahan terjadi ketika membaca dari: %s"
+
+#: ../pull.py:448
+#, python-format
+msgid "Unable to retrieve content from: %s"
+msgstr "Tidak dapat mengambil isi dari: %s"
+
+#: ../pull.py:480
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "Tidak dapat mengekstrak berkas: %s"
+
+#: ../pull.py:527
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "Tidak dapat mengunduh katalog dari: %s"
+
+#: ../pull.py:538
+#, python-format
+msgid "Error: %s while reading from: %s"
+msgstr "Error:%s saat membaca dari: %s"
+
+#: ../pull.py:576
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "Pilihan ilegal -- %s"
+
+#: ../pull.py:597
+#, python-format
+msgid "Illegal option value -- %s"
+msgstr "Nilai pilihan ilegal -- %s"
+
+#: ../pull.py:600
+msgid "a source repository must be provided"
+msgstr "repositori sumber harus disediakan"
+
+#: ../pull.py:605
+msgid "-n takes no options"
+msgstr "-n tidak mengambil pilihan"
+
+#: ../pull.py:612
+msgid "must specify at least one pkgfmri"
+msgstr "harus menentukan setidaknya satu pkgfmri"
+
+#: ../pull.py:636
+msgid "To create a repository, use the pkgsend command."
+msgstr "Untuk membuat repositori, gunakan perintah pkgsend"
+
+#: ../pull.py:641
+#, python-format
+msgid ""
+"The repository configuration for the repository located at '%s' is not valid "
+"or the specified path does not exist.  Please correct the configuration of "
+"the repository or create a new one."
+msgstr ""
+       "Konfigurasi repositori untuk repositori yang terletak di '%s' tidak valid"
+       "atau lokasi yang ditetapkan tidak ada. Harap perbaiki konfigurasi"
+       "repositori atau membuat yang baru."
+
+#: ../pull.py:656
+#, python-format
+msgid "Unable to create basedir '%s'."
+msgstr "Tidak bisa membuat basedir '%s'."
+
+#: ../pull.py:666
+msgid "Retrieving manifests for dependency evaluation ..."
+msgstr "Menerima manifest untuk evaluasi dipendensasi ..."
+
+#: ../pull.py:684
+msgid "Retrieving manifests for package evaluation ..."
+msgstr "Menerima manifest untuk evaluasi package ..."
+
+#. Next, retrieve and store the content for each package.
+#: ../pull.py:704
+msgid "Retrieving package content ..."
+msgstr "Menerima isi package ..."
+
+#: ../pull.py:726
+#, python-format
+msgid "Republishing %s ..."
+msgstr "Kembali menampilkan %s .."
+
+#: ../pull.py:782
+msgid "Refreshing repository search indices ..."
+msgstr "Refres repository mencari indek ..."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+       "Pesan update akan muncul pada bagian panel notifikasi jika update tersedia."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "Seberapa sering untuk memeriksa update"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+       "Seberapa sering untuk memeriksa update. Nilai yang ada antara lain harian, mingguan, bulanan, tidak pernah."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "Start tunggu"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "Icon pemberitahuan akan muncul saat startup jika diaktifkan."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+       "Waktu, dalam detik, bahwa updatemanagernotifier harus menunggu, setelah"
+       "mulai, sebelum memeriksa update."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid ""
+"The updatemanagernotifier program terminates after the user activates the "
+"icon in the notification area if set to true."
+msgstr ""
+       "Program updatemanagernotifier akan berakhir setelah pengguna mengaktifkan ikon di tempat pemberitahuan jika di setel benar"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to always display the icon on startup"
+msgstr "Apakah akan selalu menampilkan ikon saat memulai"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:9
+msgid "Whether to display text message when updates are available"
+msgstr "Apakah akan menampilkan pesan text saat pembaruan tersedia"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:10
+msgid "Whether to terminate updatemanagernotiifer after icon activation."
+msgstr "Apakah akan mengakhiri updatemanagernotifier setelah aktivasi ikon"
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "Install update yang tersedia"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:11
+#: ../updatemanager.py:563 ../updatemanagernotifier.py:329
+msgid "Update Manager"
+msgstr "Update Manager"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Evaluate</b>"
+msgstr "<b>Evaluasi</b>"
+
+#: ../um/data/updatemanager.glade.h:2 ../updatemanager.py:283
+msgid "<b>Updates are available for the following packages</b>"
+msgstr "<b>Pembaruan tersedia untuk paket berikut</b>"
+
+#: ../um/data/updatemanager.glade.h:3
+msgid "<b>_Details</b>"
+msgstr "<b>_Detail</b>"
+
+#: ../um/data/updatemanager.glade.h:5
+msgid "Close dialog when _finished"
+msgstr "Tutup dialog ketika _selesai"
+
+#: ../um/data/updatemanager.glade.h:7
+msgid "Index"
+msgstr "Indek"
+
+#: ../um/data/updatemanager.glade.h:8
+msgid "Install Update"
+msgstr "Instal Pembaruan"
+
+#: ../um/data/updatemanager.glade.h:10
+msgid "Select the packages you want to update and click Install."
+msgstr "Pilih paket yang ingin anda perbarui kemudian klik Instal"
+
+#: ../um/data/updatemanager.glade.h:12
+msgid "_Cancel"
+msgstr "_Batal"
+
+#: ../um/data/updatemanager.glade.h:14
+msgid "_Install Updates"
+msgstr "_Instal Pembaruan"
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "_OK"
+msgstr "_OK"
+
+#: ../um/data/updatemanager.glade.h:16
+msgid "_Select all Updates"
+msgstr "_Seleksi semua Pembaruan"
+
+#: ../um/data/updatemanager.glade.h:17
+msgid "_Update All"
+msgstr "_Perbarui Semua"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "Beritahu pengguna ketika update terbaru telah tersedia"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "Update Manager Notifier"
+
+#: ../updatemanager.py:214
+#, python-format
+msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
+msgstr "GUI tidak akan merespon atas suatu kejadian! %s. Cek sinyal updatemanager.py"
+
+#: ../updatemanager.py:285
+msgid ""
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+       "Klik Perbaharui Semua untuk membuat lingkungan boot yang baru dan instal semua paket-paket ke dalamnya."
+
+#: ../updatemanager.py:312
+msgid "Current Version"
+msgstr "Versi Saat Ini"
+
+#: ../updatemanager.py:321
+msgid "Size (Meg)"
+msgstr "Ukuran (Meg)"
+
+#: ../updatemanager.py:409
+#, python-format
+msgid "count: %d"
+msgstr "Terhitung: %d"
+
+#: ../updatemanager.py:429
+msgid "<b>You do not have sufficient permissions</b>"
+msgstr "<b>Anda tidak mempunyai ijin yang memadai</b>"
+
+#: ../updatemanager.py:431
+msgid "Please restart pm-updatemanager using pfexec."
+msgstr "Silahkan hidupkan ulang pm-updatemanger menggunakan pfexec"
+
+#: ../updatemanager.py:435
+msgid "<b>No Updates available</b>"
+msgstr "<b>Tidak Ada Pembaruan Tersedia</b>"
+
+#: ../updatemanager.py:469
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+       "\n"
+       "Mengambil rincian untuk %s ..."
+
+#: ../updatemanager.py:524
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+       "\n"
+       "Tidak ada perincian yang tersedia"
+
+#: ../updatemanager.py:582
+msgid ""
+"Not enough disc space, the Update All action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel Update All."
+msgstr ""
+       "Tidak cukup ruang disk, Pemutakhiran Semua tindakan ini tidak dapat dilakukan.\n"
+       "\n"
+       "Klik OK untuk mengelola BEs yang ada dan membebaskan ruang disk atau Batal untuk membatalkan Pemutakhiran Semua."
+
+#: ../updatemanager.py:586
+msgid "Not Enough Disc Space"
+msgstr "Tempat di Disk Tidak Mencukupi"
+
+#: ../updatemanager.py:734
+msgid "Checking for new software"
+msgstr "Sedang dilakukan pengecekan untuk perangkat lunak baru"
+
+#: ../updatemanagernotifier.py:308
+msgid "Updates are available"
+msgstr "Tersedia Update"
+
+#: ../updatemanagernotifier.py:330
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+       "Pembaruan tersedia\n"
+       "Silahkan klik di icon untuk memperbarui"
+
+#: ../updatemanagernotifier.py:405
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr "Aktivitas UpdateManagerNotify yang lain sedang berjalan"

@@ -1,0 +1,1050 @@
+pkg(5): image packaging system
+
+This information is Copyright (c) 2010, Oracle and/or its affiliates.
+All rights reserved.
+
+ON-DISK FORMAT PROPOSAL
+
+1.  Introduction
+    1.1. Date of This Document:
+
+        06/02/2010
+
+    1.2. Name of Document Author/Supplier:
+
+        Shawn Walker, Oracle,
+          on behalf of the pkg(5) project team
+
+    1.3. Acknowledgements:
+
+        This document is largely based on comments from the following
+        individuals to whom the author is exceedingly indebted to:
+
+        - Danek Duvall
+        - Mike Gerdts
+        - Stephen Hahn
+        - Krister Johansen
+        - Dan Price
+        - Brock Pytlik
+        - Bart Smaalders
+        - Peter Tribble
+
+2. Project Summary
+
+    2.1. Project Description:
+
+        "...the repository can be archived up, put on a CD, memory
+        stick, 2D barcode, and protected by the Black Knight, fire
+        moats, komodo dragons, etc." - Danek Duvall
+
+        pkg(5) is primarily a network-oriented binary packaging system.
+        Although some of the tools it provides support filesystem-based
+        operations for publication, the primary expected use for package
+        operations (such as install, update, search, etc.) is between an
+        intelligent client and one or more servers that provide access
+        to a package repository and/or other interactive services.
+
+        This project seeks to define and establish an on-disk format
+        (and corresponding container format), for the pkg(5) system,
+        with the intent that it can enable the ubiquitous, transparent
+        use of package data from filesystem-based resources.
+
+        The changes proposed by this project are evolutionary, not
+        revolutionary, in nature.  In particular, this project seeks
+        to refine and adopt the existing repository format used by the
+        pkg(5) depot server as the on-disk format.  Supplementary to
+        that, it also seeks the addition of a container format to ease
+        provisioning of the on-disk format, and the unification of the
+        scheme used by the client and server to store package data.
+
+    2.2. Problem Area:
+
+        For some deployments, network-based package data access is not
+        possible or is undesirable.  Concerns often cited in this area
+        include:
+
+        - lack of access control or ability to easily integrate with
+          existing access control systems,
+
+        - inability to rely on alternative (or existing) provisioning
+          arrangements (such as NFS-based file servers),
+
+        - environmental or procedural requirements that prohibit the
+          ability to or use of a network-based service,
+
+        - characteristics of network protocols (such as HTTP, etc.) that
+          artificially limit functionality or performance (as opposed to
+          iSCSI or other alternatives),
+
+        - ease of administration of filesystem-based resources, and
+
+        - ease of transferring package data.
+
+3. Project Technical Description:
+    3.1. Details:
+
+        This project defines an on-disk format (and corresponding con-
+        tainer format) that is intended for the supplemental or complete
+        provisioning of package data at all stages of the package life-
+        cycle.  That is, when package data is published, stored by the
+        client or server, or otherwise used during package operations.
+
+        The on-disk format (defined in detail later in this document)
+        is intended to be distributable in its raw form (a pre-defined
+        structure of directories and files) or within a container format
+        (such as a zip file, etc.).
+
+        Out of necessity, the use of filesystem-based resources (such as
+        those provided by the on-disk format) will sometimes limit the
+        operations that can be performed to a subset of those normally
+        available when interacting with a network-based repository.  For
+        example, search and publisher configuration may not be possible,
+        and purely interactive services such as the BUI (Browser UI)
+        offered by the depot server for a repository, RSS feeds, and
+        others will not be available.
+
+        Because of the wide-ranging impact of the changes required to
+        implement this functionality, it is intended that the project
+        be implemented in the following sequence:
+
+        - Client Support for filesystem-based Repository Access
+
+        - Depot Storage, Client Transport and Publication Tool Update
+
+        - Client Storage and Image Format Update
+
+        - Client and Depot Support for On-Disk Archive Format
+
+    3.2. Bug/RFE Number(s):
+
+        As an example of the kinds of defects and RFEs intended to be
+        resolved by this project, see the following selection of
+        defect.opensolaris.org bug IDs:
+
+2152 standalone package support needed (on-disk format)
+166 depot doesn't set directory mode when creating directories
+2086 validate that a repository is really a repository in pkg.depotd
+6335 publisher repo with invalid certificate information shouldn't
+    prevent querying other repos
+6576 pkg install/update support for temporary publisher origins desired
+6940 depot support for file:// URI desired
+7213 ability to remove published packages
+7273 manifests should be arranged in a hierarchy by publisher
+7276 /var/pkg metadata needs reorg (looks busy)
+8433 client and pull need to refer to refer to "repository" instead of
+    "server"
+8722 advanced repository metadata store needed
+8725 versioning information for depot and repository metadata needed
+9571 CachedManifest should be named FactoredManifest
+9572 CachedManifest should allow consumers to specify cache location
+9872 publication api should use new transport subsystem
+9933 ability to control repository creation behaviour or removal of it
+10244 caching dictionaries as a class variable prevents multi-image and
+    repo search
+11362 Image update dying when trying to talk to a disabled and offline
+    publisher
+11740 publishers with installed packages should not be removable
+12814 publisher prefixes should be forcibly lower-cased or case
+    insensitive
+14802 ability to have separate read / write download caches
+15320 pkgsend will traceback if unable to parse server error response
+15371 repository property defaults opensolaris.org-specific
+
+    3.3. In Scope:
+
+        Filesystem-based data resourcing for package operations.
+
+    3.4. Out of Scope:
+
+        Package signing and fine-grained access control for package
+        repositories.
+
+4. On-Disk Format Technical Description:
+    4.1. Overview:
+
+        The on-disk format is intended to exist both in a raw format as
+        a pre-defined structure of directories and files, and in an
+        archive format which is primarily a simple container for
+        the raw format.
+
+    4.2. Raw Format:
+
+        4.2.1. Goals:
+            The goals for the raw on-disk format include:
+
+            - unification of client and server package data storage
+              for data common to both,
+
+            - transparent usage of package data regardless of operation
+              or use by client or server,
+
+            - ease in composition and decomposition of package data
+              stored within by publisher or package,
+
+            - re-use of existing publication tools for on-disk format,
+
+            - enablement of future publication tools to automatically
+              be able to manipulate or use on-disk format, and
+
+            - ease of provisioning.
+
+        4.2.2. Raw Format specification:
+
+            The pkg(5) repository format is a set of directories and
+            files that conform to a pre-defined structure.
+            
+            For a version 3 repository (the current format), the
+            structure is as follows:
+
+            <REPO_ROOT>/
+                catalog/
+                    <catalog v1 files>
+                index/
+                    <index files>
+                file/
+                    <first two letters of file hash>/
+                        <file-named-by-hash>
+                pkg/
+                    <stem>/
+                        <manifest-file>
+                trans/
+                    <in-flight transaction files>
+                cfg_cache (optional repository configuration file)
+
+            Version 4 of the repository format eliminates the potential
+            for unintended collisions between package metadata from
+            different publishers and simplifies composition and decomp-
+            osition of repository content.  The top-level is an optional
+            shared storage space for data common to all publishers in
+            the repository, while the publisher subdirectory contains
+            data specific to a publisher.  It is essentially a nested
+            repository format, and can be defined as follows:
+
+            <REPO_ROOT>/
+                file/ (optional)
+                publisher/ (optional)
+                    <prefix>/ (optional)
+                        catalog/ (optional)
+                            <catalog v1 files>
+                        file/ (optional)
+                            <first two letters of file hash>/
+                                <file-named-by-hash>
+                        index/ (optional)
+                        pkg/ (optional)
+                            <stem>/
+                                <manifest-file-for-pkg-version>
+                        trans/ (optional)
+                            <in-flight transaction files>
+                        pub.p5i (optional)
+                pkg5.repository (required)
+
+            By default, repository operations will store data in the
+            publisher-specific location found under publisher/<prefix>
+            for new repositories.
+
+            In the case that the top-level file/ directory is used,
+            automatic decomposition of contents into its publisher-
+            specific components will not be possible unless
+            corresponding package manifests are also available. 
+
+            To support easy composition, filtering, and creation of
+            package archives, directories above marked with the text
+            '(optional)' must not be required.  The behaviour of
+            consumers accessing the contents of the repository should
+            be as follows based on the directory accessed:
+
+            - file/
+                This optional directory serves as a place to store file
+                data for more than one publisher.  Package files are
+                stored in gzip format using a sha1sum of the file as the
+                filename, and then the first two letters of the filename
+                as the parent directory's name.
+
+            - publisher/<prefix>/catalog/
+                If absent, consumers should determine the list of
+                packages available based on the manifest files present
+                in the publisher/ subdirectory.  If present, consumers
+                should expect v1 (or newer) catalog files, or none at
+                all, to be contained within.
+
+            - publisher/<prefix>/file/
+                Consumers should always check this subdirectory first
+                (if present) when retrieving package file data if the
+                publisher is known.  Package files are stored in gzip
+                format using a sha1sum of the file as the filename, and
+                then the first two letters of the filename as the parent
+                directory's name.
+
+            - publisher/<prefix>/index/
+                If absent, search functionality should be disabled for
+                this publisher, or a fallback to 'slow manifest-based
+                search' performed.  If present, consumers should expect
+                v1 (or newer) search files, or none at all, to be con-
+                tained within.
+
+            - publisher/<prefix>/pkg/
+                If absent, search must be disabled for this publisher
+                even if index is present.  If present, manifests are
+                stored in pkg(5) manifest format using the uri-encoded
+                version of the package FMRI as the filename, and using
+                the uri-encoded package FMRI stem (name) as the parent
+                directory's name.
+
+            - publisher/<prefix>/trans/
+                If absent, this directory will be created during
+                publication operations.  If present, in progress
+                transaction data is stored in a directory named
+                by the open time of the transaction as a UTC UNIX
+                timestamp plus an '_' and the URI-encoded package
+                FRMI.  As an example:
+
+                  1245176111_pkg%3A%2FBRCMbnx%400.5.11%2C5.11-0.116
+                  %3A20090616T181511Z
+
+            - publisher/<prefix>/pub.p5i
+                This pkg(5) information (p5i) file should contain
+                suggested configuration information for clients such as
+                origins, mirrors, alias, etc.  Consumers can use this to
+                provide clients with initial or suggested configuration
+                information for a given publisher.  If not present, the
+                publisher's identity should be assumed based on the
+                directory structure, while the refresh interval should
+                be assumed to be 4 hours.
+
+            - pkg5.repository
+                This file serves as an identifier and a place to store
+                configuration information specific to the repository.
+                It *is not* an equivalent to the existing cfg_cache
+                file which will no longer be used.  Its format and
+                structure are as follows:
+
+                [repository]
+                version = <integer>
+
+            Any information found in the cfg_cache used in the previous
+            repository format related to a publisher is now stored in
+            the pub.p5i file for the related publisher.  (Examples of
+            information include origins, mirrors, maintainer info,
+            etc.)  As a result, the cfg_cache file is no longer used.
+
+            Any depot-specific properties, such as the feed icon, logo,
+            etc. are now completely managed using SMF or a user-provided
+            configuration file.  This change was made not only to sim-
+            plify configuration, but to separate depot configuration
+            from repsitory configuration.
+
+            An example version 4 repository might be structured as
+            follows:
+
+            <REPO_ROOT>/
+              publisher/
+                example.com/
+                  catalog/
+                    catalog.attrs
+                    catalog.base.C
+                  file/
+                    ff/
+                      fffff277f5a8fb63e57670afc178415c2c5e706d
+                  index/
+                    __at_depend
+                    ...
+                  pkg/
+                    package%2Fpkg/
+                      0.5.11%2C5.11-0.136%3A20100327T063139Z
+                  trans/
+                    1245176111_pkg%3A%2FBRCMbnx%400.5.11%2C5.11-0.116
+                    %3A20090616T181511Z
+                  pub.p5i
+                example.net/
+                  catalog/
+                    catalog.attrs
+                    catalog.base.C
+                  file/
+                    af/
+                      affff277f5a8fb63e57670afc178415c2c5e706d
+                  index/
+                    __at_depend
+                    ...
+                  pkg/
+                    package%2Fpkg/
+                      0.5.11%2C5.11-0.133%3A20090327T062137Z
+                  trans/
+                    1245176111_pkg%3A%2FFAAMbnx%400.5.11%2C5.11-0.139
+                    %3A20100616T181511Z
+                  pub.p5i
+
+              pkg5.repository:
+                [repository]
+                version = 4
+
+    4.3. Archive Format:
+
+        4.3.1. Requirements:
+
+            The requirements for the on-disk archive format include:
+
+            - support for archives greater than 8GB in size,
+
+            - support for files in archive greater than 4GB in size,
+
+            - support for efficient storage of hard links,
+
+            - support for pathnames sigificantly greater than > 255
+              characters in length,
+
+            - core Python bindings exist or can be easily created using
+              an existing library,
+
+            - can be a container of compressed files, as opposed to a
+              compressed container of uncompressed files,
+
+            - open, royalty-free, well-documented format with wide
+              platform support and acceptance,
+
+            - multi-threaded decompression and compression possible,
+
+            - creation and basic manipulation of package archives
+              possible using widely-available tools,
+
+            - simple composition and filtering of its content should be
+              possible, and
+
+            - random access to the archive contents must be possible
+              without reading the entire archive file.
+
+        4.3.2. Candidates:
+
+            A number of potential archive formats have been considered
+            for use, including:
+
+            - 7z (7-Zip)
+            - cpio
+            - pax (portable archive exchange format)
+            - ZIP
+
+            The evaluations provided for each format here are not in-
+            tended to be exhaustive; rather they focus on the specific
+            requirements of this project.  For more information about
+            these formats, and the documents used to evaluate them,
+            please refer to section 6 of this proposal.
+
+        4.3.3. 7z Evaluation:
+
+            The 7z format was rejected for the following reasons:
+
+            - Does not permit random access to archive contents or
+              requires the entire archive file to access the contents
+              and adding this would require a custom variation of 7z.
+
+            - Although the 7z format supports compression methods other
+              than LZMA, a primary motivator for using 7z would be the
+              ability to use LZMA natively as part of the conatiner
+              format.  However, the tradeoffs in terms of CPU and memory
+              footprint currently make LZMA unsuitable for pkg(5) when
+              compared to other compression algorithms such as those
+              used by gzip(1).
+
+            - Use of the 7z format would require integration of the LZMA
+              SDK (which also provides a basic 7z API in C) and the cre-
+              ation of python bindings or the integration of a third
+              party's (such as pylzma).
+
+            - No native support for extended attributes or UNIX owner/
+              group permissions.
+
+        4.3.4. cpio Evaluation:
+
+            The cpio format doesn't natively support random access to
+            archive contents, but the format itself doesn't prevent
+            this.  An index could be added first file in the archive
+            with the information needed to provide fast, random access
+            to the archive contents.
+
+            The cpio format was rejected for the following reasons:
+
+            - The length of pathnames in cpio archives is limited to
+              256 characters for the portable format.
+
+            - Available tools vary significantly in maximum archive size
+              support.
+
+            - The portable cpio format stores a copy of the file data
+              with every hard link in an archive instead of simply
+              storing a pointer to the source file in the archive.
+
+        4.3.4. PAX Evaluation:
+
+            The PAX format meets all of the requirements except that of
+            random access to archive contents.  However, the format
+            itself doesn't prevent this.  A table of contents file could
+            be supplied as the first file in the archive with the info-
+            rmation needed to provide fast, random access to the con-
+            tainer contents.
+
+        4.3.5. ZIP Evaluation:
+
+            The ZIP format meets all of the requirements listed above
+            (assuming that ZIP64 extensions are used), with the ex-
+            ceptions listed below for which it was rejected:
+
+            - The use or implementation of some of the functionality
+              documented in the .ZIP file format requires a license from
+              PKWARE.
+
+            - While random archive content access is possible, the ZIP
+              file format stores the index for the archive at the end of
+              the archive (as opposed to the beginning).  This increases
+              the number of round trips that would be required for
+              potential remote random content access.  It also means
+              that extraction requires multiple seeks to the end of the
+              file before any content can be extracted from the archive,
+              which can be detrimental to performance for some media
+              types (optical, etc.).
+
+        4.3.6. Evaluation Conclusion:
+
+            Based on the requirements set forth in section 4.3.1, the
+            PAX format was selected as the on-disk archive format
+            for pkg(5) packages.  However, to enable efficient access
+            to the archive contents, an index file needs to be present
+            as the first file in the archive.
+
+            Early evaluations of an unoptimised prototype were performed
+            using a repository containing all packages for build 136 and
+            unbundleds.  The on-disk size of the repository was appox-
+            imately 4.98G.  The resulting archive was 5.0G in size, with
+            an archive index file 9.7M in size (when the index was comp-
+            ressed using gzip).
+
+            First time access to the prototype archive for extraction of
+            a single file after creation yielded a total time of approx-
+            imately 5 seconds compared to approximately 36-42 seconds
+            for utilities such as pax(1), tar(1), or gtar(1).
+
+            Creation of the archive took 7 minutes, 35 seconds on a
+            custom-built Intel Core 2 DUO E8400, with 8GB Memory,
+            and a 1TB 10000 RPM SATA Drive w/ 64MB Cache.
+
+        4.3.7. Package Archive Specification:
+
+            pkg(5) archive files will have an extension of 'p5p' which
+            will stand for 'pkg(5) package'.  The format of these
+            archives matches that defined by IEEE Std 1003.1, 2004 for
+            the pax Interchange Format, with the exception that the
+            first archive entry is tagged with an extended pax archive
+            header that specifies the archive version and the version
+            of the pkg(5) API that was used to write it.  In addition,
+            the file for the first archive entry must be the index
+            file file for the package archive.  The layout can be
+            visualised as follows:
+
+            .--------------------------------------------------------.
+            | ustar header for pax header global archive data        |
+            .--------------------------------------------------------.
+            | pax global extended header data for archive            |
+            .--------------------------------------------------------.
+            | ustar header for pax header for archive index file     |
+            .--------------------------------------------------------.
+            | pax extended header data for archive index file        |
+            .--------------------------------------------------------.
+            | ustar header for package archive index file            |
+            .--------------------------------------------------------.
+            | file data for package archive index file               |
+            .--------------------------------------------------------.
+            | remaining archive data                                 |
+            .________________________________________________________.
+
+            The archive and API version is stored in the header of the
+            index file instead of the global header for two reasons:
+            first, any headers in the global header are treated as
+            though they apply to every entry in the archive, and
+            secondly, the pax specification states that global headers
+            should not be used with interchange media that could suffer
+            partial data loss during transport.  Since the archive
+            version primarily serves as a way for clients to reliably
+            determine if a "standard" pax archive versus one with an
+            index is being read, this approach seems reasonable.
+
+            The reason for this limitation is to ensure that clients
+            performing selective archive extraction can be guaranteed
+            to find the location and size of the package archive index
+            file without knowing the size of the header for the index
+            file in advance (this layout ensures that clients can
+            find the archive index and/or identify the archive in
+            the first 2048 bytes).
+
+            In addition, pkg(5) archives in this format make remote,
+            selective archive access possible.  For example, a client
+            could request the first 2048 bytes of a pkg(5) archive file
+            from a remote repository, identify the offsets of the index
+            and then retrieve it using a HTTP/1.1 byte-ranges request.
+            Once it has the archive index file, it can then perform
+            additional byte-range requests to selectively transfer the
+            the data for a set of specific files from the archive.  This
+            convention also optimises access to the archive for sources
+            that are heavily biased towards sequential reads.
+
+            The index file must be named using the following template
+            and be compressed using the gzip format described by RFCs
+            1951 and 1952, and formatted according to section 4.3.8:
+
+                p5p.index.<index_file_number>.v<index_version>.gz
+
+                <index_file_number> is an integer in string form that
+                indicates which index file this is.  The number only
+                exists so that each index file can remain unique in
+                the archive.  An archive may contain multiple index
+                files to support fast archive additions.
+
+                <index_version> is an integer in string form that
+                indicates the version of the index file.  The initial
+                version for this proposal will be '0'.
+
+            However, if the first file in the archive is found to not
+            use the layout or format shown above, or any of the index
+            files in the archive are not in a format supported by the
+            client (version too old or too new), the archive must be
+            treated as a standard pax archive and some operations may
+            not be possible or experience degraded performance.  The
+            same is also true if the index file is found to not match
+            the archive contents.
+
+            All entries in the archive (excluding any archive index
+            files) must conform to the repository layout specified in
+            section 4.2.2 of this proposal.
+
+            Since a pkg(5) repository can contain one or more packages,
+            pkg(5) archive files can also contain the data for one or
+            more packages.  This allows easy redistribution of a single
+            package and all of its dependencies in a single file.
+
+            Finally, it should be noted that only ascii character path-
+            names are expected in the archive as the raw repository
+            format does not use or support unicode pathnames.
+
+        4.3.8. Package Archive Index Specification:
+
+            The pkg(5) archive index file enables fast, efficient access
+            to the contents of an archive.  It contains an entry for all
+            files in the archive excluding the index file itself in the
+            following format (also referred to as index format version
+            0):
+
+                <name>NUL<offset>NUL<entry_size>NUL<size>NUL<typeflag>
+                NULNL
+
+                <name> is a string containing the pathname of the file
+                in the archive using only ascii characters.  It can be
+                up to 65,535 bytes in length.
+
+                <offset> is an unsigned long long integer in string form
+                containing the relative offset in bytes of the first
+                header block for the file in the archive.  The offset is
+                relative to the end of the last block of the index file
+                in the archive they are listed in.
+
+                <entry_size> is an unsigned long long integer in string
+                form containing the size of the file's entry in bytes
+                in the archive (including archive headers and trailers
+                for the entry).
+
+                <size> is an unsigned long long integer in string form
+                containing the size of the file in bytes in the archive.
+
+                <typeflag> is a single character representing the type
+                of the file in the archive.  Possible values are:
+                    0 Regular File
+                    1 Hard Link
+                    2 Symbolic Link
+                    5 Directory or subdirectory
+
+                All values not listed above are reserved for future
+                use.  Unrecognised values should be treated as a
+                regular file.
+
+            An example set of entries would appear as follows:
+
+                pkg5.repositoryNUL0NUL546NUL2560NUL0NUL
+                pkgNUL2560NUL0NUL1536NUL5NUL
+                pkg/service%2Ffault-managementNUL4096NUL0NUL1536NUL5NUL
+
+            It should be noted that other possible formats were
+            evaluated for the index file, including those based
+            on: JSON, XDR, and python's pack.  However, all other
+            formats were found to be deficient for one or more
+            of the following reasons:
+
+            - larger in size
+
+            - no streaming support (required entire index file be
+              loaded into memory)
+
+            - significantly greater parsing times using currently
+              available Python libraries
+
+            - required developing an envelope format that could
+              contain the encoded data
+
+5. Proposed Changes:
+
+    5.1. Client Support for filesystem-based Repository Access:
+
+        The pkg.client.api provided by pkg(5) will be updated to allow
+        access to repositories via the filesystem.  All functionality
+        normally offered by pkg.depotd will be supported.
+
+        pkg(1) and packagemanager(1) will be modified to support the
+        use of URIs using the 'file' scheme.  No user visible changes
+        will be made to any existing subcommands or options except
+        that URIs using the 'file' scheme will be allowed.
+
+        When accessing repositories using the 'file' scheme, clients
+        by default will not copy package file data into the client's
+        cache (e.g. /var/pkg/download).  Instead, the transport system
+        will treat configured repositories as an additional read-only
+        cache.
+
+    5.2. Depot Storage, Client Transport and Publication Tool Update:
+
+        The pkg.server.repository module will be updated to support
+        the new repository format outlined in section 4.2.2.  Existing
+        repositories will not automatically be upgraded, while new
+        repositories will use the new format.  A new administrative
+        command detailed below has been introduced to allow upgrading
+        existing repositories to the new format.
+
+        These changes will automatically allow the client to access
+        repositories in the new format when using filesystem-based
+        access.  Older clients will remain unable to access repo-
+        sitories in the new format.
+
+        The client transport system will be updated to support all
+        publication operations and the publication tools and project
+        private APIs will be changed to use the client transport
+        system.
+
+        The '-d' option of pkgrecv(1) will be changed such that if
+        the name of a file with a '.p5p' extension is specified,
+        and that file does not already exist, a pkg(5) archive
+        file will be created containing the specified packages.
+        If the file already exists, it will exit with an error.
+        When pkgrecv(1) creates pkg(5) archive files, it will omit
+        catalog and index data.
+
+        Due to the transport changes above, pkgrecv(1) will also
+        be able to use pkg(5) archive files as a source of package
+        data.  pkgsend(1) will not support the use of pkg(5)
+        archive files as a destination due to the publication
+        model it currently uses.
+
+        To support the expanded multiple publisher version 4 format
+        of repositories, the depot server will be updated to respond
+        to requests as follows:
+
+        - If clients include the publisher prefix as part of the request
+          path, then responses will be for that specific publisher's
+          data.  For example:
+
+                http://localhost/dev/opensolaris.org/manifest/
+                0/opensolaris.org/backup%2Fareca/7.1%2C5.11-0.134
+                %3A20100302T005731Z
+
+                http://localhost/dev/file/0/opensolaris.org/
+                2ce6c746c85cd7ac44571d094b53c5fe1bfc32c8
+
+        - The default publisher specified in the depot configuration
+          will be used when responding to requests for operations that
+          do not include the publisher prefix.  For example:
+
+                http://localhost/dev/manifest/0/
+                backup%2Fareca/7.1%2C5.11-0.134%3A20100302T005731Z
+
+          ...provides a response identical to the first case where the
+          publisher prefix was provided as part of the request.  Those
+          expecting to maintain a large population of older clients
+          should reassign publisher URLs down a level, to include the
+          publisher explicitly although this is not required for
+          correct operation.
+
+        A new utility named pkgrepo will be added to facilitate the
+        creation and management of pkg(5) repositories.  It will have
+        the following global options:
+
+        -s repo_uri_or_path
+            A URI or path specifying the location of a pkg(5)
+            package repository.
+
+        -? / --help
+
+        It will have the following subcommands:
+
+        create <uri_or_path>
+            Creates a pkg(5) repository at the specified location.
+            Can only be used with filesystem-based repositories.
+
+        publisher [<pub_prefix> ...]
+            Lists the publishers of packages in the repository:
+
+            PUBLISHER PACKAGES        VERSIONS       UPDATED
+            <pub_1>   <num_uniq_pkgs> <num_pkg_vers> <cat_last_modified>
+            <pub_2>   <num_uniq_pkgs> <num_pkg_vers> <cat_last_modified>
+            ...
+
+        rebuild
+            Discards any catalog, search or other cached informaqtion
+            found in the repository and then re-creates it based on
+            the current contents of the repository.  Can only be used
+            with filesystem-based repositories.
+
+        refresh
+            By default, catalogs any new packages found in the repo-
+            sitory and updates search indices.  This is intended for
+            use with deferred publication (--no-catalog or --no-index
+            options of pkgsend).  Can only be used with filesystem-based
+            repositories.
+
+            Options:
+                --no-catalog - doesn't add new packages
+                --no-index - doesn't refresh search indices
+
+        remove fmri_pattern ...
+            Removes the specified package(s) from the repository.
+            If more than one match is found for any given pattern,
+            the exact FMRI must be provided.
+
+        upgrade
+            Can only be used with filesystem-based repositories.
+            Upgrades the repository to the most current format if
+            possible.
+
+            Has these options:
+
+            -n determine whether the upgrade could be formed and exit
+            
+            -v show a summary of what will be done, the current format
+               of the repository and what it will be upgraded to
+
+    5.3. Client Storage and Image Format Update:
+
+        To simplify and unify the storage format used by the client,
+        and pkg(5) repositories, the format of the client image
+        will be changed to use the structure described below.
+
+        For a version 3 image (the current format), the structure is as
+        follows:
+
+        <IMG_ROOT>
+            download/
+                <first two letters of file hash>/
+                    <file-named-by-hash>
+            file/
+            gui_cache/
+            history/
+            index/
+            lost+found/
+            pkg/
+                <stem>/
+                    <version>/
+                        manifest
+                        manifest.<cachefiles>
+            publisher/
+                <prefix>/
+                    catalog/
+                    certs/ (optional)
+                    last_refreshed (optional)
+            state/
+               installed/
+                    <image catalog files>
+               known/
+                    <image catalog files>
+            tmp/
+            cfg_cache
+            lock
+
+        For a version 4 image (the proposed format), the structure is
+        as follows:
+
+        <IMG_ROOT>
+            cache/
+                index/
+                    <api search index files>
+                publisher/
+                    <publisher_prefix>/
+                        catalog/
+                            <repository composition cache files>
+                        pkg/
+                            <stem>/
+                                <version>/
+                                    <manifest-cache-files>
+                tmp/
+                    <api temporary files>
+            gui_cache/
+                <package manager data files>
+            history/
+                <client history files>
+            license/
+                <stem>/
+                    <license files>
+            lost+found/
+                <salvaged filesystem objects>
+            publisher/
+                <prefix>/
+                    certs/
+                        <publisher signing certificates>
+                    <otherwise as described in section 4.2.2>
+            ssl/
+                client ssl certificates>
+            state/
+               installed/
+                    <image catalog files>
+               known/
+                    <image catalog files>
+            pkg5.image (client configuration file; was cfg_cache)
+
+        A new property named 'version' will be added to the image
+        and will be readonly (cannot be set using the set-property
+        subcommand of pkg(1)).
+
+        Existing images will not automatically be upgraded to the new
+        format.  To enable the upgrading of existing images to newer
+        formats, the following subcommands will be added:
+
+        update-format
+            Updates the format of the client's image to the current
+            format if possible.
+
+    5.4. Client and Depot Support for On-Disk Archive Format:
+
+        The pkg.server.repository module will be updated to support
+        the serving of a repository in readonly mode using a pkg(5)
+        archive file.
+
+        The pkg.client.api transport system will be updated to support
+        the usage of a pkg(5) archive file as an origin for package
+        data.
+
+        To support the specification of temporary origins, the install
+        and update subcommands will be modified by adding a '-g' option
+        to specify additional temporary package origin URIs or
+        the path to a pkg(5) archive file or pkg(5) info file.  The
+        '-g' option may be specified multiple times.  As an example:
+
+            $ pkg install -g /path/to/foo.p5p \
+                -g http://mytemprepo:10000/ \
+                -g file:/path/to/bar.p5p \
+                foo bar localpkg
+
+        pkg(5) archive files used as a source of package data during an
+        install or update operation will have their content cached by
+        the client before the operation begins.  Any publishers found
+        in the archive will be temporarily added to the image if they do
+        not already exist.  Publishers that were temporarily added but
+        not used during the operation will be removed after operation
+        completion or failure.  Any package FMRIs or patterns provided
+        will be matched using only the sources provided using '-g'.
+
+        The pkg list and pkg info commands will also be updated by
+        adding the '-g' option described above, with the exception
+        that the '-g' option may only be specified once, and only
+        the source named will be used for the operation.
+        
+        Using '-g' with the pkg list subcommand implies '-n' by default,
+        unless '-f' is specified; it also implies '-a'.  To list all
+        versions, the '-f' option must be used.  As an example:
+
+            $ pkg list -g /path/to/foo.p5p
+            NAME (PUBLISHER)  VERSION         STATE      UFOXI
+            bar (example.com) 1.0-0.133       known      -----
+            foo (example.com) 1.0-0.133       installed  -----
+
+            $ pkg list -g file:/path/to/foo.p5p
+            NAME (PUBLISHER)  VERSION         STATE      UFOXI
+            bar (example.com) 1.0-0.133       known      -----
+            foo (example.com) 1.0-0.133       installed  -----
+
+            $ pkg list -f -g http://example.com/multi_foo.p5p
+            NAME (PUBLISHER)  VERSION         STATE      UFOXI
+            foo (example.com) 1.0-0.133       installed  u----
+            foo (example.com) 2.0-0.133       known      u----
+            foo (example.com) 3.0-0.133       known      -----
+
+            $ pkg list -g file:/path/to/repo
+            NAME (PUBLISHER)      VERSION     STATE      UFOXI
+            repopkg (example.com) 2.0-0.133   known      -----
+
+            $ pkg list -g http://myrepo:10000
+            NAME (PUBLISHER)       VERSION    STATE      UFOXI
+            localpkg (example.org) 3.0-0.133  known      -----
+
+        Using '-g' with the pkg info subcommand implies '-r'.  The '-l'
+        option cannot be used in combination with '-g'.  As an example:
+
+        $ pkg info -g /path/to/bundle.p5p
+                  Name: bar
+               Summary: A useful complement to foo.
+                 State: Not Installed
+        ...
+                  Name: foo
+               Summary: Provides useful utilities.
+                 State: Installed
+        ...
+
+        '-g' was chosen for the option usage described above to match
+        the '-g' already used by set-publisher and image-create for
+        origins, and due to the unfortunate existing usage of '-s'
+        by the 'pkg list' subcommand.
+
+6. Reference Documents:
+
+    Project team members and community members have provided a number of
+    informal comments that served as the basis for the goals of this
+    project:
+
+    - "new on-disk format?", 18 Jan. 2008:
+        http://markmail.org/thread/2kg6w5bfwp4x3knc
+
+    - "reorganising the repository and client metadata", 23. Sep. 2009:
+        http://markmail.org/thread/stfrosvx3v6if2fi
+
+    - "ZAP - Zip Archive Packaging", Sep. 2007:
+        http://markmail.org/thread/ijyq3mlrhaofccgx
+
+    In addition, the following materials were referenced when writing
+    this proposal:
+
+    - "7z", 12 Apr. 2010:
+        http://en.wikipedia.org/wiki/7z
+
+    - "RFC2616: HTTP/1.1 Header Field Definitions", 01 Sep. 2004:
+        http://www.w3.org/Protocols/rfc2616/
+        rfc2616-sec14.html#sec14.35.1
+
+    - "cpio", 21 Mar. 2010:
+        http://en.wikipedia.org/wiki/Cpio
+
+    - "copy file archives in and out", 26 Mar. 2007:
+        http://heirloom.sourceforge.net/man/cpio.1.html
+
+    - "The gzip file format", Date Unknown:
+        http://www.gzip.org/format.txt
+
+    - "DragonFly File Formats Manual, cpio -- format of cpio archive
+      files"
+        http://leaf.dragonflybsd.org/cgi/web-man?command=cpio&section=5
+
+    - "A Quick Benchmark: Gzip vs. Bzip2 vs. LZMA", 31 May. 2005:
+        http://tukaani.org/lzma/benchmarks.html
+
+    - "Lempel Ziv Markov Algorithm and 7-Zip", 7 Feb. 2008:
+        http://blogs.sun.com/clayb/entry/lempel_ziv_markov_algorithm_and
+
+    - "The Open Group Base Specifications Issue 6: pax Interchange
+      Format, IEEE Std 1003.1, 2004 Edition"
+        http://www.opengroup.org/onlinepubs/009695399/utilities/
+        pax.html#tag_04_100_13_01
+
+    - ".ZIP File Format Specification", 28 Sep. 2007:
+        http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+
+    - "ZIP (file format)", 17 Apr. 2010:
+        http://en.wikipedia.org/wiki/ZIP_%28file_format%29

@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkgdepend-1">
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">28 Jan 2015</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgdepend</refname><refpurpose>Image Packaging System dependency analyzer</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgdepend [<replaceable>options</replaceable>] <replaceable>command
+</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgdepend generate [-IMm] -d <replaceable>dir</replaceable> [-d <replaceable>
+dir</replaceable>]
+    [-D <replaceable>name</replaceable>=<replaceable>value</replaceable>] [-k <replaceable>
+path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
+<synopsis>/usr/bin/pkgdepend resolve [-EmoSv] [-d <replaceable>output_dir</replaceable>]
+    [-e <replaceable>external_package_file</replaceable>]... [-s <replaceable>suffix
+</replaceable>]
+    <replaceable>manifest_file</replaceable> ...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgdepend-1-desc" role="description"><title></title>
+<para>The <command>pkgdepend</command> command generates and resolves dependencies
+for packages. A package might depend on files from other packages. The <command>pkgdepend
+</command> command is typically used in two passes: file dependency generation
+and file-to-package resolution.</para>
+<para>The <command>generate</command> subcommand examines the content of a
+package and determines what external files the package needs.</para>
+<para>The <command>resolve</command> subcommand takes the list of files from
+the <command>generate</command> step, and searches a reference set of packages
+to determine the names of the packages that contain those dependent files.
+The reference set of packages that are searched for the dependent files are
+the packages that are currently installed on the publisher's system.</para>
+<para>Several components of delivered files are used as sources of dependency
+information:</para>
+<variablelist>
+<varlistentry><term>ELF</term>
+<listitem><para>ELF headers in delivered files are analyzed for dependency information, with the
+<option>k</option> and <option>D</option> options modifying the information obtained. For more
+details on ELF dependencies, see <command>ldd</command> and the <olink targetdoc="OSLLG"><citetitle
+remap="book">Oracle Solaris 11.2 Linkers and Libraries Guide</citetitle></olink>. </para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Scripts</term>
+<listitem><para>Shell scripts that contain <literal>#!</literal> lines referencing
+an interpreter result in a dependency on the package that delivers that interpreter.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Python</term>
+<listitem><para>Python scripts are first analyzed as scripts. In addition,
+any imports the script declares might also serve as sources of dependency
+information.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Hard links</term>
+<listitem><para>Hard links in manifests result in a dependency on the package
+that delivers the link target.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>SMF</term>
+<listitem><para>Delivered SMF service manifests that include <literal>require_all
+</literal> dependencies result in dependencies on the packages that deliver
+the SMF manifests that provide those FMRIs.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
+<listitem><para>Operate on the image rooted at <replaceable>dir</replaceable>.
+If no directory was specified or determined based on environment, the default
+is /. See the &ldquo;Environment Variables&rdquo; section for more information.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>The following subcommands are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgdepend generate</command> [<option>IMm</option>] <option>
+d</option> <replaceable>dir</replaceable> [<option>d</option> <replaceable>dir</replaceable>]
+[<option>D</option> <replaceable>name</replaceable>=<replaceable>value</replaceable>]
+[<option>k</option> <replaceable>path</replaceable>] <replaceable>manifest_file</replaceable></term>
+<listitem><para>Produce the dependencies on files of the manifest specified
+by <replaceable>manifest_file</replaceable>.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>I</option></term>
+<listitem><para>Show the dependencies that are satisfied within <replaceable>manifest_file
+</replaceable>. Do not use the result of <option>I</option> with <command>pkgdepend resolve</command>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>M</option></term>
+<listitem><para>Display a list of file types that could not be analyzed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>Repeat the original manifest with any discovered dependencies
+added after.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>dir</replaceable></term>
+<listitem><para>Add <replaceable>dir</replaceable> to a list of directories
+to search for the manifest's files.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>name</replaceable>=<replaceable>
+value</replaceable></term>
+<listitem><para>Add the <replaceable>value</replaceable> as a way to expand
+the token <replaceable>name</replaceable> in run paths for ELF file dependencies.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>path</replaceable></term>
+<listitem><para>Add the <replaceable>path</replaceable> to the list of run
+paths to search for kernel modules. Using the <option>k</option> option removes
+the default paths, which are <filename>/kernel</filename> and <filename>/usr/kernel
+</filename>.</para>
+<para>Run paths such as those specified by the <option>k</option> option can
+also be specified per action or per manifest by using the action or manifest
+attribute <literal>pkg.depend.runpath</literal>. The value of the <literal>pkg.depend.runpath
+</literal> attribute is a colon-separated string of the paths to use. Setting
+any <literal>pkg.depend.runpath</literal> attributes in the manifest or action
+overrides paths specified with the <option>k</option> option.</para>
+<para>The special token <envar>$PKGDEPEND_RUNPATH</envar> can be used as one
+component of the <literal>pkg.depend.runpath</literal> attribute value in
+order to include the standard system run path for the file being analyzed.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>In some cases, you might want to prevent automatic generation of dependencies.
+For example, if a package delivers a sample Python script that imports a set
+of modules, those modules imported by the sample script are not dependencies
+for the package that delivers the sample script. Use the action or manifest
+attribute <literal>pkg.depend.bypass-generate</literal> to prevent generating
+dependencies against the specified files.</para>
+<para>The <literal>pkg.depend.bypass-generate</literal> values are Python
+regular expressions that match file names. The regular expressions are implicitly
+anchored at the start and end of the file path. The value given in the following
+example matches <literal>this/that</literal> but does not match <literal>something/this/that/the/other
+</literal>.</para>
+<programlisting>pkg.depend.bypass-generate=this/that</programlisting>
+<para>For more information about Python regular expression syntax, use the
+command <command>pydoc re</command> or see more complete documentation at <literal>
+http://docs.python.org/dev/howto/regex.html</literal>.</para>
+<para>When <command>pkgdepend generate</command> input manifests contain SMF
+manifest files, any SMF services or instances declared by those SMF manifest
+files are included in the <command>pkgdepend</command> output. These SMF services
+or instances are included in the form of a <literal>set</literal> action with
+the name <literal>org.opensolaris.smf.fmri</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgdepend resolve</command> [<option>EmoSv</option>]
+[<option>d</option> <replaceable>output_dir</replaceable>] [<option>e</option> <replaceable>
+external_package_file</replaceable>]... [<option>s</option> <replaceable>suffix</replaceable>] <replaceable>
+manifest_file</replaceable> ...</term>
+<listitem><para>Transform dependencies on files into dependencies on the packages
+that deliver those files. Dependencies are first resolved against the manifests
+given on the command line and then against the packages installed on the system.
+By default, the dependencies for each manifest are placed in a file named <filename><replaceable>
+manifest_file</replaceable>.res</filename>.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>e</option> <replaceable>external_package_file</replaceable></term>
+<listitem><para>Only resolve against packages from the system whose names
+match a pattern in <replaceable>external_package_file</replaceable>. This
+option can be specified multiple times. The <option>e</option> option cannot
+be used with the <option>S</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>E</option></term>
+<listitem><para>If <option>e</option> is specified, show the packages that
+were expected to be external dependencies but were not external dependencies.
+Packages that were expected to be external dependencies are packages from
+the system whose names match a pattern in <replaceable>external_package_file</replaceable>.
+</para>
+<para>If <option>e</option> is not specified, show the external dependencies
+of the resolved packages. External dependencies of the resolved packages are
+packages not named on the command line that are targets of dependencies in
+the resolved packages.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>Repeat the manifest, with any dependencies produced by the <command>
+generate</command> step removed, before adding the resolved dependencies.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option></term>
+<listitem><para>Write the results to standard output. This option is intended
+for human consumption. Appending this output to a file might result in an
+invalid manifest. The <option>d</option> or <option>s</option> options are
+strongly recommended instead of <option>o</option> for use in a pipeline for
+manifest processing.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>output_dir</replaceable></term>
+<listitem><para>Write the resolved dependencies for each manifest provided
+in a separate file in <replaceable>output_dir</replaceable>. By default, each
+file has the same base name as the manifest that was the source of the dependencies
+written to that file.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>suffix</replaceable></term>
+<listitem><para>For each output file, append <replaceable>suffix</replaceable> to
+the base name of the file that was the source of the resolved dependencies.
+If <replaceable>suffix</replaceable> is not <replaceable>.suffix</replaceable>,
+a period (.) is prepended to <replaceable>suffix</replaceable>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>S</option></term>
+<listitem><para>Only resolve against the manifests given on the command line
+and not against the manifests installed on the system.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>Include additional package dependency debugging metadata.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Generate Dependencies</title>
+<para>Generate the dependencies for the manifest written in <filename>foo</filename>,
+whose content directory is in <filename>./bar/baz</filename>, and store the
+results in <filename>foo.fdeps.</filename></para>
+<screen>$ <userinput>pkgdepend generate -d ./bar/baz foo > foo.fdeps</userinput></screen>
+</example>
+<example><title>Resolve Dependencies</title>
+<para>Resolve the file dependencies in <filename>foo.fdeps</filename> and <filename>
+bar.fdeps</filename> against each other and against the packages currently
+installed on the system.</para>
+<screen>$ <userinput>pkgdepend resolve foo.fdeps bar.fdeps</userinput>
+$ <userinput>ls *.res</userinput>
+foo.fdeps.res    bar.fdeps.res</screen>
+</example>
+<example><title>Generate and Resolve Dependencies For Two Manifests</title>
+<para>Generate the file dependencies for two manifests (<literal>foo</literal> and <literal>
+bar</literal>) and retain all the information in the original manifests. Then
+resolve the file dependencies and place the resulting manifests in <filename>./res
+</filename>. These resulting manifests can be used with <command>pkgsend publish</command>.
+</para>
+<screen>$ <userinput>pkgdepend generate -d /proto/foo -m foo > ./deps/foo</userinput>
+$ <userinput>pkgdepend generate -d /proto/bar -m bar > ./deps/bar</userinput>
+$ <userinput>pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar</userinput>
+$ <userinput>ls ./res</userinput>
+foo    bar</screen>
+</example>
+<example><title>Add Values To Tokens For ELF File Dependencies</title>
+<para>Replace all <envar>PLATFORM</envar> tokens in the run paths in ELF files
+with <literal>sun4v</literal> and <literal>sun4u</literal> while generating
+the dependencies for the manifest written in <literal>foo</literal> whose
+content directory is in /.</para>
+<screen>$ <userinput>pkgdepend generate -d / -D 'PLATFORM=sun4v' &bsol;</userinput>
+<userinput>-D 'PLATFORM=sun4u' foo</userinput></screen>
+</example>
+<example><title>Specify a Kernel Module Directory</title>
+<para>Specify <filename>/kmod</filename> as the directory in which to find
+kernel modules when generating the dependencies for the manifest written in <filename>
+foo</filename> whose content directory is in /.</para>
+<screen>$ <userinput>pkgdepend generate -d / -k /kmod foo</userinput></screen>
+</example>
+<example><title>Bypass Dependency Generation</title>
+<para>Append <filename>opt/python</filename> to the standard Python run path
+for a given Python script, and bypass dependency generation against all Python
+modules called <literal>test</literal> for a file delivered as <filename>opt/python/foo/file.py
+</filename>.</para>
+<para>Avoid generating dependencies against any file delivered in <filename>usr/lib/python2.7/vendor-packages/xdg
+</filename>.</para>
+<screen>$ <userinput>cat manifest.py</userinput>
+set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
+set name=pkg.summary value="My test package"
+dir path=opt mode=0755 group=sys owner=root
+dir path=opt/python mode=0755 group=sys owner=root
+dir path=opt/python/foo mode=0755 group=sys owner=root
+file path=opt/python/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+#
+# Add runpath and bypass-generate attributes:
+#
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
+    pkg.depend.bypass-generate=.*/test.py.* &bsol;
+    pkg.depend.bypass-generate=.*/testmodule.so &bsol;
+    pkg.depend.bypass-generate=.*/test.so &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.7/vendor-packages/xdg/.* &bsol;
+    pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
+
+$ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>Specifies the directory that contains the image to use for
+package operations. This value is ignored if <option>R</option> is specified.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Everything worked.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>An error occurred.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg
+</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

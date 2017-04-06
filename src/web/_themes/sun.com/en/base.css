@@ -1,0 +1,233 @@
+/*
+ *
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ *
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ *
+ */
+@import url("../../yui-reset-font-grids_base-min.css");
+
+/* Common Styles */
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.p5i {
+        background: transparent url(../../p5i-link.png) scroll no-repeat right center;
+        padding: 2px 16px 2px 0px;
+}
+div.page-container {
+        margin: auto;
+        width: 730px;
+}
+#custom-doc {
+        margin: auto;
+        min-width: 730px;
+        text-align: left;
+        width: 100%;
+}
+
+/* Header Styles */
+div#hd {
+        margin-top: 8px;
+}
+div.global-nav {
+        display: block;
+        width: 100%;
+}
+div.global-nav div.lang-sel {
+        display: block;
+        float: right;
+        margin: 4px 0;
+        font-size: 85%;
+}
+div.masthead {
+        display: block;
+        clear: both;
+        height: 60px;
+        background: transparent url(http://www.sun.com/im/a1a2_sprite.png) no-repeat scroll -47px -453px;
+}
+div.masthead div.content {
+        height: 100%;
+        background: transparent url(http://www.sun.com/im/a1a2_sprite.png) no-repeat scroll 100% -453px;
+}
+div.masthead a#logo {
+        display: block;
+        float: left;
+        width: 107px;
+        height: 55px;
+}
+div.masthead div.menu {
+        height: 100%;
+        background: transparent url(http://www.sun.com/im/a1a2_sprite.png) repeat-x scroll 0 0;
+        margin: 0 10px 0 10px;
+}
+div.masthead div.menu ul {
+        display: inline;
+}
+div.masthead div.menu ul li {
+        display: inline;
+        list-style: none;
+}
+div.masthead div.menu ul li a {
+        display: inline-block;
+        font-weight: bold;
+        color: white;
+        list-style: none;
+        padding: 15px 5px 20px 10px;
+}
+div.breadcrumbs {
+        clear: both;
+        display: block;
+        font-size: 85%;
+        margin: 10px 30px;
+}
+div.page-title {
+        clear: both;
+        display: block;
+        font-weight: bold;
+        color: black;
+}
+
+/* Body Styles */
+div#bd {
+        margin: auto;
+        width: 730px;
+}
+.section-title {
+        border-bottom: 1px solid black;
+}
+ul.tips li {
+        margin-bottom: 10px;
+}
+table.stats a#catalog-feed {
+        float: right;
+        background: transparent url(http://www.sun.com/im/ic_feed_16x.gif);
+        width: 16px;
+        height: 16px;
+        display: block;
+}
+table.stats {
+        width: 100%;
+        background: #E4E4E4 url(http://www.sun.com/im/bg_navblue.gif) repeat-x scroll left bottom;
+}
+table.stats tr.first {
+        /* XXX for some reason this doesn't work in IE7. */
+        background: transparent url(http://www.sun.com/im/generic_tl.gif) no-repeat scroll left top;
+}
+table.stats th.last {
+        border: 0;
+        text-align: left;
+        background: transparent url(http://www.sun.com/im/generic_tr.gif) no-repeat scroll right top;
+}
+table.stats td { border: 0; }
+table.stats td.label {
+        text-align: right;
+        width: 90%;
+}
+table.stats td.value { text-align: center; }
+
+/* Footer Styles */
+div#ft {
+        color: black;
+        font-size: 77%;
+        margin: 20px 0 8px 0;
+}
+div#ft .page-container {
+        padding-bottom: 30px;
+}
+div#ft .footer-line {
+        border-top: 1px solid black;
+}
+div#ft .logo {
+        background: transparent url(http://opensolaris.org/oracle/logo_oracle_footer.gif) no-repeat scroll;
+        display: inline;
+        float: left;
+        clear: both;
+        height: 36px;
+        margin-right: 24px;
+        width: 100px;
+}
+div#ft .notice {
+        display: inline;
+        float: left;
+        padding-top: 14px;
+}
+div#ft .footer-nav {
+        display: inline;
+        float: right;
+        padding-top: 14px;
+        vertical-align: middle;
+}
+
+/* Catalog and Search Styles */
+form.advanced-search input#search-field {
+        width: 99%;
+}
+form.search table {
+        width: 100%;
+        border: 2px solid silver;
+}
+form.search table td {
+        border: none;
+}
+form.search a {
+        font-size: 77%; /* 10px */
+        vertical-align: top;
+}
+form.search span.tip {
+        color: silver;
+        text-decoration: underline;
+}
+form.search table td.label {
+        padding-left: 2em;
+        width: 30%;
+}
+form.search table td.submit {
+        text-align: right;
+}
+div.results { margin-top: 20px; }
+div.results table {
+        -moz-border-radius: 1%;
+        background-color: #D2D5D7;
+        width: 100%;
+}
+div.results table td {
+        border: 0;
+}
+div.results table th {
+        border: 0;
+        text-align: left;
+}
+div.results table tr.first {
+        -moz-border-radius: 1% 1% 0 0;
+        background-color: #D2D5D7;
+}
+div.results table tr {
+        background-color: white;
+}
+div.results table tr.odd {
+        background-color: #EEEEEE;
+}
+div.results table tr.last {
+        background-color: #D2D5D7;
+}
+div.results table tr.last td.last {
+        text-align: right;
+}

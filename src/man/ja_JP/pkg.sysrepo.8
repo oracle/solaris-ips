@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkg.sysrepo-8">
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.sysrepo</refname><refpurpose>Image Packaging System システムリポジトリ構成</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.sysrepo -p <replaceable>port</replaceable> [-c <replaceable>
+cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
+    [-w <replaceable>http_proxy</replaceable>] [-W <replaceable>https_proxy</replaceable>]
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsysrepo-8-desc" role="description"><title></title>
+<para><command>pkg.sysrepo</command> は、Image Packaging System (IPS) システムリポジトリの構成ファイルを生成するために使用されます。<command>pkg.sysrepo </command> は、<literal>svc:/application/pkg/system-repository</literal> サービス管理機能 (SMF) サービスから呼び出されます。構成の変更は、SMF サービスのプロパティーに対して行うようにしてください。</para>
+<para>システムリポジトリは、参照イメージ内に構成されたパッケージリポジトリへのアクセスを、集中管理プロキシを通して提供する役割を果たします。その参照イメージに加えられたパブリッシャーの構成の変更は、そのシステムリポジトリを使用するように構成されたすべてのクライアントにただちに認識されます。</para>
+<para>システムリポジトリは、大域ゾーン内に構成されたリポジトリに非大域ゾーンからアクセスできるようにするために、主に大域ゾーンで使用されます。SMF サービス <literal>svc:/application/pkg/zones-proxyd</literal> および <literal>svc:/application/pkg/zones-proxy-client</literal> は、非大域ゾーンと大域ゾーンの間のトランスポートを提供する役割を果たします。このトランスポートは、<literal>pkg</literal>(7) でのみ使用されます。</para>
+<para><literal>http</literal>、<literal>https</literal>、および <literal> v4</literal> ファイルリポジトリと <literal>p5p</literal> アーカイブのみがサポートされます。古いファイルリポジトリ形式はサポートされません。リポジトリバージョンについての詳細は、<command>pkgrepo</command>(1) を参照してください。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>構成された発行元からの応答をキャッシュするためにシステムリポジトリで使用すべきディレクトリの絶対パスを指定します。</para>
+<para>デフォルトでは、ファイルキャッシュが使用されます。ただし、インメモリーキャッシュを使用すべきであることを示すために、特殊な値 <literal>memory</literal> を使用できます。システムリポジトリがキャッシュを実行すべきではないことを示すために、特殊な値 <literal>None</literal> を使用できます。この設定は、<literal>config/cache_dir</literal> SMF プロパティーを使用して構成するようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>システムリポジトリがリクエストを待機するために使用すべきポートを指定します。この設定は、<literal>config/port</literal> SMF プロパティーを使用して構成するようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
+<listitem><para>システムリポジトリの最大キャッシュサイズを定義する整数値 (M バイト単位)。この設定は、<literal>config/cache_max</literal> SMF プロパティーを使用して構成するようにしてください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>w</option> <replaceable>http_proxy</replaceable></term>
+<listitem><para>システムリポジトリが http ベースのパッケージリポジトリにアクセスするために使用できる Web プロキシを定義する形式 <literal><replaceable>scheme</replaceable>://<replaceable> hostname</replaceable>[:<replaceable>port</replaceable>]</literal> の文字列。この設定は、<literal>config/http_proxy</literal> SMF プロパティーを使用して構成できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>W</option> <replaceable>https_proxy</replaceable></term>
+<listitem><para>システムリポジトリが https ベースのパッケージリポジトリにアクセスするために使用できる Web プロキシを定義する形式 <literal><replaceable>scheme</replaceable>://<replaceable> hostname</replaceable>[:<replaceable>port</replaceable>]</literal> の文字列。この設定は、<literal>config/https_proxy</literal> SMF プロパティーを使用して構成できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>システムリポジトリの有効化</title>
+<screen>$ <userinput>svcadm enable svc:/application/pkg/system-repository</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>コマンドは有効な構成の書き込みに失敗しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

@@ -1,0 +1,11 @@
+#
+# This is a fragment of a pkglintrc file used for the pkg(7) build
+# to acknowledge that some dependencies will be missing at lint
+# runtime.  When used with a reference repository, we expect that
+# these dependencies would be available.
+#
+# If version numbers are missing from the dependencies below, we
+# match all versions of that particular package.  If version
+# numbers are specified, we only match the given version.
+#
+pkglint.action005.1.missing-deps =

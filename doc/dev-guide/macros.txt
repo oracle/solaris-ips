@@ -1,0 +1,45 @@
+
+.. |logo| image:: ../../doc/dev-guide/pkg-block-logo.png
+.. |ologo| image:: ../../doc/dev-guide/ologo.png
+
+.. Some basic macros, possibly links to man pages?
+
+.. |packagemanager| replace:: ``packagemanager(1)``
+.. |pkg| replace:: ``pkg(1)``
+.. |pkg.depotd| replace:: ``pkg.depotd(1M)``
+.. |pkg.sysrepo| replace:: ``pkg.sysrepo(1M)``
+.. |pkg5| replace:: ``pkg(5)``
+.. |pkgdepend| replace:: ``pkgdepend(1)``
+.. |pkgdiff| replace:: ``pkgdiff(1)``
+.. |pkgfmt| replace:: ``pkgfmt(1)``
+.. |pkglint| replace:: ``pkglint(1)``
+.. |pkgmerge| replace:: ``pkgmerge(1)``
+.. |pkgmogrify| replace:: ``pkgmogrify(1)``
+.. |pkgrecv| replace:: ``pkgrecv(1)``
+.. |pkgrepo| replace:: ``pkgrepo(1)``
+.. |pkgsend| replace:: ``pkgsend(1)``
+.. |pkgsign| replace:: ``pkgsign(1)``
+.. |pm-updatemanager| replace:: ``pm-updatemanager(1)``
+.. |pkginfo| replace:: ``pkginfo(4)``
+.. |pkgmap| replace:: ``pkgmap(4)``
+
+.. |svc.startd| replace:: ``svc.startd(1M)``
+.. |beadm| replace:: ``beadm(1M)``
+.. |zonecfg| replace:: ``zonecfg(1M)``
+
+.. Terminology - we want hyperlinks to the right places for these eventually
+..  and only use these macros the first time we mention these.
+
+.. |Immutable Zones| replace:: Immutable Zones
+.. |Immutable Zone| replace:: Immutable Zone
+.. |ZFS| replace:: ZFS
+.. |SMF| replace:: SMF
+
+
+.. External links - we may fold these into Terminology above
+
+.. |SAT solver| replace:: `SAT solver`_
+.. _SAT solver: http://en.wikipedia.org/wiki/Boolean_satisfiability_problem
+
+.. |MiniSAT| replace:: `MiniSAT`_
+.. _MiniSAT: http://minisat.se

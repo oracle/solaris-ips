@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!--
+	CDDL HEADER START
+
+	The contents of this file are subject to the terms of the
+	Common Development and Distribution License (the "License").
+	You may not use this file except in compliance with the License.
+
+	You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+	or http://www.opensolaris.org/os/licensing.
+	See the License for the specific language governing permissions
+	and limitations under the License.
+
+	When distributing Covered Code, include this CDDL HEADER in each
+	file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+	If applicable, add the following below this CDDL HEADER, with the
+	fields enclosed by brackets "[]" replaced with your own identifying
+	information: Portions Copyright [yyyy] [name of copyright owner]
+
+	CDDL HEADER END
+
+	Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
+
+	NOTE:  This service manifest is not editable; its contents will
+	be overwritten by package or patch operations, including
+	operating system upgrade.  Make customizations in a different
+	file.
+-->
+
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<service_bundle type='manifest' name=':pkg-mdns'>
+
+<service
+	name='application/pkg/dynamic-mirror'
+	type='service'
+	version='1'>
+
+	<create_default_instance enabled='false' />
+
+	<dependency
+		name='fs'
+		grouping='require_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/local' />
+	</dependency>
+
+	<!--
+	    If we're homed on an autofs mount point, then we should
+	    delay until our path becomes available.
+	-->
+	<dependency
+		name='autofs'
+		grouping='optional_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/autofs' />
+	</dependency>
+
+	<!--
+	    To ensure that the sequence IDs between two repositories are
+	    sensible, we should delay startup until we can issue correct
+	    timestamps.
+	-->
+	<dependency
+		name='ntp'
+		grouping='optional_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/network/ntp' />
+	</dependency>
+
+	<dependency
+		name='network'
+		grouping='require_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/milestone/network' />
+	</dependency>
+
+	<dependency
+                name='multicast'
+                grouping='require_all'
+                restart_on='none'
+                type='service'>
+                <service_fmri value='svc:/network/dns/multicast:default' />
+        </dependency>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-mdns %m'
+		timeout_seconds='0'>
+		<method_context>
+			<method_credential user='pkg5srv' group='pkg5srv' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-mdns %m %{restarter/contract}'
+		timeout_seconds='30'>
+	</exec_method>
+
+	<property_group name='pkg' type='application'>
+		<propval name='image_root' type='astring'
+			value='/' />
+		<propval name='pkg_root' type='astring' value='/' />
+		<propval name='port' type='count' value='10000' />
+	</property_group>
+
+	<stability value='Unstable' />
+
+	<template>
+		<common_name>
+			<loctext xml:lang='C'>
+image packaging repository
+			</loctext>
+		</common_name>
+	</template>
+</service>
+
+</service_bundle>

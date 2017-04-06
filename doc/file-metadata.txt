@@ -1,0 +1,53 @@
+
+pkg
+File and other metadata
+
+We would like to be efficient with our storage and bandwidth
+utilization.  We would also like to avoid a class of inconsistency
+errors preventable for a class of file objects (ELF binaries and
+libraries, potentially also Java JAR files).
+
+We have to label binaries and platform sensitive files (such as
+endian-specific binary formats).
+
+We also need to store ownership, modification and creation times, and
+permissions.  We may need to store ACLs of various kinds.
+
+Some data is interpreted by the pkg server (to process a filter request
+by the client), some by the pkg client (to establish times and
+permissions).
+
+pkg pkg_fmri keywords
+file platform type path permissions user group type-specific-hash
+link link-type dst_path src_path
+dir path permissions user group
+
+Envisioned types are "raw" and "elf".  Potentially also "jar".
+Envisioned platforms are "i86pc", "sun4".  ISA distinctions are handled
+by the filter options available on "elf" type files.
+
+The leading column is called the *action*.  If we do a driver action, it
+would be multi-file (since the .conf file is associated).  Drivers may
+have to be expressed as a non-action.  Actions are always reversible in
+some fashion.
+
+Example postinstall invocations of add_drv:
+
+1.  SUNWuedg
+
+add_drv ${BASEDIR_OPT} -m '* 0666 root sys' \
+./SUNWuedg/postinstall-     -i "${USBSER_EDGE_ALIASES} \"${NEW_ALIAS}\"" -n usbser_edge
+
+2.  SUNWav1394
+
+add_drv -b "${BASEDIR}" -m "${DRVPERM}" -i "${DRVALIAS}" -n ${DRV}
+
+3.  SUNWpd
+
+/usr/sbin/add_drv -b ${BASEDIR} -i '"pnpALI,1533,3" "ns87317-ecpp"' \
+./SUNWpd/postinstall-                   -m '* 0666 root sys' -n ecpp ||
+
+4.  SUNWlsimega
+
+check_add_drv -i '"pci1028,13" "pci1000,407" "pci1000,407.1000.532" "pci1000,408" "pci1000,408.1000.2" "pci1000,1960"' -b "$BASEDIR" -c scsi lsimega
+

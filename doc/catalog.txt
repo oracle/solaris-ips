@@ -1,0 +1,105 @@
+
+pkg
+CATALOG AND INVENTORY OPERATIONS
+
+[Suspended] Premise 1:  From the client's perspective, the catalog is just
+another package.  (It's only special in that its contents drive
+automatic package operations.)
+
+   Because we pull catalogs from multiple repositories, managing N
+   packages for N repositories seems overcomplicated.
+
+Premise 2:  From the server perspective, the catalog is a file whose
+contents are updated as a result of the set of packaging operations that
+have occurred within the server's repository.  (No operation ever
+affects the catalog directly.)
+
+1.  Server catalog
+
+The primary content of the catalog is the relationships between
+packages.  We've already said that there are packages that depend on
+other packages and packages that incorporate other packages.  These
+latter packages, the base- and stack-style packages, are really packages
+that, in addition to listing a set of packages, also freeze those
+packages, such that it takes a relaxation of the base/stack package for
+the client to modify the incorporated packages.
+
+The detailed manifest for each package contains the dependencies,
+contents, and actions.  But, as it seems that the set of incorporation
+relationships are of particular interest for reporting and determining
+package retrieval ordering, we place incorporation dependencies in the
+catalog as well.
+
+It's reasonably clear that the package repository needs to have
+observations of package popularity, so that the most aged packages can
+be purged, once unneeded.
+
+2.  Client catalog and client inventory
+
+The client catalog is a compilation of package sourcing information from
+a collection of repositories, in the form of one server catalog per
+repository.  Its purpose is to advertise what package versions are
+"available", which means that it is the union of the repositories it
+sources.
+
+In contrast, the client inventory is the set of packages currently in an
+installation state on the system, stored in some representation.  One
+form of this representation will be in the form of a server catalog.
+
+The inventory is stored under 
+
+/var/pkg/db
+
+If some instance of which@2.16 is installed, we would have a directory
+
+/var/pkg/db/pkg/[publisher?]/which/2.16
+				publisher
+				manifest
+				state
+
+XXX Can we have two packages with the same name, but from different
+publishers?
+
+An open question is whether we store one or more reverse indices in the
+inventory.  We could have indices into basenames, pathnames, and
+contents, which would look something like:
+
+/var/pkg/db/index/
+		{basename,path}/
+			[escaped basename or full path]/
+				named links to content files
+		
+		content/
+			[SHA1 hash of contents] -> package directory
+
+Unfortunately, since FILE_MAX < PATH_MAX, the escaped representation for
+full paths is insufficient, and we might need to provide a hash-based
+directory name, and a metadata file with the full path.
+
+2.1.  Multiple catalogs
+
+If a package is available from two or more repositories, we have a
+choice:  we can prefer a repository (as we would for a request for a
+first installation of a package), or we can store both catalogue
+entries.
+
+In a directory-based approach, we might have
+
+/var/pkg/catalog/repository_publisher/category/package/versions
+
+with example
+
+/var/pkg/catalog/pkg.opensolaris.org/application/which/2.16
+/var/pkg/catalog/blueslugs.com/application/which/2.16
+
+In a file-based approach, we would have
+
+/var/pkg/catalog/[escaped_catalog_URL]
+...
+
+XXX Investigate efficiency of encoding versions as entries in
+a file versus encoding as separate files
+
+XXX Are FMRI-level categories actually a help, or is a detailed,
+hierarchical namespace going to get in the way?
+

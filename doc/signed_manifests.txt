@@ -1,0 +1,239 @@
+			Manifest signing
+			----------------
+
+Manifests in IPS contain all the packaging metadata - file
+permissions, ownership, content hashes, etc, and are stored and
+transmitted as a simple text file with one line per action.  During
+download or when a system is checked for compliance, the manifest
+contents are compared to the files to determine whether or not a
+package is correctly received/installed.  Given their importance,
+verifying that all manifests are correct and reflect the original
+publisher's intent is an important part of system validation.
+Cryptographic signatures protecting the integrity of all actions form
+a Merkle hash tree that includes the delivered binaries such that
+complete verification of the installed software is possible.  There
+are other uses for manifest signing beyond validation; signatures can
+also be used to indicate approval by other organizations or parties.
+For example, the internal QA organization could sign manifests of
+Sun-delivered packages once they had be determined to be qualified for
+production use; policy settings could mandate such approvals prior to
+installation.
+
+As a result, it is a useful characteristic for signatures to be
+independent of other signatures in a manifest; it should be possible
+to add (or remove) signatures (but not other actions) in a manifest
+without invalidating the other signatures that are present.  This
+feature also facilitates production handoffs, with signatures used
+along the path to indicate completion along the way; subsequent steps
+can optionally remove previous signatures at any time without ill-effect.
+
+The need to treat signatures differently during hash computation
+suggests that the signature itself should be easily distinguished from
+other sorts of package metadata; this leads us to a new signature
+action, of the form:
+
+signature <hash of certificate> algorithm=<signature algorithm> \
+    value=<signature value> \
+    chain="<hashes of certs needed to validate primary certificate>" \
+    version=<pkg version of signature>
+
+The payload and pkg.chain_certs attributes represent the packaging hash of the
+pem file(s) containing the x.509 certificate(s) downloadable from the
+originating repository; the value is the signed hash of the manifest's message
+text, prepared as discussed below.  The payload certificate is the certificate
+which verifies the value in pkg.sigval.  The other certificates presented need
+to form a certificate path that leads from the payload certificate to the trust
+anchor(s) that was established as part of the publisher configuration.
+
+To compute the signature of a manifest, first a canonical representation of the
+manifest is created.  (See "Computing the manifest's message text" below.)  The
+message text is then given to the signature algorithm along with the private key
+and the result is the value of the signature.
+
+Two types of signature algorithms are currently supported.  The first is rsa
+group of signature algorithms.  An example is "rsa-sha256".  The bit after the
+dash specifies the hash algorithm to use to change the message text into a
+single value the rsa algorithm can use.
+
+The second type of signature algorithm is compute the hash only.  This type of
+algorithm exists primarily for testing and process verification purposes and
+presents the hash as the signature value.  A signature action of this type is
+indicated by the lack of a payload certificate hash.  This type of signature
+action is verified if the image is configured to check signatures.  Its
+presence however does not count as a signature if signatures are required.
+
+signature algorithm=<hash algorithm> value=<hash> \
+    version=<pkg version of signature>
+
+Additional signature types (pgp, for example) may be added in the future.
+
+Additional metadata can be added to a signature if desired, as with any
+other action.
+
+Policies may be set for the image or for specific publishers.  The policies
+include ignoring signatures, verifying existing signatures, requiring
+signatures, and requiring that specific common names must be seen in the chain
+of trust.  Other policies may be added in the future.
+
+Computing the manifest's message text:
+--------------------------------------
+
+Manifests have an interesting property: the lines in a manifest may be
+reordered without affecting the meaning of the manifest.  As a result,
+manifest order is not preserved and subject to change during package
+publication processing.  It is thus necessary for our manifest signing
+to be independent of presented line order, or the action ordering
+algorithm used for installation, as that may change over time.
+
+Straightforward C-locale alphabetical sorting of attributes within
+actions, the multiple values within those attributes, and across actions 
+can be used to enforce a consistent ordering for signature purposes and 
+is not subject to change for a given manifest.
+
+In order to allow other signatures to be added or removed from a
+manifest, computation of the manifest message text does not include
+other signatures; in order to protect metadata on the signature
+itself, the signature being produced or verified is included in the
+message text at the end, aside of course from the actual signature
+value itself.
+
+For example, take the following manifest:
+set name=fmri value=foo@1.0
+dir path=foo/bar group=sys
+signature cert1 algorithm=rsa-sha256 value=val1 random_attr=baz
+signature cert2 algorithm=rsa-sha256 value=val2 another_attr=whee
+
+The text used to compute val1 is:
+dir group=sys path=foo/bar
+set name=fmri value=foo@1.0
+signature cert1 algorithm=rsa-sha256 value= random_attr=baz
+
+The text used to compute val2 is:
+dir group=sys path=foo/bar
+set name=fmri value=foo@1.0
+signature cert2 another_attr=whee algorithm=rsa-sha256 value=
+
+Including the text of the signature action itself prevents the signature action
+from being modified.  Ensuring that the text used for compute val1 contains no
+mention of the second signature (or any other signature) allows signatures to be
+added and removed freely.
+
+Verification of merged signatures:
+----------------------------------
+
+We produce "fat" packages (containing variants such as different
+architectures, debug vs non-debug kernel, etc) by producing manifests
+for each variant, and then merging them.  Actions that are the same
+between variants being merge are left unmodified; those that are
+different receive a variant tag (see facets.txt). If it is considered
+useful to have signatures persist and be useful across such merges,
+some additional steps are required to verify such signatures after
+merging.
+
+Generally, signatures will be unique to their variant, thus they will
+be tagged with variant tags after merging.  To verify signatures
+post-merge, the evaluation process has three steps after other signature actions
+have been removed from consideration.
+
+1) Any variant tags present on the signature are assumed to have been added
+after the merge.  Thus, all actions whose variants do not match the signature's
+variants are removed from inclusion in the message text.
+2) Since the variant tags were not present when the manifest was signed, they
+need to be removed from the attributes of each of the remaining actions as
+well.  This includes removing the set attributes which define the variants for
+the package.
+3) Restore any set actions in the existing_pkg_vars attribute which 
+describe variants which have been removed from the text.
+
+For example, consider the following manifest:
+set name=fmri value=foo@1.0
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=true value=false
+dir path=foo1 group=sys
+dir path=foo2 variant.arch=sparc
+dir path=foo2/d variant.arch=sparc variant.debug=true
+dir path=foo2/nd variant.arch=sparc variant.debug=false
+dir path=foo3 variant.arch=i386
+signature cert1 algorithm=rsa-sha256 value=val1 random_attr=baz \
+    variant.arch=sparc variant.debug=true
+signature cert2 algorithm=rsa-sha256 value=val2 another_attr=whee \
+    variant.arch=i386 existing_pkg_vars="variant.arch=i386"
+
+To compute the message text for the first signature, the first step is applied
+producing the following text:
+set name=fmri value=foo@1.0
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=true value=false
+dir path=foo1 group=sys
+dir path=foo2 variant.arch=sparc
+dir path=foo2/d variant.arch=sparc variant.debug=true
+signature cert1 algorithm=rsa-sha256 value=val1 random_attr=baz \
+    variant.arch=sparc variant.debug=true
+
+After the second step is applied, the text becomes:
+set name=fmri value=foo@1.0
+dir path=foo1 group=sys
+dir path=foo2
+dir path=foo2/d
+signature cert1 algorithm=rsa-sha256 value=val1 random_attr=baz
+
+Since the third step doesn't apply to this signature, the above text becomes the
+canonical message text.
+
+Computing the message text for the second signature proceeds like this:
+After the first step the text is:
+set name=fmri value=foo@1.0
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=true value=false
+dir path=foo1 group=sys
+dir path=foo3 variant.arch=i386
+signature cert2 algorithm=rsa-sha256 value=val2 another_attr=whee \
+    variant.arch=i386 existing_pkg_vars="variant.arch=i386"
+
+After the second step, the text is:
+set name=fmri value=foo@1.0
+dir path=foo1 group=sys
+dir path=foo3
+signature cert2 algorithm=rsa-sha256 value=val2 another_attr=whee \
+    existing_pkg_vars="variant.arch=i386"
+
+In the third step, we restore the set action which was present in the original
+manifest.  The text becomes:
+set name=fmri value=foo@1.0
+set name=variant.arch value=i386
+dir path=foo1 group=sys
+dir path=foo3
+signature cert2 algorithm=rsa-sha256 value=val2 another_attr=whee \
+    existing_pkg_vars="variant.arch=i386"
+
+The existing_pkg_vars attribute allows whether a package variant set
+action was present or not at the time of signing to be determined 
+deterministically.
+
+Publication of signed manifests:
+--------------------------------
+
+Publishing a signed manifest is a two step process.  First the package is
+published, unsigned, to a repository.  The package is then updated in place,
+using pkgsign, appending a signature action to the manifest in the repository
+but leaving the package, including its timestamp, intact.  This process allows a
+signature action to be added by someone other than the publisher without
+invalidating the publisher's signature.  For example, the QA department of a
+company may want to sign all packages that are installed internally to indicate
+they have been approved for use, but not republish the packages which would
+create a new timestamp and invalidate the signature of the original publisher.
+
+The disadvantage of this approach is that a fmri no longer represents a single
+manifest eternally.  Eventually, this problem is solved by having the client
+ensure that the hash of the manifest it loads for the fmri matches the hash in
+the catalog.  Until that feature is implemented, it is imperative that
+publishers ensure that no client has access to an unsigned manifest which they
+plan to sign in the future, or to return to the QA example, that no client
+inside the organization sees a manifest for a fmri without a signature which the
+QA plans to sign in the future.
+
+pkgsign is able to update a package in place through the use of a new publishing
+operation called append.  This operation opens a transaction to modify the
+manifest of a fmri which is already in the repository.  When the transaction is
+closed, the signed manifest replaces the existing manifest and the catalog is 
+updated to reflect the new hash of the manifest.

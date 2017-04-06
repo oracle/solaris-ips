@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkgsign-1">
+<refmeta><refentrytitle>pkgsign</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgsign</refname><refpurpose>映像包管理系统签名实用程序</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsign [-a <replaceable>hash_algorithm</replaceable>]
+    [-c <replaceable>path_to_signing_certificate</replaceable>]
+    [-i <replaceable>path_to_intermediate_cert</replaceable>] ...
+    [-k <replaceable>path_to_private_key</replaceable>] [-n] -s <replaceable>path_or_uri
+</replaceable>
+    [--help] [--no-index] [--no-catalog]
+    (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis></refsynopsisdiv>
+<refsect1 id="pkgsign-1-desc" role="description"><title></title>
+<para>通过使用提供的密钥和证书添加签名操作，<command>pkgsign</command> 可在系统信息库中更新给定 FMRI 的清单。修改后的软件包保留原来的时间戳。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option> <replaceable>hash_algorithm</replaceable></term>
+<listitem><para>使用签名算法 <replaceable>hash_algorithm </replaceable> 而不是缺省值。缺省签名算法为 <literal> rsa-sha256</literal>。支持的签名算法包括 <literal>rsa-sha256</literal>、<literal>rsa-sha384</literal>、<literal>rsa-sha512</literal>、<literal>sha256</literal>、<literal>sha384</literal> 和 <literal>sha512</literal>。仅指定散列算法的签名算法会导致签名值为软件包清单的散列。指定 <literal>rsa </literal> 和散列算法的签名算法会导致签名值为使用提供的私钥进行签名的清单的散列（请参见 <option>c</option> 和 <option> k</option> 选项）。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>path_to_signing_certificate</replaceable></term>
+<listitem><para>添加证书 <replaceable>path_to_signing_certificate</replaceable> 作为验证操作中的签名值时所使用的证书。<option>c</option> 选项仅可以与 <option>k</option> 选项一起使用。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>path_to_intermediate_cert</replaceable></term>
+<listitem><para>添加证书 <replaceable>path_to_intermediate_cert</replaceable> 作为验证证书 <replaceable>path_to_signing_certificate </replaceable>（作为参数提供给 <option>c</option>）时所使用的证书。通过多次指定 <option>i</option>，可提供多个证书。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>path_to_private_key</replaceable></term>
+<listitem><para>使用存储在 <replaceable>path_to_private_key </replaceable> 中的私钥对清单进行签名。<option>k</option> 选项只能与 <option>c</option> 选项一起使用。如果未设置 <option>k</option>，则签名值为清单的散列。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>执行试运行，不以任何方式更改系统信息库。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para>对位于 <replaceable>path_or_uri </replaceable> 的系统信息库中的软件包进行签名。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>在重新发布已签名的清单后不更新系统信息库搜索索引。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>在重新发布已签名的清单后不更新系统信息库目录。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>使用清单的散列值进行签名</title>
+<para>使用清单的散列值对发布到 <literal>http://localhost:10000</literal> 的软件包进行签名。这通常用于测试。</para>
+<screen>$ <userinput>pkgsign -s http://localhost:10000 -a sha256 &bsol;</userinput>
+<userinput>example_pkg@1.0,5.11-0:20100626T030108Z</userinput></screen>
+</example>
+<example><title>使用密钥和证书进行签名</title>
+<para>使用 <literal>rsa-sha384</literal> 对发布到位于 <literal>/foo/bar</literal> 的文件系统信息库的软件包进行签名，以便对清单执行散列和签名操作。签名密钥位于 <literal>/key/usr2.key</literal> 中，其关联的证书位于 <literal>/key/usr2.cert</literal> 中，而用于验证证书的证书位于 <literal>/icerts/usr1.cert</literal> 中。</para>
+<screen>$ <userinput>pkgsign -s file:///foo/bar/ -a rsa-sha384 &bsol;</userinput>
+<userinput>-k /key/usr2.key -c /key/usr2.cert -i /icerts/usr1.cert &bsol;</userinput>
+<userinput>example_pkg@1.0,5.11-0:20100626T031341Z</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>请求了多项操作，但只有一部分操作成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

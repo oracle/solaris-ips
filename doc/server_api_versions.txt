@@ -1,0 +1,252 @@
+Version 12:
+    Incompatible with clients using versions 0-11.
+
+    pkg.server.api changed as follows:
+        * New constants 'PKG_STATE_RENAMED' and 'PKG_STATE_OBSOLETE' were
+          added to assist in determining package state information returned
+          from functions to the CatalogInterface class.
+
+        * The fmris() function of CatalogInterface now has an 'ordered'
+          parameter to control whether FMRIs are returned in ascending name,
+          descending version order.
+
+        * A new function named 'gen_allowed_packages' was added to
+          CatalogInterface to determine a list of packages allowed based on
+          the FMRI of a package that incorporates other packages.
+
+        * A new function named 'gen_packages' was added to
+          CatalogInterface as a replacement for the removed functions
+          get_matching_version_fmris() and get_matching_pattern_fmris().  It
+	  provides superior filtering capabilities and includes package state
+	  and attribute information.
+
+Version 11:
+    Incompatible with clients using versions 0-10.
+
+    pkg.server.api changed as follows:
+        * A new property named 'version' was added to the CatalogInterface
+          class to expose the version format of the catalog.
+
+        * The 'rename_requests' property was removed from the ConfigInterface
+          class as the stat it represented was for functionality that was
+          never implemented.
+
+        * A new property named 'publisher' that returns the Publisher
+          object for the publisher related to the request was added to the
+          RequestInterface class.
+
+Version 10:
+    Incompatible with clients using versions 0-9.
+
+    pkg.server.api changed as follows:
+        * The PackageInfo.PREF_PUBLISHER property and data was removed.
+    
+        * The CatalogInterface.INFO_MULTI_MATCH property was removed and
+          the info() method no longer detects and considers multiple
+          matches for a single pattern an error.
+
+Version 9:
+    Incompatible with clients using versions 0-8.
+
+    pkg.server.api changed as follows:
+        * All feed related properties retrieved or set using the
+          (get|set)_repo_* methods are no longer valid.  Instead,
+          all feed-related configuration information must be
+          retrieved using the new depot configuration methods
+          found in the ConfigInterface class.
+
+Version 8:
+    Incompatible with clients using versions 0-7.
+
+    pkg.server.api changed as follows:
+        * The return type of CatalogInterface.search changed so that instead
+          of returning the fmri string in the result, it returns a PkgFmri
+          object.
+
+Version 7:
+    Compatible with clients using version 6.
+
+    CatalogInterface has changed as follows:
+        * A new function named 'info' was added to provide a way to
+          retrieved package information.  It returns a PackageInfo
+          object representing the set of available package information.
+          See pydoc 'pkg.client.api.PackageInfo' for more information.
+
+        * A new function named 'get_entry_all_variants' was added to
+          provide access to the list of variants for a given package.
+
+    pkg.server.api changed as follows:
+        * New classes representing package metadata and license
+          information were added to pkg.api_common.
+
+    pkg.server.api_errors changed as follows:
+        * A new exception named 'UnrecognizedOptionsToInfo' was added.
+
+Version 6:
+Incompatible with clients using versions 0-5.
+    CatalogInterface:
+        * get_matching_pattern_fmris() and get_matching_version_fmris()
+          now return a tuple of (fmris, unmatched).  Where 'fmris' is
+          a list of matching FMRIs, and 'unmatched' is a dict of
+          unmatched patterns or versions indexed by match criteria.
+
+        * package_count now returns the number of unique packages in the
+          catalog instead of the unique number of package versions.
+
+        * package_version_count, a new property, was added that contains
+          the number of unique package versions in the catalog.
+
+     ConfigInterface:
+        * get_repo_attrs was renamed to get_repo_properties
+
+        * get_repo_attr_value was renamed to get_repo_property_value
+
+Version 5:
+Compatible with clients using Versions 3-4.
+    ConfigInterface.get_repo_attr_value() has changed as follows:
+        * Section 'feed' attribute 'authority' has been removed.  It has been
+          replaced by section 'publisher' attribute 'prefix'.
+
+        * Section 'publisher' with attributes 'alias' and 'prefix' was added.
+
+        * New attributes were added for section 'repository': 'collection_type',
+          'legal_uris', 'mirrors', 'origins', 'refresh_seconds',
+          'registration_uri', and 'related_uris'.  See the pydoc for
+          pkg.server.api.ConfigInterface for details.
+
+Version 4:
+Compatible with clients using Version 3.
+
+Changes:
+    CatalogInterface.search() has changed as follows:
+        * A docstring has been added; see pydoc pkg.server.api for details.
+
+        * Added optional keyword 'matching_version' that allows consumers to
+          filter search results based on version.
+
+        * Added optional, boolean keyword 'return_latest' that causes only the
+          the newest versions of packages to be returned when 'return_type'
+          is Query.RETURN_PACKAGES.
+
+Version 3:
+Incompatible with clients using Versions 0-2.
+
+Changes:
+    CatalogInterface.search() has changed as follows:
+        * Added optional, boolean keyword 'case_sensitive'.  This indicates
+          whether a case-sensitive search should be performed.
+
+        * Added optional keyword argument 'return_type'.  This determines
+          whether results should be returned as Query.RETURN_ACTIONS or
+          Query.RETURN_PACKAGES.
+
+        * Added optional, integer keyword argument 'start_point'.  This
+          specifies how many matching results should be skipped before
+          returning anything.
+
+        * Added optional, integer keyword argument 'num_to_return'.  This
+          indicates how many results should be returned before the search
+          is aborted.
+
+        * search_done() was removed.  Previously, after calling search(), api
+          consumers would have to call search_done().  This is no longer
+          necessary.
+
+Version 2:
+Incompatible with clients using Versions 0-1.
+Changes:
+CatalogInterface.get_matching_version_fmris() no longer accepts the constraint
+parameter.  However, as before, it expects a list of version strings for the
+'versions' parameter.  These version strings may now contain the wildcard
+characters '*' and '?'.
+
+Version 1:
+Incompatible with clients using Version 0.
+Changes:
+CatalogInterface.search_done() was added to perform cleanup after all results
+have been retrieved from search().
+
+CatalogInterface.search() now returns a generator object, instead of a list
+object, that requires that CatalogInterface.search_done() is called after all
+of the desired results have been retrieved for proper cleanup.
+
+Version 0:
+Initial api version, containing the following:
+class BaseInterface
+        -- used to instantiate other interface objects
+
+class CatalogInterface
+        def __init__(self, version_id, base):
+        def fmris(self):
+        def get_matching_pattern_fmris(self, patterns):
+        def get_matching_version_fmris(self, versions,
+            constraint=pkg.version.CONSTRAINT_AUTO):
+
+        @property
+        last_modified
+
+        @property
+        package_count
+
+        def search(self, token):
+
+        @property
+        search_available
+
+class ConfigInterface
+        def __init__(self, version_id, base):
+
+        @property
+        catalog_requests
+
+        @property
+        content_root
+
+        @property
+        file_requests
+
+        @property
+        filelist_requests
+
+        @property
+        filelist_file_requests
+
+        @property
+        in_flight_transactions
+
+        @property
+        manifest_requests
+
+        @property
+        mirror
+
+        @property
+        readonly
+
+        @property
+        rename_requests
+
+        @property
+        web_root
+
+        def get_repo_attrs(self):
+
+        def get_repo_attr_value(self, section, attr):
+
+class RequestInterface
+        def __init__(self, version_id, base):
+
+        def get_accepted_languages(self):
+
+        def get_rel_path(self, uri):
+
+        def log(self, msg):
+
+        @property
+        params
+
+        @property
+        path_info
+
+        def url(self, path='', qs='', script_name=None, relative=None):
+

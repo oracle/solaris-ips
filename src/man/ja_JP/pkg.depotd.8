@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkg.depotd-8">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.depotd</refname><refpurpose>Image Packaging System のデポサーバー</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depotd [--cfg <replaceable>source</replaceable>] [-a <replaceable>address</replaceable>]
+    [--content-root <replaceable>root_dir</replaceable>] [-d <replaceable>inst_root</replaceable>]
+    [--debug <replaceable>feature_list</replaceable>] [--disable-ops=<replaceable>op</replaceable>[/1][,...]]
+    [--image-root <replaceable>path</replaceable>] [--log-access <replaceable>dest</replaceable>]
+    [--log-errors <replaceable>dest</replaceable>] [--mirror <replaceable>mode</replaceable>] [-p <replaceable>port</replaceable>]
+    [--proxy-base <replaceable>url</replaceable>] [--readonly <replaceable>mode</replaceable>] [-s <replaceable>threads</replaceable>]
+    [--sort-file-max-size <replaceable>bytes</replaceable>] [--ssl-cert-file <replaceable>source</replaceable>]
+    [--ssl-dialog <replaceable>type</replaceable>] [--ssl-key-file <replaceable>source</replaceable>]
+    [-t <replaceable>socket_timeout</replaceable>] [--writable-root <replaceable>path</replaceable>]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depotd</command> は、Image Packaging System のデポサーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージデポを使用します。</para>
+<para>取得クライアントである<command>pkg</command> などのクライアントは、直接リポジトリから、または集積サーバーを通じてパッケージおよびパッケージメタデータのリストを取得できます。公開クライアントである <command>pkgsend</command> は、直接リポジトリに、または集積サーバーを通じて新しいバージョンのパッケージを送信できます。<command>pkgrepo</command> を使用して、集積サーバーで使用するリポジトリを作成したり、集積サーバーで直接、および集積サーバーを通じてこれらのリポジトリを管理したりすることができます。</para>
+<para><command>pkg.depotd</command> は通常、システム上のサービスとして実行されます。パッケージおよびソフトウェアの開発者が、テスト目的で非公開のコピーを実行することが必要になる場合があります。</para>
+<para>デポは、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開デポサーバーを保守するためのベストプラクティスをいくつか説明します。</para>
+</refsect1>
+<refsect1 role="other"><title>SMF プロパティー</title>
+<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。<literal>pkg.depot-config</literal>(8) マニュアルページおよび後述の <literal>pkg/standalone</literal> プロパティーを参照してください。</para>
+<para>SMF プロパティーについては、<literal>smf</literal>(7) マニュアルページを参照してください。次のようなプロパティーがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/address</literal></term>
+<listitem><para>(<literal>net_address</literal>) 接続を待機する IP アドレス。デフォルト値は 0.0.0.0 (<literal>INADDR_ANY</literal>) で、これはすべてのアクティブなインタフェースで待機することを示します。すべてのアクティブな IPv6 インタフェースで待機するには、<literal>::</literal> を使用します。最初の値のみが使用されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/content_root</literal></term>
+<listitem><para>(<literal>astring</literal>) インスタンスがその静的コンテンツまたはその他の Web コンテンツを検索するファイルシステムパス。デフォルト値は <filename>/usr/share/lib/pkg</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/debug</literal></term>
+<listitem><para>(<literal>astring</literal>) 有効にするデバッグ機能のカンマ区切りのリスト。取り得る値:</para>
+<variablelist>
+<varlistentry><term><literal>headers</literal></term>
+<listitem><para>すべての要求のヘッダーをエラーログに記録します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/disable_ops</literal></term>
+<listitem><para>(<literal>astring</literal>) 集積サーバーに対して無効にする操作のカンマ区切りのリスト。操作は <replaceable> operation</replaceable>[/<replaceable>version</replaceable>] と指定します (たとえば、<literal>catalog</literal> または <literal>search_1</literal>)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/inst_root</literal></term>
+<listitem><para>(<literal>astring</literal>) インスタンスがそのリポジトリデータを検索するファイルシステムパス。<literal>PKG_REPO</literal> が指定されていないかぎり、必須です。デフォルト値は <filename>/var/pkgrepo</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_access</literal></term>
+<listitem><para>(<literal>astring</literal>) デポプロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。<filename>stdout</filename> が <literal>tty</literal> の場合、デフォルト値は <filename>stdout</filename> です。<filename>stdout</filename> が <literal>tty</literal> でない場合、デフォルト値は <literal>none</literal> です。<literal>pkg</literal> をサービスとして実行する場合、<literal>log_access</literal> のデフォルト値は <literal>none</literal> で、出力は <filename>/var/svc/log/application-pkg-server:*</filename> に書き込まれます。大きいログファイルの管理例については、<literal>logadm</literal>(8) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_errors</literal></term>
+<listitem><para>(<literal>astring</literal>) デポプロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。デフォルト値は <filename>stderr</filename> です。大きいログファイルの管理例については、<literal>logadm</literal>(8) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/mirror</literal></term>
+<listitem><para>(<literal>ブール型</literal>) パッケージミラーモードを使用するかどうかを設定します。true の場合、公開操作およびメタデータ操作は無効になり、制限付きのブラウザユーザーインタフェースのみが提供されます。<literal>pkg/readonly</literal> プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は <literal>false</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) インスタンスが受信パッケージ要求を待機するポート番号。SSL 証明書およびキー情報が提供されていない場合、デフォルト値は80 です。提供されている場合、デフォルト値は 443 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/proxy_base</literal></term>
+<listitem><para>(<literal>uri</literal>) 集積サーバーのベース URL を変更します。これは、逆プロキシ構成において、Apache またはその他の Web サーバーの内側で動作するときに最も有用です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/readonly</literal></term>
+<listitem><para>(<literal>boolean</literal>) <command>pkgsend</command> によって開始される操作などの変更操作を無効にするかどうかを設定します。取得操作は引き続き使用可能です。<literal>pkg/mirror</literal> プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は <literal>true</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/socket_timeout</literal></term>
+<listitem><para>(<literal>count</literal>) サーバーが接続を閉じる前にクライアントからの応答を待機する最大秒数。デフォルト値は 60 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/sort_file_max_size</literal></term>
+<listitem><para>(<literal>count</literal>) インデクサソートファイルの最大サイズ。集積庫がインデックスの作成に使用する RAM の量を制限したり、速度向上のために RAM の量を増やしたりする場合に使用されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_cert_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM エンコードされた証明書ファイルの絶対パス名。デフォルト値は <literal>none</literal> です。このプロパティーは <literal>ssl_key_file</literal> とともに使用する必要があります。<literal>ssl_cert_file</literal> と <literal>/ssl_key_file</literal> の両方が指定されている場合、集積庫は SSL 要求にのみ応答します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_dialog</literal></term>
+<listitem><para>(<literal>astring</literal>) <literal>ssl_key_file</literal> の暗号化の解除に使用するパスフレーズを取得するために使用する方法を指定します。取り得る値:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>builtin</literal></term>
+<listitem><para>パスフレーズの入力を要求します。これがデフォルト値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
+<listitem><para>指定された外部プログラムを実行して、パスフレーズを取得します。プログラムの最初の引数は <literal>''</literal> であり、予約されています。プログラムの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>smf:fmri</literal></term>
+<listitem><para>FMRI に関連したサービスインスタンスから、プロパティー <literal>pkg_secure/ssl_key_passphrase</literal> の値を取得しようとします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_key_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、<literal>ssl_cert_file</literal> プロパティーとともに使用してください。<literal>/ssl_key_file</literal> および <literal>ssl_cert_file</literal> の両方が指定された場合、デポのみが SSL 要求に応答します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/standalone</literal></term>
+<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>false</literal> で、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。詳細は、<literal>pkg.depot-config</literal>(8) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/threads</literal></term>
+<listitem><para>(<literal>count</literal>) 要求を処理するために起動されるスレッドの数。デフォルト値は 60 です。小規模の配備にのみ適しています。この値は、同時実行されるクライアントの数の約 20 倍に設定してください。<literal>threads</literal> の最大値は 5000 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/writable_root</literal></term>
+<listitem><para>(<literal>astring</literal>) プログラムが書き込みアクセスできるディレクトリのファイルシステムパス。これは <option>readonly</option> オプションとともに使用して、集積サーバーがパッケージ情報への書き込みアクセスを必要とせずに、検索インデックスなどのファイルを作成できるようにします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_secure/ssl_key_passphrase</literal></term>
+<listitem><para>(<literal>astring</literal>) <literal>pkg/ssl_key_file</literal> の暗号化を解除するために使用するパスワード。この値は、属性 <literal>solaris.smf.read.pkg-server</literal> を使用して読み取り権限保護されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>集積サーバーのブラウザユーザーインタフェース (BUI) の表示および動作は次のプロパティーを使用して制御されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg_bui/feed_description</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードの説明の段落。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_icon</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードを視覚的に表現するために使用される小さなイメージのパス名。パス名は <literal>content_root</literal> の相対パス名にしてください。デフォルト値は <filename>web/_themes/pkg-block-icon.png </filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_logo</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードを視覚的にブランディングまたは識別するために使われる大きな画像のパス名。この値は <literal>content_root</literal> からの相対パスで指定します。デフォルト値は <filename>web/_themes/pkg-block-icon.png</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_name</literal></term>
+<listitem><para>(<literal>astring</literal>) リポジトリにサービスを提供するデポによって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_window</literal></term>
+<listitem><para>(<literal>count</literal>) フィードの生成時に含める、リポジトリに関するフィードが最後に生成された時点までの時間数。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>パッケージデポは、<literal>pkg</literal>(7) からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージデポサーバーの負荷が軽減されます。この機能は、SMF によって構成される代替デポサービスとして利用可能です。この機能はサービス検出のために mDNS および <literal>dns-sd</literal> を使用します。</para>
+<para>mDNS ミラーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。次のようなプロパティーがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。デフォルト値は <filename>/</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) インスタンスが受信パッケージ要求を待機するポート番号。デフォルトの値は 80 です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para><command>pkg.depotd</command> はその基本構成情報をファイルから、または既存の SMF サービスインスタンスのプロパティーデータから読み取ることができます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-cfg</option> <replaceable>source</replaceable></term>
+<listitem><para>構成データを読み書きするときに使用するファイルのパス名、または <literal>smf:<replaceable>fmri</replaceable></literal> 形式の文字列。<replaceable>fmri</replaceable> は、構成データの読み取り元インスタンスのサービス障害管理リソース識別子 (FMRI) です。指定されるファイルの形式については、後述する「集積庫の構成」を参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>利用可能な既存の設定ソースがない場合や、<option>-cfg</option> を使用して指定された構成ファイルから読み取られた値をオーバーライドする場合は、次のオプションを使用して、集積サーバーのデフォルト動作を変更できます:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>a</option> <replaceable>address</replaceable></term>
+<listitem><para>前出の <literal>pkg/address</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-content-root</option> <replaceable>root_dir</replaceable></term>
+<listitem><para>前出の <literal>pkg/content_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>inst_root</replaceable></term>
+<listitem><para>前出の <literal>pkg/inst_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-debug</option> <replaceable>feature_list</replaceable></term>
+<listitem><para>前出の <literal>pkg/debug</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable-ops</option>=<replaceable>op</replaceable>[<literal> /1</literal>][,...]</term>
+<listitem><para>前出の <literal>pkg/disable_ops</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-image-root</option> <replaceable>path</replaceable></term>
+<listitem><para>上記の <literal>pkg/image_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-access</option> <replaceable>dest</replaceable></term>
+<listitem><para>前出の <literal>pkg/log_access</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-errors</option> <replaceable>dest</replaceable></term>
+<listitem><para>前出の <literal>pkg/log_errors</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mirror</option> <replaceable>mode</replaceable></term>
+<listitem><para>前出の <literal>pkg/mirror</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>前出の <literal>pkg/port</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-proxy-base</option> <replaceable>url</replaceable></term>
+<listitem><para>前出の <literal>pkg/proxy_base</literal> を参照してください。空の値を指定した場合、このオプションは無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-readonly</option> <replaceable>mode</replaceable></term>
+<listitem><para>前出の <literal>pkg/readonly</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option><replaceable>threads</replaceable></term>
+<listitem><para>前出の <literal>pkg/threads</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sort-file-max-size</option> <replaceable>bytes</replaceable></term>
+<listitem><para>前出の <literal>pkg/sort_file_max_size</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-cert-file</option> <replaceable>source</replaceable></term>
+<listitem><para>前出の <literal>pkg/ssl_cert_file</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-dialog</option> <replaceable>type</replaceable></term>
+<listitem><para>上記の <literal>pkg/ssl_dialog</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-key-file</option> <replaceable>source</replaceable></term>
+<listitem><para>上記の <literal>pkg/ssl_key_file</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>socket_timeout</replaceable></term>
+<listitem><para>前出の <literal>pkg/socket_timeout</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-writable-root</option> <replaceable>path</replaceable></term>
+<listitem><para>前出の <literal>pkg/writable_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>パッケージリポジトリの追加の管理機能は <command>pkgrepo</command> によって提供されます。</para>
+</refsect1>
+<refsect1 role="other"><title>集積庫の構成</title>
+<para><option>-cfg</option> オプションを使用して (SMF の FMRI の代わりに) 構成ファイルが指定されたときは、集積サーバーはすべての構成データを単純テキスト形式で読み書きします。構成データについては「SMF プロパティー」ですでに説明しました。設定データは、<literal>[<replaceable>section</replaceable>]</literal> ヘッダーで始まるセクション群と、それに続く <literal>name = <replaceable>value</replaceable></literal> エントリ群で構成されます。記述の継続は RFC 822 形式です。継続行を空白で始めることにより、複数の行に値を分割できます。</para>
+<para>構成ファイルで指定されていない必要な値はすべて、前出の「オプション」で一覧表示したオプションを使用して指定する必要があります。サンプルの構成ファイルは次のようになります。</para>
+<programlisting>[pkg]
+port = 80
+inst_root = /export/repo
+
+[pub_example_com]
+feed_description = example.com's software
+  update log</programlisting>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>集積サーバーの有効化</title>
+<screen># <userinput>svcadm enable application/pkg/server</userinput></screen>
+</example>
+<example id="GLHBM"><title>サーバーの待機ポートを変更します。</title>
+<screen># <userinput>svccfg -s application/pkg/server setprop pkg/port = 10000</userinput>
+# <userinput>svcadm refresh application/pkg/server</userinput>
+# <userinput>svcadm restart application/pkg/server</userinput></screen>
+</example>
+<example id="GLHAW"><title>ミラーの有効化</title>
+<screen># <userinput>svcadm enable application/pkg/dynamic-mirror</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>サービスを提供するリポジトリを格納したディレクトリを指定します。<option>d</option> が指定されている場合は、この値は無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_DEPOT_CONTENT</envar></term>
+<listitem><para>集積庫によってサービスが提供される静的コンテンツを格納するディレクトリを指定します。下記の「ファイル」のファイルは、このディレクトリに存在するべきですが、それらの内容が提供されるデフォルトの内容と異なっていてもかまいません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>操作が成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
+<listitem><para>デフォルトのプレゼンテーションコンテンツの場所。別の場所を選択するには、<literal>pkg/content_root </literal> を変更します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<literal>syslogd</literal>(8)、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para><literal>pkd.depotd</literal> サービスは、サービス識別子 <literal>svc:/application/pkg/server</literal> のもとで SMF によって管理されます。</para>
+<para>mDNS ミラーサービスは、サービス識別子 <literal>svc:/application/pkg/dynamic-mirror</literal> のもとで SMF によって管理されます。</para>
+<para>デポへの読み取りアクセスを制御するために、<command>pkg</command> がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。</para>
+<para>最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、そのインスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。詳細は、<literal>pkg.depot-config</literal>(8) のマニュアルページを参照してください。</para>
+<para>ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、デポサーバープロセスを再起動する必要があります。デポサーバープロセスを再起動するには、次のいずれかの方法を使用します。</para>
+<itemizedlist>
+<listitem><para><command>svcadm</command> を使用して、<literal>application/pkg/server</literal> インスタンスを再起動します。</para></listitem>
+<listitem><para><command>kill</command> を使用して、<literal>SIGUSR1</literal> シグナルをデポサーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。</para>
+<screen># <userinput>kill -USR1 <replaceable>pid</replaceable></userinput></screen>
+</listitem>
+</itemizedlist>
+</refsect1>
+</refentry>
+

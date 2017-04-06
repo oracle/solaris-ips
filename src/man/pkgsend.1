@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkgsend-1">
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">30 Jul 2013</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgsend</refname><refpurpose>Image Packaging System publication client</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [-u] [--target <replaceable>file</replaceable>]
+    <replaceable>source</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgsend publish [-b <replaceable>bundle</replaceable>]... [-d <replaceable>source</replaceable>]...
+    [-s <replaceable>repo_uri_or_path</replaceable>] [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsend-1-desc" role="description"><title></title>
+<para><command>pkgsend</command> enables the publication of new packages and
+new package versions to an image packaging repository using package manifests.
+To create or manage repositories, see <command>pkgrepo</command>(1). To create
+package archives from packages in an existing repository, see <command>pkgrecv</command>(1).
+For more information about package manifests, see <literal>pkg</literal>(7).</para>
+<para>After a <command>pkgsend publish</command> operation, if your <replaceable>repo_uri_or_path</replaceable> repository must support <command>pkg search</command> operations,
+run <command>pkgrepo refresh</command> on the repository to update search
+indexes.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>The following subcommands are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>u</option>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
+<listitem><para>Read each <replaceable>source</replaceable> (such as an SVR4
+package, a directory, or a <command>tar</command> file) and emit the manifest
+that describes the <replaceable>source</replaceable> to <filename>stdout</filename>.
+</para>
+<para>The output manifest can then be annotated, have dependencies added or
+analyzed using <command>pkgdepend</command>, and have its correctness verified
+using <command>pkglint</command> before being passed to the <command>publish</command> subcommand.
+</para>
+<itemizedlist>
+<para>The following are supported sources:</para>
+<listitem><para>Filesystem format SVR4 packages</para></listitem>
+<listitem><para>Datastream format SVR4 packages</para></listitem>
+<listitem><para><command>tar</command> files</para></listitem>
+<listitem><para>Directories</para></listitem>
+</itemizedlist>
+<para>If the base name of files in the source match the patterns specified
+with <option>T</option>, the timestamp of the file is added to the action
+for that file. The <replaceable>pattern</replaceable> uses shell matching
+rules:</para>
+<variablelist>
+<varlistentry><term>*</term>
+<listitem><para>Matches everything.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>?</term>
+<listitem><para>Matches any single character.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>[<replaceable>seq</replaceable>]</term>
+<listitem><para>Matches any character in <replaceable>seq</replaceable>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>![<replaceable>seq</replaceable>]</term>
+<listitem><para>Matches any character not in <replaceable>seq</replaceable>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>When the specified source is a directory, there is no clear way to distinguish
+a <literal>file</literal> action from a <literal>hardlink</literal> action
+when there are multiple path names for a single inode. Normally, the first
+one found in the file system walk is treated as a file and the rest as hardlinks.
+This can be arbitrary, depending on the implementation of the file system.
+To specify which path names should be treated as files, pass each path name
+as an argument to the <option>-target</option> option. This option has no
+effect on other types of sources because they are capable of expressing which
+path names are files and which are hardlinks.</para>
+<para>When SVR4 packages are provided as a source, <command>pkgsend</command> checks
+that no files with class action scripts are present and no preinstall, postinstall,
+preremove, or postremove scripts are present. An exception is made for any
+SMF manifests installed with the <literal>manifest</literal> class. <literal>BASEDIR
+</literal> is removed from all relocatable paths.</para>
+<para>The SVR4 <literal>DESC</literal> parameter is converted to a <literal>pkg.description
+</literal> value. The SVR4 <literal>NAME</literal> parameter is converted
+to a <literal>pkg.summary</literal> value.</para>
+<para>When generating a manifest based on a directory, the owner and group
+for each file and directory defaults to root and bin respectively.
+To use the owner and group information set on the files and directories instead, 
+specify <option>u</option>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
+<listitem><para>Publish a package using the specified package manifests to
+the target package repository, retrieving files for the package from the
+provided sources. If multiple manifests are specified, they are joined in the
+order provided. If a manifest is not specified, the manifest is read from
+<literal>stdin</literal>.</para>
+<para>If not specified, <command>pkgsend publish</command> adds the build
+version to the package FMRI. The <command>publish</command> tool also adds
+the timestamp (the current time in UTC) to the package FMRI. See the
+<literal>pkg</literal>(7) man page for information about the version string of
+a package FMRI.</para>
+<para>If multiple <command>pkgsend publish</command> processes might be
+publishing to the same <option>s</option> repository simultaneously, specifying
+the <option>-no-catalog</option> option is recommended. See the description of
+the <option>-no-catalog</option> option below.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
+<listitem><para>Add the specified bundle to the list of sources to search
+when looking for files in the manifest. Bundles are sources such as tar files
+and SVR4 packages. If this option is specified multiple times, sources are
+searched in the order they appear on the command line. If both <option>b</option> and <option>
+d</option> are specified, <option>d</option> sources are searched first. For
+a description of supported bundles and how they are used, refer to the <command>generate
+</command> subcommand above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>source</replaceable></term>
+<listitem><para>Add the specified directory to the list of sources to search
+when looking for files in the manifest. If this option is specified multiple
+times, sources are searched in the order they appear on the command line.
+For a description of supported sources and how they are used, refer to the <command>
+generate</command> subcommand above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Publish the package to the repository located at the given
+URI or file system path. See the &ldquo;Notes&rdquo; section below for more
+information about restrictions and suggestions for publication. See also the &ldquo;Environment
+Variables&rdquo; section.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>Use the <option>-key</option> option to specify a client SSL key file to use for package retrieval from an HTTPS repository. Use the <option>-cert</option> option to specify a client SSL certificate file to use for package retrieval from an HTTPS repository. This option pair can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>Do not add the package to the publisher's catalog. This option
+is recommended whenever multiple packages are being published at one time
+because updates to publisher catalogs must be performed serially. Publication
+performance might be significantly reduced if this option is not used when
+multiple processes are simultaneously publishing packages. After publication is
+complete, the new packages can be added to the respective publisher catalogs by
+using the <command>pkgrepo refresh</command> command.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For a description of the <option>T</option> option, see the <command>generate
+</command> subcommand above.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>The path or URI of the destination repository.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Generate and Publish a Package</title>
+<para>Create a package using <command>pkgsend generate</command> and publish
+it.</para>
+<screen>$ <userinput>pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m</userinput></screen>
+<para>Add the package FMRI for the <literal>example.com</literal> publisher
+to the beginning of <filename>foo.p5m</filename>.</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0</programlisting>
+<para>The resulting manifest should look like this:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0
+dir group=sys mode=0755 owner=root path=usr
+dir group=bin mode=0755 owner=root path=usr/bin
+file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo</programlisting>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /path/to/proto &bsol;</userinput>
+<userinput>/path/to/manifests/foo.p5m</userinput></screen>
+</example>
+<example><title>Create and Publish a Trivial Package</title>
+<para>Create a manifest for publisher <literal>example.com</literal> containing
+the following lines:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting>
+<para>Publish the package:</para>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /exdir</userinput></screen>
+</example>
+<example><title>Use a Preexisting Manifest</title>
+<para>Publish a package using file system based publication and a preexisting
+manifest.</para>
+<screen>$ <userinput>pkgsend publish -s /tmp/example_repo -d /tmp/pkg_files &bsol;</userinput>
+<userinput>/tmp/pkg_manifest</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>An error occurred.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>Because of publication protocol limitations, file system based publication
+must be used when publishing individual package files that are greater than
+128 MB in size. File system based publication is also recommended when access
+control for a repository is needed.</para>
+<para>When using file system based publication, any <command>pkg.depotd</command> processes
+that are serving the target repository must be restarted after publication
+is completed for the changes to be reflected in its web interface or search
+responses. See <command>pkg.depotd</command>(8) for more information.</para>
+</refsect1>
+</refentry>
+

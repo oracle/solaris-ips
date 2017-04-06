@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgmerge-1">
+<refmeta><refentrytitle>pkgmerge</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgmerge</refname><refpurpose>Image Packaging System パッケージマージユーティリティー</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgmerge [-n] -d <replaceable>dest_repo</replaceable>
+    [-p <replaceable>publisher_prefix</replaceable>]...
+    -s <replaceable>variant</replaceable>=<replaceable>value</replaceable>[,...],<replaceable>src_repo</replaceable> ...
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgmerge-1-desc" role="description"><title></title>
+<para><command>pkgmerge</command> は、複数バリアントのパッケージを作成するためのパッケージ発行ツールです。このツールはそのために、名前とバージョン (タイムスタンプは除外) が同じパッケージをマージし、特定のソースの指定されたバリアント名および値とマージされるバージョン内で一意であるアクションをタグ付けしたあと、新しいパッケージをターゲットリポジトリに公開します。各ソースのすべてのパッケージの最新バージョンのみが使用されます。</para>
+<para>アクションの属性 <literal>pkg.merge.blend</literal> がマージされるバリアントの名前に設定されている場合は、アクションの最終的な出力に追加されたバリアントタグが含まれないようにするために、そのアクションはマージの前にほかのマニフェストにコピーされます。属性 <literal>pkg.merge.blend</literal> 自体は、出力マニフェストですべてのアクションから削除されることに注意してください。この属性は、複数のパスマージに異なる値を使用して繰り返すことができます。</para>
+<para>入力マニフェスト内の同じパスに入る同一でないアクションがあると、<command>pkgmerge</command> はエラーで終了します。</para>
+<para><command>pkgmerge</command> 操作後に、公開先のリポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、リポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>dest_repo</replaceable></term>
+<listitem><para>マージされたパッケージを公開する先のターゲットリポジトリのファイルシステムのパスまたは URI を指定します。このターゲットリポジトリはすでに存在している必要があります。新しいリポジトリは、<command>pkgrepo</command> を使用して作成できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>ターゲットリポジトリを変更することなく、試験実行を行います。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher_prefix</replaceable></term>
+<listitem><para>パッケージのマージ元になるパブリッシャーの名前を指定します。このオプションは複数回指定できます。</para>
+<para>デフォルトでは、すべてのソースリポジトリ内のすべてのパブリッシャーからパッケージがマージされます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>variant</replaceable>=<replaceable>value</replaceable>[,...],<replaceable>src_repo</replaceable></term>
+<listitem><para>このソースのパッケージに使用するバリアント名および値、そのあとに、パッケージを取得する元のソースリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。複数のバリアントをコンマで区切って指定できます。すべてのソースに対して同じバリアントを指定する必要があります。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="operands"><title></title>
+<para>次のオペランドを指定できます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
+<listitem><para>マージするパッケージを指定します。<replaceable>pkg_fmri_pattern</replaceable> オペランドには、<literal>glob</literal>(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>次の環境変数がサポートされています。</para>
+<variablelist>
+<varlistentry><term><envar>TMPDIR</envar></term>
+<listitem><para>プログラム実行中に一時データが格納されるディレクトリの絶対パス。設定されていない場合、一時データはデフォルトで <filename>/var/tmp</filename> に格納されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>バリアント名および値を指定する</title>
+<para>指定されたソース内に見つかった各パッケージを、取得元のソースに指定された特定のバリアント名および値でタグ付けします。</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src.example.com &bsol;</userinput>
+<userinput>-d http://dest.example.com</userinput></screen>
+<para>サンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>操作のあとのサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example><title>パッケージをマージおよび公開する</title>
+<para>特定のソースの最新バージョンの各パッケージをマージし、新しいパッケージをターゲットリポジトリに公開します。</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src1.example.com &bsol;</userinput>
+<userinput>-s arch=i386,http://src2.example.com &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>ソース 1 (SPARC) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>ソース 2 (i386) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>マージされたパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example><title>i386 システムと SPARC システムのデバッグおよびデバッグ以外のパッケージをマージする</title>
+<para>i386 システムと SPARC システムの一連のデバッグおよびデバッグ以外のリポジトリ内の最新バージョンの各パッケージをマージします。</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,debug=false,/repo/sparc-nondebug &bsol;</userinput>
+<userinput>-s arch=sparc,debug=true,/repo/sparc-debug &bsol;</userinput>
+<userinput>-s arch=i386,debug=false,/repo/i386-nondebug &bsol;</userinput>
+<userinput>-s arch=i386,debug=true,/repo/i386-debug &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>ソース 1 (SPARC デバッグ以外) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>ソース 2 (SPARC デバッグ) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121411Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>ソース 3 (i386 デバッグ以外) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>ソース 4 (i386 デバッグ) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>マージされたパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false value=true
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=false
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=true
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=false
+file <replaceable>id</replaceable> mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=true
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example id="GLFDD"><title><literal>pkg.merge.blend</literal> を使用してマージする</title>
+<para><literal>pkg.merge.blend</literal> 属性を使用して、競合しない 2 つのアーキテクチャーのパッケージをマージします。</para>
+<screen>$ <userinput>pkgmerge -s arch=sparc,http://src1/example.com &bsol;</userinput>
+<userinput>-s arch=i386,http://src2.example.com &bsol;</userinput>
+<userinput>-d /<replaceable>path/to/target/repository</replaceable></userinput></screen>
+<para>ソース 1 (SPARC) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/sparc/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>ソース 2 (i386) のサンプルパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/i386/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+<para>マージされたパッケージ:</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/foo
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/i386/foo
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root &bsol;
+    group=bin path=usr/bin/sparc/foo
+dir group=sys mode=0755 owner=root path=usr</programlisting>
+</example>
+<example id="differentpubs"><title>異なるパブリッシャー接頭辞が付いたパッケージのマージ</title>
+<para>これらのリポジトリ内のほかのパッケージに <literal>example.com</literal> 接頭辞が付いている場合でも、<literal>dev</literal> 接頭辞が付いたパッケージのみをマージします。</para>
+<screen>$ <userinput>pkgmerge -p dev -s arch=sparc,http://src1.example.com &bsol;
+-s arch=i386,http://src2.example.com &bsol;
+-d /path/to/target/repository</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>

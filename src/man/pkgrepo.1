@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkgrepo-1">
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">26 May 2015</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgrepo</refname><refpurpose>Image Packaging System repository management utility</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgrepo create [--version <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo add-publisher -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>publisher</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo remove-publisher [-n] [--synchronous]
+    -s <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo get [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [<replaceable>section/property</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkgrepo info [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkgrepo list [-F <replaceable>format</replaceable>] [-H] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+<synopsis>/usr/bin/pkgrepo contents [-m]
+    [-t <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]... -s <replaceable>repo_uri_or_path</replaceable>
+    [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable>...]</synopsis>
+<synopsis>/usr/bin/pkgrepo rebuild [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [--no-catalog] [--no-index]</synopsis>
+<synopsis>/usr/bin/pkgrepo refresh [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [--no-catalog] [--no-index]</synopsis>
+<synopsis>/usr/bin/pkgrepo remove [-n] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</synopsis>
+<synopsis>/usr/bin/pkgrepo set [-p <replaceable>publisher</replaceable>]... -s <replaceable>repo_uri_or_path</replaceable>
+    <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</synopsis>
+<synopsis>/usr/bin/pkgrepo verify [-d] [-p <replaceable>publisher</replaceable>]...
+    [-i <replaceable>ignored_dep_file</replaceable>]...  [--disable <replaceable>verification</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo fix [-v] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>repo_uri_or_path</replaceable></synopsis>
+<synopsis>/usr/bin/pkgrepo diff [-vq] [--strict] [--parsable] [-p <replaceable>publisher</replaceable>]...
+    -s <replaceable>first_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    -s <replaceable>second_repo_uri_or_path</replaceable> [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...</synopsis>
+<synopsis>/usr/bin/pkgrepo help</synopsis>
+<synopsis>/usr/bin/pkgrepo version</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgrepo-1-desc" role="description"><title></title>
+<para><command>pkgrepo</command> provides the ability to create and manage
+<literal>pkg</literal>(7) package repositories. Package repositories are a
+predefined set of directories and files that permit the storage and retrieval of
+package data by <command>pkg</command> and publication clients such as
+<command>pkgsend</command> or <command>pkgrecv</command>. In addition, when
+network-based access to a package repository is needed,
+<command>pkg.depotd</command> can provide clients access to the repository to
+store and/or retrieve package data.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>The following subcommands are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
+<listitem><para>Create a <literal>pkg</literal>(7) repository at the specified
+location.</para>
+<para>This subcommand can be used only with file system based repositories.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-version</option></term>
+<listitem><para>Create a repository in a format compatible with the specified
+version. By default, version 4 repositories are created. Supported versions
+are:</para>
+<variablelist>
+<varlistentry><term>3</term>
+<listitem><para>Supports storage of packages for a single publisher, catalog
+version 1, and search version 1.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>4</term>
+<listitem><para>Supports storage of packages for multiple publishers, catalog
+version 1, and search version 1.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo add-publisher</command> <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</term>
+<listitem><para>Add the specified publishers to the repository. The new publishers
+have no packages or content.</para>
+<para>This subcommand can be used only with version 4 file system based repositories.
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo remove-publisher</command> [<option>n</option>] [<option>-synchronous</option>] <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>publisher</replaceable> ...</term>
+<listitem><para>Remove the specified publishers from the repository. Remove all packages and all other data for the specified publishers.</para>
+<para>If the default publisher is removed, and only one publisher remains in the
+repository, that remaining publisher becomes the default. The
+<literal>publisher/prefix</literal> property of the repository is set to that
+remaining publisher.</para>
+<para>If the default publisher is removed, and multiple publishers remain in
+the repository, or if the last publisher is removed from the repository, the
+<literal>publisher/prefix</literal> property is unset.</para>
+<para>This subcommand can be used only with version 4 file system based repositories.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>n</option></term>
+<listitem><para>Perform a trial run of the operation with no publisher changes made. The number of packages to be removed for each publisher is displayed before exiting.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-synchronous</option></term>
+<listitem><para>Wait for the operation to complete before returning. If this
+option is not specified, the command returns immediately while the publisher is
+removed asynchronously in the background.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo get</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>section/property</replaceable> ...]</term>
+<listitem><para>Display the property information for the repository or its
+publishers.</para>
+<para>By default, each property and its value are printed on separate lines.
+Empty ASCII string values are represented by a pair of double quotation marks
+(<literal>""</literal>). The following Bourne shell metacharacters, and newline,
+space, and tab, in ASCII string values must be escaped by backslash characters
+(<literal>&bsol;</literal>):</para>
+<programlisting>; &amp; ( ) | ^ &lt; > &bsol; " ' `</programlisting>
+<para>See the &ldquo;Examples&rdquo; section for examples displaying publisher
+and repository properties.</para>
+<para>For a list of properties and the purpose and value of each property,
+see the <command>set</command> subcommand below.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>F</option> <replaceable>format</replaceable></term>
+<listitem><para>Specify an alternative output format. The value of <replaceable>format
+</replaceable> can be <literal>tsv</literal> (Tab Separated Values), <literal>json
+</literal> (JavaScript Object Notation as a single line), or <literal>json-formatted
+</literal> (JavaScript Object Notation, formatted for readability).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option></term>
+<listitem><para>Omit the headers from the listing.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Display the property information for the given publisher.
+The special value <literal>all</literal> displays the properties for all publishers.
+This option can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>Use the <option>-key</option> option to specify a client SSL
+key file to use for package retrieval from an HTTPS repository. Use the <option>-cert
+</option> option to specify a client SSL certificate file to use for package
+retrieval from an HTTPS repository. This option pair can be specified multiple
+times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section/property</replaceable></term>
+<listitem><para>Display values for only the specified properties, such as <literal>
+publisher/prefix</literal> or <literal>repository/version</literal>. See the <command>
+set</command> subcommand for a complete list of properties.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo info</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>Display a listing of the package publishers known by the repository.
+The listing includes the number of packages for each publisher, when the publisher's
+package data was last updated, and the status of the publisher's package data
+(such as whether it is currently being processed).</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Only display the data for the given publisher. If not provided,
+the data for all publishers is displayed. This option can be specified multiple
+times.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For descriptions of all other options, see the <command>pkgrepo get</command> command
+above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
+<listitem><para>List the packages in the <replaceable>repo_uri_or_path</replaceable> repository
+that match the specified <replaceable>pkg_fmri_pattern</replaceable> patterns.
+If no patterns are specified, all packages in the repository are listed. The
+<replaceable>pkg_fmri_pattern</replaceable> pattern can include the
+<literal>?</literal> and <literal>*</literal> characters as
+<literal>glob</literal>(3C)-style wildcards to match one or more packages.</para>
+<para>In the default output, the first column contains the name of the publisher
+of the package. The second column contains the name of the package. The third
+column is a flag that shows the status of the package. A value of <literal>o</literal> in
+the status column indicates the package is obsolete. A value of <literal>r</literal> in
+the status column indicates the package has been renamed, which is a form
+of obsoletion. The fourth column contains the release and branch versions
+of the package. See <literal>pkg</literal>(7) for information about release
+and branch versions.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Only display the packages for the given publisher. If not
+provided, the packages for all publishers are listed. This option can be
+specified multiple times.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For descriptions of all other options, see the <command>pkgrepo get</command> command
+above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo contents</command> [<option>m</option> [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable>...]</term>
+<listitem><para>List all packages in the
+<replaceable>repo_uri_or_path</replaceable> repository. If
+<replaceable>pkg_fmri_pattern</replaceable> is specified, display the contents
+(action attributes) of all matching packages in the repository.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>m</option></term>
+<listitem><para>Display all attributes of actions in the specified packages.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
+<listitem><para>Display only the specified actions in the specified packages.
+The <option>t</option> option can be specified multiple times, or multiple
+actions can be specified as the argument to one <option>t</option> option by
+separating the action names with commas. The value of
+<replaceable>action_name</replaceable> is one of the actions listed in 
+&ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page, such as
+<literal>file</literal>, <literal>dir</literal>, <literal>driver</literal>, <literal>depend</literal>, or <literal>set</literal>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For descriptions of all other options, see the <command>pkgrepo get</command> command
+above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo rebuild</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>]</term>
+<listitem><para>Discard all catalog, search, and other cached information
+found in the repository, and then recreate it based on the current contents
+of the repository.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the given publisher. If not
+provided, or if the special value <literal>all</literal> is specified, the
+operation is performed for all publishers. This option can be specified multiple
+times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>Do not rebuild package data.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>Do not rebuild search indexes.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For descriptions of all other options, see the <command>pkgrepo get</command> command
+above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo refresh</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>]
+</term>
+<listitem><para>Catalog any new packages found in the repository and update
+all search indexes. This is intended for use with deferred publication (<option>-no-catalog
+</option> or <option>-no-index</option> options of <command>pkgsend</command>).</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the given publisher. If not
+provided, or if the special value <literal>all</literal> is specified, the
+operation is performed for all publishers. This option can be specified multiple
+times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>Do not add any new packages.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>Do not update search indexes.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For descriptions of all other options, see the <command>pkgrepo get</command> command
+above.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo remove</command> [<option>n</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</term>
+<listitem><para>Remove packages that match the specified
+<replaceable>pkg_fmri_pattern</replaceable> pattern from the repository,
+including any files they reference that are not in use by any other package.
+The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the
+<literal>?</literal> and <literal>*</literal> characters as
+<literal>glob</literal>(3C)-style wildcards to match one or more packages.</para>
+<note><para>All search index data for related publishers is removed.</para>
+</note>
+<para>This subcommand can be used only with file system based repositories.</para>
+<caution><para>This operation is not reversible and should not be used while
+other clients are accessing the repository since it might cause them to fail
+during retrieval operations.</para></caution>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>n</option></term>
+<listitem><para>Perform a trial run of the operation with no package changes
+made. A list of the packages to be removed is displayed before exiting.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Only remove matching packages for the given publisher. If
+not provided, any matching packages are removed for all publishers. This option
+can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo set</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>section/property</replaceable>=[<replaceable>value</replaceable>] ...</term><term><command>pkgrepo set</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>section/property</replaceable>=([<replaceable>value</replaceable>]) ...</term>
+<listitem><para>Set the value of the specified properties for the repository
+or publisher.</para>
+<para>This subcommand can be used only with file system based repositories.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Only set property data for the given publisher. If the publisher
+does not already exist, it is added. The special value <literal>all</literal> can
+be used to set the property for all publishers.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Properties and values can be specified using one of the following forms:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=</term>
+<listitem><para>Clear the property value.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=<replaceable>value</replaceable></term>
+<listitem><para>Replace the property value with the given value.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><replaceable>section</replaceable>/<replaceable>property</replaceable>=(<replaceable>value1</replaceable> <replaceable>value2</replaceable> <replaceable>valueN</replaceable>)</term>
+<listitem><para>Replace the property value with the list of values.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For repository versions 3 and 4, the following properties can be set for
+the repository:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>publisher/prefix</literal></term>
+<listitem><para>A string that represents the name of the default publisher.
+The first character must be a-z, A-Z, or 0-9. The remainder of the string
+can only contain the characters 0-9, -, ., a-z, and A-Z. This value indicates
+the publisher that should be used when more than one publisher's packages
+are present, or when packages are published to the repository and a publisher
+is not specified.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>For repository versions 3 and 4, the following properties can be set for
+individual publishers in the repository. Use the <option>p</option> option to
+specify at least one publisher when you set these properties:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>publisher/alias</literal></term>
+<listitem><para>A string that represents the default alias that clients should
+use when adding a publisher using the repository's configuration data. The
+first character must be a-z, A-Z, or 0-9. The remainder of the string can
+only contain the characters 0-9, -, ., a-z, and A-Z.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/check-certificate-revocation</literal></term>
+<listitem><para>A boolean to check whether a certificate has been revoked.
+When this property is set to <literal>True</literal>, the <command>pkgrepo verify</command>
+and <command>pkgrepo fix</command> commands attempt to contact
+any CRL distribution points in the certificates used for signature verification
+to determine whether the certificate has been revoked since being issued.
+The default value is <literal>False</literal>. This property is only used
+by the <command>verify</command> and <command>fix</command> subcommands to
+validate the contents of the repository. This property does not affect client
+settings. This value should be the same as the corresponding <literal>pkg</literal>(1)
+property value.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/collection_type</literal></term>
+<listitem><para>Can have the value <literal>core</literal> or
+<literal>supplemental</literal>, indicating the type of packages offered in this
+repository.</para>
+<para>The <literal>core</literal> type indicates that the repository contains
+all of the dependencies declared by packages in the repository. The
+<literal>core</literal> type is primarily used for operating system
+repositories.</para>
+<para>The <literal>supplemental</literal> type indicates that the repository
+contains packages that rely on or are intended to be used with packages located
+in another repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/description</literal></term>
+<listitem><para>A paragraph of plain text that describes the purpose and contents
+of the repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/detailed_url</literal></term>
+<listitem><para>A URI that represents the location of a document (such as
+a web page) that provides additional information about the repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/legal_uris</literal></term>
+<listitem><para>A list of locations (URIs) for documents that provide additional
+legal information about the repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/mirrors</literal></term>
+<listitem><para>A list of locations (URIs) of repositories that contain a
+copy of the repository's package content but not the package metadata.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/name</literal></term>
+<listitem><para>A plain text string that contains the name of the repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/origins</literal></term>
+<listitem><para>A list of locations (URIs) of repositories that contain a
+complete copy of the repository's package metadata and content.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/refresh_seconds</literal></term>
+<listitem><para>An integer value that represents the number of seconds clients
+should wait before checking the repository for updated package data after
+each update check.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/registration_uri</literal></term>
+<listitem><para>A URI that represents the location of a resource that must
+be used to obtain credentials for access to the repository. A registration
+web page is one example.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/related_uris</literal></term>
+<listitem><para>A list of locations (URIs) of repositories that contain packages
+that users might be interested in.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/signature-required-names</literal></term>
+<listitem><para>A list of names that must be seen as common names of certificates
+while validating the signatures of a package. This property is only used by
+the <command>verify</command> and <command>fix</command> subcommands to validate
+the contents of the repository. This property does not affect client settings.
+These values should be the same as the corresponding <literal>pkg</literal>(1)
+property values.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>repository/trust-anchor-directory</literal></term>
+<listitem><para>The absolute path name of the directory that contains the
+trust anchors for packages in this repository. If not specified, <filename>/etc/certs/CA/
+</filename> is used. This property is only used by the <command>verify</command> and <command>
+fix</command> subcommands to validate the contents of the repository. This
+property does not affect client settings. This value should be the same as
+the corresponding <literal>pkg</literal>(1) property value.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Properties not documented here, but listed in the output of the
+<command>get</command> subcommand, are reserved for internal use and should not
+be set.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo verify</command> [<option>d</option>] [<option>p</option> <replaceable>publisher</replaceable>]... [<option>i</option> <replaceable>ignored_dep_file</replaceable>]... [<option>-disable</option> <replaceable>verification</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Verify that the following attributes of the package repository
+contents are correct:</para>
+<itemizedlist>
+<listitem><para>File checksums</para></listitem>
+<listitem><para>File permissions</para><para>The path leading to the repository
+is also checked to ensure that the <literal>pkg5srv</literal> user can read
+the repository contents. This check can be necessary for repositories that
+are made available using the <literal>svc:/application/pkg/server</literal> service,
+or using the <literal>svc:/application/pkg/system-repository</literal> service
+when the system has non-global zones.</para>
+</listitem>
+<listitem><para>Package manifest permissions</para></listitem>
+<listitem><para>Package manifest content</para></listitem>
+<listitem><para>Package signatures</para><para>Package manifest signatures
+are calculated based on the values of the <literal>repository/signature-required-names
+</literal>, <literal>repository/trust-anchor-directory</literal>, and <literal>repository/check-certificate-revocation
+</literal> properties.</para>
+</listitem>
+</itemizedlist>
+<para>Errors are emitted to <literal>stdout</literal>. The <command>pkgrepo</command> command
+exits with a non-zero return code if any errors are emitted.</para>
+<para>This subcommand can be used only with version 4 file system based repositories.
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the specified publisher. If
+no publisher is specified, or if the special value <literal>all</literal> is
+specified, the operation is performed for all publishers. This option can
+be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>Perform complete dependency verification. This option cannot be used together with <option>-disable</option> <literal>dependency</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
+<listitem><para>Perform dependency verification but ignore dependencies specified in the file. This option cannot be used together with <option>-disable</option> <literal>dependency</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
+<listitem><para>Disable verification specified. The current allowed value: <literal>dependency</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Fix the contents of a repository by first verifying the repository,
+and then moving any invalid repository contents into a quarantine directory
+within the repository.</para>
+<para>If repository errors are found, a repository rebuild is automatically
+performed. If any errors are found, a message is emitted to
+<literal>stdout</literal> showing which packages must be re-imported using
+<literal>pkgsend</literal>(1) or <literal>pkgrecv</literal>(1) in order to
+restore the repository contents.</para>
+<para>This subcommand can be used only with version 4 file system based repositories.
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>Include output detailing the errors found during repository
+verification.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the specified publisher. If
+no publisher is specified, or if the special value <literal>all</literal> is
+specified, the operation is performed for all publishers. This option can
+be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo diff</command> [<option>vq</option>] [<option>-strict</option>] [<option>-parsable</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>first_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... <option>s</option> <replaceable>second_repo_uri_or_path</replaceable>... [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]...</term>
+<listitem><para>Compare two repositories and show the differences.</para>
+<para><literal>-</literal> symbol in the beginning of an output
+line indicates the item found only in the first repository, while
+<literal>+</literal> symbol indicates the item found only in the second
+repository. No symbol in the beginning means it is a common item.
+</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>v</option></term>
+<listitem><para>Include output detailing the comparison including per-fmri
+output.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>q</option></term>
+<listitem><para>Perform quiet comparison; no output will be generated.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-strict</option></term>
+<listitem><para>Compare catalog last modified time stamp. This is useful to
+determine whether one repository is the exact clone of the other one.</para>
+</listitem>
+<varlistentry><term><option>-parsable</option></term>
+<listitem><para>Generate parsable output in JSON format.</para>
+</listitem>
+</varlistentry>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Perform the operation only for the specified publisher. If
+no publisher is specified, or if the special value <literal>all</literal> is
+specified, the operation is performed for all publishers. This option can
+be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>Operate on the repository located at the given URI or file
+system path.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>Use the <option>-key</option> option to specify a client SSL
+key file to use for package retrieval from an HTTPS repository. Use the <option>-cert
+</option> option to specify a client SSL certificate file to use for package
+retrieval from an HTTPS repository. This option pair can be specified multiple
+times. The pair specified after the first <option>s</option> but before the
+second <option>s</option> will be applied to the first repository. The pair
+specified after the second <option>s</option> will be applied to the second
+repository.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo help</command></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgrepo version</command></term>
+<listitem><para>Display a unique string that identifies the version of the <literal>pkg</literal>(7) system. The values produced by the <command>version</command> operation are not sortable and are not safe for comparison beyond equality.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Create a Package Repository</title>
+<screen>$ <userinput>pkgrepo create /my/repository</userinput></screen>
+</example>
+<example><title>Display Information</title>
+<para>Display a summary of publishers and the number of packages in a repository.
+</para>
+<screen>$ <userinput>pkgrepo info -s /my/repository</userinput>
+PUBLISHER   PACKAGES STATUS UPDATED
+example.com 5        online 2011-07-22T18:09:09.769106Z
+$ <userinput>pkgrepo info -s http://pkg.oracle.com/solaris/release/</userinput>
+PUBLISHER PACKAGES STATUS UPDATED
+solaris   3941     online 2010-11-12T19:24:25.967246Z</screen>
+</example>
+<example><title>Rebuild Catalogs and Search Data</title>
+<para>Rebuild the repository's catalogs and search data.</para>
+<screen>$ <userinput>pkgrepo rebuild -s /my/repository</userinput></screen>
+</example>
+<example><title>Refresh Catalogs and Search Data</title>
+<para>Refresh the repository's catalogs and search data.</para>
+<screen>$ <userinput>pkgrepo refresh -s /my/repository</userinput>
+$ <userinput>pkgrepo refresh -s http://example.com/repository</userinput></screen>
+</example>
+<example><title>Display All Repository Properties</title>
+<screen>$ <userinput>pkgrepo get -s /export/repoSolaris11</userinput>
+SECTION    PROPERTY    VALUE
+publisher  prefix      solaris
+repository description Local&bsol; copy&bsol; of&bsol; the&bsol; Oracle&bsol; Solaris&bsol; 11&bsol; repository
+repository name        Oracle&bsol; Solaris&bsol; 11
+repository version     4
+$ <userinput>pkgrepo get -s http://pkg.oracle.com/solaris/release/</userinput>
+SECTION    PROPERTY VALUE
+deployment content  s11_11-11
+deployment pubdate  20111102T222051Z
+publisher  prefix   solaris
+repository version  4</screen>
+</example>
+<example><title>Display All Publisher Properties</title>
+<screen>$ <userinput>pkgrepo get -s http://pkg.oracle.com/solaris/release/ -p all</userinput>
+PUBLISHER SECTION    PROPERTY         VALUE
+solaris   publisher  alias
+solaris   publisher  prefix           solaris
+solaris   repository collection-type  core
+solaris   repository description      This&bsol; repository&bsol; serves&bsol; the&bsol; Oracle&bsol;
+Solaris&bsol; 11&bsol; Package&bsol; repository.
+solaris   repository legal-uris       ()
+solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
+solaris   repository name             Oracle&bsol; Solaris&bsol; 11&bsol; Package&bsol; Repository
+solaris   repository origins          ()
+solaris   repository refresh-seconds
+solaris   repository registration-uri ""
+solaris   repository related-uris     ()</screen>
+</example>
+<example><title>Set the Default Publisher</title>
+<screen>$ <userinput>pkgrepo set -s /my/repository publisher/prefix=example.com</userinput></screen>
+</example>
+<example><title>Set a Publisher Property</title>
+<screen>$ <userinput>pkgrepo set -s /my/repository -p example.com &bsol;</userinput>
+<userinput>repository/origins=http://example.com/repository</userinput></screen>
+</example>
+<example><title>Add a New Publisher To the Repository</title>
+<screen>$ <userinput>pkgrepo add-publisher -s /my/repository example.com</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded (or no differences encountered
+for pkgrepo diff).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>An error occurred.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>Multiple operations were requested, but only some of them
+succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>4</returnvalue></term>
+<listitem><para>No changes were made, nothing to do.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>5</returnvalue></term>
+<listitem><para>Differences found for pkgrepo diff.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(7) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>Most <command>pkgrepo</command> operations are not available for package archives. A package archive is a file, typically with a <filename>.p5p</filename> extension, as described in the <option>a</option> option in the <literal>pkgrecv</literal>(1) man page. A package archive contains packages but does not contain repository configuration. However, the <command>pkgrepo list</command>, <command>pkgrepo info</command>, and <command>pkgrepo contents</command> commands work with package archives.</para>
+</refsect1>
+</refentry>

@@ -1,0 +1,79 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg/depot@$(PKGVERS)
+set name=pkg.summary value="IPS Depot"
+set name=pkg.description \
+    value="A service that provides a scalable web-based pkg(7) server."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=etc
+dir  path=etc/pkg
+dir  path=etc/pkg/depot
+dir  path=etc/pkg/depot/apache22
+file path=etc/pkg/depot/apache22/depot.conf.mako
+file path=etc/pkg/depot/apache22/depot_httpd.conf.mako
+file path=etc/pkg/depot/apache22/depot_httpd_ssl_protocol.conf
+dir  path=etc/pkg/depot/conf.d
+file path=etc/pkg/depot/depot.conf.mako
+file path=etc/pkg/depot/depot_httpd.conf.mako
+file path=etc/pkg/depot/depot_httpd_ssl_protocol.conf
+file path=etc/pkg/depot/depot_index.py pkg.tmp.autopyc=false
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+dir  path=lib/svc/manifest/application/pkg
+file path=lib/svc/manifest/application/pkg/pkg-depot.xml
+file path=lib/svc/method/svc-pkg-depot
+dir  path=usr
+file path=usr/lib/pkg.depot-config mode=0755
+dir  path=usr/share/lib/pkg/web
+file path=usr/share/lib/pkg/web/repos.shtml
+dir  path=usr/share/man/ja_JP.UTF-8/man8
+file path=usr/share/man/ja_JP.UTF-8/man8/pkg.depot-config.8
+dir  path=usr/share/man/man8
+file path=usr/share/man/man8/pkg.depot-config.8
+dir  path=usr/share/man/zh_CN.UTF-8/man8
+file path=usr/share/man/zh_CN.UTF-8/man8/pkg.depot-config.8
+dir  path=var
+dir  path=var/cache
+dir  path=var/cache/pkg owner=pkg5srv
+dir  path=var/cache/pkg/depot owner=pkg5srv
+dir  path=var/log
+dir  path=var/log/pkg
+dir  path=var/log/pkg/depot owner=pkg5srv
+# we deliver 0-byte log file stubs
+file path=var/log/pkg/depot/access_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/depot/error_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/depot/rewrite.log owner=pkg5srv mode=0644 preserve=true
+license cr_Oracle license=cr_Oracle
+#
+# The manual dependency on apache results from our calling apachectl from
+# our method script, and can't be detected by pkgdepend.
+#
+depend type=require fmri=web/server/apache-24
+depend type=require fmri=web/server/apache-24/module/apache-ssl
+# p5p support in the system repository requires mod_wsgi
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-27

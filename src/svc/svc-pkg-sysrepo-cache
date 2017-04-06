@@ -1,0 +1,95 @@
+#!/sbin/sh
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+#
+
+. /lib/svc/share/smf_include.sh
+
+getprop() {
+	PROPVAL=""
+	if [ -z "$2" ]; then
+		FMRI=svc:/application/pkg/system-repository:default
+	else
+		FMRI=${SMF_FMRI}
+	fi
+	svcprop -q -p $1 ${FMRI}
+	if [ $? -eq 0 ] ; then
+		PROPVAL=$(svcprop -p $1 ${FMRI})
+		if [ "${PROPVAL}" = "\"\"" ] ; then
+			PROPVAL=""
+		fi
+		return
+	fi
+}
+
+check_failure() {
+	RESULT=$1
+	MESSAGE=$2
+	NON_FATAL=$3
+	if [ $RESULT -ne 0 ]; then
+		echo $MESSAGE
+		if [ -n "$NON_FATAL" ]; then
+			return
+		fi
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+}
+
+run_htcacheclean() {
+	if [ "${SYSREPO_CACHE_DIR}" != "None" ] && [ "${SYSREPO_CACHE_DIR}" != "memory" ]; then
+		# Start a cache cleaning process, limiting the cache to
+		# ${SYSREPO_CACHE_MAX} megabytes, being nice about
+		# scheduling and removing empty directories if needed.
+		/usr/apache2/2.4/bin/htcacheclean \
+		   -l ${SYSREPO_CACHE_MAX}M -n \
+		    -p ${SYSREPO_CACHE_DIR} \
+		   -P ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid \
+		   -t
+		check_failure $? "htcacheclean failed to run cleanly"
+	fi
+}
+
+kill_htcacheclean() {
+	if [ -f ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid ]; then
+		PID=$(< ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid)
+		echo "Previous htcacheclean pid file found - killing process $PID"
+		/usr/bin/kill -TERM $PID
+		check_failure $? "failed to kill htcacheclean process $PID" \
+		    "not_fatal"
+	fi
+}
+
+getprop config/cache_dir
+if [ "${PROPVAL}" != "" ] ; then
+	SYSREPO_CACHE_DIR=${PROPVAL}
+fi
+
+getprop config/cache_max
+if [ "${PROPVAL}" != "" ] ; then
+	SYSREPO_CACHE_MAX=${PROPVAL}
+fi
+
+kill_htcacheclean
+run_htcacheclean
+
+exit $SMF_EXIT_OK

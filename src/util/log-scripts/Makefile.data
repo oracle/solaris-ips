@@ -1,0 +1,145 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
+LOG_HOME=$(HOME)/project/pkg/repo/src/util/log-scripts
+DATA_HOME=$(HOME)/project/pkg/data/log
+
+RSYNC_ACCT = <rsyncaccount>@pkg.opensolaris.org
+RSYNC_SRC = /site/apache2/logs/.
+RSYNC_FLAGS = -rz --size-only --rsync-path=/opt/sfw/bin/rsync
+
+# RC2a for 2008.05 released on 24 Apr.
+# 30-day window for recent activity.
+AN_FLAGS = -a 2008-04-24 -w 30
+
+access_log.catalog	:= PATTERN = " /catalog"
+access_log.filelist	:= PATTERN = " /filelist"
+access_log.manifest	:= PATTERN = " /manifest"
+access_log.search	:= PATTERN = " /search"
+
+ACCESS_LOGS:sh = ls access_log.[0-9]* 2>/dev/null || exit 0
+
+SPLITS = $(ACCESS_LOGS:access_log.%=split.%)
+IPS_ACTIVE = $(ACCESS_LOGS:access_log.%=ip.%.pkl)
+RAW_CATALOG = $(SPLITS:split.%=raw.catalog.%)
+CAT_IPS_ACTIVE = $(RAW_CATALOG:raw.catalog.%=catalog-ip.%.pkl)
+RAW_FILELIST = $(SPLITS:split.%=raw.filelist.%)
+RAW_MANIFEST = $(SPLITS:split.%=raw.manifest.%)
+RAW_SEARCH = $(SPLITS:split.%=raw.search.%)
+
+REPORTS_HTML = \
+	cat_active_ips.html \
+	catalog.html \
+	filelist.html \
+	search.html \
+	manifest.html
+
+SUMMARIES = $(REPORTS_HTML:%.html=%-summary.html)
+
+.KEEP_STATE:
+
+all: index.html
+
+index.html: summary.html $(SUMMARIES)
+	python $(LOG_HOME)/in_header.py > header
+	python $(LOG_HOME)/in_footer.py > footer
+	cat header summary.html $(SUMMARIES) footer > index.html
+
+# Run on an updated log set.
+run: retrieve
+	dmake -j 4 -m parallel all
+
+# Remove any symlinks we filled for processing.
+retrieve:
+	find . -type l -name raw.\* | xargs rm -f
+	time rsync $(RSYNC_FLAGS) $(RSYNC_ACCT):$(RSYNC_SRC) .
+
+clean:
+	rm -f *.html
+
+clobber: clean
+	rm -f split.*
+	rm -f raw.*
+	rm -f ip.*
+
+summary.html: $(SUMMARIES)
+	time python $(LOG_HOME)/an2_ip.py -s $(SUMMARIES:%-summary.html=%) > $@
+
+catalog.html : $(LOG_HOME)/an_catalog.py
+filelist.html : $(LOG_HOME)/an_filelist.py
+manifest.html : $(LOG_HOME)/an_manifest.py
+search.html : $(LOG_HOME)/an_search.py
+
+%-summary.html: %.html
+
+catalog.html: $(RAW_CATALOG)
+	time python $(LOG_HOME)/an_catalog.py $(AN_FLAGS) -s $(RAW_CATALOG) > $@
+filelist.html: $(RAW_FILELIST)
+	time python $(LOG_HOME)/an_filelist.py $(AN_FLAGS) -s $(RAW_FILELIST) > $@
+search.html: $(RAW_SEARCH)
+	time python $(LOG_HOME)/an_search.py $(AN_FLAGS) -s $(RAW_SEARCH) > $@
+manifest.html: $(RAW_MANIFEST)
+	time python $(LOG_HOME)/an_manifest.py $(AN_FLAGS) -s $(RAW_MANIFEST) > $@
+
+active_ips.html: $(IPS_ACTIVE)
+	time python $(LOG_HOME)/an2_ip_active.py $(IPS_ACTIVE) > $@
+	cp active_ips.html active_ips-summary.html
+
+cat_active_ips.html: $(CAT_IPS_ACTIVE)
+	time python $(LOG_HOME)/an2_ip_active.py $(CAT_IPS_ACTIVE) > $@
+	cp cat_active_ips.html cat_active_ips-summary.html
+
+# each log should be processed for IP addresses, which we reduce to [day, hash,
+# geo] tuples
+ip.%: split.%
+	time python $(LOG_HOME)/an_ip_active.py $(AN_FLAGS) -s raw.$(@:split.%=%) > $@
+
+splits: empty $(SPLITS) $(IPS_ACTIVE) $(CAT_IPS_ACTIVE)
+
+raw.catalog.%: split.%
+	[ -f $@ ] || ln -sf empty $@
+raw.manifest.%: split.%
+	[ -f $@ ] || ln -sf empty $@
+raw.filelist.%: split.%
+	[ -f $@ ] || ln -sf empty $@
+raw.search.%: split.%
+	[ -f $@ ] || ln -sf empty $@
+
+ip.%.pkl: access_log.%
+	python $(LOG_HOME)/an_ip_active.py -S ip -t $(<:access_log.%=%) $<
+
+catalog-ip.%.pkl: raw.catalog.%
+	python $(LOG_HOME)/an_ip_active.py -S catalog-ip -t $(<:raw.catalog.%=%) $<
+
+split.%: access_log.%
+	$(LOG_HOME)/split.awk $(<:access_log.%=%) $<
+	touch $@
+
+empty:
+	touch empty
+
+print:
+	echo $(SPLITS)
+
+FRC:

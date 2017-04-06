@@ -1,0 +1,170 @@
+
+pkg
+IMAGES
+
+:vim:set expandtab:
+
+1.  Summary
+
+
+2.  Discussion
+
+2.1.  Image types
+
+    Each collection of installed package instances is some kind of
+    image.  We envision three kinds:
+
+    - entire images
+        An entire image contains (and can contain) all appropriate
+        packages from a repository.  It has a machine type and release.
+
+    - partial images
+        A partial image contains (and can contain) all appropriate
+        packages from a repository.  An partial image is tied to an
+        entire image and has an identified list of non-writeable
+        directory paths.  It inherits its machine type and release.
+
+    - user images
+        A user image consists entirely of relocatable packages.  It is
+        tied to an entire image for dependency satisfaction of
+        non-relocatable packages.  It inherits its machine type and
+        release.
+
+2.2.  Image configuration
+
+2.2.1.  Configuration inheritance
+
+    Some aspects of configuration can be shared between all images.  For
+    instance, a user image may specify publishers beyond those encoded
+    into the system defaults.  So, a user image must have authoritative
+    configuration, but be able to draw on the parent image's state for
+    default settings.
+
+    Operations on partial images and non-live entire images may need to
+    access image configuration data when smf(5) for that image is
+    unavailable.  So images of these kinds must have cached
+    configuration state.
+
+    Roughly, these aspects are sufficient to constrain our configuration
+    behaviour for user and entire images:
+
+    [user image]
+      look up local configuration
+      if undefined, request properties from svc://application/pkg
+      if unavailable, examine parent's configuration cache
+      if undefined or unavailable, use hard-coded default
+
+    [entire image]
+      request properties from svc://application/pkg
+      if unavailable, examine configuration cache
+      if undefined or unavailable, use hard-coded default
+
+    Partial images could have differing behaviour depending on whether
+    the operation is invoked from within the partial image's "packaging
+    context" (as it would be for an operation issued from within the
+    zone), or outside it (operations on the entire image and its
+    associated partial images).
+
+    For the first case, the configuration strategy is the same as that
+    for an entire image.  For the second case, we could do
+
+    [partial image, external context]
+      examine partial image configuration cache
+      if unavailable, request properties from svc://application/pkg
+      if undefined or unavailable, examine entire image configuration
+        cache
+      if undefined, use hard-coded default
+
+    For certain properties (or even certain packages), it may be
+    inappropriate to let the partial image configurations drift from
+    that of the entire image.
+
+2.2.2.  Configuration components
+
+    List of publishers.  For each publisher, we have a prefix, an
+    origin URL, a list of mirror URLs, and annotations.
+
+    publisher_[escaped_name]/  Property group of type "com.sun.pkg,publisher"
+      /prefix                  pkg: publisher
+      /origin                  http:, https:, or ftp: URL
+      /mirrors                 list of URLs
+      /disabled                boolean indicating whether publisher should be used
+
+    Image properties.  The image has a collection of simple properties,
+    like machine type and policies that control the behavior of the pkg(5)
+    software within that image.  Policies are properties with a boolean value.
+
+    properties/
+      /pursue-latest            (not currently used)
+      /require-optional         (not currently used)
+      /display-copyrights       (not currently used)
+      /flush-content-cache-on-success
+                                should downloaded compressed files be removed
+                                after a successful install
+      /preferred-publisher      preferred publisher for unknown package lookups
+      /title                    title of image for use in GUIs and other UIs
+      /description              longer description of the content of the image
+      /[various]
+
+    Entire images have a property group for each tied partial image.
+
+    partial_[escaped_name]/     Property group of type "com.sun.pkg,partial"
+      /path                     Filesystem path
+      /vdomainname              Defined if this image is a virtual
+                                domain controlled on this system.
+      /vdomaintype              "xen", "zone", ...
+
+    (XXX Should we instead assume that each of Zones and Xen will
+    acquire service FMRIs per zone/domain?)
+
+
+2.3  Image-filesystem interactions
+
+    The intent is to utilize snapshot-capable filesystems to provide a
+    rollback mechanism that includes both the pkg(1M)-driven
+    modifications as well as subsequent modifications from configuration
+    methods, etc.  In most cases, we are considering a filesystem with
+    capabilities similar to ZFS.
+
+    XXX Is fssnap_ufs(1M) sufficient to build something meaningful for
+    UFS?
+
+    With appropriate policies set, the image plan, prior to execution
+    must snapshot the involved filesystems.
+
+    There seem to be two options:
+
+    1.  The image can build its list of filesystems and types (plus
+	other attributes, like mutability.
+
+    2.  A list of filesystems is given to each package plan, the package
+	plan then evaluates its proposed actions against that list, and
+	offers a method to return the affected subset of the list.
+
+	In this case, we must also determine whether or not we are
+	restricted to clones (because one or more packages in the image
+	plan require kernel-restart) or are potentially live.
+
+    XXX Either of these approaches is applicable in the image/substrate
+    model, where the substrate owns the low-level properties specific to
+    a particular "place to write data".
+
+    In the case that one or more filesystems in the image is or are not
+    capable of snapshots, we have two choices:
+
+    - take no snapshot, as image-revert not possible in any safe or
+      complete sense
+
+    - take a set of snapshots that lead to a revert point that requires
+      manual forcing
+
+    We must warn about images of this kind, unless policy settings allow
+    us otherwise.  Since we want to allow and understand "zfs
+    split"-style operations [1], we also need to determine if a snapshot
+    set taken before a split can sensibly be restored after the split
+    operation.
+
+
+3.  References
+
+[1] (The zfs split RFE.)

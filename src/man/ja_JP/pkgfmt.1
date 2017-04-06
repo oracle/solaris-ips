@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgfmt-1">
+<refmeta><refentrytitle>pkgfmt</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgfmt</refname><refpurpose>パッケージマニフェストの整形</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgfmt [-c|-d|-u] [<replaceable>package-manifest-file</replaceable>]
+</synopsis></refsynopsisdiv>
+<refsect1 id="pkgfmt-1-desc" role="description"><title></title>
+<para><option>c</option> または <option>d</option> オプションが指定されない <command>pkgfmt</command> は、80 文字での行の折り返し、タイプによるアクションのソート、属性のソートなどを含む、一貫した方法でパッケージマニフェストを整形します。アクションに解析されない行 (マクロ、コメント、変換など) は、ソートされた順序では表示されません。</para>
+<para>引数が指定されない場合、<command>pkgfmt</command> は <literal>stdin</literal> を EOF まで読み取ったあと、整形されたマニフェストを <literal>stdout</literal> に書き込みます。コマンド行で指定されたマニフェストはすべて、その場所で整形されます。</para>
+<para><option>c</option> オプションが指定された <command>pkgfmt</command> は、マニフェストが <command>pkgfmt</command> 形式で整形されているかどうかをチェックします。<option>d</option> オプションを指定すると、ファイルが正しく整形されていない場合にその違いが表示されます。
+</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option></term>
+<listitem><para>マニフェストが <command>pkgfmt</command> 形式で整形されているかどうかをチェックします。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>統合された形式で整形されたバージョンとのマニフェストの違いを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>u</option></term>
+<listitem><para>80 文字で行を折り返しません。このオプションは、パッケージマニフェストに従来のテキスト処理ツールを適用する場合に有効です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para><option>c</option> または <option>d</option> オプションが指定され、1 つ以上のマニフェストが <command>pkgfmt</command> の正常な形式でないか、またはエラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

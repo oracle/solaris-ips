@@ -1,0 +1,499 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
+set name=pkg.summary value="Image Packaging System"
+set name=pkg.description \
+    value="The Image Packaging System (IPS), or pkg(7), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=$(PYDIR)
+dir  path=$(PYDIRVP)
+dir  path=$(PYDIRVP)/pkg
+file path=$(PYDIRVP)/pkg-0.1-py2.7.egg-info
+dir  path=$(PYDIRVP)/pkg/64
+file path=$(PYDIRVP)/pkg/64/_arch.so
+file path=$(PYDIRVP)/pkg/64/_pspawn.so
+file path=$(PYDIRVP)/pkg/64/_sha512_t.so
+file path=$(PYDIRVP)/pkg/64/_sysattr.so
+file path=$(PYDIRVP)/pkg/64/_syscallat.so
+file path=$(PYDIRVP)/pkg/64/_varcet.so
+file path=$(PYDIRVP)/pkg/64/elf.so
+file path=$(PYDIRVP)/pkg/64/solver.so
+file path=$(PYDIRVP)/pkg/__init__.py
+file path=$(PYDIRVP)/pkg/_arch.so
+file path=$(PYDIRVP)/pkg/_pspawn.so
+file path=$(PYDIRVP)/pkg/_sha512_t.so
+file path=$(PYDIRVP)/pkg/_sysattr.so
+file path=$(PYDIRVP)/pkg/_syscallat.so
+file path=$(PYDIRVP)/pkg/_varcet.so
+dir  path=$(PYDIRVP)/pkg/actions
+#
+# We ship a 64-bit version of _actions.so because it's
+# needed by the sysrepo_p5p which is a mod_wsgi application
+# that runs in a 64-bit apache instance.
+#
+dir  path=$(PYDIRVP)/pkg/actions/64
+file path=$(PYDIRVP)/pkg/actions/64/_actions.so
+file path=$(PYDIRVP)/pkg/actions/64/_common.so
+# pkgdepend doesn't understand the relative import syntax "from .x import y",
+# so we have to bypass generating dependencies on those files.
+file path=$(PYDIRVP)/pkg/actions/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/_actions.so
+file path=$(PYDIRVP)/pkg/actions/_common.so
+file path=$(PYDIRVP)/pkg/actions/attribute.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/depend.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/directory.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/driver.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/file.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/generic.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/group.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/hardlink.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/legacy.py pkg.depend.bypass-generate=.*
+#
+# Don't worry about the "from x.y.z" six imports since pkgdepend has some issues
+# with the python importer. Instead, we force a dependency on the six package.
+#
+file path=$(PYDIRVP)/pkg/actions/license.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/link.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/signature.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/unknown.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/actions/user.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/altroot.py
+file path=$(PYDIRVP)/pkg/api_common.py
+file path=$(PYDIRVP)/pkg/arch.py
+dir  path=$(PYDIRVP)/pkg/bundle
+file path=$(PYDIRVP)/pkg/bundle/DirectoryBundle.py
+file path=$(PYDIRVP)/pkg/bundle/SolarisPackageDatastreamBundle.py
+file path=$(PYDIRVP)/pkg/bundle/SolarisPackageDirBundle.py
+file path=$(PYDIRVP)/pkg/bundle/TarBundle.py
+file path=$(PYDIRVP)/pkg/bundle/__init__.py
+file path=$(PYDIRVP)/pkg/catalog.py
+file path=$(PYDIRVP)/pkg/cfgfiles.py
+file path=$(PYDIRVP)/pkg/choose.py
+dir  path=$(PYDIRVP)/pkg/client
+file path=$(PYDIRVP)/pkg/client/__init__.py
+file path=$(PYDIRVP)/pkg/client/actuator.py
+file path=$(PYDIRVP)/pkg/client/api.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/api_errors.py pkg.depend.bypass-generate=.*six.*
+#
+# Don't worry about the libbe or bemgmt import; the python code is graceful
+# in the face of their absence.
+#
+file path=$(PYDIRVP)/pkg/client/bootenv.py \
+    pkg.depend.bypass-generate=.*bemgmt.* pkg.depend.bypass-generate=.*libbe.*
+file path=$(PYDIRVP)/pkg/client/client_api.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/debugvalues.py
+file path=$(PYDIRVP)/pkg/client/firmware.py
+file path=$(PYDIRVP)/pkg/client/history.py
+file path=$(PYDIRVP)/pkg/client/image.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/imageconfig.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/imageplan.py
+file path=$(PYDIRVP)/pkg/client/imagetypes.py
+file path=$(PYDIRVP)/pkg/client/indexer.py
+dir  path=$(PYDIRVP)/pkg/client/linkedimage
+file path=$(PYDIRVP)/pkg/client/linkedimage/__init__.py
+file path=$(PYDIRVP)/pkg/client/linkedimage/common.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/linkedimage/system.py \
+    pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/client/linkedimage/zone.py \
+    pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/client/options.py
+file path=$(PYDIRVP)/pkg/client/pkg_solver.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/pkgdefs.py
+file path=$(PYDIRVP)/pkg/client/pkgplan.py
+file path=$(PYDIRVP)/pkg/client/pkgremote.py
+file path=$(PYDIRVP)/pkg/client/plandesc.py
+file path=$(PYDIRVP)/pkg/client/printengine.py
+file path=$(PYDIRVP)/pkg/client/progress.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/publisher.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/query_parser.py
+file path=$(PYDIRVP)/pkg/client/rad_pkg.py
+file path=$(PYDIRVP)/pkg/client/sigpolicy.py
+dir  path=$(PYDIRVP)/pkg/client/transport
+file path=$(PYDIRVP)/pkg/client/transport/__init__.py
+file path=$(PYDIRVP)/pkg/client/transport/engine.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/transport/exception.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/transport/fileobj.py
+file path=$(PYDIRVP)/pkg/client/transport/mdetect.py \
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/transport/repo.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/transport/stats.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/client/transport/transport.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/config.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/cpiofile.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/dependency.py
+file path=$(PYDIRVP)/pkg/depotcontroller.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/digest.py
+file path=$(PYDIRVP)/pkg/elf.so
+file path=$(PYDIRVP)/pkg/facet.py
+dir  path=$(PYDIRVP)/pkg/file_layout
+file path=$(PYDIRVP)/pkg/file_layout/__init__.py
+file path=$(PYDIRVP)/pkg/file_layout/file_manager.py
+file path=$(PYDIRVP)/pkg/file_layout/layout.py
+dir  path=$(PYDIRVP)/pkg/flavor
+file path=$(PYDIRVP)/pkg/flavor/__init__.py
+file path=$(PYDIRVP)/pkg/flavor/base.py
+# importlib is specific to Python 3 and part of its standard library.
+file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf.py \
+    pkg.depend.bypass-generate=.*importlib.*
+file path=$(PYDIRVP)/pkg/flavor/elf.py
+file path=$(PYDIRVP)/pkg/flavor/hardlink.py
+file path=$(PYDIRVP)/pkg/flavor/python.py
+file path=$(PYDIRVP)/pkg/flavor/script.py
+file path=$(PYDIRVP)/pkg/flavor/smf_manifest.py
+file path=$(PYDIRVP)/pkg/fmri.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/indexer.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PYDIRVP)/pkg/lint
+file path=$(PYDIRVP)/pkg/lint/__init__.py
+file path=$(PYDIRVP)/pkg/lint/base.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/lint/config.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/lint/engine.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/lint/log.py
+file path=$(PYDIRVP)/pkg/lint/opensolaris.py
+file path=$(PYDIRVP)/pkg/lint/pkglint_action.py
+file path=$(PYDIRVP)/pkg/lint/pkglint_manifest.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/lockfile.py
+file path=$(PYDIRVP)/pkg/manifest.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/mediator.py
+file path=$(PYDIRVP)/pkg/misc.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/mogrify.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/nrlock.py
+file path=$(PYDIRVP)/pkg/p5i.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/p5p.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/p5s.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/pipeutils.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/pkggzip.py
+file path=$(PYDIRVP)/pkg/pkgsubprocess.py
+file path=$(PYDIRVP)/pkg/pkgtarfile.py
+dir  path=$(PYDIRVP)/pkg/portable
+file path=$(PYDIRVP)/pkg/portable/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_aix.py pkg.depend.bypass-generate=.*
+# Python on Solaris doesn't deliver the macostools module.
+file path=$(PYDIRVP)/pkg/portable/os_darwin.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_sunos.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/os_unix.py pkg.depend.bypass-generate=.*
+# Python on Solaris doesn't deliver the win32api module.
+file path=$(PYDIRVP)/pkg/portable/os_windows.py pkg.depend.bypass-generate=.*
+file path=$(PYDIRVP)/pkg/portable/util.py
+file path=$(PYDIRVP)/pkg/pspawn.py
+dir  path=$(PYDIRVP)/pkg/publish
+file path=$(PYDIRVP)/pkg/publish/__init__.py
+file path=$(PYDIRVP)/pkg/publish/dependencies.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/publish/transaction.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/query_parser.py
+file path=$(PYDIRVP)/pkg/search_errors.py
+file path=$(PYDIRVP)/pkg/search_storage.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PYDIRVP)/pkg/server
+file path=$(PYDIRVP)/pkg/server/__init__.py
+file path=$(PYDIRVP)/pkg/server/api.py
+file path=$(PYDIRVP)/pkg/server/api_errors.py
+file path=$(PYDIRVP)/pkg/server/depot.py \
+    pkg.depend.bypass-generate=.*pybonjour.* pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/server/face.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/server/feed.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/server/query_parser.py
+file path=$(PYDIRVP)/pkg/server/repository.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/server/transaction.py \
+    pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/sha512_t.py
+file path=$(PYDIRVP)/pkg/smf.py pkg.depend.bypass-generate=.*six.*
+file path=$(PYDIRVP)/pkg/solver.so
+file path=$(PYDIRVP)/pkg/sysattr.py
+file path=$(PYDIRVP)/pkg/syscallat.py
+file path=$(PYDIRVP)/pkg/sysvpkg.py
+file path=$(PYDIRVP)/pkg/variant.py
+file path=$(PYDIRVP)/pkg/version.py pkg.depend.bypass-generate=.*six.*
+dir  path=etc
+dir  path=etc/security
+dir  path=etc/security/auth_attr.d
+file path=etc/security/auth_attr.d/package:pkg
+dir  path=etc/security/exec_attr.d
+file path=etc/security/exec_attr.d/package:pkg
+dir  path=etc/user_attr.d
+file path=etc/user_attr.d/package:pkg
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+file path=lib/svc/manifest/application/pkg/pkg-mdns.xml
+file path=lib/svc/manifest/application/pkg/pkg-mirror.xml
+file path=lib/svc/manifest/application/pkg/pkg-repositories-setup.xml
+file path=lib/svc/manifest/application/pkg/pkg-server.xml
+dir  path=lib/svc/method
+file path=lib/svc/method/svc-pkg-mdns
+file path=lib/svc/method/svc-pkg-mirror
+file path=lib/svc/method/svc-pkg-repositories-setup
+file path=lib/svc/method/svc-pkg-server
+dir  path=lib/svc/share
+file path=lib/svc/share/pkg5_include.sh
+dir  path=usr
+dir  path=usr/bin
+file path=usr/bin/pkg
+file path=usr/bin/pkgdepend
+file path=usr/bin/pkgdiff
+file path=usr/bin/pkgfmt pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkglint
+file path=usr/bin/pkgmerge pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkgmogrify
+file path=usr/bin/pkgrecv pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkgrepo
+file path=usr/bin/pkgsend
+file path=usr/bin/pkgsign
+file path=usr/bin/pkgsurf
+dir  path=usr/lib
+file path=usr/lib/cronjob-removal.sh mode=0755
+file path=usr/lib/pkg.depotd mode=0755 pkg.depend.bypass-generate=.*six.*
+link path=usr/lib/update-refresh.sh target=cronjob-removal.sh
+dir  path=usr/share
+dir  path=usr/share/lib
+dir  path=usr/share/lib/pkg
+file path=usr/share/lib/pkg/opensolaris.org.sections
+file path=usr/share/lib/pkg/pkglintrc
+file path=usr/share/lib/pkg/rad-invoke mode=0755
+dir  path=usr/share/lib/pkg/web
+dir  path=usr/share/lib/pkg/web/_themes
+dir  path=usr/share/lib/pkg/web/_themes/default
+dir  path=usr/share/lib/pkg/web/_themes/default/en
+file path=usr/share/lib/pkg/web/_themes/default/en/base.css
+file path=usr/share/lib/pkg/web/_themes/default/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/default/feed-icon-14x14.png
+dir  path=usr/share/lib/pkg/web/_themes/opensolaris.com
+dir  path=usr/share/lib/pkg/web/_themes/opensolaris.com/en
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/base.css
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/header.shtml
+dir  path=usr/share/lib/pkg/web/_themes/opensolaris.org
+dir  path=usr/share/lib/pkg/web/_themes/opensolaris.org/en
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/base.css
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/feed-icon-14x14.png
+dir  path=usr/share/lib/pkg/web/_themes/oracle.com
+file path=usr/share/lib/pkg/web/_themes/oracle.com/breadcrumb-center.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/breadcrumb-left.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/breadcrumb-right.png
+dir  path=usr/share/lib/pkg/web/_themes/oracle.com/en
+file path=usr/share/lib/pkg/web/_themes/oracle.com/en/base.css
+file path=usr/share/lib/pkg/web/_themes/oracle.com/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/feed-icon-14x14.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/mosaic-homebutton.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/navigation-item-background.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/navigation-last-button-cap.png
+file path=usr/share/lib/pkg/web/_themes/oracle.com/oralogo_small.gif
+file path=usr/share/lib/pkg/web/_themes/oracle.com/separator.png
+file path=usr/share/lib/pkg/web/_themes/p5i-link.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-icon.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-logo.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-logo.svg
+dir  path=usr/share/lib/pkg/web/_themes/sun.com
+dir  path=usr/share/lib/pkg/web/_themes/sun.com/en
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/base.css
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/yui-reset-font-grids_base-min.css
+file path=usr/share/lib/pkg/web/config.shtml
+dir  path=usr/share/lib/pkg/web/en
+file path=usr/share/lib/pkg/web/en/advanced_search.shtml
+file path=usr/share/lib/pkg/web/en/base.shtml
+file path=usr/share/lib/pkg/web/en/catalog.shtml
+file path=usr/share/lib/pkg/web/en/index.shtml
+file path=usr/share/lib/pkg/web/en/layout.shtml
+file path=usr/share/lib/pkg/web/en/search.shtml
+file path=usr/share/lib/pkg/web/en/stats.shtml
+file path=usr/share/lib/pkg/web/index.shtml
+file path=usr/share/lib/pkg/web/robots.txt
+file path=usr/share/lib/pkg/web/shared.shtml
+dir  path=usr/share/locale
+dir  path=usr/share/locale/ar
+dir  path=usr/share/locale/ar/LC_MESSAGES
+file path=usr/share/locale/ar/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/ca
+dir  path=usr/share/locale/ca/LC_MESSAGES
+file path=usr/share/locale/ca/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/cs
+dir  path=usr/share/locale/cs/LC_MESSAGES
+file path=usr/share/locale/cs/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/de
+dir  path=usr/share/locale/de/LC_MESSAGES
+file path=usr/share/locale/de/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/es
+dir  path=usr/share/locale/es/LC_MESSAGES
+file path=usr/share/locale/es/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/fr
+dir  path=usr/share/locale/fr/LC_MESSAGES
+file path=usr/share/locale/fr/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/he
+dir  path=usr/share/locale/he/LC_MESSAGES
+file path=usr/share/locale/he/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/hu
+dir  path=usr/share/locale/hu/LC_MESSAGES
+file path=usr/share/locale/hu/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/id
+dir  path=usr/share/locale/id/LC_MESSAGES
+file path=usr/share/locale/id/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/it
+dir  path=usr/share/locale/it/LC_MESSAGES
+file path=usr/share/locale/it/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/ja
+dir  path=usr/share/locale/ja/LC_MESSAGES
+file path=usr/share/locale/ja/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/ko
+dir  path=usr/share/locale/ko/LC_MESSAGES
+file path=usr/share/locale/ko/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/nl
+dir  path=usr/share/locale/nl/LC_MESSAGES
+file path=usr/share/locale/nl/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/pl
+dir  path=usr/share/locale/pl/LC_MESSAGES
+file path=usr/share/locale/pl/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/pt_BR
+dir  path=usr/share/locale/pt_BR/LC_MESSAGES
+file path=usr/share/locale/pt_BR/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/ru
+dir  path=usr/share/locale/ru/LC_MESSAGES
+file path=usr/share/locale/ru/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/sk
+dir  path=usr/share/locale/sk/LC_MESSAGES
+file path=usr/share/locale/sk/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/sv
+dir  path=usr/share/locale/sv/LC_MESSAGES
+file path=usr/share/locale/sv/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/zh_CN
+dir  path=usr/share/locale/zh_CN/LC_MESSAGES
+file path=usr/share/locale/zh_CN/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/zh_HK
+dir  path=usr/share/locale/zh_HK/LC_MESSAGES
+file path=usr/share/locale/zh_HK/LC_MESSAGES/pkg.mo
+dir  path=usr/share/locale/zh_TW
+dir  path=usr/share/locale/zh_TW/LC_MESSAGES
+file path=usr/share/locale/zh_TW/LC_MESSAGES/pkg.mo
+dir  path=usr/share/man
+dir  path=usr/share/man/ja_JP.UTF-8
+dir  path=usr/share/man/ja_JP.UTF-8/man1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkg.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgdepend.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgdiff.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgfmt.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkglint.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgmerge.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgmogrify.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgrecv.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgrepo.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgsend.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgsign.1
+file path=usr/share/man/ja_JP.UTF-8/man1/pkgsurf.1
+dir  path=usr/share/man/ja_JP.UTF-8/man7
+file path=usr/share/man/ja_JP.UTF-8/man7/pkg.7
+dir  path=usr/share/man/ja_JP.UTF-8/man8
+file path=usr/share/man/ja_JP.UTF-8/man8/pkg.depotd.8
+dir  path=usr/share/man/man1
+file path=usr/share/man/man1/pkg.1
+file path=usr/share/man/man1/pkgdepend.1
+file path=usr/share/man/man1/pkgdiff.1
+file path=usr/share/man/man1/pkgfmt.1
+file path=usr/share/man/man1/pkglint.1
+file path=usr/share/man/man1/pkgmerge.1
+file path=usr/share/man/man1/pkgmogrify.1
+file path=usr/share/man/man1/pkgrecv.1
+file path=usr/share/man/man1/pkgrepo.1
+file path=usr/share/man/man1/pkgsend.1
+file path=usr/share/man/man1/pkgsign.1
+file path=usr/share/man/man1/pkgsurf.1
+dir  path=usr/share/man/man7
+file path=usr/share/man/man7/pkg.7
+dir  path=usr/share/man/man8
+file path=usr/share/man/man8/pkg.depotd.8
+dir  path=usr/share/man/zh_CN.UTF-8
+dir  path=usr/share/man/zh_CN.UTF-8/man1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkg.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgdepend.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgdiff.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgfmt.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkglint.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgmerge.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgmogrify.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgrecv.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgrepo.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgsend.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgsign.1
+file path=usr/share/man/zh_CN.UTF-8/man1/pkgsurf.1
+dir  path=usr/share/man/zh_CN.UTF-8/man7
+file path=usr/share/man/zh_CN.UTF-8/man7/pkg.7
+dir  path=usr/share/man/zh_CN.UTF-8/man8
+file path=usr/share/man/zh_CN.UTF-8/man8/pkg.depotd.8
+dir  path=usr/share/pkg
+dir  path=usr/share/pkg/ignored_deps
+dir  path=usr/share/pkg/transforms
+file path=usr/share/pkg/transforms/developer
+file path=usr/share/pkg/transforms/documentation
+file path=usr/share/pkg/transforms/locale
+file path=usr/share/pkg/transforms/smf-manifests
+dir  path=var/cache/pkg/mirror
+dir  path=var/log/pkg/mirror
+group groupname=pkg5srv gid=97
+user username=pkg5srv gcos-field="pkg(7) server UID" group=pkg5srv password=NP \
+    uid=97
+legacy pkg=SUNWipkg version=0.0.0
+license lic_gustaebel license="MIT (Lars Gustaebel)" \
+    com.oracle.info.description="portions of the tarfile module from Python 2.4" \
+    com.oracle.info.name=tarfile com.oracle.info.tpno=17819 \
+    com.oracle.info.version=2.4
+license lic_minisat license="MIT (MiniSAT)" \
+    com.oracle.info.description="MiniSAT 1.14.1" com.oracle.info.name=MiniSAT \
+    com.oracle.info.tpno=17867 com.oracle.info.version=1.14.1
+license cr_Oracle license=cr_Oracle
+depend type=group fmri=package/pkg/zones-proxy \
+    variant.opensolaris.zone=nonglobal
+# temporary: depends on ON changes in nightly 07/23/16 and later
+depend type=optional \
+    fmri=system/boot-environment-utilities@5.12-5.12.0.0.0.104.34307
+# cross zone dependency on linked image metadata
+depend type=parent fmri=feature/package/dependency/self \
+    variant.opensolaris.zone=nonglobal
+depend type=require fmri=crypto/ca-certificates
+# CFFI import is done in C code, so it isn't picked up by pkgdepend
+depend type=require fmri=library/python/cffi-27@1.4.2

@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="zh" id="pkgrecv-1">
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 10 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgrecv</refname> <refpurpose>映像包管理系统内容检索实用程序</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
+    [-m <replaceable>match</replaceable>] [--mog-file <replaceable>file_path</replaceable> ...] [--raw]
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
+    [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
+    (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
+<synopsis>/usr/bin/pkgrecv [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)] --newest</synopsis>
+<synopsis>/usr/bin/pkgrecv [-nv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-p <replaceable>publisher</replaceable>]...
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>] --clone
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgrecv-1-desc" role="description"><title></title>
+<para><command>pkgrecv</command> 从 <option>s</option> 选项指定的 <literal>pkg</literal>(7) 系统信息库或软件包归档文件检索每个匹配 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的软件包的所有版本，并且可以将检索到的软件包重新发布到 <option>d</option> 选项指定的软件包系统信息库或软件包归档文件。缺省情况下，会以 <command>pkg</command>、<command>pkg.depotd</command> 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。</para>
+<para>不重新发布未更改的软件包。因此，更新现有系统信息库的时间取决于新的和已更改软件包的数量。</para>
+<para>使用 <option>m</option> 选项可指定是检索每个匹配软件包的所有版本还是每个匹配软件包的最新版本。</para>
+<para>如果未指定要检索的 <literal>'*'</literal>，则可以指定 <option>r</option> 选项来确保检索指定软件包的所有依赖项。</para>
+<note><para>不要同时使用 <command>pkgrecv</command> 的多个实例来将软件包重新发布到同一目标系统信息库或归档文件。在这种情况下，新检索的软件包可以包含重复操作。</para></note>
+<para>在将软件包检索到 <replaceable>dest_uri</replaceable> 中的 <command>pkgrecv</command> 操作后，如果 <replaceable>dest_uri</replaceable> 系统信息库必须支持 <command>pkg search</command> 操作，则在该系统信息库上运行 <command>pkgrepo refresh</command> 以更新搜索索引。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>h</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>将检索的软件包数据存储在 <option>d</option> 选项指定的位置中的 <literal>pkg</literal>(7) 归档文件中。<option>d</option> 指定的文件不能已经存在。<option>a</option> 选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 <literal>.p5p</literal>（例如：<literal> archive.p5p</literal>）。<option>a</option> 选项不能与 <option>-raw</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>指定将用于缓存已下载内容的目录的路径。如果没有提供此目录，客户机将自动选择一个高速缓存目录。如果下载中断并且已自动选择了一个高速缓存目录，可使用该选项继续执行下载。有关如何设置用于存储临时数据的位置的详细信息，请参见下文的“环境变量”部分。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)</term>
+<listitem><para>指定应重新发布检索的软件包的文件系统路径或 URI。如果指定 <option>a</option>，此目标必须是尚未存在的软件包归档文件。如果未指定 <option>a</option>，此目标必须是已经存在的软件包系统信息库。使用 <command>pkgrepo</command> 命令创建新软件包系统信息库。如果未指定 <option>d</option>，则使用值 <envar>PKG_DEST</envar>。请参见下面的“环境变量”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option></term>
+<listitem><para>使检索的软件包内容保持压缩状态。重新发布时会忽略该选项。压缩的软件包内容不得与 <command>pkgsend</command> 一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option> <replaceable>match</replaceable></term>
+<listitem><para>在指定 <replaceable>pattern</replaceable> 或未充分指定 <replaceable>fmri</replaceable> 时控制要检索哪些软件包版本。在下面的说明中，<option>s</option> 选项所指定的源中存在下面的四个示例软件包。在这些 FMRI 中，<literal>@</literal> 与 <literal>:</literal> 之间的字符表示已编号的软件包版本，<literal>:</literal> 至结尾的字符表示版本字符串的时间戳部分。</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z</programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>all-timestamps</literal></term>
+<listitem><para>检索匹配 <replaceable>fmri</replaceable> 或<replaceable> pattern</replaceable> 的每个软件包的所有版本（隐式的 <literal>all-versions</literal>）。如果未指定 <option>m</option> 选项，这将是缺省行为。在上面的例子中，将检索到全部四个软件包。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>all-versions</literal></term>
+<listitem><para>检索匹配 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的每个软件包的每个版本的最新时间戳。在上面的例子中，将检索到下面两个软件包：</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>latest</literal></term>
+<listitem><para>只检索匹配 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的每个软件包的最新版本。在上面的例子中，将检索到下面的软件包：</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>执行试运行，不进行任何更改。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>只克隆指定的发布者。可以多次指定此选项。<option>p</option> 选项只有在与 <option>-clone</option> 选项一起使用时才有效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>递归检索每个匹配的 <replaceable>fmri</replaceable> 或 <replaceable>pattern</replaceable> 的所有依赖项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
+<listitem><para>指定要从中接收软件包数据的 <literal>pkg</literal>(7) 系统信息库或软件包归档文件的文件系统路径或 URI。如果未指定 <option>s</option>，则使用值 <envar>PKG_SRC</envar>。请参见下面的“环境变量”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>显示详细输出，包括检索到的软件包个数及其完整 FMRI、检索到的文件个数以及估计的传输大小。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>src_key</replaceable></term>
+<listitem><para>指定用于从源 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert</option> <replaceable>src_cert</replaceable></term>
+<listitem><para>指定用于从源 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dkey</option> <replaceable>dest_key</replaceable></term>
+<listitem><para>指定用于向目标 HTTPS 系统信息库发布软件包的客户机 SSL 密钥文件。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dcert</option> <replaceable>dest_cert</replaceable></term>
+<listitem><para>指定用于向目标 HTTPS 系统信息库发布软件包的客户机 SSL 证书文件。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-clone</option></term>
+<listitem><para>为源系统信息库创建完全一致的副本。缺省情况下，仅当源系统信息库中的发布者也存在于目标中时，克隆操作才会成功。要限制仅对指定的发布者使用克隆操作，请使用 <option>p</option> 选项。使用 <option>p</option> 选项指定的发布者如果不在目标系统信息库中，则会将其添加到其中。存在于目标系统信息库中但不在源系统信息库中的软件包将被删除。如果发生错误，克隆操作会导致目标系统信息库更改。因此，目标系统信息库应位于自己的 ZFS 数据集中，并且在执行克隆操作之前应创建一个快照。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mog-file</option></term>
+<listitem><para>指定一个包含 pkgmogrify(1) 转换的文件，在将每个软件包复制到目标软件包系统信息库之前，会将这些转换应用到该软件包的清单。可以指定 &#39;-&#39; 以将 stdin 用作输入。如果既指定了文件又指定了 &#39;-&#39;，则将忽略 &#39;-&#39; 而且仅使用所指定的文件。使用此选项将自动导致从软件包中删除任何现有的软件包签名。不允许添加新的可散列操作（如文件和许可证）。可以多次指定此选项。此选项不能与 --clone 结合使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-newest</option></term>
+<listitem><para>列出 <option>s</option> 选项指定的系统信息库中提供的最新版本的软件包。将忽略所有其他选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-raw</option></term>
+<listitem><para>按主干和版本，检索一组目录结构中的原始软件包数据并将其存储在 <option>d</option> 指定的位置中。<option>-raw</option> 选项仅可以与基于文件系统的目标一起使用。此软件包数据可用于方便地修改和重新发布软件包，也许通过更正文件内容，也许通过提供附加的软件包元数据。<option>-raw</option> 选项不能与 <option>a</option> 一起使用。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>列出最新的软件包</title>
+<para>列出名为 <literal>test</literal> 的系统上的系统信息库中的最新软件包。</para>
+<screen>$ <userinput>pkgrecv -s http://test --newest</userinput>
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z</screen>
+</example>
+<example><title>检索原始软件包数据</title>
+<para>以能够与 <command>pkgsend publish</command> 结合使用的合适格式从示例 1 中接收 <literal>c++-runtime</literal> 软件包。</para>
+<screen>$ <userinput>pkgrecv -s http://test &bsol;</userinput>
+<userinput>-d /local/repo --raw &bsol;</userinput>
+<userinput>c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z</userinput>
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND (MB)
+Completed       1/1      3.5/3.5      0.0/0.0
+$ <userinput>ls /local/repo</userinput>
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
+</example>
+<example><title>从系统中检索依赖项</title>
+<para>从名为 <literal>test</literal> 的系统中接收软件包 <literal>editor/vim</literal> 及其所有依赖项。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -r editor/vim</userinput></screen>
+</example>
+<example><title>仅检索最新版本</title>
+<para>仅从名为 <literal>test</literal> 的系统中接收软件包 <literal>editor/vim</literal> 的最新版本。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -m latest -v &bsol;</userinput>
+<userinput>editor/vim</userinput>
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+
+Retrieving packages ...
+        Packages to add:       1
+      Files to retrieve:    1557
+Estimated transfer size: 9.21 MB
+
+Packages to transfer:
+editor/vim@7.3.600,5.11-0.175.1.0.0.24.0:20120904T172128Z
+
+PROCESS                                     ITEMS    GET (MB) SEND (MB)
+Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
+</example>
+<example><title>检索所有版本并远程重新发布</title>
+<para>从名为 <literal>test</literal> 的系统中接收软件包 <literal>library/zlib</literal> 的所有版本，然后将其重新发布到名为 <literal>remote</literal> 的系统上的远程系统信息库中。</para>
+<screen>$ <userinput>pkgrecv -s http://test -d http://remote:10000 &bsol;</userinput>
+<userinput>-m all-versions library/zlib</userinput></screen>
+</example>
+<example><title>从系统信息库中检索依赖项</title>
+<para>从位于 <filename>/export/repo</filename> 的系统信息库中接收软件包 <literal>editor/gnu-emacs</literal> 及其所有依赖项。</para>
+<screen>$ <userinput>pkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>检索其他软件包和更改的内容</title>
+<para>从位于 <literal>http://pkg.oracle.com/solaris/release/</literal> 的系统信息库中将并非已存在的所有软件包和所有已更改内容接收到位于 <literal>/export/repoSolaris11</literal> 的系统信息库。</para>
+<screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
+<para>将位于 <literal>https://pkg.oracle.com/solaris/support/</literal> 的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 <literal>/export/repoSolaris11</literal> 的系统信息库。 </para>
+<screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
+<userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
+<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'</userinput></screen>
+</example>
+<example><title>创建软件包归档文件</title>
+<para>根据位于 <literal>http://example.com:10000 </literal> 的系统信息库创建包含软件包 <literal>editor/gnu-emacs</literal> 及其所有依赖项的软件包归档文件。</para>
+<screen>$ <userinput>pkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a &bsol;</userinput>
+<userinput>-r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>将软件包从归档文件复制到系统信息库中</title>
+<para>将软件包归档文件中的所有软件包复制到位于 <filename>/export/repo</filename> 中的现有系统信息库。</para>
+<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+</example>
+<example><title>更改发布者名称</title>
+<para>在重新发布期间将软件包 &#39;foo&#39; 的发布者名称及其所有依赖项更改为 &#39;extra&#39;。</para>
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>支持以下环境变量：</para>
+<variablelist>
+<varlistentry><term><envar>PKG_DEST</envar></term>
+<listitem><para>要将检索到的软件包保存到的目录的路径，或者要复制软件包的系统信息库或软件包归档文件的文件系统路径或 URI。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_SRC</envar></term>
+<listitem><para>URI 或文件系统路径代表要从中检索软件包的 <literal> pkg</literal>(7) 系统信息库或软件包归档文件的位置。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>TMPDIR</envar></term>
+<listitem><para>在程序执行期间用于存储临时数据的目录的绝对路径。如果未设置，则存储临时数据的缺省路径为 <filename>/var/tmp</filename>。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>请求了多项操作，但只有一部分操作成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>当使用基于文件系统的目标系统信息库时，在完成软件包传输后必须重新启动提供该系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <command>pkg.depotd</command>(8)。</para>
+</refsect1>
+</refentry>

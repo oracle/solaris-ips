@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+
+ Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+
+ CDDL HEADER START
+
+ The contents of this file are subject to the terms of the
+ Common Development and Distribution License (the "License").
+ You may not use this file except in compliance with the License.
+
+ You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ or http://www.opensolaris.org/os/licensing.
+ See the License for the specific language governing permissions
+ and limitations under the License.
+
+ When distributing Covered Code, include this CDDL HEADER in each
+ file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ If applicable, add the following below this CDDL HEADER, with the
+ fields enclosed by brackets "[]" replaced with your own identifying
+ information: Portions Copyright [yyyy] [name of copyright owner]
+
+ CDDL HEADER END
+
+    NOTE:  This service manifest is not editable; its contents will
+    be overwritten by package or patch operations, including
+    operating system upgrade.  Make customizations in a different
+    file.
+
+    NOTE: This code will add and remove its privileges as needed, but at a
+    minimum it needs to have root privs at some time so that it can zone_enter
+    and fattach the door in the proxy-client's zone.
+
+-->
+
+<service_bundle type='manifest' name='application/pkg/zones-proxyd'>
+
+<service
+	name='application/pkg/zones-proxyd'
+	type='service'
+	version='1'>
+	<create_default_instance enabled="false"/>
+	<single_instance/>
+
+	 <dependency
+	 	name='fs'
+	 	grouping='require_any'
+	 	restart_on='none'
+	 	type='service'>
+	 	<service_fmri value='svc:/system/filesystem/minimal' />
+	 </dependency>
+
+        <dependency name='network'
+                grouping='require_any'
+                restart_on='error'
+                type='service'>
+                <service_fmri value='svc:/milestone/network' />
+        </dependency>
+
+	<dependency
+		  name='sysrepo'
+	          type='service'
+	          grouping='require_all'
+	          restart_on='none'>
+	          <service_fmri value='svc:/application/pkg/system-repository' />
+	</dependency>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec='/usr/lib/zones/zoneproxyd'
+		timeout_seconds='300'>
+		<method_context>
+			<method_credential user='pkg5srv'
+				privileges='all' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':kill'
+		timeout_seconds='300'>
+		<method_context>
+			<method_credential user='pkg5srv' />
+		</method_context>
+	</exec_method>
+
+	<stability value='Unstable' />
+
+	<template>
+		<common_name>
+			<loctext xml:lang='C'>
+			Zones Proxy Daemon
+			</loctext>
+		</common_name>
+		<documentation>
+			<manpage title='pkg.sysrepo' section='8'
+			     manpath='/usr/share/man' />
+		</documentation>
+	</template>
+</service>
+
+</service_bundle>

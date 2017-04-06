@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+	CDDL HEADER START
+
+	The contents of this file are subject to the terms of the
+	Common Development and Distribution License (the "License").
+	You may not use this file except in compliance with the License.
+
+	You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+	or http://www.opensolaris.org/os/licensing.
+	See the License for the specific language governing permissions
+	and limitations under the License.
+
+	When distributing Covered Code, include this CDDL HEADER in each
+	file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+	If applicable, add the following below this CDDL HEADER, with the
+	fields enclosed by brackets "[]" replaced with your own identifying
+	information: Portions Copyright [yyyy] [name of copyright owner]
+
+	CDDL HEADER END
+
+	Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+
+	NOTE:  This service manifest is not editable; its contents will
+	be overwritten by package or patch operations, including
+	operating system upgrade.  Make customizations in a different
+	file.
+-->
+
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<!-- This service is responsible for periodically running the Apache
+     htcacheclean program to prune the system-repository cache down
+     to a required size -->
+<service_bundle type='manifest' name='pkg:sysrepo-cache-compact'>
+
+<service
+	name='application/pkg/sysrepo-cache-compact'
+	type='service'
+	version='1'>
+
+	<instance name='default' enabled='false'>
+		<!--
+		  Wait for network interfaces to be initialized.
+		-->
+		<dependency name='network'
+		    grouping='require_all'
+		    restart_on='none'
+		    type='service'>
+		    <service_fmri value='svc:/milestone/network:default'/>
+		</dependency>
+
+		<!--
+		  Wait for all local filesystems to be mounted.
+		-->
+		<dependency name='filesystem-local'
+		    grouping='require_all'
+		    restart_on='none'
+		    type='service'>
+		    <service_fmri
+			value='svc:/system/filesystem/local:default'/>
+		</dependency>
+
+		<!--
+		  Require the system-repository service. There's no
+		  point in running this service if the system-repository
+		  isn't around to actually populate the cache.
+
+		  Despite our using config properties from the system repository,
+		  since this is a scheduled service, if those properties change
+		  we pick them up during the next scheduled run - no need for a
+		  restart_on setting.
+		-->
+		<dependency name='sysrepo'
+		    grouping='require_all'
+		    restart_on='none'
+		    type='service'>
+		    <service_fmri
+			value='svc:/application/pkg/system-repository:default'/>
+		</dependency>
+
+		<!--
+		  Running the service every 3 months is likely to be enough.
+		   We choose an arbitrary hour to run the service at, but
+		  the specific time does not matter. If a system is
+		  offline at the time the service is due to run,
+		  'recover' will cause it to run when the system comes
+		  online again.
+		-->
+		<scheduled_method
+			interval='month'
+			frequency='3'
+			day_of_month='1'
+			hour='15'
+			recover='true'
+			exec='/lib/svc/method/svc-pkg-sysrepo-cache'
+			timeout_seconds='-1'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv' />
+			</method_context>
+		</scheduled_method>
+
+		<property_group name='config' type='application'>
+			<stability value='Evolving' />
+			<!-- Note that this service uses the following
+			    properties from
+			    svc:/application/pkg/system-repository:default
+
+				config/cache_dir
+				config/cache_max
+
+			    We rely on pkg.sysrepo to validate the values for
+			    these settings, and certain cache_dir values may
+			    require configuration in the system-repository
+			    httpd.conf.
+			-->
+			</property_group>
+
+			<property_group name='general' type='framework'>
+				<propval name='action_authorization'
+				type='astring'
+				value='solaris.smf.manage.pkg-sysrepo' />
+				<propval name='value_authorization'
+				type='astring'
+				value='solaris.smf.value.pkg-sysrepo' />
+			</property_group>
+
+			<template>
+				<common_name>
+					<loctext xml:lang='C'>
+					IPS System Repository Cache Maintenance
+					</loctext>
+				</common_name>
+				<documentation>
+					<manpage title='pkg.sysrepo' section='8' />
+				</documentation>
+			</template>
+		</instance>
+
+		<stability value='Evolving' />
+	</service>
+</service_bundle>

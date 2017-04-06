@@ -1,0 +1,22 @@
+For obvious compatibility reasons, the over-the-wire protocol needs to be
+versioned.  Since we're using HTTP, it makes sense to simply version the
+URLs used.
+
+The scheme is pretty simple:
+
+    http://host:port/operation/version(/extra)?
+
+where "version" is a simple integer.
+
+Open questions:
+
+  - Are there operations where we don't want to require a version?
+
+  - Is there a use for a "300 Multiple Choices" HTTP return code?
+
+  - If we always try the client-optimal version first and then back off
+    linearly, we'll want to cache the version that succeeded so we don't
+    spend all of our time trying versions that don't exist.
+
+  - Alternatively, we can call "versions" to find out what versions the
+    server supports for each operation, and cache that.

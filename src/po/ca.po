@@ -1,0 +1,5975 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+#
+#
+msgid ""
+msgstr ""
+       "Project-Id-Version: Package Manager\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2009-12-07 18:42+0900\n"
+       "PO-Revision-Date: 2010-01-20 20:31+0100\n"
+       "Last-Translator: Robert Antoni Buj\n"
+       "Language-Team: Catalan language team <i18n-discuss@opensolaris.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
+       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. The full usage message isn't desired.
+#: ../client.py:138
+msgid "Try `pkg --help or -?' for more information."
+msgstr "Proveu amb `pkg --help o -?' per a més informació."
+
+#: ../client.py:141
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-Hafnsuv] [--no-refresh] [package...]\n"
+"        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [publisher ...]\n"
+"        pkg version\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-alprI] [-s server] query\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
+"            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
+"            [--variant <variant_spec>=<instance>] \n"
+"            [--facet <facet_spec>=[True,False]]\n"
+"            (-p|--publisher) name=uri dir\n"
+"        pkg change-variant [-nvq] [--be-name name] "
+"<variant_spec>=<instance>\n"
+"            [<variant_spec>=<instance> ...]\n"
+"        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|"
+"None] ...\n"
+"        pkg variant -H [<variant_spec>]\n"
+"        pkg facet -H [<facet_spec>]\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-g origin_to_add | --add-origin=origin_to_add]\n"
+"            [-G origin_to_remove | --remove-origin=origin_to_remove]\n"
+"            [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+"            [--non-sticky] [--sticky] [--search-after=publisher]\n"
+"            [--search-before=publisher] publisher\n"
+"        pkg unset-publisher publisher ...\n"
+"        pkg publisher [-HPn] [publisher ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Ús:\n"
+       "        pkg [opcions] comanda [opcions_cmd] [operands]\n"
+       "\n"
+       "Subcomandes bàsiques:\n"
+       "        pkg install [-nvq] [--no-refresh] [--no-index] paquet...\n"
+       "        pkg uninstall [-nrvq] [--no-index] paquet...\n"
+       "        pkg list [-Hafnsuv] [--no-refresh] [paquet...]\n"
+       "        pkg update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+       "index]\n"
+       "        pkg refresh [--full] [publicador ...]\n"
+       "        pkg version\n"
+       "\n"
+       "Subcomandes avançades:\n"
+       "        pkg info [-lr] [--license] [patró_paquet_fmri ...]\n"
+       "        pkg search [-alprI] [-s servidor] consulta\n"
+       "        pkg verify [-Hqv] [patró_paquet_fmri ...]\n"
+       "        pkg fix [patró_paquet_fmri ...]\n"
+       "        pkg contents [-Hmr] [-a atribut=patró ...] [-o atribut ...]\n"
+       "            [-s clau_ordenació] [-t tipus_acció ... ] [patró_paquet_fmri ...]\n"
+       "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+       "zone]\n"
+       "            [-k clau_ssl] [-c certificat_ssl] [--no-refresh]\n"
+       "            [--variant <variant_spec>=<instància>] \n"
+       "            [--facet <facet_spec>=[True,False]]\n"
+       "            (-p|--publisher) nom=uri dir\n"
+       "        pkg change-variant [-nvq] [--be-name nom] "
+       "<variant_spec>=<instància>\n"
+       "            [<variant_spec>=<instància> ...]\n"
+       "        pkg change-facet -nvq [--be-name nom] <facet_spec>=[True|False|"
+       "None] ...\n"
+       "        pkg variant -H [<variant_spec>]\n"
+       "        pkg facet -H [<facet_spec>]\n"
+       "        pkg set-property nom_propietat valor_propietat\n"
+       "        pkg unset-property nom_propietat ...\n"
+       "        pkg property [-H] [nom_propietat ...]\n"
+       "\n"
+       "        pkg set-publisher [-Ped] [-k clau_ssl] [-c certificat_ssl]\n"
+       "            [-g origen_a_afegir | --add-origin=origen_a_afegir]\n"
+       "            [-G origen_a_eliminar | --remove-origin=origen_a_eliminar]\n"
+       "            [-m rèplica_a_afegir | --add-mirror=rèplica_a_afegir]\n"
+       "            [-M rèplica_a_eliminar | --remove-mirror=rèplica_a_eliminar]\n"
+       "            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+       "            [--non-sticky] [--sticky] [--search-after=publicador]\n"
+       "            [--search-before=publicador] publicador\n"
+       "        pkg unset-publisher publicador ...\n"
+       "        pkg publisher [-HPn] [publicador ...]\n"
+       "        pkg history [-Hl]\n"
+       "        pkg purge-history\n"
+       "        pkg rebuild-index\n"
+       "\n"
+       "Opcions:\n"
+       "        -R dir\n"
+       "        --help o -?\n"
+       "\n"
+       "Entorn:\n"
+       "        PKG_IMAGE"
+
+#: ../client.py:262
+msgid "-f may only be used in combination with -a"
+msgstr "-f únicament pot utilitzar-se en combinació amb -a"
+
+#: ../client.py:281
+#, python-format
+msgid "%(opts)s may not be used with %(opt)s"
+msgstr "%(opts)s no pot utilitzar-se amb %(opt)s"
+
+#: ../client.py:285
+msgid "-s and -v may not be combined"
+msgstr "-s i -v no poden combinar-se"
+
+#: ../client.py:383 ../client.py:439
+msgid "installed"
+msgstr "instal·lat"
+
+#: ../client.py:385 ../client.py:435
+msgid "known"
+msgstr "conegut"
+
+#: ../client.py:405 ../client.py:1548 ../client.py:1946
+msgid "no packages installed"
+msgstr "sense paquets instal·lats"
+
+#: ../client.py:411
+msgid "No specified packages have newer versions available."
+msgstr "Cap paquet especificat té noves versions disponibles."
+
+#: ../client.py:414
+msgid "No installed packages have newer versions available."
+msgstr "Cap paquet instal·lat té noves versions disponibles."
+
+#: ../client.py:437
+msgid "known or installed"
+msgstr "conegut o instal·lat"
+
+#: ../client.py:441
+#, python-format
+msgid "no packages matching '%(pattern)s' %(state)s"
+msgstr "Cap paquet que coincideixi '%(pattern)s' %(state)s"
+
+#: ../client.py:495
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "Creada instantània ZFS: %s"
+
+#: ../client.py:506
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be repaired: "
+msgstr ""
+       "Els següents paquets necessiten que s'acceptin les seves llicències abans que puguin ser reparats: "
+
+#: ../client.py:510 ../client.py:684
+msgid ""
+"To indicate that you agree to and accept the terms of the licenses of the "
+"packages listed above, use the --accept option.  To display all of the "
+"related licenses, use the --licenses option."
+msgstr ""
+       "Per tal d'indicar que esteu d'acord i acceptar els termes de la llicència dels paquets llistats a continuació, utilitzeu l'opció --accept. Per a mostrar totes les llicències relacionades, utilitzeu l'opció --licenses."
+
+#: ../client.py:517
+msgid ""
+"Requested \"fix\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "L'operació \"fix\" sol·licitada podria afectar a fitxers que no poden ser modificats de l'imatge autònoma.\n"
+       "Torneu a intentar aquesta operació en un altre entorn d'arranc."
+
+#: ../client.py:549 ../client.py:1016 ../client.py:1092 ../client.py:1156
+msgid "-v and -q may not be combined"
+msgstr "-v i -q no poden combinar-se"
+
+#: ../client.py:602
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+       "pkg: cap paquet que coincideixi amb els patrons següents que heu especificat, \n"
+       "està instal·lat al vostre sistema.\n"
+
+#: ../client.py:612
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+       "\n"
+       "Tot els altres patrons coincideixen amb paquets instal·lats.  %s"
+
+#: ../client.py:650 ../modules/client/image.py:865
+#, python-format
+msgid "Package: %s"
+msgstr "Paquet: %s"
+
+#: ../client.py:651 ../modules/client/api_errors.py:129
+#: ../modules/client/image.py:867
+#, python-format
+msgid "License: %s\n"
+msgstr "Llicència: %s\n"
+
+#: ../client.py:680
+msgid ""
+"The following packages require their licenses to be accepted before they can "
+"be installed or updated: "
+msgstr ""
+       "Els següents paquets necessiten que s'acceptin les seves llicències abans que puguin ser instal·lats o actualitzats: "
+
+#: ../client.py:692
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened while preparing for %s:"
+msgstr ""
+       "\n"
+       "S'ha produït un error inesperat mentre s'estava preparant %s:"
+
+#: ../client.py:701
+#, python-format
+msgid "%s failed: %s"
+msgstr "%s error: %s"
+
+#: ../client.py:704
+#, python-format
+msgid "%s cannot be done on live image"
+msgstr "%s no pot fer-se en l'imatge autònoma"
+
+#: ../client.py:707
+#, python-format
+msgid ""
+"Requested \"%s\" operation would affect files that cannot be modified in "
+"live image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "L'operació \"%s\" sol·licitada podria afectar a fitxers que no poden ser modificats en l'imatge autònoma.\n"
+       "Re-intenteu aquesta operació en un entorn d'arranc alternatiu."
+
+#: ../client.py:739 ../client.py:743
+#, python-format
+msgid "An unexpected error happened during %s: %s"
+msgstr "S'ha produït un error durant %s: %s"
+
+#: ../client.py:755 ../client.py:764
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "Cap imatge arrelada a '%s'"
+
+#: ../client.py:767
+#, python-format
+msgid ""
+"%s failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "%s error (excepció d'inventari):\n"
+       "%s"
+
+#: ../client.py:770
+#, python-format
+msgid ""
+"WARNING: pkg(7) appears to be out of date, and should be updated before\n"
+"running %s.  Please update pkg(7) using 'pfexec pkg install\n"
+"SUNWipkg' and then retry the %s."
+msgstr ""
+       "AVÍS: pkg(7) sembla que estigui des-actualitzat, i hauria de ser actualitzat\n"
+       "abans d'executar %s.  Actualitzeu pkg(7) utilitzant 'pfexec pkg install\n"
+       "SUNWipkg' i després torneu-ho a intentar %s."
+
+#: ../client.py:777
+#, python-format
+msgid "Cannot remove '%s' due to the following packages that depend on it:"
+msgstr "No es pot eliminar '%s' degut a que els següents paquets en depenen:"
+
+#: ../client.py:832 ../client.py:913
+#, python-format
+msgid "%s: -v and -q may not be combined"
+msgstr "%s: -s i -v no poden combinar-se"
+
+#: ../client.py:835
+#, python-format
+msgid "%s: no variants specified"
+msgstr "%s: variants no especificades"
+
+#: ../client.py:841
+#, python-format
+msgid "%s: variants must to be of the form '<name>=<value>'."
+msgstr "%s: les variants han de ser de la forma '<nom>=<valor>'."
+
+#: ../client.py:851
+#, python-format
+msgid "%s: duplicate variant specified: %s"
+msgstr "%s: especificada variant duplicada: %s"
+
+#: ../client.py:869 ../client.py:1111
+msgid "No updates necessary for this image."
+msgstr "Sense actualitzacions necessàries per a aquesta imatge."
+
+#: ../client.py:916
+#, python-format
+msgid "%s: no facets specified"
+msgstr "%s: cap faceta especificada"
+
+#: ../client.py:929
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
+msgstr "%s: les facetes han de ser de la forma 'facet....=[True|False|None]'"
+
+#: ../client.py:938
+#, python-format
+msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
+msgstr "%s: les facetes han de ser de la forma 'facet....=[True|False|None]'."
+
+#: ../client.py:962
+msgid "Facet change has no effect on image"
+msgstr "El canvi de faceta no té efectes en l'imatge"
+
+#: ../client.py:1019 ../client.py:2962
+#, python-format
+msgid "command does not take operands ('%s')"
+msgstr "la comanda no pren operands ('%s')"
+
+#: ../client.py:1037
+msgid "No updates available for this image."
+msgstr "No hi han actualitzacions disponibles per a aquesta imatge."
+
+#: ../client.py:1054
+msgid "NOTE: Please review release notes posted at:\n"
+msgstr "NOTA: Si us plau reviseu les notes de la versió publicades a:\n"
+
+#: ../client.py:1089 ../client.py:1153
+msgid "at least one package name required"
+msgstr "com a mínim es necessita el nom d'un paquet"
+
+#: ../client.py:1262
+#, python-format
+msgid ""
+"The server returned a malformed result.\n"
+"The problematic structure:%r"
+msgstr ""
+       "El servidor ha retornat un resultat dolent.\n"
+       "L'estructura problemàtica: %r"
+
+#: ../client.py:1268
+#, python-format
+msgid ""
+"The server returned an invalid action.\n"
+"%s"
+msgstr ""
+       "El servidor ha retornat una acció no permesa.\n"
+       "%s"
+
+#: ../client.py:1324
+#, python-format
+msgid "%s is not a valid server URL."
+msgstr "%s no és una URL de servidor vàlida."
+
+#: ../client.py:1336
+msgid "at least one search term must be provided"
+msgstr "com a mínim s'ha de proporcionar un tema de cerca"
+
+#: ../client.py:1347
+#, python-format
+msgid "action level options ('%s') to -o cannot be used with the -p option"
+msgstr "les opcions a nivell d'acció ('%s') -o no poden ser utilitzades amb l'opció -p"
+
+#: ../client.py:1399
+#, python-format
+msgid "The server returned a malformed result:%r"
+msgstr "El servidor ha retornat una resposta dolenta: %r"
+
+#: ../client.py:1410
+msgid ""
+"action level options to -o cannot be used with the queries that return "
+"packages"
+msgstr ""
+       "les opcions a nivell d'acció -o no poden ser utilitzades amb consultes que retornin paquets"
+
+#: ../client.py:1467 ../client.py:1477
+msgid ""
+"The search index appears corrupted.  Please rebuild the index with 'pkg "
+"rebuild-index'."
+msgstr ""
+       "L'índex de cerca està corrupte.  Si us plau torneu a construir l'índex amb 'pkg "
+       "rebuild-index'."
+
+#: ../client.py:1511 ../client.py:1908
+msgid "-l and -r may not be combined"
+msgstr "-l i -r no poden combinar-se"
+
+#: ../client.py:1514
+msgid "must request remote info for specific packages"
+msgstr "ha de sol·licitar informació remota per paquets específics"
+
+#: ../client.py:1566
+msgid "Obsolete"
+msgstr "Obsolet"
+
+#: ../client.py:1568
+msgid "Renamed"
+msgstr "Reanomenat"
+
+#: ../client.py:1576 ../packagemanager.py:1694 ../packagemanager.py:3163
+msgid "Installed"
+msgstr "Instal·lat"
+
+#: ../client.py:1578 ../packagemanager.py:3165
+msgid "Not installed"
+msgstr "No instal·lat"
+
+#: ../client.py:1580
+msgid "          Name:"
+msgstr "           Nom:"
+
+#: ../client.py:1582
+msgid "       Summary:"
+msgstr "         Resum:"
+
+#: ../client.py:1584
+msgid "   Description:"
+msgstr "    Descripció:"
+
+#: ../client.py:1594
+msgid "      Category:"
+msgstr "     Categoria:"
+
+#: ../client.py:1601
+msgid "         State:"
+msgstr "         Estat:"
+
+#: ../client.py:1604
+msgid "    Renamed to:"
+msgstr "  Reanomenat a:"
+
+#. XXX even more info on the publisher would be nice?
+#: ../client.py:1609
+msgid "     Publisher:"
+msgstr "    Publicador:"
+
+#: ../client.py:1610
+msgid "       Version:"
+msgstr "        Versió:"
+
+#: ../client.py:1611
+msgid " Build Release:"
+msgstr "Versió construcció:"
+
+#: ../client.py:1612
+msgid "        Branch:"
+msgstr "        Branca:"
+
+#: ../client.py:1613
+msgid "Packaging Date:"
+msgstr "Data empaquetament:"
+
+#: ../client.py:1614
+msgid "          Size:"
+msgstr "          Mida:"
+
+#: ../client.py:1615
+msgid "          FMRI:"
+msgstr "          FMRI:"
+
+#: ../client.py:1623
+msgid ""
+"pkg: info: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: info: sense paquets que coincideixin amb els següents patrons que heu especificat estan\n"
+       "instal·lats al sistema.  Intenteu especificant -r a la consulta remota:"
+
+#: ../client.py:1627
+msgid ""
+"pkg: info: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: info: sense paquets que coincideixin amb els següents patrons que heu especificat\n"
+       "varen ser trobats en el catàleg.  Intenteu relaxant els patrons, refrescant i/o\n"
+       "examinant els catàlegs:"
+
+#: ../client.py:1643 ../modules/client/api_errors.py:278
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s' coincideix amb múltiples paquets"
+
+#: ../client.py:1649
+msgid "no license information could be found for the following packages:"
+msgstr "Cap informació de llicència pot ser trobada pels següents paquets:"
+
+#: ../client.py:1865
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "Atribut no vàlid '%s'"
+
+#: ../client.py:1911
+msgid "contents: must request remote contents for specific packages"
+msgstr "continguts: heu de sol·licitar continguts remots per a un paquet específic"
+
+#: ../client.py:1925
+#, python-format
+msgid "-m and %s may not be specified at the same time"
+msgstr "-m i %s no poden especificar-se al mateix temps"
+
+#: ../client.py:1988 ../client.py:1994
+#, python-format
+msgid "pkg: contents: '%s' matches multiple packages"
+msgstr "pkg: contents: '%s' coincideix amb diversos paquets"
+
+#: ../client.py:2074
+msgid "pkg: contents: no matching actions found in the listed packages"
+msgstr "pkg: continguts: no 'han trobat accions que coincideixin en els paquets llistats"
+
+#: ../client.py:2086
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg: contents: sense paquets que coincideixin amb els següents patrons que heu especificat estan\n"
+       "instal·lats al sistema.  Intenteu especificant -r a la consulta remota:"
+
+#: ../client.py:2090
+msgid ""
+"pkg: contents: no packages matching the following patterns you specified "
+"were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg: contents: sense paquets que coincideixin amb els següents patrons que heu especificat estan\n"
+       "instal·lats al sistema.  Intenteu especificant -r a la consulta remota:"
+
+#: ../client.py:2107
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg: %s/%s catàlegs han estat actualitzats:"
+
+#: ../client.py:2175
+msgid "'pkg publisher' will show a list of publishers."
+msgstr "'pkg publisher' mostrarà el llistat de tots els publicadors."
+
+#: ../client.py:2252
+msgid "requires a publisher name"
+msgstr "El nom del publicador és obligatori"
+
+#: ../client.py:2254
+msgid "only one publisher name may be specified"
+msgstr "solament s'ha d'especificar el nom d'un publicador"
+
+#: ../client.py:2260
+msgid "the -p and -d options may not be combined"
+msgstr "les opcions -p i-d no poden combinar-se"
+
+#: ../client.py:2264
+msgid ""
+"the -O and -g, --add-origin, -G, or --remove-origin options may not be "
+"combined"
+msgstr ""
+       "les opcions -O i -g, --add-origin, -G, o --remove-origin no poden combinar-se"
+
+#: ../client.py:2268
+msgid "search_before and search_after may not be combined"
+msgstr "search_before i search_after no poden combinar-se"
+
+#: ../client.py:2287
+msgid ""
+"publisher does not exist. Use -g to define origin URI for new publisher."
+msgstr ""
+       "el publicador no existeix, Utilitzeu -g per definir la URI origen pel nou publicador."
+
+#: ../client.py:2391
+#, python-format
+msgid ""
+"The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
+"server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(details)s"
+msgstr ""
+       "La URI origen per a '%(pubname)s' no sembla que apunti a un servidor pkg vàlid.\n"
+       "Si us plau comproveu l'adreça del servidor i la configuració de la xarxa al client.\n"
+       "Detalls addicionals:\n"
+       "\n"
+       "%(details)s"
+
+#: ../client.py:2419
+msgid "at least one publisher must be specified"
+msgstr "com a mínim s'ha d'especificar un publicador"
+
+#: ../client.py:2449
+#, python-format
+msgid "Removal failed for '%(pub)s': %(msg)s"
+msgstr "Error d'eliminació per a '%(pub)s': %(msg)s"
+
+#: ../client.py:2517
+msgid "PUBLISHER"
+msgstr "PUBLICADOR"
+
+#: ../client.py:2517
+msgid "TYPE"
+msgstr "TIPUS"
+
+#: ../client.py:2517
+msgid "STATUS"
+msgstr "ESTAT"
+
+#: ../client.py:2518
+msgid "URI"
+msgstr "URI"
+
+#: ../client.py:2543
+msgid "non-sticky"
+msgstr "non-sticky"
+
+#: ../client.py:2548
+msgid "preferred"
+msgstr "preferit"
+
+#: ../client.py:2550
+msgid "disabled"
+msgstr "deshabilitat"
+
+#. XXX get the real origin status
+#: ../client.py:2561
+msgid "origin"
+msgstr "origen"
+
+#. XXX get the real mirror status
+#: ../client.py:2565
+msgid "mirror"
+msgstr "rèplica"
+
+#: ../client.py:2571
+msgid "              SSL Key:"
+msgstr "          Clau SSL:"
+
+#: ../client.py:2572
+msgid "             SSL Cert:"
+msgstr "          Cert SSL:"
+
+#: ../client.py:2584
+msgid " Cert. Effective Date:"
+msgstr " Cert. Data d'expiració:"
+
+#: ../client.py:2586
+msgid "Cert. Expiration Date:"
+msgstr "Cert. Data d'expiració:"
+
+#: ../client.py:2593
+msgid "           Origin URI:"
+msgstr "        URI Origen:"
+
+#: ../client.py:2599
+msgid "           Mirror URI:"
+msgstr "       URI Rèplica:"
+
+#: ../client.py:2613
+msgid "            Publisher:"
+msgstr "         Publicador:"
+
+#: ../client.py:2614
+msgid "                Alias:"
+msgstr "              Àlies:"
+
+#: ../client.py:2624
+msgid "          Client UUID:"
+msgstr "        UUOD Client:"
+
+#: ../client.py:2625
+msgid "      Catalog Updated:"
+msgstr "      Catàleg actualitzat:"
+
+#: ../client.py:2627 ../client.py:2629
+msgid "              Enabled:"
+msgstr "          Habilitat:"
+
+#. Not Installed
+#: ../client.py:2627 ../gui/modules/misc.py:285 ../gui/modules/misc.py:287
+#: ../gui/modules/misc.py:345 ../gui/modules/misc.py:354
+#: ../packagemanager.py:3650
+msgid "No"
+msgstr "No"
+
+#: ../client.py:2629
+msgid "Yes"
+msgstr "Si"
+
+#: ../client.py:2640
+msgid "requires a property name and value"
+msgstr "necessita un nom i valor de propietat"
+
+#: ../client.py:2644 ../client.py:2672
+msgid "set-publisher must be used to change the preferred publisher"
+msgstr "set-publisher ha de ser utilitzat per caviar el publicador preferit"
+
+#: ../client.py:2667
+msgid "requires at least one property name"
+msgstr "necessita com a mínim el nom d'una propietat"
+
+#: ../client.py:2679
+#, python-format
+msgid "no such property: %s"
+msgstr "no hi ha tal propietat: %s"
+
+#: ../client.py:2701
+#, python-format
+msgid "property: no such property: %s"
+msgstr "propietat: no existeix la propietat: %s"
+
+#: ../client.py:2732
+#, python-format
+msgid "no such variant: %s"
+msgstr "no hi ha tal variant: %s"
+
+#: ../client.py:2819 ../client.py:2890
+msgid "publisher argument must be of the form '<prefix>=<url>'."
+msgstr "l'argument del publicador ha de ser de la forma '<prefix>=<url>'."
+
+#: ../client.py:2850
+msgid "variant arguments must be of the form '<name>=<value>'."
+msgstr "els arguments variant han de ser de la forma '<nom>=<valor>'."
+
+#: ../client.py:2860
+msgid "Facet arguments must beform 'facet..=[True|False]'"
+msgstr "Els arguments de faceta han de ser de la forma 'facet..=[True|False]'"
+
+#: ../client.py:2866
+msgid "only one image directory path may be specified"
+msgstr "únicament es pot especificar la ruta d'un directori"
+
+#: ../client.py:2887
+msgid "a publisher must be specified"
+msgstr "s'ha d'especificar un publicador"
+
+#: ../client.py:2894
+#, python-format
+msgid "a publisher's prefix may not start with the text: %s"
+msgstr "el prefix d'un publicador no pot començar amb el text: %s"
+
+#: ../client.py:2899
+msgid "publisher prefix contains invalid characters"
+msgstr "el prefix del publicador conté caràcters no permesos"
+
+#: ../client.py:2917
+#, python-format
+msgid "cannot create image at %(image_dir)s: %(reason)s"
+msgstr "no es pot crear l'imatge a %(image_dir)s: %(reason)s"
+
+#: ../client.py:2934
+#, python-format
+msgid ""
+"The URI '%(pub_url)s' does not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%(error)s"
+msgstr ""
+       "La URI '%(pub_url)s' no sembla que apunti a un servidor pkg vàlid.\n"
+       "Si us plau comproveu l'adreça del servidor i la configuració de xarxa del client.\n"
+       "Detalls addicionals:\n"
+       "\n"
+       "%(error)s"
+
+#: ../client.py:2999
+msgid "-H and -l may not be combined"
+msgstr "-H i -l no poden combinar-se"
+
+#: ../client.py:3003
+msgid "TIME"
+msgstr "HORA"
+
+#: ../client.py:3004
+msgid "OPERATION"
+msgstr "OPERACIÓ"
+
+#: ../client.py:3004
+msgid "CLIENT"
+msgstr "CLIENT"
+
+#: ../client.py:3004
+msgid "OUTCOME"
+msgstr "RESULTATS"
+
+#: ../client.py:3085
+msgid "History purged."
+msgstr "Història purgada."
+
+#: ../client.py:3099
+msgid ""
+"\n"
+"The following proxy configuration is set in the environment:\n"
+msgstr ""
+       "\n"
+       "La següent configuració de proxy està establerta en l'entorn:\n"
+
+#: ../client.py:3102
+#, python-format
+msgid "http_proxy: %s\n"
+msgstr "proxy_http: %s\n"
+
+#: ../client.py:3104
+#, python-format
+msgid "https_proxy: %s\n"
+msgstr "proxy_https: %s\n"
+
+#: ../client.py:3119 ../pkgdep.py:98 ../pkgdep.py:194 ../pkgdep.py:444
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "opció global il·legal -- %s"
+
+#: ../client.py:3131
+#, python-format
+msgid "%(opt)s takes argument of form name=value, not %(arg)s"
+msgstr "%(opt)s pren arguments de la forma nom=valor, no %(arg)s"
+
+#: ../client.py:3149
+msgid "no subcommand specified"
+msgstr "cap sub-comanda especificada"
+
+#: ../client.py:3160 ../client.py:3171
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R no permès per la subcomanda %s"
+
+#: ../client.py:3167 ../client.py:3256
+#, python-format
+msgid "illegal option -- %s"
+msgstr "opció no permesa -- %s"
+
+#: ../client.py:3174
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "versió: la comanda no pren arguments ('%s')"
+
+#: ../client.py:3199 ../pkgdep.py:236
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+       "No es pot trobar l'imatge.  Utilitzeu l'opció -R o establiu $PKG_IMAGE per a apuntar\n"
+       "a una imatge, o canvieu el directori de treball a un que estigui dins de l'imatge."
+
+#: ../client.py:3213
+msgid "No image found."
+msgstr "Cap imatge trobada."
+
+#: ../client.py:3249 ../pkgdep.py:472 ../publish.py:509
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "subcommanda desconeguda '%s'"
+
+#: ../client.py:3263 ../pkgdep.py:505 ../publish.py:535 ../pull.py:811
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(7) is '%s'."
+msgstr ""
+       "\n"
+       "\n"
+       "Aquest és un error intern.  Si us plau permeteu als desenvolupadors conèixer quan a aquest\n"
+       "problema tot omplit l'error a http://defect.opensolaris.org i incloent el següent\n"
+       "missatge de traçabilitat i aquest missatge.  La versió de pkg(7) és '%s'."
+
+#: ../client.py:3306
+msgid ""
+"\n"
+"Errors were encountered while attempting to retrieve package or file data "
+"for\n"
+"the requested operation."
+msgstr ""
+       "\n"
+       "Es van trobar errors mentre s'intentava recuperar les dades del paquet o fitxer per\n"
+       "l'operació sol·licitada."
+
+#: ../client.py:3309
+#, python-format
+msgid ""
+"Details follow:\n"
+"\n"
+"%s"
+msgstr ""
+       "Prestar atenció als detalls:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3315
+msgid ""
+"\n"
+"Unable to contact a valid package depot. This may be due to a problem with "
+"the server, network misconfiguration, or an incorrect pkg client "
+"configuration.  Please check your network settings and attempt to contact "
+"the server using a web browser."
+msgstr ""
+       "\n"
+       "No es pot contactar amb un dipòsit de paquets vàlid. Aquest pot ser degut a un problema amb "
+       "el servidor, xarxa mal configurada, o a una configuració de pkg incorrecta al client. "
+       "Si us plau comproveu la xarxa i proveu de contactar amb "
+       "el servidor mitjançant un navegador web."
+
+#: ../client.py:3320
+#, python-format
+msgid ""
+"\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "Detalls addicionals:\n"
+       "\n"
+       "%s"
+
+#: ../client.py:3328
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+       "S'ha produït un error mentre s'intentava carregar l'històric\n"
+       "quant a les operacions antigues de client."
+
+#: ../client.py:3337
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+       "S'ha produït un error mentre s'intentava emmagatzemar l'informació quant a\n"
+       "l'operació actual al històric del client."
+
+#: ../client.py:3347
+msgid "An error was encountered while attempting to purge client history."
+msgstr "S'ha produït un error mentre s'intentava purgar la història del client."
+
+#: ../client.py:3354
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "La comanda pkg sembla fora de sincronització amb les biblioteques proporcionades \n"
+       "per SUNWipkg. La versió del client és %(client)s mentre que la versió de l'API de la biblioteca "
+       "és %(api)s"
+
+#: ../client.py:3369
+#, python-format
+msgid ""
+"\n"
+"%s%s"
+msgstr ""
+       "\n"
+       "%s%s"
+
+#: ../client.py:3371
+msgid ""
+"\n"
+"\n"
+"Despite the error while indexing, the update, install, or uninstall\n"
+"has completed successfuly."
+msgstr ""
+       "\n"
+       "\n"
+       "Tot i l'error durant l'indexació, el update, l'instal·lació o la desinstal·lació\n"
+       "ha estat completada correctament."
+
+#. The full usage message isn't desired.
+#: ../depot.py:131
+msgid "Try `pkg.depotd --help or -?' for more information."
+msgstr "Proveu amb `pkg.depotd --help o -?' per a més informació."
+
+#: ../depot.py:396 ../publish.py:115
+msgid "property arguments must be of the form '<section.property>=<value>'."
+msgstr "els valors de propietat ha de tenir la forma '<secció.propietat>=<valor>'."
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "Afegir més programari"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:2
+#: ../gui/data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "Instal·lar, actualitzar i eliminar paquets de programari"
+
+#: ../gui/data/l10n.py:31
+msgid "AMP Stack"
+msgstr "Pila AMP"
+
+#: ../gui/data/l10n.py:32
+msgid "Accessories"
+msgstr "Accessoris"
+
+#: ../gui/data/l10n.py:33
+msgid "Administration and Configuration"
+msgstr "Administració i configuració"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "Aplicació i serveis web"
+
+#: ../gui/data/l10n.py:35
+msgid "Builds"
+msgstr "Construccions"
+
+#: ../gui/data/l10n.py:36
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:37
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:38
+msgid "Communications"
+msgstr "Comunicacions"
+
+#: ../gui/data/l10n.py:39
+msgid "Configuration and Preferences"
+msgstr "Configuració i preferències"
+
+#: ../gui/data/l10n.py:40
+msgid "Core"
+msgstr "Nucli"
+
+#: ../gui/data/l10n.py:41
+msgid "Databases"
+msgstr "Bases de dades"
+
+#: ../gui/data/l10n.py:42
+msgid "Developer Tools"
+msgstr "Eines de desenvolupament"
+
+#: ../gui/data/l10n.py:43
+msgid "Display"
+msgstr "Monitor"
+
+#: ../gui/data/l10n.py:44
+msgid "Distribution Tools"
+msgstr "Eines de distribució"
+
+#: ../gui/data/l10n.py:45
+msgid "Documentation"
+msgstr "Documentació"
+
+#: ../gui/data/l10n.py:46
+msgid "Editors"
+msgstr "Editors"
+
+#: ../gui/data/l10n.py:47
+msgid "Enterprise Management"
+msgstr "Gestió d'empreses"
+
+#: ../gui/data/l10n.py:48
+msgid "File Managers"
+msgstr "Gestors de fitxers"
+
+#: ../gui/data/l10n.py:49
+msgid "File System"
+msgstr "Sistema de fitxers"
+
+#: ../gui/data/l10n.py:50
+msgid "Fonts"
+msgstr "Fonts"
+
+#: ../gui/data/l10n.py:51
+msgid "GNOME and GTK+"
+msgstr "GNOME i GTK+"
+
+#: ../gui/data/l10n.py:52
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:53
+msgid "Games"
+msgstr "Jocs"
+
+#: ../gui/data/l10n.py:54
+msgid "Graphics and Imaging"
+msgstr "Gràfics i imatges"
+
+#: ../gui/data/l10n.py:55
+msgid "Hardware"
+msgstr "Maquinari"
+
+#: ../gui/data/l10n.py:56
+msgid "High Performance Computing"
+msgstr "Computació d'alt rendiment"
+
+#: ../gui/data/l10n.py:57
+msgid "Integrated Development Environments"
+msgstr "Entorns de desenvolupament integrats"
+
+#: ../gui/data/l10n.py:58
+msgid "Internationalization"
+msgstr "Internacionalització"
+
+#: ../gui/data/l10n.py:59
+msgid "Internet"
+msgstr "Internet"
+
+#: ../gui/data/l10n.py:60
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:61
+msgid "Libraries"
+msgstr "Biblioteques"
+
+#: ../gui/data/l10n.py:62
+msgid "Localizations"
+msgstr "Localitzacions"
+
+#: ../gui/data/l10n.py:63
+msgid "Media"
+msgstr "Multimèdia"
+
+#: ../gui/data/l10n.py:64
+msgid "Multimedia Libraries"
+msgstr "Biblioteques multimèdia"
+
+#: ../gui/data/l10n.py:65
+msgid "Networking"
+msgstr "Xarxa"
+
+#: ../gui/data/l10n.py:66
+msgid "Office"
+msgstr "Oficina"
+
+#: ../gui/data/l10n.py:67
+msgid "Office Tools"
+msgstr "Eines d'oficina"
+
+#: ../gui/data/l10n.py:68
+msgid "Other Languages"
+msgstr "Altres llenguatges"
+
+#: ../gui/data/l10n.py:69
+msgid "Other Peripherals"
+msgstr "Altres perifèrics"
+
+#: ../gui/data/l10n.py:70
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:71
+msgid "Packaging"
+msgstr "Empaquetament"
+
+#: ../gui/data/l10n.py:72
+msgid "Panels and Applets"
+msgstr "Panells i mini-aplicacions"
+
+#: ../gui/data/l10n.py:73
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:74
+msgid "Plug-ins and Run-times"
+msgstr "Extensions i Entorns d'execució"
+
+#: ../gui/data/l10n.py:75
+msgid "Ports"
+msgstr "Ports"
+
+#: ../gui/data/l10n.py:76
+msgid "Printing"
+msgstr "Impressió"
+
+#: ../gui/data/l10n.py:77
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:78
+msgid "Releases"
+msgstr "Versions"
+
+#: ../gui/data/l10n.py:79
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:80
+msgid "Scripts"
+msgstr "Scripts"
+
+#: ../gui/data/l10n.py:81
+msgid "Security"
+msgstr "Seguretat"
+
+#: ../gui/data/l10n.py:82
+msgid "Services"
+msgstr "Serveis"
+
+#: ../gui/data/l10n.py:83
+msgid "Sessions"
+msgstr "Sessions"
+
+#: ../gui/data/l10n.py:84
+msgid "Shells"
+msgstr "Consoles"
+
+#: ../gui/data/l10n.py:85
+msgid "Software Management"
+msgstr "Gestió programari"
+
+#: ../gui/data/l10n.py:86
+msgid "Sound and Video"
+msgstr "Àudio i vídeo"
+
+#: ../gui/data/l10n.py:87
+msgid "Source Code Management"
+msgstr "Gestió de codi font"
+
+#: ../gui/data/l10n.py:88
+msgid "Storage"
+msgstr "Emmagatzemament"
+
+#: ../gui/data/l10n.py:89 ../packagemanager.py:1827
+msgid "System"
+msgstr "Sistema"
+
+#: ../gui/data/l10n.py:90
+msgid "System Utilities"
+msgstr "Eines de sistema"
+
+#: ../gui/data/l10n.py:91
+msgid "Text Tools"
+msgstr "Eines de text"
+
+#: ../gui/data/l10n.py:92
+msgid "Theming"
+msgstr "Temes"
+
+#: ../gui/data/l10n.py:93
+msgid "Trusted"
+msgstr "De confiança"
+
+#: ../gui/data/l10n.py:94
+msgid "Trusted Extensions"
+msgstr "Extensions de confiança"
+
+#: ../gui/data/l10n.py:95
+msgid "Universal Access"
+msgstr "Accés universal"
+
+#: ../gui/data/l10n.py:96
+msgid "Virtualization"
+msgstr "Virtualització"
+
+#: ../gui/data/l10n.py:97
+msgid "Window Managers"
+msgstr "Gestors de finestres"
+
+#: ../gui/data/l10n.py:98
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:1
+msgid ""
+"A boolean which determines if the Start Page should be shown on startup or "
+"the initial list view."
+msgstr ""
+       "Un booleà que determina si s'ha de mostrar la pàgina d'inici a l'inici, "
+       "o bé el llistat inicial."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:2
+msgid ""
+"A boolean which determines if the search is executed dynamically as user "
+"types or only when user hits the return key."
+msgstr ""
+       "Un booleà que determina si la cerca s'executa dinàmicament quant l'usuari escriu, "
+       "o únicament quant es pressiona la tecla Enter."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:3
+msgid ""
+"A boolean which determines whether Package Manager should save its state on "
+"exit and use it on restart. The state is the selected publisher and the size "
+"and position of horizontal and vertical dividers."
+msgstr ""
+       "Un booleà que determina si el Gestor de Paquets ha de desar el seu estat de sortida i utilitzar-lo quant es reinicii. L'estat és el publicador seleccionat i la mida i posició dels divisors horitzontal i vertical."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:4
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the updates are found after performing Updates operation (Checks "
+"if updates are available) or it should go straight to the update all "
+"operation."
+msgstr ""
+       "Un booleà que determina si el Gestor de paquets ha de mostrar el diàleg de confirmació quant es troben actualitzacions després de realitzar operacions d'actualització (Comprova si hi han actualitzacions disponibles) o si ha de segui l'operació d'actualitzar tot."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:5
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for installation or update."
+msgstr ""
+       "Un booleà que determina si el Gestor de paquets ha de mostrar el diàleg de confirmació quant l'usuari ha seleccionat alguns paquets per a instal·lar o actualitzar."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:6
+msgid ""
+"A boolean which determines whether Package Manager should show confirmation "
+"dialog when the user selected some packages for removal."
+msgstr ""
+       "Un booleà que determina si el Gestor de paquets ha de mostrar el diàleg de confirmació quant l'usuari ha seleccionat alguns paquets per a eliminar."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid ""
+"A boolean which determines whether Package Manager should start in search "
+"mode."
+msgstr ""
+       "Un booleà que determina si el Gestor de Paquets ha d'iniciar-se amb mode de cerca."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid ""
+"A string which determines if the repository is shown or not in the error "
+"dialog."
+msgstr ""
+       "Una cadena de text que determina si el repositori es mostrat o no en el diàleg d'error. "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+msgid "A string which stores the last publisher used by package manager."
+msgstr "Una cadena de text que emmagatzema l'últim publicador utilitzat pel Gestor de Paquets."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+msgid ""
+"An integer which identifies the initial show filter value to be displayed "
+"when packagemanager starts. 0 corresponds to All Packages."
+msgstr ""
+       "Un enter que identifica el valor del filtre inicial per a ser mostrat quan "
+       "packagemanager s'inicia. 0 correspon a tots els paquets."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:11
+msgid ""
+"An integer which identifies the initial toplevel section to be expanded when "
+"packagemanager starts. 0 = \"All Categories\", 2 = \"Applications\" (the "
+"default)"
+msgstr ""
+       "Un enter que identifica la secció de nivell alt inicial a ser expandida quan el packagemanager s'inicia. 0 = \"Totes les categories\", 2 = \"Aplicacions\" (la predeterminada)"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+msgid ""
+"An integer which specifies the initial height of the application main "
+"window, overridden if there is not enough screen available."
+msgstr ""
+       "Un enter que especifica l'altura inicial per a la finestra de l'aplicació principal, "
+       "sobreescriure si no es disposa de prouta pantalla."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:13
+msgid ""
+"An integer which specifies the initial horizonatal divider position of the "
+"application, which separates the category panel from the list panel."
+msgstr ""
+       "Un enter que especifica la posició inicial del divisor horitzontal de l'aplicació, "
+       "amb la que es separa el panell de categories del panell amb el llistat."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:14
+msgid ""
+"An integer which specifies the initial vertical divider position of the "
+"application, which separates the details panel from the list panel."
+msgstr ""
+       "Un enter que especifica la posició inicial del divisor vertical de l'aplicació, "
+       "amb la que es separa el panell amb els detalls del panell amb el llistat."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:15
+msgid ""
+"An integer which specifies the initial width of the application main window, "
+"overridden if there is not enough screen available."
+msgstr ""
+       "Un enter que especifica l'amplada inicial per a la finestra de l'aplicació principal, "
+       "sobreescriure si no es disposa de prou pantalla."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:16
+msgid ""
+"An integer which specifies the maximum number of entries to store for search "
+"completion."
+msgstr ""
+       "Un enter que especifica el nombre màxim d'entrades a emmagatzemar per la cerca completa"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:17
+msgid ""
+"Comma separated list of repositories which we show if there are API errors "
+"when searching them"
+msgstr ""
+       "Llistat de repositoris separats amb comes que mostrem si hi han errors d'API quant se'ls cerca"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:18
+msgid "Display confirmation dialog after Check for updates"
+msgstr "Mostrar el diàleg de confirmació després de comprovar actualitzacions"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:19
+msgid "Display install/update packages confirmation dialog"
+msgstr "Mostrar el diàleg de confirmació d'instal·lació/actualització de paquets"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:20
+msgid "Display remove packages confirmation dialog"
+msgstr "Mostrar el diàleg de confirmació d'eliminació de paquets"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:21
+msgid "Display selected publisher at startup"
+msgstr "Mostrar el publicador seleccionat al començament"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:22
+msgid "Enable type ahead search"
+msgstr "Permetre la cerca mentre s'escriu"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:23
+msgid "Initial application height"
+msgstr "Altura inicial de l'aplicació"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:24
+msgid "Initial application horizonatal divider position"
+msgstr "Posició del separador horitzontal inicial de l'aplicació"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:25
+msgid "Initial application vertical divider position"
+msgstr "Posició del separador vertical inicial de l'aplicació"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:26
+msgid "Initial application width"
+msgstr "Amplada inicial de l'aplicació"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:27
+msgid "Initial section value"
+msgstr "Valor de secció inicial"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:28
+msgid "Initial show filter value"
+msgstr "Mostrar valor de filtratge inicial"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:29
+msgid "Last Export Selections Path"
+msgstr "Última ruta de selecció d'exportacions"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:30
+msgid "Last publisher used by package manager"
+msgstr "Últim publicador utilitzat pel Gestor de Paquets"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:31
+msgid "Maximum entries for Search Completion"
+msgstr "Entrades màximes per la cerca completa"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:32
+msgid "Show Start Page on startup"
+msgstr "Mostrar la pàgina d'inici a l'inici"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:33
+msgid "Start Page Update URL"
+msgstr "URL de la pàgina d'inici d'actualització"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:34
+msgid "Start in serach mode"
+msgstr "Iniciar en mode cerca"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:35
+msgid ""
+"The location from which to fetch updates to the Package Manager Start Page."
+msgstr ""
+       "La localització des de la qual obtenir les actualitzacions de la pàgina d'inici del Gestor de Paquets."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:36
+msgid "The path for the last set of selections exported from packagemanager."
+msgstr "La ruta per l'ultim conjunt de seleccions exportat a packagemanager."
+
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:77 ../gui/modules/webinstall.py:428
+#: ../packagemanager.py:281 ../packagemanager.py:3761
+#: ../packagemanager.py:5264
+msgid "Package Manager"
+msgstr "Gestor de Paquets"
+
+#: ../gui/data/packagemanager.glade.h:1
+msgid "<b>Add, modify and remove publishers</b>"
+msgstr "<b>Afegir, modificar i treure publicadors</b>"
+
+#: ../gui/data/packagemanager.glade.h:2
+msgid "<b>Apply the following changes:</b>"
+msgstr "<b>Aplicar els canvis següents:</b>"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid "<b>Delete, rename and activate boot environments</b>"
+msgstr "<b>Eliminar, reanomenar i activar entorns d'arranc</b>"
+
+#: ../gui/data/packagemanager.glade.h:4
+msgid "<b>Exit</b>"
+msgstr "<b>Sortir</b>"
+
+#: ../gui/data/packagemanager.glade.h:5
+msgid "<b>General</b>"
+msgstr "<b>General</b>"
+
+#: ../gui/data/packagemanager.glade.h:6 ../packagemanager.py:3600
+msgid "<b>Installable Version:</b>"
+msgstr "<b>Versió instal·lable:</b>"
+
+#: ../gui/data/packagemanager.glade.h:7
+msgid "<b>Installed:</b>"
+msgstr "<b>Instal·lat:</b>"
+
+#: ../gui/data/packagemanager.glade.h:8
+msgid "<b>Name:</b>"
+msgstr "<b>Nom:</b>"
+
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Origins</b>"
+msgstr "<b>Orígens</b>"
+
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Publisher added successfully</b>"
+msgstr "<b>Publicador afegit correctament</b>"
+
+#: ../gui/data/packagemanager.glade.h:11
+msgid "<b>Publisher</b>"
+msgstr "<b>Publicador</b>"
+
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Recent Searches</b>"
+msgstr "<b>Cerques recents</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Review the packages to be installed or udpated</b>"
+msgstr "<b>Revisar els paquets a ser instal·lats o actualitzats</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Show Confirmation Dialog</b>"
+msgstr "<b>Mostrar el diàleg de confirmació</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>Startup</b>"
+msgstr "<b>Inici</b>"
+
+#: ../gui/data/packagemanager.glade.h:16
+msgid "<b>Update All completed successfully</b>"
+msgstr "<b>Actualitzar tot, s'ha completat de forma correcta</b>"
+
+#: ../gui/data/packagemanager.glade.h:17
+msgid "<b>View Package Manager Logs</b>"
+msgstr "<b>Visualitzar els registres del Gestor de Paquets</b>"
+
+#: ../gui/data/packagemanager.glade.h:18
+msgid "<b>_Mirrors</b>"
+msgstr "<b>_Rèpliques</b>"
+
+#: ../gui/data/packagemanager.glade.h:19
+msgid "<b>_SSL Key and Certificate</b>"
+msgstr "<b>Clau _SSL i Certificat</b>"
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "<big><b>Package Manager Web Installer</b></big>"
+msgstr "<big><b>Instal·lador Web Gestor de Paquets</b></big>"
+
+#: ../gui/data/packagemanager.glade.h:21
+msgid "<span foreground=\"blue\"><u>What's this?</u></span>"
+msgstr "<span foreground=\"blue\"><u>Què és això?</u></span>"
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid ""
+"A boot environment (BE) contains the operating\n"
+"system image and updated packages. The\n"
+"system will boot into the new BE on restart."
+msgstr ""
+       "Un entorn d'arranc (BE) conté l'imatge\n"
+       "del sistema operatiu i els paquets actualitzats. El\n"
+       "sistema arrancarà el nou BE al reiniciar-se."
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid ""
+"A new boot environment has been created and will be given the\n"
+"following name."
+msgstr ""
+       "S'ha creat un nou entorn d'arranc i se l'hi ha assignat el\n"
+       "següent nom."
+
+#: ../gui/data/packagemanager.glade.h:27
+msgid "A_dd"
+msgstr "Afegir"
+
+#: ../gui/data/packagemanager.glade.h:28
+msgid "A_lias:"
+msgstr "À_lies:"
+
+#: ../gui/data/packagemanager.glade.h:29
+msgid "About Glade"
+msgstr "Quant a Glade"
+
+#: ../gui/data/packagemanager.glade.h:30 ../gui/modules/repository.py:1348
+msgid "Add Publisher"
+msgstr "Afegir publicador"
+
+#: ../gui/data/packagemanager.glade.h:31
+msgid "Adding Publisher Complete"
+msgstr "Afegint publicador complet"
+
+#: ../gui/data/packagemanager.glade.h:32 ../gui/modules/repository.py:1451
+#: ../gui/modules/repository.py:1465
+msgid "Applying Changes"
+msgstr "Aplicant canvis"
+
+#: ../gui/data/packagemanager.glade.h:33
+msgid "Applying changes..."
+msgstr "Aplicant canvis..."
+
+#: ../gui/data/packagemanager.glade.h:34
+msgid "B_rowse..."
+msgstr "Navega_r..."
+
+#: ../gui/data/packagemanager.glade.h:35
+msgid "Bro_wse..."
+msgstr "Navegar..."
+
+#: ../gui/data/packagemanager.glade.h:36
+msgid "Browse for SSL Certificate"
+msgstr "Navegar per a un certificat SSL"
+
+#: ../gui/data/packagemanager.glade.h:37
+msgid "Browse for SSL Key"
+msgstr "Navegar per a una clau SSL"
+
+#: ../gui/data/packagemanager.glade.h:38
+msgid "C_lear Search"
+msgstr "Netejar cerca"
+
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Cancel current operation"
+msgstr "Cancel·lar operació actual"
+
+#: ../gui/data/packagemanager.glade.h:40 ../um/data/updatemanager.glade.h:4
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "Comprovant per al últim SUNWipkg i SUNWipkg-gui, si us plau espereu..."
+
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Checking package dependencies..."
+msgstr "Comprovant dependències del paquet..."
+
+#: ../gui/data/packagemanager.glade.h:42
+msgid "Checks if updates are available"
+msgstr "Comprova si hi han actualitzacions disponibles"
+
+#: ../gui/data/packagemanager.glade.h:43
+msgid "Clear Recent Searc_hes"
+msgstr "Netejar les cerques recents"
+
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Confirmation"
+msgstr "Confirmació"
+
+#: ../gui/data/packagemanager.glade.h:45
+msgid ""
+"Copyright 2010 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+       "Copyright 2010 Sun Microsystems, Inc.  \n"
+       "Reservats tots els drets.\n"
+       "L'ús està subjecte als termes de la llicència."
+
+#: ../gui/data/packagemanager.glade.h:48
+msgid "Currently active boot environment"
+msgstr "Entorn d'arranc actualment actiu"
+
+#: ../gui/data/packagemanager.glade.h:49
+msgid "D_eselect All"
+msgstr "_Deseleccionar-ho Tot"
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid "D_etails"
+msgstr "D_etalls"
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Dependencies"
+msgstr "Dependències"
+
+#: ../gui/data/packagemanager.glade.h:52 ../gui/modules/misc.py:257
+msgid "Description:"
+msgstr "Descripció"
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Details"
+msgstr "Detalls"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Do not notify me about these publishers again."
+msgstr "No em torneu a notificar quant aquests publicadors."
+
+#: ../gui/data/packagemanager.glade.h:55 ../gui/modules/installupdate.py:95
+#: ../um/data/updatemanager.glade.h:6
+msgid "Download"
+msgstr "Descarregar"
+
+#: ../gui/data/packagemanager.glade.h:56 ../gui/modules/misc.py:235
+msgid "Error"
+msgstr "Error"
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Errors and Warnings"
+msgstr "Errors i Advertències"
+
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Files"
+msgstr "Fitxers"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Go to package _list"
+msgstr "Anar al _llistat de paquets"
+
+#: ../gui/data/packagemanager.glade.h:60
+msgid "Information"
+msgstr "Informació"
+
+#: ../gui/data/packagemanager.glade.h:61 ../gui/modules/installupdate.py:96
+msgid "Install"
+msgstr "Instal·lar"
+
+#: ../gui/data/packagemanager.glade.h:62 ../gui/modules/installupdate.py:280
+msgid "Install/Update"
+msgstr "Instal·lar/Actualitzar"
+
+#: ../gui/data/packagemanager.glade.h:63
+msgid "Install/Upgrade Check"
+msgstr "Comprovar Instal·lar/Actualitzar"
+
+#: ../gui/data/packagemanager.glade.h:64
+msgid "License"
+msgstr "Llicència"
+
+#: ../gui/data/packagemanager.glade.h:65 ../packagemanager.py:3473
+#: ../packagemanager.py:3475
+msgid "Loading ..."
+msgstr "Carregant..."
+
+#: ../gui/data/packagemanager.glade.h:66
+msgid "M_irror:"
+msgstr "M_irall:"
+
+#: ../gui/data/packagemanager.glade.h:67
+msgid "Manage Boot Environments"
+msgstr "Gestionar entorns d'arranc"
+
+#: ../gui/data/packagemanager.glade.h:68
+msgid "Manage Publishers"
+msgstr "Gestionar publicadors"
+
+#: ../gui/data/packagemanager.glade.h:69
+msgid "Manage _Boot Environments..."
+msgstr "Gestionar _Entorns d'arranc..."
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Modify Publisher"
+msgstr "Modificar publicador"
+
+#: ../gui/data/packagemanager.glade.h:71 ../gui/modules/misc.py:256
+msgid "Name:"
+msgstr "Nom:"
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "Name: "
+msgstr "Nom: "
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "O_rigin:"
+msgstr "O_rigen:"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "On Package _Install/Update"
+msgstr "En _Instal·lar/Actualitzar paquets"
+
+#: ../gui/data/packagemanager.glade.h:75
+msgid "On Package _Remove"
+msgstr "En Elimina_r paquets"
+
+#: ../gui/data/packagemanager.glade.h:76
+msgid "On _Updates"
+msgstr "En Act_ualitzacions"
+
+#: ../gui/data/packagemanager.glade.h:78
+msgid "Package Version Info"
+msgstr "Informació de la versió del paquet"
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid "Preferences"
+msgstr "Preferències"
+
+#: ../gui/data/packagemanager.glade.h:80 ../gui/modules/installupdate.py:94
+msgid "Preparation"
+msgstr "Preparació"
+
+#: ../gui/data/packagemanager.glade.h:81 ../um/data/updatemanager.glade.h:9
+msgid "Processing"
+msgstr "Processant"
+
+#: ../gui/data/packagemanager.glade.h:82
+msgid "Pu_blisher:"
+msgstr "Pu_blicador:"
+
+#: ../gui/data/packagemanager.glade.h:83
+msgid "Publisher Name:"
+msgstr "Nom publicador:"
+
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Re_fresh"
+msgstr "Re_frescar"
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Re_gistration Details"
+msgstr "Detalls del re_gistrament"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Read the release notes before restarting the system."
+msgstr "Llegir les notes de la versió abans de reiniciar el sistema."
+
+#: ../gui/data/packagemanager.glade.h:87
+msgid "Read the release notes."
+msgstr "Llegir les notes de la versió."
+
+#: ../gui/data/packagemanager.glade.h:88
+msgid "Refresh"
+msgstr "Refrescar"
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Refresh list of packages and package status"
+msgstr "Refrescar el llistat i estat dels paquets"
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Release notes"
+msgstr "Notes de la versió"
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid "Remember current state on _exit"
+msgstr "Recordar l'_estat actual al sortir"
+
+#: ../gui/data/packagemanager.glade.h:92
+msgid "Remo_ve"
+msgstr "Treure"
+
+#: ../gui/data/packagemanager.glade.h:93
+msgid "Remov_e"
+msgstr "Treur_e"
+
+#: ../gui/data/packagemanager.glade.h:94 ../gui/modules/installupdate.py:243
+#: ../gui/modules/installupdate.py:246
+msgid "Remove"
+msgstr "Eliminar"
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "Restart _Now"
+msgstr "Rei_niciar ara"
+
+#: ../gui/data/packagemanager.glade.h:96
+msgid "SSL C_ertificate: "
+msgstr "C_ertificat SSL: "
+
+#: ../gui/data/packagemanager.glade.h:97
+msgid "SSL Certi_ficate:"
+msgstr "Certi_ficat SSL:"
+
+#: ../gui/data/packagemanager.glade.h:98
+msgid "SSL _Key:"
+msgstr "C_lau SSL:"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "SSL _Key: "
+msgstr "C_lau SSL: "
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "Search"
+msgstr "Cercar"
+
+#: ../gui/data/packagemanager.glade.h:101
+msgid "Search Publisher Errors"
+msgstr "Errors cerca publicadors"
+
+#: ../gui/data/packagemanager.glade.h:102
+msgid "Search Repositories Error"
+msgstr "Cercar errors repositoris"
+
+#: ../gui/data/packagemanager.glade.h:103
+msgid "Search errors with the following publishers:"
+msgstr "Cercar errors amb els següents publicadors:"
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "Select _Updates"
+msgstr "Seleccionar Act_ualitzacions"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "Select packages by marking the checkbox and click to Install/Update"
+msgstr "Seleccioneu els paquets tot marcant la casella de selecció i cliqueu a Instal·lar/Actualitzar"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "Select packages by marking the checkbox and click to Remove selected"
+msgstr "Seleccioneu els paquets tot marcant la casella de selecció i cliqueu a Treure seleccionats"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "Set publisher priorities using arrows."
+msgstr "Establiu la prioritat del publicador utilitzant les fletxes."
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "Show Start Page on _startup"
+msgstr "Mostrar la pàgina d'inici a l'iniciar"
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "Show _all publisher results"
+msgstr "Mostrar resultats tots els publicadors"
+
+#: ../gui/data/packagemanager.glade.h:110
+msgid "Specify the publisher name and URI"
+msgstr "Especificar el nom i l'URI del publicador"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "Start _Page"
+msgstr "_Pàgina d'inici"
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "The following will be added to your system:"
+msgstr "El següent serà afegit al vostre sistema:"
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "This is a secure publisher."
+msgstr "Aquest és un publicador segur."
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid ""
+"This publisher requires an SSL key and an SSL certificate.\n"
+"Specify the location of these files."
+msgstr ""
+       "Aquests publicadors necessiten una clau i certificat SSL.\n"
+       "Especifiqueu la localització d'aquests fitxers."
+
+#: ../gui/data/packagemanager.glade.h:116
+msgid "Type text to search for the package."
+msgstr "Escriviu el text per a cercar el paquet."
+
+#: ../gui/data/packagemanager.glade.h:117
+msgid "URI:"
+msgstr "URI:"
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "Update All Complete"
+msgstr "Actualitzar tot completat"
+
+#: ../gui/data/packagemanager.glade.h:119 ../packagemanager.py:330
+msgid "Updates"
+msgstr "Actualitzacions"
+
+#: ../gui/data/packagemanager.glade.h:120
+msgid "Vie_w:"
+msgstr "Visualitzar:"
+
+#: ../gui/data/packagemanager.glade.h:121
+msgid "_Accept"
+msgstr "_Acceptar"
+
+#: ../gui/data/packagemanager.glade.h:122
+msgid "_Add"
+msgstr "_Afegir"
+
+#: ../gui/data/packagemanager.glade.h:123
+msgid "_Add Publisher..."
+msgstr "_Afegir publicador..."
+
+#: ../gui/data/packagemanager.glade.h:124
+msgid "_Add..."
+msgstr "_Afegir..."
+
+#: ../gui/data/packagemanager.glade.h:125
+msgid "_Browse..."
+msgstr "_Navegar..."
+
+#: ../gui/data/packagemanager.glade.h:126
+msgid "_Contents"
+msgstr "_Continguts"
+
+#: ../gui/data/packagemanager.glade.h:127 ../um/data/updatemanager.glade.h:13
+msgid "_Details"
+msgstr "_Detalls"
+
+#: ../gui/data/packagemanager.glade.h:128
+msgid "_Do not show this confirmation dialog again"
+msgstr "No tornar a mostrar aquest _diàleg de confirmació"
+
+#: ../gui/data/packagemanager.glade.h:129
+msgid "_Down"
+msgstr "Abaix"
+
+#: ../gui/data/packagemanager.glade.h:130
+msgid "_Edit"
+msgstr "_Edició"
+
+#: ../gui/data/packagemanager.glade.h:131
+msgid "_Export Selections..."
+msgstr "_Exportar seleccions..."
+
+#: ../gui/data/packagemanager.glade.h:132
+msgid "_File"
+msgstr "_Fitxer"
+
+#: ../gui/data/packagemanager.glade.h:133
+msgid "_Help"
+msgstr "_Ajuda"
+
+#: ../gui/data/packagemanager.glade.h:134
+msgid "_Install Details"
+msgstr "Detalls _instal·lació"
+
+#: ../gui/data/packagemanager.glade.h:135
+msgid "_Install/Update"
+msgstr "_Instal·lar / Actualitzar"
+
+#: ../gui/data/packagemanager.glade.h:136
+msgid "_Logs"
+msgstr "Re_gistres"
+
+#: ../gui/data/packagemanager.glade.h:137
+msgid "_Manage Publishers..."
+msgstr "_Gestionar publicadors"
+
+#: ../gui/data/packagemanager.glade.h:138
+msgid "_Modify..."
+msgstr "_Modificar..."
+
+#: ../gui/data/packagemanager.glade.h:139
+msgid "_Name:"
+msgstr "_Nom:"
+
+#: ../gui/data/packagemanager.glade.h:140
+msgid "_Package"
+msgstr "_Paquet"
+
+#: ../gui/data/packagemanager.glade.h:141
+msgid "_Package Version Info"
+msgstr "Informació versió del _paquet"
+
+#: ../gui/data/packagemanager.glade.h:142
+msgid "_Recent Searches"
+msgstr "Cerques _recents"
+
+#: ../gui/data/packagemanager.glade.h:143
+msgid "_Registration Details"
+msgstr "Detalls _registrament"
+
+#: ../gui/data/packagemanager.glade.h:144
+msgid "_Remove"
+msgstr "_Eliminar"
+
+#: ../gui/data/packagemanager.glade.h:145
+msgid "_Remove Details"
+msgstr "T_reure detalls"
+
+#: ../gui/data/packagemanager.glade.h:146
+msgid "_Search"
+msgstr "_Cercar"
+
+#: ../gui/data/packagemanager.glade.h:147
+msgid "_URI:"
+msgstr "_URI:"
+
+#: ../gui/data/packagemanager.glade.h:148
+msgid "_Up"
+msgstr "Am_unt"
+
+#: ../gui/data/packagemanager.glade.h:149
+msgid "_Update Details"
+msgstr "Detalls act_ualització"
+
+#: ../gui/data/packagemanager.glade.h:150
+msgid "_Updates"
+msgstr "Act_ualitzacions"
+
+#: ../gui/data/packagemanager.glade.h:151
+msgid "_View"
+msgstr "_Visualitzar"
+
+#: ../gui/data/packagemanager.glade.h:152 ../gui/modules/repository.py:75
+msgid "e.g. http://pkg.opensolaris.org/release"
+msgstr "pex. http://pkg.opensolaris.org/release"
+
+#: ../gui/data/packagemanager.glade.h:153
+msgid "label"
+msgstr "etiqueta"
+
+#: ../gui/modules/beadmin.py:73
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "La llibreria <b>libbe</b> no ha estat trobada al vostre sistema.\n"
+       "Totes les funcions per a gestionar els entorns d'arranc han estat deshabilitades"
+
+#: ../gui/modules/beadmin.py:81
+msgid "BE management"
+msgstr "Gestió Entorns d'arranc"
+
+#: ../gui/modules/beadmin.py:161
+#, python-format
+msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
+msgstr "La interfície gràfica d'usuari no està responent a cap event! %s. Comproveu les senyals de beadmin.py"
+
+#: ../gui/modules/beadmin.py:170
+msgid "Boot Environment Confirmation"
+msgstr "Confirmació de l'entorn d'arranc"
+
+#: ../gui/modules/beadmin.py:173
+msgid "Loading Boot Environment Information"
+msgstr "Carregant informació de l'entorn d'arranc"
+
+#: ../gui/modules/beadmin.py:175
+msgid "Fetching BE entries..."
+msgstr "Obtenint entrades BE..."
+
+#: ../gui/modules/beadmin.py:202
+msgid "Boot Environment"
+msgstr "Entorn d'arranc"
+
+#: ../gui/modules/beadmin.py:213
+msgid "Created"
+msgstr "Creat"
+
+#: ../gui/modules/beadmin.py:222
+msgid "Size"
+msgstr "Mida"
+
+#: ../gui/modules/beadmin.py:230
+msgid "Active on Reboot"
+msgstr "Activar i reiniciar"
+
+#: ../gui/modules/beadmin.py:241
+msgid "Delete"
+msgstr "Eliminar"
+
+#: ../gui/modules/beadmin.py:256
+msgid "Applying changes"
+msgstr "Aplicant canvis"
+
+#: ../gui/modules/beadmin.py:258
+msgid "Applying changes, please wait ..."
+msgstr "Aplicant canvis, si us plau espereu ..."
+
+#: ../gui/modules/beadmin.py:287
+msgid "Active on reboot\n"
+msgstr "Actiu al reiniciar\n"
+
+#: ../gui/modules/beadmin.py:288
+msgid "Delete\n"
+msgstr "Eliminar\n"
+
+#: ../gui/modules/beadmin.py:289
+msgid "Rename\n"
+msgstr "Reanomenar\n"
+
+#: ../gui/modules/beadmin.py:330
+msgid " to "
+msgstr " a "
+
+#: ../gui/modules/beadmin.py:384
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>No es pot canviar l'entorn d'arranc actual a:</b>\n"
+
+#: ../gui/modules/beadmin.py:389
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>No es poden eliminar els entorns d'arranc:</b>\n"
+
+#: ../gui/modules/beadmin.py:396
+msgid "<b>Couldn't rename Boot Environments:</b>\n"
+msgstr "<b>No es poden reanomenar els entorns d'arranc:</b>\n"
+
+#: ../gui/modules/beadmin.py:399
+#, python-format
+msgid "%s <b>to</b> %s\n"
+msgstr "%s <b>a</b> %s\n"
+
+#: ../gui/modules/beadmin.py:416
+msgid "BE error"
+msgstr "Error entorn d'arranc"
+
+#: ../gui/modules/beadmin.py:501
+msgid ""
+"The <b>libbe</b> library couldn't prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "La llibreria <b>libbe</b> no ha pogut preparar el llistat amb els entorns d'arranc.\n"
+       "Totes les funcions per a gestionar els entorns d'arranc han estat deshabilitades"
+
+#: ../gui/modules/beadmin.py:531 ../gui/modules/beadmin.py:547
+msgid "%m/%d/%y %H:%M"
+msgstr "%d/%m/%y %H:%M"
+
+#: ../gui/modules/installupdate.py:94
+msgid "Preparing..."
+msgstr "Preparant..."
+
+#: ../gui/modules/installupdate.py:95 ../gui/modules/installupdate.py:632
+msgid "Downloading..."
+msgstr "Descarregant..."
+
+#: ../gui/modules/installupdate.py:96
+msgid "Installing..."
+msgstr "Instal·lant..."
+
+#: ../gui/modules/installupdate.py:166 ../gui/modules/webinstall.py:216
+msgid "_Proceed"
+msgstr "_Procedir"
+
+#: ../gui/modules/installupdate.py:190
+msgid "_Reject"
+msgstr "_Rebutjar"
+
+#: ../gui/modules/installupdate.py:232
+#, python-format
+msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
+msgstr "La interfície gràfica d'usuari no està responent a cap event! %s. Comproveu les senyals de installupdate.py"
+
+#. For the remove, we are not showing the download stage
+#: ../gui/modules/installupdate.py:243
+msgid "Removing..."
+msgstr "Eliminant..."
+
+#: ../gui/modules/installupdate.py:249
+msgid "Remove Confirmation"
+msgstr "Eliminar confirmació"
+
+#: ../gui/modules/installupdate.py:252
+msgid "Review the package to be removed"
+msgid_plural "Review the packages to be removed"
+msgstr[0] "Revisar el paquet a ser eliminat"
+msgstr[1] "Revisar els paquets a ser eliminats"
+
+#: ../gui/modules/installupdate.py:274
+msgid "Update All"
+msgstr "Actualitzar tot"
+
+#: ../gui/modules/installupdate.py:299
+msgid "Install/Update Confirmation"
+msgstr "Confirmació instal·lació/actualització"
+
+#: ../gui/modules/installupdate.py:301
+msgid "Review the package to be Installed/Updated"
+msgid_plural "Review the packages to be Installed/Updated"
+msgstr[0] "Revisar el paquet a ser instal·lat/actualitzat"
+msgstr[1] "Revisar els paquets a ser instal·lats/actualitzats"
+
+#: ../gui/modules/installupdate.py:306
+msgid "Update Confirmation"
+msgstr "Confirmació actualització"
+
+#: ../gui/modules/installupdate.py:308
+msgid "Review the package to be Updated"
+msgid_plural "Review the packages to be Updated"
+msgstr[0] "Revisar el paquet a ser actualitzat"
+msgstr[1] "Revisar els paquets a ser actualitzats"
+
+#: ../gui/modules/installupdate.py:313
+msgid "Install Confirmation"
+msgstr "Confirmació instal·lació"
+
+#: ../gui/modules/installupdate.py:315
+msgid "Review the package to be Installed"
+msgid_plural "Review the packages to be Installed"
+msgstr[0] "Revisar el paquet a ser instal·lat"
+msgstr[1] "Revisar els paquets a ser instal·lats"
+
+#: ../gui/modules/installupdate.py:350 ../packagemanager.py:1492
+#: ../packagemanager.py:1600 ../updatemanager.py:297
+msgid "Name"
+msgstr "Nom"
+
+#: ../gui/modules/installupdate.py:357 ../gui/modules/repository.py:386
+#: ../packagemanager.py:1512
+msgid "Publisher"
+msgstr "Publicador"
+
+#: ../gui/modules/installupdate.py:365 ../packagemanager.py:1528
+msgid "Description"
+msgstr "Descripció"
+
+#: ../gui/modules/installupdate.py:410
+msgid "Canceling..."
+msgstr "Cancel·lant..."
+
+#: ../gui/modules/installupdate.py:446
+#, python-format
+msgid "Ensuring %s is up to date..."
+msgstr "Garantint que %s estigui al dia..."
+
+#: ../gui/modules/installupdate.py:481
+msgid "Inventory exception:\n"
+msgstr "Excepció d'inventari:\n"
+
+#: ../gui/modules/installupdate.py:490
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+       "Si us plau comproveu la connexió de xarxa.\n"
+       "És accessible el repositori?"
+
+#: ../gui/modules/installupdate.py:497
+#, python-format
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?\n"
+"\n"
+"%s"
+msgstr ""
+       "Si us plau comproveu la connexió de xarxa.\n"
+       "És accessible el repositori?\n"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:503
+#, python-format
+msgid ""
+"\n"
+"Unable to contact a valid package depot. Please check your network\n"
+"settings and attempt to contact the server using a web browser.\n"
+"\n"
+"%s"
+msgstr ""
+       "\n"
+       "No es pot contactar amb un magatzem de paquets vàlid. Comproveu les preferències\n"
+       "de la vostra xarxa i intenteu contactar amb els servidor utilitzant un navegador web.\n"
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:510
+msgid ""
+"pkg(7) appears to be out of date and should be updated.\n"
+"Please update SUNWipkg package"
+msgstr ""
+       "pkg(7) sembla que estigui desfasat i ha de ser actualitzat.\n"
+       "Actualitzeu el paquet SUNWipkg"
+
+#: ../gui/modules/installupdate.py:516
+#, python-format
+msgid ""
+"Cannot remove:\n"
+"\t%s\n"
+"Due to the following packages that depend on it:\n"
+msgstr ""
+       "No es pot eliminar:\n"
+       "\t%s\n"
+       "Degut a que els següent paquets en depenen:\n"
+
+#: ../gui/modules/installupdate.py:525
+#, python-format
+msgid ""
+"\n"
+"Failure of consistent use of pfexec or gksu when running\n"
+"%s is often a source of this problem."
+msgstr ""
+       "\n"
+       "Error de consistència a l'utilitzar pfexec or gksu quan l'execució\n"
+       "%s és sovint l'origen d'aquest problema."
+
+#: ../gui/modules/installupdate.py:528
+msgid ""
+"\n"
+"To rebuild index, please use the terminal command:"
+msgstr ""
+       "\n"
+       "Per a reconstruir l'índex, si us plau utilitzeu la comanda de terminal:"
+
+#: ../gui/modules/installupdate.py:529
+msgid ""
+"\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:533
+msgid ""
+"There was an error during installation. The search\n"
+"index is corrupted. You might want try to fix this\n"
+"problem by running command:\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "S'ha produït un error durant l'instal·lació. L'índex\n"
+       "de cerca està corrupte. Podeu provar de solucionar el\n"
+       "problema utilitzant la comanda:\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:540
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+       "Aquesta és una imatge Live.\n"
+       "L'operació d'instal·lar es pot realitzar."
+
+#: ../gui/modules/installupdate.py:545
+msgid ""
+"The requested operation would affect files that cannotbe modified in the "
+"Live Image.\n"
+"Please retry this operation on an alternate boot environment."
+msgstr ""
+       "L'operació sol·licitada podria afectar a fitxers que no poden ser modificats en l'imatge autònoma.\n"
+       "Torneu a intentar aquesta operació en un entorn d'arranc alternatiu."
+
+#: ../gui/modules/installupdate.py:551
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "Hi ha hagut un error durant l'instal·lació.\n"
+       "Falta la planificació de l'operació i l'operació no pot finalitzar-se.\n"
+       "És possible que vulgueu intentar solucionar aquest problema\n"
+       "tot reiniciant  %s\n"
+
+#: ../gui/modules/installupdate.py:558
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "S'ha produït un error durant l'instal·lació.\n"
+       "L'estat de l'imatge no és correcte i l'operació\n"
+       "no pot finalitzar-se. Podeu provar de solucionar\n"
+       "el problema tornant a iniciar %s\n"
+
+#: ../gui/modules/installupdate.py:569
+msgid "Specifying BE Name not supported.\n"
+msgstr "El nom de l'entorn d'arranc especificat no està suportat.\n"
+
+#: ../gui/modules/installupdate.py:628
+#, python-format
+msgid "Updating %s"
+msgstr "Actualitzant %s"
+
+#: ../gui/modules/installupdate.py:634
+msgid "Executing..."
+msgstr "Executant..."
+
+#: ../gui/modules/installupdate.py:640
+msgid "Gathering package information, please wait..."
+msgstr "Recollint informació del paquet, espereu..."
+
+#: ../gui/modules/installupdate.py:642
+msgid "Gathering package information"
+msgstr "Recopilant l'informació del paquet"
+
+#: ../gui/modules/installupdate.py:656
+msgid "All packages already installed."
+msgstr "Ja estan instal·lats tots el paquets."
+
+#: ../gui/modules/installupdate.py:660
+msgid ""
+"Selected package(s) cannot be updated on their own.\n"
+"Click Updates to update all packages."
+msgstr ""
+       "els paques seleccionats no poden ser actualitzats per ells mateixos\n"
+       "Cliqueu a Actualitzacions per actualitzar tots els paquets."
+
+#: ../gui/modules/installupdate.py:664
+msgid "No updates available"
+msgstr "No ni han actualitzacions disponibles"
+
+#: ../gui/modules/installupdate.py:725
+msgid "Update All Confirmation"
+msgstr "Confirmació actualitzar tot"
+
+#: ../gui/modules/installupdate.py:728
+msgid "Review the package which will be affected by Update all"
+msgid_plural "Review the packages which will be affected by Update all"
+msgstr[0] "Revisar el paquet el qual estarà afectat per Actualitzar tot"
+msgstr[1] "Revisar els paquets els quals estaran afectats per Actualitzar tot"
+
+#: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
+msgid "No further information available"
+msgstr "No hi ha més informació disponible"
+
+#: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855
+msgid ""
+"\n"
+"Error:\n"
+msgstr ""
+       "\n"
+       "Error:\n"
+
+#: ../gui/modules/installupdate.py:830 ../gui/modules/installupdate.py:846
+msgid " - Failed </b>"
+msgstr " - Fallit </b>"
+
+#: ../gui/modules/installupdate.py:850
+#, python-format
+msgid ""
+"An unknown error occurred in the %s stage.\n"
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:\n"
+msgstr ""
+       "S'ha produït un error desconegut en l'etapa %s.\n"
+       "Permeteu als desenvolupadors conèixer quant a aquest error tot\n"
+       "emplenant l'error amb els seus detalls llistats a continuació:\n"
+
+#: ../gui/modules/installupdate.py:859
+msgid "Exception traceback:\n"
+msgstr "Traceig de l'excepció:\n"
+
+#: ../gui/modules/installupdate.py:866
+msgid "pkg version: "
+msgstr "versió pkg: "
+
+#: ../gui/modules/installupdate.py:870
+msgid "List of configured publishers:"
+msgstr "Llistat dels publicadors configurats:"
+
+#: ../gui/modules/installupdate.py:953
+msgid "Installation completed successfully"
+msgstr "Instal·lació correctament completada"
+
+#: ../gui/modules/installupdate.py:955
+msgid "Packages removed successfully"
+msgstr "Paquets eliminats correctament"
+
+#: ../gui/modules/installupdate.py:957
+msgid "Packages updated successfully"
+msgstr "Paquets actualitzats correctament"
+
+#: ../gui/modules/installupdate.py:991
+msgid ""
+"Not enough disk space, the selected action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action."
+msgstr ""
+       "No hi ha prou espai lliure, l'acció seleccionada no es pot realitzar.\n"
+       "\n"
+       "Cliqueu a Acceptar per a gestionar els vostres entorns d'arranc i allibereu espai al disc, o Cancel·lar per "
+       "a cancel·lar l'acció."
+
+#: ../gui/modules/installupdate.py:995
+msgid "Not Enough Disk Space"
+msgstr "No hi ha espai suficient al disc"
+
+#: ../gui/modules/installupdate.py:1013
+msgid "Packages To Be Updated:\n"
+msgstr "Paquets a ser actualitzats:\n"
+
+#: ../gui/modules/installupdate.py:1020
+msgid "Packages To Be Installed:\n"
+msgstr "Paquets a ser instal·lats:\n"
+
+#: ../gui/modules/installupdate.py:1027
+msgid "Packages To Be Removed:\n"
+msgstr "Paquets a ser eliminats:\n"
+
+#: ../gui/modules/installupdate.py:1114
+msgid "A_ccept"
+msgstr "A_cceptar"
+
+#: ../gui/modules/installupdate.py:1116
+msgid ""
+"You must accept the terms of the license before downloading this package."
+msgstr ""
+       "Heu d'acceptar els termes de la llicència abans de descarregar aquest paquet."
+
+#: ../gui/modules/installupdate.py:1129
+msgid "You must view the terms of the license before downloading this package."
+msgstr "Heu de visualitzar els termes de la llicència abans de descarregar aquest paquet."
+
+#: ../gui/modules/installupdate.py:1137
+#, python-format
+msgid "%s License"
+msgstr "%s Llicència"
+
+#: ../gui/modules/misc.py:123
+msgid "Errors logged: click to view"
+msgstr "Errors registrats: clicar per a visualitzar"
+
+#: ../gui/modules/misc.py:207
+#, python-format
+msgid "Version mismatch: expected version %d, got version %d"
+msgstr "Incongruència de versió: versió esperada %d, versió adquirida %d"
+
+#: ../gui/modules/misc.py:210
+#, python-format
+msgid "%s is not an install image"
+msgstr "%s no és una imatge d'instal·lació"
+
+#: ../gui/modules/misc.py:214
+msgid "API Error"
+msgstr "Error d'API"
+
+#: ../gui/modules/misc.py:258
+msgid "Size:"
+msgstr "Mida:"
+
+#: ../gui/modules/misc.py:259
+msgid "Category:"
+msgstr "Categoria:"
+
+#: ../gui/modules/misc.py:260
+msgid "Installed:"
+msgstr "Instal·lat:"
+
+#: ../gui/modules/misc.py:261
+msgid "Version Available:"
+msgstr "Versió disponible:"
+
+#: ../gui/modules/misc.py:262 ../gui/modules/misc.py:278
+#: ../gui/modules/misc.py:288
+msgid "Latest Version:"
+msgstr "Última versió:"
+
+#: ../gui/modules/misc.py:263
+msgid "Publisher:"
+msgstr "Publicador:"
+
+#. Installed with later version but can't upgrade
+#. Upgradeable Version: None
+#. Not Installed with later version and can't install
+#. Installable Version: None
+#: ../gui/modules/misc.py:265 ../gui/modules/misc.py:298
+#: ../packagemanager.py:3619 ../packagemanager.py:3677
+#: ../packagemanager.py:4271
+msgid "None"
+msgstr "Cap"
+
+#: ../gui/modules/misc.py:273 ../gui/modules/misc.py:290
+#: ../packagemanager.py:3597 ../packagemanager.py:3693
+#: ../packagemanager.py:4229
+#, python-format
+msgid "%(version)s (Build %(build)s-%(branch)s)"
+msgstr "%(version)s (Construcció %(build)s-%(branch)s)"
+
+#: ../gui/modules/misc.py:315
+msgid " (disabled)"
+msgstr " (deshabilitat)"
+
+#: ../gui/modules/misc.py:317
+msgid " (removed)"
+msgstr " (eliminat)"
+
+#: ../gui/modules/misc.py:438
+msgid "Catalog refresh error:\n"
+msgstr "Error de refresc de catàleg:\n"
+
+#: ../gui/modules/misc.py:441
+#, python-format
+msgid "Only %(suc)s out of %(tot)s catalogs successfully updated.\n"
+msgstr "Únicament s'han actualitzat correctament %(suc)s de %(tot)s catàlegs.\n"
+
+#: ../gui/modules/progress.py:44
+#, python-format
+msgid "Retrieving catalog '%s'...\n"
+msgstr "Recuperant catàleg '%s'...\n"
+
+#: ../gui/modules/progress.py:52
+msgid "Caching catalogs ...\n"
+msgstr "capturant catàlegs ...\n"
+
+#: ../gui/modules/progress.py:59
+msgid "Loading catalog cache ...\n"
+msgstr "Carregant cau del catàleg ...\n"
+
+#: ../gui/modules/progress.py:70
+#, python-format
+msgid "Refreshing catalog %s\n"
+msgstr "Refrescant catàleg %s\n"
+
+#: ../gui/modules/progress.py:75
+#, python-format
+msgid "Finished refreshing catalog %s\n"
+msgstr "Finalitzat refresc del catàleg %s\n"
+
+#: ../gui/modules/progress.py:87
+#, python-format
+msgid "Evaluating: %s"
+msgstr "Avaluant: %s"
+
+#: ../gui/modules/progress.py:110
+#, python-format
+msgid "Downloaded %(current)s of %(total)s"
+msgstr "Descarregats %(current)s de %(total)s"
+
+#: ../gui/modules/progress.py:117
+#, python-format
+msgid "Package %d of %d: %s\n"
+msgstr "Paquet %d de %d: %s\n"
+
+#: ../gui/modules/progress.py:127 ../gui/modules/progress.py:139
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../gui/modules/repository.py:103
+msgid "Manage Publishers Confirmation"
+msgstr "Gestionar la configuració dels publicadors"
+
+#: ../gui/modules/repository.py:339
+#, python-format
+msgid "GUI will not respond to any event! %s. Check repository.py signals"
+msgstr "La interfície gràfica d'usuari no està responent a cap event! %s. Comproveu les senyals de repository.py"
+
+#: ../gui/modules/repository.py:393
+msgid "Alias"
+msgstr "Àlies"
+
+#: ../gui/modules/repository.py:399
+msgid "Enabled"
+msgstr "Habilitat"
+
+#: ../gui/modules/repository.py:551
+msgid "Name contains invalid characters"
+msgstr "El nom conté caràcters no vàlids"
+
+#: ../gui/modules/repository.py:554
+msgid "Name already in use"
+msgstr "El nom ja està en ús"
+
+#: ../gui/modules/repository.py:592 ../gui/modules/repository.py:1690
+msgid "SSL Key not found at specified location"
+msgstr "No s'ha trobat la clau SSL a la localització especificada"
+
+#: ../gui/modules/repository.py:801
+msgid "Adding Publisher"
+msgstr "Afegint publicador"
+
+#: ../gui/modules/repository.py:815
+msgid "Canceling...\n"
+msgstr "Cancel·lant...\n"
+
+#: ../gui/modules/repository.py:836 ../gui/modules/repository.py:1051
+#, python-format
+msgid "Removing publisher %s\n"
+msgstr "Eliminant publicador %s\n"
+
+#: ../gui/modules/repository.py:840 ../gui/modules/repository.py:1055
+#, python-format
+msgid "Publisher %s succesfully removed\n"
+msgstr "El publicador %s ha estat correctament eliminat\n"
+
+#: ../gui/modules/repository.py:867
+#, python-format
+msgid "Adding publisher %s\n"
+msgstr "Afegint publicador %s\n"
+
+#: ../gui/modules/repository.py:871
+#, python-format
+msgid "Updating publisher %s\n"
+msgstr "Actualitzant publicador %s\n"
+
+#: ../gui/modules/repository.py:875
+#, python-format
+msgid "Publisher %s succesfully added\n"
+msgstr "El publicador %s ha estat correctament afegit\n"
+
+#: ../gui/modules/repository.py:878
+#, python-format
+msgid "Publisher %s succesfully updated\n"
+msgstr "El publicador %s ha estat correctament actualitzat\n"
+
+#: ../gui/modules/repository.py:947
+msgid "Disable Publisher:\n"
+msgid_plural "Disable Publishers:\n"
+msgstr[0] "Des-habilitar publicador:\n"
+msgstr[1] "Deshabilitar els publicadors:\n"
+
+#: ../gui/modules/repository.py:949
+msgid "Enable Publisher:\n"
+msgid_plural "Enable Publishers:\n"
+msgstr[0] "Habilitar publicador:\n"
+msgstr[1] "Habilitar els publicadors:\n"
+
+#: ../gui/modules/repository.py:951
+msgid "Remove Publisher:\n"
+msgid_plural "Remove Publishers:\n"
+msgstr[0] "Eliminar el publicador:\n"
+msgstr[1] "Eliminar els publicadors:\n"
+
+#: ../gui/modules/repository.py:953
+msgid "Change Priorities:\n"
+msgstr "Canviar les prioritats:\n"
+
+#: ../gui/modules/repository.py:956
+msgid "Apply the following change:"
+msgid_plural "Apply the following changes:"
+msgstr[0] "Aplicar el següent canvi:"
+msgstr[1] "Aplicar els següents canvis:"
+
+#: ../gui/modules/repository.py:1006 ../gui/modules/repository.py:1063
+msgid "Disabling"
+msgstr "Deshabilitant"
+
+#: ../gui/modules/repository.py:1008 ../gui/modules/repository.py:1065
+msgid "Enabling"
+msgstr "Habilitant"
+
+#: ../gui/modules/repository.py:1011 ../gui/modules/repository.py:1068
+#, python-format
+msgid "%(enable)s publisher %(name)s\n"
+msgstr "%(enable)s publicador %(name)s\n"
+
+#: ../gui/modules/repository.py:1038
+#, python-format
+msgid "Changing priority for publisher %s\n"
+msgstr "Canviant la prioritat pel publicador %s\n"
+
+#: ../gui/modules/repository.py:1231
+msgid ""
+"Mirrors for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Les rèpliques per a publicadors segurs\n"
+       "necessiten començar amb https://"
+
+#: ../gui/modules/repository.py:1239
+msgid ""
+"Origins for a secure publisher\n"
+"need to begin with https://"
+msgstr ""
+       "Els orígens per a publicadors segurs\n"
+       "necessiten començar amb https://"
+
+#: ../gui/modules/repository.py:1261
+msgid "URI already added"
+msgstr "La URI ja ha estat afegida"
+
+#: ../gui/modules/repository.py:1508
+msgid "Origin:\n"
+msgid_plural "Origins:\n"
+msgstr[0] "Origen:\n"
+msgstr[1] "Orígens:\n"
+
+#: ../gui/modules/repository.py:1520
+msgid "Description:\n"
+msgstr "Descripció:\n"
+
+#. More Generic for WebInstall
+#: ../gui/modules/repository.py:1530
+msgid "Publisher error"
+msgstr "Error publicador"
+
+#: ../gui/modules/repository.py:1543
+msgid "Specify SSL Key File"
+msgstr "Especificar fitxer de clau SSL"
+
+#: ../gui/modules/repository.py:1565
+msgid "Specify SSL Certificate File"
+msgstr "Especificar fitxer de certificat SSL"
+
+#: ../gui/modules/repository.py:1666
+msgid "URI is not valid"
+msgstr "La URI no és vàlida"
+
+#: ../gui/modules/repository.py:1680
+msgid "SSL should not be specified"
+msgstr "S'ha d'especificar SSL"
+
+#: ../gui/modules/repository.py:1694
+msgid "SSL Certificate not found at specified location"
+msgstr "No s'ha trobat el certificat SSL a la localització especificada"
+
+#: ../gui/modules/repository.py:1702
+msgid "Mirror URI"
+msgstr "URI rèplica"
+
+#: ../gui/modules/repository.py:1711
+msgid "Origin URI"
+msgstr "URI origen"
+
+#: ../gui/modules/repository.py:1805
+msgid "Enabling Publisher"
+msgid_plural "Enabling Publishers"
+msgstr[0] "Habilitar publicador"
+msgstr[1] "Habilitant publicador"
+
+#: ../gui/modules/repository.py:1807
+msgid "Disabling Publisher"
+msgid_plural "Disabling Publishers"
+msgstr[0] "Deshabilitant publicador"
+msgstr[1] "Deshabilitant publicadors"
+
+#: ../gui/modules/uarenamebe.py:58
+msgid "The <b>libbe</b> library was not found on your system."
+msgstr "No s'ha trobat la biblioteca <b>libbe</b> en el vostre sistema."
+
+#: ../gui/modules/uarenamebe.py:65 ../gui/modules/uarenamebe.py:109
+msgid "Rename BE"
+msgstr "Reanomenar entorn d'arranc"
+
+#: ../gui/modules/uarenamebe.py:110
+msgid "Renaming BE, please wait..."
+msgstr "Reanomenant l'entorn d'arranc, espereu..."
+
+#: ../gui/modules/uarenamebe.py:143 ../packagemanager.py:722
+#, python-format
+msgid "GUI will not respond to any event! %s. Check declare_signals()"
+msgstr "La GUI no respondrà a cap esdeveniment! %s. Comproveu declare_signals()"
+
+#: ../gui/modules/uarenamebe.py:220
+#, python-format
+msgid ""
+"Could not change the BE name to:\n"
+"\t%s\n"
+"\n"
+"The following name will be used instead:\n"
+"\t%s"
+msgstr ""
+       "No es pot canviar el nom de l'entorn d'arranc a:\n"
+       "\t%s\n"
+       "\n"
+       "Enlloc seu s'utilitzarà el següent nom:\n"
+       "\t%s"
+
+#: ../gui/modules/uarenamebe.py:223
+msgid "BE Name"
+msgstr "Nom entorn d'arranc"
+
+#: ../gui/modules/uarenamebe.py:229
+msgid ""
+"Could not restart the system.\n"
+"Please restart the system manually."
+msgstr ""
+       "No es pot reiniciar el sistema.\n"
+       "Reinicieu manualment el sistema."
+
+#: ../gui/modules/uarenamebe.py:231
+msgid "Restart Error"
+msgstr "Error reinici"
+
+#: ../gui/modules/uarenamebe.py:245
+msgid "This name already exists."
+msgstr "Aquest nom ja existeix."
+
+#: ../gui/modules/uarenamebe.py:251
+msgid "BE name contains invalid character."
+msgstr "L'entorn d'arranc conté un caràcter no permès."
+
+#: ../gui/modules/webinstall.py:131
+#, python-format
+msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
+msgstr "La interfície gràfica d'usuari no està responent a cap event! %s. Comproveu les senyals de webinstall.py"
+
+#: ../gui/modules/webinstall.py:143
+msgid ""
+"\n"
+" Add New Publisher\n"
+msgid_plural ""
+"\n"
+" Add New Publishers\n"
+msgstr[0] ""
+       "\n"
+       " Afegir publicador nou\n"
+msgstr[1] ""
+       "\n"
+       " Afegir publicadors nous\n"
+
+#: ../gui/modules/webinstall.py:152
+msgid "All specified publishers are already on the system."
+msgstr "Tots els publicadors especificats ja estan en el sistema."
+
+#: ../gui/modules/webinstall.py:162
+#, python-format
+msgid "\t%s "
+msgstr "\t%s "
+
+#: ../gui/modules/webinstall.py:166
+#, python-format
+msgid " (%s)\n"
+msgstr " (%s)\n"
+
+#: ../gui/modules/webinstall.py:172
+msgid ""
+"\n"
+" Install Package\n"
+msgid_plural ""
+"\n"
+" Install Packages\n"
+msgstr[0] ""
+       "\n"
+       " Instal·lar Paquet\n"
+msgstr[1] ""
+       "\n"
+       " Instal·lar paquets\n"
+
+#: ../gui/modules/webinstall.py:181
+#, python-format
+msgid "\t%s (disabled)\n"
+msgstr "\t%s (deshabilitat)\n"
+
+#: ../gui/modules/webinstall.py:231
+msgid "Click Proceed <b>only</b> if you trust this new publisher "
+msgid_plural "Click Proceed <b>only</b> if you trust these new publishers "
+msgstr[0] "Cliqueu a Procedir <b>únicament</b> si confieu amb aquest nou publicador "
+msgstr[1] "Cliqueu a procedir <b>únicament</b> si confieu amb aquests nous publicadors "
+
+#: ../gui/modules/webinstall.py:302 ../gui/modules/webinstall.py:347
+#: ../gui/modules/webinstall.py:391
+msgid "Publisher Error"
+msgstr "Error publicador"
+
+#: ../gui/modules/webinstall.py:310
+msgid "The following publisher is disabled:\n"
+msgid_plural "The following publishers are disabled:\n"
+msgstr[0] "El següent publicador està deshabilitat:\n"
+msgstr[1] "Els següents publicadors estan deshabilitats:\n"
+
+#: ../gui/modules/webinstall.py:314
+#, python-format
+msgid "\t<b>%s</b>\n"
+msgstr "\t<b>%s</b>\n"
+
+#: ../gui/modules/webinstall.py:317
+msgid ""
+"\n"
+"Clicking OK will enable the publisher before proceeding with install. On "
+"completion it will be disabled again."
+msgid_plural ""
+"\n"
+"Clicking OK will enable the publishers before proceeding with install.\n"
+"On completion they will be disabled again."
+msgstr[0] ""
+       "\n"
+       "Clicant a Acceptar habilitareu el publicador abans de procedir amb l'instal·lació. En completar-se aquest tornarà a ser deshabilitat."
+msgstr[1] ""
+       "\n"
+       "Clicant a Acceptar habilitareu el publicador abans de procedir amb l'instal·lació.\n"
+       "En completar-se aquest tornarà a ser deshabilitat."
+
+#: ../gui/modules/webinstall.py:329
+msgid "Disabled Publisher"
+msgid_plural "Disabled Publishers"
+msgstr[0] "Publicador deshabilitat"
+msgstr[1] "Publicadors deshabilitats"
+
+#: ../gui/modules/webinstall.py:387
+#, python-format
+msgid "Failed to add %s.\n"
+msgstr "Error a l'afegir %s.\n"
+
+#: ../gui/modules/webinstall.py:388 ../packagemanager.py:1349
+#: ../packagemanager.py:1361
+msgid "No URI specified"
+msgstr "No s'ha especificat cap URI"
+
+#: ../gui/modules/webinstall.py:469
+msgid "Web Installer Error"
+msgstr "Error instal·lador web"
+
+#: ../modules/actions/__init__.py:95
+#, python-format
+msgid ""
+"unknown action type '%(type)s' in package '%(fmri)s' in action '%(action)s'"
+msgstr ""
+       "tipus d'acció desconeguda '%(type)s' al paquet '%(fmri)s' a l'acció '%(action)s'"
+
+#: ../modules/actions/__init__.py:99
+#, python-format
+msgid "unknown action type '%(type)s' in action '%(action)s'"
+msgstr "tipus d'acció desconeguda '%(type)s' a l'acció '%(action)s'"
+
+#: ../modules/actions/__init__.py:112
+#, python-format
+msgid ""
+"Malformed action in package '%(fmri)s' at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Acció dolenta al paquet '%(fmri)s' a la posició: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:117
+#, python-format
+msgid ""
+"Malformed action at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "Acció dolenta a la posició: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:144
+#, python-format
+msgid "invalid action in package %(fmri)s: %(action)s: %(error)s"
+msgstr "acció no vàlida al paquet %(fmri)s: %(action)s: %(error)s"
+
+#: ../modules/actions/__init__.py:147
+#, python-format
+msgid "invalid action, '%(action)s': %(error)s"
+msgstr "acció no vàlida, '%(action)s': %(error)s"
+
+#: ../modules/actions/__init__.py:178
+#, python-format
+msgid "required attribute '%s' was not provided."
+msgstr "l'atribut obligatori '%s' no s'ha proporcionat."
+
+#: ../modules/actions/__init__.py:253
+#, python-format
+msgid "required attribute, '%s', was not provided."
+msgstr "l'atribut obligatori, '%s', no s'ha proporcionat."
+
+#: ../modules/actions/depend.py:65
+msgid "Missing type attribute"
+msgstr "Falta l'atribut tipus"
+
+#: ../modules/actions/depend.py:69
+msgid "Missing fmri attribute"
+msgstr "Falta l'atribut fmri"
+
+#: ../modules/actions/depend.py:73
+#, python-format
+msgid "Unknown type (%s) in depend action"
+msgstr "Tipus desconegut (%s) en l'acció depèn"
+
+#: ../modules/actions/directory.py:54 ../modules/actions/file.py:63
+#: ../modules/actions/link.py:56
+msgid "Empty path attribute"
+msgstr "Atribut ruta buit"
+
+#: ../modules/actions/generic.py:139
+#, python-format
+msgid "No such file: '%s'."
+msgstr "No tal fitxer: '%s'."
+
+#: ../modules/actions/generic.py:142
+#, python-format
+msgid "'%s' is not a file."
+msgstr "'%s' no és un fitxer."
+
+#: ../modules/actions/license.py:113
+#, python-format
+msgid "License file %s does not exist."
+msgstr "El fitxer de llicència %s no existeix."
+
+#: ../modules/actions/license.py:118
+#, python-format
+msgid "Hash: '%(found)s' should be '%(expected)s'"
+msgstr "Hash: '%(found)s' hauria de ser '%(expected)s'"
+
+#: ../modules/catalog.py:1514
+#, python-format
+msgid "Unknown info_needed type: %s"
+msgstr "Tipus info_needed desconegut: %s"
+
+#. API consumer passed an unknown type for img_path.
+#: ../modules/client/api.py:130
+msgid "Unknown img_path type."
+msgstr "Tipus img_path desconegut."
+
+#: ../modules/client/api_errors.py:126
+#, python-format
+msgid ""
+"Package: %s\n"
+"\n"
+msgstr ""
+       "Paquet: %s\n"
+       "\n"
+
+#: ../modules/client/api_errors.py:131
+msgid "  License requires acceptance."
+msgstr "  La llicència ha d'acceptar-se."
+
+#: ../modules/client/api_errors.py:134
+msgid "  License must be viewed."
+msgstr "  La llicència ha de ser visualitzada."
+
+#: ../modules/client/api_errors.py:174
+#, python-format
+msgid ""
+"Invalid package state change attempted '%(states)s' for package '%(fmri)s'."
+msgstr ""
+       "Intent no vàlid de canvi d'estat '%(states)s' pel paquet '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:204
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because of insufficient permissions. Please try the command again using "
+"pfexec\n"
+"or otherwise increase your privileges."
+msgstr ""
+       "No es pot operar a %s\n"
+       "a causa de permisos insuficients. Si us plau torneu a provar la comanda utilitzant "
+       "pfexec\n"
+       "o en un altre cas incrementeu els vostres permisos."
+
+#: ../modules/client/api_errors.py:209
+msgid ""
+"\n"
+"Could not complete the operation because of insufficient permissions. "
+"Please\n"
+"try the command again using pfexec or otherwise increase your privileges.\n"
+msgstr ""
+       "\n"
+       "No es pot completar l'operació a causa de permisos insuficients. "
+       "Si us plau\n"
+       "proveu de nou la comanda utilitzant pfexec o en qualsevol altre cas incrementant els vostres privilegis.\n"
+
+#: ../modules/client/api_errors.py:220
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because the file is in use. Please stop using the file and try the\n"
+"operation again."
+msgstr ""
+       "No es pot operar a %s\n"
+       "ja que el fitxer està en ús. Si us plau pareu d'utilitzar el fitxer i intenteu de\n"
+       "nou l'operació."
+
+#: ../modules/client/api_errors.py:235
+#, python-format
+msgid "Could not complete the operation on %s: read-only filesystem\n"
+msgstr "No es pot completar l'operació en %s: sistema de fitxers de només-lectura\n"
+
+#: ../modules/client/api_errors.py:237
+msgid "Could not complete the operation: read-only filesystem."
+msgstr "No es pot completar l'operació: sistema de fitxers de només-lectura."
+
+#: ../modules/client/api_errors.py:264
+msgid ""
+"The following pattern(s) did not match any packages in the current catalog.\n"
+"Try relaxing the pattern, refreshing and/or examining the catalogs:"
+msgstr ""
+       "Els següents patrons no coincideixen amb cap paquet del catàleg actual.\n"
+       "Intenteu un patró més senzill, refrescant i/o examinant els catàlegs:"
+
+#: ../modules/client/api_errors.py:271
+msgid ""
+"The following patterns only matched packages that are from publishers other "
+"than that which supplied the already installed version of this package"
+msgstr ""
+       "Els següents patrons només coincideixen amb paquets d'altres publicadors no pas amb el publicador seleccionat que va proporcionar la versió d'aquest paquet ja instal·lat"
+
+#: ../modules/client/api_errors.py:285
+#, python-format
+msgid "'%s' matches no installed packages"
+msgstr "'%s' no coincideix amb els paquets instal·lats"
+
+#: ../modules/client/api_errors.py:289
+#, python-format
+msgid "'%s' is an illegal fmri"
+msgstr "'%s' és un fmri il·legal"
+
+#: ../modules/client/api_errors.py:293
+#, python-format
+msgid "'%s' supports the following architectures: %s"
+msgstr "'%s' suporta les següents arquitectures: %s"
+
+#: ../modules/client/api_errors.py:294
+#, python-format
+msgid "Image architecture is defined as: %s"
+msgstr "La imatge de l'arquitectura està definida com: %s"
+
+#: ../modules/client/api_errors.py:299
+#, python-format
+msgid "'%(p)s' depends on obsolete package '%(op)s'"
+msgstr "'%(p)s' depèn del paquet obsolet '%(op)s'"
+
+#: ../modules/client/api_errors.py:303
+msgid ""
+"The proposed operation can not be performed for the following package(s) as "
+"they are already installed: "
+msgstr ""
+       "L'operació proposada no pot ser realitzada ja que aquests paquets ja estan instal·lats: "
+
+#: ../modules/client/api_errors.py:310
+msgid "The following different patterns specify thesame package(s):"
+msgstr "Els següents patrons diferents especifiquen el mateix paquet/paquets:"
+
+#: ../modules/client/api_errors.py:320
+msgid "No solution was found to satisfy constraints"
+msgstr "No es va trobar cap solució que satisfés les restriccions"
+
+#: ../modules/client/api_errors.py:326
+#, python-format
+msgid "Package %s is missing a dependency: %s"
+msgstr "El paquet %s li falta la dependència: %s"
+
+#: ../modules/client/api_errors.py:398
+#, python-format
+msgid ""
+"The FMRI '%s' does not contain publisher information and cannot be used for "
+"catalog operations."
+msgstr ""
+       "El FMRI '%s' no conté informació de publicador i no pot ser utilitzat per a operacions catàleg."
+
+#: ../modules/client/api_errors.py:407
+#, python-format
+msgid ""
+"Catalog meta_root '%(root)s' is invalid; unable to complete operation: '%(op)"
+"s'."
+msgstr ""
+       "El catàleg meta_root '%(root)s' no és vàlid; no es pot completar l'operació: '%(op)"
+       "s'."
+
+#: ../modules/client/api_errors.py:424 ../modules/server/catalog.py:79
+msgid "The following catalog files have incorrect permissions:\n"
+msgstr "Els següents fitxers de catàleg tenen permisos incorrectes:\n"
+
+#: ../modules/client/api_errors.py:428 ../modules/server/catalog.py:83
+#, python-format
+msgid "\t%(fname)s: expected mode: %(emode)s, found mode: %(fmode)s\n"
+msgstr "\t%(fname)s: mode esperat: %(emode)s, mode trobat: %(fmode)s\n"
+
+#: ../modules/client/api_errors.py:438
+#, python-format
+msgid "The signature data for the '%s' catalog file is not valid."
+msgstr "Les dades de signatura pel fitxer de catàleg '%s' no són vàlides."
+
+#: ../modules/client/api_errors.py:448
+#, python-format
+msgid ""
+"Unable to determine the updates needed for  the current catalog using the "
+"provided catalog update data in '%s'."
+msgstr ""
+       "No es poden determinar les operacions necessàries per l'actualització del catàleg actual utilitzant les dades proporcionades d'actualització de catàleg a '%s'."
+
+#: ../modules/client/api_errors.py:458
+#, python-format
+msgid ""
+"Unable to perform '%(op)s' operation for catalog %(name)s; completion would "
+"result in a duplicate entry for package '%(fmri)s'."
+msgstr ""
+       "No es pot realitzar l'operació '%(op)s' pel catàleg %(name)s; la completació podria produir una entrada duplicada pel paquet '%(fmri)s'."
+
+#: ../modules/client/api_errors.py:470
+msgid "Catalog updates can only be applied to an on-disk catalog."
+msgstr "Les actualitzacions de catàleg només es poden aplicar a catàlegs en disc."
+
+#: ../modules/client/api_errors.py:478
+#, python-format
+msgid "Catalog file '%s' is invalid."
+msgstr "El fitxer de catàleg '%s' no és vàlid."
+
+#: ../modules/client/api_errors.py:486
+#, python-format
+msgid ""
+"Unable to determine the updates needed for the catalog using the provided "
+"catalog update data in '%s'. The specified catalog updates are for an older "
+"version of the catalog and cannot be used."
+msgstr ""
+       "No es poden determinar les actualitzacions necessàries pel catàleg utilitzant les dades d'actualització proporcionades en '%s'. Les actualitzacions de catàleg especificades són per a una versió antiga del catàleg i no poden utilitzar-se."
+
+#: ../modules/client/api_errors.py:497
+#, python-format
+msgid "'%s' could not be found in the catalog."
+msgstr "'%s' no pot ser trobat al catàleg."
+
+#: ../modules/client/api_errors.py:505
+#, python-format
+msgid "Unknown catalog update type '%s'"
+msgstr "Tipus d'actualització de catàleg desconegut '%s'"
+
+#: ../modules/client/api_errors.py:513
+#, python-format
+msgid "Unrecognized, unknown, or invalid CatalogPart '%s'"
+msgstr "CatalogPart no-reconegut, desconegut, o no-vàlid '%s'"
+
+#: ../modules/client/api_errors.py:544
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current publishers:\n"
+msgstr ""
+       "No es pot trobar paquets coincidents pel següents FMRIs a qualsevol d'aquests "
+       "catàlegs pels publicadors actuals:\n"
+
+#: ../modules/client/api_errors.py:549
+#, python-format
+msgid "%s (pattern did not match)\n"
+msgstr "%s (patró no coincideix)\n"
+
+#: ../modules/client/api_errors.py:551
+#, python-format
+msgid "%s (publisher did not match)\n"
+msgstr "%s (publicador no coincideix)\n"
+
+#: ../modules/client/api_errors.py:554
+#, python-format
+msgid "%s (version did not match)\n"
+msgstr "%s (nersiṕ no coincideix)\n"
+
+#: ../modules/client/api_errors.py:595
+#, python-format
+msgid "The search at url %s returned no results."
+msgstr "La cerca a la url %s no ha retornat resultats."
+
+#: ../modules/client/api_errors.py:609
+msgid "Some servers failed to respond appropriately:\n"
+msgstr "Alguns servidors no han respost apropiadament:\n"
+
+#: ../modules/client/api_errors.py:611 ../modules/client/api_errors.py:620
+#, python-format
+msgid ""
+"%(o)s:\n"
+"%(msg)s\n"
+msgstr ""
+       "%(o)s:\n"
+       "%(msg)s\n"
+
+#: ../modules/client/api_errors.py:614
+#, python-format
+msgid "%s did not return a valid response.\n"
+msgstr "%s no ha retornat una resposta vàlida.\n"
+
+#: ../modules/client/api_errors.py:617
+msgid "Some servers don't support requested search operation:\n"
+msgstr "Alguns servidors no suporten l'operació de cerca sol·licitada:\n"
+
+#: ../modules/client/api_errors.py:631
+msgid ""
+"Search performance is degraded.\n"
+"Run 'pkg rebuild-index' to improve search speed."
+msgstr ""
+       "El rendiment de cerca està degradat.\n"
+       "Executeu 'pkg rebuild-index' per a millorar la velocitat de la cerca."
+
+#: ../modules/client/api_errors.py:645
+msgid "Search server does not support the requested protocol:"
+msgstr "El servidor de cerca no suporta el protocol sol·licitat:"
+
+#: ../modules/client/api_errors.py:793
+#, python-format
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information: %s"
+msgstr ""
+       "El fitxer especificat té un format incorrecte o no conté informació vàlida "
+       "quant al publicador: %s"
+
+#: ../modules/client/api_errors.py:796
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information."
+msgstr ""
+       "El fitxer especificat té un format incorrecte o no conté informació vàlida "
+       "quant al publicador."
+
+#: ../modules/client/api_errors.py:805
+msgid "Unsupported pkg(7) publisher information data format."
+msgstr "Format de dades de l'informació del publicador no suporades pkg(7)."
+
+#: ../modules/client/api_errors.py:831
+#, python-format
+msgid ""
+"Error encountered while retrieving data from '%s':\n"
+"%s"
+msgstr ""
+       "S'ha produït un error mentres s'estava rebent dades de '%s':\n"
+       "%s"
+
+#: ../modules/client/api_errors.py:833
+#, python-format
+msgid "Error encountered while retrieving data from: %s"
+msgstr "S'ha produït un error mentres s'obtenien dades de: %s"
+
+#: ../modules/client/api_errors.py:845
+#, python-format
+msgid "'%s' is not a valid location."
+msgstr "'%s' no és una localització vàlida."
+
+#: ../modules/client/api_errors.py:857
+#, python-format
+msgid "'%s' is not a valid boot environment name."
+msgstr "'%s' no és un nom d'entorn d'arranc vàlid."
+
+#: ../modules/client/api_errors.py:869
+#, python-format
+msgid "The boot environment '%s' already exists."
+msgstr "L'entorn d'arranc '%s' ja existeix."
+
+#: ../modules/client/api_errors.py:878
+msgid ""
+"Boot environment naming during package install is not supported on this\n"
+"version of OpenSolaris. Please update without the --be-name option."
+msgstr ""
+       "El nomenament de l'entorn d'arranc durant l'instal·lació no està suportat en aquesta \n"
+       "versió d'OpenSolaris. Si us plau utilitzeu update sense l'opció --be-name."
+
+#: ../modules/client/api_errors.py:884
+msgid "Unable to clone the current boot environment."
+msgstr "No es pot clonar l'actual entorn d'arranc."
+
+#: ../modules/client/api_errors.py:897
+#, python-format
+msgid ""
+"A problem occurred while attempting to rename the boot environment\n"
+"currently named %(orig)s to %(dest)s."
+msgstr ""
+       "S'ha produït un error mentre s'intentava reanomenar l'entorn d'arranc\n"
+       "actualment anomenat %(orig)s a %(dest)s."
+
+#: ../modules/client/api_errors.py:908
+#, python-format
+msgid "Unable to mount %(name)s at %(mt)s"
+msgstr "No es pot desmuntar %(name)s a %(mt)s"
+
+#: ../modules/client/api_errors.py:917
+msgid ""
+"Naming a boot environment when operating on a non-live image is\n"
+"not allowed."
+msgstr ""
+       "Nombrar un entorn d'arranc quan esteu treballant amb una imatge no-live no està\n permès."
+
+#: ../modules/client/api_errors.py:928
+msgid "Info does not recognize the following options:"
+msgstr "Info no reconeix les següents opcions:"
+
+#: ../modules/client/api_errors.py:930
+msgid " '"
+msgstr " '"
+
+#: ../modules/client/api_errors.py:930
+msgid "'"
+msgstr "'"
+
+#: ../modules/client/api_errors.py:959
+#, python-format
+msgid ""
+"Publisher meta_root '%(root)s' is invalid; unable to complete operation: '%"
+"(op)s'."
+msgstr ""
+       "El meta_root del publicador '%(root)s' no és vàlid; no es pot completar l'operació: '%"
+       "(op)s'."
+
+#: ../modules/client/api_errors.py:968
+#, python-format
+msgid "'%s' is not a valid publisher name."
+msgstr "'%s' no és un nom de publicador vàlid."
+
+#: ../modules/client/api_errors.py:976
+#, python-format
+msgid ""
+"'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
+msgstr ""
+       "'%(value)s' no és un valor vàlid per l'atribut de repositori '%(attribute)s'."
+
+#: ../modules/client/api_errors.py:989
+#, python-format
+msgid "'%s' is not a valid repository collection type."
+msgstr "'%s' no és un tipus de col·lecció de repositori vàlid."
+
+#: ../modules/client/api_errors.py:997
+#, python-format
+msgid "'%s' is not a valid URI."
+msgstr "'%s' no és una URI vàlida."
+
+#: ../modules/client/api_errors.py:1005
+#, python-format
+msgid "'%s' is not a valid URI priority; integer value expected."
+msgstr "'%s' no és una prioritat URI vàlida. S'esperava un valor de tipus enter."
+
+#: ../modules/client/api_errors.py:1017
+#, python-format
+msgid "'%s' is not a valid repository URI sort policy."
+msgstr "'%s' no és una política d'ordenació URI vàlida."
+
+#: ../modules/client/api_errors.py:1026
+#, python-format
+msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
+msgstr "L'ediror '%s' està deshabilitat i no pot utilitzar-se per a operacions d'empaquetament."
+
+#: ../modules/client/api_errors.py:1035
+#, python-format
+msgid "A publisher with the same name or alias as '%s' already exists."
+msgstr "Ja existeix un publicador amb el mateix nom o àlies '%s'."
+
+#: ../modules/client/api_errors.py:1044
+#, python-format
+msgid ""
+"A repository with the same name or origin URIs already exists for publisher "
+"'%s'."
+msgstr ""
+       "Un repositori amb el mateix nom o origen URI ja existeix pel publicador "
+       "'%s'."
+
+#: ../modules/client/api_errors.py:1053
+#, python-format
+msgid "Mirror '%s' already exists for the specified publisher."
+msgstr "La rèplica '%s' ja existeix pel publicador especificat."
+
+#: ../modules/client/api_errors.py:1062
+#, python-format
+msgid "Origin '%s' already exists for the specified publisher."
+msgstr "L'origen '%s' ja existeix pel publicador especificat."
+
+#: ../modules/client/api_errors.py:1071
+#, python-format
+msgid ""
+"At least one origin is required for %s.  You must add a new origin before "
+"attempting to remove the specified origin(s)."
+msgstr ""
+       "Com a mínim es necessita un origen per a %s.  Heu d'afegir l'origen abans d'intentar eliminar l'origen especificat."
+
+#: ../modules/client/api_errors.py:1081
+msgid "The preferred publisher cannot be removed."
+msgstr "El publicador predeterminat no pot ser eliminat."
+
+#: ../modules/client/api_errors.py:1088
+msgid "Cannot search a repository before or after itself"
+msgstr "No es pot cercar a un repositori abans o després d'ell mateix"
+
+#: ../modules/client/api_errors.py:1096
+msgid "Cannot remove the selected repository for a publisher."
+msgstr "No és pot eliminar el repositori seleccionat pel publicador."
+
+#: ../modules/client/api_errors.py:1105
+#, python-format
+msgid ""
+"Publisher '%s' is disabled and cannot be set as the preferred publisher."
+msgstr ""
+       "El publicador '%s' està deshabilitat i no pot ser utilitzat com a publicador predeterminat."
+
+#: ../modules/client/api_errors.py:1114
+msgid ""
+"The preferred publisher may not be disabled.  Another publisher must be set "
+"as the preferred publisher before this publisher can be disabled."
+msgstr ""
+       "El publicador preferit no pot de ser deshabilitat. Un altre publicador ha de ser establert com a publicador preferit abans que el publicador pugui ser deshabilitat."
+
+#: ../modules/client/api_errors.py:1124
+#, python-format
+msgid "Unknown legal URI '%s'."
+msgstr "URI legal desconegut '%s'."
+
+#: ../modules/client/api_errors.py:1132
+#, python-format
+msgid "Unknown publisher '%s'."
+msgstr "Publicador desconegut '%s'."
+
+#: ../modules/client/api_errors.py:1140
+#, python-format
+msgid "Unknown related URI '%s'."
+msgstr "URI relacionat desconegut '%s'."
+
+#: ../modules/client/api_errors.py:1148
+#, python-format
+msgid "Unknown repository '%s'."
+msgstr "Repositori desconegut '%s'."
+
+#: ../modules/client/api_errors.py:1156
+#, python-format
+msgid "Unknown repository mirror '%s'."
+msgstr "Rèplica desconeguda '%s'."
+
+#: ../modules/client/api_errors.py:1170
+#, python-format
+msgid "Publisher '%s' has no repositories that support the '%s' operation."
+msgstr "El publicador '%s' no te repositoris que suportin l'acció '%s'."
+
+#: ../modules/client/api_errors.py:1178
+#, python-format
+msgid "Unknown repository origin '%s'"
+msgstr "Origen del repositori desconegut '%s'."
+
+#: ../modules/client/api_errors.py:1189
+#, python-format
+msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
+msgstr "La URI '%(uri)s' conté un esquema no suportat '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1192
+msgid "The specified URI contains an unsupported scheme."
+msgstr "La URI especificada conté un esquema no suportat."
+
+#: ../modules/client/api_errors.py:1200
+#, python-format
+msgid "'%(attr)s' is not supported for '%(scheme)s'."
+msgstr "'%(attr)s' no està suportat per '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:1227
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
+"has expired.  Please install a valid certificate."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s' necessita accedir '%(uri)s', "
+       "ha expirat.  Si us plau instal·leu un certificat vàlid."
+
+#: ../modules/client/api_errors.py:1232
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
+"a valid certificate."
+msgstr ""
+       "El certificat '%(cert)s', necessita accedir '%(pub)s', ha expirat.  Si us plau "
+       "instal·leu un certificat vàlid."
+
+#: ../modules/client/api_errors.py:1237
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
+"install a valid certificate."
+msgstr ""
+       "El certificat '%(cert)s', necessita accedir '%(uri)s', ha expirat.  Si us plau "
+       "instal·leu un certificat vàlid."
+
+#: ../modules/client/api_errors.py:1240
+#, python-format
+msgid "Certificate '%s' has expired.  Please install a valid certificate."
+msgstr "El certificat '%s' ha expirat.  Si us plau instal·leu un certificat vàlid."
+
+#: ../modules/client/api_errors.py:1253
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"will expire in '%(days)s' days."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s', necessita accedir '%(uri)s', "
+       "expirarà d'aquí '%(days)s' dies."
+
+#: ../modules/client/api_errors.py:1258
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
+"days."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s' expirarà d'aquí '%(days)s' "
+       "dies."
+
+#: ../modules/client/api_errors.py:1262
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
+"s' days."
+msgstr ""
+       "El certificat '%(cert)s', necessita accedir a '%(uri)s', expirarà d'aquí '%(days)s' dies."
+
+#: ../modules/client/api_errors.py:1265
+#, python-format
+msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
+msgstr "El certificat '%(cert)s' expirarà d'aquí a '%(days)s' dies."
+
+#: ../modules/client/api_errors.py:1277
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"is invalid."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s', necessita accedir '%(uri)s', "
+       "no és vàlida."
+
+#: ../modules/client/api_errors.py:1281
+#, python-format
+msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
+msgstr "El certificat '%(cert)s' pel publicador '%(pub)s' no es vàlid."
+
+#: ../modules/client/api_errors.py:1285
+#, python-format
+msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
+msgstr "El certificat '%(cert)s' necessita accedir a '%(uri)s' no és vàlida."
+
+#: ../modules/client/api_errors.py:1288
+#, python-format
+msgid "Invalid certificate '%s'."
+msgstr "Certificat no vàlid '%s'."
+
+#: ../modules/client/api_errors.py:1299
+#, python-format
+msgid ""
+"Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
+"(uri)s'."
+msgstr ""
+       "No es pot localitzar la clau '%(key)s' pel publicador '%(pub)s' necessària per accedir a '%"
+       "(uri)s'."
+
+#: ../modules/client/api_errors.py:1303
+#, python-format
+msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
+msgstr "No es pot localitzar la clau '%(key)s' pel publicador '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1307
+#, python-format
+msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
+msgstr "No es pot localitzar la clau'%(key)s' necessària per accedir a '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1310
+#, python-format
+msgid "Unable to locate key '%s'."
+msgstr "No es pot localitzar la clau '%s'."
+
+#: ../modules/client/api_errors.py:1321
+#, python-format
+msgid ""
+"Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
+"access '%(uri)s'."
+msgstr ""
+       "No es pot localitzar el certificat '%(cert)s' per al publicador '%(pub)s' necessari per a "
+       "accedir a '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1326
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
+msgstr "No es pot localitzar el certificat '%(cert)s' pel publicador '%(pub)s'."
+
+#: ../modules/client/api_errors.py:1330
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
+msgstr "No es pot localitzar el certificat '%(cert)s' necessita accedir a '%(uri)s'."
+
+#: ../modules/client/api_errors.py:1333
+#, python-format
+msgid "Unable to locate certificate '%s'."
+msgstr "No es pot localitzar el certificat '%s'."
+
+#: ../modules/client/api_errors.py:1345
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"has a future effective date."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s', necessita accedir a '%(uri)s', "
+       "té una futura data efectiva."
+
+#: ../modules/client/api_errors.py:1350
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
+msgstr ""
+       "El certificat '%(cert)s' pel publicador '%(pub)s' té una futura data efectiva."
+
+#: ../modules/client/api_errors.py:1354
+#, python-format
+msgid ""
+"Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
+"date."
+msgstr ""
+       "El certificat '%(cert)s' necessita accedir a '%(uri)s' té una futura data efectiva."
+
+#: ../modules/client/api_errors.py:1357
+#, python-format
+msgid "Certificate '%s' has a future effective date."
+msgstr "El certificat '%s' té una futura data efectiva."
+
+#: ../modules/client/api_errors.py:1370
+#, python-format
+msgid "Gave a bad response:%s"
+msgstr "Ha donat una resposta dolenta:%s"
+
+#: ../modules/client/api_errors.py:1381
+#, python-format
+msgid "Could not find %s"
+msgstr "No es pot trobar %s"
+
+#: ../modules/client/api_errors.py:1404
+#, python-format
+msgid "The signature data for the manifest of the '%s' package is not valid."
+msgstr "Les dades de signatura del manifest del paquet '%s' no són vàlides."
+
+#: ../modules/client/api_errors.py:1406
+msgid "The signature data for the manifest is not valid."
+msgstr "Les dades de signatura del manifest no són vàlides."
+
+#: ../modules/client/api_errors.py:1419
+#, python-format
+msgid ""
+"there is already an image at: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "aquí ja hi ha una imatge: %s.\n"
+       "Per a sobreescriure-la, utilitzeu l'opció -f (forçar)."
+
+#: ../modules/client/api_errors.py:1425
+#, python-format
+msgid ""
+"the specified image path is not empty: %s.\n"
+"To override, use the -f (force) option."
+msgstr ""
+       "la ruta de a imatge especificada no està buida: %s.\n"
+       "Per a sobreescriure-la, utilitzeu l'opció -f (forçar)."
+
+#: ../modules/client/bootenv.py:134
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg: no es pot crear una instantània automàtica. pkg recovery està deshabilitat."
+
+#: ../modules/client/bootenv.py:267
+#, python-format
+msgid "pkg: A system error %(e)s was caught executing %(cmd)s"
+msgstr "pkg: S'ha capturat un error de sistema %(e)s executant %(cmd)s"
+
+#: ../modules/client/bootenv.py:272
+#, python-format
+msgid ""
+"pkg: '%(cmd)s' failed. \n"
+"with a return code of %(ret)d."
+msgstr ""
+       "pkg: '%(cmd)s' error. \n"
+       "amb un codi de retorn %(ret)d."
+
+#: ../modules/client/bootenv.py:284
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg: no puc activar %s"
+
+#: ../modules/client/bootenv.py:294
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg: no es puc desmuntar %s"
+
+#: ../modules/client/bootenv.py:300
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+       "\n"
+       "Un clon de %s existeix i ha set actualitzat i activat.\n"
+       "Al següent arranc de l'entorn d'arranc %s serà muntat a '/'.\n"
+       "Reinicieu quan desitgeu per a activar aquest entorn d'arranc actualitzat.\n"
+
+#: ../modules/client/bootenv.py:314
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s ha estat actualitzat correctament"
+
+#: ../modules/client/bootenv.py:346
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr " El sistema que s'esta executant no ha estat modificat. Les modificacions solament es van fer a un "
+       "clon del sistema que s'esta executant.  Aquest clon està muntat a %s potser desitgeu "
+       "inspeccionar-lo."
+
+#: ../modules/client/bootenv.py:357
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg: no es pot revocar l'entorn d'arranc %s i restaurar l'imatge"
+
+#: ../modules/client/bootenv.py:367
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s Error al ser actualitzat. No s'ha fet canvis a %s."
+
+#: ../modules/client/bootenv.py:380
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg: no es pot destruir l'instantània %s"
+
+#: ../modules/client/bootenv.py:409
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg: no es pot crear l'Entorn d'arranc %s"
+
+#: ../modules/client/bootenv.py:414
+#, python-format
+msgid "pkg: unable to mount BE %(name)s on %(clone_dir)s"
+msgstr "pkg: no es pot muntar l'Entorn d'arranc %(name)s a %(clone_dir)s"
+
+#: ../modules/client/bootenv.py:420
+#, python-format
+msgid ""
+"The Boot Environment %(name)s failed to be updated. A snapshot was taken "
+"before the failed attempt and is mounted here %(clone_dir)s. Use 'beadm "
+"unmount %(clone_name)s' and then 'beadm activate %(clone_name)s' if you wish "
+"to boot to this BE."
+msgstr ""
+       "L'Entorn d'arranc %(name)s ha fallat al ser actualitzat. S'ha pres una instantània "
+       "abans de l'intent fallit i està muntat a %(clone_dir)s. Utilitzeu 'beadm "
+       "unmount %(clone_name)s' i després 'beadm activate %(clone_name)s' si desitgeu "
+       "arrancar aquest entorn d'arranc."
+
+#: ../modules/client/bootenv.py:435
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+       "S'ha produït un error a l'actualitzar l'entorn d'arranc %s. s'ha pres una instantània abans "
+       "de l'intent fallit i ha estat reutaurat, doncs no s'han fet canvis a %s."
+
+#: ../modules/client/image.py:2436
+msgid "SUNWipkg update check failed."
+msgstr "Error al comprovar d'actualitzar SUNWipkg"
+
+#: ../modules/client/imageplan.py:169
+#, python-format
+msgid "Planning for %s failed: %s\n"
+msgstr "Error per a la planificació de %s: %s\n"
+
+#: ../modules/client/imageplan.py:861
+msgid "Removal Phase"
+msgstr "Etapa d'eliminació"
+
+#: ../modules/client/imageplan.py:871
+msgid "Install Phase"
+msgstr "Etapa d'instal·lació"
+
+#: ../modules/client/imageplan.py:882
+msgid "Update Phase"
+msgstr "Etapa d'actualització"
+
+#: ../modules/client/imageplan.py:938
+msgid "Index Phase"
+msgstr "Etapa d'indexació"
+
+#: ../modules/client/pkg_solver.py:162
+msgid "This version excluded by specified installation version"
+msgstr "Aquesta versió està exclosa per la versió d'instal·lació especificada"
+
+#: ../modules/client/pkg_solver.py:171
+#, python-format
+msgid "This version is excluded by installed incorporation %s"
+msgstr "Aquesta versió està exclosa per l'incorporació instal·lada %s"
+
+#: ../modules/client/pkg_solver.py:181
+#, python-format
+msgid "This version is excluded by freeze %s"
+msgstr "Aquesta versió està exclosa per congelament %s"
+
+#: ../modules/client/pkg_solver.py:197
+#, python-format
+msgid "No matching version of %s can be installed:"
+msgstr "Cap versió corresponent a %s pot ser instal·lada:"
+
+#: ../modules/client/pkg_solver.py:229
+#, python-format
+msgid "No version of %s can be installed:"
+msgstr "Cap versió de %s pot ser instal·lada:"
+
+#: ../modules/client/pkg_solver.py:917
+msgid "Publisher differs from installed or specifed version"
+msgstr "El publicador diferix de la versió instal·lada o especificada"
+
+#: ../modules/client/pkg_solver.py:927
+msgid "Publisher is lower ranked"
+msgstr "El publicador te un rang més baix"
+
+#: ../modules/client/pkg_solver.py:962
+#, python-format
+msgid "Newer version %s is already installed"
+msgstr "La versió més nova %s ja està instal·lada"
+
+#: ../modules/client/pkg_solver.py:971
+msgid "Package doesn't support image architecture"
+msgstr "El paquet no suporta l'arquitectura de l'imatge"
+
+#: ../modules/client/pkg_solver.py:973
+#, python-format
+msgid "Package doesn't support image variant %s"
+msgstr "El paquet no suporta la variant de l'arquitectura %s"
+
+#: ../modules/client/progress.py:592
+#, python-format
+msgid "Retrieving catalog '%s'..."
+msgstr "Recuperant catàleg '%s'..."
+
+#: ../modules/client/progress.py:599
+msgid "Caching catalogs ..."
+msgstr "Capturant catàlegs ..."
+
+#: ../modules/client/progress.py:605
+msgid "Loading catalog cache ..."
+msgstr "Carregant cau del catàleg ..."
+
+#: ../modules/client/progress.py:611
+msgid "Refreshing catalog"
+msgstr "Refrescant catàleg"
+
+#: ../modules/client/publisher.py:957
+#, python-format
+msgid ""
+"\n"
+"Unable to retrieve package data for publisher '%(prefix)s' from one\n"
+"of the following origin(s):\n"
+"\n"
+"%(origins)s\n"
+"\n"
+"The catalog retrieved from one of the origin(s) listed above only\n"
+"contains package data for: %(pubs)s.\n"
+msgstr ""
+       "\n"
+       "No es poden recuperar les dades del paquet des del publicador'%(prefix)s'\n"
+       "des d'un dels següents orígens:\n"
+       "\n"
+       "%(origins)s\n"
+       "\n"
+       "Els catàlegs recuperats des d'un dels orígens llistats a continuació\n"
+       "únicament contenen dades del paquet per: %(pubs)s.\n"
+
+#: ../modules/client/publisher.py:969
+#, python-format
+msgid ""
+"This is either a result of invalid origin information being provided\n"
+"for publisher '%s', or because the wrong publisher name was\n"
+"provided when this publisher was added.\n"
+msgstr ""
+       "Això pot ser degut com a resultat d'una informació incorrecta de l'origen\n"
+       "pel publicador '%s', o perque el nom incorrecte del publicador va ser\n"
+       "proporcionat quant aquest publicador va ser afegit.\n"
+
+#: ../modules/client/publisher.py:977
+#, python-format
+msgid ""
+"To resolve this issue, correct the origin information provided for\n"
+"publisher '%(prefix)s' using the pkg set-publisher subcommand, or re-add\n"
+"the publisher using the correct name and remove the '%(prefix)s'\n"
+"publisher.\n"
+msgstr ""
+       "Per resoldre aquesta incidència, corregiu l'informació proporcionada pel\n"
+       "publicador '%(prefix)s' mitjançant la subcomanda pkg set-publisher, o\n"
+       "torneu a afegir el publicador utilitzant el nom correcte i elimineu el\n"
+       "'%(prefix)s' del publicador.\n"
+
+#: ../modules/client/publisher.py:985
+#, python-format
+msgid ""
+"To re-add this publisher with the correct name, execute the following\n"
+"commands as a privileged user:\n"
+"\n"
+"pkg set-publisher -P -g %(origin)s %(pub)s\n"
+"pkg unset-publisher %(prefix)s\n"
+msgstr ""
+       "Per tornar a afegir aquest publicador amb el nom correcte, executeu les\n"
+       "següents comandes com usuari amb privilegis:\n"
+       "\n"
+       "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+       "pkg unset-publisher %(prefix)s\n"
+
+#: ../modules/client/publisher.py:994
+msgid ""
+"The origin(s) listed above contain package data for more than one\n"
+"publisher, but this issue can likely be resolved by executing one\n"
+"of the following commands as a privileged user:\n"
+msgstr ""
+       "Els orígens llistats a continuació contenen les dades de paquet per més\n"
+       "d'un publicador, però aquesta incidència podria ser resolta d'una manera\n"
+       "similar executant una de les següents comandes com usuari amb privilegis:\n"
+
+#: ../modules/client/publisher.py:1001
+#, python-format
+msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
+
+#: ../modules/client/publisher.py:1005
+#, python-format
+msgid ""
+"Afterwards, the old publisher should be removed by executing the\n"
+"following command as a privileged user:\n"
+"\n"
+"pkg unset-publisher %s\n"
+msgstr ""
+       "Posteriorment, l'antic publicador ha de ser eliminat mitjançant la\n"
+       "utilització de la següent comanda com usuari amb privilegis:\n"
+       "\n"
+       "pkg unset-publisher %s\n"
+
+#: ../modules/file_layout/file_manager.py:73
+#, python-format
+msgid ""
+"The FileManager cannot %(cre)s %(ent)s because it is configured read-only."
+msgstr ""
+       "El gestor de fitxers no pot %(cre)s %(ent)s perquè aquest està configurat com només-lectura."
+
+#: ../modules/file_layout/file_manager.py:93
+#, python-format
+msgid "FileManager was unable to create %s or the directories containing it."
+msgstr "El gestor de fitxers va ser incapaç de crear %s o als directoris continguts."
+
+#: ../modules/file_layout/file_manager.py:112
+#, python-format
+msgid ""
+"The following paths were found but cannot be accounted for by any of the "
+"known layouts:\n"
+"%s"
+msgstr ""
+       "Es van trobar les següents rutes però no poden ser responsabilitzades per cap dels plantejaments coneguts:\n"
+       "%s"
+
+#: ../modules/flavor/base.py:51
+#, python-format
+msgid "Couldn't find %s"
+msgstr "No es pot trobar %s"
+
+#: ../modules/flavor/base.py:106
+#, python-format
+msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
+msgstr "Les subclasses de dependència han d'implementar dep_key. Classe actual en %s"
+
+#: ../modules/flavor/elf.py:46
+#, python-format
+msgid "%s had this elf error:%s"
+msgstr "%s tenia aquest error elf:%s"
+
+#: ../modules/flavor/elf.py:60
+#, python-format
+msgid ""
+"%(pp)s (which will be installed at %(ip)s) had this token, %(tok)s, in its "
+"run path: %(rp)s.  It is not currently possible to automatically expand this "
+"token. Please specify its value on the command line."
+msgstr ""
+       "%(pp)s (el qual serà instal·lat a %(ip)s) té aquesta senyal, %(tok)s, en la seva ruta d'execució: %(rp)s.  Actualment no és possible aquesta senyal. Especifiqueu el seu valor des de la línia de comandes."
+
+#: ../modules/flavor/python.py:43
+#, python-format
+msgid "Could not find the file for %(name)s imported in %(localpath)s"
+msgstr "No es pot trobar el fitxer %(name)s importat en %(localpath)s"
+
+#: ../modules/fmri.py:97
+#, python-format
+msgid "FMRI '%s' is missing version information."
+msgstr "Al FMRI '%s' hi falta l'informació de versió."
+
+#: ../modules/indexer.py:158
+msgid "Reading Existing Index"
+msgstr "Llegint índex existent"
+
+#: ../modules/indexer.py:673 ../modules/indexer.py:698
+msgid "Indexing Packages"
+msgstr "Indexant paquets"
+
+#: ../modules/manifest.py:462
+#, python-format
+msgid ""
+"%(fp)s:\n"
+"%(e)s"
+msgstr ""
+       "%(fp)s:\n"
+       "%(e)s"
+
+#: ../modules/manifest.py:473
+#, python-format
+msgid ""
+"%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
+"The action is:%(act)s"
+msgstr ""
+       "%(fp)s conté una acció la qual li falta un atribut esperat: %(at)s.\n"
+       "L'acció és:%(act)s"
+
+#: ../modules/manifest.py:595
+#, python-format
+msgid "Attribute value '%s' not 'true' or 'false'"
+msgstr "El valor d'atribut '%s' no és 'true' o 'false'"
+
+#: ../modules/misc.py:455
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:456
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:457
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:458
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:459
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:460
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:461 ../modules/misc.py:465
+msgid "EB"
+msgstr "EB"
+
+#: ../modules/p5i.py:87
+msgid "missing version"
+msgstr "falta versió"
+
+#: ../modules/p5i.py:89
+msgid "invalid version"
+msgstr "versió no permesa"
+
+#: ../modules/publish/dependencies.py:60
+#, python-format
+msgid ""
+"The file dependency %s has paths which resolve to multiple packages. The "
+"actions are as follows:\n"
+"%s"
+msgstr ""
+       "La dependència de fitxer %s té rutes les quals resolen diversos paquets. Les accions són com les següents:\n"
+       "%s"
+
+#: ../modules/publish/dependencies.py:73
+#, python-format
+msgid ""
+"The file dependency %s depends on a path delivered by multiple packages. "
+"Those packages are:%s"
+msgstr ""
+       "La dependència de fitxer %s depèn de la ruta entregada per diversos paquets. "
+       "Aquests paquets  són:%s"
+
+#: ../modules/publish/dependencies.py:87
+#, python-format
+msgid ""
+"%s has unresolved dependency '%s' under the following combinations of "
+"variants:\n"
+"%s"
+msgstr ""
+       "%s té una dependència sense resoldre '%s' sota les següents combinacions de variats:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:78
+#, python-format
+msgid "Unsupported scheme '%(scheme)s' in URL: '%(url)s'."
+msgstr "Esquema no suportat'%(scheme)s' a la URL: '%(url)s'."
+
+#: ../modules/publish/transaction.py:82
+#, python-format
+msgid "Malformed URL: '%s'."
+msgstr "URL mal-formada: '%s'."
+
+#: ../modules/publish/transaction.py:83
+#, python-format
+msgid "Invalid repository URL: '%(url)s': %(msg)s"
+msgstr "URL de repositori no vàlida: '%(url)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:95
+#, python-format
+msgid ""
+"'%(op)s' failed for transaction ID '%(trans_id)s'; status '%(status)s': %"
+"(msg)s"
+msgstr ""
+       "'%(op)s' error pel ID transacció '%(trans_id)s'; estat '%(status)s': %"
+       "(msg)s"
+
+#: ../modules/publish/transaction.py:102
+#, python-format
+msgid "'%(op)s' failed for transaction ID '%(trans_id)s': %(msg)s"
+msgstr "'%(op)s' error pel ID transacció '%(trans_id)s': %(msg)s"
+
+#: ../modules/publish/transaction.py:108
+#, python-format
+msgid ""
+"'%(op)s' failed; unable to initiate transaction:\n"
+"%(msg)s"
+msgstr ""
+       "'%(op)s' error; no es pot iniciar la transacció:\n"
+       "%(msg)s"
+
+#: ../modules/publish/transaction.py:111
+#, python-format
+msgid ""
+"Unable to initiate transaction:\n"
+"%s"
+msgstr ""
+       "No es pot inicialitzar la transacció:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:125
+#, python-format
+msgid ""
+"Unsupported operation '%(op)s' for the specified repository type '%(type)s'."
+msgstr ""
+       "Operació no suportada '%(op)s' pel tipus '%(type)s' de repositori especificat."
+
+#: ../modules/publish/transaction.py:147
+msgid "Not an absolute path."
+msgstr "No és una ruta absoluta."
+
+#: ../modules/publish/transaction.py:156
+#, python-format
+msgid ""
+"An error occurred while trying to initialize the repository directory "
+"structures:\n"
+"%s"
+msgstr ""
+       "S'ha produït un error mentre s'intentava inicialitzar l'estructura dels directoris del repositori:\n"
+       "%s"
+
+#: ../modules/publish/transaction.py:294
+msgid "Unsupported or temporarily unavailable operation requested."
+msgstr "L'operació sol·licitada no està suportada o bé no està disponible temporalment."
+
+#: ../modules/publish/transaction.py:422
+#, python-format
+msgid "Unknown failure; no transaction ID provided in response: %s"
+msgstr "Error desconegut; cap ID transacció proporcionat en resposta a: %s"
+
+#: ../modules/query_parser.py:126
+#, python-format
+msgid "An unparseable character in query at position : %d"
+msgstr "Un caràcter in-analitzable en la posició de la consulta : %d"
+
+#: ../modules/query_parser.py:337
+#, python-format
+msgid "In query %(query)s, %(name)s had a bad value of '%(bv)s'."
+msgstr "En la consulta %(query)s, %(name)s tenia un valor dolent de '%(bv)s'."
+
+#: ../modules/query_parser.py:352
+#, python-format
+msgid ""
+"A query is expected to have five fields: case sensitivity, return type, "
+"number of results to return, the number at which to start returning results, "
+"and the text of the query.  The query provided lacked at least one of those "
+"fields:\n"
+"%s"
+msgstr ""
+       "S'espera que una consulta tingui cinc camps: distinció de majúscules i de minúscules, tipus a retornar, "
+       "nombre de resultats a retornar, en nombre amb el qual iniciar el retorn de resultats, "
+       "i el text d'una consulta.  La consulta proporcionada necessita com a mínim d'un d'aquest camps:\n"
+       "%s"
+
+#: ../modules/query_parser.py:374
+msgid "Could not parse query."
+msgstr "No es pot analitzar la consulta."
+
+#: ../modules/query_parser.py:375
+#, python-format
+msgid "Problem occurred with: %s"
+msgstr "S'ha produït un problema amb: %s"
+
+#: ../modules/query_parser.py:514
+msgid "This expression produces action results:"
+msgstr "Aquesta expressió produeix els resultats d'acció:"
+
+#: ../modules/query_parser.py:516
+msgid "This expression produces package results:"
+msgstr "Aquesta expressió produeix els resultats de paquets:"
+
+#: ../modules/query_parser.py:519
+msgid ""
+"'AND' and 'OR' require those expressions to produce the same type of results."
+msgstr ""
+       "'AND' o 'OR' requereix aquestes expressions per a produir el mateix tipus de resultats."
+
+#: ../modules/search_errors.py:135
+#, python-format
+msgid ""
+"Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
+"was %(l)s"
+msgstr ""
+       "Obtingut un unquote_list buit mentre s'indexava. split_chars era %(sc)s i la línia era %(l)s"
+
+#: ../modules/search_errors.py:147
+#, python-format
+msgid ""
+"Had an empty line in the main dictionary. split_chars is %(sc)s and "
+"unquote_list is %(ul)s.%(s)s"
+msgstr ""
+       "Tenia una línia buida en el diccionari principal. split_chars és %(sc)s i "
+       "unquote_list és %(ul)s.%(s)s"
+
+#: ../modules/server/api_errors.py:70
+#, python-format
+msgid "Info does not recognize the following options: %s"
+msgstr "Info no reconeix les següents opcions: %s"
+
+#: ../modules/server/catalog.py:225 ../modules/server/repository.py:793
+#, python-format
+msgid ""
+"Index corrupted or out of date. Removing old index directory (%s)  and "
+"rebuilding search indexes."
+msgstr ""
+       "L'Índex està corrupte o fora de data. Eliminant l'antic directori d'índex (%s)  i "
+       "tornant a construir els índexs de cerca."
+
+#: ../modules/server/catalog.py:241 ../modules/server/repository.py:809
+msgid "writable root not writable by current user id or group."
+msgstr "No es pot escriure a l'arrel per l'id o grup d'usuari actual."
+
+#: ../modules/server/catalog.py:246 ../modules/server/repository.py:812
+msgid "unable to write to index directory."
+msgstr "no es pot escriure al directori índex."
+
+#: ../modules/server/depot.py:395
+msgid "Directory listing not allowed."
+msgstr "El llistat de directori no està permès."
+
+#: ../modules/server/depot.py:678
+#, python-format
+msgid "The specified Action Type, '%s', is not valid."
+msgstr "El tipus d'acció especificada, '%s', no ès vàlida."
+
+#: ../modules/server/depot.py:941
+msgid "No matching FMRI found in repository catalog."
+msgstr "Cap coincidència FRI trobada en el catàleg de repositori."
+
+#: ../modules/server/repository.py:78
+#, python-format
+msgid "The specified catalog file '%s', could not be found."
+msgstr "El fitxer de catàleg especificat '%s', no pot ser trobat."
+
+#: ../modules/server/repository.py:87
+#, python-format
+msgid "No file could be found for the specified hash name: '%s'."
+msgstr "Cap fitxer pot ser trobat pel nom hash especificat: '%s'."
+
+#: ../modules/server/repository.py:96
+#, python-format
+msgid "The specified repository root '%s' does not contain a valid repository."
+msgstr "L'arrel del repositori especificat '%s' no conté un repositori vàlid."
+
+#: ../modules/server/repository.py:108
+#, python-format
+msgid "The specified Transaction ID '%s' is invalid."
+msgstr "El ID transacció especificat '%s' no és vàlid."
+
+#: ../modules/server/repository.py:116
+#, python-format
+msgid "No manifest could be found for the FMRI: '%s'."
+msgstr "No s'ha pogut trobar cap manifest pel FMRI: '%s'."
+
+#: ../modules/server/repository.py:125
+msgid ""
+"The requested operation cannot be performed when the repository is used in "
+"mirror mode."
+msgstr ""
+       "L'operació sol·licitada no pot realitzar-se quant el repositori està utilitzat en mode de rèplica."
+
+#: ../modules/server/repository.py:134
+msgid "The repository is read-only and cannot be modified."
+msgstr "Es repositori és de nomes-lectura i no pot ser modificat."
+
+#: ../modules/server/repository.py:143
+msgid "No token was provided to search."
+msgstr "No es va proporcionar cap senyal de cerca."
+
+#: ../modules/server/repository.py:145
+#, python-format
+msgid "The specified search token '%s' is invalid."
+msgstr "La senyal de cerca especificada '%s' no és vàlida."
+
+#: ../modules/server/repository.py:153
+msgid "Search functionality is temporarily unavailable."
+msgstr "La funcionalitat de cerca temporalment no està disponible."
+
+#: ../modules/server/repository.py:162
+msgid ""
+"The format of the repository or its contents needs to be upgraded before it "
+"can be used to serve package data.  However, it is currently read-only and "
+"cannot be upgraded.  If using pkg.depotd, please restart the server without "
+"read-only so that the repository can be upgraded."
+msgstr ""
+       "El format del repositori o el seu contingut necessita ser actualitzat abans d'actualitzar-lo per poder utilitzar per servir les dades del paquet.  Tanmateix, aquest actualment és de només-lectura i no pot ser actualitzat.  Si esteu utilitzant pkg.depotd, reinicieu el servidor sense nomes-lectura aleshores aquest repositori podrà ser actualitzat."
+
+#. To upgrade the repository, the catalog will have to
+#. be rebuilt.
+#: ../modules/server/repository.py:432
+msgid "Upgrading repository; this process will take some time."
+msgstr "Actualitzant repositori; aquest procés prendrà algun temps."
+
+#: ../modules/server/repository.py:541
+msgid "repository directories incomplete"
+msgstr "directoris de repositori incomplets"
+
+#: ../modules/server/repository.py:550
+msgid ""
+"repository directories not writeable by current user id or group and are "
+"incomplete"
+msgstr ""
+       "als directoris de repositori no hi pot escriure l'id d'usuari o l'id de grup actual, i són incomplets."
+
+#. Don't add packages with corrupt
+#. manifests to the catalog.
+#: ../modules/server/repository.py:663
+#, python-format
+msgid "Skipping %(fmri)s; invalid manifest: %(error)s"
+msgstr "Omitint %(fmri)s; manifest no vàlid: %(error)s"
+
+#: ../modules/server/repositoryconfig.py:406
+#, python-format
+msgid ""
+"Unable to locate or read the specified repository configuration file: '%s'."
+msgstr ""
+       "No es pot localitzar o llegir el fitxer de configuració del repositori especificat: '%s'."
+
+#: ../modules/server/transaction.py:72
+#, python-format
+msgid "Unrecognized or malformed data in operation payload: '%s'."
+msgstr "Dades no reconegudes o mal-formades en l'operació payload: '%s'."
+
+#: ../modules/server/transaction.py:89
+#, python-format
+msgid "The specified client_release is invalid: '%s'"
+msgstr "El client_release especificat no és vàlid: '%s'"
+
+#: ../modules/server/transaction.py:92
+#, python-format
+msgid "'The specified FMRI, '%s', has an invalid version."
+msgstr "'El FMRI especificat, '%s', no té una versió vàlida."
+
+#: ../modules/server/transaction.py:95
+#, python-format
+msgid "The specified FMRI, '%s', already exists or has been restricted."
+msgstr "El FMRI especificat, '%s', ja existeix o bé ha estat restringit."
+
+#: ../modules/server/transaction.py:98
+#, python-format
+msgid ""
+"The specified FMRI, '%s', must include the publisher prefix as the "
+"repository contains package data for more than one publisher or a default "
+"publisher has not been defined."
+msgstr ""
+       "El FMRI especificat, '%s', ha d'incloure el prefix del publicador de fet el repositori conté dades de paquet per més d'un publicador o el publicador predeterminat no ha estat definit."
+
+#: ../modules/server/transaction.py:104
+#, python-format
+msgid "The specified FMRI, '%s', is invalid."
+msgstr "El FMRI especificat, '%s', no és vàlid."
+
+#: ../modules/server/transaction.py:113
+#, python-format
+msgid "Transaction ID '%s' is already open."
+msgstr "El ID transacció '%s' ja està obert."
+
+#: ../modules/server/transaction.py:428
+msgid "An obsolete package cannot contain actions other than 'set'."
+msgstr "Un paquet obsolet no pot contenir accions que no siguin altres que 'set'."
+
+#: ../modules/server/transaction.py:436
+msgid "A renamed package cannot contain actions other than 'set' and 'depend'."
+msgstr "Un paquet reanomenat no pot contenir accions que no siguin altres que 'set' o 'depend'."
+
+#: ../modules/server/transaction.py:451
+msgid "A package may not  be marked for both obsoletion and renaming."
+msgstr "Un paquet no pot ser marcat tant per eliminació com per a reanomenament."
+
+#: ../modules/server/transaction.py:454
+#, python-format
+msgid "A '%s' action cannot be present in an obsolete package: %s"
+msgstr "Una acció '%s' no pot estar present en un paquet obsolet: %s"
+
+#: ../modules/server/transaction.py:458
+#, python-format
+msgid "A '%s' action cannot be present in a renamed package: %s"
+msgstr "Una acció '%s' no pot estar present en un paquet reanomenat: %s"
+
+#: ../modules/server/transaction.py:478
+msgid "A renamed package must contain at least one 'depend' action."
+msgstr "Un paquet reanomenat ha de contenir com a mínim una acció 'depend'."
+
+#: ../packagemanager.py:326
+msgid "All Packages"
+msgstr "Tots els paquets"
+
+#: ../packagemanager.py:328
+msgid "Installed Packages"
+msgstr "Paquets instal·lats"
+
+#: ../packagemanager.py:332
+msgid "Not Installed Packages"
+msgstr "Paquets no instal·lats"
+
+#: ../packagemanager.py:336
+msgid "Selected Packages"
+msgstr "Paquets seleccionats"
+
+#: ../packagemanager.py:339
+msgid "All Publishers (Installed)"
+msgstr "Tots els publicadors (Instal·lats)"
+
+#: ../packagemanager.py:340
+msgid "All Publishers (Search)"
+msgstr "Tots els publicadors (Cerca)"
+
+#: ../packagemanager.py:341
+msgid "Add..."
+msgstr "Afegir..."
+
+#: ../packagemanager.py:422
+msgid "Logs"
+msgstr "Registres"
+
+#: ../packagemanager.py:815
+msgid "Export Selections Confirmation"
+msgstr "Confirmació exportar seleccions"
+
+#: ../packagemanager.py:817
+msgid "<b>Export the following to a Web Install .p5i file:</b>"
+msgstr "<b>Exportar el següent a un fitxer d'instal·lació web .p5i file:</b>"
+
+#: ../packagemanager.py:859
+msgid "Export Selections Error"
+msgstr "Error exportació seleccions"
+
+#: ../packagemanager.py:870
+msgid "Export Selections"
+msgstr "Exportar seleccions"
+
+#: ../packagemanager.py:877
+msgid "p5i Files"
+msgstr "Fitxers p5i"
+
+#: ../packagemanager.py:881
+msgid "All Files"
+msgstr "Tots els fitxers"
+
+#: ../packagemanager.py:886
+msgid "my_packages"
+msgstr "my_packages"
+
+#: ../packagemanager.py:933 ../packagemanager.py:941
+msgid "Search (Ctrl-F)"
+msgstr "Cercar (Ctrl-F)"
+
+#: ../packagemanager.py:1088
+#, python-format
+msgid ""
+"<html><head></head><body><H2>Welcome toPackageManager!</H2><br><font "
+"color='#0000FF'>Warning: Unable to load Start Page:<br>%s</font></body></"
+"html>"
+msgstr ""
+       "<html><head></head><body><H2>Benvinguts al Gestor de Paquets!</H2><br><font "
+       "color='#0000FF'>Avís: no s'ha pogut carregar la pàgina d'inici:<br>%s</font></body></"
+       "html>"
+
+#: ../packagemanager.py:1100
+msgid "failed to respond"
+msgstr "error al respondre"
+
+#: ../packagemanager.py:1103
+msgid "invalid response"
+msgstr "resposta no permesa"
+
+#: ../packagemanager.py:1104
+msgid "A valid response was not returned."
+msgstr "No s'ha retornat una resposta vàlida."
+
+#: ../packagemanager.py:1107
+msgid "unsupported search"
+msgstr "cerca no suportada"
+
+#: ../packagemanager.py:1133
+msgid "Search Errors: click to view"
+msgstr "Errors de cerca: clicar per a visualitzar"
+
+#: ../packagemanager.py:1188
+#, python-format
+msgid "Loading... %s"
+msgstr "Carregant... %s"
+
+#: ../packagemanager.py:1194
+msgid "Stopped"
+msgstr "Parat"
+
+#: ../packagemanager.py:1208
+msgid "Done"
+msgstr "Fet"
+
+#: ../packagemanager.py:1215
+#, python-format
+msgid ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = '%s/startpage_star."
+"png'                     style='border-style: none'></a> "
+"<br><br>                    <h2><font color='#0000FF'>Warning: Unable "
+"to                     load URL</font></h2><br>%s</body></html>"
+msgstr ""
+       "<html><head></head><body><font color='#000000'>                    <a "
+       "href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+       "s'>                    <IMG SRC = '%s/startpage_star."
+       "png'                     style='border-style: none'></a> "
+       "<br><br>                    <h2><font color='#0000FF'>Advertència: No es pot carregar la URL</font></h2><br>%s</body></html>"
+
+#: ../packagemanager.py:1281
+#, python-format
+msgid "View packages in %(s1)s%(pub)s%(e1)s"
+msgstr "Visualitzar paquets en %(s1)s%(pub)s%(e1)s"
+
+#: ../packagemanager.py:1289
+#, python-format
+msgid "Search within %(s1)sAll Publishers%(e1)s"
+msgstr "Cercar dins %(s1)sTots els publicadors%(e1)s"
+
+#: ../packagemanager.py:1296
+#, python-format
+msgid "View installed packages for %(s1)sAll Publishers%(e1)s"
+msgstr "Visualitzar els paquets per a %(s1)sTots els pùblicadors%(e1)s"
+
+#: ../packagemanager.py:1303
+#, python-format
+msgid "Change View to %(s1)sAll Packages%(e1)s"
+msgstr "Canviar vista a %(s1)sTots els paquets%(e1)s"
+
+#: ../packagemanager.py:1311
+#, python-format
+msgid "Display %(s1)sSearch Help%(e1)s"
+msgstr "Mostrar l'%(s1)sAjuda de la cerca%(e1)s"
+
+#: ../packagemanager.py:1314
+#, python-format
+msgid "Loading %(s1)sSearch Help%(e1)s ..."
+msgstr "Carregant l'%(s1)sAjuda de la cerca%(e1)s ..."
+
+#: ../packagemanager.py:1324
+#, python-format
+msgid "View results for %s"
+msgstr "Visualitzar els resultats per %s"
+
+#: ../packagemanager.py:1383
+msgid "Empty Action not supported"
+msgstr "Acció buida no suportada"
+
+#: ../packagemanager.py:1386
+#, python-format
+msgid "Action not supported: %s"
+msgstr "Acció no suportada: %s"
+
+#: ../packagemanager.py:1487
+msgid "Click to toggle selections"
+msgstr "Cliqueu a commutar seleccions"
+
+#: ../packagemanager.py:1502 ../packagemanager.py:3149
+msgid "Status"
+msgstr "Estat"
+
+#: ../packagemanager.py:1644
+msgid "all selection toggle"
+msgstr "Commutar tota la sel·lecció"
+
+#: ../packagemanager.py:1696
+msgid "Not Installed"
+msgstr "No instal·lat"
+
+#: ../packagemanager.py:1698 ../packagemanager.py:3167
+msgid "Updates Available"
+msgstr "Actualitzacions disponibles"
+
+#. Only enable the first section. Later other sections are enabled
+#. in __add_category_to_section() if the section contains any categories
+#. which in turn contain some packages.
+#: ../packagemanager.py:1819 ../packagemanager.py:4951
+#: ../packagemanager.py:4952
+msgid "All Categories"
+msgstr "Totes les categories"
+
+#: ../packagemanager.py:1821
+msgid "Meta Packages"
+msgstr "Meta paquets"
+
+#: ../packagemanager.py:1822
+msgid "Applications"
+msgstr "Aplicacions"
+
+#: ../packagemanager.py:1823
+msgid "Desktop (GNOME)"
+msgstr "Escriptori (GNOME)"
+
+#: ../packagemanager.py:1824
+msgid "Development"
+msgstr "Desenvolupament"
+
+#: ../packagemanager.py:1825
+msgid "Distributions"
+msgstr "Distribucions"
+
+#: ../packagemanager.py:1826
+msgid "Drivers"
+msgstr "Controladors"
+
+#: ../packagemanager.py:1828
+msgid "Web Services"
+msgstr "Serveis Web"
+
+#: ../packagemanager.py:1956
+msgid "Search all publishers"
+msgstr "Cercar a tots els publicadors"
+
+#: ../packagemanager.py:1958
+msgid "Search current publisher"
+msgstr "Cercar al publicador actual"
+
+#: ../packagemanager.py:2006
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search All Publishers</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+"Use the Search field to search for packages within the following Publishers:"
+"</TD></TR>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></TD><TD><h3><b>Cercar a tors els publicadors</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+       "Utilitzeu el camp de cerca per cercar paquets dins dels següents publicadors:"
+       "</TD></TR>"
+
+#: ../packagemanager.py:2024
+msgid ""
+"<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Click on the Publishers below to "
+"view their list of packages:</TD></TR>"
+msgstr ""
+       "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Clique en els següents publicadors per a visualitzar el seu llistat de paquets:</TD></TR>"
+
+#: ../packagemanager.py:2038
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search in All Publishers (Installed)</b></h3><TD></TD></"
+"TR><TR><TD></TD><TD> Search is <b>not</b> supported in All Publishers "
+"(Installed).</TD></TR>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></"
+       "TD><TD><h3><b>Cercar en tots els publicadors (Instal·lats)</b></h3><TD></TD></TR><TR><TD></TD><TD> La cerca <b>no</b> està suportada en tots els publicadors (Instal·lats).</TD></TR>"
+
+#: ../packagemanager.py:2044 ../packagemanager.py:2113
+#: ../packagemanager.py:2139
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Suggeriments:</b><br></TD></TR><TR><TD></TD><TD<TD>"
+
+#: ../packagemanager.py:2049
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Return to view packages for All Publishers <a "
+"href='pm?pm-action=internal&search=%s'>(Installed)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Torneu a visualitzar els paquets per a tots els publicadors <a href='pm?pm-action=internal&search=%s'>(Instal·lats)</a></li>"
+
+#: ../packagemanager.py:2052
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> using All Publishers "
+"<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Search)</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Cercar <b>%(text)s</b> utilitzant tots els publicadors<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Cerca)</a></li>"
+
+#: ../packagemanager.py:2057 ../packagemanager.py:2180
+#: ../packagemanager.py:2209
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>See <a href='pm?pm-action=internal&search=%"
+"s'>Search Help</a></li></TD></TR>"
+msgstr ""
+       "<li style='padding-left:7px'>Vegeu l'<a href='pm?pm-action=internal&search=%s'>Ajuda de la cerca</a></li></TD></TR>"
+
+#: ../packagemanager.py:2067
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Recent Searches</b></h3><TD></TD></TR><TR><TD></TD><TD> Access "
+"stored results from recent searches in this session.</TD></TR>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></"
+       "TD><TD><h3><b>Cerques recents</b></h3><TD></TD></TR><TR><TD></TD><TD> Accessos emmagatzemats des de les cerques recents en aquesta sessió.</TD></TR>"
+
+#: ../packagemanager.py:2080
+msgid "results"
+msgstr "resultats"
+
+#: ../packagemanager.py:2086
+msgid "Click on the search results link below to view the stored results:"
+msgid_plural ""
+"Click on one of the search results links below to view the stored results:"
+msgstr[0] "Cliqueu al següent enllaç de resultats de cerca per a visualitzar els resultats emmagatzemats:"
+msgstr[1] ""
+       "Cliqueu a un dels següents enllaços de resultats de cerca per a visualitzar els resultats emmagatzemats:"
+
+#: ../packagemanager.py:2101
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>View "
+"Packages</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></TD><TD><h3><b>Visualitzar paquets</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2104
+#, python-format
+msgid ""
+"There is one package in this category, however it is not visible in the "
+"selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgid_plural ""
+"There are a number of packages in this category, however they are not "
+"visible in the selected View:\n"
+"<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[0] ""
+       "Hi ha un paquet en aquesta categoria, tanmateix no és visible en la vista seleccionada:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+msgstr[1] ""
+       "Hi ha un número de paquets en aquesta categoria, tanmateix no són visibles en la vista seleccionada:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
+
+#: ../packagemanager.py:2117 ../packagemanager.py:2143
+#, python-format
+msgid ""
+"<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+"s'>Change View to All Packages</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
+       "s'>Canviar la vista a tots els paquets</a></li>"
+
+#: ../packagemanager.py:2128
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></"
+       "TD><TD><h3><b>Resultats de la cerca</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+
+#: ../packagemanager.py:2131
+#, python-format
+msgid ""
+"Found <b>%(num)s</b> package matching <b>%(text)s</b> in All Packages, "
+"however it is not listed in the <b>%(filter)s</b> View."
+msgid_plural ""
+"Found <b>%(num)s</b> packages matching <b>%(text)s</b> in All Packages, "
+"however they are not listed in the <b>%(filter)s</b> View."
+msgstr[0] ""
+       "Trobat <b>%(num)s</b> paquet que coincideix <b>%(text)s</b> en tots els paquets, tanmateix no és llistat a la vista <b>%(filter)s</b>."
+msgstr[1] ""
+       "Trobats <b>%(num)s</b> paquets que coincideixen amb <b>%(text)s</b> en tots els paquets, tanmateix no estan llistats en la vista <b>%(filter)s</b>."
+
+#: ../packagemanager.py:2163
+#, python-format
+msgid ""
+"alt='[Information]' title='Information' ALIGN='bottom'></"
+"TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>No "
+"packages found in <b>%(pub)s</b> matching <b>%(text)s</b></TD></TR>"
+msgstr ""
+       "alt='[Informació]' title='Informació' ALIGN='bottom'></"
+       "TD><TD><h3><b>Resultats de la cerca</b></h3><TD></TD></TR><TR><TD></TD><TD>No s'ha trobat cap paquet en <b>%(pub)s</b> que coincideixi amb <b>%(text)s</b></TD></TR>"
+
+#: ../packagemanager.py:2168
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Check your spelling</li><li style='padding-"
+"left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+       "TD><TD<TD><b>Suggeriments:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+       "style='padding-left:7px'>Comproveu que ho hageu escrit correctament</li><li style='padding-left:7px'>Provar amb nous termes de cerca</li>"
+
+#: ../packagemanager.py:2175
+#, python-format
+msgid ""
+"<li style='padding-left:7px'>Search for <b>%(text)s</b> within <a href='pm?"
+"pm-action=internal&search=%(all_pubs)s'>All Publishers</a></li>"
+msgstr ""
+       "<li style='padding-left:7px'>Cercar <b>%(text)s</b> dins <a href='pm?"
+       "pm-action=internal&search=%(all_pubs)s'>Tots els publicadors</a></li>"
+
+#: ../packagemanager.py:2197
+#, python-format
+msgid ""
+"<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+"SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
+"title='Warning' ALIGN='bottom'></TD><TD><h3><b>Search Warning</b></h3><TD></"
+"TD></TR><TR><TD></TD><TD>Search using only the wildcard character, <b>*</b>, "
+"is not supported in All Publishers</TD></TR>"
+msgstr ""
+       "<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
+       "SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Advertència]' title='Advertència' ALIGN='bottom'></TD><TD<h3><b>Advertència cerca</b></h3><TD></TD></TR><TR><TD></TD><TD>Cercar utilitzant únicament amb el caràcter comodí, <b>*</b>, "
+       "no està suportat en tots els publicadors</TD></TR>"
+
+#: ../packagemanager.py:2204
+msgid ""
+"<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
+"TD><TD<TD><b>Suggestions:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+"style='padding-left:7px'>Try new search terms</li>"
+msgstr ""
+       "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD><TD><b>Suggeriments:</b><br></TD></TR><TR><TD></TD><TD<TD><li "
+       "style='padding-left:7px'>Provar amb nous termes de cerca</li>"
+
+#: ../packagemanager.py:2452 ../packagemanager.py:2473
+#: ../packagemanager.py:5025
+msgid "All Publishers"
+msgstr "Tots els publicadors"
+
+#: ../packagemanager.py:2664
+msgid "Search cleared"
+msgstr "Cerca netejada"
+
+#: ../packagemanager.py:2684
+msgid "Fetching legal information..."
+msgstr "Obtenint informació legal..."
+
+#: ../packagemanager.py:3391 ../packagemanager.py:3828
+msgid "Refreshing package catalog information"
+msgstr "Refrescant l'informació del catàleg de paquets"
+
+#: ../packagemanager.py:3438
+msgid "All"
+msgstr "Tots"
+
+#: ../packagemanager.py:3491 ../packagemanager.py:3493
+#: ../packagemanager.py:3495 ../packagemanager.py:3508
+#: ../packagemanager.py:3510 ../packagemanager.py:3512
+msgid "None: "
+msgstr "Sense: "
+
+#. Installed
+#: ../packagemanager.py:3604
+msgid "<b>Upgradeable Version:</b>"
+msgstr "<b>Versió actualitzable:</b>"
+
+#: ../packagemanager.py:3605
+#, python-format
+msgid "Yes, %(version)s (Build %(build)s-%(branch)s)"
+msgstr "Si, %(version)s (Construcció %(build)s-%(branch)s)"
+
+#. Installed and up to date
+#: ../packagemanager.py:3613
+msgid "Installed package is up-to-date"
+msgstr "El paquet instal·lat està al dia"
+
+#: ../packagemanager.py:3696
+#, python-format
+msgid ""
+"The latest version of %s cannot be installed. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "L'última versió de %s no pot ser instal·lada. Això podria ser possible després de l'actualització del vostre sistema. Executeu \"Actualitzacions\" per tal que el vostre sistema estigui al dia."
+
+#: ../packagemanager.py:3701
+#, python-format
+msgid ""
+"Cannot upgrade to the latest version of %s. It may be possible to do so "
+"after updating your system. Run \"Updates\" to get your system up-to-date."
+msgstr ""
+       "No és pot actualitzar a l'última versió de %s. Això podria ser possible després de l'actualització del vostre sistema. Executeu \"Actualitzacions\" per tal que el vostre sistema estigui al dia."
+
+#: ../packagemanager.py:3721
+msgid "Latest Version: "
+msgstr "Última versió: "
+
+#: ../packagemanager.py:4098
+msgid "Selected for Removal:"
+msgstr "Seleccionat per a eliminar:"
+
+#: ../packagemanager.py:4106
+msgid "Selected for Install/Update:"
+msgstr "Seleccionat per a instal·lar/actualitzar:"
+
+#: ../packagemanager.py:4110
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "Seleccionar paquets tot marcant-los a la casella i clicar a instal·lar/actualitzar."
+
+#: ../packagemanager.py:4114
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "Seleccionar paquets tot marcant-los a la casella i clicar a eliminar."
+
+#: ../packagemanager.py:4176
+msgid "Fetching information..."
+msgstr "Obtenint informació..."
+
+#: ../packagemanager.py:4248 ../packagemanager.py:4263
+msgid "(not installed)"
+msgstr "(no instal·lat)"
+
+#: ../packagemanager.py:4301
+msgid "Name\tDependency\tInstalled Version\n"
+msgstr "Nom\tDependència\tVersió instal·lada\n"
+
+#: ../packagemanager.py:4342
+msgid ""
+"\n"
+"This might be caused by network problem while accessing the repository."
+msgstr ""
+       "\n"
+       "Aquest pot ser causat per un problema de xarxa mentre s'estava accedint al repositori."
+
+#: ../packagemanager.py:4345
+msgid "Files Details not available for this package..."
+msgstr "Detalls dels fitxers no disponibles per a aquest paquet..."
+
+#: ../packagemanager.py:4348
+msgid "Dependencies info not available for this package..."
+msgstr "Informació de dependències no disponible per a aquest paquet..."
+
+#: ../packagemanager.py:4351
+msgid "Information not available for this package..."
+msgstr "Informació no disponible per a aquest paquet..."
+
+#: ../packagemanager.py:4396
+msgid "Not available"
+msgstr "No disponible"
+
+#: ../packagemanager.py:4404
+msgid "License could not be shown due to conversion problem."
+msgstr "La llicència no pot ser carregada degut a un problema de conversió."
+
+#: ../packagemanager.py:4754 ../packagemanager.py:4803
+msgid "Loading package list"
+msgstr "Carregant llista de paquets"
+
+#. This can happen if the repository does not
+#. contain any packages
+#: ../packagemanager.py:4767
+msgid "Selected publisher does not contain any packages."
+msgstr "El publicador seleccionat no conté cap paquet."
+
+#: ../packagemanager.py:5001
+msgid "Recent Searches"
+msgstr "Cerques recents"
+
+#: ../packagemanager.py:5440
+#, python-format
+msgid "Total: %(total)s  Selected: %(selected)s"
+msgstr "Total: %(total)s  Seleccionats: %(selected)s"
+
+#: ../packagemanager.py:5460
+#, python-format
+msgid ""
+"Searching %(s1)s%(active_pub)s%(e1)s for %(s1)s%(search_text)s%(e1)s ..."
+msgstr ""
+       "Cercant a %(s1)s%(active_pub)s%(e1)s per %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5466
+#, python-format
+msgid "Searching for %(s1)s%(search_text)s%(e1)s ..."
+msgstr "Cercant %(s1)s%(search_text)s%(e1)s ..."
+
+#: ../packagemanager.py:5471
+#, python-format
+msgid "%(number)d packages found matching %(s1)s%(search_text)s%(e1)s"
+msgstr "Trobats %(number)d paquets que coincideixen amb %(s1)s%(search_text)s%(e1)s"
+
+#: ../packagemanager.py:5591
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+       "Problema de xarxa.\n"
+       "\n"
+
+#: ../packagemanager.py:5592
+msgid "Details:\n"
+msgstr "Detalls:\n"
+
+#: ../packagemanager.py:5593
+#, python-format
+msgid "%s/%s catalogs successfully updated:\n"
+msgstr "%s/%s catàlegs correctament actualitzats:\n"
+
+#: ../packagemanager.py:5686
+msgid "An unknown error occurred"
+msgstr "S'ha produït un error desconegut"
+
+#: ../packagemanager.py:5690
+msgid ""
+"Please let the developers know about this problem by\n"
+"filing a bug together with the error details listed below at:"
+msgstr ""
+       "Permeteu als desenvolupadors conèixer quant a aquest problema tot\n"
+       "omplint un bug juntament amb els detalls de l'error llistats a continuació:"
+
+#: ../packagemanager.py:5694
+msgid "Unexpected Error"
+msgstr "Error inesperat"
+
+#: ../packagemanager.py:5713
+msgid "Error details:\n"
+msgstr "Detalls de l'error:\n"
+
+#: ../packagemanager.py:5722
+msgid ""
+"\n"
+"List of configured publishers:"
+msgstr ""
+       "\n"
+       "Llistat dels publicadors configurats:"
+
+#: ../packagemanager.py:5728
+msgid ""
+"\n"
+"Please include output from:\n"
+msgstr ""
+       "\n"
+       "Incloeu la sortida des de:\n"
+
+#: ../packagemanager.py:5733
+msgid ""
+"\n"
+"pkg version:\n"
+msgstr ""
+       "\n"
+       "versió pkg:\n"
+
+#: ../packagemanager.py:5766
+msgid "Save selected..."
+msgstr "Desar seleccionat..."
+
+#: ../packagemanager.py:5767
+msgid "Save selected packages..."
+msgstr "Desar paquets seleccionats..."
+
+#: ../packagemanager.py:5768
+msgid ""
+"The installed package(s) require a reboot before installation can be "
+"completed."
+msgstr ""
+       "Els paquets instal·lats necessiten reiniciar abans que l'instal·lació pugui ser "
+       "completada."
+
+#: ../packagemanager.py:5805
+msgid "Unable to initialize gtk"
+msgstr "No es pot inicialitzar gtk"
+
+#: ../pkgdep.py:75
+msgid ""
+"Usage:\n"
+"        pkgdepend [options] command [cmd_options] [operands]\n"
+"\n"
+"Subcommands:\n"
+"        pkgdepend generate [-DIkMm] manifest proto_dir\n"
+"        pkgdepend [options] resolve [-dMos] manifest ...\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Ús:\n"
+       "        pkgdepend [opcions] comanda [opcions_cmd] [operands]\n"
+       "\n"
+       "Subcomandes:\n"
+       "        pkgdepend generate [-DIkMm] manifest dir_proto\n"
+       "        pkgdepend [options] resolve [-dMos] manifest ...\n"
+       "\n"
+       "Opcions:\n"
+       "        -R dir\n"
+       "        --help o -?\n"
+       "Entorn:\n"
+       "        PKG_IMAGE"
+
+#: ../pkgdep.py:115
+msgid "-D arguments must be of the form 'name=value'."
+msgstr "-D arguments ha de ser de la forma 'nom=valor'."
+
+#: ../pkgdep.py:134
+msgid "Generate only accepts exactly two arguments."
+msgstr "Generar únicament accepta dos arguments."
+
+#: ../pkgdep.py:140
+msgid ""
+"ORIGIN may not be specified using -D. It will be inferred from the\n"
+"install paths of the files."
+msgstr ""
+       "L'ORIGEN no pot estar especificat mitjançant -D. Entrarà amb conflicte\n"
+       "amb les rutes d'instal·lació dels fitxers."
+
+#: ../pkgdep.py:149 ../pkgdep.py:212
+#, python-format
+msgid "The manifest file %s could not be found."
+msgstr "No s'ha pogut trobar el fitxer manifest %s."
+
+#: ../pkgdep.py:153
+#, python-format
+msgid "The proto directory %s could not be found."
+msgstr "No s'ha pogut trobar el directori proto %s."
+
+#: ../pkgdep.py:160
+#, python-format
+msgid ""
+"Could not parse manifest %(manifest)s because of the following line:\n"
+"%(line)s"
+msgstr ""
+       "No es pot analitzar el manifest %(manifest)s a causa de la següent línia:\n"
+       "%(line)s"
+
+#: ../pkgdep.py:206
+msgid "-o cannot be used with -d or -s"
+msgstr "-o no pot utilitzar-se amb -d o -s"
+
+#: ../pkgdep.py:218
+#, python-format
+msgid "The output directory %s is not a directory."
+msgstr "El directori de sortida %s no és un directori."
+
+#: ../pkgdep.py:248
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s' no és una imatge d'instal·lació"
+
+#: ../pkgdep.py:254
+msgid "Could not parse one or more manifests because of the "
+msgstr "No es poden analitzar un o més manifests a causa de  "
+
+#: ../pkgdep.py:323 ../pkgdep.py:358
+#, python-format
+msgid "Could not open %s to echo manifest"
+msgstr "No es pot obrir el manifest %s per a repetir el manifest"
+
+#: ../pkgdep.py:328
+msgid ""
+"\n"
+"\n"
+msgstr ""
+       "\n"
+       "\n"
+
+#: ../pkgdep.py:350
+#, python-format
+msgid "Could not open output file %s for writing"
+msgstr "No es pot obrir el fitxer de sortida %s per escriptura"
+
+#: ../pkgdep.py:392
+#, python-format
+msgid "Out dir %s does not exist and could not be created. Error is: %s"
+msgstr "El directori de sortida %s no existeix i no pot ser creat. L'error és: %s"
+
+#: ../pkgdep.py:467
+msgid "generate subcommand doesn't use -R"
+msgstr "la sub-comanda generate no utilitza -R"
+
+#: ../pkgdep.py:485
+#, python-format
+msgid ""
+"The %(cmd)s command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "La comanda %(cmd)s sembla que estigui des-sincronitzada amb les biblioteques proporcionades \n"
+       "per SUNWipkg. La versió del client és %(client)s mentre que la versió l'API de la biblioteca és %(api)s"
+
+#: ../publish.py:80
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend create-repository --set-property <section.property>=<value>\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments\n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] .. [manifest] ...\n"
+"        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+"        pkgsend publish [ -d basedir] ... [--no-index] \n"
+"          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...\n"
+"        pkgsend generate [-T file_pattern] bundlefile ....\n"
+"        pkgsend refresh-index\n"
+"\n"
+"Options:\n"
+"        -s repo_uri     target repository URI\n"
+"        --help or -?    display usage message\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+       "Ús:\n"
+       "        pkgsend [opcions] comanda [opcions_cmd] [operands]\n"
+       "\n"
+       "Subcomandes empaquetador:\n"
+       "        pkgsend create-repository --set-property <secció.propietat>=<valor>\n"
+       "        pkgsend open [-en] pkg_fmri\n"
+       "        pkgsend add acció arguments\n"
+       "        pkgsend import [-T patró_fitxer] bundlefile ...\n"
+       "        pkgsend include [-d dirbase] .. [manifest] ...\n"
+       "        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+       "        pkgsend publish [ -d dirbase] ... [--no-index] \n"
+       "          [--fmri-in-manifest | frmi_pkg] [--no-catalog] [manifest] ...\n"
+       "        pkgsend generate [-T patró_fitxer] bundlefile ....\n"
+       "        pkgsend refresh-index\n"
+       "\n"
+       "Opcions:\n"
+       "        -s repo_uri     URI repositori objectiu\n"
+       "        --help or -?    mosta el missatge d'ús\n"
+       "\n"
+       "Entorn:\n"
+       "        PKG_REPO"
+
+#: ../publish.py:126
+msgid ""
+"Invalid repository configuration values were specified using --set-property "
+"or required values are missing.  Please provide the correct and/or required "
+"values using the --set-property option."
+msgstr ""
+       "Valors de configuració de repositori no vàlids van ser especificats mitjançant --set-property o bé els valors requerits no hi són.  Proporcioneu i/o corregiu els valors amb l'opció --set-property."
+
+#: ../publish.py:149
+msgid "only -e or -n may be specified"
+msgstr "solament podeu especificar -e o -n"
+
+#: ../publish.py:152
+msgid "open requires one package name"
+msgstr "obrir necessita el nom d'un paquet"
+
+#: ../publish.py:183
+msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
+msgstr "No s'ha especificat cap ID de transacció utilitzant -t o a $PKG_TRANS_ID."
+
+#: ../publish.py:198 ../publish.py:321 ../publish.py:401
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "No s'ha especificat cap ID de transacció a $PKG_TRANS_ID."
+
+#: ../publish.py:202 ../publish.py:413 ../publish.py:431
+msgid "No arguments specified for subcommand."
+msgstr "No s'han especificat arguments per a la subcomada."
+
+#: ../publish.py:230
+msgid "No fmri argument specified for subcommand"
+msgstr "Cap argument frmi especificat per a la sub-comanda"
+
+#: ../publish.py:275 ../publish.py:365
+#, python-format
+msgid "File %s line %s: %s"
+msgstr "Fitxer %s línia %s: %s"
+
+#: ../publish.py:281
+msgid "Manifest does not set fmri and "
+msgstr "El manifest no té establert l'fmri i "
+
+#: ../publish.py:446
+msgid "command does not take operands"
+msgstr "la comanda no pren arguments"
+
+#: ../publish.py:475
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: opció global il·legal -- %s"
+
+#: ../publish.py:511
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "opció %s il·legal -- %s"
+
+#: ../pull.py:86
+msgid ""
+"Usage:\n"
+"        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]\n"
+"            (fmri|pattern) ...\n"
+"        pkgrecv [-s src_repo_uri] -n\n"
+"\n"
+"Options:\n"
+"        -d path_or_uri  The path of a directory to save the retrieved "
+"package\n"
+"                        to, or the URI of a repository to republish it to.  "
+"If\n"
+"                        not provided, the default value is the current "
+"working\n"
+"                        directory.  If a directory path is provided, then\n"
+"                        package content will only be retrieved if it does "
+"not\n"
+"                        already exist in the target directory.  If a "
+"repository\n"
+"                        URI is provided, a temporary directory will be "
+"created\n"
+"                        and all of the package data retrieved before "
+"attempting\n"
+"                        to republish it.\n"
+"\n"
+"        -h              Display this usage message.\n"
+"        -k              Keep the retrieved package content compressed, "
+"ignored\n"
+"                        when republishing.  Should not be used with "
+"pkgsend.\n"
+"        -m match        Controls matching behaviour using the following "
+"values:\n"
+"                            all-timestamps\n"
+"                                includes all matching timestamps, not just\n"
+"                                latest (implies all-versions)\n"
+"                            all-versions\n"
+"                                includes all matching versions, not just "
+"latest\n"
+"        -n              List the most recent versions of the packages "
+"available\n"
+"                        from the specified repository and exit (all other\n"
+"                        options except -s will be ignored).\n"
+"        -r              Recursively evaluates all dependencies for the "
+"provided\n"
+"                        list of packages and adds them to the list.\n"
+"        -s src_repo_uri A URI representing the location of a pkg(7)\n"
+"                        repository to retrieve package data from.\n"
+"\n"
+"Environment:\n"
+"        PKG_DEST        Destination directory or repository URI\n"
+"        PKG_SRC         Source repository URI"
+msgstr ""
+       "Usage:\n"
+       "        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]\n"
+       "            (fmri|pattern) ...\n"
+       "        pkgrecv [-s src_repo_uri] -n\n"
+       "\n"
+       "Options:\n"
+       "        -d path_or_uri  The path of a directory to save the retrieved "
+       "package\n"
+       "                        to, or the URI of a repository to republish it to.  "
+       "If\n"
+       "                        not provided, the default value is the current "
+       "working\n"
+       "                        directory.  If a directory path is provided, then\n"
+       "                        package content will only be retrieved if it does "
+       "not\n"
+       "                        already exist in the target directory.  If a "
+       "repository\n"
+       "                        URI is provided, a temporary directory will be "
+       "created\n"
+       "                        and all of the package data retrieved before "
+       "attempting\n"
+       "                        to republish it.\n"
+       "\n"
+       "        -h              Display this usage message.\n"
+       "        -k              Keep the retrieved package content compressed, "
+       "ignored\n"
+       "                        when republishing.  Should not be used with "
+       "pkgsend.\n"
+       "        -m match        Controls matching behaviour using the following "
+       "values:\n"
+       "                            all-timestamps\n"
+       "                                includes all matching timestamps, not just\n"
+       "                                latest (implies all-versions)\n"
+       "                            all-versions\n"
+       "                                includes all matching versions, not just "
+       "latest\n"
+       "        -n              List the most recent versions of the packages "
+       "available\n"
+       "                        from the specified repository and exit (all other\n"
+       "                        options except -s will be ignored).\n"
+       "        -r              Recursively evaluates all dependencies for the "
+       "provided\n"
+       "                        list of packages and adds them to the list.\n"
+       "        -s src_repo_uri A URI representing the location of a pkg(7)\n"
+       "                        repository to retrieve package data from.\n"
+       "\n"
+       "Environment:\n"
+       "        PKG_DEST        Directori destí o URI repositori\n"
+       "        PKG_SRC         URI repositori font"
+
+#: ../pull.py:167
+#, python-format
+msgid "Unable to load manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "No es pot carregar el manifest'%(mpath)s' pel paquet '%(pfmri)s'"
+
+#: ../pull.py:177
+#, python-format
+msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
+msgstr "No es pot analitzar el manifest'%(mpath)s' pel paquet '%(pfmri)s'"
+
+#: ../pull.py:188
+#, python-format
+msgid "Unable to write manifest '%(mpath)s' for package '%(pfmri)s'."
+msgstr "No es pot escriure el manifest '%(mpath)s' pel paquet '%(pfmri)s'."
+
+#: ../pull.py:235
+#, python-format
+msgid "Unable to retrieve manifest %s from %s: %s"
+msgstr "No es pot recuperar el manifest %s de %s: %s"
+
+#: ../pull.py:244
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "S'ha produït un error mentre s'estava llegint de: %s"
+
+#: ../pull.py:448
+#, python-format
+msgid "Unable to retrieve content from: %s"
+msgstr "No es pot recuperar el contingut de %s"
+
+#: ../pull.py:480
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "No es pot extraure el fitxer: %s"
+
+#: ../pull.py:527
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "No es pot descarregar el catàleg de: %s"
+
+#: ../pull.py:538
+#, python-format
+msgid "Error: %s while reading from: %s"
+msgstr "Error: %s mentre es llegia des de: %s"
+
+#: ../pull.py:576
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "Opció Il·legal -- %s"
+
+#: ../pull.py:597
+#, python-format
+msgid "Illegal option value -- %s"
+msgstr "Valor d'opció no permès -- %s"
+
+#: ../pull.py:600
+msgid "a source repository must be provided"
+msgstr "s'ha de proporcionar un repositori font"
+
+#: ../pull.py:605
+msgid "-n takes no options"
+msgstr "-n no pren cap opció"
+
+#: ../pull.py:612
+msgid "must specify at least one pkgfmri"
+msgstr "heu d'especificar almenys un pkgfmri"
+
+#: ../pull.py:636
+msgid "To create a repository, use the pkgsend command."
+msgstr "Per a crear un repositori, utilitzeu la comanda pkgsend."
+
+#: ../pull.py:641
+#, python-format
+msgid ""
+"The repository configuration for the repository located at '%s' is not valid "
+"or the specified path does not exist.  Please correct the configuration of "
+"the repository or create a new one."
+msgstr ""
+       "La configuració del repositori pel repositori situat a '%s' no és vàlid o bé la ruta especificada no existeix.  Corregiu la configuració del repositori o creau-ne una de nova."
+
+#: ../pull.py:656
+#, python-format
+msgid "Unable to create basedir '%s'."
+msgstr "No es pot crear el directori base (basedir) '%s'."
+
+#: ../pull.py:666
+msgid "Retrieving manifests for dependency evaluation ..."
+msgstr "Recuperant manifests per a la avaluació de dependències ..."
+
+#: ../pull.py:684
+msgid "Retrieving manifests for package evaluation ..."
+msgstr "Recuperant manifests per a la avaluació de paquet ..."
+
+#. Next, retrieve and store the content for each package.
+#: ../pull.py:704
+msgid "Retrieving package content ..."
+msgstr "Recuperant contingut del paquet ..."
+
+#: ../pull.py:726
+#, python-format
+msgid "Republishing %s ..."
+msgstr "Re-publicant %s ..."
+
+#: ../pull.py:782
+msgid "Refreshing repository search indices ..."
+msgstr "Refrescant els índexs de cerca de repositori ..."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+       "Un missatge de text descriu les actualitzacions es mostrat prop de l'àrea de "
+       "Notificació quan les actualitzacions es converteixen amb disponibles si està establert a cert."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "Amb quina freqüència es comprova per a actualitzacions"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+       "Amb quina freqüència es comprova per a actualitzacions. Els valors vàlids són Diària, Setmanal, Mensual, "
+       "Mai"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "Iniciar espera"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "La icona de notificació és mostrada a l'iniciar si està establert a cert."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+       "El temps, en segons, que l'updatemanagernotifier ha d'esperar-se, després  de ser iniciat, per a comprovar actualitzacions."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid ""
+"The updatemanagernotifier program terminates after the user activates the "
+"icon in the notification area if set to true."
+msgstr ""
+       "El programa notificador de gestió d'actualització finalitza després que l'usuari activi la "
+       "icona en l'àrea de notificació si s'estableix a cert."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to always display the icon on startup"
+msgstr "Si voleu mostrar sempre l'icona a l'inici"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:9
+msgid "Whether to display text message when updates are available"
+msgstr "Si voleu mostrar un missatges de text quan les actualitzacions estiguin disponibles"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:10
+msgid "Whether to terminate updatemanagernotiifer after icon activation."
+msgstr "Si finalitzar el notificador de gestió d'actualització després de l'activació de l'icona."
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "Instal·lar actualitzacions disponibles"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:11
+#: ../updatemanager.py:563 ../updatemanagernotifier.py:329
+msgid "Update Manager"
+msgstr "Gestió d'actualitzacions"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Evaluate</b>"
+msgstr "<b>Avaluar</b>"
+
+#: ../um/data/updatemanager.glade.h:2 ../updatemanager.py:283
+msgid "<b>Updates are available for the following packages</b>"
+msgstr "<b>Hi han actualitzacions disponibles pels següents paquets</b>"
+
+#: ../um/data/updatemanager.glade.h:3
+msgid "<b>_Details</b>"
+msgstr "<b>_Detalls</b>"
+
+#: ../um/data/updatemanager.glade.h:5
+msgid "Close dialog when _finished"
+msgstr "Tancar el diàleg quant _finalitzi"
+
+#: ../um/data/updatemanager.glade.h:7
+msgid "Index"
+msgstr "Índex"
+
+#: ../um/data/updatemanager.glade.h:8
+msgid "Install Update"
+msgstr "Instal·lar actualització"
+
+#: ../um/data/updatemanager.glade.h:10
+msgid "Select the packages you want to update and click Install."
+msgstr "Seleccioneu els paquets que voleu actualitzar i cliqueu a Instal·lar."
+
+#: ../um/data/updatemanager.glade.h:12
+msgid "_Cancel"
+msgstr "_Cancel·lar"
+
+#: ../um/data/updatemanager.glade.h:14
+msgid "_Install Updates"
+msgstr "_Instal·lar actualització"
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "_OK"
+msgstr "_Acceptar"
+
+#: ../um/data/updatemanager.glade.h:16
+msgid "_Select all Updates"
+msgstr "_Seleccionar totes les actualitzacions"
+
+#: ../um/data/updatemanager.glade.h:17
+msgid "_Update All"
+msgstr "_Actualitzar tot"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "Notificar a l'usuari quant hi hagi actualitzacions disponibles"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "Notificador del Gestor d'Actualitzacions"
+
+#: ../updatemanager.py:214
+#, python-format
+msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
+msgstr "La interfície gràfica d'usuari no està responent a cap event! %s. Comproveu les senyals de updatemanager.py"
+
+#: ../updatemanager.py:285
+msgid ""
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+       "Cliqueu a Actualitzar tot per a crear un nou entorn, i a dintre d'ell, instal·lar totes les actualitzacions."
+
+#: ../updatemanager.py:312
+msgid "Current Version"
+msgstr "Versió actual"
+
+#: ../updatemanager.py:321
+msgid "Size (Meg)"
+msgstr "Mida (Meg)"
+
+#: ../updatemanager.py:409
+#, python-format
+msgid "count: %d"
+msgstr "comptador: %d"
+
+#: ../updatemanager.py:429
+msgid "<b>You do not have sufficient permissions</b>"
+msgstr "<b>No teniu permisos suficients</b>"
+
+#: ../updatemanager.py:431
+msgid "Please restart pm-updatemanager using pfexec."
+msgstr "Reinicieu pm-updatemanager utilitzant pfexec."
+
+#: ../updatemanager.py:435
+msgid "<b>No Updates available</b>"
+msgstr "<b>No hi han actualitzacions disponibles</b>"
+
+#: ../updatemanager.py:469
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+       "\n"
+       "Obtenint detalls per %s ..."
+
+#: ../updatemanager.py:524
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+       "\n"
+       "Sense detalls disponibles"
+
+#: ../updatemanager.py:582
+msgid ""
+"Not enough disc space, the Update All action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel Update All."
+msgstr ""
+       "No hi ha prou espai de disc disponible, l'acció d'Actualitzar tot no pot ser realitzada.\n"
+       "\n"
+       "Cliqueu a Acceptar per a gestionar els vostres entorns d'arranc i allibereu espai de disc o Cancel·lar per "
+       "cancel·lar Actualitzar tot."
+
+#: ../updatemanager.py:586
+msgid "Not Enough Disc Space"
+msgstr "No hi ha prou espai al disc"
+
+#: ../updatemanager.py:734
+msgid "Checking for new software"
+msgstr "Comprovant per a nou programari"
+
+#: ../updatemanagernotifier.py:308
+msgid "Updates are available"
+msgstr "Hi han actualitzacions disponibles"
+
+#: ../updatemanagernotifier.py:330
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+       "Actualitzacions disponibles\n"
+       "Si us plau cliqueu a l'icona per a actualitzar."
+
+#: ../updatemanagernotifier.py:405
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr "Hi ha una altra instància de UpdateManagerNotify executant-se"

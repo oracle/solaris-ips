@@ -1,0 +1,4 @@
+# Files to exclude from translation.
+# Please keep this file in alphabetical order.
+tests
+util/publish/update_file_layout.py

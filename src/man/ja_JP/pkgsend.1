@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgsend-1">
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 30 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgsend</refname><refpurpose>Image Packaging System の発行クライアント</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [-u] [--target <replaceable>file</replaceable>]
+    <replaceable>source</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgsend publish [-b <replaceable>bundle</replaceable>]... [-d <replaceable>source</replaceable>]...
+    [-s <replaceable>repo_uri_or_path</replaceable>] [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsend-1-desc" role="description"><title></title>
+<para><command>pkgsend</command> では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに発行できます。リポジトリを作成または管理するには、<command>pkgrepo</command>(1) を参照してください。既存のリポジトリ内でパッケージからパッケージアーカイブを作成するには、<command>pkgrecv</command>(1) を参照してください。パッケージのマニフェストの詳細は、<literal>pkg</literal>(7) を参照してください。</para>
+<para><command>pkgsend publish</command> 操作のあとで、<replaceable>repo_uri_or_path</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、リポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>サポートされているサブコマンドは次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>u</option>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
+<listitem><para>各 <replaceable>source</replaceable> (SVR4 パッケージ、ディレクトリ、<command>tar</command> ファイルなど) を読み取り、その <replaceable>source</replaceable> を<filename>標準出力</filename>に表示するマニフェストを生成します。
+</para>
+<para>これで、出力されたマニフェストに注釈を加え、<command>pkgdepend</command> を使用して依存関係を追加または分析し、<command>pkglint</command> を使用してその正当性を検証してから <command>publish</command> サブコマンドに渡すことができるようになります。
+</para>
+<itemizedlist>
+<para>サポートされているソースを次に示します。</para>
+<listitem><para>ファイルシステム形式の SVR4 パッケージ</para></listitem>
+<listitem><para>データストリーム形式の SVR4 パッケージ</para></listitem>
+<listitem><para><command>tar</command> ファイル</para></listitem>
+<listitem><para>ディレクトリ</para></listitem>
+</itemizedlist>
+<para>ソース内のファイルのベース名が <option>T</option> で指定されたパターンに一致している場合、ファイルのタイムスタンプがそのファイルのアクションに追加されます。<replaceable>pattern</replaceable> は、次のシェルマッチング規則を使用します。</para>
+<variablelist>
+<varlistentry><term>*</term>
+<listitem><para>すべてと一致します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>?</term>
+<listitem><para>任意の単一文字と一致します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>[<replaceable>seq</replaceable>]</term>
+<listitem><para><replaceable>seq</replaceable> 内にある任意の文字と一致します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>![<replaceable>seq</replaceable>]</term>
+<listitem><para><replaceable>seq</replaceable> 内にない文字と一致します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>指定されたソースがディレクトリ内にある場合、単一の i ノードに対して複数のパス名があると、<literal>ファイル</literal>のアクションを <literal>ハードリンク</literal>のアクションと明確に区別できません。通常、ファイルシステム調査で最初に見つかったものがファイルとして扱われ、残りのものがハードリンクとして扱われます。この処理は、ファイルシステムの実装に応じて自由に設定できます。ファイルとして扱うパス名を指定するには、各パス名を引数として <option>-target</option> オプションに渡します。このオプションはほかの種類のソースには影響しません。これは、ソースにはパス名がファイルであるかハードリンクであるかを示す機能があるためです。</para>
+<para>SVR4 パッケージがソースとして提供されている場合、<command>pkgsend</command> は、クラスアクションスクリプトを持つファイルが存在せず、プリインストールスクリプト、ポストインストールスクリプト、削除前スクリプト、または削除後スクリプトが存在することを確認します。<literal>manifest</literal> クラスを使用してインストールされた SMF マニフェストがある場合、例外が作成されます。<literal>BASEDIR</literal> は、すべての再配置可能パスから削除されます。</para>
+<para>SVR4 <literal>DESC</literal> パラメータは、<literal>pkg.description</literal> 値に変換されます。SVR4 <literal>NAME</literal> パラメータは、<literal>pkg.summary</literal> 値に変換されます。</para>
+<para>ディレクトリに基づいたマニフェストを生成するとき、デフォルトでは、各ファイルおよびディレクトリの所有者とグループはそれぞれ root と bin になります。代わりにファイルおよびディレクトリに設定された所有者およびグループ情報を使用するには、<option>u</option> を指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
+<listitem><para>指定されたパッケージマニフェストを使用するパッケージをターゲットパッケージリポジトリに公開します。これにより、指定されたソースからそのパッケージ用のファイルが取得されます。複数のマニフェストが指定されている場合、それらのマニフェストは指定された順序で追加されます。マニフェストが指定されていない場合は、<literal>stdin</literal> からマニフェストが読み取られます。</para>
+<para>指定しない場合、<command>pkgsend publish</command> はビルドバージョンをパッケージ FMRI に追加します。<command>publish</command> ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。パッケージ FMRI のバージョン文字列については、<literal>pkg </literal>(7) のマニュアルページを参照してください。</para>
+<para>複数の <command>pkgsend publish</command> プロセスが同じ <option>s</option> リポジトリに同時に公開する場合は、<option>-no-catalog</option> オプションを指定することをお勧めします。下記の <option>-no-catalog</option> オプションの説明を参照してください。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
+<listitem><para>マニフェスト内でファイルを検索するときに、指定されたバンドルを検索するソースの一覧に追加します。バンドルは、tar ファイルや SVR4 パッケージなどのソースです。このオプションが複数回指定されている場合、ソースはコマンド行に表示される順序で検索されます。<option>b</option> と <option>d</option> の両方が指定されている場合、<option>d</option> のソースが最初に検索されます。サポートされているバンドルとその使用方法の詳細は、前述の <command>generate</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>source</replaceable></term>
+<listitem><para>マニフェスト内でファイルを検索するときに、指定されたディレクトリを検索するソースの一覧に追加します。このオプションが複数回指定されている場合、ソースはコマンド行に表示される順序で検索されます。サポートされているソースとその使用方法の詳細は、上記の <command>generate</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>特定の URI またはファイルシステムパスに存在しているリポジトリにパッケージが公開されます。発行についての制限事項と推奨事項の詳細は、次の「注意事項」のセクションを参照してください。また、「環境変数」のセクションも参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para><option>-key</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。<option>-cert</option> オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>パッケージを発行元のカタログに追加しません。パブリッシャーのカタログの更新は連続で実行されるため、複数のパッケージを一度に公開する場合には常にこのオプションを使用することを推奨します。複数のプロセスが同時にパッケージを発行するときは、このオプションを使用しないと、発行のパフォーマンスが大幅に低下する可能性があります。発行の完了後、<command>pkgrepo refresh</command> コマンドを使用してそれぞれのパブリッシャーカタログに新しいパッケージを追加できます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><option>T</option> オプションの説明については、前述の <command>generate</command> サブコマンドを参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>公開先リポジトリのパスまたは URI です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>パッケージの生成と公開</title>
+<para><command>pkgsend generate</command> を使用してパッケージを作成し、そのパッケージを公開します。</para>
+<screen>$ <userinput>pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m</userinput></screen>
+<para><literal>example.com</literal> パブリッシャーのパッケージ FMRI を、<filename>foo.p5m</filename> の先頭に追加します。</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0</programlisting>
+<para>結果として生成されるマニフェストは、次のようになります。</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0
+dir group=sys mode=0755 owner=root path=usr
+dir group=bin mode=0755 owner=root path=usr/bin
+file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo</programlisting>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /path/to/proto &bsol;</userinput>
+<userinput>/path/to/manifests/foo.p5m</userinput></screen>
+</example>
+<example><title>簡易パッケージの作成と公開</title>
+<para>次の行を含むパブリッシャー <literal>example.com</literal> に対してマニフェストを作成します。</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting>
+<para>パッケージを公開します。</para>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /exdir</userinput></screen>
+</example>
+<example><title>既存のマニフェストの使用</title>
+<para>ファイルシステムベースの発行と既存のマニフェストを使用してパッケージを発行します。</para>
+<screen>$ <userinput>pkgsend publish -s /tmp/example_repo -d /tmp/pkg_files &bsol;</userinput>
+<userinput>/tmp/pkg_manifest</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>発行プロトコルの制限事項により、サイズが 128MB を超えるパッケージファイルを個別に発行する場合には、ファイルシステムベースの発行を使用する必要があります。ファイルシステムベースの発行は、リポジトリのアクセス制御が必要な場合にも推奨されます。</para>
+<para>ファイルシステムベースの発行を使用する場合、発行が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、発行先リポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(8) を参照してください。</para>
+</refsect1>
+</refentry>
+

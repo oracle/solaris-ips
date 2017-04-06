@@ -1,0 +1,93 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+##
+<%!
+        import pkg.server.api as api
+%>\
+<%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
+<%page args="g_vars"/>\
+<%
+        CLIENT_API_VERSION = 12
+        base = g_vars["base"]
+        catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
+        config = api.ConfigInterface(CLIENT_API_VERSION, base)
+        request = api.RequestInterface(CLIENT_API_VERSION, base)
+        g_vars["catalog"] = catalog
+        g_vars["config"] = config
+        g_vars["request"] = request
+
+        rpath = request.path_info.strip("/")
+        comps = rpath.split("/")
+        pub = g_vars["pub"]
+        if pub and comps[0] == pub:
+                # Ignore publisher component of path.
+                comps.pop(0)
+        g_vars["web_config"] = { "locale-region": comps[0] }
+%>\
+<%include file="../config.shtml" args="g_vars=g_vars"/>\
+<%def name="global_menu_items(g_vars)"><%
+        if g_vars["config"].mirror:
+                # Only statistics are available in mirror mode.
+                return [("stats.shtml", "Statistics")]
+        if g_vars["http_depot"]:
+                # Apache can't return statistics via the BUI
+                # but does have a top level list of all repositories.
+                return [
+                    ("/", "Repositories"),
+                    ("catalog.shtml", "Packages"),
+                    ("search.shtml", "Search"),
+                ]
+        return [
+                ("catalog.shtml", "Packages"),
+                ("search.shtml", "Search"),
+                ("stats.shtml", "Statistics")
+        ]
+%></%def>\
+<%def name="document_class()"><%
+        return ""
+%></%def>\
+<%def name="page_crumbs(g_vars)"><%
+        return [
+            ("index.shtml", "Home")
+        ]
+%></%def>\
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+        <title>${self.page_title(g_vars)}</title>
+% if not config.mirror:
+        <link rel="alternate" type="application/atom+xml"
+            title="${self.shared.dcval(g_vars, "pkg_bui", "feed_name")}"
+            href="${self.shared.rpath(g_vars, "feed")}"/>
+% endif
+<%include file="${self.shared.ltipath(g_vars, 'head_end.shtml')}"
+    args="g_vars=g_vars"/>\
+</head>
+<body>
+${next.body(g_vars)}
+<%include file="${self.shared.ltipath(g_vars, 'body_end.shtml')}"
+    args="g_vars=g_vars"/>\
+</body>
+</html>

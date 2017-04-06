@@ -1,0 +1,46 @@
+# Ignore compiled byte code, lint output, object files, shared objects,
+# VIM swap files, emacs backups and the entire proto area.
+\.intltool-merge-cache
+\.ln$
+\.make\.
+\.mo$
+\.o$
+\.pyc$
+\.so$
+\.sw.$
+^nbproject
+^packages
+^proto
+~$
+# Specific build products
+^doc/guide-main.aux
+^doc/guide-main.cb
+^doc/guide-main.cb2
+^doc/guide-main.log
+^doc/guide-main.pdf
+^doc/guide-main.tex
+^doc/guide-main.toc
+^doc/html-out
+^doc/dev-guide/doctools/
+^doc/dev-guide/doctmp/
+^doc/dev-guide/book.txt
+^src/cffi_src/_.*$
+^src/man/nroff
+^src/pkg/Makefile.link
+^src/pkg/pkgtmp/
+^src/po/i18n_errs.txt$
+^src/po/pkg.pot$
+^src/tests/.coverage$
+^src/tests/.coverage-.*$
+^src/tests/cov_proto.*$
+^src/tests/cov_tests.*$
+^src/tests/.timing_history.txt$
+^src/tests/ro_data/signing_certs/produced/.*/.*\.csr
+^src/tests/ro_data/signing_certs/produced/.*\.old
+^src/tests/ro_data/signing_certs/produced/.*\.tmp
+^src/util/misc/extract_hostid$
+^src/zoneproxy/zoneproxy-adm/zoneproxy-adm$
+^src/zoneproxy/zoneproxy-client/zoneproxy-client$
+^src/zoneproxy/zoneproxyd/zoneproxyd$
+^src/util/mkcert/certgen$
+^webrev

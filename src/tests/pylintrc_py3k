@@ -1,0 +1,102 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+
+#
+# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+#
+
+# This file is used to control pylint's python3 checker when checking
+# python source.
+#
+
+[MESSAGES CONTROL]
+# See the detailed explanations of the messages at:
+# http://docs.pylint.org/features.html
+
+# Disable the message, report, category or checker with the given id(s). You
+# can either give multiple identifiers separated by comma (,) or put this
+# option multiple times (only on the command line, not in the configuration
+# file where it should appear only once).You can also use "--disable=all" to
+# disable everything first and then reenable specific checks. For example, if
+# you want to run only the similarities checker, you can use "--disable=all
+# --enable=similarities". If you want to run only the classes checker, but have
+# no Warning level messages displayed, use"--disable=all --enable=classes
+# --disable=W"
+disable=all
+
+# These messages are not so required for our gate.
+# W1618 no-absolute-import
+# W1633 round-builtin
+# W1636 map-builtin-not-iterating
+# W1637 zip-builtin-not-iterating
+# W1638 range-builtin-not-iterating
+# W1639 filter-builtin-not-iterating
+
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time. See also the "--disable" option for examples.
+# E1601 print-statement
+# E1602 parameter-unpacking
+# E1603 npacking-in-except
+# E1604 old-raise-syntax
+# E1605 backtick
+# E1606 long-suffix
+# E1607 old-ne-operator
+# E1608 old-octal-literal
+
+# W1601 apply-builtin
+# W1602 basestring-builtin
+# W1603 buffer-builtin
+# W1604 cmp-builtin
+# W1605 coerce-builtin
+# W1606 execfile-builtin
+# W1607 file-builtin
+# W1608 long-builtin
+# W1609 raw_input-builtin
+# W1610 reduce-builtin
+# W1611 standarderror-builtin
+# W1612 unicode-builtin
+# W1613 xrange-builtin
+# W1614 coerce-method
+# W1615 delslice-method
+# W1616 getslice-method
+# W1617 setslice-method
+# W1619 old-division
+# W1620 dict-iter-method
+# W1621 dict-view-method
+# W1622 next-method-called
+# W1623 metaclass-assignment
+# W1624 indexing-exception
+# W1625 raising-string
+# W1626 reload-builtin
+# W1627 oct-method
+# W1628 hex-method
+# W1629 nonzero-method
+# W1630 cmp-method
+# W1632 input-builtin
+# W1634 intern-builtin
+# W1635 unichr-builtin
+# W1640 using-cmp-argument
+
+enable=E1601,E1602,E1603,E1604,E1605,E1606,E1607,E1608,W1601,W1602,W1603,W1604,W1605,W1606,W1607,W1608,W1609,W1610,W1611,W1612,W1613,W1614,W1615,W1616,W1617,W1619,W1620,W1621,W1622,W1623,W1624,W1625,W1626,W1627,W1628,W1629,W1630,W1632,W1634,W1635,W1640
+
+# Template used to display messages. This is a python new-style format string
+# used to format the message information. See doc for all details
+msg-template='{msg_id}:{line:3d},{column:2d}: {msg} ({symbol})'

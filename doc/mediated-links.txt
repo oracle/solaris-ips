@@ -1,0 +1,269 @@
+Problem Statement
+=================
+
+It's common to want multiple versions of a component installed on a system.
+In order for this to work, each version must have no coincident pathnames.
+For most pathnames, it's easy to put them in a versioned directory or give
+them a versioned name.  But for some frequently used pathnames (an
+executable expected to be in $PATH, or a man page), it's highly convenient
+to provide an unversioned path (possibly as a link to a versioned path) for
+casual use.
+
+This of course leads to a conflict when multiple component versions all
+want to provide the same unversioned path.  We need a mechanism by which we
+can manage these paths.
+
+The most typical desired behavior for these paths is that they refer to the
+latest version available; that is, if component foo has versions 1.2, 1.3,
+and 1.4 installed, then unversioned pathnames for foo should refer to the
+1.4 version.  However, there may be reasons that the package vendor, the
+site administrator, or even the local system administrator may want to
+override this choice.  Since properly written code uses the versioned
+pathnames, the reference should be allowed to switch at arbitrary times.
+
+Another related problem is the delivery of different components which
+provide similar functionality.  This differs from the previously stated
+problem in that the components don't share the same versioning space, and
+so need a different namespace from which the desired component can be
+chosen.
+
+Finally, a versioned component may also have different implementations
+(indeed, there may be multiple implementation axes), so we need to handle
+both problems at once.
+
+
+Proposal
+========
+
+We assert that this problem can be restricted to pathnames which can be
+replaced by symbolic links.  Although a solution could apply to other
+filesystem entry types, the implementations would be significantly more
+difficult, and likely wouldn't provide any real benefit.
+
+To that, we introduce the notion of "mediated links", being symlinks or
+hardlinks which are subject -- when necessary -- to mediation in the case of
+conflict.  Mediated links are link or hardlink actions with some extra metadata
+that allows the packaging system to treat conflicts specially.
+
+The one required attribute is "mediator", whose value denotes the entry in
+the namespace shared by all the pathnames participating in a given
+mediation group.  For instance, the mediator attribute value for all
+/usr/bin/python and /usr/share/man/man1/python.1 links might be "python".
+The value of this attribute must be an alphanumeric string.
+
+For a link mediated solely by version, the "mediator-version" attribute is
+required.  This is the version (expressed as a dot-separated sequence of
+nonnegative integers) of the interface described by the "mediator"
+attribute, and not necessarily related to the version of the implementation
+delivered by the package, or by the version in the package FMRI.  For
+instance, links participating in the "python" mediation might have
+"mediator-version" set to "2.4", "2.6", "3.2", etc.
+
+When resolving the conflict in mediated links, pkg(5) will normally choose
+the link with the greatest value of "mediator-version".  The package vendor
+may override this selection by adding the attribute "mediator-priority"
+with the value "vendor" to its preferred link in a package it delivers.
+Similarly, site administrators may override the selection by version or the
+vendor override by adding the attribute "mediator-priority" with the value
+"site" to its preferred link.  The local system administrator may override
+this selection with the commandline specified below.
+
+Mediation may be performed by implementation in addition to or instead of
+by version.  In this case, the attribute is "mediator-implementation" and
+the value must be a string containing only alphanumeric characters and '-'
+(preferably short and descriptive).  Implementation strings are not considered
+to be ordered, and so one must be chosen explicitly, or the system will choose
+arbitrarily (first in lexical order).  As with versioned mediation,
+"mediator-priority=vendor" and "mediator-priority=site" can be used to override
+the default behavior, and the local administrator can set the preference
+explicitly.
+
+If the implementation itself can be or is versioned, then the value may
+have a '@' and a version appended to it.  If multiple versions of an
+implementation exist, the default will be to choose the greatest as defined
+by those versions, similarly to the purely version-mediated scenario.
+
+By default, every time a package operation is performed, the "best" mediation
+will be selected and then applied to all packages.  However, the local
+administrator may explicitly set both the version and implementation for a
+mediation, or only one of them, in which case the system will select the "best"
+mediation with the matching component.
+
+All links delivered to a given pathname must participate in mediation or not
+at all.  If some links delivered to a given pathname are mediated, and some
+are not, package operations will fail with a conflicting error message. Likewise,
+all mediated links delivered to a given pathname must share the same mediator.
+
+However, not all mediator versions and implementations need to provide a link at
+a given path.  If a version and/or implementation doesn't provide a link, then the
+link is removed when that version is selected.
+
+The commandline used for locally administering mediated links is as
+follows:
+
+  - pkg set-mediator [-V <version>] [-I <implementation>] mediator ...
+
+    Sets the mediator <mediator> to a given version and/or implementation.
+
+  - pkg unset-mediator [-V] [-I] mediator ...
+
+    Reverts the mediator <mediator> to the system default.  If the -V option is
+    supplied, revert the version-mediated aspect to the system default, but leave
+    the implementation mediation in place.  If the -I option is supplied,
+    revert the implementation-mediated aspect to the system default, but
+    leave the version mediation in place.  If neither -V or -I are specified,
+    both the version and implementation will be reverted to the system default.
+
+  - pkg mediator [<mediator> ...]
+
+    Display information about the mediators on the system.  When one or
+    more mediators are specified, display information only about the specified
+    mediators.  The information should include the mediator name, selected
+    version and implementation, and how each component was chosen by the system.
+
+Examples
+========
+
+Mediation by version
+--------------------
+
+The canonical case for version mediation is a language platform.  In this
+case, we'll investigate Python.  Two paths that might be mediated are the
+python interpreter executable and its manpage.  The runtime/python-26
+package would deliver
+
+    file path=usr/bin/python2.6 ...
+    file path=usr/share/man/man1/python2.6.1 ...
+    link path=usr/bin/python target=python2.6 mediator=python \
+        mediator-version=2.6
+    link path=usr/share/man/man1/python.1 target=python2.6.1 mediator=python \
+        mediator-version=2.6
+
+and the runtime/python-24 package would deliver
+
+    file path=usr/bin/python2.4 ...
+    file path=usr/share/man/man1/python2.4.1 ...
+    link path=usr/bin/python target=python2.4 mediator=python \
+        mediator-version=2.4
+    link path=usr/share/man/man1/python.1 target=python2.4.1 mediator=python \
+        mediator-version=2.4
+
+If only runtime/python-26 were installed, then /usr/bin/python would be
+linked to python2.6.  Likewise, if only runtime/python-24 were installed,
+then /usr/bin/python would be linked to python2.4.  If both were installed,
+then by default, 2.6 would be found to be greater than 2.4, and the link
+would point to python2.6.
+
+If the vendor of the two packages wished, they could deliver a package
+"runtime/python" which would simply have a dependency on the desired
+default version.
+
+If the local administrator preferred /usr/bin/python to be version 2.4,
+then she could run
+
+    pkg set-mediator -V 2.4 python
+
+after which running "python" would run the 2.4 interpreter, and "man
+python" would display the manual for the 2.4 interpreter.
+
+
+Vendor override
+---------------
+
+If, in the above scenario, the vendor of runtime/python-26 and
+runtime/python-24 wished to override the default behavior and have the 2.4
+interpreter be the default, then the runtime/python-24 package would
+deliver
+
+    file path=usr/bin/python2.4 ...
+    file path=usr/share/man/man1/python2.4.1 ...
+    link path=usr/bin/python target=python2.4 mediator=python \
+        mediator-version=2.4 mediator-priority=vendor
+    link path=usr/share/man/man1/python.1 target=python2.4.1 mediator=python \
+        mediator-version=2.4 mediator-priority=vendor
+
+Thus in the case where both runtime/python-26 and runtime/python-24 were
+installed, /usr/bin/python would point to python2.4, despite 2.6 being
+greater than 2.4.  The "runtime/python" package would likely then contain a
+a dependency on "runtime/python-24".  The local administrator could
+override this choice to 2.6 by running
+
+    pkg set-mediator -V 2.6 python
+
+
+Mediation by implementation
+---------------------------
+
+The canonical case for implementation mediation is the editor vi.  There
+are multiple implementations of vi, but there is no versioned specification
+which each implements.  We will examine vim, nvi, and the legacy Solaris
+vi.
+
+In the package editor/vim, we deliver
+
+    file path=usr/bin/vim
+    link path=usr/bin/vi target=vim mediator=vi mediator-implementation=vim
+
+In the package editor/svr4-vi, we deliver
+
+    file path=usr/has/bin/vi
+    link path=usr/bin/vi target=../has/bin/vi mediator=vi mediator-implementation=svr4
+
+And in the package editor/nvi, we deliver
+
+    file path=usr/bin/nvi
+    link path=usr/bin/vi target=nvi mediator=vi mediator-implementation=nvi
+
+If editor/vim were installed on the system without either of the others,
+then /usr/bin/vi would point to vim.  If either of the other packages were
+later added, the /usr/bin/vi would continue to run vim, until the local
+administrator were to run
+
+    pkg set-mediator -I svr4 vi
+
+which would switch the link to run legacy Solaris vi.  If the packages were
+all installed simultaneously, the link would be chosen arbitrarily.  The
+vendor ought to deliver a vendor priority tag:
+
+    link path=usr/bin/vi target=vim mediator=vi mediator-implementation=vim \
+        mediator-priority=vendor
+
+so that the desired default is always chosen.
+
+
+Mediation with multiple implementations
+---------------------------------------
+
+Vim can be configured with a handful of different compile-time options.
+For this example, we'll focus on --with-features=tiny (the minimal
+configuration) and --with-features=huge (the maximal configuration, sans
+GUI and external languages).
+
+As before, we deliver the package editor/svr4-vi:
+
+    file path=usr/has/bin/vi
+    link path=usr/bin/vi target=../has/bin/vi mediator=vi mediator-implementation=svr4
+
+We deliver two vim packages -- one for tiny, one for huge -- with a new
+"vim" implementation-based mediator, set to "tiny" for the tiny package and
+"huge" for the huge package.  In addition, an implementation-based mediated
+link is delivered to /usr/bin/vi which targets vim if the vi mediator is
+set to vim.  Since these two actions are identical, there is no conflict.
+
+Here is vim-tiny:
+
+    file path=usr/bin/vim-tiny
+    link path=usr/bin/vim target=vim-tiny mediator=vim mediator-implementation=tiny
+    link path=usr/bin/vi target=vim mediator=vi mediator-implementation=vim
+
+and editor/vim-huge:
+
+    file path=usr/bin/vim-huge
+    link path=usr/bin/vim target=vim-huge mediator=vim mediator-implementation=huge
+    link path=usr/bin/vi target=vim mediator=vi mediator-implementation=vim
+
+Thus to ensure that /usr/bin/vi is the huge vim, the administrator would
+have to run
+
+    pkg set-mediator -I huge vim
+    pkg set-mediator -I vim vi

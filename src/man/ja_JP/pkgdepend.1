@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgdepend-1">
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 1 月 28 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates.All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgdepend</refname><refpurpose>Image Packaging System 依存関係アナライザ</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgdepend [<replaceable>options</replaceable>] <replaceable>command
+</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgdepend generate [-IMm] -d <replaceable>dir</replaceable> [-d <replaceable>
+dir</replaceable>]
+    [-D <replaceable>name</replaceable>=<replaceable>value</replaceable>] [-k <replaceable>
+path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
+<synopsis>/usr/bin/pkgdepend resolve [-EmoSv] [-d <replaceable>output_dir</replaceable>]
+    [-e <replaceable>external_package_file</replaceable>]... [-s <replaceable>suffix
+</replaceable>]
+    <replaceable>manifest_file</replaceable> ...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgdepend-1-desc" role="description"><title></title>
+<para><command>pkgdepend</command> コマンドは、パッケージの依存関係を生成および解決します。パッケージは、ほかのパッケージのファイルに依存することがあります。<command>pkgdepend</command> コマンドは通常、ファイル依存関係の生成と、ファイルからパッケージへの解決という 2 つのパスで使用されます。</para>
+<para><command>generate</command> サブコマンドはパッケージの内容を検査し、そのパッケージにどのような外部ファイルが必要かを判定します。</para>
+<para><command>resolve</command> サブコマンドは、<command>generate</command> ステップからファイルのリストを取得し、これらの依存ファイルを含むパッケージの名前を判定するためにパッケージの参照セットを検索します。依存ファイルが検索されるパッケージの参照セットは、パブリッシャーのシステムに現在インストールされているパッケージです。</para>
+<para>依存関係情報のソースとして、提供されたファイルの次のいくつかのコンポーネントが使用されます。</para>
+<variablelist>
+<varlistentry><term>ELF</term>
+<listitem><para>提供されたファイル内の ELF ヘッダーが依存関係情報のために分析され、<option>k</option> および <option>D</option> オプションが指定されていると取得された情報が変更されます。ELF 依存関係についての詳細は、<command>ldd</command> および<olink targetdoc="OSLLG"><citetitle remap="book">Oracle Solaris 11.2 Linkers and Libraries Guide</citetitle></olink>を参照してください。 </para>
+</listitem>
+</varlistentry>
+<varlistentry><term>スクリプト</term>
+<listitem><para>インタプリタを参照している <literal>#!</literal> 行を含むシェルスクリプトによって、そのインタプリタを提供しているパッケージへの依存関係が生成されます。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Python</term>
+<listitem><para>Python スクリプトはまず、スクリプトとして分析されます。さらに、そのスクリプトでインポートが宣言されていると、それらも依存関係情報のソースとして機能することがあります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>ハードリンク</term>
+<listitem><para>マニフェスト内のハードリンクによって、リンクターゲットを提供しているパッケージへの依存関係が生成されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>SMF</term>
+<listitem><para><literal>require_all</literal> 依存関係を含む提供された SMF サービスマニフェストによって、これらの FMRI を提供する SMF マニフェストを提供しているパッケージへの依存関係が生成されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
+<listitem><para><replaceable>dir</replaceable> をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」のセクションを参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>サポートされているサブコマンドは次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgdepend generate</command> [<option>IMm</option>] <option> d</option> <replaceable>dir</replaceable> [<option>d</option> <replaceable>dir</replaceable>] [<option>D</option> <replaceable>name</replaceable>=<replaceable>value</replaceable>] [<option>k</option> <replaceable>path</replaceable>] <replaceable>manifest_file</replaceable></term>
+<listitem><para><replaceable>manifest_file</replaceable> で指定されたマニフェストのファイルへの依存関係を生成します。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>I</option></term>
+<listitem><para><replaceable>manifest_file</replaceable> 内で満たされている依存関係を表示します。<option>I</option> と <command>pkgdepend resolve</command> の結果を使用しないでください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>M</option></term>
+<listitem><para>分析できなかったファイルタイプのリストを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>元のマニフェストを繰り返してから、検出された依存関係をすべて追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>dir</replaceable></term>
+<listitem><para>マニフェストのファイルを検索するディレクトリのリストに <replaceable>dir</replaceable> を追加します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>name</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>ELF ファイル依存関係のための実行パス内のトークン <replaceable>name</replaceable> を展開する方法として <replaceable>value</replaceable> を追加します。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>path</replaceable></term>
+<listitem><para>カーネルモジュールを検索する実行パスのリストに <replaceable>path</replaceable> を追加します。<option>k</option> オプションを使用すると、デフォルトのパス (<filename>/kernel</filename> と <filename>/usr/kernel</filename>) が削除されます。</para>
+<para><option>k</option> オプションで指定されるような実行パスは、アクションまたはマニフェスト属性 <literal>pkg.depend.runpath</literal> を使用して、アクションごとまたはマニフェストごとにも指定できます。<literal>pkg.depend.runpath</literal> 属性の値は、使用するパスのコロンで区切られた文字列です。マニフェストまたはアクション内にいずれかの <literal>pkg.depend.runpath</literal> 属性を設定すると、<option>k</option> オプションで指定されたパスがオーバーライドされます。</para>
+<para><literal>pkg.depend.runpath</literal> 属性値の 1 つのコンポーネントとして、特殊なトークン <envar>$PKGDEPEND_RUNPATH</envar> を使用すると、分析対象のファイルのための標準のシステム実行パスを含めることができます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>場合によっては、依存関係が自動的に生成されることを回避したいことがあります。たとえば、あるパッケージによって、一連のモジュールをインポートするサンプルの Python スクリプトが提供される場合、そのサンプルスクリプトによってインポートされるこれらのモジュールは、サンプルスクリプトを提供しているパッケージの依存関係ではありません。指定されたファイルに対する依存関係の生成を回避するには、アクションまたはマニフェスト属性 <literal>pkg.depend.bypass-generate</literal> を使用します。</para>
+<para><literal>pkg.depend.bypass-generate</literal> 値は、ファイル名に一致する Python の正規表現です。これらの正規表現は、ファイルパスの先頭と最後に暗黙的に固定されます。次の例で指定されている値は <literal>this/that</literal> に一致しますが、<literal>something/this/that/the/other</literal> には一致しません。</para>
+<programlisting>pkg.depend.bypass-generate=this/that</programlisting>
+<para>Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。</para>
+<para><command>pkgdepend generate</command> 入力マニフェストに SMF マニフェストファイルが含まれる場合、それらの SMF マニフェストファイルによって宣言されている SMF サービスまたはインスタンスが <command>pkgdepend</command> の出力に含まれます。これらの SMF サービスまたはインスタンスは、<literal>org.opensolaris.smf.fmri</literal> の名前で <literal>set</literal> アクションの形式で含まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgdepend resolve</command> [<option>EmoSv</option>] [<option>d</option> <replaceable>output_dir</replaceable>] [<option>e</option> <replaceable> external_package_file</replaceable>]... [<option>s</option> <replaceable>suffix</replaceable>] <replaceable> manifest_file</replaceable> ...</term>
+<listitem><para>ファイルへの依存関係を、これらのファイルを提供するパッケージへの依存関係に変換します。依存関係は、まずコマンド行に指定されたマニフェストに基づいて解決され、次にシステムにインストールされているパッケージに基づいて解決されます。デフォルトでは、各マニフェストの依存関係は <filename><replaceable>manifest_file</replaceable>.res</filename> という名前のファイルに格納されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>e</option> <replaceable>external_package_file</replaceable></term>
+<listitem><para><replaceable>external_package_file</replaceable> 内のパターンに名前が一致したシステムからのパッケージに対してのみ解決します。このオプションは複数回指定できます。<option>e</option> オプションは <option>S</option> オプションと一緒に使用できません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>E</option></term>
+<listitem><para><option>e</option> が指定された場合、外部の依存関係であると予想されたが、外部の依存関係ではなかったパッケージが表示されます。外部の依存関係であると予想されるパッケージは、<replaceable>external_package_file</replaceable> 内のパターンに名前が一致するシステムからのパッケージです。
+</para>
+<para><option>e</option> が指定されない場合、解決済みパッケージの外部の依存関係を表示します。解決済みパッケージの外部の依存関係とは、解決済みパッケージの依存関係のターゲットで、コマンド行で指定されないパッケージです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>解決された依存関係を追加する前に、<command>generate</command> ステップによって生成された依存関係をすべて削除して、マニフェストを繰り返します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option></term>
+<listitem><para>結果を標準出力に書き込みます。このオプションは、人による使用を目的にしています。この出力をファイルに追加すると、無効なマニフェストが生成されることがあります。マニフェスト処理のパイプラインでは、<option>o</option> の代わりに <option>d</option> または <option>s</option> オプションを使用することを強くお勧めします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>output_dir</replaceable></term>
+<listitem><para>指定された各マニフェストの解決された依存関係を <replaceable>output_dir</replaceable> 内の個別のファイルに書き込みます。デフォルトでは、各ファイルには、そのファイルに書き込まれた依存関係のソースだったマニフェストと同じベース名が付けられます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>suffix</replaceable></term>
+<listitem><para>出力ファイルごとに、解決された依存関係のソースだったファイルのベース名に <replaceable>suffix</replaceable> を追加します。<replaceable>suffix</replaceable> が <replaceable>.suffix</replaceable> でない場合、ピリオド (.) が <replaceable>suffix</replaceable> の前に付加されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>S</option></term>
+<listitem><para>コマンド行で指定されたマニフェストに対してのみ解決し、システムにインストールされているマニフェストに対しては解決しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>追加のパッケージ依存関係デバッグ用のメタデータを含めます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>依存関係を生成する</title>
+<para><filename>foo</filename> (このコンテンツディレクトリは <filename>./bar/baz</filename> 内に存在する) に書き込まれているマニフェストの依存関係を生成し、その結果を <filename>foo.fdeps</filename> に格納します。</para>
+<screen>$ <userinput>pkgdepend generate -d ./bar/baz foo > foo.fdeps</userinput></screen>
+</example>
+<example><title>依存関係を解決する</title>
+<para><filename>foo.fdeps</filename> と <filename> bar.fdeps</filename> における互いに対するファイル依存関係と、システムに現在インストールされているパッケージに対するファイル依存関係を解決します。</para>
+<screen>$ <userinput>pkgdepend resolve foo.fdeps bar.fdeps</userinput>
+$ <userinput>ls *.res</userinput>
+foo.fdeps.res    bar.fdeps.res</screen>
+</example>
+<example><title>2 つのマニフェストの依存関係を生成および解決する</title>
+<para>2 つのマニフェスト (<literal>foo</literal> と <literal>bar</literal>) へのファイル依存関係を生成し、すべての情報を元のマニフェスト内に保持します。次に、これらのファイル依存関係を解決し、結果のマニフェストを <filename>./res</filename> 内に格納します。これらの結果のマニフェストは、<command>pkgsend publish</command> で使用できます。
+</para>
+<screen>$ <userinput>pkgdepend generate -d /proto/foo -m foo > ./deps/foo</userinput>
+$ <userinput>pkgdepend generate -d /proto/bar -m bar > ./deps/bar</userinput>
+$ <userinput>pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar</userinput>
+$ <userinput>ls ./res</userinput>
+foo    bar</screen>
+</example>
+<example><title>ELF ファイル依存関係のためのトークンに値を追加する</title>
+<para>コンテンツディレクトリが / 内に存在する <literal>foo</literal> に書き込まれているマニフェストの依存関係を生成するときに、ELF ファイルの実行パス内のすべての <envar>PLATFORM</envar> トークンを <literal>sun4v</literal> と <literal>sun4u</literal> に置き換えます。</para>
+<screen>$ <userinput>pkgdepend generate -d / -D 'PLATFORM=sun4v' &bsol;</userinput>
+<userinput>-D 'PLATFORM=sun4u' foo</userinput></screen>
+</example>
+<example><title>カーネルモジュールディレクトリを指定する</title>
+<para>コンテンツディレクトリが / 内に存在する <filename>foo</filename> に書き込まれているマニフェストの依存関係を生成するときに、カーネルモジュールを検索するディレクトリとして <filename>/kmod</filename> を指定します。</para>
+<screen>$ <userinput>pkgdepend generate -d / -k /kmod foo</userinput></screen>
+</example>
+<example><title>依存関係の生成をバイパスする</title>
+<para>指定された Python スクリプトの標準の Python 実行パスに <filename>opt/python</filename> を追加し、<filename>opt/python/foo/file.py</filename> として提供されるファイルの <literal>test</literal> という名前のすべての Python モジュールに対する依存関係の生成をバイパスします。</para>
+<para><filename>usr/lib/python2.7/vendor-packages/xdg</filename> で提供されたすべてのファイルに対する依存関係の生成を回避します。</para>
+<screen>$ <userinput>cat manifest.py</userinput>
+set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
+set name=pkg.summary value="My test package"
+dir path=opt mode=0755 group=sys owner=root
+dir path=opt/python mode=0755 group=sys owner=root
+dir path=opt/python/foo mode=0755 group=sys owner=root
+file path=opt/python/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+#
+# Add runpath and bypass-generate attributes:
+#
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
+    pkg.depend.bypass-generate=.*/test.py.* &bsol;
+    pkg.depend.bypass-generate=.*/testmodule.so &bsol;
+    pkg.depend.bypass-generate=.*/test.so &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.7/vendor-packages/xdg/.* &bsol;
+    pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
+
+$ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>パッケージ操作に使用するイメージを含むディレクトリを指定します。<option>R</option> が指定されている場合は、この値は無視されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>すべてが動作しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
+

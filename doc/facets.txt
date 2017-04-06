@@ -1,0 +1,125 @@
+Package facets and variants
+---------------------------
+
+Traditionally, packaging systems have placed optional components
+of a package in separate packages, and established conventions 
+for naming such components, such as -localization-locale,
+-devel, -doc, etc.  This method of ad-hoc decomposition 
+makes it more difficult for GUI programs to offer the appropriate
+choices when selecting components, makes the introduction of new
+optional components difficult and makes installing documentation
+after the fact a painful process.  
+
+Packaging options also exist which are mutually exclusive; the typical
+example is which architecture the package supports.  One cannot select
+both sparc and x86, since the two architecture's files intersect or
+collide.  Other examples include debug vs non-debug binaries, and
+global vs nonglobal zones.
+
+In pkg(5), options that may be selected or not selected, such as various
+locales, documentation, etc., are referred to as facets.  Options which
+are mutually exclusive are called variants.  Both variants and facets
+appear as tags on IPS actions, and result in the action being
+selected or de-selected for installation.  Some examples are:
+
+Name                  values
+--------------------------------------------
+facet.locale.*        true, false
+facet.doc.man	      true, false
+facet.doc	      true, false
+facet.debug.*         true, false
+facet.devel.*         true, false
+facet.optional.*      true, false
+variant.arch	      sparc, i386, zos
+variant.debug.*	      true, false
+
+An action that is tagged w/ a facet or variant that is not selected
+will be automatically excluded; actions w/o facets or variants are
+always included. A single action may have multiple facet and variant
+tags; an example would be an architecture-specific header file that's
+used by developers:
+
+file 8e7247b269fd116345abbf1aa9000a3d81ed871b chash=1fe53e8e2d0ad25bae13e1fd622c50397a2389ce group=bin mode=0644 owner=root path=usr/include/sys/regset.h variant.arch=x86 facet.devel.headers=true pkg.csize=4002 pkg.size=12457
+
+This implies that facets and variants are evaluated ANDed together;
+if any of the variant tags do not match, the action is not installed.
+On the other hand, the facet tags are OR'd together; if any of the
+facets match the action is installed.
+
+Facets and variants are tags, and as such can initially be 
+set on any action, including dependencies, etc.  This can make
+testing problematic, however.  To simplify matters, variants and
+facets are set at the image level.  Package developers desiring
+fine grained control of their componentry are advised to use
+unique facet tags.
+
+In order to simplify grouping of facets, wildcarding is supported
+when setting facets, but not variants.  For example,
+facet.doc.* matches facet.doc.man, facet.doc.info and facet.doc.html.
+For ease of installation and backwards compatibility, facets that
+are unspecified in the image are automatically included except for those
+starting with 'facet.debug.' or 'facet.optional.'; for the same reasons,
+any variant matching the name variant.debug.* is automatically set to
+false.  When multiple image facet patterns match, the longest match is
+selected. For example, the image may have:
+
+
+facet.locale.*  false
+facet.locale.en_US(utf8) true
+
+Actions marked w/ facet.locale.de would match facet.locale.*
+and thus not be installed, but actions matching facet.locale.en_US(utf8)
+would match both patterns; since facet.locale.en_US(utf8) is
+longer than facet.locale.* that logic would prevail.  Note that
+exact matches are always preferred.
+
+A more useful example would be installing the french locale as
+spoken in France.  This consists of files tagged
+
+facet.locale.fr, which tags files which should be installed for all
+French locales, 
+
+and
+
+facet.locale.fr_FR, which is for France in particular, 
+
+but not
+
+facet.locale.fr_CA, which is for Canada.
+
+Setting the following facets insures this selection:
+
+facet.locale.*     false   # install only locales we specify
+facet.locale.fr    true    
+facet.locale.fr_FR true
+
+Changing either variants or facets for an installed image
+effectively causes re-evaluation of the actions in the installed 
+packages, and may or may not be done live depending on the impact
+of the change.
+
+Because of the need to select the appropriate variant types prior to
+installation or parsing manifests, only variant.debug.* variants can
+used with pkg(5) without making explicit changes to the source
+code. Developers are encourged to design their components not to
+intersect in the filesystem so that facets may be used rather than
+variants.
+
+Proposed facets and variants in initial implementation:
+
+Name			 default      comments
+-----------------------------------------------------
+facet.*			 true   implements default "all facets are included"
+facet.locale.*		 true	should be set to false if individual locales are selected
+facet.doc.info		 true
+facet.doc.man		 true
+facet.doc.html		 true
+facet.devel		 true
+facet.debug.<all>	 false
+facet.optional.<all>	 false
+facet.platform.sun4u	 true 
+facet.platform.sun4v	 true
+variant.arch		 one of sparc, i386 as set by platform code
+variant.opensolaris.zone either global or nonglobal as set by image type
+variant.debug.<all>	 false
+variant.<unknown>	 false	all unknown variants default to 'false'

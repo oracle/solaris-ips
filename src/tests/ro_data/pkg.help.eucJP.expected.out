@@ -1,0 +1,4 @@
+使用方法:
+        pkg [options] command [cmd_options] [operands]
+
+基本的なサブコマンド:

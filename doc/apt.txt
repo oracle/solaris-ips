@@ -1,0 +1,25 @@
+
+apt-get install pkg_name[-]
+	suffix with - to remove
+
+apt-get upgrade 
+	upgrades all packages
+	will "keep back" packages in case of broken dependencies (absent
+	dependencies), or if a package has an additional dependency
+	(resolve with apt-get install)
+
+apt-get dist-upgrade
+	upgrades everything, handling relationship changes
+
+apt-get clean; apt-get autoclean
+	remove cached packages under varying conditions
+
+/etc/apt/apt.conf
+	config file
+	contains APT::Default-Release "version";
+
+/etc/apt/preferences
+	allows pinning of packages
+	pin priorities allow packages to be blocked from installation,
+	or from being upgraded, plus intermediate behaviours
+

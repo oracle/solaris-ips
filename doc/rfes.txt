@@ -1,0 +1,45 @@
+
+1.  [sch] Put size in manifest so that we can do GET with offset to speed
+    retrieval.  Example:  reget on Windows.
+
+2.  [billm] ACLs and extended attributes.  Are these both new action types?
+
+3.  [sch] Do we need other forms of signing, beyond publisher and depot SSL
+    certificates?  Is it best to enforce a CA-based model, or should web
+    of trust also be allowed?
+
+4.  [dp] Package deletion should include a "subsumed-by" or "replaced-by".  A
+    good example is when we stopped including Mozilla, its final
+    version--expressing the deletion--should have stated subsumption by
+    Firefox and Thunderbird.
+
+5.  [barts] Minimization boundaries based on setuid binaries.
+
+6.  [barts] Feature tagging.  This should be offered via leaf packages
+    and grouping packages.
+
+7.  [dp] Present timestamp as UTC YYYYMMDDHHMMSS, as opposed to Unix
+    seconds.
+
+8.  [lianep]  Be able to preserve specific files, even though the
+    package no longer provides them.  This one's tricky:  if you state,
+    "release file" in version 2, then an upgrade from v 1 to v 3 would
+    miss it (as v 2's manifest is not consulted).  These kind of actions
+    could be treated as choking, or we could always examine intermediate
+    manifests.
+
+9.  [psa]  Take a snapshot [of each affected filesystem] between every
+    package update operation in a larger image transaction, as opposed
+    to at the image transaction boundaries only.
+
+10.  [sch]  Examine use of alternative, HTTP 1.1-friendly URL loading
+     modules.  (Example:  Duke's urlgrabber.)
+
+11.  [pelegri]  Use of package-level metadata to provide additional
+     information, such as links to training/learning resources,
+     declarations of related packages, endorsements by certifying
+     publishers.
+
+12.  [sch]  Support use of :timestamp field for "newer" and "older"
+     queries.
+
