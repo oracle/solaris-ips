@@ -2,39 +2,33 @@
 
 ## Introduction
 
-Image Packaging System (IPS) is an integrated solution to manage system software lifecycle since Oracle Solaris 11. It relies on a network-centric and efficient approach with automatic software dependency checking and validation, and it builds on the foundation of ZFS as the default root file system. Using IPS, administrators can easily and reliably install or replicate an exact set of software package versions across many different client machines, and get a much clearer understanding of any differences between software versions installed on a system.
-
+The image packaging system (IPS) is a software delivery system with interaction with a network repository as its primary design goal. Other key ideas are: safe execution for zones and other installation contexts, use of ZFS for efficiency and rollback, preventing the introduction of incorrect or incomplete packages, and efficient use of bandwidth.
 
 ## Prerequisites
 
-IPS developement requires a few of external dependency packages. The entire list can be found in src/pkg/external_deps.txt.
-
+IPS development requires additional external dependencies, which on Solaris 11 are provided by the list of packages found in src/pkg/external_deps.txt.
 
 ## Build, Testing and Deployment
 
 Once all dependency packages are installed, IPS source can be built by the following command:
 >       $ cd src; make install
 
-The above will generate a proto directory under root directory. Inside proto directory, build_i386
-directory contains python-version specific builds; root_i386 contains complete IPS build with
-directory structure preserved.
+The above will generate a proto directory under the root directory. Inside the proto directory, the build\_i386 directory contains Python version-specific builds; root\_i386 contains the complete build with the directory structure preserved.
 
 Generally, testing of the new build can be done by the following command:
 >       $cd src/tests; sudo ./run.py -j 8
 
-The above will run all test cases in 8 parallel processes. Other options are
-also available by typing ./run.py -h.
+The above will run all test cases in 8 parallel processes. Other options are also available by typing `./run.py -h.`
 
 Tests running can also be done by using make:
->       $cd src; sudo make test;
+>       $cd src; sudo make test
 
-Make targets: test-27 and test-34 are available for testing for different python versions.
+Make targets test-27 and test-34 are available for testing specific Python versions.
 
-
-IPS applications and libraries can be packaged and published into an IPS repository:
+IPS applications and libraries can be packaged and published into an IPS repository using:
 >       $cd src; make packages;
 
-The above command generates IPS related packages and publish them into packages/i386/repo.
+The above command generates IPS related packages and publishes them into packages/i386/repo on an x86-based system.
 
 ## Usage Examples
 
@@ -69,16 +63,15 @@ The above command generates IPS related packages and publish them into packages/
 
 >         $ pkg set-publisher -p /export/repo
 
-For more examples, please refer to List of References or main page section pkg(1) on Solaris operating system.
+For more examples, please refer to List of References below or man page pkg(1) on Solaris operating system.
 
 ## How to Contribute
 
-Please refer to CONTRIBUTING.md file
-
+Please refer to [CONTRIBUTING](https://github.com/oracle/solaris-ips/blob/master/CONTRIBUTING.md) for details.
 
 ## List of References
 
-1. [Packaging and Delivering Software With the Image Packaging System in Oracle® Solaris 11.2](https://docs.oracle.com/cd/E36784_01/html/E36856/)
+1. [Packaging and Delivering Software With the Image Packaging System in Oracle&copy; Solaris 11.3](https://docs.oracle.com/cd/E53394_01/html/E54820/)
 2. [Introducing the Basics of Image Packaging System (IPS) on Oracle Solaris 11](http://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html)
 3. [Oracle Solaris 11 Cheatsheet for Image Packaging System](http://www.oracle.com/technetwork/server-storage/solaris11/documentation/ips-one-liners-032011-337775.pdf)
 
