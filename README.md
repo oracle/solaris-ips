@@ -82,4 +82,3 @@ Please refer to CONTRIBUTING.md file
 2. [Introducing the Basics of Image Packaging System (IPS) on Oracle Solaris 11](http://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html)
 3. [Oracle Solaris 11 Cheatsheet for Image Packaging System](http://www.oracle.com/technetwork/server-storage/solaris11/documentation/ips-one-liners-032011-337775.pdf)
 
-
