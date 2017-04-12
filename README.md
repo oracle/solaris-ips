@@ -69,6 +69,12 @@ For more examples, please refer to List of References below or man page pkg(1) o
 
 Please refer to [CONTRIBUTING](https://github.com/oracle/solaris-ips/blob/master/CONTRIBUTING.md) for details.
 
+## License
+
+The Image Packaging System is primarily distributed under the terms of the CDDL (Common Development and Distribution License), with a few portions covered by BSD-style or MIT-style licenses.
+
+Refer to LICENSE-CDDL, LICENSE-CPIO (applies to src/modules/cpiofile.py), and LICENSE-MINISAT (applies to src/modules/solver/*) for details.
+
 ## List of References
 
 1. [Packaging and Delivering Software With the Image Packaging System in Oracle&copy; Solaris 11.3](https://docs.oracle.com/cd/E53394_01/html/E54820/)
