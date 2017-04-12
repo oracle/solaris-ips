@@ -28,12 +28,13 @@
 should be installed, updated, or removed to perform a requested operation."""
 
 import operator
-import six
 import time
 
 from collections import defaultdict
 # Redefining built-in; pylint: disable=W0622
 from functools import reduce
+
+import six
 # Imports from package six are not grouped: pylint: disable=C0412
 from six.moves import range
 
@@ -669,7 +670,7 @@ class PkgSolver(object):
                     excludes), (self.__avoid_set, self.__implicit_avoid_set,
                         self.__obs_set)))
 
-        def __assert_installed_allowed(self, proposed=None):
+        def __assert_installed_allowed(self, excludes, proposed=None):
                 """Raises a PlanCreationException if the proposed operation
                 would require the removal of installed packages that are not
                 marked for removal by the proposed operation."""
@@ -723,7 +724,28 @@ class PkgSolver(object):
                         self.__raise_solution_error(no_version=ret)
 
                 for fmri in uninstall_fmris:
-                        res = self.__fmri_list_errors([fmri],
+                        flist = [fmri]
+                        if fmri in self.__linked_pkgs:
+                                depend_self = any(
+                                    da
+                                    for da in self.__get_dependency_actions(
+                                        fmri, excludes)
+                                    if da.attrs["type"] == "parent" and
+                                    pkg.actions.depend.DEPEND_SELF in
+                                        da.attrlist("fmri")
+                                )
+
+                                if depend_self:
+                                        pf = self.__parent_dict.get(
+                                            fmri.pkg_name)
+                                        if pf and pf != fmri:
+                                                # include parent's version of
+                                                # parent-constrained packages in
+                                                # error messaging for clarity if
+                                                # different
+                                                flist.append(pf)
+
+                        res = self.__fmri_list_errors(flist,
                             already_seen=already_seen)
 
                         # If no errors returned, that implies that all of the
@@ -772,7 +794,7 @@ class PkgSolver(object):
                 self.__set_proposed_required(proposed_dict, excludes)
                 self.__trim_proposed(proposed_dict)
                 self.__assign_possible(possible_set)
-                self.__assert_installed_allowed(proposed=proposed)
+                self.__assert_installed_allowed(excludes, proposed=proposed)
 
         def __raise_install_error(self, exp, inc_list, proposed_dict,
             possible_set, excludes):
@@ -870,8 +892,7 @@ class PkgSolver(object):
             new_variants=None, excludes=EmptyI,
             reject_set=frozenset(), trim_proposed_installed=True,
             relax_all=False, ignore_inst_parent_deps=False,
-            exact_install=False, installed_dict_tmp=EmptyDict,
-            insync=False):
+            exact_install=False, installed_dict_tmp=EmptyDict):
                 """Logic to install packages, change variants, and/or change
                 facets.
 
@@ -904,8 +925,8 @@ class PkgSolver(object):
                 'ignore_inst_parent_deps' indicates if the solver should
                 ignore parent dependencies for installed packages.  This
                 allows us to modify images with unsatisfied parent
-                dependencies (ie, out of sync images).  Any packaging
-                operation which needs to guarantee that we have an in sync
+                dependencies (i.e., out-of-sync images).  Any packaging
+                operation which needs to guarantee that we have an in-sync
                 image (for example, sync-linked operations, or any recursive
                 packaging operations) should NOT enable this behavior.
 
@@ -917,9 +938,7 @@ class PkgSolver(object):
 
                 'installed_dict_tmp' a dictionary containing the current
                 installed FMRIs indexed by pkg_name. Used when exact_install
-                is on.
-
-                'insync' a flag indicating if the image is currently in sync."""
+                is on."""
 
                 pt = self.__begin_solve()
 
@@ -990,7 +1009,7 @@ class PkgSolver(object):
                             )
                         )
                         relax_pkgs |= \
-                            self.__relax_parent_self_constrained(excludes,
+                            self.__installed_unsatisfied_parent_deps(excludes,
                                 ignore_inst_parent_deps)
 
                 inc_list, con_lists = self.__get_installed_unbound_inc_list(
@@ -1084,12 +1103,15 @@ class PkgSolver(object):
                         self.__trim_recursive_incorps(proposed_dict[name],
                             excludes, _TRIM_PROPOSED_INC)
 
-                # Trim packages with unsatisfied parent dependencies.  Then
-                # if the current image is out of sync, for packages with
-                # satisfied parent depencences (which will include
-                # incorporations), call __trim_recursive_incorps() to trim out
-                # more packages that are disallowed due to the synced
-                # incorporations.
+                # Trim packages with unsatisfied parent dependencies.  For any
+                # remaining allowable linked packages check if they are in
+                # relax_pkgs.  (Which means that either a version of them was
+                # requested explicitly on the command line or a version of them
+                # is installed which has unsatisfied parent dependencies and
+                # needs to be upgraded.)  In that case add the allowable
+                # packages to possible_linked so we can call
+                # __trim_recursive_incorps() on them to trim out more packages
+                # that may be disallowed due to synced incorporations.
                 if self.__is_child():
                         possible_linked = defaultdict(set)
                         for f in possible_set.copy():
@@ -1098,14 +1120,19 @@ class PkgSolver(object):
                                     excludes, ignore_inst_parent_deps):
                                         possible_set.remove(f)
                                         continue
-                                if f in self.__linked_pkgs and not insync:
+                                if (f in self.__linked_pkgs and
+                                    f.pkg_name in relax_pkgs):
                                         possible_linked[f.pkg_name].add(f)
                         for name in possible_linked:
                                 # calling __trim_recursive_incorps can be
-                                # expensive so don't call it unnecessarily.
+                                # expensive so don't call it for versions except
+                                # the one currently installed in the parent if
+                                # it has been proposed.
                                 if name in proposed_dict:
+                                        pf = self.__parent_dict.get(name)
                                         possible_linked[name] -= \
-                                            set(proposed_dict[name])
+                                            set(proposed_dict[name]) - \
+                                            set([pf])
                                 if not possible_linked[name]:
                                         continue
                                 self.__progress()
@@ -1203,7 +1230,8 @@ class PkgSolver(object):
                 self.__generate_operation_clauses(proposed=proposed_pkgs,
                     proposed_dict=proposed_dict)
                 try:
-                        self.__assert_installed_allowed(proposed=proposed_pkgs)
+                        self.__assert_installed_allowed(excludes,
+                            proposed=proposed_pkgs)
                 except api_errors.PlanCreationException as exp:
                         # One or more installed packages can't be retained or
                         # upgraded.
@@ -1291,6 +1319,13 @@ class PkgSolver(object):
                 self.__set_removed_and_required_packages(rejected=reject_set)
                 self.__progress()
 
+                if self.__is_child():
+                        synced_parent_pkgs = \
+                            self.__installed_unsatisfied_parent_deps(excludes,
+                                False)
+                else:
+                        synced_parent_pkgs = frozenset()
+
                 self.__start_subphase(2)
                 # generate set of possible fmris
                 possible_set = set()
@@ -1316,13 +1351,28 @@ class PkgSolver(object):
                 # now trim any pkgs we cannot update due to freezes
                 self.__trim_frozen(existing_freezes)
 
-                # Trim packages with unsatisfied parent dependencies.
+                # Trim packages with unsatisfied parent dependencies.  Then
+                # for packages with satisfied parent dependenices (which will
+                # include incorporations), call __trim_recursive_incorps() to
+                # trim out more packages that are disallowed due to the synced
+                # incorporations.
                 if self.__is_child():
+                        possible_linked = defaultdict(set)
                         for f in possible_set.copy():
                                 self.__progress()
                                 if not self.__trim_nonmatching_parents(f,
                                     excludes):
                                         possible_set.remove(f)
+                                        continue
+                                if (f in self.__linked_pkgs and
+                                    f.pkg_name not in synced_parent_pkgs):
+                                        possible_linked[f.pkg_name].add(f)
+                        for name in possible_linked:
+                                self.__progress()
+                                self.__trim_recursive_incorps(
+                                    list(possible_linked[name]), excludes,
+                                    _TRIM_SYNCED_INC)
+                        del possible_linked
 
                 self.__start_subphase(3)
                 # Update the set of possible FMRIs with the transitive closure
@@ -1355,7 +1405,7 @@ class PkgSolver(object):
                 # Add installed packages to solver.
                 self.__generate_operation_clauses()
                 try:
-                        self.__assert_installed_allowed()
+                        self.__assert_installed_allowed(excludes)
                 except api_errors.PlanCreationException:
                         # Attempt a full trim to see if we can raise a sensible
                         # error.  If not, re-raise.
@@ -2407,7 +2457,7 @@ class PkgSolver(object):
                     (N_("No version matching '{0}' dependency {1} can be "
                         "installed"), (dtype, fstr)), matching)
 
-        def __relax_parent_self_constrained(self, excludes, \
+        def __installed_unsatisfied_parent_deps(self, excludes,
             ignore_inst_parent_deps):
                 """If we're a child image then we need to relax packages
                 that are dependent upon themselves in the parent image.  This
@@ -2430,8 +2480,18 @@ class PkgSolver(object):
                                 if da.attrs["type"] != "parent":
                                         continue
                                 self.__linked_pkgs.add(f)
-                                if pkg.actions.depend.DEPEND_SELF in \
-                                    da.attrlist("fmri"):
+
+                                if (pkg.actions.depend.DEPEND_SELF
+                                    not in da.attrlist("fmri")):
+                                        continue
+
+                                # We intentionally do not rely on 'insync' state
+                                # as a change in facets/variants may result in
+                                # changed parent constraints.
+                                pf = self.__parent_dict.get(f.pkg_name)
+                                if pf != f:
+                                        # We only need to relax packages that
+                                        # don't match the parent.
                                         relax_pkgs.add(f.pkg_name)
                                         break
 

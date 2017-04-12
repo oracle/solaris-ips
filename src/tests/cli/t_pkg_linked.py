@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -122,6 +122,31 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                     close\n"""
                 p_all.append(p_data)
 
+        group_pkgs = """
+            open osnet-incorporation@0.5.11-0.151.0.1
+            add set name=pkg.depend.install-hold value=core-os.osnet
+            add depend fmri=ipfilter@0.5.11-0.151.0.1 type=incorporate
+            close
+            open osnet-incorporation@0.5.11-0.175.3.19.0.1.0
+            add set name=pkg.depend.install-hold value=core-os.osnet
+            add depend fmri=feature/package/dependency/self type=parent variant.opensolaris.zone=nonglobal
+            add depend fmri=ipfilter@0.5.11,5.11-0.175.3.18.0.3.0 type=incorporate
+            close
+            open osnet-incorporation@0.5.11-0.175.3.20.0.0.0
+            add set name=pkg.depend.install-hold value=core-os.osnet
+            add depend fmri=feature/package/dependency/self type=parent variant.opensolaris.zone=nonglobal
+            add depend fmri=ipfilter@0.5.11,5.11-0.175.3.18.0.3.0 type=incorporate
+            close
+            open ipfilter@0.5.11-0.151.0.1
+            close
+            open ipfilter@0.5.11,5.11-0.175.3.18.0.3.0
+            add depend fmri=feature/package/dependency/self type=parent variant.opensolaris.zone=nonglobal
+            close
+            open solaris-small-server@0.5.11,5.11-0.175.3.11.0.4.0
+            add depend fmri=ipfilter type=group
+            close
+        """
+
         def setUp(self):
                 self.i_count = 5
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test"],
@@ -137,6 +162,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.rurl1, self.p_all)
                 self.s1_list = self.pkgsend_bulk(self.rurl1, self.p_sync1)
                 self.foo1_list = self.pkgsend_bulk(self.rurl1, self.p_foo1)
+                self.pkgsend_bulk(self.rurl1, self.group_pkgs)
 
                 # setup image names and paths
                 self.i_name = []
@@ -1690,6 +1716,115 @@ class TestPkgLinked3(TestPkgLinked):
 
                 # install the same ver of a synced package in the child
                 self._pkg([1, 2], "install -v {0}".format(self.p_sync1_name[1]))
+
+        def test_install_group(self):
+                self._imgs_create(2)
+
+                # install synced package into parent
+                self._pkg([0], "install -v osnet-incorporation@0.5.11-0.175.3.19.0.1.0")
+
+                # attach children
+                self._attach_child(0, [1])
+
+                # install synced package into child
+                self._pkg([1], "install -v osnet-incorporation@0.5.11-0.175.3.19.0.1.0")
+
+                # verify group package can be installed into child even though
+                # group package and its dependencies are not installed in parent
+                self._pkg([1], "-D plan install solaris-small-server")
+
+                # verify arbitrary un-synced package can be installed into child
+                # even though group dependencies are active and cannot be
+                # satisfied
+                self._pkg([1], "-D plan install -nv {0}".format(self.p_foo1_name[0]))
+
+                # verify parent and child can have parent-constraint package
+                # updated even though child's group dependencies in
+                # solaris-small-server are active and cannot be satisfied
+                self._pkg([0], "-D plan update -nv")
+                self._pkg([0], "-D plan update -v osnet-incorporation")
+
+        def test_install_frozen(self):
+                self._imgs_create(2)
+
+                # install synced package into parent
+                self._pkg([0], "install -v osnet-incorporation@0.5.11-0.175.3.19.0.1.0")
+
+                # attach children
+                self._attach_child(0, [1])
+
+                # install synced package into child
+                self._pkg([1], "install -v osnet-incorporation@0.5.11-0.175.3.19.0.1.0")
+
+                # freeze synced package in parent
+                self._pkg([0], "freeze osnet-incorporation")
+
+                # verify that if synced package is frozen in parent, an update
+                # in the child will result in 'nothing to do' instead of 'no
+                # solution found' even though a newer version of synced package
+                # is available; check both with and without arguments cases
+                self._pkg([1], "-D plan update -nv", rv=EXIT_NOP)
+                self._pkg([1], "-D plan update -nv osnet-incorporation", rv=EXIT_NOP)
+
+                # verify that if synced package is frozen in parent, an attempt
+                # to update in the child to the latest version will result in
+                # graceful failure
+                self._pkg([1], "-D plan update -nv osnet-incorporation@latest",
+                    rv=EXIT_OOPS)
+
+                # verify that if synced package is frozen, arbitrary un-synced
+                # package can be installed into child
+                self._pkg([1], "-D plan install -nv {0}".format(self.p_foo1_name[0]))
+
+                # unfreeze synced package in parent
+                self._pkg([0], "unfreeze osnet-incorporation")
+
+                # verify that if synced package is unfrozen in both parent and
+                # child, an update in the child will result in 'nothing to do'
+                # since it is parent-constrained; check both with and without
+                # arguments cases
+                self._pkg([1], "-D plan update -nv", rv=EXIT_NOP)
+                self._pkg([1], "-D plan update -nv osnet-incorporation", rv=EXIT_NOP)
+
+                # freeze synced package in child
+                self._pkg([1], "freeze osnet-incorporation")
+
+                # verify that if synced package is frozen in child, an update
+                # in the parent will result in expected failure
+                self._pkg([0], "-D plan update -nv", rv=EXIT_OOPS)
+
+                # verify that if synced package is frozen in child, an update in
+                # the child will still result in 'nothing to do'
+                self._pkg([1], "-D plan update -nv", rv=EXIT_NOP)
+
+                # verify that if synced package is frozen in child, an attempt
+                # to update in the child to the latest version will result in
+                # graceful failure
+                self._pkg([1], "-D plan update -nv osnet-incorporation@latest",
+                    rv=EXIT_OOPS)
+
+                # upgrade the parent using -I to ignore the children
+                self._pkg([0],
+                    "-D plan update -I -v osnet-incorporation@latest")
+
+                # explicitly sync metadata in child 1
+                self._pkg([0], "sync-linked --linked-md-only -l {0}".format(
+                    self.i_name[1]))
+
+                # verify that an update in the child fails due to out of sync
+                # state, but can't get back into sync because of freeze; check
+                # both with and without arguments cases
+                self._pkg([1], "-D plan update -nv", rv=EXIT_OOPS)
+                self._pkg([1], "-D plan update -nv osnet-incorporation@latest",
+                    rv=EXIT_OOPS)
+
+                # unfreeze synced package in child
+                self._pkg([1], "unfreeze osnet-incorporation")
+
+                # verify that the child can be updated back to in-sync state
+                # with the parent; check both with and without arguments cases
+                self._pkg([1], "-D plan update -nv")
+                self._pkg([1], "-D plan update -nv osnet-incorporation@latest")
 
         def test_verify(self):
                 self._imgs_create(5)
