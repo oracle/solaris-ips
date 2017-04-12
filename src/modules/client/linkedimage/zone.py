@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -33,8 +33,9 @@ information is stored within a parent image.
 
 # standard python classes
 import os
-import six
 import tempfile
+
+import six
 
 # pkg classes
 import pkg.client.api_errors as apx

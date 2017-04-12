@@ -47,12 +47,13 @@ import operator
 import os
 import select
 import simplejson as json
-import six
 
 # Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
 # Imports from package six are not grouped: pylint: disable=C0412
 from functools import reduce
 from six.moves import zip
+
+import six
 
 # pkg classes
 import pkg.actions
@@ -1501,7 +1502,7 @@ class LinkedImage(object):
                 assert self.ischild()
 
                 cat = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
-                excludes = [ self.__img.cfg.variants.allow_action ]
+                excludes = self.__img.list_excludes()
 
                 sync_fmris = []
 
