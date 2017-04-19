@@ -99,6 +99,9 @@ packages: install pylint pep8
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
+dist:
+	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
+
 test-27:
 	$(PYTHON27) tests/run.py -j ${JOBS} -v
 
