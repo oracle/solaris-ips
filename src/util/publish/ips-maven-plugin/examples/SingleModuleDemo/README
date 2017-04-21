@@ -1,0 +1,8 @@
+Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+
+In order to use this demo, first change pom.xml into another name,
+and change pom.xml.demo into pom.xml. Then run:
+
+$ mvn package
+
+For more information, please refer to IPS Maven plugin user guide.
