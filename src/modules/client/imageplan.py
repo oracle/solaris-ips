@@ -688,8 +688,10 @@ class ImagePlan(object):
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
-                        if reject_set:
-                                self.__set_pkg_actuators(reject_set,
+                        if reject_list:
+                                # use reject_list, not reject_set, to preserve
+                                # input intent (e.g. 'pkg:/', '/' prefixes).
+                                self.__set_pkg_actuators(reject_list,
                                     pkgdefs.PKG_OP_UNINSTALL, solver)
 
                         # run solver
@@ -1351,8 +1353,10 @@ class ImagePlan(object):
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
-                        if reject_set:
-                                self.__set_pkg_actuators(reject_set,
+                        if reject_list:
+                                # use reject_list, not reject_set, to preserve
+                                # input intent (e.g. 'pkg:/', '/' prefixes).
+                                self.__set_pkg_actuators(reject_list,
                                     pkgdefs.PKG_OP_UNINSTALL, solver)
 
                         # run solver
