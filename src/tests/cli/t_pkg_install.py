@@ -1851,6 +1851,17 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v /A /multimatch/A")
                 self.pkg("update -nv --reject /A")
 
+        def test_multimatch_trigger(self):
+                """Ensure actuator matches are exact and do not result in
+                multiple matches."""
+
+                self.image_create(self.rurl)
+                # Install two packages which can be ambiguously matched using
+                # the pattern 'A'.
+                self.pkg("install -v /A@1 /multimatch/A@1 trigger@6")
+                self.pkg("uninstall -v trigger@6")
+                self.pkg("list /A", exit=1)
+
 
 class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
         """Test --reject option to pkg update/install"""
