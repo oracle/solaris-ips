@@ -1696,6 +1696,9 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
 
         pkgs = (
                 """
+                    open multimatch/A@1,5.11-0
+                    close """,
+                """
                     open A@0.5,5.11-0
                     close """,
                 """
@@ -1759,7 +1762,7 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 """Test that pkg actuators work as expected."""
                 # prepare image
                 self.image_create(self.rurl)
-                self.pkg("install A@1")
+                self.pkg("install /A@1")
                 self.pkg("install -v trigger@1")
                 self.pkg("list A@1 trigger@1")
 
@@ -1777,30 +1780,30 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list A", exit=1)
 
                 # verify unversioned actuator triggers
-                self.pkg("install -v trigger@4 A@1")
+                self.pkg("install -v trigger@4 /A@1")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A", exit=1)
-                self.pkg("install -v trigger@4 A@2")
+                self.pkg("install -v trigger@4 /A@2")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A", exit=1)
 
                 # verify correct version is uninstalled
-                self.pkg("install -v trigger@6 A@1")
+                self.pkg("install -v trigger@6 /A@1")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A", exit=1)
 
                 # verify non-matching version is not installed
-                self.pkg("install -v trigger@6 A@2")
+                self.pkg("install -v trigger@6 /A@2")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A")
 
                 # multiple values
-                self.pkg("install -v trigger@5 A@2 B@2")
+                self.pkg("install -v trigger@5 /A@2 B@2")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A B", exit=1)
 
                 # multiple values but at different versions
-                self.pkg("install -v trigger@5 A@1 B@1")
+                self.pkg("install -v trigger@5 /A@1 B@1")
                 self.pkg("uninstall -v trigger")
                 self.pkg("list A@1 B@1")
 
@@ -1810,7 +1813,7 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list C", exit=1)
 
                 # test that uninstall actuators also work when pkg is rejected
-                self.pkg("install -v A@1 trigger@1")
+                self.pkg("install -v /A@1 trigger@1")
                 self.pkg("list A@1")
                 # install with reject
                 self.pkg("install --reject trigger B@1")
@@ -1833,10 +1836,31 @@ class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
                 # Test overlapping user and actuator pkg requests.
                 # Since actuators are treated like user requests, the solver
                 # will pick the latest one.
-                self.pkg("install -v A@1 trigger@1")
+                self.pkg("install -v /A@1 trigger@1")
                 # update with reject
-                self.pkg("update --parsable=0 --reject trigger A@0.5")
+                self.pkg("update --parsable=0 --reject trigger /A@0.5")
                 self.pkg("list A@2")
+
+        def test_multimatch_reject(self):
+                """Ensure --reject works as expected when actuators are
+                applied."""
+
+                self.image_create(self.rurl)
+                # verify that pkg actuators work as expected in the presence of
+                # multiple, installed packages that can be ambiguously matched
+                self.pkg("install -v /A /multimatch/A")
+                self.pkg("update -nv --reject /A")
+
+        def test_multimatch_trigger(self):
+                """Ensure actuator matches are exact and do not result in
+                multiple matches."""
+
+                self.image_create(self.rurl)
+                # Install two packages which can be ambiguously matched using
+                # the pattern 'A'.
+                self.pkg("install -v /A@1 /multimatch/A@1 trigger@6")
+                self.pkg("uninstall -v trigger@6")
+                self.pkg("list /A", exit=1)
 
 
 class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
