@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Set some specific permissions
@@ -91,16 +91,6 @@
 # Add manpage facets
 <transform dir file link hardlink path=usr.*/man(/.+){0,1}$ -> \
     default facet.doc.man all>
-
-# Default values for legacy actions
-<transform legacy -> default name %{pkg.summary}>
-<transform legacy -> default desc %{pkg.description}>
-<transform legacy -> default vendor "Sun Microsystems, Inc.">
-<transform legacy -> default hotline "Please contact your local service provider">
-<transform legacy -> default category system>
-<transform legacy -> default arch $(ARCH)>
-# add a ,REV= string to any version attributes that don't have a REV=
-<transform legacy -> edit version (^(?!.*?,REV=).*) \\1,REV=$(REV)>
 
 # only set the info.repository-* values for packages we're responsible for
 <transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-changeset $(CHANGESET)>
