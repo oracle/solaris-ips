@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -32,10 +32,11 @@ Primarily used by linked images when recursing into child images.
 # standard python classes
 import os
 import select
-import six
 import subprocess
 import tempfile
 import traceback
+
+import six
 
 # pkg classes
 import pkg.client.api_errors as apx
