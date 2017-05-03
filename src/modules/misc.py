@@ -44,7 +44,6 @@ import resource
 import shutil
 import signal
 import simplejson as json
-import six
 import socket
 import struct
 import sys
@@ -59,15 +58,18 @@ from binascii import hexlify, unhexlify
 from collections import defaultdict
 from io import BytesIO
 from operator import itemgetter
+
+from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
+    S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
+    S_IWUSR, S_IXGRP, S_IXOTH
+
 # Redefining built-in 'range'; pylint: disable=W0622
 # Module 'urllib' has no 'parse' member; pylint: disable=E1101
 from six.moves import range, zip_longest
 from six.moves.urllib.parse import urlsplit, urlparse, urlunparse
 from six.moves.urllib.request import pathname2url, url2pathname
 
-from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
-    S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
-    S_IWUSR, S_IXGRP, S_IXOTH
+import six
 
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable

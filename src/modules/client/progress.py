@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -36,13 +36,14 @@ import itertools
 import math
 import sys
 import simplejson as json
-import six
 import time
 from collections import deque
 from functools import wraps
+
 # Redefining built-in 'range'; pylint: disable=W0622
-# Imports from package six are not grouped: pylint: disable=C0412
 from six.moves import range
+
+import six
 
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.publisher as publisher

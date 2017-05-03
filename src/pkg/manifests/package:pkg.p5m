@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -477,7 +477,6 @@ dir  path=var/log/pkg/mirror
 group groupname=pkg5srv gid=97
 user username=pkg5srv gcos-field="pkg(7) server UID" group=pkg5srv password=NP \
     uid=97
-legacy pkg=SUNWipkg version=0.0.0
 license lic_gustaebel license="MIT (Lars Gustaebel)" \
     com.oracle.info.description="portions of the tarfile module from Python 2.4" \
     com.oracle.info.name=tarfile com.oracle.info.tpno=17819 \
