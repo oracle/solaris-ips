@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -1443,7 +1443,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                                 s = "depend fmri=pkg:/{type}@0,5.11-1 " \
                                     "type={type}".format(type=t)
                         manf.append(s)
-                        
+
                 manf_path = self.make_manifest("\n".join(manf))
                 self.pkgdepend_resolve("-m {0}".format(manf_path))
                 res_path = manf_path + ".res"
@@ -4322,6 +4322,30 @@ link path=usr/perl5/bin target=5.20/bin
                 self.pkgdepend_resolve("{0} {1} {2} {3}".format(
                     dep_path, perl512_path, perl516_path, perl520_path))
                 self.assertTrue("WARNING: dropping dependency" not in self.output)
+
+        def test_variant_empty_intersection(self):
+                """Test that when two conditional depend actions have empty
+                intersection, it should not report NeedConditionalRequireAny
+                error because they actually refer to different packages under
+                different variants."""
+
+                manf_a = """
+set name=pkg.fmri value=a@1.0
+set name=variant.arch value=foo value=bar
+depend fmri=pkg:/b@1.0 pkg.debug.depend.path-id=var/log/authlog predicate=pkg:/d@1.0 type=conditional variant.arch=foo
+depend fmri=pkg:/c@1.0 pkg.debug.depend.path-id=var/log/authlog predicate=pkg:/d@1.0 type=conditional variant.arch=bar
+"""
+                res = """\
+depend fmri=pkg:/b@1.0 predicate=pkg:/d@1.0 type=conditional variant.arch=foo
+depend fmri=pkg:/c@1.0 predicate=pkg:/d@1.0 type=conditional variant.arch=bar
+"""
+                manf_a_p = self.make_manifest(manf_a)
+
+                self.pkgdepend_resolve("{0}".format(manf_a_p))
+                with open(manf_a_p + ".res", "r") as fh:
+                        s = fh.read()
+                self.assertEqual(res, s)
+
 
 if __name__ == "__main__":
         unittest.main()

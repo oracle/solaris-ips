@@ -1546,7 +1546,16 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                         for d2, v2 in group[i + 1:]:
                                 only_v1, inter, only_v2 = \
                                     v1.separate_satisfied(v2)
-                                if (inter.is_empty() or inter.sat_set) and \
+                                # If the variant tag of the two conditional
+                                # depend actions are different, 'inter', their
+                                # variant combinations intersection is empty,
+                                # and the two depend actions are different.
+                                # Since only depend actions that have non-empty
+                                # variant combination intersection are
+                                # considered to be conflicts, we thus need to
+                                # check whether 'inter' is None or not.
+                                if inter is not None and \
+                                    (inter.is_empty() or inter.sat_set) and \
                                     d1.attrs["fmri"] != d2.attrs["fmri"]:
                                         conflicts.append((d1, d2, inter))
         if conflicts:
