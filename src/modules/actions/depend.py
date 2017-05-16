@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -112,7 +112,7 @@ class DependencyAction(generic.Action):
                 # data cannot be specified as a keyword argument
                 generic.Action.__init__(self, data, **attrs)
 
-        def __check_parent_installed(self, image, fmri):
+        def __check_parent_installed(self, image, pkg_fmri, fmri):
 
                 if not image.linked.ischild():
                         # if we're not a linked child then ignore "parent"
@@ -140,9 +140,16 @@ class DependencyAction(generic.Action):
                                       format(pf))
                         return errors
 
-                if pf.version == fmri.version or pf.version.is_successor(
-                                fmri.version, pkg.version.CONSTRAINT_AUTO):
-                        # parent dependency is satisfied
+                # This intentionally mirrors the logic in
+                # __trim_nonmatching_parents1 in pkg_solver.py.
+                if pf.version == fmri.version:
+                        # parent dependency is satisfied, which applies to both
+                        # DEPEND_SELF and other cases
+                        return []
+                elif (pkg_fmri != fmri and
+                    pf.version.is_successor(fmri.version,
+                        pkg.version.CONSTRAINT_NONE)):
+                        # *not* DEPEND_SELF; parent dependency is satisfied
                         return []
 
                 if pf.version.is_successor(fmri.version,
@@ -228,7 +235,7 @@ class DependencyAction(generic.Action):
                         # handle "parent" dependencies here
                         assert len(pfmris) == 1
                         errors.extend(self.__check_parent_installed(
-                                image, pfmris[0]))
+                                image, pfmri, pfmris[0]))
                         return errors, warnings, info
 
                 installed_versions = [

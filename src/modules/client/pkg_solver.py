@@ -1906,14 +1906,15 @@ class PkgSolver(object):
                                 return True
                 return False
 
-        def __filter_explicit_install(self, fmri):
+        def __filter_explicit_install(self, fmri, excludes):
                 """Check packages which have 'pkg.depend.explicit-install'
                 action set to true, and prepare to filter."""
 
                 will_filter = True
                 # Filter out fmris with 'pkg.depend.explicit-install' set to
-                # true and not present in self.__expl_install_dict or
-                # self.__installed_dict.
+                # true and not explicitly proposed, already installed in the
+                # current image, or is parent-constrained and is installed in
+                # the parent image.
                 if self.__is_explicit_install(fmri):
                         pkg_name = fmri.pkg_name
                         if pkg_name in self.__expl_install_dict and \
@@ -1921,6 +1922,21 @@ class PkgSolver(object):
                                 will_filter = False
                         elif pkg_name in self.__installed_dict:
                                 will_filter = False
+                        elif pkg_name in self.__parent_dict:
+                                # If this is a linked package that is
+                                # constrained to be the same version as parent,
+                                # and the parent has it installed, ignore
+                                # pkg.depend.explicit-install so that IDR
+                                # versions of packages can be used
+                                # automatically.
+                                will_filter = not any(
+                                    da
+                                    for da in self.__get_dependency_actions(
+                                        fmri, excludes)
+                                    if da.attrs["type"] == "parent" and
+                                        pkg.actions.depend.DEPEND_SELF in
+                                            da.attrlist("fmri")
+                                )
                 else:
                         will_filter = False
                 return will_filter
@@ -1943,7 +1959,7 @@ class PkgSolver(object):
                         already_processed.add(fmri)
                         # Trim filtered packages.
                         if filter_explicit and \
-                            self.__filter_explicit_install(fmri):
+                            self.__filter_explicit_install(fmri, excludes):
                                 reason = (N_("Uninstalled fmri {0} can "
                                     "only be installed if explicitly "
                                     "requested"), (fmri,))
@@ -3200,9 +3216,15 @@ class PkgSolver(object):
                         self.__trim((pkg_fmri,), _TRIM_PARENT_PUB, reason)
                         return False
 
-                if pf.version == fmri.version or pf.version.is_successor(
-                    fmri.version, version.CONSTRAINT_AUTO):
-                        # parent dependency is satisfied
+                if pf.version == fmri.version:
+                        # parent dependency is satisfied, which applies to both
+                        # DEPEND_SELF and other cases
+                        return True
+                elif (pkg_fmri != fmri and
+                    pf.version.is_successor(fmri.version,
+                        version.CONSTRAINT_NONE)):
+                                # *not* DEPEND_SELF; parent dependency is
+                                # satisfied
                         return True
 
                 # version mismatch

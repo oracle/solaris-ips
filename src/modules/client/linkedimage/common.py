@@ -43,6 +43,7 @@ are also defined here:
 # standard python classes
 import collections
 import copy
+import itertools
 import operator
 import os
 import select
@@ -1505,20 +1506,21 @@ class LinkedImage(object):
                 excludes = self.__img.list_excludes()
 
                 sync_fmris = []
-
                 for fmri in cat.fmris():
                         # get parent dependencies from the catalog
-                        parent_deps = [
-                            a
+                        for f in itertools.chain.from_iterable(
+                            a.attrlist("fmri")
                             for a in cat.get_entry_actions(fmri,
                                 [pkg.catalog.Catalog.DEPENDENCY],
                                 excludes=excludes)
-                            if a.name == "depend" and \
+                            if a.name == "depend" and
                                 a.attrs["type"] == "parent"
-                        ]
-
-                        if parent_deps:
-                                sync_fmris.append(fmri)
+                        ):
+                                if f == pkg.actions.depend.DEPEND_SELF:
+                                        sync_fmris.append((fmri, fmri))
+                                else:
+                                        sync_fmris.append((fmri,
+                                            pkg.fmri.PkgFmri(f)))
 
                 if not sync_fmris:
                         # No packages to sync
@@ -1530,14 +1532,23 @@ class LinkedImage(object):
                         for fmri in self.parent_fmris()
                 ])
 
-                for fmri in sync_fmris:
+                for (pkg_fmri, fmri) in sync_fmris:
                         if fmri.pkg_name not in ppkgs_dict:
                                 return False
-                        pfmri = ppkgs_dict[fmri.pkg_name]
-                        if fmri.version != pfmri.version and \
-                            not pfmri.version.is_successor(fmri.version,
-                                pkg.version.CONSTRAINT_AUTO):
-                                return False
+                        # This intentionally mirrors the logic in
+                        # __trim_nonmatching_parents1 in pkg_solver.py.
+                        pf = ppkgs_dict[fmri.pkg_name]
+                        if pf.version == fmri.version:
+                                # parent dependency is satisfied, which applies
+                                # to both DEPEND_SELF and other cases
+                                continue
+                        elif (pkg_fmri != fmri and
+                            pf.version.is_successor(fmri.version,
+                                pkg.version.CONSTRAINT_NONE)):
+                                # *not* DEPEND_SELF; parent dependency is
+                                # satisfied
+                                continue
+                        return False
                 return True
 
         def audit_self(self, latest_md=True):
