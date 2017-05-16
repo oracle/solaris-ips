@@ -147,8 +147,8 @@ class DependencyAction(generic.Action):
                         # DEPEND_SELF and other cases
                         return []
                 elif (pkg_fmri != fmri and
-                    pf.version.is_successor(fmri.version,
-                        pkg.version.CONSTRAINT_NONE)):
+                      pf.version.is_successor(fmri.version,
+                                              pkg.version.CONSTRAINT_NONE)):
                         # *not* DEPEND_SELF; parent dependency is satisfied
                         return []
 
