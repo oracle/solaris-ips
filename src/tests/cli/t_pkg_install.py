@@ -7416,7 +7416,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # attach c2p 1 -> 0.
                 self.pkg("attach-linked -p system:img1 {0}".format(self.img_path(0)))
 
-                # try to install or exact-instal packages that have unmet
+                # try to install or exact-install packages that have unmet
                 # parent dependencies.
                 self.pkg("{0} pkg12@1.2".format(install_cmd), exit=EXIT_OOPS)
                 self.pkg("{0} pkg13@1.2".format(install_cmd), exit=EXIT_OOPS)
@@ -7441,10 +7441,9 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # try to install or exact-install packages that have unmet
                 # parent dependencies.
                 self.pkg("{0} pkg12@1.2".format(install_cmd), exit=EXIT_OOPS)
-                self.pkg("{0} pkg13@1.2".format(install_cmd), exit=EXIT_OOPS)
                 self.pkg("{0} pkg14@1.2".format(install_cmd), exit=EXIT_OOPS)
 
-                # install packages in parent
+                # update packages in parent
                 self.set_image(0)
                 self.pkg("update pkg12@1.2")
                 self.set_image(1)
@@ -7473,6 +7472,16 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("{0} pkg14@1.2".format(install_cmd))
                 self.pkg("verify")
                 self.pkg("uninstall pkg14@1.2")
+
+                # update packages in parent
+                self.set_image(0)
+                self.pkg("update pkg12@1.3")
+                self.set_image(1)
+
+                # try to install or exact-install packages that have satisfied parent deps.
+                self.pkg("{0} pkg13@1.2".format(install_cmd))
+                self.pkg("verify")
+                self.pkg("uninstall pkg13@1.2")
 
         def test_optional_nosolution(self):
                 """Ensure useful error messages are produced when an optional
@@ -11741,6 +11750,44 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                     add set name=pkg.depend.explicit-install value=true
                     add depend type=incorporate fmri=pkg:/A@1.0,5.11-0.1.1.0
                     close """,
+                """
+                    open B@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=pkg:/idrb@1.0,5.11-0.1.1.0
+                    close """,
+                """
+                    open idrb@1.0,5.11-0.1.1.0
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=incorporate fmri=pkg:/B@1.0,5.11-0.1.1.0
+                    add depend type=parent fmri=feature/package/dependency/self
+                    close """,
+                # The two versions of C below intentionally have the same
+                # timestamp to ensure that even if the timestamps are the same,
+                # an upgrade to the newer version will be considered.
+                """
+                    open C@1.0,5.11-0.1:20170513T045531Z
+                    add depend type=parent fmri=feature/package/dependency/self
+                    close """,
+                """
+                    open C@1.0,5.11-0.1.1.0:20170513T045531Z
+                    add depend type=require fmri=pkg:/idrc@1.0,5.11-0.1.1.0
+                    add depend type=parent fmri=feature/package/dependency/self
+                    close """,
+                """
+                    open idrc@1.0,5.11-0.1.1.0
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=incorporate fmri=pkg:/C@1.0,5.11-0.1.1.0
+                    add depend type=parent fmri=feature/package/dependency/self
+                    close """,
+                """
+                    open D@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=pkg:/idrd@1.0,5.11-0.1.1.0
+                    add depend type=parent fmri=feature/package/dependency/self
+                    close """,
+                """
+                    open idrd@1.0,5.11-0.1.1.0
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=incorporate fmri=pkg:/D@1.0,5.11-0.1.1.0
+                    close """,
         )
 
         pkgs2 = (
@@ -11816,8 +11863,8 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
         )
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.pkgsend_bulk(self.rurl, self.pkgs)
+                pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
+                self.__pkgs = self.pkgsend_bulk(self.rurl, self.pkgs)
 
         def test_01_install(self):
                 self.image_create(self.rurl, prefix="")
@@ -11956,7 +12003,7 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install p2@1.0")
                 self.pkg("install p1")
 
-        def test_02_updateReject(self):
+        def test_02_update_reject(self):
                 self.image_create(self.rurl, prefix="")
                 self.pkgsend_bulk(self.rurl, self.pkgs2)
                 self.pkgsend_bulk(self.rurl, self.pkgs3)
@@ -12007,6 +12054,112 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+        def test_03_linked(self):
+                """Ensure pkg.depend.explicit-install works as expected for
+                linked images."""
+
+                self.set_image(0)
+                self.image_create(self.rurl)
+                self.set_image(1)
+                self.image_create(self.rurl)
+
+                # attach child to parent
+                self.set_image(0)
+                self.pkg("attach-linked -c system:img1 {0}".format(
+                    self.img_path(1)))
+                self.pkg("list-linked")
+                self.set_image(1)
+                self.pkg("list-linked")
+
+                # Verify that a package that requires a package marked with
+                # pkg.depend.explict-install cannot be installed in both parent
+                # and child image.
+                self.set_image(0)
+                self.pkg("install -nv A@1.0-0.1.1.0", exit=1)
+                self.set_image(1)
+                self.pkg("install -nv A@1.0-0.1.1.0", exit=1)
+
+                # Install a package that requires a package marked with
+                # pkg.depend.explicit-install into a parent image and then
+                # verify that package cannot be installed in the child image
+                # if the required package is not parent constrained and is not
+                # proposed.
+                self.set_image(0)
+                self.pkg("install -v A@1.0-0.1.1.0 idr")
+                self.set_image(1)
+                self.pkg("install -nv A@1.0-0.1.1.0", exit=1)
+                self.set_image(0)
+                self.pkg("uninstall -v \*")
+
+                # Verify that a package that depends on a parent-constrained
+                # package that is also marked with pkg.depend.explicit-install
+                # cannot be installed in a child image if the parent constraint
+                # is not satisfied and produces the expected error.
+                self.set_image(1)
+                self.pkg("install -nv B@1.0-0.1.1.0", exit=1)
+
+                # Verify that a package that depends on a parent-constrained
+                # package that is also marked with pkg.depend.explicit-install
+                # can be installed in a parent image *if* the marked package is
+                # also proposed.
+                self.set_image(0)
+                self.pkg("install -v B@1.0-0.1.1.0 idrb")
+
+                # Verify that a package that depends on a parent-constrained
+                # package that is also marked with pkg.depend.explicit-install
+                # can be installed in a child image *without* proposing the
+                # required package if the parent constraint is satisfied.
+                self.set_image(1)
+                self.pkg("install -nv B@1.0-0.1.1.0")
+                self.set_image(0)
+                self.pkg("uninstall -v \*")
+
+                # Install a parent-constrained package that requires a package
+                # marked with pkg.depend.explicit-install that is *not*
+                # parent-constrained into a parent image and then verify that
+                # package cannot be installed in the child image if the required
+                # package is not proposed.
+                self.set_image(0)
+                self.pkg("install -v D@1.0-0.1.1.0 idrd")
+                self.set_image(1)
+                self.pkg("install -nv D@1.0-0.1.1.0", exit=1)
+                self.set_image(0)
+                self.pkg("uninstall -r \*")
+
+        def test_04_linked_upgrade(self):
+                """Ensure pkg.depend.explicit-install works as expected for
+                linked image upgrades."""
+
+                self.set_image(0)
+                self.image_create(self.rurl)
+                self.set_image(1)
+                self.image_create(self.rurl)
+
+                # attach child to parent
+                self.set_image(0)
+                self.pkg("attach-linked -c system:img1 {0}".format(
+                    self.img_path(1)))
+
+                # Install a package into a parent image and child image, and
+                # then verify that upgrading the version in the parent image to
+                # one that requires a package that depends on a parent-constrained
+                # package that is also marked with pkg.depend.explicit-install
+                # also upgrades the child image.
+                self.set_image(0)
+                self.pkg("install -v C")
+                self.pkg("list C@1.0-0.1.1.0", exit=1)
+                self.set_image(1)
+                self.pkg("install -v C")
+                self.pkg("list C@1.0-0.1.1.0", exit=1)
+                # Now upgrade package in parent; this should automatically
+                # upgrade parent-constrained packages in child.
+                self.set_image(0)
+                self.pkg("install -v C@1.0-0.1.1.0 idrc")
+                self.pkg("list C@1.0-0.1.1.0 idrc")
+                self.set_image(1)
+                self.pkg("list")
+                self.pkg("list C@1.0-0.1.1.0 idrc")
 
 
 class TestPkgOSDowngrade(pkg5unittest.ManyDepotTestCase):
