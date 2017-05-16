@@ -3223,8 +3223,7 @@ class PkgSolver(object):
                 elif (pkg_fmri != fmri and
                     pf.version.is_successor(fmri.version,
                         version.CONSTRAINT_NONE)):
-                                # *not* DEPEND_SELF; parent dependency is
-                                # satisfied
+                        # *not* DEPEND_SELF; parent dependency is satisfied
                         return True
 
                 # version mismatch
