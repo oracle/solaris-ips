@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -154,7 +154,10 @@ mirror_cache_dir = 'var/cache/pkg/mirror'
 # together if the os supports it and otherwise copied.
 hardlink_modules = []
 
-symlink_modules = [('cronjob-removal.sh', 'usr/lib/update-refresh.sh')]
+symlink_modules = [
+        ['cronjob-removal.sh', 'usr/lib/update-refresh.sh'],
+        ['../cronjob-removal.sh', 'usr/lib/update-manager/update-refresh.sh']
+        ]
 
 scripts_sunos = {
         scripts_dir: [
@@ -783,7 +786,8 @@ class install_func(_install):
 
                 for target, o_dest in symlink_modules:
                         dest = util.change_root(self.root_dir, o_dest)
-                        file_util.copy_file(target, dest, link="sym", update=True)
+                        dir_util.mkpath(os.path.dirname(dest), verbose=True)
+                        os.symlink(target, dest)
 
 class install_lib_func(_install_lib):
         """Remove the target files prior to the standard install_lib procedure
