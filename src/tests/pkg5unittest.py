@@ -40,6 +40,7 @@ import copy
 import difflib
 import errno
 import gettext
+import grp
 import hashlib
 import locale
 import logging
@@ -3398,15 +3399,38 @@ class CliTestCase(Pkg5TestCase):
                 file_path = os.path.join(self.get_img_path(), path)
                 os.chmod(file_path, mode)
 
-        def file_exists(self, path):
+        def file_chown(self, path, owner=None, group=None):
+                """Change the ownership of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                uid = pwd.getpwnam(owner).pw_uid
+                gid = grp.getgrnam(group).gr_gid
+                os.chown(file_path, uid, gid)
+
+        def file_exists(self, path, mode=None, owner=None, group=None):
                 """Assert the existence of a file in the image."""
 
                 file_path = os.path.join(self.get_img_path(), path)
-                if not os.path.isfile(file_path):
-                        self.assertTrue(False, "File {0} does not exist".format(path))
+                try:
+                        st = os.stat(file_path)
+                except OSError as e:
+                        if e.errno == errno.ENOENT:
+                                self.assertTrue(False,
+                                    "File {0} does not exist".format(path))
+                        else:
+                                raise
+                if mode is not None:
+                        self.assertEqual(mode, stat.S_IMODE(st.st_mode))
+                if owner is not None:
+                        uid = pwd.getpwnam(owner).pw_uid
+                        self.assertEqual(uid, st.st_uid)
+                if group is not None:
+                        gid = grp.getgrnam(group).gr_gid
+                        self.assertEqual(gid, st.st_gid)
 
         def dir_exists(self, path, mode=None, owner=None, group=None):
                 """Assert the existence of a directory in the image."""
+
                 dir_path = os.path.join(self.get_img_path(), path)
                 try:
                         st = os.stat(dir_path)
@@ -3419,9 +3443,11 @@ class CliTestCase(Pkg5TestCase):
                 if mode is not None:
                         self.assertEqual(mode, stat.S_IMODE(st.st_mode))
                 if owner is not None:
-                        self.assertEqual(owner, st.st_uid)
+                        uid = pwd.getpwnam(owner).pw_uid
+                        self.assertEqual(uid, st.st_uid)
                 if group is not None:
-                        self.assertEqual(group, st.st_gid)
+                        gid = grp.getgrnam(group).gr_gid
+                        self.assertEqual(gid, st.st_gid)
 
         def file_doesnt_exist(self, path):
                 """Assert the non-existence of a file in the image."""

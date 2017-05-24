@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -576,7 +576,7 @@ Incorrect attribute list.
                 # Verify multiple values for file attributes are rejected.
                 for attr in ("pkg.size", "pkg.csize", "chash", "preserve",
                     "overlay", "elfhash", "original_name", "facet.doc",
-                    "owner", "group"):
+                    "owner", "group", "preserve-version"):
                         nact = "file path=/usr/bin/foo owner=root group=root " \
                             "mode=0555 {attr}=1 {attr}=2 {attr}=3".format(
                             attr=attr)

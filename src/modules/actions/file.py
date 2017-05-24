@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -45,6 +45,7 @@ import pkg.client.api_errors as api_errors
 import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.version as version
 
 from pkg.client.pkgdefs import MSG_WARNING
 from pkg.client.api_errors import ActionExecutionError
@@ -521,6 +522,51 @@ class FileAction(generic.Action):
 
                 return errors, warnings, info
 
+        def __check_preserve_version(self, orig):
+                """Any action that can have a 'preserve' attribute should also
+                be able to have a 'preserve-version' attribute (that
+                represents a simple package FMRI release version; no
+                timestamp, etc., just 'X.n.n...').
+
+                In the absence of a 'preserve-version' attribute, '0' will be
+                assumed.
+
+                When performing downgrades, if the installed editable file has
+                been modified (compared to the proposed packaged version), the
+                behavior will be as follows:
+
+                if the installed action's 'preserve-version' is greater than
+                the proposed 'preserve-version', the installed file will be
+                renamed with '.update' and the proposed file will be
+                installed.
+
+                if the installed action's 'preserve-version' is equal to or
+                less than the proposed 'preserve-version', the installed file
+                content will not be modified."""
+
+                orig_preserve_ver = version.Version("0")
+                preserve_ver = version.Version("0")
+
+                try:
+                        ver = orig.attrs["preserve-version"]
+                        orig_preserve_ver = version.Version(ver)
+                except KeyError:
+                        pass
+
+                try:
+                        ver = self.attrs["preserve-version"]
+                        preserve_ver = version.Version(ver)
+                except KeyError:
+                        pass
+
+                if orig_preserve_ver > preserve_ver:
+                        # .old is intentionally avoided here to prevent
+                        # accidental collisions with the normal install
+                        # process.
+                        return "renameold.update"
+
+                return True
+
         def _check_preserve(self, orig, pkgplan, orig_path=None):
                 """Return the type of preservation needed for this action.
 
@@ -615,17 +661,20 @@ class FileAction(generic.Action):
                                 # the version on disk is different than what
                                 # was originally delivered, and if so, preserve
                                 # it.
-                                if is_file:
-                                        ihash, cdata = misc.get_data_digest(
-                                            final_path,
-                                            hash_func=orig_hash_func)
-                                        if ihash != orig_hash_val:
-                                                # .old is intentionally avoided
-                                                # here to prevent accidental
-                                                # collisions with the normal
-                                                # install process.
-                                                return "renameold.update"
-                                return False
+                                if not is_file:
+                                        return False
+
+                                preserve_version = self.__check_preserve_version(orig)
+                                if not preserve_version:
+                                        return False
+
+                                ihash, cdata = misc.get_data_digest(
+                                    final_path,
+                                    hash_func=orig_hash_func)
+                                if ihash != orig_hash_val:
+                                        return preserve_version
+
+                                return True
 
                 if (orig and orig_path):
                         # Comparison will be based on a file being moved.
@@ -694,9 +743,7 @@ class FileAction(generic.Action):
                     (not use_content_hash or
                      content_hash_val != orig_content_hash_val)):
                         if ("preserve" not in self.attrs or
-                            not pkgplan.origin_fmri or
-                            (pkgplan.destination_fmri.version <
-                            pkgplan.origin_fmri.version)):
+                            not pkgplan.origin_fmri):
                                 return True
                 elif orig:
                         # It's possible that the file content hasn't changed
@@ -875,8 +922,37 @@ class FileAction(generic.Action):
                     numeric_attrs=("pkg.csize", "pkg.size"), raise_errors=False,
                     required_attrs=("owner", "group"), single_attrs=("chash",
                     "preserve", "overlay", "elfarch", "elfbits", "elfhash",
-                    "original_name"))
+                    "original_name", "preserve-version"))
                 errors.extend(self._validate_fsobj_common())
+
+                preserve = self.attrs.get("preserve")
+                preserve_version = self.attrs.get("preserve-version")
+
+                if preserve_version:
+                        if not preserve:
+                                errors.append(("preserve-version",
+                                    _("preserve must be 'true' if a "
+                                    "preserve-version is specified")))
+
+                        (release, build_release, branch, timestr), ignored = \
+                            version.Version.split(str(preserve_version))
+                        if not release:
+                                errors.append(("preserve-version",
+                                    _("preserve-version must specify "
+                                      "the release")))
+                        if build_release != "":
+                                errors.append(("preserve-version",
+                                    _("preserve-version must specify "
+                                      "the release")))
+                        if branch:
+                                errors.append(("preserve-version",
+                                    _("preserve-version must not specify "
+                                      "the branch")))
+                        if timestr:
+                                errors.append(("preserve-version",
+                                    _("preserve-version must not specify "
+                                      "the timestamp")))
+
                 if errors:
                         raise pkg.actions.InvalidActionAttributesError(self,
                             errors, fmri=fmri)
