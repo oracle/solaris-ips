@@ -2966,6 +2966,66 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        preserve_version_4 = """
+            open preserve_version@4.0
+            add file tmp/preserve_version_4 path=testme mode=0644 owner=root group=root preserve=true preserve-version=1.0
+            close
+        """
+
+        preserve_version_3 = """
+            open preserve_version@3.0
+            add file tmp/preserve_version_3 path=testme mode=0644 owner=root group=root preserve=true preserve-version=0.1
+            close
+        """
+
+        preserve_version_2 = """
+            open preserve_version@2.0
+            add file tmp/preserve_version_2 path=testme mode=0644 owner=root group=root preserve=true preserve-version=1.0
+            close
+        """
+
+        preserve_version_1 = """
+            open preserve_version@1.0
+            add file tmp/preserve_version_1 path=testme mode=0644 owner=root group=root preserve=true preserve-version=2.0 overlay=allow
+            close
+        """
+
+        no_pres_ver_2 = """
+            open no_pres_ver@2.0
+            add file tmp/no_pres_ver_2 path=testme mode=0644 owner=root group=root preserve=true
+            close
+        """
+
+        no_pres_ver_1 = """
+            open no_pres_ver@1.0
+            add file tmp/no_pres_ver_1 path=testme mode=0644 owner=root group=root preserve=true preserve-version=1.0
+            close
+        """
+
+        add_pres_ver_2 = """
+            open add_pres_ver@2.0
+            add file tmp/add_pres_ver_2 path=testme mode=0644 owner=root group=root preserve=true preserve-version=1.0
+            close
+        """
+
+        add_pres_ver_1 = """
+            open add_pres_ver@1.0
+            add file tmp/add_pres_ver_1 path=testme mode=0644 owner=root group=root preserve=true
+            close
+        """
+
+        pres_ver_overlay_1 = """
+            open pres_ver_overlay@1.0
+            add file tmp/pres_ver_overlay_1 path=testme mode=0644 owner=root group=root overlay=true
+            close
+        """
+
+        pres_ver_overlay_2 = """
+            open pres_ver_overlay@2.0
+            add file tmp/pres_ver_overlay_2 path=testme mode=0644 owner=root group=root overlay=true preserve=true preserve-version=1.0
+            close
+        """
+
         preslegacy = """
             open preslegacy@1.0
             add file tmp/preserve1 path=testme mode=0644 owner=root group=root preserve=true
@@ -3166,7 +3226,13 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             "tmp/gold-passwd1", "tmp/gold-passwd2", "tmp/gold-group",
             "tmp/gold-shadow", "tmp/gold-ftpusers", "tmp/gold-silly",
             "tmp/silver-silly", "tmp/preserve1", "tmp/preserve2",
-            "tmp/preserve3", "tmp/renold1", "tmp/renold3", "tmp/rennew1",
+            "tmp/preserve3",
+            "tmp/preserve_version_1", "tmp/preserve_version_2",
+            "tmp/preserve_version_3", "tmp/preserve_version_4",
+            "tmp/no_pres_ver_1", "tmp/no_pres_ver_2",
+            "tmp/add_pres_ver_1", "tmp/add_pres_ver_2",
+            "tmp/pres_ver_overlay_1", "tmp/pres_ver_overlay_2",
+            "tmp/renold1", "tmp/renold3", "tmp/rennew1",
             "tmp/rennew3", "tmp/liveroot1", "tmp/liveroot2", "tmp/foo2",
             "tmp/auth1"
         ]
@@ -3843,11 +3909,10 @@ adm
                 self.file_contains("testme", "preserve3")
 
                 self.pkg("update --parsable=0 preserve@1")
-                self._assertEditables(
-                    updated=['testme'],
-                )
+                self._assertEditables()
 
-                self.file_contains("testme", "preserve1")
+                # ... on downgrade leave the existing configuration intact.
+                self.file_contains("testme", "preserve3")
 
                 self.pkg("verify preserve")
                 self.pkg("uninstall --parsable=0 preserve")
@@ -3865,21 +3930,17 @@ adm
                 self.pkg("verify preserve")
                 self.pkg("uninstall --parsable=0 preserve")
 
-                # Modify the file locally and downgrade to a version where
-                # the content changes.
+                # Modify the file locally and verify that on downgrade the
+                # content remains unchanged.
                 self.pkg("{0} --parsable=0 preserve@3".format(install_cmd))
                 self.file_append("testme", "junk")
                 self.file_contains("testme", "preserve3")
                 self.pkg("update --parsable=0 preserve@1")
-                self._assertEditables(
-                    moved=[['testme', 'testme.update']],
-                    installed=['testme'],
-                )
-                self.file_doesnt_contain("testme", ["preserve3", "junk"])
+                self._assertEditables()
+                self.file_contains("testme", ["preserve3", "junk"])
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
-                self.file_exists("testme.update")
-                self.file_remove("testme.update")
+                self.file_doesnt_exist("testme.update")
                 self.pkg("verify preserve")
                 self.pkg("uninstall --parsable=0 preserve")
 
@@ -4674,6 +4735,215 @@ adm
                 self.file_remove("testme")
                 self.pkg("revert testme")
                 self.file_contains("testme", "preserve1")
+
+        def test_file_preserve_version(self):
+                """Verify that file preserve-version works as expected
+                during pkg install, update, upgrade, and removal."""
+
+                self.pkgsend_bulk(self.rurl, (self.preserve_version_1,
+                    self.preserve_version_2, self.preserve_version_3,
+                    self.preserve_version_4))
+                self.image_create(self.rurl)
+
+                # If file preserve_version is less than the
+                # installed preserve_version, the installed file
+                # will be renamed with '.update' and the proposed file
+                # will be installed.
+                # (orig_preserve_ver = 1.0, preserve_ver = 0.1)
+                self.pkg("install --parsable=0 preserve_version@4")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_append("testme", "junk")
+                self.pkg("install --parsable=0 preserve_version@3")
+                self._assertEditables(
+                    moved=[['testme', 'testme.update']],
+                    installed=['testme'],
+                )
+
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_exists("testme.update")
+
+                self.file_contains("testme.update", "preserve_version_4")
+                self.file_contains("testme.update", "junk")
+
+                self.file_contains("testme", "preserve_version_3")
+                self.file_doesnt_contain("testme", "junk")
+
+                self.file_remove("testme.update")
+
+                self.pkg("verify preserve_version")
+
+                self.pkg("uninstall --parsable=0 preserve_version")
+
+                # If file preserve_version is equal to the
+                # proposed preserve_version, the installed file
+                # content is not modified (but the owner, group, and
+                # permissions are updated).
+                # (orig_preserve_ver = 1.0, preserve_ver = 1.0)
+                self.pkg("install --parsable=0 preserve_version@4")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_chmod("testme", 0o777)
+                self.file_chown("testme", "nobody", "nobody")
+                self.file_append("testme", "junk")
+                self.pkg("install --parsable=0 preserve_version@2")
+                self._assertEditables()
+
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+                self.file_exists("testme", 0o644, "root", "root")
+
+                self.file_contains("testme", "preserve_version_4")
+                self.file_contains("testme", "junk")
+
+                self.pkg("verify preserve_version")
+
+                self.pkg("uninstall --parsable=0 preserve_version")
+
+                # If file preserve_version is greater than the
+                # installed preserve_version, the installed file
+                # content is not modified (but the owner, group, and
+                # permissions are updated).
+                # (orig_preserve_ver = 1.0, preserve_ver = 2.0)
+                self.pkg("install --parsable=0 preserve_version@4")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_chmod("testme", 0o777)
+                self.file_chown("testme", "nobody", "nobody")
+                self.file_append("testme", "junk")
+                self.pkg("install --parsable=0 preserve_version@1")
+                self._assertEditables()
+
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+                self.file_exists("testme", 0o644, "root", "root")
+
+                self.file_contains("testme", "preserve_version_4")
+                self.file_contains("testme", "junk")
+
+                self.pkg("verify preserve_version")
+
+                self.pkg("uninstall --parsable=0 preserve_version")
+
+        def test_file_preserve_version_defined(self):
+                """Verify that file preserve-version works as expected
+                during pkg install, update, upgrade, and removal for a file
+                that did not initially define a preserve-version."""
+
+                self.pkgsend_bulk(self.rurl, (self.no_pres_ver_1,
+                    self.no_pres_ver_2))
+                self.image_create(self.rurl)
+
+                self.pkg("install --parsable=0 no_pres_ver@2")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_append("testme", "junk")
+                self.pkg("install --parsable=0 no_pres_ver@1")
+                self._assertEditables()
+
+                self.file_contains("testme", "no_pres_ver_2")
+                self.file_contains("testme", "junk")
+
+                self.pkg("verify no_pres_ver")
+
+                self.pkg("uninstall --parsable=0 no_pres_ver")
+
+        def test_file_preserve_version_undefined(self):
+                """Verify that file preserve-version works as expected
+                during pkg install, update, upgrade, and removal for a file
+                that no longer defines a preserve-version."""
+
+                self.pkgsend_bulk(self.rurl, (self.add_pres_ver_1,
+                    self.add_pres_ver_2))
+                self.image_create(self.rurl)
+
+                self.pkg("install --parsable=0 add_pres_ver@2")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_append("testme", "junk")
+                self.pkg("install --parsable=0 add_pres_ver@1")
+                self._assertEditables(
+                    moved=[['testme', 'testme.update']],
+                    installed=['testme'],
+                )
+
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_exists("testme.update")
+
+                self.file_contains("testme.update", "add_pres_ver_2")
+                self.file_contains("testme.update", "junk")
+
+                self.file_contains("testme", "add_pres_ver_1")
+                self.file_doesnt_contain("testme", "junk")
+
+                self.pkg("verify add_pres_ver")
+
+                self.pkg("uninstall --parsable=0 add_pres_ver")
+
+        def test_file_preserve_version_overlay(self):
+                """Verify that file preserve-version works as expected
+                when the file specifies overlay=allow."""
+
+                self.pkgsend_bulk(self.rurl, (self.preserve_version_1,
+                    self.pres_ver_overlay_1, self.pres_ver_overlay_2))
+                self.image_create(self.rurl)
+
+                # Install an overlaying package that does not specify a
+                # preserve-version and verify that the file gets replaced
+                # as expected.
+                # (orig_preserve_ver = 2.0, preserve_ver = 0)
+                self.pkg("install --parsable=0 preserve_version@1")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.pkg("install --parsable=0 pres_ver_overlay@1")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+
+                self.file_contains("testme", "pres_ver_overlay_1")
+                self.file_doesnt_contain("testme", "preserve_version")
+
+                self.pkg("verify preserve_version")
+
+                self.pkg("uninstall --parsable=0 preserve_version")
+                self.pkg("uninstall --parsable=0 pres_ver_overlay")
+
+                # Install an overlaying package that specifies a downgraded
+                # preserve-version and verify that the file gets replaced
+                # as expected.
+                # (orig_preserve_ver = 2.0, preserve_ver = 1.0)
+                self.pkg("install --parsable=0 preserve_version@1")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.pkg("install --parsable=0 pres_ver_overlay@2")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+
+                self.file_contains("testme", "pres_ver_overlay_2")
+                self.file_doesnt_contain("testme", "preserve_version")
+
+                self.pkg("verify preserve_version")
+
+                self.pkg("uninstall --parsable=0 preserve_version")
+                self.pkg("uninstall --parsable=0 pres_ver_overlay")
 
         def test_directory_salvage(self):
                 """Make sure basic directory salvage works as expected"""

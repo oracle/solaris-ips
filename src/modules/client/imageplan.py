@@ -1521,9 +1521,11 @@ class ImagePlan(object):
                         needs_change = []
                         pt.plan_add_progress(pt.PLAN_PKGPLAN, nitems=0)
                         for act in revert_dict[(f, m)]:
-                                # delete preserve attribute to both find and
-                                # enable replacement of modified editable files.
+                                # delete preserve and preserve-version
+                                # attributes to both find and enable
+                                # replacement of modified editable files.
                                 act.attrs.pop("preserve", None)
+                                act.attrs.pop("preserve-version", None)
                                 act.verify(self.image, forever=True)
                                 if act.replace_required == True:
                                         needs_change.append(act)
