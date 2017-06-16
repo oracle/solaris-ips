@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -2053,7 +2053,6 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                         for uri in sorted(origins):
                                 # XXX get the real origin status
                                 set_value(field_data["type"], _("origin"))
-                                set_value(field_data["status"], _("online"))
                                 set_value(field_data["proxy"], "-")
                                 set_value(field_data["proxied"], "F")
 
@@ -2061,9 +2060,13 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 if uri.disabled:
                                         set_value(field_data["enabled"],
                                             _("false"))
+                                        set_value(field_data["status"],
+                                            _("disabled"))
                                 else:
                                         set_value(field_data["enabled"],
                                             _("true"))
+                                        set_value(field_data["status"],
+                                            _("online"))
 
                                 if uri.proxies:
                                         set_value(field_data["proxied"], _("T"))
@@ -2093,6 +2096,8 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                         for uri in mirrors:
                                 # XXX get the real mirror status
                                 set_value(field_data["type"], _("mirror"))
+                                # We do not currently deal with mirrors. So
+                                # they are always online.
                                 set_value(field_data["status"], _("online"))
                                 set_value(field_data["proxy"], "-")
                                 set_value(field_data["proxied"], _("F"))
@@ -2168,6 +2173,10 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                         origins_data = []
                         for uri in r.origins:
                                 origin_data = {"Origin URI": str(uri)}
+                                if uri.disabled:
+                                        origin_data["Status"] = _("Disabled")
+                                else:
+                                        origin_data["Status"] = _("Online")
                                 if uri.proxies:
                                         origin_data["Proxy"] = \
                                             [str(p.uri) for p in uri.proxies]
@@ -2179,6 +2188,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                         mirrors_data = []
                         for uri in r.mirrors:
                                 mirror_data = {"Mirror URI": str(uri)}
+                                mirror_data["Status"] = _("Online")
                                 if uri.proxies:
                                         mirror_data["Proxy"] = \
                                             [str(p.uri) for p in uri.proxies]
