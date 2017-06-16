@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -1174,13 +1174,20 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                     "http://unknown"), exit=1)
                 self.pkg("publisher -F tsv | grep unknown")
                 output = self.output.split()
-                self.assertTrue(output[3] == "false")
+                self.assertTrue(output[3] == "false" and
+                    output[5] == "disabled")
 
                 # Test adding an enabled origin.
                 self.pkg("set-publisher --enable -g " + self.durl7 + " test4")
                 self.pkg("publisher -F tsv | grep test4")
                 output = self.output.split()
-                self.assertTrue(output[3] == "true")
+                self.assertTrue(output[3] == "true" and
+                    output[5] == "online")
+                # Test detailed output should also show origin status.
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Online")
+
                 # List and info will succeed.
                 self.pkg("list -af origin1")
                 self.pkg("info -r origin1")
@@ -1192,9 +1199,14 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --disable -g " + self.durl7 + " test4")
                 self.pkg("publisher -F tsv | grep test4")
                 output = self.output.split()
-                self.assertTrue(output[3] == "false")
+                self.assertTrue(output[3] == "false" and
+                    output[5] == "disabled")
                 self.pkg("publisher | grep test4")
                 self.assertTrue("(disabled)" not in self.output)
+                # Test detailed output should also show origin status.
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
                 self.pkg("list -af origin1", exit=1)
                 self.pkg("install origin1", exit=1)
 
@@ -1210,7 +1222,11 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # The status of the origin should still be enabled.
                 self.pkg("publisher -F tsv | grep test4")
                 output = self.output.split()
-                self.assertTrue(output[3] == "true")
+                self.assertTrue(output[3] == "true" and
+                    output[5] == "online")
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Online")
 
                 self.pkg("list -af origin1", exit=1)
                 self.pkg("info origin1", exit=1)
@@ -1224,6 +1240,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.assertTrue(output[3] == "false")
                 self.pkg("publisher | grep test5")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test5 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
                 self.pkg("list -af origin2", exit=1)
                 self.pkg("info -r origin2", exit=1)
                 # Install will fail.
@@ -1235,9 +1254,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --disable -g " + self.durl8 + " test5")
                 self.pkg("publisher -F tsv | grep test5")
                 output = self.output.split()
-                self.assertTrue(output[3] == "false")
+                self.assertTrue(output[3] == "false" and
+                    output[5] == "disabled")
                 self.pkg("publisher | grep test5")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test5 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
                 self.pkg("list -af origin2", exit=1)
                 self.pkg("info -r origin2", exit=1)
                 # Install will fail.
@@ -1247,9 +1270,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --enable -g '*' test5")
                 self.pkg("publisher -F tsv | grep test5")
                 output = self.output.split()
-                self.assertTrue(output[3] == "true")
+                self.assertTrue(output[3] == "true" and
+                    output[5] == "online")
                 self.pkg("publisher | grep test5")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test5 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Online")
                 self.pkg("list -af origin2")
                 self.pkg("info -r origin2")
                 self.pkg("install -nv origin2")
@@ -1257,9 +1284,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --disable -g '*' test5")
                 self.pkg("publisher -F tsv | grep test5")
                 output = self.output.split()
-                self.assertTrue(output[3] == "false")
+                self.assertTrue(output[3] == "false" and
+                    output[5] == "disabled")
                 self.pkg("publisher | grep test5")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test5 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
                 self.pkg("list -af origin2", exit=1)
                 self.pkg("info -r origin2", exit=1)
                 # Install will fail.
@@ -1274,13 +1305,20 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 output = outputs[1].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                self.assertTrue(output[0] == "test4" and output[3] == "true"
+                    and output[5] == "online")
                 # (disabled) indicating publisher level disable should not be
                 # in the output.
                 self.pkg("publisher | grep test4")
                 self.assertTrue("(disabled)" not in self.output)
+
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.splitlines()
+                self.assertTrue("Disabled" in output[0])
+                self.assertTrue("Online" in output[1])
 
                 # Test installing package from a disabled origin should fail.
                 self.pkg("install origin1", exit=1)
@@ -1306,11 +1344,18 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 output = outputs[1].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 self.pkg("publisher -Hn | grep test4")
                 self.assertTrue("test4" in self.output)
+
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.splitlines()
+                self.assertTrue("Disabled" in output[0])
+                self.assertTrue("Disabled" in output[1])
                 # Install origin2 will fail.
                 self.pkg("install origin2", exit=1)
                 # List and info will also fail.
@@ -1324,9 +1369,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                self.assertTrue(output[0] == "test4" and output[3] == "true"
+                    and output[5] == "online")
                 output = outputs[1].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "true")
+                self.assertTrue(output[0] == "test4" and output[3] == "true"
+                    and output[5] == "online")
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.splitlines()
+                self.assertTrue("Online" in output[0])
+                self.assertTrue("Online" in output[1])
                 self.pkg("publisher -Hn | grep test4")
                 self.pkg("install -nv origin1")
                 self.pkg("install -nv origin2")
@@ -1346,9 +1397,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 output = outputs[1].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.splitlines()
+                self.assertTrue("Disabled" in output[0])
+                self.assertTrue("Disabled" in output[1])
                 self.pkg("install origin1", exit=1)
                 self.pkg("list -af origin1", exit=1)
                 self.pkg("info -r origin1", exit=1)
@@ -1371,9 +1428,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 self.assertTrue(self.durl7 in self.output)
                 self.assertTrue(self.durl9 not in self.output)
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
 
                 # Removing an non-existing origin fails the operation.
                 self.pkg("set-publisher -G http://unknown  -g " + self.durl7
@@ -1381,9 +1442,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 self.assertTrue(self.durl7 in self.output)
                 self.assertTrue(self.durl9 not in self.output)
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
 
                 # Remove all origins and add a new one.
                 self.pkg("set-publisher -G '*'  -g " + self.durl9
@@ -1391,11 +1456,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test4")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test4" and output[3] == "false")
+                self.assertTrue(output[0] == "test4" and output[3] == "false"
+                    and output[5] == "disabled")
                 self.assertTrue(self.durl9 in self.output)
                 self.assertTrue(self.durl7 not in self.output)
                 self.pkg("publisher | grep test4")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test4 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
 
                 # Removing an unknown origin for a publisher not set yet will
                 # fail.
@@ -1411,10 +1480,14 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -HF tsv | grep test5")
                 outputs = self.output.split("\n")
                 output = outputs[0].split("\t")
-                self.assertTrue(output[0] == "test5" and output[3] == "false")
+                self.assertTrue(output[0] == "test5" and output[3] == "false"
+                    and output[5] == "disabled")
                 self.assertTrue(self.durl8 in self.output)
                 self.pkg("publisher | grep test5")
                 self.assertTrue("(disabled)" not in self.output)
+                self.pkg("publisher test5 | grep 'Origin Status'")
+                output = self.output.split()
+                self.assertTrue(output[2] == "Disabled")
 
         def test_search_order(self):
                 """Test moving search order around"""

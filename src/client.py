@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -3846,6 +3846,8 @@ def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 for od in pub["origins"]:
                                         msg(_("           Origin URI:"),
                                             od["Origin URI"])
+                                        msg(_("           Origin Status:"),
+                                            od["Status"])
                                         if "Proxy" in od:
                                                 msg(_("                Proxy:"),
                                                     ", ".join(od["Proxy"]))
@@ -3855,6 +3857,8 @@ def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 for md in pub["mirrors"]:
                                         msg(_("           Mirror URI:"),
                                             md["Mirror URI"])
+                                        msg(_("           Mirror Status:"),
+                                            md["Status"])
                                         if "Proxy" in md:
                                                 msg(_("                Proxy:"),
                                                     ", ".join(md["Proxy"]))
