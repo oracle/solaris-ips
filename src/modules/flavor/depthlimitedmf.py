@@ -2,7 +2,7 @@
 # Copyright (c) 2001, 2016, 2003, 2016, 2005, 2016, 2007, 2016, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 """A standalone version of ModuleFinder which limits the depth of exploration
@@ -207,7 +207,11 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
                 res = []
                 code = co.co_code
-                if sys.version_info >= (2, 5):
+                if sys.version_info >= (2, 5) and sys.version_info < (3, 6):
+                        # Python 3.6's modulefinder.py got rid of
+                        # scan_opcodes_25() and renamed scan_opcodes_25()
+                        # to scan_opcodes(). Previously old scan_opcodes()
+                        # was for Python 2.4 and earlier.
                         scanner = self.scan_opcodes_25
                 else:
                         scanner = self.scan_opcodes
