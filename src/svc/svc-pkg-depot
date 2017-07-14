@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -205,12 +205,16 @@ function server_ping {
 	# can result in us waiting 40 seconds, which ought to be long
 	# enough for Apache to come online. (index refreshes are run in
 	# the background on the server after it has returned a response)
-	url="http://${depot_host}:${depot_port}"
+	scheme="http"
+	if [ "${depot_https}" == "true" ]; then
+		scheme="https"
+	fi
+	url="${scheme}://${depot_host}:${depot_port}"
 	ipv6=$(echo ${depot_host} | /usr/bin/grep :)
 	if [ -n "$ipv6" ] ; then
-		url="http://\[${depot_host}\]:${depot_port}"
+		url="${scheme}://\[${depot_host}\]:${depot_port}"
 	fi
-	/usr/bin/curl -s --max-time 5 --retry 4 -o /dev/null ${url} \
+	/usr/bin/curl -k -s --max-time 5 --retry 4 -o /dev/null ${url} \
 2> /dev/null
 	check_failure $? "Unable to access the server at ${url}. Check\
  the SMF service log or the error log at ${depot_log_dir}/error_log for\
