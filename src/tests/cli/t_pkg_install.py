@@ -10212,6 +10212,21 @@ class TestConflictingActions(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg_overlaid_attr = """
+            open overlaid-no-attr@0,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=allow
+            close
+            open overlaid-attr-allow@0,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=allow overlay-attributes=allow
+            close
+            open overlaid-attr-deny@0,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=allow overlay-attributes=deny
+            close
+        """
+
         # 'overlay' is ignored unless 'preserve' is also set.
         pkg_invalid_overlaid = """
             open invalid-overlaid@0,5.11-0
@@ -10255,11 +10270,24 @@ class TestConflictingActions(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
-        # overlaying file is treated as conflicting file if its mode, owner, and
-        # group attributes don't match the action being overlaid
         pkg_mismatch_overlayer = """
             open mismatch-overlayer@0,5.11-0
             add file tmp/file2 path=etc/pam.conf mode=640 owner=root group=bin preserve=true overlay=true
+            close
+        """
+
+        pkg_mismatch_overlayer2 = """
+            open mismatch-overlayer-deny@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=640 owner=root group=bin preserve=true overlay=true overlay-attributes=deny
+            close
+        """
+
+        # overlaying file is treated as conflicting file if overlay-attribute is
+        # set to false or its mode, owner, and group attributes don't match the
+        # action being overlaid.
+        pkg_mismatch_overlayer3 = """
+            open mismatch-overlayer-allow@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=640 owner=root group=bin preserve=true overlay=true overlay-attributes=allow
             close
         """
 
@@ -10990,6 +11018,43 @@ adm
                 self.pkg("uninstall pkg2", exit=1)
                 self.pkg("verify pkg2")
 
+        def __check_overlay_install(self, overlaid, overlayer, exit=0):
+                self.image_create(self.rurl)
+                self.pkg("install {0}".format(overlaid))
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("install {0}".format(overlayer), exit=exit)
+                # If exit == 0, the file has been overlaid.
+                if exit == 0:
+                        self.file_doesnt_contain("etc/pam.conf", "zigit")
+                else:
+                        self.file_contains("etc/pam.conf", "zigit")
+
+        def test_mismatch_overlay_files_install(self):
+                """Test overlay attributes mismatch."""
+
+                # Test all combo of overlay-attributes on overlaid and
+                # overlayer packages.
+                self.__check_overlay_install("overlaid-attr-deny@0",
+                    "mismatch-overlayer@0", exit=1)
+                self.__check_overlay_install("overlaid-attr-deny@0",
+                    "mismatch-overlayer-allow@0", exit=1)
+                self.__check_overlay_install("overlaid-attr-deny@0",
+                    "mismatch-overlayer-deny@0", exit=1)
+
+                self.__check_overlay_install("overlaid-no-attr@0",
+                    "mismatch-overlayer@0", exit=0)
+                self.__check_overlay_install("overlaid-no-attr@0",
+                    "mismatch-overlayer-allow@0", exit=0)
+                self.__check_overlay_install("overlaid-no-attr@0",
+                    "mismatch-overlayer-deny@0", exit=1)
+
+                self.__check_overlay_install("overlaid-attr-allow@0",
+                    "mismatch-overlayer@0", exit=0)
+                self.__check_overlay_install("overlaid-attr-allow@0",
+                    "mismatch-overlayer-allow@0", exit=0)
+                self.__check_overlay_install("overlaid-attr-allow@0",
+                    "mismatch-overlayer-deny@0", exit=1)
+
         def test_overlay_files_install(self):
                 """Test the behaviour of pkg(1) when actions for editable files
                 overlay other actions."""
@@ -11017,9 +11082,11 @@ adm
                 self.file_contains("etc/pam.conf", "file1")
                 self.pkg("install invalid-overlayer", exit=1)
 
-                # Should fail because one action is overlayable but overlaying
-                # action mode, owner, and group attributes don't match.
-                self.pkg("install mismatch-overlayer", exit=1)
+                # Should succeed because no overlay-attributes='deny' present
+                # on either action.
+                self.pkg("install mismatch-overlayer")
+                # Uninstall it to not affect the subsequent tests.
+                self.pkg("uninstall mismatch-overlayer")
 
                 # Should succeed because one action is overlayable and
                 # overlaying action declares its intent to overlay.
@@ -11099,10 +11166,10 @@ adm
                 # and contents matches overlaying action.
                 self.pkg("verify overlaid unpreserved-overlayer")
 
-                # Should succeed even though file has been modified since
-                # overlaid action permits modification.
+                # Should fail because it turns into verifying the
+                # overlaying action from unpreserved-overlayer package.
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("verify overlaid")
+                self.pkg("verify overlaid", exit=1)
 
                 # Should fail because overlaying action does not permit
                 # modification.

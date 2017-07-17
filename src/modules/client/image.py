@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -1738,8 +1738,47 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Only after success should the configuration be saved.
                 self.save_config()
 
-        def verify(self, fmri, progresstracker, verifypaths=None,
+        def __process_verify(self, act, path, path_only, fmri, excludes,
+            vardrate_excludes, progresstracker, verifypaths=None,
             overlaypaths=None, **kwargs):
+                errors = []
+                warnings = []
+                info = []
+                if act.include_this(excludes, publisher=fmri.publisher):
+                        if not path_only:
+                                errors, warnings, info = act.verify(
+                                    self, pfmri=fmri, **kwargs)
+                        elif path in verifypaths or path in overlaypaths:
+                                if path in verifypaths:
+                                        progresstracker.plan_add_progress(
+                                            progresstracker.PLAN_PKG_VERIFY)
+
+                                errors, warnings, info = act.verify(
+                                    self, pfmri=fmri, **kwargs)
+                                # It's safe to immediately discard this
+                                # match as only one action can deliver a
+                                # path with overlay=allow and only one with
+                                # overlay=true.
+                                overlaypaths.discard(path)
+                                if act.attrs.get("overlay") == "allow":
+                                        overlaypaths.add(path)
+                                verifypaths.discard(path)
+                elif act.include_this(vardrate_excludes,
+                    publisher=fmri.publisher) and not act.refcountable:
+                        # Verify that file that is faceted out does not
+                        # exist. Exclude actions which may be delivered
+                        # from multiple packages.
+                        if path is not None and os.path.exists(os.path.join(
+                            self.root, path)):
+                                errors.append(_("File should not exist"))
+                else:
+                        # Action that is not applicable to image variant
+                        # or has been dehydrated.
+                        return None, None, None, True
+                return errors, warnings, info, False
+
+        def verify(self, fmri, progresstracker, verifypaths=None,
+            overlaypaths=None, single_act=None, **kwargs):
                 """Generator that returns a tuple of the form (action, errors,
                 warnings, info) if there are any error, warning, or other
                 messages about an action contained within the specified
@@ -1755,10 +1794,42 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 'overlaypaths' is the set of overlaying path to verify.
 
+                'single_act' is the only action of the specified fmri to
+                 verify.
+
                 'kwargs' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
                 path_only = bool(verifypaths or overlaypaths)
+                # pkg verify only looks at actions that have not been dehydrated.
+                excludes = self.list_excludes()
+                vardrate_excludes = [self.cfg.variants.allow_action]
+                dehydrate = self.cfg.get_property("property", "dehydrated")
+                if dehydrate:
+                        func = self.get_dehydrated_exclude_func(dehydrate)
+                        excludes.append(func)
+                        vardrate_excludes.append(func)
+
+                # If single_act is set, only that action will be processed.
+                if single_act:
+                        overlay = None
+                        if single_act.attrs.get("overlay") == "allow":
+                                overlay = "overlaid"
+                        elif single_act.attrs.get("overlay") == "true":
+                                overlay = "overlaying"
+                        progresstracker.plan_add_progress(
+                            progresstracker.PLAN_PKG_VERIFY, nitems=0)
+                        path = single_act.attrs.get("path")
+                        errors, warnings, info, ignore = \
+                            self.__process_verify(single_act,
+                                path, path_only, fmri,
+                                excludes, vardrate_excludes,
+                                progresstracker, verifypaths=verifypaths,
+                                overlaypaths=overlaypaths, **kwargs)
+                        if (errors or warnings or info) and not ignore:
+                                yield single_act, errors, \
+                                    warnings, info, overlay
+                        return
 
                 try:
                         pub = self.get_publisher(prefix=fmri.publisher)
@@ -1791,9 +1862,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                         "check-certificate-revocation"))
                         except apx.SigningException as e:
                                 e.pfmri = fmri
-                                yield e.sig, [e], [], []
+                                yield e.sig, [e], [], [], None
                         except apx.InvalidResourceLocation as e:
-                                yield None, [e], [], []
+                                yield None, [e], [], [], None
 
                 def mediation_allowed(act):
                         """Helper function to determine if the mediation
@@ -1821,17 +1892,18 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         return med_version == cfg_med_version and \
                             med.mediator_impl_matches(med_impl, cfg_med_impl)
 
-                # pkg verify only looks at actions that have not been dehydrated.
-                excludes = self.list_excludes()
-                vardrate_excludes = [self.cfg.variants.allow_action]
-                dehydrate = self.cfg.get_property("property", "dehydrated")
-                if dehydrate:
-                        func = self.get_dehydrated_exclude_func(dehydrate)
-                        excludes.append(func)
-                        vardrate_excludes.append(func)
-
                 for act in manf.gen_actions():
                         path = act.attrs.get("path")
+                        # Defer verification on actions with 'overlay'
+                        # attribute = 'allow'.
+                        if not path_only:
+                                if act.attrs.get("overlay") == "true":
+                                        yield act, [], [], [], "overlaying"
+                                        continue
+                                elif act.attrs.get("overlay"):
+                                        yield act, [], [], [], "overlaid"
+                                        continue
+
 
                         progresstracker.plan_add_progress(
                             progresstracker.PLAN_PKG_VERIFY, nitems=0)
@@ -1843,44 +1915,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 # mediation, so shouldn't be verified.
                                 continue
 
-                        errors = []
-                        warnings = []
-                        info = []
-                        if act.include_this(excludes, publisher=fmri.publisher):
-                                if not path_only:
-                                        errors, warnings, info = act.verify(
-                                            self, pfmri=fmri, **kwargs)
-                                elif path in verifypaths or path in overlaypaths:
-                                        if path in verifypaths:
-                                            progresstracker.plan_add_progress(
-                                                progresstracker.PLAN_PKG_VERIFY)
-
-                                        errors, warnings, info = act.verify(
-                                            self, pfmri=fmri, **kwargs)
-                                        # It's safe to immediately discard this
-                                        # match as only one action can deliver a
-                                        # path with overlay=allow and only one with
-                                        # overlay=true.
-                                        overlaypaths.discard(path)
-                                        if act.attrs.get("overlay") == "allow":
-                                                overlaypaths.add(path)
-                                        verifypaths.discard(path)
-                        elif act.include_this(vardrate_excludes,
-                            publisher=fmri.publisher) and not act.refcountable:
-                                # Verify that file that is faceted out does not
-                                # exist. Exclude actions which may be delivered
-                                # from multiple packages.
-                                if path is not None and os.path.exists(
-                                    os.path.join(self.root, path)):
-                                        errors.append(
-                                            _("File should not exist"))
-                        else:
-                                # Action that is not applicable to image variant
-                                # or has been dehydrated.
-                                continue
-
-                        if errors or warnings or info:
-                                yield act, errors, warnings, info
+                        errors, warnings, info, ignore = self.__process_verify(
+                            act, path, path_only, fmri, excludes,
+                            vardrate_excludes, progresstracker,
+                            verifypaths=verifypaths, overlaypaths=overlaypaths,
+                            **kwargs)
+                        if (errors or warnings or info) and not ignore:
+                                yield act, errors, warnings, info, None
 
         def image_config_update(self, new_variants, new_facets, new_mediators):
                 """update variants in image config"""

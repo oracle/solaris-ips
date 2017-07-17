@@ -1641,10 +1641,10 @@ class ImagePlan(object):
                             mode=mode, owner="root",
                             group="bin", path=pubpath)
 
-        def __get_overlaying_fmri(self, img, act, pfmri):
+        def __get_overlaying(self, img, act, pfmri):
                 """Given an action with attribute overlay=allow, if there is an
                 overlaying action installed in the image, return the overlaying
-                package's name."""
+                package's FMRI and the action."""
 
                 for f in img.gen_installed_pkgs():
                         if f == pfmri:
@@ -1656,23 +1656,43 @@ class ImagePlan(object):
                         if matching:
                                 # Only one action can overlay another, so we
                                 # know we've found a match at this point.
-                                return f.get_pkg_stem(anarchy=True)
+                                return f, matching[0]
+                return None, None
 
-        def __process_verify_result(self, args, img, act, errors, pfmri):
-                """Look further to see if we can include more details in the
-                verify result."""
-
-                if not args or act.name != "file" or \
-                    not act.attrs.get("overlay") == "allow":
-                        # No further processing required.
-                        return False
-
-                # We found errors and this is a file that can be overlaid.
-                overlaying = self.__get_overlaying_fmri(img, act, pfmri)
-                if overlaying:
-                        errors.add(_("verify or fix overlaying package: "
-                            "{0}").format(overlaying))
-                return True
+        def __process_verify_result(self, act, pfmri, pt,
+            verifypaths=None, overlaypaths=None, ovlying_fmri=None,
+            ovlying_act=None, skip_ovlying=False, ovly_entries=None):
+                """Process delayed actions."""
+                if not ovlying_act and not skip_ovlying:
+                        # Find the overlaying fmri/action.
+                        ovlying_fmri, ovlying_act = self.__get_overlaying(
+                            self.image, act, pfmri)
+                # If overlaying action is found, we use the overlaying action
+                # for verification.
+                if ovlying_act:
+                        # Update overlaying entries with the newly found
+                        # overlaying action.
+                        if ovly_entries:
+                                ovlying_path = ovlying_act.attrs.get("path")
+                                if ovlying_path in ovly_entries:
+                                        ovly_entries[ovlying_path].append(
+                                            (ovlying_fmri, ovlying_act,
+                                            "overlaying"))
+                        for oing_act, errors, warnings, pinfo, is_overlaid in \
+                            self.image.verify(pfmri, pt,
+                            verifypaths=verifypaths, overlaypaths=overlaypaths,
+                            single_act=ovlying_act, verbose=True,
+                            forever=True):
+                                return oing_act, errors, warnings, pinfo, \
+                                    ovlying_fmri
+                else:
+                        for olaid_act, errors, warnings, pinfo, is_overlaid \
+                            in self.image.verify(pfmri, pt,
+                            verifypaths=verifypaths, overlaypaths=overlaypaths,
+                            single_act=act, verbose=True, forever=True):
+                                return olaid_act, errors, warnings, pinfo, \
+                                    None
+                return act, [], [], [], None
 
         def __is_active_liveroot_be(self, img):
                 """Check if an image is in an active live be."""
@@ -1811,31 +1831,253 @@ class ImagePlan(object):
                                             msg_type=MSG_UNPACKAGED,
                                             parent="unpackaged")
 
+        def __process_msgs(self, entries, pfmri, msg_level, result, needs_fix,
+            repairs):
+                """Generate plan message for verify result."""
+
+                timestamp = misc.time_to_timestamp(time.time())
+                ffmri = str(pfmri)
+                self.pd.add_item_message(ffmri, timestamp,
+                    msg_level, _("{pkg_name:70} {result:>7}").format(
+                    pkg_name=pfmri.get_pkg_stem(),
+                    result=result))
+                timestamp = misc.time_to_timestamp(time.time())
+
+                for act, errors, warnings, info, oing_fmri in entries:
+                        if act:
+                                item_id = act.distinguished_name()
+                                if oing_fmri:
+                                    item_id += ' (from {0})'.format(
+                                        oing_fmri.get_pkg_stem(anarchy=True))
+                                parent = ffmri
+                        else:
+                                item_id = ffmri
+                                parent = None
+                        for x in errors:
+                                self.pd.add_item_message(item_id,
+                                    timestamp, MSG_ERROR,
+                                    _("ERROR: {0}").format(x),
+                                    parent=parent)
+                        for x in warnings:
+                                self.pd.add_item_message(item_id,
+                                    timestamp, MSG_WARNING,
+                                    _("WARNING: {0}").format(x),
+                                    parent=parent)
+                        for x in info:
+                                self.pd.add_item_message(item_id,
+                                    timestamp, MSG_INFO,
+                                    _("{0}").format(x),
+                                    parent=parent)
+
+                if needs_fix:
+                    # Eliminate policy-based entries with no repair
+                    # action.
+                    for x in needs_fix:
+                        if x[0] in repairs:
+                            if x[1] is not None:
+                                repairs[x[0]].append(
+                                    x[1])
+                        else:
+                            if x[1] is None:
+                                repairs[x[0]] = []
+                            else:
+                                repairs[x[0]] = [x[1]]
+
+        def __get_overlaying_act_from_cache(self, path, overlay_entries):
+                """Get overlaying action from overlay_entries cache."""
+
+                for e in overlay_entries[path]:
+                        if e[2] == 'overlaying':
+                                return e[0], e[1]
+                return None, None
+
+        def __add_to_processed(self, oing_fmri, overlay, def_pkgs, pfmri, act,
+            errors, warnings, pinfo):
+                """Add newly processed actions results into cache."""
+
+                # If found overlaying package.
+                if oing_fmri:
+                        # If the action is an overlaid one, attach the
+                        # overlaying fmri for msg print.
+                        if overlay == "overlaid":
+                            def_pkgs[
+                                pfmri].append((act, errors, warnings, pinfo,
+                                oing_fmri))
+                        # The overlaying action is itself.
+                        else:
+                            def_pkgs[
+                                pfmri].append((act, errors, warnings, pinfo,
+                                None))
+                else:
+                        def_pkgs[
+                            pfmri].append((act, errors, warnings, pinfo,
+                            None))
+
+        def __process_per_overlay_action(self, args, pfmri, entry,
+            def_pkgs, verifypaths, overlaypaths, overlay_entries, pt):
+                """Process per overlay action."""
+
+                act = entry[0]
+                overlay = entry[1]
+                path = act.attrs.get("path")
+                # Try the overlay_entries cache first.
+                oing_fmri, oing_act = \
+                    self.__get_overlaying_act_from_cache(
+                        path, overlay_entries)
+                # If found, process it directly.
+                if oing_act:
+                    act, errors, warnings, pinfo, \
+                    oing_fmri = \
+                        self.__process_verify_result(
+                            act, pfmri, pt,
+                            verifypaths=verifypaths,
+                            overlaypaths=overlaypaths,
+                            ovlying_fmri=oing_fmri,
+                            ovlying_act=oing_act)
+                elif args:
+                        # Not all fmris were processed, we need to find the
+                        # overlaying action.
+                        #
+                        # Also need to collect newly found overlaying
+                        # actions into overlay_entries if any.
+                        act, errors, warnings, pinfo, oing_fmri = \
+                            self.__process_verify_result(
+                            act, pfmri, pt,
+                            verifypaths=verifypaths,
+                            overlaypaths=overlaypaths,
+                            ovly_entries=overlay_entries)
+                else:
+                        # All fmris were processed, if the cache didn't contain
+                        # the action, that means no overlaying action.
+                        #
+                        # We need to skip overlaying action finding, since we
+                        # already know no overlaying action in the cache.
+                        act, errors, warnings, pinfo, oing_fmri = \
+                            self.__process_verify_result(
+                            act, pfmri, pt,
+                            verifypaths=verifypaths,
+                            overlaypaths=overlaypaths,
+                            skip_ovlying=True)
+                self.__add_to_processed(oing_fmri, overlay, def_pkgs, pfmri,
+                    act, errors, warnings, pinfo)
+
+        def __check_attr_mismatch_between_actions(self, overlaid, overlaying):
+                """Check attribute mismatch between overlaying and overlaid
+                 actions."""
+
+                overlaid_act = overlaid[1]
+                overlaying_act = overlaying[1]
+                o_attr_overlaid = overlaid_act.attrs.get("overlay-attributes")
+                o_attr_overlaying = overlaying_act.attrs.get(
+                    "overlay-attributes")
+                owner_overlaid = overlaid_act.attrs["owner"]
+                owner_overlaying = overlaying_act.attrs["owner"]
+                mode_overlaid = overlaid_act.attrs["mode"]
+                mode_overlaying = overlaying_act.attrs["mode"]
+                group_overlaid = overlaid_act.attrs["group"]
+                group_overlaying = overlaying_act.attrs["group"]
+
+                msgs = []
+                if owner_overlaid != owner_overlaying:
+                        msgs.append(_("owner: {0} does not match overlaid "
+                            "package owner: {1}").format(owner_overlaying,
+                            owner_overlaid))
+                if mode_overlaid != mode_overlaying:
+                        msgs.append(_("mode: {0} does not match overlaid "
+                            "package mode: {1}").format(mode_overlaying,
+                            mode_overlaid))
+                if group_overlaid != group_overlaying:
+                        msgs.append(_("group: {0} does not match overlaid "
+                            "package group: {1}").format(group_overlaying,
+                            group_overlaid))
+                if not msgs:
+                        return
+
+                item_id = str(overlaying[0])
+                act_id = overlaid_act.distinguished_name()
+                msg_level = MSG_INFO
+                result = "OK"
+
+                if o_attr_overlaid == "deny" or o_attr_overlaying == "deny":
+                        msg_level = MSG_ERROR
+
+                # Check if there is already an FMRI-level message;
+                # update it or add a new one if necessary.
+                item_msgs = self.pd.get_parsable_item_messages()
+                added_msgs = None
+                if item_id in item_msgs and "messages" in item_msgs[item_id]:
+                        added_msgs = item_msgs[item_id]["messages"]
+                add_msg = False
+                if added_msgs:
+                        if (added_msgs[0]["msg_level"] == MSG_INFO and
+                            msg_level == MSG_ERROR):
+                                # Empty the current message list.
+                                added_msgs[:] = []
+                                add_msg = True
+                else:
+                        add_msg = True
+
+                timestamp = misc.time_to_timestamp(time.time())
+                if add_msg:
+                        self.pd.add_item_message(item_id, timestamp, msg_level,
+                            _("{pkg_name:70} {result:>7}").format(
+                            pkg_name=overlaying[0].get_pkg_stem(),
+                            result=result))
+                self.pd.add_item_message(act_id, timestamp, msg_level,
+                    _("Overlaid package: {0}").format(
+                    overlaid[0].get_pkg_stem()), parent=item_id)
+
+                for msg in msgs:
+                        if msg_level == MSG_ERROR:
+                                imsg = _("ERROR: {0}").format(msg)
+                        else:
+                                imsg = msg
+                        self.pd.add_item_message(act_id, timestamp, msg_level,
+                            imsg, parent=item_id)
+
         def __verify_fmris(self, repairs, args, proposed_fmris, pt, verifypaths,
             overlaypaths):
+                """Verify FRMIs."""
+
                 path_only = bool(verifypaths or overlaypaths)
+                overlay_entries = {}
+                def_pkgs = {}  # deferred packages
+                def_acts = {}  # deferred actions
                 for pfmri in proposed_fmris:
                         entries = []
                         needs_fix = []
                         result = "OK"
                         failed = False
                         msg_level = MSG_INFO
-                        ffmri = str(pfmri)
 
                         # Since every entry returned by verify might not be
                         # something needing repair, the relevant information
                         # for each package must be accumulated first to find
                         # an overall success/failure result and then the
                         # related messages output for it.
-                        process_overlay = False
-                        errs = set()
                         verify_path_count = len(verifypaths)
                         overlay_path_count = len(overlaypaths)
-                        for act, errors, warnings, pinfo in self.image.verify(
-                            pfmri, pt, verifypaths=verifypaths,
-                            overlaypaths=overlaypaths, verbose=True, forever=True):
-                                # determine the package's status and message
-                                # type
+                        for act, errors, warnings, pinfo, overlay in \
+                            self.image.verify(pfmri, pt,
+                            verifypaths=verifypaths,
+                            overlaypaths=overlaypaths, verbose=True,
+                            forever=True):
+                                if not path_only and overlay:
+                                        path = act.attrs.get("path")
+                                        if path not in overlay_entries:
+                                            overlay_entries[path] = []
+                                        overlay_entries[path].append(
+                                            (pfmri, act, overlay))
+
+                                        if pfmri not in def_acts:
+                                            def_acts[pfmri] = []
+                                        def_acts[pfmri].append((act, overlay))
+                                else:
+                                        entries.append((act, errors, warnings,
+                                            pinfo, None))
+                                # Try to determine the package's status and
+                                # message type. This is subject to change if
+                                # the package contains overlay actions.
                                 if errors:
                                         failed = True
                                         result = "ERROR"
@@ -1843,72 +2085,82 @@ class ImagePlan(object):
                                         # Some errors are based on policy (e.g.
                                         # signature policy) and not a specific
                                         # action, so act may be None.
-                                        needs_fix.append(act)
-                                        if (not path_only and act and
-                                            not process_overlay):
-                                                # We only do this for package
-                                                # verification. In path verification,
-                                                # if the action has overlay=allow,
-                                                # its path will be in 'overlaypaths'
-                                                # and we will later look for the
-                                                # overlaying file anyway.
-                                                process_overlay = \
-                                                    self.__process_verify_result(
-                                                        args, self.image,
-                                                        act, errs, pfmri)
+                                        needs_fix.append((pfmri, act))
                                 elif not failed and warnings:
                                         result = "WARNING"
                                         msg_level = MSG_WARNING
 
-                                entries.append((act, errors, warnings, pinfo))
+                        # Defer final processing of package if verification was
+                        # deferred for any of its actions.
+                        if pfmri in def_acts:
+                                def_pkgs[pfmri] = entries
+                                continue
 
                         if (path_only and verify_path_count == len(verifypaths)
                             and overlay_path_count == len(overlaypaths)):
                                 # When verifying paths, omit packages without any
                                 # matches from output.
                                 continue
-                        timestamp = misc.time_to_timestamp(time.time())
-                        self.pd.add_item_message(ffmri, timestamp,
-                            msg_level, _("{pkg_name:70} {result:>7}").format(
-                            pkg_name=pfmri.get_pkg_stem(),
-                            result=result))
-                        timestamp = misc.time_to_timestamp(time.time())
-                        for e in errs:
-                                self.pd.add_item_message("overlay_errors",
-                                    timestamp, msg_level, e, parent=ffmri)
-
-                        for act, errors, warnings, info in entries:
-                                if act:
-                                        item_id = act.distinguished_name()
-                                        parent = ffmri
-                                else:
-                                        item_id = ffmri
-                                        parent = None
-                                for x in errors:
-                                        self.pd.add_item_message(item_id,
-                                            timestamp, MSG_ERROR,
-                                            _("ERROR: {0}").format(x),
-                                            parent=parent)
-                                for x in warnings:
-                                        self.pd.add_item_message(item_id,
-                                            timestamp, MSG_WARNING,
-                                            _("WARNING: {0}").format(x),
-                                            parent=parent)
-                                for x in info:
-                                        self.pd.add_item_message(item_id,
-                                            timestamp, MSG_INFO,
-                                            _("{0}").format(x),
-                                            parent=parent)
-
-                        if needs_fix:
-                                # Eliminate policy-based entries with no repair
-                                # action.
-                                needs_fix = [x for x in needs_fix
-                                             if x is not None]
-                                repairs.append((pfmri, needs_fix))
-
+                        self.__process_msgs(entries, pfmri, msg_level, result,
+                            needs_fix, repairs)
                         if path_only and not overlaypaths and not verifypaths:
                                 return
+
+                # No need to proceed for path only case.
+                if path_only:
+                        return
+
+                # Process deferred actions.
+                for pfmri, entries in def_acts.items():
+                        for entry in entries:
+                                self.__process_per_overlay_action(args, pfmri,
+                                    entry, def_pkgs, verifypaths,
+                                    overlaypaths, overlay_entries, pt)
+
+                # Generate messages for all processed packages with overlay
+                # actions.
+                for pfmri, entries in def_pkgs.items():
+                        failed = False
+                        result = "OK"
+                        msg_level = MSG_INFO
+                        needs_fix = []
+                        for act, errors, warnings, pinfo, oing_fmri in entries:
+                                # Try to determine the package's status and
+                                # message type.
+                                if errors:
+                                        failed = True
+                                        result = "ERROR"
+                                        msg_level = MSG_ERROR
+                                        if oing_fmri:
+                                                # Only append overlaying action
+                                                # if not all packages are
+                                                # verified. Otherwise, the
+                                                # overlaying action will be
+                                                # append later.
+                                                if args:
+                                                        needs_fix.append((
+                                                            oing_fmri, act))
+                                        else:
+                                                needs_fix.append((pfmri, act))
+                                elif not failed and warnings:
+                                        result = "WARNING"
+                                        msg_level = MSG_WARNING
+
+                        self.__process_msgs(entries, pfmri, msg_level, result,
+                            needs_fix, repairs)
+
+                # Generate overlay-specific messages.
+                for path, entries in overlay_entries.items():
+                        overlaid = None
+                        overlaying = None
+                        for e in entries:
+                                if e[2] == "overlaid":
+                                        overlaid = e
+                                elif e[2] == "overlaying":
+                                        overlaying = e
+                        if overlaid and overlaying:
+                                self.__check_attr_mismatch_between_actions(
+                                    overlaid, overlaying)
 
         def plan_fix(self, args, unpackaged=False, unpackaged_only=False,
                 verify_paths=misc.EmptyI):
@@ -1935,7 +2187,7 @@ class ImagePlan(object):
                         proposed_fixes = list(self.image.gen_installed_pkgs(
                             ordered=True))
 
-                repairs = []
+                repairs = {}
                 overlaypaths = set()
                 verifypaths = set(a.lstrip(os.path.sep) for a in verify_paths)
 
@@ -1992,7 +2244,6 @@ class ImagePlan(object):
                                     set(), overlaypaths)
 
                 pt.plan_done(pt.PLAN_PKG_VERIFY)
-
                 # If no repairs, finish the plan.
                 if not repairs:
                         self.__finish_plan(plandesc.EVALUATED_PKGS)
@@ -2000,7 +2251,7 @@ class ImagePlan(object):
 
                 # Repair anything we failed to verify.
                 pt.plan_start(pt.PLAN_PKG_FIX, goal=len(repairs))
-                for fmri, actions in repairs:
+                for fmri, actions in repairs.items():
                         pt.plan_add_progress(pt.PLAN_PKG_FIX)
                         # Need to get all variants otherwise evaluating the
                         # pkgplan will fail in signature verification.
@@ -2366,8 +2617,24 @@ class ImagePlan(object):
                         if overlayable and overlay:
                                 # Found both an overlayable action and the
                                 # action that overlays it.
+                                ignore = ["preserve"]
+                                # If neither overlay nor overlayable action
+                                # has "deny" set in "overlay-attributes"
+                                if ("deny" not in overlay.attrlist(
+                                    "overlay-attributes") and "deny" not in
+                                    overlayable.attrlist(
+                                    "overlay-attributes")):
+                                        ignore.extend(["owner", "group",
+                                            "mode", "sysattr"])
+                                # Need to verify mismatched attributes between
+                                # overlaying action and overlaid action in
+                                # testsuite.
+                                elif DebugValues[
+                                    "broken-conflicting-action-handling"]:
+                                        ignore.extend(["owner", "group",
+                                            "mode", "sysattr"])
                                 errors = ImagePlan.__find_inconsistent_attrs(
-                                    actions, ignore=["preserve"])
+                                    actions, ignore=ignore)
                                 if errors:
                                         # overlay is not permitted if unique
                                         # attributes (except 'preserve') are
