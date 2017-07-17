@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -125,6 +125,12 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add file amber2 mode=0555 owner=root group=bin sysattr=sensitive path=amber2 timestamp=20100731T014051Z
             close"""
 
+        sysattr_no_overlay = """
+            open sysattr-no-overlay@1.0-0
+            add file amber1 mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1
+            add file amber2 mode=0555 owner=root group=bin sysattr=sensitive path=amber2
+            close"""
+
         sysattr_o = """
             open sysattr_overlay@1.0-0
             add file mode=0555 owner=root group=bin sysattr=sensitive preserve=true path=amber1 overlay=true
@@ -141,6 +147,32 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add file mech_2 path=etc/gss/mech owner=root group=sys mode=0644 overlay=true preserve=renameold
             add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold
             close """
+
+        # Mismatched group attribute between file mech_1 and mech_2.
+        mismatched_attr = """
+            open gss-no-attr@1.0-0
+            add file mech_1 path=etc/gss/mech owner=root group=sys mode=0644 overlay=allow preserve=renameold
+            add file mech_3 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=allow preserve=renameold
+            close
+            open krb5-no-attr@1.0-0
+            add file mech_2 path=etc/gss/mech owner=root group=bin mode=0664 overlay=true preserve=renameold
+            add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold
+            open gss-attr-allow@1.0-0
+            add file mech_1 path=etc/gss/mech owner=root group=sys mode=0644 overlay=allow preserve=renameold overlay-attributes=allow
+            add file mech_3 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=allow preserve=renameold
+            close
+            open krb5-attr-allow@1.0-0
+            add file mech_2 path=etc/gss/mech owner=root group=bin mode=0664 overlay=true preserve=renameold overlay-attributes=allow
+            add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold
+            close
+            open gss-attr-deny@1.0-0
+            add file mech_1 path=etc/gss/mech owner=root group=sys mode=0644 overlay=allow preserve=renameold overlay-attributes=deny
+            add file mech_3 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=allow preserve=renameold overlay-attributes=deny
+            close
+            open krb5-attr-deny@1.0-0
+            add file mech_2 path=etc/gss/mech owner=root group=bin mode=0664 overlay=true preserve=renameold overlay-attributes=deny
+            add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold overlay-attributes=deny
+            close"""
 
         misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum", "amber1", "amber2",
@@ -162,8 +194,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 for p in self.pkgsend_bulk(self.rurl, (self.amber10,
                     self.licensed13, self.dir10, self.file10, self.preserve10,
                     self.preserve11, self.preserve12, self.driver10,
-                    self.driver_prep10, self.sysattr, self.sysattr_o, self.gss,
-                    self.krb, self.pkg_dupfile, self.pkg_duplink)):
+                    self.driver_prep10, self.sysattr, self.sysattr_no_overlay, self.sysattr_o, self.gss,
+                    self.krb, self.pkg_dupfile, self.pkg_duplink, self.mismatched_attr)):
                         pfmri = fmri.PkgFmri(p)
                         old_publisher = pfmri.publisher
                         pfmri.publisher = None
@@ -306,7 +338,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(size1, size2)
 
         def __do_alter_verify(self, pfmri, verbose=False, quiet=False, exit=0,
-            parsable=False):
+            parsable=False, validate=True):
                 # Alter the owner, group, mode, and timestamp of all files (and
                 # directories) to something different than the package declares.
                 m = manifest.Manifest()
@@ -340,6 +372,12 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         return exit
 
                 editables = []
+                # For actions being overlaid, the following logic will
+                # not report correct validation results because it is
+                # only against the overlaid fmri. So we just return.
+                if not validate:
+                        return
+
                 # Now verify that fix actually fixed them.
                 for a in m.gen_actions():
                         if a.name not in ("file", "dir"):
@@ -477,7 +515,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.durl)
                 configure_cb()
                 for p in ("file@1.0-0","preserve@1.0-0", "preserve@1.1-0",
-                        "preserve@1.2-0", "amber@1.0-0", "sysattr@1.0-0"):
+                        "preserve@1.2-0", "amber@1.0-0", "sysattr-no-overlay@1.0-0"):
                         pfmri = self.plist[p]
                         self.pkg("install {0}".format(pfmri))
                         offline_cb()
@@ -564,7 +602,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install file")
 
                 self.pkg("set-property signature-policy require-signatures")
-                self.pkg("fix", exit=1)
+                self.pkg("fix -v", exit=1)
 
                 # Specify location as filesystem path.
                 self.pkgsign_simple(self.dc.get_repodir(), "file")
@@ -606,6 +644,176 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.__do_alter_verify(pfmri, quiet=True)
                 assert(self.output == "")
 
+        def __do_alter_only_verify(self, pfmri, verbose=False, quiet=False, exit=0,
+            parsable=False, debug=""):
+                # Alter the owner, group, mode of all files (and
+                # directories) to something different than the package declares.
+                m = manifest.Manifest()
+                m.set_content(self.get_img_manifest(pfmri))
+                for a in m.gen_actions():
+                        if a.name not in ("file", "dir"):
+                                # Only want file or dir actions.
+                                continue
+
+                        ubin = portable.get_user_by_name("bin", None, False)
+                        groot = portable.get_group_by_name("root", None, False)
+
+                        fname = a.attrs["path"]
+                        fpath = os.path.join(self.get_img_path(), fname)
+                        os.chown(fpath, ubin, groot)
+                        os.chmod(fpath, misc.PKG_RO_FILE_MODE)
+
+                verify_cmd = "verify"
+                if verbose:
+                        verify_cmd += " -v"
+                if quiet:
+                        verify_cmd += " -q"
+                if parsable:
+                        verify_cmd += " --parsable=0"
+
+                self.pkg("{0}{1} {2}".format(debug, verify_cmd, pfmri),
+                    exit=exit)
+                if exit == 0:
+                        self.assertTrue("OK" in self.output and "ERROR" not
+                            in self.output)
+                return exit
+
+        def __check_overlay_attr_verify(self, pkg, exit=0, new_img=True, debug=""):
+                if new_img:
+                        self.image_create(self.rurl)
+                pfmri = self.plist[pkg]
+                self.pkg("-D broken-conflicting-action-handling=1 install {0}".format(pkg))
+                return self.__do_alter_only_verify(pfmri, exit=exit, verbose=True, debug=debug)
+
+        def __check_overlay_attr_fix(self, pkg, exit=0, new_img=True):
+                if new_img:
+                        self.image_create(self.rurl)
+                pfmri = self.plist[pkg]
+                self.pkg("-D broken-conflicting-action-handling=1 install {0}".format(pkg))
+                return self.__do_alter_verify(pfmri, exit=exit, verbose=True)
+
+        def test_verify_fix_overlay_attributes(self):
+                """Test verify/fix behaviour for overlay-attributes attribute."""
+
+                # Changing on-disk action attributes should always fail.
+                self.__check_overlay_attr_verify("gss@1.0-0", exit=1)
+                # Changing on-disk action attributes should always fail.
+                self.__check_overlay_attr_verify("krb5@1.0-0", exit=1,
+                    new_img=False)
+                self.assertTrue("(from " not in self.output)
+                file_path = "etc/gss/mech"
+                self.pkg("verify -v -p {0}".format(file_path), exit=1)
+                self.assertTrue("pkg://test/gss" in self.output)
+                self.assertTrue("pkg://test/krb5" in self.output)
+                self.assertTrue("ERROR: Owner: 'bin (2)' should be 'root (0)'"
+                    in self.output)
+
+                # Verify overlaid package should turn into checking its
+                # overlaying action (the on-disk one), and fail.
+                self.__do_alter_only_verify(self.plist["gss@1.0-0"],
+                    verbose=True, exit=1)
+                self.assertTrue("(from pkg:/krb5" in self.output)
+                # Verify all packages.
+                self.pkg("verify -v", exit=1)
+
+                # Changing on-disk action attributes should always fail.
+                self.__check_overlay_attr_verify("gss-no-attr@1.0-0", exit=1)
+                # Changing on-disk action attributes should always fail.
+                self.__check_overlay_attr_verify("krb5-no-attr@1.0-0", exit=1,
+                    new_img=False)
+                # Verify overlaid package should turn into checking its
+                # overlaying action (the on-disk one), and fail.
+                self.__do_alter_only_verify(self.plist["gss-no-attr@1.0-0"],
+                    verbose=True, exit=1)
+                self.assertTrue("(from pkg:/krb5" in self.output)
+                self.assertTrue("Overlaid package: pkg://test/gss-no-attr"
+                    in self.output)
+                self.assertTrue("mode: 0664 does not match overlaid package mode: 0644"
+                    in self.output)
+                # Verify all packages.
+                self.pkg("verify -v", exit=1)
+                self.assertTrue("Overlaid package" in self.output)
+
+                self.pkg("verify -v -p {0}".format(file_path), exit=1)
+                self.assertTrue("pkg://test/krb5-no-attr" in self.output)
+                self.assertTrue("pkg://test/gss-no-attr" in self.output)
+                self.assertTrue("ERROR: Owner: 'bin (2)' should be 'root (0)'"
+                    in self.output)
+
+                # Changing on-disk action attributes should always fail.
+                self.__check_overlay_attr_verify("gss-attr-allow@1.0-0", exit=1)
+
+                # Changing on-disk action attributes should always fail.
+                exit = self.__check_overlay_attr_verify("krb5-attr-allow@1.0-0",
+                    exit=1, new_img=False)
+                self.assertTrue(exit == 1)
+                self.assertTrue("(from " not in self.output)
+
+                # Verify overlaid package should still fail, because it
+                # turn into checking its overlaying action (the on-disk one).
+                self.__do_alter_only_verify(self.plist["gss-attr-allow@1.0-0"],
+                    verbose=True, exit=1)
+                self.assertTrue("(from pkg:/krb5" in self.output)
+                self.assertTrue("Overlaid package: pkg://test/gss-attr-allow"
+                    in self.output)
+                self.assertTrue("mode: 0664 does not match overlaid package mode: 0644"
+                    in self.output)
+                # Verify all packages.
+                self.pkg("verify -v", exit=1)
+                self.assertTrue("Overlaid package" in self.output)
+
+                # Changing on-disk action should always fail.
+                exit = self.__check_overlay_attr_verify("gss-attr-deny@1.0-0", exit=1)
+                self.assertTrue(exit == 1)
+                self.assertTrue("(from " not in self.output)
+
+                # Verify overlaid package should still fail, because it
+                # turn into checking its overlaying action (the on-disk one).
+                exit = self.__check_overlay_attr_verify("krb5-attr-deny@1.0-0",
+                    exit=1, new_img=False, debug="-D broken-conflicting-action-handling=1 ")
+                self.assertTrue("(from " not in self.output)
+                self.assertTrue(exit == 1)
+
+                # Verify overlaid package should turn into checking its
+                # overlaying action (the on-disk one), and fail.
+                self.__do_alter_only_verify(self.plist["gss-attr-deny@1.0-0"],
+                    verbose=True, exit=1, debug="-D broken-conflicting-action-handling=1 ")
+                self.assertTrue("(from pkg:/krb5" in self.output)
+                self.assertTrue("Overlaid package: pkg://test/gss-attr-deny"
+                    in self.output)
+                self.assertTrue("ERROR: mode: 0664 does not match overlaid package mode: 0644"
+                    in self.output)
+                # Verify all packages.
+                self.pkg("-D broken-conflicting-action-handling=1 verify -v", exit=1)
+                self.assertTrue("Overlaid package" in self.output)
+                self.assertTrue("ERROR: mode: 0664 does not match overlaid package mode: 0644"
+                    in self.output)
+
+                # Should be fixed, since on-disk actions should not be changed.
+                exit = self.__check_overlay_attr_fix("gss@1.0-0", exit=0)
+
+                # Should be fixed, since on-disk actions should not be changed.
+                self.__check_overlay_attr_fix("krb5@1.0-0")
+
+                # Should be fixed, since on-disk actions should not be changed.
+                exit = self.__check_overlay_attr_fix("gss-attr-allow@1.0-0", exit=0)
+                # Should be fixed, since on-disk actions should not be changed.
+                self.__check_overlay_attr_fix("krb5-attr-allow@1.0-0",
+                    exit=0, new_img=False)
+                # The on-disk overlaying action should be fixed.
+                self.__do_alter_verify(self.plist["gss-attr-allow@1.0-0"],
+                    exit=0, verbose=True, validate=False)
+                # Post verify the above has been fixed.
+                self.pkg("verify -v gss-attr-allow@1.0-0")
+                self.assertTrue("Overlaid package" in self.output)
+                self.pkg("verify krb5-attr-allow@1.0-0")
+
+                # Should be fixed, since on-disk actions should not be changed.
+                self.__check_overlay_attr_fix("gss-attr-deny@1.0-0")
+
+                # Should be fixed, since on-disk actions should not be changed.
+                self.__check_overlay_attr_fix("krb5-attr-deny@1.0-0")
+
         def test_fix_overlay(self):
                 """Test that pkg verify / fix should tell the users to look at
                 the overlaying package in the error message if fix won't repair
@@ -644,7 +852,9 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # Fix should be able to repair the file.
                 self.pkg("fix -v gss")
                 self.file_exists(file_path)
-                self.__do_alter_verify(pfmri_gss)
+                # On-disk action attributes should be changed and should be
+                # fixed.
+                self.__do_alter_verify(pfmri_gss, exit=0)
 
                 # Install the overlaying package.
                 self.pkg("install krb5")
@@ -682,25 +892,19 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                     and pfmri_gss.get_pkg_stem() in self.output)
 
                 # Now pkg verify should still report an error on the overlaid
-                # package and tell the users to verify the overlaying package.
+                # package and tell the users it is from the overlaying package.
                 self.pkg("verify gss", exit=1)
-                self.assertTrue("package: {0}".format(
+                self.assertTrue("from {0}".format(
                     pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
                 # Verify should report an error on the overlaying package.
                 self.pkg("verify krb5", exit=1)
-                # Fix won't repair the overlaid package but will tell the users
-                # to fix the overlaying package in the verbose mode.
-                self.pkg("fix gss", exit=4)
-                self.pkg("fix -v gss", exit=4)
-                self.assertTrue("Could not repair: {0}".format(pfmri_gss) in
-                    self.output)
-                self.assertTrue("package: {0}".format(
-                    pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
-                self.file_doesnt_exist(file_path)
+                # Fix will fix the overlaying action (from krb5) for gss
+                # directly.
+                self.pkg("fix gss")
+                self.file_exists(file_path)
 
-                # Fix should be able to repair the file by fixing the overlaying
-                # package.
-                self.pkg("fix -v pkg:/krb5")
+                # Fix has fixed that one before.
+                self.pkg("fix -v pkg:/krb5", exit=4)
                 self.pkg("verify gss")
                 self.file_exists(file_path)
 
@@ -708,28 +912,19 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.file_remove(file_path)
                 self.file_remove(file_path_1)
                 self.pkg("verify gss", exit=1)
-                # Test that the overlay warning only emits once for each
-                # package.
-                self.pkg("verify gss | grep 'verify or fix' | wc -l | grep 1")
                 self.pkg("fix krb5")
 
                 # Test the owner, group and mode change.
-                self.__do_alter_verify(pfmri_gss, verbose=True, exit=4)
-                self.assertTrue("Could not repair: {0}".format(pfmri_gss) in
-                    self.output)
-                self.assertTrue("package: {0}".format(
-                    pfmri_krb.get_pkg_stem(anarchy=True)) in self.output)
+                self.__do_alter_verify(pfmri_gss, verbose=True)
                 self.__do_alter_verify(pfmri_krb, verbose=True)
 
                 # Test that verify / fix on system wide could report / fix the
                 # error on the overlaid and overlaying packges.
                 self.file_remove(file_path)
                 self.pkg("verify", exit=1)
-                # Test that verify / fix on all packages should not emit the
-                # overlaying warning.
-                self.assertTrue("verify or fix" not in self.output)
+                self.assertTrue("(from " in self.output)
                 self.pkg("fix")
-                self.assertTrue("verify or fix" not in self.output)
+                self.assertTrue("(from " in self.output)
                 self.pkg("verify")
                 self.file_exists(file_path)
 
@@ -757,12 +952,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 os.chmod(fpath, 0o555)
                 os.chown(fpath, -1, 2)
                 self.pkg("verify sysattr", exit=1)
-                self.pkg("fix -v sysattr", exit=4)
-                self.assertTrue("Could not repair: {0}".format(pfmri_sysattr) in
-                    self.output, self.plist)
-                self.assertTrue("package: {0}".format(
+                self.pkg("fix -v sysattr")
+                self.assertTrue("from {0}".format(
                     pfmri_sysattr_o.get_pkg_stem(anarchy=True)) in self.output)
-                self.pkg("fix sysattr_overlay")
+                self.pkg("fix sysattr_overlay", exit=4)
                 self.pkg("verify sysattr")
                 self.image_destroy()
 

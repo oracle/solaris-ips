@@ -1247,15 +1247,15 @@ def __print_verify_result(op, api_inst, plan, noexecute, omit_headers,
                         # Top level message.
                         if not parent_id:
                                 msg(msg_text)
-                        elif item_id == "overlay_errors":
-                                msg(_("\t{0}").format(msg_text))
                         elif last_item_id != item_id:
                                 # A new action id; we need to print it out and
                                 # then group its subsequent messages.
-                                msg(_("\t{0}\n\t\t{1}").format(item_id,
-                                    msg_text))
+                                msg(_("\t{0}").format(item_id))
+                                if msg_text:
+                                        msg(_("\t\t{0}").format(msg_text))
                         else:
-                                msg(_("\t\t{0}").format(msg_text))
+                                if msg_text:
+                                        msg(_("\t\t{0}").format(msg_text))
                         last_item_id = item_id
                         did_print_something = True
         else:

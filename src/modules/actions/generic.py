@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -758,6 +758,9 @@ class Action(six.with_metaclass(NSG, object)):
                                 continue
                         # keep file action overlay attributes
                         if self.name == "file" and key == "overlay":
+                                continue
+                        # keep file action overlay-attributes attributes
+                        if self.name == "file" and key == "overlay-attributes":
                                 continue
                         # keep specified keys
                         if key in preserve.get(self.name, []):

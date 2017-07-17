@@ -7,11 +7,11 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">21 Apr 2016</refmiscinfo>
+<refmiscinfo class="date">30 May 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -309,6 +309,27 @@ of the file are preserved if the action being overlaid is still installed,
 regardless of whether the <literal>preserve</literal> attribute was specified.
 Only one action can overlay another, and the <literal>mode</literal>, <literal>owner
 </literal>, and <literal>group</literal> attributes must match.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay-attributes</literal></term>
+<listitem><para>Specifies whether image-modifying operations such as install,
+update, etc. should report errors when an overlaying action has a different
+<literal>owner</literal>, <literal>group</literal>, <literal>mode</literal>
+or <literal>sysattr</literal> from its overlaid action.
+<literal>overlay-attributes</literal> is usually used in actions with
+<literal>overlay</literal> equal to <literal>allow</literal> or
+<literal>deny</literal>. When the value of
+<literal>overlay-attributes</literal> for either overlaying action or overlaid
+action is <literal>deny</literal>, an error will be generated during image-modifying
+operations. Also verification operations will generate an error on those mismatched attributes:
+<literal>owner</literal>, <literal>group</literal> and <literal>mode</literal>
+if <literal>overlay</literal> is equal to <literal>deny</literal> for a pair of
+overlaid and overlaying action. Otherwise, an info message will be generated on
+the above mismatched attributes for the pair. Regardless of the value of
+<literal>overlay-attributes</literal>, mismatched attributes
+when comparing the on-disk attributes of a file to its packaged
+version will always be reported as errors.
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>dehydrate</literal></term>
