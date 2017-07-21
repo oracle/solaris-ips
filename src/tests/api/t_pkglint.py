@@ -2377,10 +2377,10 @@ class TestLintEngineDepot(pkg5unittest.ManyDepotTestCase):
         ref_mf["ref-ancient-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to an earlier release than
-# 0.140. This manifest has an intentional error, which we should detect when
+# 139 This manifest has an intentional error, which we should detect when
 # linting against build 139.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.139
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.139.0
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2394,9 +2394,9 @@ dir group=sys mode=0755 owner=root path=etc
         ref_mf["ref-old-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to an earlier release than
-# 0.141
+# 141
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.140
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.140.0
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2407,9 +2407,9 @@ dir group=sys mode=0755 owner=root path=etc
 """
         ref_mf["ref-sample1.mf"] = """
 #
-# A sample package which delivers several actions, to 0.141
+# A sample package which delivers several actions, to 11.4.0.0.0.141.0
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2423,7 +2423,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # A sample package which delivers several actions
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/additional@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/additional@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2438,7 +2438,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # A sample package which delivers several actions
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/more@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/more@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2452,7 +2452,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # This is not an obsolete package - used to check versioning
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.140
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@11.4-11.4.0.0.0.140.0
 set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
@@ -2461,7 +2461,7 @@ set name=variant.arch value=i386
 #
 # This is a perfectly valid example of an obsolete package
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@11.4-11.4.0.0.0.141.0
 set name=pkg.obsolete value=true variant.arch=i386
 set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
@@ -2472,7 +2472,7 @@ set name=variant.arch value=i386
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
 # we don't declare a dependency on the package delivering the legacy action.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2494,7 +2494,7 @@ set name=pkg.description value="A package with two values for variant.arch."
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.fmri value=pkg://opensolaris.org/variant/twovar@0.5.11,5.11-0.148:20100910T211706Z
+set name=pkg.fmri value=pkg://opensolaris.org/variant/twovar@11.4-11.4.0.0.0.148.0:20100910T211706Z
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.opensolaris.zone=global
 """
         ref_mf["no_rename-dummy-ancestor.mf"] = """
@@ -2502,7 +2502,7 @@ dir group=sys mode=0755 owner=root path=kernel/strmod variant.opensolaris.zone=g
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
 # we don't declare a dependency on the FMRI delivered by it.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr-norename@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr-norename@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2515,7 +2515,7 @@ depend fmri=system/kernel type=require
 #
 # A package with a legacy action that points to a renamed ancestor
 #
-set name=pkg.fmri value=pkg://opensolaris.org/legacy-uses-renamed-ancestor@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/legacy-uses-renamed-ancestor@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2528,7 +2528,7 @@ legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific inst
 #
 # The ancestor referred to above, but we've renamed it
 #
-set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-old@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-old@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2542,7 +2542,7 @@ depend fmri=renamed-ancestor-new type=require
 # The renamed legacy ancestor - this correctly depends on the latest
 # named version
 #
-set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2563,7 +2563,7 @@ depend fmri=legacy-uses-renamed-ancestor type=require
 #   pkg://solaris/network/ping
 #   pkg://solaris/SUNWbip
 
-set name=pkg.fmri value=pkg://opensolaris.org/compatibility/renamed-ancestor-old@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/compatibility/renamed-ancestor-old@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2580,7 +2580,7 @@ legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific inst
 # We declare a dependency on a package that we intend to make obsolete
 # in the lint repository, though this package itself is perfectly valid.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/dep/tobeobsolete@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/dep/tobeobsolete@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2603,13 +2603,13 @@ depend fmri=system/obsolete-this type=require
         lint_mf["deliver-old-sample1.mf"] = """
 #
 # We deliver something a package older version than our ref_repo has,
-# 0.140 instead of 0.141, this should cause errors unless we're
-# linting against the 0.140 build in the repository.
+# 140 instead of 141, this should cause errors unless we're
+# linting against the 140 build in the repository.
 # (the errors being, a name clash for system/kernel and a path clash
-# for etc/passwd - essentially pkglint sees the 0.140 package being a
-# duplicate of the 0.141 package)
+# for etc/passwd - essentially pkglint sees the 140 package being a
+# duplicate of the 141 package)
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.140
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.140.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2624,7 +2624,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # We deliver a newer version than our reference repo has
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2641,7 +2641,7 @@ dir group=sys mode=0755 owner=root path=etc
 # We deliver a newer version than our reference repo has, intentionally
 # duplicating a file our reference repository has in sample3
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.142
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.142.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2660,7 +2660,7 @@ dir group=sys mode=0755 owner=root path=etc
 # field from the ref repo which doesn't depend on us.  Only one failure,
 # because the 2nd legacy action below points to a non-existent package.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2676,7 +2676,7 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
 # We declare a dependency without a version number, on an obsolete package
 # this should result in a lint error
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2690,13 +2690,13 @@ depend fmri=pkg:/system/obsolete type=require
 #
 # We declare a dependency on a version known to be obsolete
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
-depend fmri=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.141 type=require
+depend fmri=pkg://opensolaris.org/system/obsolete@11.4-11.4.0.0.0.141.0 type=require
         """
 
         expected_failures["versioned-older-obsolete.mf"] = ["pkglint.action005"]
@@ -2707,13 +2707,13 @@ depend fmri=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.141 type=require
 # version, because we published a later, obsoleted version of that package,
 # we should get the lint warning.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
-depend fmri=system/obsolete@0.5.11-0.140 type=require
+depend fmri=system/obsolete@11.4-11.4.0.0.0.140.0 type=require
         """
 
         expected_failures["onevar.mf"] = []
@@ -2729,7 +2729,7 @@ set name=org.opensolaris.consolidation value=osnet variant.arch=i386
 set name=info.classification value="org.opensolaris.category.2008:Drivers/Other Peripherals" variant.arch=i386
 set name=variant.arch value=i386
 set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
-set name=pkg.fmri value=pkg://opensolaris.org/variants/onevar@0.5.11,5.11-0.148:20100910T195826Z
+set name=pkg.fmri value=pkg://opensolaris.org/variants/onevar@11.4-11.4.0.0.0.148.0:20100910T195826Z
 set name=pkg.description value="A package published against only one variant value" variant.arch=i386
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.opensolaris.zone=global
 """
@@ -2745,7 +2745,7 @@ dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.
 # action which has a pkg attribute pointing to an old package that gets renamed,
 # we should get pkglint.action003.4
 #
-set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2765,7 +2765,7 @@ depend fmri=renamed-ancestor-missing type=require
 # which has a pkg attribute point to an old package that gets renamed,
 # we should get pkglint.action003.5, since we're trying to depend on ourselves
 #
-set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2780,7 +2780,7 @@ depend fmri=renamed-ancestor-new type=require
 #
 # We try to rename ourselves to an obsolete package.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/an-old-name@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/an-old-name@11.4-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2796,7 +2796,7 @@ depend fmri=system/obsolete type=require
 # Make this package obsolete.  Since it has a dependency in the ref_repository,
 # we should get a warning, but only when linting against that repo.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete-this@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete-this@11.4-11.4.0.0.0.141.0
 set name=pkg.obsolete value=true variant.arch=i386
 set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
@@ -2805,10 +2805,10 @@ set name=variant.arch value=i386
         lint_move_mf = {}
         lint_move_mf["move-sample1.mf"] = """
 #
-# A sample package which delivers several actions, to 0.161. We no longer
+# A sample package which delivers several actions, to 161. We no longer
 # deliver etc/passwd, moving that to the package in move-sample2.mf below.
 #
-set name=pkg.fmri value=pkg://foo.org/system/kernel@0.5.11,5.11-0.161
+set name=pkg.fmri value=pkg://foo.org/system/kernel@11.4-11.4.0.0.0.161.0
 set name=pkg.description value="we remove etc/passwd from this package"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -2822,7 +2822,7 @@ dir group=sys mode=0755 owner=root path=etc
 # A sample package which delivers several actions, we now deliver etc/passwd
 # also.
 #
-set name=pkg.fmri value=pkg://foo.org/system/additional@0.5.11,5.11-0.161
+set name=pkg.fmri value=pkg://foo.org/system/additional@11.4-11.4.0.0.0.161.0
 set name=pkg.description value="this manifest now gets etc/passwd too"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="additional content"
@@ -2990,10 +2990,10 @@ dir group=sys mode=0755 owner=root path=etc
                         lint_logger.close()
 
                 # this manifest should report duplicates when
-                # linted against a 0.141 repository, but none
-                # when linted against a 0.140 repository. The duplicates
-                # were tested when 'deliver-old-sample1.mf' was linted
-                # above - this time, we lint against 0.140 and expect
+                # linted against a 11.4.0.0.0.141.0 repository, but none
+                # when linted against a 11.4.0.0.0.140.0 repository. The
+                # duplicates were tested when 'deliver-old-sample1.mf' was
+                # linted above - this time, we lint against 140 and expect
                 # no errors.
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
@@ -3004,7 +3004,7 @@ dir group=sys mode=0755 owner=root path=etc
 
                 lint_engine.setup(cache=self.cache_dir,
                     ref_uris=[self.ref_uri],
-                    lint_manifests=manifests, release="140")
+                    lint_manifests=manifests, release="11.4.0.0.0.140.0")
                 lint_engine.execute()
                 lint_engine.teardown(clear_cache=True)
 
@@ -3014,13 +3014,13 @@ dir group=sys mode=0755 owner=root path=etc
                     "\n".join(lint_logger.messages)))
 
                 # ensure we detect the error when linting against the reference
-                # 0.139 repository
+                # 139 repository
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
                     config_file=os.path.join(self.test_root, "pkglintrc"))
                 lint_engine.setup(cache=self.cache_dir,
                     ref_uris=[self.ref_uri],
-                    lint_uris=[self.ref_uri], release="139")
+                    lint_uris=[self.ref_uri], release="11.4.0.0.0.139.0")
                 lint_engine.execute()
                 lint_engine.teardown(clear_cache=True)
 

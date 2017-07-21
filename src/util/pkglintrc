@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 [pkglint]
 
@@ -47,8 +47,8 @@ pkglint.exclude = pkg.lint.opensolaris
     pkg.lint.pkglint_action.PkgActionChecker.arch64
 
 # The version pattern we use when searching for manifests
-# for a given build (only when using the -b flag to pkglint)
-version.pattern = *,5.11-0.
+# for a given branch (only when using the -b flag to pkglint)
+version.pattern = *-
 
 # The path used for info.classification attribute checks
 info_classification_path = /usr/share/lib/pkg/opensolaris.org.sections

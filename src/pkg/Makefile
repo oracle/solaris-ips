@@ -21,20 +21,22 @@
 # Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
-PKGVERS_COMPONENT = 5.12
 PKGVERS_BUILTON   = 5.11
-UPDATENUM         = 0
+MINORNUM          = 11
+UPDATENUM         = 4
 SRUNUM            = 0
+ORDER             = 0
 PLATNUM           = 0
+PKGVERS_COMPONENT = $(MINORNUM).$(UPDATENUM)
 BUILDID.cmd       = \
 	hg tags | \
-	nawk '$$1 ~ /^s12b[0-9]+/ {exit} END {print substr($$1, 5) + 0}'
+	nawk '$$1 ~ /^st[0-9]+/ {exit} END {print substr($$1, 3) + 0}'
 BUILDID           = $(BUILDID.cmd:sh)
 NIGHTLYID:sh      = hg parents --template '{rev}'
 CHANGESET:sh      = hg id -i
 PKGVERS_BRANCH    = \
-	$(PKGVERS_COMPONENT).$(UPDATENUM).$(SRUNUM).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
-PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+	$(MINORNUM).$(UPDATENUM).$(SRUNUM).$(ORDER).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
+PKGVERS           = $(PKGVERS_COMPONENT)-$(PKGVERS_BRANCH)
 ARCH              = $(TARGET_ARCH:-%=%)
 REV:sh            = date +%Y.%m.%d.%H.%M.%S
 

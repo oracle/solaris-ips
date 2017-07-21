@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -470,7 +470,7 @@ class TestPkglintCliDepot(pkg5unittest.ManyDepotTestCase):
 #
 # A sample package which delivers several actions
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@11.4,5.11-11.4.0.0.0.141.0
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -484,7 +484,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # A sample package which delivers several actions
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/additional@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/additional@11.4,5.11-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -499,7 +499,7 @@ dir group=sys mode=0755 owner=root path=etc
 #
 # A sample package which delivers several actions
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/more@0.5.11,5.11-0.141
+set name=pkg.fmri value=pkg://opensolaris.org/system/more@11.4,5.11-11.4.0.0.0.141.0
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -584,7 +584,12 @@ dir group=sys mode=0755 owner=root path=etc
         def test_3_badrelease(self):
                 """Checks we can deal with bad -b options """
 
-                for opt in ["chickens", "0,1234", "0.16b"]:
+                # First check some good branch numbers
+                for opt in ["11.4", "11.4.0.0", "11.4.0.0.0.141"]:
+                        self.pkglint("-c {0} -l {1} -b {2}".format(
+                            self.cache_dir, self.lint_uri, opt), exit=0)
+
+                for opt in ["chickens", "0,1234", "4.16b"]:
                         self.pkglint("-c {0} -l {1} -b {2}".format(
                             self.cache_dir, self.lint_uri, opt), exit=2)
 
