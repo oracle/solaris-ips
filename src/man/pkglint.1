@@ -7,11 +7,11 @@
 
 <refentry id="pkglint-1">
 <refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">29 Apr 2014</refmiscinfo>
+<refmiscinfo class="date">07 Jul 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System package lint</refpurpose>
@@ -19,8 +19,8 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
-    [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
-    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
+    [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
+    [-v] [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
@@ -72,11 +72,11 @@ to <filename>stderr</filename>.</para>
 <listitem><para>Display a usage message.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>b</option> <replaceable>build_no</replaceable></term>
-<listitem><para>Specify a build number used to narrow the list of packages
-used during linting from lint and reference repositories. If no <option>b</option> option
-is specified, the latest versions of packages are used. See also the <literal>version.pattern
-</literal> configuration property.</para>
+<varlistentry><term><option>b</option> <replaceable>branch</replaceable></term>
+<listitem><para>Specify a branch used to narrow the list of packages
+used during linting from lint and reference repositories. If no <option>b</option>
+option is specified, the latest versions of packages are used. See also the
+<literal>version.pattern</literal> configuration property.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -158,10 +158,10 @@ over manifests during lint runs. The default value is <literal>True</literal>.</
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>version.pattern</literal></term>
-<listitem><para>A version pattern, used when specifying a build number to
-lint against (<option>b</option>). If not specified in the configuration file,
-the <option>b</option> option uses the pattern <literal>*,5.11-0.</literal>,
-matching all components of the 5.11 build, with a branch prefix of 0.</para>
+<listitem><para>A version pattern, used when specifying a branch
+to lint against (<option>b</option>). If not specified in the configuration file,
+the <option>b</option> option uses the pattern <literal>*-</literal>,
+matching all branches.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -203,11 +203,11 @@ and specifying a subset of manifests to check.</para>
 <screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
 <userinput>-p '.*firefox.*'</userinput></screen>
 </example>
-<example><title>Specifying a Build</title>
-<para>Running a <command>pkglint</command> session against a given build in
+<example><title>Specifying a Branch</title>
+<para>Running a <command>pkglint</command> session against a given branch in
 verbose mode.</para>
 <screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 &bsol;</userinput>
-<userinput>-l http://localhost:12000 -b 147 -v</userinput></screen>
+<userinput>-l http://localhost:12000 -b 11.4.0.0.0.147.0 -v</userinput></screen>
 </example>
 <example><title>Modifying a Configuration File</title>
 <para>A configuration file with a new lint module, excluding some checks.</para>

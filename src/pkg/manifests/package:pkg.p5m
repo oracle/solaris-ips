@@ -489,9 +489,6 @@ license lic_minisat license="MIT (MiniSAT)" \
 license cr_Oracle license=cr_Oracle
 depend type=group fmri=package/pkg/zones-proxy \
     variant.opensolaris.zone=nonglobal
-# temporary: depends on ON changes in nightly 07/23/16 and later
-depend type=optional \
-    fmri=system/boot-environment-utilities@5.12-5.12.0.0.0.104.34307
 # cross zone dependency on linked image metadata
 depend type=parent fmri=feature/package/dependency/self \
     variant.opensolaris.zone=nonglobal

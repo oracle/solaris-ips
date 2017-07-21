@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
@@ -69,14 +69,14 @@ def main_func():
 
         usage = \
             _("\n"
-            "        %prog [-b build_no] [-c cache_dir] [-f file]\n"
+            "        %prog [-b branch] [-c cache_dir] [-f file]\n"
             "            [-l uri ...] [-p regexp] [-r uri ...] [-v]\n"
             "            [manifest ...]\n"
             "        %prog -L")
         parser = OptionParser(usage=usage)
 
-        parser.add_option("-b", dest="release", metavar="build_no",
-            help=_("build to use from lint and reference repositories"))
+        parser.add_option("-b", dest="release", metavar="branch",
+            help=_("branch to use from lint and reference repositories"))
         parser.add_option("-c", dest="cache", metavar="dir",
             help=_("directory to use as a repository cache"))
         parser.add_option("-f", dest="config", metavar="file",

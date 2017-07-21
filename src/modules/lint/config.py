@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 # aspects of pkglint configuration
@@ -44,7 +44,7 @@ defaults = {
     "pkglint.ext.pkglint_actions": "pkg.lint.pkglint_action",
     "pkglint.ext.pkglint_manifests": "pkg.lint.pkglint_manifest",
     "pkglint.exclude": None,
-    "version.pattern": "*,5.11-0."
+    "version.pattern": "*-"
     }
 
 # Ensure the order of the items is the same.

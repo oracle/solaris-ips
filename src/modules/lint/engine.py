@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -71,13 +71,16 @@ class LintEngineCache():
                 # release is a build number, eg. 150
                 # version_pattern used by the engine is a regexp, intended
                 # to be used when searching for images, combined with the
-                # release - eg. "*,5.11-0."
+                # release - eg. "*-"
                 #
                 self.version_pattern = version_pattern
                 self.release = release
                 if self.release:
-                        combined = "{0}{1}".format(
-                            version_pattern.split(",")[1], release)
+                        prefix = version_pattern
+                        # Backward-compatible with ,5.11 in version_pattern.
+                        if "," in version_pattern:
+                                prefix = version_pattern.split(",")[1]
+                        combined = "{0}{1}".format(prefix, release)
                         try:
                                 self.branch = DotSequence(
                                     combined.split("-")[1])
@@ -127,8 +130,8 @@ class LintEngineCache():
                                 fmri ="pkg://{0}/{1}@{2}".format(pub, name,
                                     version)
                                 # obtain just the build branch, e.g. from
-                                # 0.5.11,5.11-0.111:20090508T235707Z, return
-                                # 0.111
+                                # 11.4-11.4:20090508T235707Z, return
+                                # 11.4
                                 branch = Version(version, None).branch
 
                                 pfmri = pkg.fmri.PkgFmri(fmri)
@@ -270,10 +273,9 @@ class LintEngine(object):
         'my.lint.module' or
         'my.lint.module.ManifestChecker.crosscheck_paths'
 
-        'version.pattern' A version pattern, used when specifying a build number
-        to lint against (-b). If not specified in the rcfile, this pattern is
-        "*,5.11-0.", matching all components of the '5.11' build, with a branch
-        prefix of '0.'
+        'version.pattern' A version pattern, used when specifying a branch
+        number to lint against (-b). If not specified in the rcfile, this
+        pattern is "*-", matching all branches.
 
         'info_classification_path' A path the file used to check the values
         of info.classification attributes in manifests.
@@ -303,7 +305,7 @@ class LintEngine(object):
                 self.pattern = None
                 self.release = None
                 # a prefix for the pattern used to search for given releases
-                self.version_pattern = "*,5.11-0."
+                self.version_pattern = "*-"
 
                 # lists of checker functions and excluded checker functions
                 self.checkers = []
