@@ -10944,9 +10944,9 @@ adm
                 for i, l in enumerate(self.plist):
                     if l.startswith("pkg://test/dupfilesp1"):
                         index = i
-                expected = "\n  {0}\n  {1}\n  {2}".format(
-                    self.plist[index], self.plist[index + 1], self.plist[index + 3])
-                self.assertTrue(expected in err1, err1)
+                self.assertTrue(self.plist[index] in err1, err1)
+                self.assertTrue(self.plist[index + 1] in err1, err1)
+                self.assertTrue(self.plist[index + 3] in err1, err1)
                 self.assertTrue("Hash" not in out1)
                 self.pkg("uninstall dupfilesp3")
                 # Removing dupfilesp3, verify should still report a duplicate
@@ -12199,6 +12199,26 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                     close """,
         )
 
+        pkgs7 = (
+                """
+                    open downgrade@1.0
+                    close """,
+                """
+                    open downgrade@1.0.1
+                    add depend type=require fmri=idrDG@1
+                    close """,
+                """
+                    open idrDG@1
+                    add set name=pkg.depend.explicit-install value=true
+                    add depend type=incorporate fmri=downgrade@1.0.1
+                    close """,
+                """
+                    open incorpDG1@1.0
+                    add depend type=require fmri=downgrade
+                    add depend type=incorporate fmri=downgrade@1.0
+                    close """
+        )
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
                 self.__pkgs = self.pkgsend_bulk(self.rurl, self.pkgs)
@@ -12498,6 +12518,21 @@ class TestPkgInstallExplicitInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("list C@1.0-0.1.1.0 idrc")
 
+        def test_05_exact_install_downgrade(self):
+                """Ensure explicit-install allows downgrade of
+                existing packages w/ explicit-install."""
+
+                self.image_create(self.rurl)
+                self.pkgsend_bulk(self.rurl, self.pkgs7)
+                self.pkg("install idrDG@1 downgrade@1.0.1 incorpDG1@1.0")
+                self.pkg("list idrDG@1 downgrade@1.0.1 incorpDG1@1.0")
+                # downgrade should go back to downgrade@1.0 and idrDG should
+                # be removed.
+                self.pkg("exact-install incorpDG1@1.0")
+                self.pkg("list idrDG@1", exit=1)
+                self.pkg("list downgrade@1.0.1", exit=1)
+                self.pkg("list downgrade@1.0 incorpDG1@1.0")
+
 
 class TestPkgOSDowngrade(pkg5unittest.ManyDepotTestCase):
         persistent_setup = True
@@ -12702,6 +12737,35 @@ class TestPkgUpdateDowngradeIncorp(pkg5unittest.ManyDepotTestCase):
 
                 self.pkgsend_bulk(self.rurl, self.pkgs)
                 self.pkgsend_bulk(self.rurl2, self.pub2_pkgs)
+
+        def test_exact_install_downgrade(self):
+                """ Test exact-install downgrade."""
+
+                self.image_create(self.rurl, prefix="")
+                self.pkg("install A@2.0")
+                self.pkg("list A@2.0")
+                # Test exact-install A to a lower version.
+                self.pkg("exact-install A@1.0")
+                self.pkg("list A@1.0")
+
+                self.pkg("install A incorp@1")
+                self.pkg("list A@2.0 incorp@1.0")
+
+                # When incorp moves forward, A should move backwards
+                self.pkg("exact-install A incorp@2")
+                self.pkg("list A@1.0 incorp@2.0")
+
+                self.pkg("install ihold_incorp@2 B")
+                self.pkg("list ihold_incorp@2 B@2")
+
+                # Test exact-install incorp with install-holds.
+                self.pkg("exact-install ihold_incorp@1 B")
+                self.pkg("list ihold_incorp@1 B@1")
+
+                self.pkg("install ihold_incorp@2 B")
+                self.pkg("exact-install ihold_incorp@1")
+                self.pkg("list ihold_incorp@1")
+                self.pkg("list B", exit=1)
 
         def test_incorp_downgrade(self):
                 """ Test that downgrades are allowed if they are incorporated

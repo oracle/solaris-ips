@@ -1056,18 +1056,8 @@ class PkgSolver(object):
                 self.__start_subphase(3)
                 # If requested, trim any proposed fmris older than those of
                 # corresponding installed packages.
-                # Because we have introduced exact-install where
-                # self.__installed_fmris will be empty, in order to prevent
-                # downgrading, we need to look up the full installed dictionary
-                # stored in installed_dict_tmp.
-                if exact_install:
-                        installed_fmris_tmp = frozenset(
-                            installed_dict_tmp.values())
-                        candidate_fmris = installed_fmris_tmp - \
-                            self.__removal_fmris
-                else:
-                        candidate_fmris = self.__installed_fmris - \
-                            self.__removal_fmris
+                candidate_fmris = self.__installed_fmris - \
+                    self.__removal_fmris
 
                 for f in candidate_fmris:
                         self.__progress()
