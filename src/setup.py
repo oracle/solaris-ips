@@ -787,6 +787,10 @@ class install_func(_install):
                 for target, o_dest in symlink_modules:
                         dest = util.change_root(self.root_dir, o_dest)
                         dir_util.mkpath(os.path.dirname(dest), verbose=True)
+                        try:
+                                os.unlink(dest)
+                        except Exception:
+                                pass
                         os.symlink(target, dest)
 
 class install_lib_func(_install_lib):
