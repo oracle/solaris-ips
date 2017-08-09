@@ -2967,6 +2967,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 if updated:
                         self.__rebuild_image_catalogs(progtrack=progtrack)
+                        # Ensure any configuration or metadata changes made
+                        # during refresh are reflected in on-disk state.
+                        self.save_config()
                 else:
                         self.__end_state_update()
 
