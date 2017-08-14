@@ -459,6 +459,13 @@ class ImagePlan(object):
                 # have the solver try to satisfy parent dependencies.
                 ignore_inst_parent_deps = False
 
+                # In some error cases, significant recursion may be required,
+                # and the default (1000) is not enough.  In testing, this was
+                # found to be sufficient for the solver's needs.
+                prlimit = sys.getrecursionlimit()
+                if prlimit < 3000:
+                        sys.setrecursionlimit(3000)
+
                 try:
                         return solver_cb(ignore_inst_parent_deps)
                 except api_errors.PlanCreationException as e:
@@ -484,6 +491,9 @@ class ImagePlan(object):
                         # out of sync.
                         ignore_inst_parent_deps = True
                         return solver_cb(ignore_inst_parent_deps)
+                finally:
+                        # restore original recursion limit
+                        sys.setrecursionlimit(prlimit)
 
         def __add_actuator(self, trigger_fmri, trigger_op, exec_op, values,
             solver_inst, installed_dict):
