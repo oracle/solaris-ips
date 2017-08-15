@@ -30,7 +30,7 @@
 
     <name>IPS maven plugin</name>
     <description>plugin to convert maven project deliverables into Solaris IPS package.</description>
-    <url>https://java.net/projects/ips/sources/mvn-plugin-repo/show</url>
+    <url>https://github.com/oracle/solaris-ips/tree/master/src/util/publish/ips-maven-plugin</url>
 
     <licenses>
         <license>
@@ -41,8 +41,8 @@
     </licenses>
 
     <scm>
-	<connection>scm:svn:https://hg.java.net/hg/ips~mvn-plugin-repo</connection>
-        <url>https://hg.java.net/hg/ips~mvn-plugin-repo</url>
+        <connection>scm:svn:https://github.com/oracle/solaris-ips</connection>
+        <url>https://github.com/oracle/solaris-ips</url>
     </scm>
 
     <developers>
