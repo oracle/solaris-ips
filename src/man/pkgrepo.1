@@ -11,7 +11,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System repository management utility</refpurpose></refnamediv>
@@ -753,6 +753,9 @@ succeeded.</para>
 <para>See <literal>attributes</literal>(7) for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
+<textobject>
+<simpara>Table shows applicable attribute types and related values.</simpara>
+</textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
 align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -787,7 +790,7 @@ align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
-<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+<para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
 <para>Most <command>pkgrepo</command> operations are not available for package archives. A package archive is a file, typically with a <filename>.p5p</filename> extension, as described in the <option>a</option> option in the <literal>pkgrecv</literal>(1) man page. A package archive contains packages but does not contain repository configuration. However, the <command>pkgrepo list</command>, <command>pkgrepo info</command>, and <command>pkgrepo contents</command> commands work with package archives.</para>

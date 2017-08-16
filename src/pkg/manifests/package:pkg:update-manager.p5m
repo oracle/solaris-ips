@@ -23,6 +23,6 @@
 # Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/package/pkg/update-manager@11.4-11.4.0.0.0.1.0
+set name=pkg.fmri value=pkg:/package/pkg/update-manager@11.4-11.4.0.0.0.3.0
 set name=pkg.obsolete value=true
-set name=nopublish.after value=1
+set name=nopublish.after value=3
