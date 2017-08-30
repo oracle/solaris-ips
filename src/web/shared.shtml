@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import six
@@ -49,9 +49,7 @@
         catalog = g_vars["catalog"]
         request = g_vars["request"]
         versions = {}
-	for f, states, attrs in catalog.gen_packages(patterns=["/entire",
-	    "/solaris"],
-            return_fmris=True):
+        for f in catalog.gen_fmris(["entire"]):
                 br = str(f.version.branch).replace(".", "").strip()
                 ver_label = "{0}-{1}".format(f.version.release,
                     f.version.branch)
