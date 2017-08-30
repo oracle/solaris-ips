@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -32,6 +32,7 @@ from functools import cmp_to_key
 from io import BytesIO
 from operator import itemgetter
 
+import pkg.actions
 import pkg.catalog
 import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri
@@ -110,8 +111,7 @@ class CatalogInterface(_Interface):
                         return iter(())
                 return c.fmris(ordered=ordered)
 
-        def gen_allowed_packages(self, pfmris, build_release=None,
-            excludes=misc.EmptyI):
+        def gen_allowed_packages(self, pfmris, build_release=None):
                 """A generator function that produces a list of tuples of the
                 form (fmri, states) in the catalog incorporated by the named
                 package and its dependencies and any packages that are not
@@ -126,52 +126,62 @@ class CatalogInterface(_Interface):
 
                 pubs = frozenset([pfmri.publisher for pfmri in pfmris])
 
+                # Avoid unnecessary object creation, pre-define and
+                # pre-populate all possible state combinations.
+                #
+                # Package not renamed or obsolete.
+                sn = frozenset()
+                # Package renamed.
+                sr = frozenset((pkgdefs.PKG_STATE_RENAMED,))
+                # Package obsoleted.
+                so = frozenset((pkgdefs.PKG_STATE_OBSOLETE,))
+
                 # Seed the set of allowed packages with the set of FMRIs that
                 # were started with since they don't likely incorporate
                 # themselves.
                 allowed = dict(
-                    (pfmri.pkg_name, set([(pfmri, frozenset())]))
+                    (pfmri.pkg_name, set([(pfmri, sn)]))
                     for pfmri in pfmris
                 )
 
                 # pfmri is not leaked from the above list comprehension in
                 # Python 3, so we need to use pfmris[-1] explicitly.
                 self.__get_allowed_packages(cat, pfmris[-1], allowed,
-                    build_release=build_release, excludes=excludes,
-                    pubs=pubs)
+                    build_release=build_release, pubs=pubs)
 
                 # Add packages not incorporated by the recursively discovered
                 # incorporations above.
                 cat_info = frozenset([cat.DEPENDENCY])
-                remaining = set(cat.names(pubs=pubs)) - \
-                    set(six.iterkeys(allowed))
+                remaining = (frozenset(cat.names(pubs=pubs)) -
+                    set(six.iterkeys(allowed)))
+
                 for pkg_name in remaining:
-                        for ver, flist in cat.fmris_by_version(pkg_name,
-                            pubs=pubs):
-                                aset = allowed.setdefault(pkg_name, set())
-                                for f in flist:
-                                        states = set()
-                                        for fa in cat.get_entry_actions(f,
-                                            cat_info, excludes=excludes):
-                                                if fa.name != "set":
-                                                        continue
+                        allowed.setdefault(pkg_name, [])
+                        for v, entries in cat.entries_by_version(pkg_name,
+                            info_needed=cat_info, pubs=pubs):
+                                for f, fa in (
+                                    (f, fa)
+                                    for f, md in entries
+                                    for fa in md.get("actions", misc.EmptyI)
+                                ):
+                                        if not fa.startswith("set"):
+                                                continue
 
-                                                attrs = fa.attrs
-                                                aname = attrs["name"]
-                                                avalue = attrs["value"]
-                                                if aname == "pkg.renamed":
-                                                        if avalue == "true":
-                                                                states.add(
-                                                                    pkgdefs.PKG_STATE_RENAMED)
-                                                        break
-                                                if aname == "pkg.obsolete":
-                                                        if avalue == "true":
-                                                                states.add(
-                                                                    pkgdefs.PKG_STATE_OBSOLETE)
-                                                        break
-
-                                        aset.add((f, frozenset(states)))
-
+                                        a = pkg.actions.fromstr(fa)
+                                        aname = a.attrs["name"]
+                                        if aname == "pkg.renamed":
+                                                allowed[pkg_name].append((f,
+                                                    sr))
+                                                del a
+                                                break
+                                        if aname == "pkg.obsolete":
+                                                allowed[pkg_name].append((f,
+                                                    so))
+                                                del a
+                                                break
+                                        del a
+                                else:
+                                        allowed[pkg_name].append((f, sn))
 
                 sort_ver = itemgetter(0)
                 return (
@@ -185,6 +195,7 @@ class CatalogInterface(_Interface):
             build_release=None, excludes=misc.EmptyI, pubs=misc.EmptyI):
                 cat_info = frozenset([cat.DEPENDENCY])
 
+                incs = set()
                 for a in cat.get_entry_actions(pfmri, cat_info,
                     excludes=excludes):
                         if a.name != "depend":
@@ -195,10 +206,24 @@ class CatalogInterface(_Interface):
                         ifmri = pkg.fmri.PkgFmri(a.attrs["fmri"],
                             build_release=build_release)
                         iver = ifmri.version
-                        # Versionless incorporations don't make sense so don't
-                        # recurse any further.
-                        if not iver:
+                        if iver:
+                                # Ignore versionless incorporations.
+                                incs.add(ifmri)
+
+                for ifmri in incs:
+                        iver = ifmri.version
+                        if any(ifmri.pkg_name == f.pkg_name and
+                            (iver != f.version and f.version.is_successor(iver,
+                                version.CONSTRAINT_AUTO))
+                            for f in incs):
+                                # Prefer incorporate dependencies that are
+                                # subset of this one so that a multi-level
+                                # incorporation dependency scheme (e.g.
+                                # incorporate at update level and then again at
+                                # SRU level) doesn't allow unexpected versions
+                                # and slow down filtering.
                                 continue
+
                         recurse = False
                         for ver, flist in cat.fmris_by_version(ifmri.pkg_name,
                             pubs=pubs):
@@ -232,6 +257,24 @@ class CatalogInterface(_Interface):
                                         self.__get_allowed_packages(cat, f,
                                             allowed=allowed, excludes=excludes,
                                             pubs=pubs)
+
+        def gen_fmris(self, stems=misc.EmptyI):
+                """A generator function that produces FMRIs for the named stems.
+
+                Results are always sorted by order stems were provided,
+                publisher, and then in descending version order."""
+
+                try:
+                        cat = self._depot.repo.get_catalog(self._pub)
+                except srepo.RepositoryMirrorError:
+                        return iter(())
+
+                return (
+                    f
+                    for name in stems
+                    for v, fmris in cat.fmris_by_version(name)
+                    for f in fmris
+                )
 
         def gen_packages(self, collect_attrs=False, matched=None,
             patterns=misc.EmptyI, pubs=misc.EmptyI, unmatched=None,
