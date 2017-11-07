@@ -1,25 +1,5 @@
 /*
- * CDDL HEADER START
- *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
- *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
- * See the License for the specific language governing permissions
- * and limitations under the License.
- *
- * When distributing Covered Code, include this CDDL HEADER in each
- * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
- * If applicable, add the following below this CDDL HEADER, with the
- * fields enclosed by brackets "[]" replaced with your own identifying
- * information: Portions Copyright [yyyy] [name of copyright owner]
- *
- * CDDL HEADER END
- */
-/*
- * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <door.h>
@@ -101,8 +81,8 @@ static void
 zp_perror(int res)
 {
 	if (res == ZP_STATUS_PERMISSION) {
-		(void) fprintf(stderr, "Insufficient priviliges for zoneproxyd"
-		    "access\n");
+		(void) fprintf(stderr, "Insufficient privileges for zoneproxyd"
+		    " access\n");
 	} else if (res == ZP_STATUS_INVALID) {
 		(void) fprintf(stderr,
 		    "Invalid argument provided to zoneproxyd\n");
@@ -111,7 +91,7 @@ zp_perror(int res)
 		    "Zoneproxyd encountered an internal error\n");
 	} else if (res == ZP_STATUS_UNKNOWN) {
 		(void) fprintf(stderr, "The zoneproxyd did not recognize the"
-		    "command\n");
+		    " command\n");
 	} else if (res != ZP_STATUS_OK) {
 		(void) fprintf(stderr,
 		    "The daemon returned an unrecognized response");
@@ -363,6 +343,8 @@ drop_privs(void)
 	(void) priv_delset(pPrivSet, PRIV_PROC_FORK);
 	(void) priv_delset(pPrivSet, PRIV_PROC_EXEC);
 	(void) priv_delset(pPrivSet, PRIV_FILE_WRITE);
+	/* We need access to ZP_DOOR_PATH after dropping the privileges. */
+	(void) priv_addset(pPrivSet, PRIV_FILE_DAC_READ);
 
 	/* Set permitted set */
 	if (setppriv(PRIV_SET, PRIV_PERMITTED, pPrivSet) != 0) {
@@ -528,7 +510,7 @@ main(int argc, char **argv)
 
 	/*
 	 * At this point, the proxyd has a copy of the socket and will answer
-	 * all incoming connection requests.  Close our refernce to the socket
+	 * all incoming connection requests.  Close our reference to the socket
 	 * here.
 	 */
 	(void) close(sockfd);
