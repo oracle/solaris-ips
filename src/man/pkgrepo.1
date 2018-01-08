@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,7 +6,7 @@
 
 <refentry id="pkgrepo-1">
 <refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">26 May 2015</refmiscinfo>
+<refmiscinfo class="date">17 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -517,7 +516,7 @@ or using the <literal>svc:/application/pkg/system-repository</literal> service
 when the system has non-global zones.</para>
 </listitem>
 <listitem><para>Package manifest permissions</para></listitem>
-<listitem><para>Package manifest content</para></listitem>
+<listitem><para>Package manifest content, including dependencies</para><para>The dependency check verifies that every file referenced in each package manifest is in the repository. See also the <option>d</option>, <option>i</option>, and <option>-disable</option> options below.</para></listitem>
 <listitem><para>Package signatures</para><para>Package manifest signatures
 are calculated based on the values of the <literal>repository/signature-required-names
 </literal>, <literal>repository/trust-anchor-directory</literal>, and <literal>repository/check-certificate-revocation
@@ -537,11 +536,12 @@ be specified multiple times.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>d</option></term>
-<listitem><para>Perform complete dependency verification. This option cannot be used together with <option>-disable</option> <literal>dependency</literal>.</para>
+<listitem><para>Perform complete dependency verification. This option cannot be used together with <command>--disable dependency</command>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
-<listitem><para>Perform dependency verification but ignore dependencies specified in the file. This option cannot be used together with <option>-disable</option> <literal>dependency</literal>.</para>
+<listitem><para>Perform dependency verification but ignore dependencies specified in the file. This option cannot be used together with
+<command>--disable dependency</command>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
@@ -789,7 +789,7 @@ align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

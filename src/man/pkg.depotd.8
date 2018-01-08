@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,7 +6,7 @@
 
 <refentry id="pkg.depotd-8">
 <refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum>
-<refmiscinfo class="date">02 Oct 2013</refmiscinfo>
+<refmiscinfo class="date">15 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -56,7 +55,9 @@ the SMF properties associated with its service. The
 <literal>pkg.depot</literal> server process, or contributes configuration to
 the <literal>svc:/application/pkg/depot</literal> service. See
 the <literal>pkg.depot-config</literal>(8) man page and the
-<literal>pkg/standalone</literal> property below.</para>
+<literal>pkg/standalone</literal> property below. To install the
+<literal>pkg.depot-config</literal> tool and man page, install the
+<literal>package/pkg/depot</literal> package.</para>
 <para>See the <literal>smf</literal>(7) man page for information about SMF
 properties. The following properties are recognized:</para>
 <variablelist termlength="wholeline">
@@ -201,7 +202,7 @@ repositories from a single Apache instance with minimal Apache configuration,
 set this property to <literal>false</literal> and set the
 <literal>pkg/readonly</literal> property of this <literal>pkg/server</literal>
 instance to <literal>true</literal>. The default value of
-<literal>pkg/standalone</literal> is <literal>false</literal> and the default
+<literal>pkg/standalone</literal> is <literal>true</literal> and the default
 value of <literal>pkg/readonly</literal> is <literal>true</literal>. See the
 <literal>pkg.depot-config</literal>(8) man page for more information.</para>
 </listitem>
@@ -507,7 +508,7 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <literal>syslogd</literal>(8), <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
