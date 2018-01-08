@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,7 +6,7 @@
 
 <refentry id="pkg.sysrepo-8">
 <refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum>
-<refmiscinfo class="date">21 May 2013</refmiscinfo>
+<refmiscinfo class="date">15 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -37,10 +36,7 @@ The SMF services <literal>svc:/application/pkg/zones-proxyd</literal> and <liter
 svc:/application/pkg/zones-proxy-client</literal> are responsible for providing
 the transport between non-global zones and the global zone. This transport
 is only used by <literal>pkg</literal>(7).</para>
-<para>Note that only <literal>http</literal>, <literal>https</literal>, and <literal>
-v4</literal> file repositories and <literal>p5p</literal> archives are supported.
-Older file repository formats are not supported. See <command>pkgrepo</command>(1)
-for more information about repository versions.</para>
+<para>The system repository can proxy <literal>http</literal>, <literal>https</literal>, <literal>file</literal>, and <filename>.p5p</filename> archive repositories. Only version 4 file system repositories are supported, which is the default format for the <command>pkgrepo create</command> command. See the <literal>pkgrepo</literal>(1) man page for more information about repository versions.</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>The following options are supported:</para>

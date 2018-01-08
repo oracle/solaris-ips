@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,7 +6,7 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">30 May 2017</refmiscinfo>
+<refmiscinfo class="date">15 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -28,59 +27,90 @@ and users.</para>
 <refsect1 role="other"><title>Package FMRIs and Versions</title>
 <para>Each package is represented by a fault management resource identifier
 (FMRI) with the scheme <literal>pkg:</literal>. The full FMRI for a package
-consists of the scheme, a publisher, the package name, and a version string
-in the following format:</para>
-<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
-</screen>
-<para><literal>solaris</literal> is the publisher. <literal>system/library/c++-runtime
-</literal> is the package name. Although the namespace is hierarchical and
-arbitrarily deep, there is no enforced containment; the name is essentially
-arbitrary. The publisher information is optional, but must be preceded by <literal>
-pkg://</literal> if present. An FMRI that includes the publisher is often
-referred to as being &ldquo;fully qualified.&rdquo; If publisher information
-is not present, then the package name should generally be preceded by <literal>pkg:/
-</literal>.</para>
-<para>Packaging clients often allow the scheme of an FMRI to be omitted if
-it does not contain publisher information. For example, <literal>pkg:/system/library/c++-runtime
-</literal> can be written as <literal>system/library/c++-runtime</literal>.
-If the scheme is omitted, clients also allow omission of all but the last
-component of a package name for matching purposes. For example, <literal>system/library/c++-runtime
-</literal> could be written as <literal>library/c++-runtime</literal> or <literal>
-c++-runtime</literal>, which would then match packages named <literal>c++-runtime
-</literal> or package names ending in <literal>/c++-runtime</literal>.</para>
-<para>A publisher name identifies a person, group of persons, or an organization
-as the source of one or more packages. To avoid publisher name collisions
-and help identify the publisher, a best practice is to use a domain name that
-represents the entity publishing the packages as a publisher name.</para>
-<para>The version follows the package name, separated by an at sign (@). The
-version consists of four sequences of numbers, separated by punctuation. The
-elements in the first three sequences are separated by dots, and the sequences
-are arbitrarily long. Leading zeros in version components (for example, 01.1
-or 1.01) are not permitted. Trailing zeros (for example, 1.10) are permitted.</para>
-<para>The first part of the version is the component version. For components
-tightly bound to the operating system, this is usually the value of
-<command>uname -r</command> for that version of the operating system. For a
-component with its own development lifecycle, this sequence is a dotted
-release number, such as 2.4.10.</para>
-<para>The second part of the version, which if present must follow a comma
-(,), is the build version. The build version specifies what version of the
-operating system the contents of the package were built on, providing a minimum
-bound on which operating system version the contents can be expected to run
-successfully.</para>
-<para>The third part of the version, which if present must follow a hyphen
-(<literal>-</literal>), is the branch version. The branch version is a versioning
-component that provides vendor-specific information. The branch version can
-be incremented when the packaging metadata is changed, independently of the
-component version. The branch version might contain a build number or other
-information.</para>
-<para>The fourth part of the version, which if present must follow a colon
-(:), is a timestamp. The timestamp represents when the package was published.</para>
+consists of the scheme, a publisher, the package name, and a version string in
+the following format:</para>
+<screen>pkg://solaris/system/library/c++-runtime@11.4-11.4.0.0.1.1.2:20170919T184404Z</screen>
+<para><literal>solaris</literal> is the publisher.
+<literal>system/library/c++-runtime</literal> is the package name. Although the
+namespace is hierarchical and arbitrarily deep, there is no enforced
+containment; the name is arbitrary. The publisher information is optional, but
+must be preceded by <literal>pkg://</literal> if present. An FMRI that includes
+the publisher is often referred to as being &ldquo;fully qualified.&rdquo; If
+publisher information is not present, then the package name should generally be
+preceded by <literal>pkg:/</literal>.</para>
+<para>Packaging clients often allow the scheme of an FMRI to be omitted if it
+does not contain publisher information. For example,
+<literal>pkg:/system/library/c++-runtime</literal> can be written as
+<literal>system/library/c++-runtime</literal>. If the scheme is omitted,
+clients also allow omission of all but the last component of a package name for
+matching purposes. For example, <literal>system/library/c++-runtime</literal>
+could be written as <literal>library/c++-runtime</literal> or
+<literal>c++-runtime</literal>, which would then match packages named
+<literal>c++-runtime</literal> or package names ending in
+<literal>/c++-runtime</literal>.</para>
+<para>A publisher name identifies a person, group of persons, or an
+organization as the source of one or more packages. To avoid publisher name
+collisions and help identify the publisher, a best practice is to use a domain
+name that represents the entity publishing the packages as a publisher name.</para>
+<para>The version follows the package name, separated by an at (@) sign. The
+version consists of a component version, a branch version, and a timestamp. The
+component version and branch version are separated by a hyphen (-). The branch
+version and timestamp are separated by a colon (:). Leading zeros (for example,
+01.1 or 1.01) are not permitted in elements of the component version or branch
+version. Trailing zeros (for example, 1.10) are permitted.</para>
+<para><emphasis role="strong">Component version: 11.4.</emphasis> For components
+tightly bound to the operating system, the component version number is
+<replaceable>minor.update</replaceable>. Components with their own development
+lifecycle, such as FOSS components, have their own version numbers, such as
+2.4.10. The component version can be arbitrarily long.</para>
+<para><emphasis role="strong">Branch version: 11.4.0.0.1.1.2.</emphasis> The
+branch version, if present, must follow a hyphen (-). The branch version string
+is the same as the &ldquo;Branch&rdquo; in <command>pkg info</command> output.</para>
+<para>Oracle Solaris packages show the following information in the branch
+version portion of the version string of a package FMRI:</para>
+<programlisting><replaceable>minor.update.sru.order.platform.build.rev</replaceable></programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">Minor release number: 11</emphasis></term>
+<listitem><para>The <replaceable>minor</replaceable> portion of 
+<replaceable>major.minor</replaceable> that is output by the 
+<command>uname -r</command>.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Update release number: 4</emphasis></term>
+<listitem><para>The update release number for this Oracle Solaris release.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">SRU number: 0</emphasis></term>
+<listitem><para>The Support Repository Update (SRU) number for this update
+release. SRUs are approximately monthly updates that fix bugs, fix security
+issues, or provide support for new hardware. The Oracle Support Repository is
+available only to systems under a support contract.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Order: 0</emphasis></term>
+<listitem><para>This value is used internally.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Platform: 1</emphasis></term>
+<listitem><para>This value is used internally.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Release or SRU build number: 1</emphasis></term>
+<listitem><para>The build number of the SRU, or the respin number for the release.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Revision or nightly build number: 2</emphasis></term>
+<listitem><para>The build number for the individual nightly builds.</para></listitem></varlistentry>
+</variablelist>
+<para>If the package is an Interim Diagnostic or Relief (IDR) update, then the
+branch version of the package FMRI contains the following two additional fields.
+IDRs are package updates that help diagnose customer issues or provide temporary
+relief for a problem until a formal package update is issued. The following
+examples are for idr824, which has FMRI
+<literal>pkg://solaris/idr824@4,5.11:20131114T034951Z</literal> and contains
+packages such as
+<literal>pkg://solaris/system/library@11.4-11.4.0.0.1.1.2.824.4</literal>:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">IDR: 824</emphasis></term>
+<listitem><para>The name of the IDR.</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">IDR ID: 4</emphasis></term>
+<listitem><para>The version of the IDR.</para></listitem></varlistentry>
+</variablelist>
+<para><emphasis role="strong">Timestamp: 20170919T184404Z.</emphasis> The timestamp must follow a colon (:). The timestamp is the time the package was published in ISO-8601 basic format: <replaceable>YYYYMMDDTHHMMSSZ</replaceable>.</para>
 <para>When performing comparisons between versions, no component of the full
-version is considered unless the components to its left are the same. Thus, <literal>
-4.3-1</literal> is greater than <literal>4.2-7</literal> because <literal>4.3</literal> is
-greater than <literal>4.2</literal>, and <literal>4.3-3</literal> is greater
-than <literal>4.3-1</literal> because <literal>3</literal> is greater than <literal>
-1</literal>.</para>
+version is considered unless the components to its left are the same. Thus,
+<literal>4.3-1</literal> is greater than <literal>4.2-7</literal> because
+<literal>4.3</literal> is greater than <literal>4.2</literal>, and
+<literal>4.3-3</literal> is greater than <literal>4.3-1</literal> because
+<literal>3</literal> is greater than <literal>1</literal>.</para>
 <para>The <literal>pkg.human-version</literal> attribute can be used to provide
 a human-readable version string. The value of the
 <literal>pkg.human-version</literal> attribute can be provided in addition to
@@ -94,16 +124,11 @@ timestamp can be elided. Sometimes all of the versioning information can be
 omitted.</para>
 </refsect1>
 <refsect1 role="other"><title>Actions</title>
-<para>Actions represent the installable objects on a system. Actions are described
-in the manifest of a package. Every action consists primarily of its name
-and a key attribute. Together, these refer to a unique object as it follows
-a version history. Actions can have other attributes. Some attributes are
-interpreted directly by the packaging system. Other attributes might be useful
-only to the system administrator or the end-user.</para>
+<para>Actions represent the installable objects on a system. Actions are described in the manifest of a package.</para>
+<para>To remove a file or other installable object from the image, remove the associated action from the package manifest. The object will be removed from the image when the package is updated by using the <command>pkg update</command> command. For more information, see <olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink>.</para>
+<para>Every action consists primarily of its name and a key attribute. Together, these refer to a unique object as it follows a version history. Actions can have other attributes. Some attributes are interpreted directly by the packaging system. Other attributes might be useful only to the system administrator or the end-user.</para>
 <para>Actions have a simple text representation:</para>
-<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
-value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
-</programlisting>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...</programlisting>
 <para>Names of attributes cannot have whitespace, quotation marks, or equals
 signs (=) in them. All characters after the first equals sign belong to the
 value. Values can have all of those, though spaces must be enclosed in single
@@ -274,11 +299,19 @@ exists in the image and has a <literal>preserve</literal> value of <literal>lega
 of the package, the permissions and timestamp (if present) are reset on the
 existing file.</para></listitem>
 </itemizedlist>
+<para>Unless otherwise specified above, when a package is downgraded or
+upgraded, any <literal>file</literal> action previously delivered by a package
+that is not listed in the new package version is removed from the system.
+Additionally, when the package is uninstalled, any <literal>file</literal>
+action delivered by the package is removed.</para>
 <para>When a package is uninstalled, if a <literal>file</literal> action
 delivered by the currently installed version of the package has a
-<literal>preserve</literal> value of <literal>abandon</literal> or
-<literal>install-only</literal> and the file exists in the image, the file
-will not be removed.</para></listitem>
+<literal>preserve</literal> value of <literal>abandon</literal> and the file
+exists in the image, the file is not removed. However, any other
+<literal>file</literal> action delivered by that package that is removed, that
+has a <literal>preserve</literal> attribute specified, and that has been
+modified since it was originally installed is moved to
+<filename>/var/pkg/lost+found</filename>.</para></listitem>
 </varlistentry>
 <varlistentry><term><literal>overlay</literal></term>
 <listitem><para>Specifies whether the action allows other packages to deliver
@@ -508,7 +541,7 @@ are not considered to be ordered and a string is arbitrary selected by <literal>
 <para>The value can be a string of arbitrary length composed of alphanumeric
 characters and spaces. If the implementation itself can be versioned or is
 versioned, then the version should be specified at the end of the string,
-after a @ (expressed as a dot-separated sequence of nonnegative integers).
+after an at (@) sign (expressed as a dot-separated sequence of nonnegative integers).
 If multiple versions of an implementation exist, the default behavior is to
 select the implementation with the greatest version.</para>
 <para>If only one instance of an implementation mediation link at a particular
@@ -658,8 +691,7 @@ the image rooted at / in order to install this package. If the value of the
 <literal>fmri</literal> attribute starts with <literal>pkg:/feature/firmware/</literal>, the
 remainder of the <literal>fmri</literal> value is treated as a command in
 <filename>/usr/lib/fwenum</filename> that evaluates the firmware dependency. See
-<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>
-for examples.</para>
+<olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink> for examples.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal></term>
@@ -1002,25 +1034,32 @@ This actuator declares that update or removal of the tagged action must be
 performed in a new boot environment if the package system is operating on
 a live image. Creation of a new boot environment is controlled by the <literal>be-policy
 </literal> image property. See the &ldquo;Image Properties&rdquo; section
-in the <literal>pkg</literal>(1) man page for more information about the <literal>
-be-policy</literal> property.</para>
+in the <literal>pkg</literal>(1) man page for more information about the
+<literal>be-policy</literal> property.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, <literal>
-restart_fmri</literal>, <literal>suspend_fmri</literal></term>
+<varlistentry><term><literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, <literal>restart_fmri</literal>, <literal>suspend_fmri</literal></term>
 <listitem><para>Each of these actuators takes the value of an FMRI of a service
-instance to operate on during the package installation or removal. <literal>disable_fmri
-</literal> causes the given FMRI to be disabled prior to action removal, per
-the <literal>disable</literal> subcommand to <literal>svcadm</literal>(8). <literal>
-refresh_fmri</literal> and <literal>restart_fmri</literal> cause the given
-FMRI to be refreshed or restarted after action installation, update, or removal
-per the respective subcommands of <literal>svcadm</literal>(8). Finally, <literal>
-suspend_fmri</literal> causes the given FMRI to be disabled temporarily prior
-to the action install phase, and then enabled after the completion of that
-phase.</para>
-<para>The value can contain a pattern that matches multiple service instances.
-However, it must do so explicitly with a glob as accepted by <literal>svcs</literal>(1),
-rather than doing so implicitly by not indicating any instances.</para>
+instance to operate on during the installation or removal of the package.</para>
+<para><literal>disable_fmri</literal> causes the given FMRI to be disabled prior
+to action removal, per the <command>disable</command> subcommand to the
+<command>svcadm</command> command.</para>
+<para><literal>refresh_fmri</literal> and <literal>restart_fmri</literal> cause
+the given FMRI to be refreshed or restarted after action installation, update,
+or removal per the respective subcommands of <command>svcadm</command>.</para>
+<para><literal>suspend_fmri</literal> causes the given FMRI to be disabled
+temporarily prior to the action update phase, and then enabled after the
+completion of that phase. <literal>suspend_fmri</literal> only applies to
+update, not to install, only applies to services that are loaded and running
+(<literal>enabled</literal>), and only applies when a fully qualified service
+instance is specified (for example,
+<literal>svc:/system/pkgserv:default</literal> instead of
+<literal>svc:/system/pkgserv</literal>).</para>
+<para>For <literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, and
+<literal>restart_fmri</literal>, the value can contain a pattern that matches
+multiple service instances. However, the pattern to match must be specified
+explicitly with a glob as accepted by the <command>svcs</command> command,
+rather than implicitly by not indicating any instances.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1254,9 +1293,7 @@ both the facets and the variants allow the action to be installed.</para>
 </listitem>
 </itemizedlist>
 <para>You can create custom facet tags and variant tags. See
-<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>
-for more information. The following tags are in common use in Oracle
-Solaris.</para>
+<olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink> for more information. The following tags are in common use in Oracle Solaris.</para>
 <informaltable frame="topbot">
 <textobject><simpara>Variants and their possible values.</simpara></textobject>
 <tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*"/><colspec
@@ -1393,9 +1430,9 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
-<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>
