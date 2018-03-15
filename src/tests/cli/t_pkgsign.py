@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -1119,9 +1119,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
+                # Tests that the cli can handle an UnsupportedCriticalExtension.
                 self.assertRaises(apx.UnsupportedCriticalExtension,
                     self._api_install, api_obj, ["example_pkg"])
-                # Tests that the cli can handle an UnsupportedCriticalExtension.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
                 self.pkg("set-publisher --set-property signature-policy=ignore "
@@ -1335,7 +1335,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
-                self.assertRaises(apx.InvalidCertificateExtensions,
+                self.assertRaises(apx.UnsupportedCriticalExtension,
                     self._api_install, api_obj, ["example_pkg"])
                 # Tests that the cli can handle an InvalidCertificateExtensions.
                 self.pkg("install example_pkg", exit=1)

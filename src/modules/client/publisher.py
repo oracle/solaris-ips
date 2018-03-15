@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -2577,10 +2577,6 @@ pkg unset-publisher {0}
                 """Verify the signature of a certificate or CRL 'c' against a
                 provided public key 'key'."""
 
-                verifier = key.verifier(
-                    c.signature, padding.PKCS1v15(),
-                    c.signature_hash_algorithm)
-
                 if isinstance(c, x509.Certificate):
                         data = c.tbs_certificate_bytes
                 elif isinstance(c, x509.CertificateRevocationList):
@@ -2589,9 +2585,9 @@ pkg unset-publisher {0}
                         raise AssertionError("Invalid x509 object for "
                             "signature verification: {0}".format(type(c)))
 
-                verifier.update(data)
                 try:
-                        verifier.verify()
+                        key.verify(c.signature, data, padding.PKCS1v15(),
+                                   c.signature_hash_algorithm)
                         return True
                 except Exception:
                         return False
@@ -2736,7 +2732,7 @@ pkg unset-publisher {0}
 
                 try:
                         exts = cert.extensions
-                except (ValueError, x509.UnsupportedExtension) as e:
+                except (ValueError, x509.UnrecognizedExtension) as e:
                         raise api_errors.InvalidCertificateExtensions(
                             cert, e)
 

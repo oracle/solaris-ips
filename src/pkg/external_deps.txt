@@ -8,6 +8,8 @@
     pkg:/developer/intltool
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
+    pkg:/library/python/asn1crypto-27
+    pkg:/library/python/asn1crypto-34
     pkg:/library/python/cffi-27
     pkg:/library/python/cffi-34
     pkg:/library/python/cryptography-27
