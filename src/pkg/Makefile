@@ -23,7 +23,7 @@
 
 PKGVERS_BUILTON   = 5.11
 MINORNUM          = 11
-UPDATENUM         = 4
+UPDATENUM         = 5
 SRUNUM            = 0
 ORDER             = 0
 PLATNUM           = 0
