@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 4 月 29 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>映像包管理系统软件包 lint</refpurpose>
@@ -14,8 +13,8 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
-    [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
-    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
+    [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
+    [-v] [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
@@ -38,8 +37,8 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <listitem><para>显示用法消息。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>b</option> <replaceable>build_no</replaceable></term>
-<listitem><para>指定内部版本号，用于细化从 lint 和引用系统信息库执行 lint 期间使用的软件包列表。如果不指定 <option>b</option> 选项，将使用最新版本的软件包。另请参见 <literal>version.pattern </literal> 配置属性。</para>
+<varlistentry><term><option>b</option> <replaceable>branch</replaceable></term>
+<listitem><para>指定分支，用于细化从 lint 和引用系统信息库执行 lint 期间使用的软件包列表。如果不指定 <option>b</option> 选项，将使用最新版本的软件包。另请参见 <literal>version.pattern</literal> 配置属性。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -86,7 +85,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkglint.ext.</literal>*</term>
-<listitem><para><command>pkglint</command> 的插件机制允许在运行时添加其他 lint 模块。以 <literal> pkglint.ext.</literal> 开头的任何键采用必须是完全指定的 Python 模块的值。有关更多信息，请参见“开发工具”一节。</para>
+<listitem><para><command>pkglint</command> 的插件机制允许在运行时添加其他 lint 模块。以 <literal> pkglint.ext.</literal> 开头的任何键采用必须是完全指定的 Python 模块的值。有关更多信息，请参见“开发者”一节。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkglint.exclude</literal></term>
@@ -98,15 +97,54 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>version.pattern</literal></term>
-<listitem><para>指定内部版本号以针对 (<option>b</option>) 执行 lint 时使用的版本模式。如果未在配置文件中指定，则 <option>b</option> 选项将使用模式 <literal>*,5.11-0.</literal>，并使用分支前缀 0 来匹配 5.11 内部版本的所有组件。</para>
+<listitem><para>指定分支以针对 (<option>b</option>) 执行 lint 时使用的版本模式。如果未在配置文件中指定，<option>b</option> 选项使用模式 <literal>*-</literal>（与所有分支匹配）。</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </refsect1>
-<refsect1 role="other"><title>开发工具</title>
+<refsect1 role="other"><title>开发者</title>
 <para>扩展 <command>pkglint</command>、子类 <literal>pkg.lint.base.Checker</literal> 及其子类 <literal>ManifestChecker </literal>、<literal>ActionChecker</literal> 和 <literal>ContentChecker</literal> 执行的检查集。将包含这些类的 Python 模块名称添加到配置文件中的新 <literal>pkglint.ext.</literal> 键。</para>
 <para>这些新子类的实例由 <command>pkglint</command> 在启动时创建。lint 会话过程中，将会调用带有特殊关键字参数 <literal> pkglint_id</literal> 的每个子类中的方法。这些方法应该与超类中的相应 <function>check</function> 方法具有相同的签名。还应该为方法指定一个 <literal>pkglint_desc</literal> 属性，该属性用作 <command>pkglint -L</command> 输出的描述。</para>
 <para>参数可用于 <literal>Checker</literal> 子类，使这些子类能够调优其行为。建议的参数命名约定为 <literal><replaceable> pkglint_id</replaceable>.<replaceable>name</replaceable></literal>。参数值可以存储在配置文件中，或者在使用 <function>LintEngine.get_param</function> 方法检索的清单或操作中访问。从清单访问参数时，将在键名的前面附加前缀 <literal>pkg.lint</literal>，以确保 <command>pkglint</command> 参数不会与任何现有的操作或清单值重叠。</para>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>传输操作期间尝试建立连接时等待的秒数（针对每次尝试），达到此秒数后，客户端会异常中止操作。值 0 表示无限期等待。</para>
+<para>缺省值：60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>传输操作期间低于 <literal>lowspeed</literal> 限制（1024 字节/秒）的秒数，达到此秒数后，客户机会异常中止操作。值 0 表示不中止运行。</para>
+<para>缺省值：30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>客户端异常中止操作之前发生瞬态传输错误的最大次数。值 0 表示不中止运行。</para>
+<para>缺省值：4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>在传输操作期间，异常中止某个连接之前允许的最大 HTTP 或 HTTPS 重定向次数。值 0 表示不中止运行。</para>
+<para>缺省值：5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>客户端异常中止操作之前每台主机上的最大传输尝试次数。值 0 表示不中止运行。</para>
+<para>缺省值：4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
+<listitem><para>HTTP 或 HTTPS 代理服务器。使用下面的语法设置 <envar>http_proxy</envar> 或 <envar>https_proxy</envar>：</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>不应经过任何代理的主机名的列表。如果仅设置为星号 (*)，则与所有主机匹配：将不对任何主机进行代理操作。使用下面的语法设置 <envar>no_proxy</envar>：</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
 </refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>对特定系统信息库的首次运行</title>
@@ -122,10 +160,10 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
 <userinput>-p '.*firefox.*'</userinput></screen>
 </example>
-<example><title>指定内部版本</title>
-<para>在详细模式下针对给定的内部版本运行 <command>pkglint</command> 会话。</para>
+<example><title>指定分支</title>
+<para>在详细模式下针对给定的分支运行 <command>pkglint</command> 会话。</para>
 <screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 &bsol;</userinput>
-<userinput>-l http://localhost:12000 -b 147 -v</userinput></screen>
+<userinput>-l http://localhost:12000 -b 11.4.0.0.0.147.0 -v</userinput></screen>
 </example>
 <example><title>修改配置文件</title>
 <para>带有新的 lint 模块的配置文件，排除某些检查。</para>
@@ -167,7 +205,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -200,7 +238,8 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd </refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

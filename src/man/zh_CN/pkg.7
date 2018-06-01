@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统</refpurpose>
@@ -16,31 +15,61 @@
 </refsect1>
 <refsect1 role="other"><title>软件包 FMRI 和版本</title>
 <para>每个软件包均由带有机制 <literal>pkg:</literal> 的故障管理资源标识符 (fault management resource identifier, FMRI) 表示。软件包的完整 FMRI 由机制、发布者、软件包名称和以下格式的版本字符串组成：</para>
-<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
-</screen>
-<para><literal>solaris</literal> 是发布者。<literal>system/library/c++-runtime</literal> 是软件包名称。虽然名称空间是有层次的且可具有任意深度，但不存在强制包含；名称从本质上而言是任意的。发布者信息为可选项，但必须位于 <literal>pkg://</literal> 之后（如果存在）。包含发布者的 FMRI 通常被称为“全限定”。如果不存在发布者信息，那么软件包名称之前通常应带有 <literal>pkg:/</literal>。</para>
+<screen>pkg://solaris/system/library/c++-runtime@11.4-11.4.0.0.1.1.2:20170919T184404Z</screen>
+<para><literal>solaris</literal> 是发布者。<literal>system/library/c++-runtime</literal> 是软件包名称。虽然名称空间是有层次的且可具有任意深度，但不存在强制包含；名称是任意的。发布者信息为可选项，但必须位于 <literal>pkg://</literal> 之后（如果存在）。包含发布者的 FMRI 通常被称为“全限定”。如果不存在发布者信息，那么软件包名称之前通常应带有 <literal>pkg:/</literal>。</para>
 <para>如果 FMRI 不包含发布者信息，打包客户端通常允许省略 FMRI 的机制。例如，<literal>pkg:/system/library/c++-runtime</literal> 可以写为 <literal>system/library/c++-runtime</literal>。如果省略了机制，客户端也允许省略除软件包名称的最后一个组成部分（用于匹配目的）之外的所有其他内容。例如，<literal>system/library/c++-runtime</literal> 可以写为 <literal>library/c++-runtime</literal> 或 <literal>c++-runtime</literal>，这将与名为 <literal>c++-runtime</literal> 的软件包或以 <literal>/c++-runtime</literal> 结尾的软件包名称匹配。</para>
 <para>发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。</para>
-<para>版本跟在软件包名称后面，由 @ 符号分隔。版本包含四个数字序列，由标点符号分隔。前三个序列中的元素由圆点分隔，各序列可具有任意长度。不允许版本的组成部分以零开头（例如 01.1 或 1.01）。允许以零结尾（例如 1.10）。</para>
-<para>版本的第一个部分是组件版本。对于紧密绑定到操作系统上的组件，此序列通常是操作系统中该版本的 <command>uname -r</command> 值。对于具有自己的开发生命周期的组件，此序列是一个由小圆点分隔的发行编号，例如 2.4.10。</para>
-<para>版本的第二个部分（如果存在）必须跟在逗号 (,) 后面，是内部版本。内部版本指定构建软件包内容的操作系统版本，提供了希望软件包内容可成功运行的最低操作系统版本。</para>
-<para>版本的第三个部分（如果存在）必须跟在连字符 (<literal>-</literal>) 后面，是分支版本。分支版本是用于提供特定于供应商的信息的版本控制组件。分支版本可在打包元数据发生更改时增大，独立于组件版本。分支版本可能包含内部版本号或其他信息。</para>
-<para>版本的第四个部分（如果存在）必须跟在冒号 (:) 后面，是一个时间戳。时间戳表示软件包的发布时间。</para>
+<para>版本跟在软件包名称后面，由 @ 符号分隔。版本由组件版本、分支版本和时间戳组成。组件版本与分支版本之间由连字符 (-) 分隔。分支版本与时间戳之间由冒号 (:) 分隔。不允许组件版本或分支版本的元素以零开头（例如 01.1 或 1.01）。允许以零结尾（例如 1.10）。</para>
+<para><emphasis role="strong">组件版本：11.4。</emphasis>对于紧密绑定到操作系统上的组件，组件版本号为 <replaceable>minor.update</replaceable>。具有其各自开发生命周期的组件（如 FOSS 组件）具有其各自的版本号（如 2.4.10）。组件版本可能会是任意长度。</para>
+<para><emphasis role="strong">分支版本：11.4.0.0.1.1.2。</emphasis>分支版本（如果有）必须跟在连字符 (-) 后面。分支版本字符串与 <command>pkg info</command> 输出中的 "Branch" 相同。</para>
+<para>Oracle Solaris 软件包显示软件包 FMRI 中版本字符串的分支版本部分中的以下信息：</para>
+<programlisting><replaceable>minor.update.sru.order.platform.build.rev</replaceable></programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">次要发行编号：11</emphasis></term>
+<listitem><para>由 <command>uname -r</command> 输出的 <replaceable>major.minor</replaceable> 的 <replaceable>minor</replaceable> 部分。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">更新发行编号：4</emphasis></term>
+<listitem><para>此 Oracle Solaris 发行版的更新发行编号。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">SRU 编号：0</emphasis></term>
+<listitem><para>此更新发行版的 Support Repository Update (SRU) 编号。SRU 大约每月更新一次，用于修复错误、解决安全问题或为新硬件提供支持。Oracle Support Repository 仅可用于具有支持合同的系统。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">顺序：0</emphasis></term>
+<listitem><para>此值在内部使用。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">平台：1</emphasis></term>
+<listitem><para>此值在内部使用。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">发行版或 SRU 内部版本号：1</emphasis></term>
+<listitem><para>SRU 的内部版本号，或发行版的更新编号。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">修订版或每晚构建版本号：2</emphasis></term>
+<listitem><para>单个每晚构建版本的内部版本号。</para></listitem></varlistentry>
+</variablelist>
+<para>如果软件包是一项临时诊断或救援 (Interim Diagnostic or Relief, IDR) 更新，则软件包 FMRI 的分支版本将包含以下两个附加字段。IDR 是软件包更新，用于帮助诊断客户问题，或在正式软件包更新发布之前，对问题进行临时补救。以下示例介绍的是 idr824，它含有 FMRI <literal>pkg://solaris/idr824@4,5.11:20131114T034951Z</literal> 并包含软件包（如 <literal>pkg://solaris/system/library@11.4-11.4.0.0.1.1.2.824.4</literal>）：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">IDR：824</emphasis></term>
+<listitem><para>IDR 的名称。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">IDR ID：4</emphasis></term>
+<listitem><para>IDR 的版本。</para></listitem></varlistentry>
+</variablelist>
+<para><emphasis role="strong">时间戳：20170919T184404Z。</emphasis>时间戳必须跟在冒号 (:) 后面。时间戳是以如下 ISO-8601 基本格式发布软件包的时间：<replaceable>YYYYMMDDTHHMMSSZ</replaceable>。</para>
 <para>在版本之间进行比较时，不考虑完整版本的任何组件，除非左侧的组件与其相同。因此，<literal>4.3-1</literal> 大于 <literal>4.2-7</literal>，因为 <literal>4.3</literal> 大于 <literal>4.2</literal>；<literal>4.3-3</literal> 大于 <literal>4.3-1</literal>，因为 <literal>3</literal> 大于 <literal>1</literal>。</para>
 <para><literal>pkg.human-version</literal> 属性可以用于提供人工可读的版本字符串。对于软件包 FMRI，除了上文描述的软件包版本外，还可以提供 <literal>pkg.human-version</literal> 属性值，但该值不能替代软件包 FMRI 版本。人工可读的版本字符串仅用于显示目的。请参见“设置操作”了解更多信息。</para>
 <para>系统的许多部分（如果适用）会在显示 FMRI 时缩短 FMRI 并接受简短格式的输入，以减少显示的或所需的信息量。通常，可以省略机制、发布者、内部版本和时间戳。有时可以省略所有版本控制信息。</para>
 </refsect1>
 <refsect1 role="other"><title>操作</title>
-<para>操作表示系统上的可安装对象。在软件包的清单中对操作进行了描述。每个操作主要由其名称和一个关键属性组成。这些属性共同引用一个唯一的对象，与该对象一样遵循版本历史记录。操作可以具有其他属性。某些属性由包管理系统直接解释。其他属性可能仅对系统管理员或最终用户有用。</para>
+<para>操作表示系统上的可安装对象。在软件包的清单中对操作进行了描述。</para>
+<para>要从映像中删除文件或其他可安装的对象，请从软件包清单中删除相关的操作。使用 <command>pkg</command> 命令更新软件包时，该对象将被从映像中删除。有关更多信息，请参见<olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink>。</para>
+<para>每个操作主要由其名称和一个关键属性组成。这些属性共同引用一个唯一的对象，与该对象一样遵循版本历史记录。操作可以具有其他属性。某些属性由包管理系统直接解释。其他属性可能仅对系统管理员或最终用户有用。</para>
 <para>操作具有一种简单文本表示法：</para>
-<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
-value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
-</programlisting>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...</programlisting>
 <para>属性名称中不能包含空格、引号或等号 (=)。第一个等号后的所有字符都属于值。值中可以包含所有这些符号，虽然空格必须括在单引号或双引号中。单引号处于括在双引号中的字符串内时不需要进行转义，双引号处于括在单引号中的字符串内时也不需要进行转义。可使用反斜杠 (\) 字符作为引号的前缀来避免终止带引号的字符串。反斜杠可使用反斜杠进行转义。</para>
 <para>操作可以具有多个属性。可以针对单个操作使用不同的值来多次命名某些属性。具有相同名称的多个属性将被视为无序列表。</para>
 <para>具有多个属性的操作可以在清单文件中创建长行。可以通过使用反斜杠终止每个不完整的行来对此类行进行折行。请注意，属性/值对之间必须具有此接续字符。属性、属性值及其组合均不可分离。</para>
 <para>下面列出的属性不是全部属性。事实上，任意属性都可附加到操作中，标准属性组易于扩大以合并将来的开发。</para>
 <para>某些属性会导致在打包上下文外部执行其他操作。这些属性记录在下面的“执行器”部分中。</para>
+<para>安装到路径的操作不得向下列任一路径交付内容：</para>
+<programlisting>/system/volatile
+/tmp
+/var/share
+/var/tmp</programlisting>
+<para>此外，以下目录保留供系统使用，也不应由操作使用：</para>
+<programlisting>/var/pkg</programlisting>
 <refsect2><title>文件操作</title>
 <para><literal>file</literal> 操作表示普通文件。<literal>file</literal> 操作引用有效负荷，具有四个标准属性：</para>
 <variablelist>
@@ -101,7 +130,8 @@ value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</
 <listitem><para>如果软件包的升级版本提供的文件存在于映像中，在升级的软件包中具有的 <literal>preserve</literal> 值为 <literal>legacy</literal>，并且在软件包的当前安装版本中具有不同的 <literal>preserve</literal> 值，则使用扩展名 <literal>.legacy</literal> 重命名现有文件，并使用更新的权限和时间戳（如果存在）安装新文件。</para></listitem>
 <listitem><para>如果软件包的升级版本提供的文件存在于映像中并且在升级的软件包和软件包的当前安装版本中具有的 <literal>preserve</literal> 值为 <literal>legacy </literal>，则在现有文件中重置权限和时间戳（如果存在）。</para></listitem>
 </itemizedlist>
-<para>卸载软件包时，如果该软件包的当前安装版本所提供的 <literal>file</literal> 操作具有的 <literal>preserve</literal> 值为 <literal>abandon</literal> 或 <literal>install-only</literal> 并且文件存在于映像中，将不删除该文件。</para></listitem>
+<para>除非在上面指定，否则当对软件包进行降级或升级时，以前由新软件包版本中未列出的软件包提供的任何 <literal>file</literal> 操作将从系统中删除。此外，卸载软件包时，由该软件包提供的任何 <literal>file</literal> 操作将被删除。</para>
+<para>软件包卸载后，如果由当前安装的软件包版本提供的 <literal>file</literal> 操作的 <literal>preserve</literal> 值为 <literal>abandon</literal> 而且该文件存在于映像中，则将不删除该文件。但是，由指定了 <literal>preserve</literal> 属性而且自最初安装以来进行过修改的已删除软件包提供的任何其他 <literal>file</literal> 操作将移到 <filename>/var/pkg/lost+found</filename>。</para></listitem>
 </varlistentry>
 <varlistentry><term><literal>overlay</literal></term>
 <listitem><para>指定操作是允许其他软件包在同一位置交付文件，还是用交付的文件覆盖其他文件。此功能设计用于不参与任何自组装（例如 <filename>/etc/motd</filename>）且可安全覆盖的配置文件。</para>
@@ -118,6 +148,11 @@ value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</
 </varlistentry>
 </variablelist>
 <para>基于覆盖文件的 <literal>preserve</literal> 属性值保留对已安装文件所做的更改。在删除时，如果仍要安装将覆盖的操作，则将保留文件的内容，无论是否指定了 <literal>preserve</literal> 属性。只能一个操作覆盖另一个操作，且 <literal>mode</literal>、<literal>owner</literal> 和 <literal>group</literal> 属性必须匹配。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay-attributes</literal></term>
+<listitem><para>指定当覆盖操作与被覆盖操作具有不同的 <literal>owner</literal>、<literal>group</literal>、<literal>mode</literal> 或 <literal>sysattr</literal> 时，映像修改操作（如安装、更新等）是否应当报告错误。<literal>overlay-attributes</literal> 通常用在 <literal>overlay</literal> 等于 <literal>allow</literal> 或 <literal>deny</literal> 的操作中。当覆盖操作或被覆盖操作的 <literal>overlay-attributes</literal> 值为 <literal>deny</literal> 时，将在映像修改操作期间生成错误。而且，对于一对覆盖/被覆盖操作，如果 <literal>overlay</literal> 等于 <literal>deny</literal>，验证操作将针对以下不匹配的属性生成错误：<literal>owner</literal>、<literal>group</literal> 和 <literal>mode</literal>。否则，将针对该操作对的以上不匹配属性生成信息性消息。无论 <literal>overlay-attributes</literal> 的值是什么，在对文件的盘上属性与它的打包版本进行比较时，会始终将不匹配的属性报告为错误。
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>dehydrate</literal></term>
@@ -225,7 +260,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
 <listitem><para>指定除 <literal>mediator-version</literal> 之外还使用中介实现，或使用中介实现代替 mediator-version。不认为实现字符串应进行排序，如果系统管理员未显式指定，则由 <literal>pkg</literal>(7) 任意选择一个字符串。</para>
-<para>该值可以是由字母数字字符和空格组成的任意长度的字符串。如果实现本身可被版本化或已被版本化，则应在字符串的结尾处在 @ 之后指定版本（表示为非负整数的点分序列）。如果存在实现的多个版本，则缺省行为是选择最高版本的实现。</para>
+<para>该值可以是由字母数字字符和空格组成的任意长度的字符串。如果实现本身可被版本化或已被版本化，则应在字符串的结尾处在 @ 符号之后指定版本（表示为非负整数的点分序列）。如果存在实现的多个版本，则缺省行为是选择最高版本的实现。</para>
 <para>如果系统上仅安装了特定路径的实现中介链接的一个实例，则会自动选择该实例。如果以后安装了该路径的其他链接，除非应用供应商、站点或本地覆盖或者如果某一链接进行了版本中介，否则不会切换链接。</para>
 </listitem>
 </varlistentry>
@@ -315,7 +350,8 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>origin</literal></term>
-<listitem><para>在安装此软件包之前，相关项目标（如果存在）在要修改的映像上必须具有指定值或更大值。如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，则目标必须存在于根目录为 / 的映像上，才能安装此软件包。如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，并且 <literal>fmri</literal> 属性的值以 <literal>pkg:/feature/firmware/</literal> 开头，则将剩余的 <literal>fmri</literal> 值视为 <filename>/usr/lib/fwenum</filename> 中计算固件依赖项的命令。有关示例，请参见《<citetitle>在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》。</para>
+<listitem><para>在安装此软件包之前，依赖项目标（如果已安装）在要修改的映像上必须具有指定值或更大值。如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，则这会改为应用于在 / 处挂载的映像。</para>
+<para>如果 <literal>root-image</literal> 属性的值为 <literal>true</literal>，并且 <literal>fmri</literal> 属性的值以 <literal>pkg:/feature/firmware/</literal> 开头，则将剩余的 <literal>fmri</literal> 值视为 <filename>/usr/lib/fwenum</filename> 中计算固件依赖项的命令。有关示例，请参见<olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal></term>
@@ -552,8 +588,41 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
-<listitem><para>其中每个执行器在软件包安装或删除过程中均使用服务实例的 FMRI 值进行操作。根据 <literal>svcadm</literal>(8) 的 <literal>disable</literal> 子命令，<literal>disable_fmri</literal> 会导致给定的 FMRI 在删除操作之前被禁用。根据 <literal>svcadm</literal>(8) 的各个子命令，<literal>refresh_fmri</literal> 和 <literal>restart_fmri</literal> 会导致给定的 FMRI 在安装、更新或删除操作后被刷新或重新启动。最后，<literal>suspend_fmri</literal> 会导致给定的 FMRI 在安装操作阶段之前被临时禁用，并在该阶段完成后被重新启用。</para>
-<para>该值可以包含与多个服务实例匹配的模式。但是，它必须使用 <literal>svcs</literal>(1) 所接受的 glob 显式执行此操作，而不是通过不指示任何实例来隐式执行此操作。</para>
+<listitem><para>其中的每个执行器会在安装或删除软件包期间，提取要操作的一个服务实例的 FMRI 值。指定服务实例的完整名称以避免不明确。</para>
+<para>对于 <literal>disable_fmri</literal>、<literal>refresh_fmri</literal> 和 <literal>restart_fmri</literal>，FMRI 值可以包含与多个服务实例相匹配的模式。必须使用由 <command>svcs</command> 命令接受的 glob 显式指定要匹配的模式，而不是通过指出任何实例来隐式指定。</para>
+<para>如果用多个操作（可能位于多个软件包中）标记了同一个服务 FMRI，则由该执行器指定的操作将仅执行一次。例如，如果多个 <literal>restart_fmri</literal> 执行器指定同一个 FMRI，则该服务将仅针对 <command>pkg</command> 操作重新启动一次。</para>
+<para>下面的 SMF 执行器列表介绍了对服务 FMRI（每个指定的执行器的值）的影响。在这些说明中，“卸载软件包”还包括将交付该服务的 <literal>file</literal> 操作移动到其他软件包。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>disable_fmri</literal></term>
+<listitem>
+<para>在卸载软件包前，禁用 (<command>svcadm disable</command>) 指定的服务。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>refresh_fmri</literal></term>
+<listitem>
+<para>在安装、更新或卸载软件包后，刷新 (<command>svcadm refresh</command>) 指定的服务。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>restart_fmri</literal></term>
+<listitem>
+<para>在安装、更新或卸载软件包后，重新启动 (<command>svcadm restart</command>) 指定的服务。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>suspend_fmri</literal></term>
+<listitem>
+<para>在更新软件包前临时禁用 (<command>svcadm disable -t</command>) 指定的服务，然后在更新软件包后启用 (<command>svcadm enable</command>) 该服务。指定的服务值必须是完全指定的服务实例 FMRI（例如，<literal>svc:/site/mysvc:default</literal>，而非 <literal>svc:/site/mysvc</literal>），不能包括 glob 字符。<literal>suspend_fmri</literal> 只能针对已启用的服务执行而且只能应用于软件包更新操作。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>在以下情况下，SMF 执行器不会执行：</para>
+<itemizedlist>
+<listitem>
+<para>当对备用根目录进行操作时 (<command>pkg -R /<replaceable>path</replaceable>/<replaceable>to</replaceable>/<replaceable>BE</replaceable></command>)。</para>
+</listitem>
+<listitem>
+<para>当从全局区域执行递归操作时 (<command>pkg <replaceable>subcommand</replaceable> -r</command>)。</para>
+</listitem>
+</itemizedlist>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -628,13 +697,13 @@ file group=sys mode=0644 overlay=allow owner=root &bsol;
 <listitem><para>如果侧面和变量都允许安装操作，则会安装带有这两种标记的操作。</para>
 </listitem>
 </itemizedlist>
-<para>可以创建定制侧面标记和变量标记。有关更多信息，请参见《<citetitle>在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》。以下是 Oracle Solaris 中的常用标记。</para>
+<para>可以创建定制侧面标记和变量标记。有关更多信息，请参见<olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink>。以下是 Oracle Solaris 中的常用标记。</para>
 <informaltable frame="topbot">
 <textobject><simpara>变量及其可能值。</simpara></textobject>
 <tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*" /><colspec colwidth="50*" /><thead>
 <row rowsep="1">
 <entry>
-<para>变量名</para>
+<para>变量名称</para>
 </entry>
 <entry>
 <para>可能值</para>
@@ -709,7 +778,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -743,9 +812,9 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.2 中添加和更新软件</citetitle>》</olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
-<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.2 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
+<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.4 中创建软件包系统信息库</citetitle>》</olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

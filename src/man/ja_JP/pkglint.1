@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 4 月 29 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -14,8 +13,8 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
-    [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
-    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
+    [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
+    [-v] [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
@@ -38,8 +37,8 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <listitem><para>使用方法に関するメッセージを表示します。</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>b</option> <replaceable>build_no</replaceable></term>
-<listitem><para>lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるビルド番号を指定します。<option>b</option> オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。<literal>version.pattern </literal> 構成プロパティーも参照してください。</para>
+<varlistentry><term><option>b</option> <replaceable>branch</replaceable></term>
+<listitem><para>lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるブランチを指定します。<option>b</option> オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。<literal>version.pattern</literal> 構成プロパティーも参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -98,7 +97,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>version.pattern</literal></term>
-<listitem><para>lint の対象となるビルド番号を指定するときに使用されるバージョンのパターン (<option>b</option>)。構成ファイルで指定されていない場合、<option>b</option> オプションはパターン <literal>*,5.11-0.</literal> を使用します。これは、ブランチ接頭辞が 0 である 5.11 ビルドのすべてのコンポーネントに一致します。</para>
+<listitem><para>lint の対象となるブランチを指定するときに使用されるバージョンのパターン (<option>b</option>)。構成ファイルで指定されていない場合、<option>b</option> オプションではパターン <literal>*-</literal> が使用され、すべてのブランチに一致します。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -107,6 +106,45 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <para><command>pkglint</command> によって実行されるチェックのセットを拡張するには、<literal>pkg.lint.base.Checker</literal> とそのサブクラス <literal>ManifestChecker </literal>、<literal>ActionChecker</literal>、および <literal>ContentChecker</literal> をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい <literal>pkglint.ext.</literal> キーに追加します。</para>
 <para>これらの新しいサブクラスのインスタンスは、起動時に <command>pkglint</command> によって作成されます。lint セッション中に、特殊なキーワード引数 <literal>pkglint_id</literal> を持つ、各サブクラスの内部のメソッドが呼び出されます。これらのメソッドには、スーパークラス内の対応する <function>check</function> メソッドと同じ署名が含まれているべきです。また、これらのメソッドには、<command>pkglint -L</command> によって出力される説明として使用される <literal>pkglint_desc</literal> 属性も割り当てられていなくてはいけません。</para>
 <para>パラメータは <literal>Checker</literal> サブクラスから使用できます。これにより、これらのサブクラスは自身の動作を調整できます。推奨されるパラメータの命名規則は、<literal><replaceable>pkglint_id</replaceable>.<replaceable>name</replaceable></literal> です。パラメータ値は構成ファイル内に格納するか、または <function>LintEngine.get_param</function> メソッドを使用して取得されるマニフェストまたはアクションでアクセスすることができます。マニフェストからパラメータにアクセスする場合は、<command>pkglint</command> パラメータが既存のどのアクションまたはマニフェスト値とも重複しないようにするために、キー名に接頭辞 <literal>pkg.lint</literal> が付加されます。</para>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。</para>
+<para>デフォルト値: 60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>クライアントが操作を中止するまでの、トランスポート操作中に <literal>lowspeed</literal> 制限 (1024 バイト/秒) を下回っていられる秒数。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
+<listitem><para>HTTP または HTTPS プロキシサーバー。<envar>http_proxy</envar> または <envar>https_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>プロキシ経由にするべきでないホストの名前のリスト。アスタリスク (*) のみに設定すると、すべてのホストが一致するため、どのホストもプロキシ経由になりません。<envar>no_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
 </refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>特定のリポジトリに対する最初の実行</title>
@@ -120,12 +158,12 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <example><title>絞り込まれたマニフェストセットでの lint リポジトリの使用</title>
 <para>lint リポジトリでの <command>pkglint</command> セッションの実行と、チェックするマニフェストのサブセットの指定。</para>
 <screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
-<userinput>-p '.*firefox.*'</userinput></screen>
+<userinput>-p &#39;.*firefox.*&#39;</userinput></screen>
 </example>
-<example><title>ビルドの指定</title>
-<para>冗長モードでの特定のビルドに対する <command>pkglint</command> セッションの実行。</para>
+<example><title>ブランチの指定</title>
+<para>冗長モードでの特定のブランチに対する <command>pkglint</command> セッションの実行。</para>
 <screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 &bsol;</userinput>
-<userinput>-l http://localhost:12000 -b 147 -v</userinput></screen>
+<userinput>-l http://localhost:12000 -b 11.4.0.0.0.147.0 -v</userinput></screen>
 </example>
 <example><title>構成ファイルの変更</title>
 <para>新しい lint モジュールを含む構成ファイル (一部のチェックを除外)。</para>
@@ -167,7 +205,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -200,7 +238,8 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd </refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> </citerefentry></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

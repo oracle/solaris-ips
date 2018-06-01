@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkg.sysrepo-8">
-<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.sysrepo</refname><refpurpose>Image Packaging System システムリポジトリ構成</refpurpose></refnamediv>
@@ -20,7 +19,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 <para><command>pkg.sysrepo</command> は、Image Packaging System (IPS) システムリポジトリの構成ファイルを生成するために使用されます。<command>pkg.sysrepo </command> は、<literal>svc:/application/pkg/system-repository</literal> サービス管理機能 (SMF) サービスから呼び出されます。構成の変更は、SMF サービスのプロパティーに対して行うようにしてください。</para>
 <para>システムリポジトリは、参照イメージ内に構成されたパッケージリポジトリへのアクセスを、集中管理プロキシを通して提供する役割を果たします。その参照イメージに加えられたパブリッシャーの構成の変更は、そのシステムリポジトリを使用するように構成されたすべてのクライアントにただちに認識されます。</para>
 <para>システムリポジトリは、大域ゾーン内に構成されたリポジトリに非大域ゾーンからアクセスできるようにするために、主に大域ゾーンで使用されます。SMF サービス <literal>svc:/application/pkg/zones-proxyd</literal> および <literal>svc:/application/pkg/zones-proxy-client</literal> は、非大域ゾーンと大域ゾーンの間のトランスポートを提供する役割を果たします。このトランスポートは、<literal>pkg</literal>(7) でのみ使用されます。</para>
-<para><literal>http</literal>、<literal>https</literal>、および <literal> v4</literal> ファイルリポジトリと <literal>p5p</literal> アーカイブのみがサポートされます。古いファイルリポジトリ形式はサポートされません。リポジトリバージョンについての詳細は、<command>pkgrepo</command>(1) を参照してください。</para>
+<para>システムリポジトリは <literal>http</literal>、<literal>https</literal>、<literal>file</literal>、および <filename>.p5p</filename> アーカイブリポジトリをプロキシ設定できます。ファイルシステムリポジトリバージョン 4 のみがサポートされており、これは <command>pkgrepo create</command> コマンドのデフォルトの形式です。リポジトリバージョンについての詳細は、<literal>pkgrepo</literal>(1) のマニュアルページを参照してください。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>サポートしているオプションは、次のとおりです。</para>
@@ -78,7 +77,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -111,7 +110,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

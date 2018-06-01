@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkgdepend-1">
-<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 1 月 28 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgdepend</refname><refpurpose>映像包管理系统依赖项分析器</refpurpose></refnamediv>
@@ -30,7 +29,7 @@ path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
 <para>提供的文件的多个组件用作依赖项信息的源：</para>
 <variablelist>
 <varlistentry><term>ELF</term>
-<listitem><para>分析提供的文件中的 ELF 头以获取依赖项信息，<option>k</option> 和 <option>D</option> 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 <command>ldd</command> 和<olink targetdoc="OSLLG">《<citetitle remap="book">Oracle Solaris 11.2 链接程序和库指南</citetitle>》</olink>。 </para>
+<listitem><para>分析提供的文件中的 ELF 头以获取依赖项信息，<option>k</option> 和 <option>D</option> 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 <command>ldd</command> 和<olink targetdoc="OSLLG">《<citetitle remap="book">Oracle Solaris 11.4 链接程序和库指南</citetitle>》</olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term>脚本</term>
@@ -234,7 +233,7 @@ $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -267,7 +266,8 @@ $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">在 Oracle Solaris 11.4 中使用映像打包系统打包和交付软件</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>
