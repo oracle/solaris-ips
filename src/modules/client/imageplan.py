@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -3908,6 +3908,7 @@ class ImagePlan(object):
                         pub = self.image.get_publisher(pfmri.publisher)
                         hash_attr, hash_val, hash_func = \
                             digest.get_least_preferred_hash(act)
+
                         return self.image.transport.get_content(pub, hash_val,
                             fmri=pfmri, hash_func=hash_func)
                 finally:
@@ -3928,10 +3929,10 @@ class ImagePlan(object):
                                         if act.attrs.get("must-display",
                                             "false") == "true":
                                                 must_display = True
+                                        notes.append("\n" + pfmri.get_pkg_stem())
                                         for l in self.__get_note_text(
                                             act, pfmri).splitlines():
                                                 notes.append(misc.decode(l))
-
                         self.pd.release_notes = (must_display, notes)
 
         def __save_release_notes(self):
