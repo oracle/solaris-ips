@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
@@ -71,7 +71,7 @@ def main_func():
             _("\n"
             "        %prog [-b branch] [-c cache_dir] [-f file]\n"
             "            [-l uri ...] [-p regexp] [-r uri ...] [-v]\n"
-            "            [manifest ...]\n"
+            "            manifest ...\n"
             "        %prog -L")
         parser = OptionParser(usage=usage)
 
