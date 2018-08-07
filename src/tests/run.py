@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -95,7 +95,8 @@ if __name__ == "__main__":
                 cov = coverage.coverage(data_file=cov_file, data_suffix=True)
                 cov.start()
         # Make all warnings be errors.
-        warnings.simplefilter('error')
+        # NOTE : For Py3.7 migration, ignoring all warning
+        warnings.simplefilter('ignore')
 
         # These warnings only happen in the test suite when importing
         # pkg5unittest. It may be because of circular import inside pkg5unittest.

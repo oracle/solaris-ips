@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -3922,7 +3922,7 @@ class HTTPSTestClass(ApacheDepotTestCase):
                     testcase=self)
                 self.register_apache_controller("default", ac)
 
-        https_conf = """\
+        https_conf = r"""\
 # Configuration and logfile names: If the filenames you specify for many
 # of the server's control files begin with "/" (or "drive:/" for Win32), the
 # server will use that explicit path.  If the filenames do *not* begin
