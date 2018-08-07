@@ -441,8 +441,8 @@ SSLProxyProtocol all
                         context.write("RewriteRule ^/{pub}/{hash}/manifest/0/.*$ "
                             "%{{THE_REQUEST}} [NE,C]\n".format(**locals()))
 
-                        context.write("RewriteRule ^GET\ "
-                            "/{pub}/{hash}/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
+                        context.write(r"RewriteRule ^GET\ "
+                            r"/{pub}/{hash}/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
                             "/{pub}/{hash}/publisher/{pub}/pkg/$1/$2 [NE,PT,C]\n"
                            .format(**locals()))
                         context.write("RewriteRule ^/{pub}/{hash}/(.*)$ %{{DOCUMENT_ROOT}}/{pub}/{hash}/$1 [NE,L]"

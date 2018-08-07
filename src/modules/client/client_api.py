@@ -21,12 +21,11 @@
 #
 
 #
-# Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 
 import calendar
-import collections
 import datetime
 import errno
 import getopt
@@ -2342,7 +2341,6 @@ def _info(op, api_inst, pargs, display_license, info_local, info_remote,
                 elif lparen:
                         state += ")"
 
-                # XXX-Consider using Python's 2.7 collections.OrderedDict
                 attr_list = []
                 seen = {}
 

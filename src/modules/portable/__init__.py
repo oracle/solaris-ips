@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -260,14 +260,11 @@ from . import util as os_util
 
 osname = os_util.get_canonical_os_name()
 ostype = os_util.get_canonical_os_type()
-distro = platform.dist()[0].lower()
 
-fragments = [distro, osname, ostype]
-for fragment in fragments:
+for fragment in [osname, ostype]:
         modname = 'os_' + fragment
 
-        # try the most-specific module name first (e.g. os_suse),
-        # then try the more generic OS Name module (e.g. os_linux),
+        # try the more generic OS Name module (e.g. os_linux),
         # then the OS type module (e.g. os_unix)        
         try:
                 exec('from .{0} import *'.format(modname))
