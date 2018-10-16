@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -115,7 +115,20 @@ class GroupAction(generic.Action):
                                                     error=e, details=txt,
                                                     fmri=pkgplan.destination_fmri)
 
-                # NOTE: needs modification if more attrs are used
+                        # Deal with other columns in the group row.
+                        #
+                        # pkg has no support for the legacy password field
+                        # in the group table and thus requires it to be
+                        # empty for any pkg delivered group.  So there is
+                        # explicitly no support for updating
+                        # template["password"] since we require it to be empty.
+                        #
+                        # If the admin has assigned any users to a group that is
+                        # delivered as an action we preserve that list without
+                        # attempting to validate it in any way.
+                        if cur_attrs["user-list"]:
+                            template["user-list"] = cur_attrs["user-list"]
+
                 gr.setvalue(template)
                 try:
                         gr.writefile()

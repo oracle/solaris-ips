@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -1464,7 +1464,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                 self.image_create(props={"use-system-repo": True})
 
                 # When we corrupt the files in the repository, we intentionally
-                # corrupt them with different contents than the the cache,
+                # corrupt them with different contents than the cache,
                 # allowing us to check the error messages being printed by the
                 # transport subsystem.
 
@@ -5320,6 +5320,7 @@ other::1:root
 bin::2:root,daemon
 sys::3:root,bin,adm
 adm::4:root,daemon
+keepmembers::102:user1,user2
 +::::
 """,
                 "passwd" :
@@ -5923,6 +5924,8 @@ adm:NP:6445::::::
                 open simplegroup@2
                 add dir path=/etc/muppet owner=root group=muppets mode=755
                 add group groupname=muppets gid=70
+                open keepmembers@1
+                add group groupname=keepmembers gid=102
                 close"""
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
@@ -5951,6 +5954,12 @@ adm:NP:6445::::::
                 # make sure we can add new version of same package
                 self.pkg("update simplegroup")
                 self.pkg("verify simplegroup")
+
+                # verify that pre-existing members are preserved on upgrade
+                self.pkg("uninstall simple*")
+                self.pkg("install keepmembers")
+                self.pkg("verify")
+                self.file_contains("etc/group", "keepmembers::102:user1,user2")
 
         def test_missing_ownergroup_install(self):
                 """test what happens when a owner or group is missing"""
