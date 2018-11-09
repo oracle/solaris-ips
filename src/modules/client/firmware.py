@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os.path
@@ -59,9 +59,7 @@ class Firmware(object):
                         for k, v in sorted(six.iteritems(dep_action.attrs))
                 ])
 
-                # Set up the default return values
-                ret = 0
-                buf = ""
+                key = str(args)
 
                 # use a cache since each check may be expensive and each
                 # pkg version may have the same dependency.
@@ -70,7 +68,8 @@ class Firmware(object):
                 if portable.osname != "sunos" and key not in self._cache:
                         self._cache[key] = (True, None)
 
-                if str(args) not in self._cache:
+                if key not in self._cache:
+                        # Set up the default return values
                         try:
                                 proc = subprocess.Popen(
                                     args,
@@ -78,7 +77,7 @@ class Firmware(object):
                                     stderr=subprocess.STDOUT)
                                 # output from proc is bytes
                                 buf = [misc.force_str(l) for l in
-                                    proc.stdout.readlines()]
+                                       proc.stdout.readlines()]
                                 ret = proc.wait()
 
                         except OSError as e:
@@ -93,7 +92,10 @@ class Firmware(object):
                                          " Cannot exec {0}: {1}").format(
                                                  " ".join(args), str(e)))
                                 ret = -1
-                return (ret, buf, args)
+                        self._cache[key] = {"ret": ret,
+                                            "buf": buf,
+                                            "args": args}
+                return self._cache[key]
 
 
 class Cpu(Firmware):
@@ -101,7 +103,15 @@ class Cpu(Firmware):
         returns ((true, false, none (internal error)), error text)"""
 
         def check(self, dep_action, enumerator):
-                (ret, buf, args) = self._check(dep_action, which="cpu")
+                rval = self._check(dep_action, which="cpu")
+
+                if "ans" in rval:
+                        return rvals["ans"]
+
+                ret = rval["ret"]
+                buf = rval["buf"]
+                args = rval["args"]
+
                 if ret == 0:
                         ans = (True, None)
                 elif ret == -1:
@@ -124,19 +134,19 @@ class Cpu(Firmware):
                             vtype = "CPU Name(s)"
                         try:
                             innit = checkargs["check.include"] or None
-                            mesg = "include: {0}".format(innit)
-                        except KeyError as ke:
+                            mesg = "includes {0}".format(innit)
+                        except KeyError as _ke:
                             pass
                         try:
                             notit = checkargs["check.exclude"] or None
-                            mesg = "exclude: {0}".format(notit)
-                        except KeyError as ke:
+                            mesg = "excludes {0}".format(notit)
+                        except KeyError as _ke:
                             pass
 
                         ans = (False,
                                (_("cpu dependency error: '{0}' does "
-                                  "not meet the the minimum "
-                                  "requirement for {1} {2}\n").
+                                  "not meet the minimum "
+                                  "requirement for {1}: {2}\n").
                                 format("".join(buf).rstrip(),
                                        vtype, mesg)))
                 else:
@@ -144,9 +154,8 @@ class Cpu(Firmware):
                         ans = (False,
                                (_("cpu dependency error: "
                                   "Unable to verify cpu type\n")))
-                key = str(args)
-                self._cache[key] = ans
-                return self._cache[key]
+                rval["ans"] = ans
+                return rval["ans"]
 
 
 class Driver(Firmware):
@@ -155,8 +164,14 @@ class Driver(Firmware):
 
         def check(self, dep_action, enumerator):
                 which = enumerator[len("feature/firmware/"):]
-                (ret, buf, args) = self._check(dep_action, which=which)
-                # if there was output, something went wrong.
+
+                rval = self._check(dep_action, which=which)
+
+                if "ans" in rval:
+                        return rval["ans"]
+
+                ret = rval["ret"]
+                buf = rval["buf"]
 
                 min_ver = dep_action.attrs.get(
                     "check.minimum-version",
@@ -195,6 +210,5 @@ class Driver(Firmware):
                                 format(str(ret),
                                        " ".join(buf),
                                        "\n".join(buf))))
-                key = str(args)
-                self._cache[key] = ans
-                return self._cache[key]
+                rval["ans"] = ans
+                return rval["ans"]
