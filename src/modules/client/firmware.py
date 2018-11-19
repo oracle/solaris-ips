@@ -106,7 +106,7 @@ class Cpu(Firmware):
                 rval = self._check(dep_action, which="cpu")
 
                 if "ans" in rval:
-                        return rvals["ans"]
+                        return rval["ans"]
 
                 ret = rval["ret"]
                 buf = rval["buf"]
