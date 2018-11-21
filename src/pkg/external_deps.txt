@@ -28,6 +28,8 @@
     pkg:/library/python/pep8
     pkg:/library/python/ply-27
     pkg:/library/python/ply-34
+    pkg:/library/python/portend-27
+    pkg:/library/python/portend-34
     pkg:/library/python/prettytable-27
     pkg:/library/python/prettytable-34
     pkg:/library/python/pybonjour-27
