@@ -21,8 +21,20 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 #
+
+# This script will generate the certificates needed for testing.
+# As certs expire tests will fail and so it will be necessary to
+# generate new certs with this file and commit them.
+# As part of the cert generation openssl will create certifcates
+# of the form <serial>.pem (e.g. 1B.pem) these are not required
+# by the testsuite but are included in the certificate generation
+# commit for completelness.
+# Note: If additional cert creations are inserted below this may
+# change the serial number for following openssl operations and
+# so there may be additional .pem files that need to be added
+# or removed from the mercurial commit.
 
 from __future__ import print_function
 import os
