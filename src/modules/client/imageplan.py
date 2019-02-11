@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -792,7 +792,10 @@ class ImagePlan(object):
                 self.pd._backup_be_name = backup_be_name
                 self.pd._new_be = new_be
                 self.pd._be_activate = be_activate
-                self.pd._be_name = be_name
+                # The plan may have an auto discovered name set already
+                # but override with any user supplied name.
+                if be_name:
+                    self.pd._be_name = be_name
 
         def __set_update_index(self, value):
                 self.pd._update_index = value
@@ -4006,14 +4009,13 @@ class ImagePlan(object):
 
                 for oldfmri, old_in, newfmri, new_in in eval_list:
                         pp = pkgplan.PkgPlan(self.image)
-
+                        m = self.__get_manifest(newfmri, new_in,
+                            ignore_excludes=True)
                         if oldfmri == newfmri:
                                 # When creating intent, we always prefer to send
                                 # the new intent over old intent (see
                                 # __create_intent), so it's not necessary to
                                 # touch the old manifest in this situation.
-                                m = self.__get_manifest(newfmri, new_in,
-                                    ignore_excludes=True)
                                 pp.propose(
                                     oldfmri, m,
                                     newfmri, m)
@@ -4023,9 +4025,18 @@ class ImagePlan(object):
                                     oldfmri,
                                     self.__get_manifest(oldfmri, old_in),
                                     newfmri,
-                                    self.__get_manifest(newfmri, new_in,
-                                    ignore_excludes=True))
+                                    m)
                                 can_exclude = True
+                        # It might seem wrong to look at specific packages
+                        # at this point but it means we don't have to make
+                        # another pass over the plan later.  Since we already
+                        # have the manifest for the new version to hand now
+                        # we abuse that to lookup the suggested BE name for
+                        # the case where the plan doesn't have one already.
+                        if self.pd._be_name == None and newfmri and \
+                           newfmri.get_name() == 'release/name':
+                            self.pd._be_name = m.get(
+                                "com.oracle.info.suggested_bename", None)
 
                         pp.evaluate(self.__old_excludes, self.__new_excludes,
                             can_exclude=can_exclude)

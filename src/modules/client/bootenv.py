@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 
 import errno
 import os
@@ -455,6 +455,17 @@ class BeadmV2BootEnv(GenericBootEnv):
                 non-live BE we use the already created snapshot"""
 
                 self.img = img
+                # If the plan discovered a suggested BE name and we didn't 
+                # get one from the CLI/API use the one from the plan.
+                # First checking that it is valid and not already in use.
+                # If it is in use already we fallback to letting bemgr.copy()
+                # pick the new value for be_name.
+                if img.imageplan.pd._be_name and not be_name:
+                    try:
+                        self.check_be_name(img.imageplan.pd.__be_name)
+                        be_name = img.imageplan.pd._be_name
+                    except api_errors.DuplicateBEName:
+                        pass
 
                 if self.is_live_BE:
                         # Create a clone of the live BE and mount it.
