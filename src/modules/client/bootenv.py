@@ -455,45 +455,41 @@ class BeadmV2BootEnv(GenericBootEnv):
                 non-live BE we use the already created snapshot"""
 
                 self.img = img
+                if not self.is_live_BE and be_name is not None:
+                        raise api_errors.BENameGivenOnDeadBE(be_name)
+
                 # If the plan discovered a suggested BE name and we didn't 
                 # get one from the CLI/API use the one from the plan.
                 # First checking that it is valid and not already in use.
                 # If it is in use already we fallback to letting bemgr.copy()
                 # pick the new value for be_name.
                 if img.imageplan.pd._be_name and not be_name:
-                    try:
-                        self.check_be_name(img.imageplan.pd.__be_name)
                         be_name = img.imageplan.pd._be_name
-                    except api_errors.DuplicateBEName:
-                        pass
 
-                if self.is_live_BE:
-                        # Create a clone of the live BE and mount it.
-                        self.destroy_snapshot()
+                # Create a clone of the live BE and mount it.
+                self.destroy_snapshot()
 
-                        self.check_be_name(be_name)
+                self.check_be_name(be_name)
 
-                        try:
-                                self.be_clone = self.bemgr.copy(
-                                    dst_be_fmri=be_name)
-                                self.be_name_clone = self.be_clone.fmri
-                        except Exception:
-                                raise api_errors.UnableToCopyBE()
+                try:
+                        self.be_clone = self.bemgr.copy(
+                            dst_be_fmri=be_name)
+                        self.be_name_clone = self.be_clone.fmri
+                except Exception:
+                        raise api_errors.UnableToCopyBE()
 
-                        try:
-                                self.bemgr.mount(fmri=self.be_clone.fmri,
-                                                 mountpoint=self.clone_dir)
-                        except Exception:
-                                raise api_errors.UnableToMountBE(
-                                    self.be_clone.name, self.clone_dir)
+                try:
+                        self.bemgr.mount(fmri=self.be_clone.fmri,
+                                         mountpoint=self.clone_dir)
+                except Exception:
+                        raise api_errors.UnableToMountBE(
+                            self.be_clone.name, self.clone_dir)
 
-                        # record the UUID of this cloned boot environment
-                        self.be_name_clone_uuid = self.be_clone.uuid
+                # record the UUID of this cloned boot environment
+                self.be_name_clone_uuid = self.be_clone.uuid
 
-                        # Set the image to our new mounted BE.
-                        img.find_root(self.clone_dir, exact_match=True)
-                elif be_name is not None:
-                        raise api_errors.BENameGivenOnDeadBE(be_name)
+                # Set the image to our new mounted BE.
+                img.find_root(self.clone_dir, exact_match=True)
 
         def activate_image(self, set_active=True):
                 """Activate a clone of the BE being operated on.

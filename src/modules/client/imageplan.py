@@ -4033,7 +4033,8 @@ class ImagePlan(object):
                         # have the manifest for the new version to hand now
                         # we abuse that to lookup the suggested BE name for
                         # the case where the plan doesn't have one already.
-                        if self.pd._be_name == None and newfmri and \
+                        if self.pd._be_name == None and \
+                           self.image.is_liveroot() and newfmri and \
                            newfmri.get_name() == 'release/name':
                             self.pd._be_name = m.get(
                                 "com.oracle.info.suggested_bename", None)
