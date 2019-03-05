@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -3473,3 +3473,14 @@ class UnsupportedVariantGlobbing(ApiException):
 
         def __str__(self):
                 return _("Globbing is not supported for variants.")
+
+class UnsupportedFacetChange(ApiException):
+        """Used to indicate an unsupported facet change."""
+
+        def __init__(self, facet, value=None):
+            self.facet = facet
+            self.value = value
+
+        def __str__(self):
+                return _("Changing '{facet}' to '{value}' "
+                        "is not supported.".format(facet=facet, value=value))

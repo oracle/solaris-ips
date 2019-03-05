@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1638,7 +1638,7 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                 error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
         if isinstance(e, (api_errors.UnsupportedVariantGlobbing,
-            api_errors.InvalidVarcetNames)):
+            api_errors.InvalidVarcetNames, api_errors.UnsupportedFacetChange)):
                 error(str(e), cmd=op)
                 return EXIT_OOPS
 
