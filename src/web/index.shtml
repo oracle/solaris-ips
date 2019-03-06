@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import os.path
@@ -35,8 +35,7 @@
         config = api.ConfigInterface(CLIENT_API_VERSION, base)
         request = api.RequestInterface(CLIENT_API_VERSION, base)
 
-        # XXX default language if one can't be automatically determined,
-        # where to set this?
+        # Default to English, if one can't be automatically determined,
         dlang = "en"
 
         # First, get the list of desired languages from the request.
@@ -46,6 +45,9 @@
         # 639(.1/.2) code or an l10n simple name) to see if a directory of
         # content exists for it.
         for rl in rlangs:
+                # Use absolute path to ensure we only look at known locale
+                # directories below the webroot.
+                rl = os.path.abspath(rl)
                 if os.path.exists(os.path.join(config.web_root, rl)):
                         dlang = rl
                         break
