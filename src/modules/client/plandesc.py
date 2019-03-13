@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -238,6 +238,7 @@ class PlanDescription(object):
 
                 #
                 # Set by imageplan.set_be_options()
+                # or imageplan.__evaluate_pkg_plans()
                 #
                 self._backup_be = None
                 self._backup_be_name = None
