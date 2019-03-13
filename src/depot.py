@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -109,6 +109,11 @@ import pkg.search_errors as search_errors
 import pkg.server.depot as ds
 import pkg.server.repository as sr
 
+try:
+        import portend
+except ImportError:
+        emsg("Python module: portend not found.");
+        sys.exit(1)
 
 # Starting in CherryPy 3.2, its default dispatcher converts all punctuation to
 # underscore. Since publisher name can contain the hyphen symbol "-", in order
@@ -632,7 +637,8 @@ if __name__ == "__main__":
         # the program will not bind to a port.
         if not exit_ready:
                 try:
-                        cherrypy.process.servers.check_port(address, port)
+                        # Wait for the port to be free, time out in 1 sec.
+                        portend.free(address, port, 1.0)
                 except Exception as e:
                         emsg("pkg.depotd: unable to bind to the specified "
                             "port: {0:d}. Reason: {1}".format(port, e))
