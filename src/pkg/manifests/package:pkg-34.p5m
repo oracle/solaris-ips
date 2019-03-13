@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-34@$(PKGVERS)
@@ -235,4 +235,4 @@ license lic_minisat license="MIT (MiniSAT)" \
     com.oracle.info.tpno=17867 com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
 # CFFI import is done in C code, so it isn't picked up by pkgdepend
-depend type=require fmri=library/python/cffi-34@1.4.2
+depend type=require fmri=library/python/cffi-34@1.11.4

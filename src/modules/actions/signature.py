@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import hashlib
@@ -470,13 +470,12 @@ class SignatureAction(generic.Action):
                 # Check that the certificate verifies against this signature.
                 pub_key = cert.public_key()
                 hhash = self.__get_hash_by_name(self.hash_alg)
-                verifier = pub_key.verifier(
-                    misc.hex_to_binary(self.attrs["value"]), padding.PKCS1v15(),
-                    hhash())
-                verifier.update(misc.force_bytes(
-                    self.actions_to_str(acts, ver)))
+                signature = misc.hex_to_binary(self.attrs["value"])
+
                 try:
-                        verifier.verify()
+                        pub_key.verify(signature, misc.force_bytes(
+                            self.actions_to_str(acts, ver)), padding.PKCS1v15(),
+                            hhash())
                 except InvalidSignature:
                         raise apx.UnverifiedSignature(self,
                             _("The signature value did not match the expected "
@@ -533,11 +532,10 @@ class SignatureAction(generic.Action):
                                     "correctly.").format(key_path))
 
                         hhash = self.__get_hash_by_name(self.hash_alg)
-                        signer = priv_key.signer(padding.PKCS1v15(), hhash())
-                        signer.update(misc.force_bytes(self.actions_to_str(acts,
-                            generic.Action.sig_version)))
-                        self.attrs["value"] = \
-                                misc.binary_to_hex(signer.finalize())
+                        sigdata = misc.force_bytes(self.actions_to_str(acts,
+                                                   generic.Action.sig_version))
+                        signature = priv_key.sign(sigdata, padding.PKCS1v15(), hhash())
+                        self.attrs["value"] = misc.binary_to_hex(signature)
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See
