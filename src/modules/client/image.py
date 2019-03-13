@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -2627,6 +2627,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Build list of installed packages based on actual state
                 # information just in case there is a state issue from an
                 # older client.
+                # Also stash away any old metadata, in particular we want
+                # the last-install and last-update times but maybe other
+                # metadata will be useful in the future.
                 inst_stems = {}
                 for t, entry in old_icat.tuple_entries():
                         states = entry["metadata"]["states"]
@@ -2635,7 +2638,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         pub, stem, ver = t
                         inst_stems.setdefault(pub, {})
                         inst_stems[pub].setdefault(stem, {})
-                        inst_stems[pub][stem][ver] = False
+                        inst_stems[pub][stem][ver] = { "installed": False,
+                            "metadata" : entry["metadata"] }
 
                 # Create the new installed catalog in a temporary location.
                 icat = pkg.catalog.Catalog(batch_mode=True,
@@ -2672,7 +2676,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                     stem in inst_stems[pub] and \
                                     ver in inst_stems[pub][stem]:
                                         installed = True
-                                        inst_stems[pub][stem][ver] = True
+                                        inst_stems[pub][stem][ver]["installed"] = True
 
                                 # copy() is too slow here and catalog entries
                                 # are shallow so this should be sufficient.
@@ -2701,6 +2705,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 if installed:
                                         states.append(
                                             pkgdefs.PKG_STATE_INSTALLED)
+                                        # Preserve the dates of install/update
+                                        # if present in the old metadata
+                                        md = inst_stems[pub][stem][ver]["metadata"]
+                                        for key in ["last-install", "last-update"]:
+                                            if key in md:
+                                                entry["metadata"][key] = md[key]
 
                                 nver, snver = newest.get(stem, (None, None))
                                 if snver is not None and ver != snver:
@@ -2793,7 +2803,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 if pub not in inst_stems or \
                                     stem not in inst_stems[pub] or \
                                     ver not in inst_stems[pub][stem] or \
-                                    inst_stems[pub][stem][ver]:
+                                    inst_stems[pub][stem][ver]["installed"]:
                                         # Entry is no longer valid or is already
                                         # known.
                                         continue
