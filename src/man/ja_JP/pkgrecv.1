@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkgrecv-1">
-<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 10 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname><refpurpose>Image Packaging System 内容取得ユーティリティー</refpurpose>
@@ -25,10 +24,11 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
+<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。この再発行では、タイムスタンプ以外は変更されず、パッケージ署名も含めてパッケージがそのままコピーされます。同じタイムスタンプを保持するには、-<option>clone</option> オプションを参照してください。</para>
+<para>デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
 <para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
 <para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
-<para>取得対象に <literal>'*'</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
+<para>取得対象に <literal>&#39;*&#39;</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
 <note><para>同じ公開先リポジトリまたはアーカイブにパッケージを再発行するために、<command>pkgrecv</command> の複数インスタンスを同時に使用しないでください。この場合、新しく受け取ったパッケージに、重複するアクションが含まれる可能性があります。</para></note>
 <para><replaceable>dest_uri</replaceable> に対してパッケージを取得する <command>pkgrecv</command> 操作後に、<replaceable>dest_uri</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、そのリポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
 </refsect1>
@@ -153,7 +153,8 @@ Retrieving and evaluating 1 package(s)...
 PROCESS       ITEMS     GET (MB)    SEND (MB)
 Completed       1/1      3.5/3.5      0.0/0.0
 $ <userinput>ls /local/repo</userinput>
-pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
+pkg5.repository  publisher  system&#37;2Flibrary&#37;2Fc&#37;2B&#37;2B-runtime</screen>
+<para>変更のないパッケージは再発行されないため、SEND (再発行) の MB は GET (検査) の MB より少なくなる場合があります。この例では、<option>d</option> リポジトリへの再発行は行わずに raw データを取得しています。</para>
 </example>
 <example><title>システムから依存関係を取得する</title>
 <para><literal>test</literal> という名前のシステムから、パッケージ <literal>editor/vim</literal> とそのすべての依存関係を受け取ります。</para>
@@ -189,12 +190,12 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <example><title>追加パッケージおよび変更された内容の取得</title>
 <para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>http://pkg.oracle.com/solaris/release/</literal> にあるリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。</para>
 <screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
-<userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
+<userinput>-d /export/repoSolaris11 -m all-timestamps &#39;*&#39;</userinput></screen>
 <para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>https://pkg.oracle.com/solaris/support/</literal> にあるセキュアなリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。 </para>
 <screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
 <userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
 <userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
-<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'</userinput></screen>
+<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem &#39;*&#39;</userinput></screen>
 </example>
 <example><title>パッケージアーカイブを作成する</title>
 <para><literal>http://example.com:10000</literal> にあるリポジトリから、パッケージ <literal>editor/gnu-emacs</literal> とそのすべての依存関係を含むパッケージアーカイブを作成します。</para>
@@ -203,18 +204,43 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </example>
 <example><title>パッケージをアーカイブからリポジトリにコピーする</title>
 <para>パッケージアーカイブ内のすべてのパッケージを <filename>/export/repo</filename> にある既存のリポジトリにコピーします。</para>
-<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo &#39;*&#39;</userinput></screen>
 </example>
 <example><title>パブリッシャー名を変更する</title>
 <para>再公開時に、パッケージ &#39;foo&#39; とそのすべての依存関係のパブリッシャー名を &#39;extra&#39; に変更します。</para>
-<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
-(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
+<screen>$ <userinput>echo &#39;&#60;transform set name=pkg.fmri -&#62; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&#62;&#39; | pkgrecv -s repo1 -d repo2 --mog-file - foo
 </userinput></screen>
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <para>次の環境変数がサポートされています。</para>
-<variablelist>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。</para>
+<para>デフォルト値: 60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>クライアントが操作を中止するまでの、トランスポート操作中に <literal>lowspeed</literal> 制限 (1024 バイト/秒) を下回っていられる秒数。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_DEST</envar></term>
 <listitem><para>取得されたパッケージを保存する先のディレクトリのパス、またはパッケージがコピーされるリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI。</para>
 </listitem>
@@ -225,6 +251,17 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
 <listitem><para>プログラム実行中に一時データが格納されるディレクトリの絶対パス。設定されていない場合、一時データはデフォルトで <filename>/var/tmp</filename> に格納されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
+<listitem><para>HTTP または HTTPS プロキシサーバー。<envar>http_proxy</envar> または <envar>https_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>の、プロキシの指定に関する説明を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>プロキシ経由にするべきでないホストの名前のリスト。アスタリスク (*) のみに設定すると、すべてのホストが一致するため、どのホストもプロキシ経由になりません。<envar>no_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -258,7 +295,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -291,8 +328,8 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

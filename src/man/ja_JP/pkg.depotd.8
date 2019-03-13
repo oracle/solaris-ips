@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkg.depotd-8">
-<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depotd</refname><refpurpose>Image Packaging System のデポサーバー</refpurpose>
@@ -29,7 +28,7 @@
 <para>デポは、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開デポサーバーを保守するためのベストプラクティスをいくつか説明します。</para>
 </refsect1>
 <refsect1 role="other"><title>SMF プロパティー</title>
-<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。<literal>pkg.depot-config</literal>(8) マニュアルページおよび後述の <literal>pkg/standalone</literal> プロパティーを参照してください。</para>
+<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。<literal>pkg.depot-config</literal>(8) マニュアルページおよび後述の <literal>pkg/standalone</literal> プロパティーを参照してください。<literal>pkg.depot-config</literal> ツールおよびマニュアルページをインストールするには、<literal>package/pkg/depot</literal> パッケージをインストールします。</para>
 <para>SMF プロパティーについては、<literal>smf</literal>(7) マニュアルページを参照してください。次のようなプロパティーがあります。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/address</literal></term>
@@ -106,7 +105,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
-<listitem><para>指定された外部プログラムを実行して、パスフレーズを取得します。プログラムの最初の引数は <literal>''</literal> であり、予約されています。プログラムの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
+<listitem><para>指定された外部プログラムを実行して、パスフレーズを取得します。プログラムの最初の引数は <literal>&#39;&#39;</literal> であり、予約されています。プログラムの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>smf:fmri</literal></term>
@@ -121,7 +120,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/standalone</literal></term>
-<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>false</literal> で、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。詳細は、<literal>pkg.depot-config</literal>(8) のマニュアルページを参照してください。</para>
+<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>true</literal>、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。詳細は、<literal>pkg.depot-config</literal>(8) のマニュアルページを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/threads</literal></term>
@@ -168,7 +167,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/port</literal></term>
-<listitem><para>(<literal>count</literal>) インスタンスが受信パッケージ要求を待機するポート番号。デフォルトの値は 80 です。</para>
+<listitem><para>(<literal>count</literal>) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルトの値は 80 です。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -274,7 +273,7 @@ port = 80
 inst_root = /export/repo
 
 [pub_example_com]
-feed_description = example.com's software
+feed_description = example.com&#39;s software
   update log</programlisting>
 </refsect1>
 <refsect1 role="examples"><title></title>
@@ -310,7 +309,7 @@ feed_description = example.com's software
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生しました。</para>
+<listitem><para>エラーが発生した。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -335,7 +334,7 @@ feed_description = example.com's software
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -369,7 +368,7 @@ feed_description = example.com's software
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<literal>syslogd</literal>(8)、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 20 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -67,7 +66,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
     [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
-    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged]
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -177,7 +177,9 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
-<listitem><para><replaceable>dir</replaceable> をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」のセクションを参照してください。</para>
+<listitem><para><replaceable>dir</replaceable> をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは /、つまり現在アクティブなイメージです。下記の「環境変数」の <envar>PKG_IMAGE</envar> も参照してください。</para>
+<para><replaceable>dir</replaceable> または <envar>PKG_IMAGE</envar> が現在アクティブなイメージに設定されていない場合、<literal>--require-new-be</literal> や <literal>--require-backup-be</literal> などの BE オプションは無視され、新規またはバックアップ BE をいつ作成するかに関するイメージポリシー設定 (下記の「イメージプロパティー」の <literal>be-policy</literal> を参照) は無視されます。現在アクティブなイメージではないイメージを操作する場合、変更は直接そのイメージに対して行われます。新規またはバックアップ BE は作成されません。</para>
+<para><option>R</option> オプションはグローバルオプションです。どの <command>pkg</command> サブコマンドでも使用できますが、一部のサブコマンド (<command>help</command> や <command>version</command> など) では無視されます。<option>R</option> オプションは <command>dehydrate</command> および <command>rehydrate</command> サブコマンドでは必須です。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-network-cache</option></term>
@@ -522,7 +524,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </varlistentry>
 </variablelist>
 <para>関連するサブコマンドは <command>contents</command> および <command>search</command> であり、どちらもパッケージの内容についてシステムをクエリーします。<command>contents</command> サブコマンドは、1 つまたは複数のインストールされているか、インストール可能なパッケージ内のアクションを、指定されたオプションに基づいて出力をフィルタ処理して表示します。<command>search</command> サブコマンドは逆方向からクエリーを行い、ユーザーが指定したトークンを含むすべてのパッケージの名前を表示します。</para>
-<para>各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行なってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。</para>
+<para>各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行ってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg search</command> [<option>HIaflpr</option>] [<option>o</option> <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></term>
@@ -564,7 +566,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>p</option></term>
-<listitem><para>一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (<literal>&lt;&gt;</literal>) で囲むことと等価です。<literal>&lt;></literal> 演算子の詳細は、次の <replaceable>query</replaceable> を参照してください。</para>
+<listitem><para>一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (<literal>&#60;&#62;</literal>) で囲むことと等価です。<literal>&#60;&#62;</literal> 演算子の詳細は、次の <replaceable>query</replaceable> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>r</option></term>
@@ -580,7 +582,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 <listitem><para>デフォルトでは、<replaceable>query</replaceable> は完全一致する一連の条件として解釈され、複数の条件は AND でつながれます。</para>
 <para>AND と OR がサポートされています。</para>
 <para><literal>?</literal> および <literal>*</literal> 文字を <literal>glob</literal>(3C) 形式のワイルドカードとして使用でき、より柔軟なクエリー一致が可能になります。</para>
-<para>単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (<literal>'</literal> または <literal>"</literal>) を使用することにより、語句を検索できます。<command>pkg</command> が実際に <literal>'</literal> または <literal>"</literal> を認識するように、必ずシェルを考慮に入れてください。</para>
+<para>単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (<literal>&#39;</literal> または <literal>&#34;</literal>) を使用することにより、語句を検索できます。<command>pkg</command> が実際に <literal>&#39;</literal> または <literal>&#34;</literal> を認識するように、必ずシェルを考慮に入れてください。</para>
 <para>どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。アクションとそれらの属性については、<literal>pkg</literal>(7) のマニュアルページのアクションに関する項目を参照してください。前述の <command>pkg contents</command> および <option> o</option> 内の擬似属性名のリストも参照してください。</para>
 <para>構造化されたクエリーは、次の構文でサポートされます:</para>
 <programlisting><replaceable>pkg_name</replaceable>:<replaceable>action_name</replaceable>:<replaceable>
@@ -604,12 +606,12 @@ INDEX    ACTION VALUE       PACKAGE
 basename file   usr/bin/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1</screen>
 <para><replaceable>pkg_name</replaceable> および <replaceable>token</replaceable> フィールドでは明示的ワイルドカードがサポートされます。<replaceable>action_name</replaceable> および <replaceable> index</replaceable> は、正確に一致する必要があります。</para>
 <para>ファイルと依存関係の検索例については、「使用例」セクションを参照してください。</para>
-<para>アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、<literal> &lt;></literal> を使用します:</para>
-<screen>$ <userinput>pkg search &bsol;&lt;pkg&bsol;></userinput>
+<para>アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、<literal> &#60;&#62;</literal> を使用します:</para>
+<screen>$ <userinput>pkg search &bsol;&#60;pkg&bsol;&#62;</userinput>
 PACKAGE                                  PUBLISHER
 pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1  solaris
 pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
-<para><option>a</option> オプションを使用する場合 (デフォルト)、<literal>token</literal> を検索した結果は <literal>token</literal> に一致するアクションについての情報である一方で、<literal>&lt;token></literal> を検索した結果は、<literal>token</literal> に一致するアクションを包含しているパッケージの一覧です。</para>
+<para><option>a</option> オプションを使用する場合 (デフォルト)、<literal>token</literal> を検索した結果は <literal>token</literal> に一致するアクションについての情報である一方で、<literal>&#60;token&#62;</literal> を検索した結果は、<literal>token</literal> に一致するアクションを包含しているパッケージの一覧です。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -632,19 +634,19 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>p</option> <replaceable>path</replaceable></term>
 <listitem><para>パスを指定して、個々のファイル、リンク、またはディレクトリを検証します。指定されたパスは、検証が実行されるイメージの <literal>/</literal> の相対パスであると見なされます。ディレクトリまたはリンクが指定されている場合、そのディレクトリまたはリンクの一致するアクションのみが検証されます。</para>
-<para>パスの指定時に <replaceable>pkg_fmri_pattern</replaceable> を指定しないと、イメージにインストールされているパッケージから一致するすべてのアクションが検証されます。</para>
+<para>パスの指定時に <replaceable>pkg_fmri_pattern</replaceable> を指定しないと、イメージにインストールされているパッケージから一致するすべてのアクションが検証されます。このオプションを <option>-unpackaged</option> または <option>-unpackaged-only</option> と組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
-<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>q</option> が暗黙的に指定されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
-<listitem><para>一般的な出力に加えて展開されたパッケージ内容が報告されます。</para>
+<listitem><para>一般的な検証の出力に加えて展開されたパッケージ内容が報告されます。現在展開されたパッケージ内容には、パッケージ解除されたファイルおよびパッケージ解除されたディレクトリが含まれます。このオプションは <option>-parsable</option> と組み合わせることができます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged-only</option></term>
-<listitem><para>展開されたパッケージ内容のみを報告します。</para>
+<listitem><para>展開されたパッケージ内容のみを報告します。このオプションは、一般的な検証の出力を除外し、パッケージ解除されたファイルおよびディレクトリのみを報告します。このオプションは <option>-parsable</option> と組み合わせることができます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -675,7 +677,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
-<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>-q</option> が暗黙的に指定されます。</para>
+<listitem><para>解析可能な出力。サポートされるバージョンは 0 です。このオプションを使用すると、<option>q</option> が暗黙的に指定されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
@@ -927,7 +929,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg publisher</command> [<option>HPn</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>publisher</replaceable> ...] </term>
-<listitem><para>すべてのパブリッシャーの一覧を、検索の優先順に従って表示します。パブリッシャーごとに次の情報が表示されます。名前、非固定的や無効などの属性、種類 (起点またはミラー)、オンラインステータス、プロキシ、場所の URI。プロキシ情報は、P というラベルが付いた列に T (true) または F (false) と表示されるだけです。P 列が T のパブリッシャーのプロキシ値を表示するには、<literal>-F tsv</literal> オプションを使用するか、パブリッシャー名の引数を使用します。<command>pkg publisher</command> コマンドによって表示されるプロキシは、<command>pkg set-publisher</command> コマンドの <option>-proxy</option> オプションを使用して設定されました。<envar>http_proxy</envar> 環境変数を使用して設定されるプロキシは、<command>pkg publisher</command> コマンドによって表示されません。</para>
+<listitem><para>すべてのパブリッシャーの一覧を、検索の優先順に従って表示します。パブリッシャーごとに次の情報が表示されます。名前、非固定的や無効などの属性、種類 (起点またはミラー)、ステータス、プロキシ、場所の URI。プロキシ情報は、P というラベルが付いた列に T (true) または F (false) と表示されるだけです。P 列が T のパブリッシャーのプロキシ値を表示するには、<literal>-F tsv</literal> オプションを使用するか、パブリッシャー名の引数を使用します。<command>pkg publisher</command> コマンドによって表示されるプロキシは、<command>pkg set-publisher</command> コマンドの <option>-proxy</option> オプションを使用して設定されました。<envar>http_proxy</envar> 環境変数を使用して設定されるプロキシは、<command>pkg publisher</command> コマンドによって表示されません。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>publisher</replaceable></term>
 <listitem><para>指定された発行元のみの詳細な構成を表示します。表示される追加情報には、プロキシ URI、各起点またはミラー URI 用の鍵および証明書、クライアント UUID、カタログが最後に更新された時間などがあります。</para>
@@ -1008,7 +1010,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
 <listitem><para>指定したプロキシ URI を使用して、指定した起点 (<option>g</option>) またはミラー (<option>m</option>) のコンテンツを取得します。プロキシ値は、パブリッシャーの構成の一部として格納されます。つまり、子イメージが使用するシステムリポジトリは自動的に更新されます。このオプションを使用して認証済みプロキシを設定することはできません。<replaceable>proxy_to_use</replaceable> の値を <literal>protocol://user:password@host</literal> の形式にすることはできません。</para>
-<para>実行時には、<literal>$http_proxy</literal> または関連する環境変数がこのプロキシ設定をオーバーライドします。受け入れられる環境変数名のリストについては、<literal>curl</literal>(1) のマニュアルページの「環境」セクションを参照してください。環境変数を使用してプロキシ URI を設定する場合は、<literal>svc:/application/pkg/system-repository</literal> SMF サービスの該当するプロキシプロパティーも同じ値に設定する必要があります。<citetitle>Oracle Solaris 11.2 でのソフトウェアの追加と更新に関するドキュメント</citetitle>の、プロキシの指定に関する説明を参照してください。</para>
+<para>実行時には、<literal>$http_proxy</literal> または関連する環境変数がこのプロキシ設定をオーバーライドします。受け入れられる環境変数名のリストについては、<literal>curl</literal>(1) のマニュアルページの「環境」セクションを参照してください。環境変数を使用してプロキシ URI を設定する場合は、<literal>svc:/application/pkg/system-repository</literal> SMF サービスの該当するプロキシプロパティーも同じ値に設定する必要があります。<olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>の、プロキシの指定に関する説明を参照してください</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
@@ -1158,7 +1160,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>time</replaceable></term> <term><option>t</option> <replaceable>time</replaceable>-<replaceable>time</replaceable></term>
-<listitem><para><literal>%Y-%m-%dT%H:%M:%S</literal> 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (<literal>strftime</literal>(3C) マニュアルページを参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (<literal>-</literal>) を使用します。キーワード <literal>now</literal> は、現在の日時の別名として使用できます。このオプションは複数回指定できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントは表示されません。各履歴イベントの 1 つのインスタンスのみが表示されます。</para>
+<listitem><para><literal>&#37;Y-&#37;m-&#37;dT&#37;H:&#37;M:&#37;S</literal> 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (<literal>strftime</literal>(3C) マニュアルページを参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (<literal>-</literal>) を使用します。キーワード <literal>now</literal> は、現在の日時の別名として使用できます。このオプションは複数回指定できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントは表示されません。各履歴イベントの 1 つのインスタンスのみが表示されます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1257,10 +1259,10 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>
-
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>イメージプロパティー</title>
+<para>イメージが最後に変更された時間を知る必要があるデーモンまたはほかのプログラムは、ファイル <filename>/var/pkg/modified</filename> のタイムスタンプを参照できます。<filename>/var/pkg/modified</filename> のタイムスタンプは、イメージを変更する操作が発生するたびに更新されます。その時点の変更に関する情報を表示するには、<command>pkg history</command> コマンドを使用します。</para>
 <para>次のプロパティーはイメージの特性を定義します。これらのプロパティーは、イメージの目的、内容、および動作に関する情報を格納します。イメージ内のこれらのプロパティーの現在の値を表示するには、<command>pkg property</command> コマンドを使用します。これらのプロパティーの値を変更するには、<command>pkg set-property</command> コマンドおよび <command>pkg unset-property</command> コマンドを使用します。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be-policy</literal></term>
@@ -1475,7 +1477,7 @@ usr/bin/vim    editor/vim/vim-core</screen>
 <example id="GMEGA"><title>どのパッケージがどの SMF サービスを提供するかを表示する</title>
 <para>構造化された検索内で <replaceable>index</replaceable> に値 <literal>org.opensolaris.smf.fmri</literal> を指定し、<replaceable> token</replaceable> に検索対象のサービスの名前を指定することにより、特定の SMF サービスを提供するのはどのパッケージかを表示します。値 <literal>org.opensolaris.smf.fmri</literal> は、<literal>set</literal> アクションの属性の名前です。サービスの名前では、「:」を確実にエスケープしてください。</para>
 <para>たとえば、使用可能な HTTP サーバーを表示するには、<replaceable>token</replaceable> に値 <literal>svc:/network/http</literal> を指定します。</para>
-<screen>$ <userinput>pkg search 'org.opensolaris.smf.fmri:svc&bsol;:/network/http*'</userinput>
+<screen>$ <userinput>pkg search &#39;org.opensolaris.smf.fmri:svc&bsol;:/network/http*&#39;</userinput>
 INDEX                    ACTION VALUE                        PACKAGE
 org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
 org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
@@ -1595,7 +1597,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </example>
 <example><title>パブリッシャーの起点とミラーをすべて削除する</title>
 <para>パブリッシャーのすべての起点およびミラーを削除し、新しい起点を追加します。</para>
-<screen>$ <userinput>pkg set-publisher -G '*' -M '*' -g http://example.com:10000 &bsol;</userinput>
+<screen>$ <userinput>pkg set-publisher -G &#39;*&#39; -M &#39;*&#39; -g http://example.com:10000 &bsol;</userinput>
 <userinput>example.com</userinput></screen>
 </example>
 <example><title>イメージをデハイドレートおよびリハイドレートする</title>
@@ -1618,11 +1620,8 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
+<para>次の環境変数がサポートされています。</para>
 <variablelist termlength="wholeline">
-<varlistentry><term><envar>PKG_IMAGE</envar></term>
-<listitem><para>パッケージ操作に使用するイメージが含まれるディレクトリ。<option>R</option> を指定した場合は無視されます。</para>
-</listitem>
-</varlistentry>
 <varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
 <listitem><para>トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。</para>
 <para>デフォルト値: 60</para>
@@ -1643,19 +1642,30 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para>デフォルト値: 5</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_CONCURRENCY</envar></term>
 <listitem><para>同時に更新する子イメージの数。<option>C</option> オプションが指定されている場合には、無視されます。</para>
 <para>子イメージ (通常はインストールされている <literal>solaris</literal> ブランドの非大域ゾーン) 内への再帰時に、最大 <envar>$PKG_CONCURRENCY </envar> 個の子イメージを同時に更新します。<envar>$PKG_CONCURRENCY</envar> が 0 または負数の場合は、すべての子イメージが同時に更新されます。</para>
 <para>デフォルト値: 1</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
-<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
-<para>デフォルト値: 4</para>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>パッケージ操作に使用するイメージが含まれるディレクトリ。<option>R</option> を指定した場合は無視されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
-<listitem><para>HTTP または HTTPS プロキシサーバー。</para>
+<listitem><para>HTTP または HTTPS プロキシサーバー。<envar>http_proxy</envar> または <envar>https_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>の、プロキシの指定に関する説明を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>プロキシ経由にするべきでないホストの名前のリスト。アスタリスク (*) のみに設定すると、すべてのホストが一致するため、どのホストもプロキシ経由になりません。<envar>no_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1668,7 +1678,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生しました。</para>
+<listitem><para>エラーが発生した。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -1734,7 +1744,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -1768,7 +1778,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<literal>glob</literal>(3C)、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

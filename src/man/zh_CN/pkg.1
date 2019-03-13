@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 5 月 20 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统的检索客户端</refpurpose>
@@ -67,7 +66,8 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
     [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
-    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
+    [--accept] [--licenses] [--parsable <replaceable>version</replaceable>] [--unpackaged]
+    [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
 <synopsis>/usr/bin/pkg revert [-nv] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
@@ -177,7 +177,9 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
-<listitem><para>对根目录为 <replaceable>dir</replaceable> 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见“环境变量”部分。</para>
+<listitem><para>对根目录为 <replaceable>dir</replaceable> 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /，即当前处于活动状态的映像。另请参见下面的“环境变量”中的 <envar>PKG_IMAGE</envar>。</para>
+<para>如果 <replaceable>dir</replaceable> 或 <envar>PKG_IMAGE</envar> 未设置为当前处于活动状态的映像，将忽略 <literal>--require-new-be</literal> 和 <literal>--require-backup-be</literal> 之类的 BE 选项，以及有关何时创建新 BE 或备份 BE（请参见下面的“映像属性”中的 <literal>be-policy</literal>）的映像策略设置。对当前不处于活动状态的映像进行操作时，将直接针对该映像进行更改，而不创建新 BE 或备份 BE。</para>
+<para><option>R</option> 选项是全局选项。它可以与任何 <command>pkg</command> 子命令一起使用，尽管对于某些子命令（如 <command>help</command> 和 <command>version</command>），它将被忽略。对于 <command>dehydrate</command> 和 <command>rehydrate</command> 子命令，<option>R</option> 选项是必需的。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-network-cache</option></term>
@@ -632,19 +634,19 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>p</option> <replaceable>path</replaceable></term>
 <listitem><para>通过指定路径验证单个文件、链接或目录。指定的路径假定为相对于在其上执行验证的映像的 <literal>/</literal>。如果指定目录或链接，将仅验证该目录或链接的匹配操作。</para>
-<para>如果指定路径时未提供 <replaceable>pkg_fmri_pattern</replaceable>，将验证映像中安装的软件包中的所有匹配操作。</para>
+<para>如果指定路径时未提供 <replaceable>pkg_fmri_pattern</replaceable>，将验证映像中安装的软件包中的所有匹配操作。此选项不能与 <option>-unpackaged</option> 或 <option>-unpackaged-only</option> 结合使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
-<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>-q</option>。</para>
+<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>q</option>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
-<listitem><para>除了常规输出之外，还报告未打包内容。</para>
+<listitem><para>除了常规验证输出之外，还报告未打包内容。当前的未打包内容包括未打包文件和未打包目录。此选项可以与 <option>-parsable</option> 结合使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged-only</option></term>
-<listitem><para>仅报告未打包内容。</para>
+<listitem><para>仅报告未打包内容。此选项排除常规验证输出，仅报告未打包的文件和目录。此选项可以与 <option>-parsable</option> 结合使用。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -675,7 +677,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
-<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>-q</option>。</para>
+<listitem><para>可解析的输出。支持的版本是 0。使用此选项表示 <option>q</option>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
@@ -927,7 +929,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg publisher</command> [<option>HPn</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>publisher</replaceable> ...] </term>
-<listitem><para>按搜索优先顺序显示所有发布者的列表。为每个发布者显示以下信息：名称、属性（例如非粘性和已禁用）、类型（源或镜像）、联机状态、代理和位置 URI。代理信息在标记为 P 的列下仅显示为 T (true) 或 F (false)。要在 P 列中为具有 T 的发布者显示代理值，请使用 <literal>-F tsv</literal> 选项或指定发布者名称参数。<command>pkg publisher</command> 命令显示的代理是使用 <command>pkg set-publisher</command> 命令的 <option>-proxy</option> 选项来设置的。<command>pkg publisher</command> 命令不显示通过使用 <envar>http_proxy</envar> 环境变量设置的代理。</para>
+<listitem><para>按搜索优先顺序显示所有发布者的列表。为每个发布者显示以下信息：名称、属性（例如非粘性和已禁用）、类型（源或镜像）、状态、代理和位置 URI。代理信息在标记为 P 的列下仅显示为 T (true) 或 F (false)。要在 P 列中为具有 T 的发布者显示代理值，请使用 <literal>-F tsv</literal> 选项或指定发布者名称参数。<command>pkg publisher</command> 命令显示的代理是使用 <command>pkg set-publisher</command> 命令的 <option>-proxy</option> 选项来设置的。<command>pkg publisher</command> 命令不显示通过使用 <envar>http_proxy</envar> 环境变量设置的代理。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>publisher</replaceable></term>
 <listitem><para>仅显示指定发布者的详细配置信息。显示的其他信息包括代理 URI、键和每个源或镜像 URI 的证书、客户机 UUID 以及上次更新目录的时间。</para>
@@ -1008,7 +1010,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
 <listitem><para>使用指定的代理 URI 检索指定源 (<option>g</option>) 或镜像 (<option>m</option>) 的内容。代理值被存储为发布者配置的一部分，这意味着子映像所使用的系统信息库是自动更新的。此选项不能用于设置验证代理。<replaceable>proxy_to_use</replaceable> 值不能使用 <literal>protocol://user:password@host</literal> 格式。</para>
-<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。有关接受的环境变量名列表，请参见 <literal>curl</literal>(1) 手册页的“环境”部分。如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见《<citetitle>在 Oracle Solaris 11.3 中添加和更新软件</citetitle>》中的“指定代理”。</para>
+<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。有关接受的环境变量名列表，请参见 <literal>curl</literal>(1) 手册页的“环境”部分。如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见<olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink>中的“指定代理”</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
@@ -1257,10 +1259,10 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>
-
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>映像属性</title>
+<para>需要知道映像上次修改时间的守护线程或其他程序可以在文件 <filename>/var/pkg/modified</filename> 上查询时间戳。每当发生会修改映像的操作时，<filename>/var/pkg/modified</filename> 上的时间戳会进行更新。使用 <command>pkg history</command> 命令可显示有关那时所做更改的信息。</para>
 <para>以下属性可定义映像的特征。这些属性存储有关映像的用途、内容和行为的信息。要查看映像中这些属性的当前值，请使用 <command>pkg property</command> 命令。要修改这些属性的值，请使用 <command>pkg set-property</command> 和 <command>pkg unset-property</command> 命令。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be-policy</literal></term>
@@ -1618,11 +1620,8 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </example>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
+<para>支持以下环境变量：</para>
 <variablelist termlength="wholeline">
-<varlistentry><term><envar>PKG_IMAGE</envar></term>
-<listitem><para>用于软件包操作的映像所在的目录。如果指定了 <option>R</option>，则会忽略此属性。</para>
-</listitem>
-</varlistentry>
 <varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
 <listitem><para>传输操作期间尝试建立连接时等待的秒数（针对每次尝试），达到此秒数后，客户端会异常中止操作。值 0 表示无限期等待。</para>
 <para>缺省值：60</para>
@@ -1643,19 +1642,30 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para>缺省值：5</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>客户端异常中止操作之前每台主机上的最大传输尝试次数。值 0 表示不中止运行。</para>
+<para>缺省值：4</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_CONCURRENCY</envar></term>
 <listitem><para>要并行更新的子映像数。如果指定了 <option>C</option> 选项，则会忽略此属性。</para>
 <para>在递归检查子映像（通常为安装的 <literal>solaris</literal> 标记非全局区域）时，最多可以并行更新 <envar>$PKG_CONCURRENCY</envar> 个子映像。如果 <envar>$PKG_CONCURRENCY</envar> 为 0 或负数，则并行更新所有子映像。</para>
 <para>缺省值：1</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
-<listitem><para>客户端异常中止操作之前每台主机上的最大传输尝试次数。值 0 表示不中止运行。</para>
-<para>缺省值：4</para>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>用于软件包操作的映像所在的目录。如果指定了 <option>R</option>，则会忽略此属性。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
-<listitem><para>HTTP 或 HTTPS 代理服务器。</para>
+<listitem><para>HTTP 或 HTTPS 代理服务器。使用下面的语法设置 <envar>http_proxy</envar> 或 <envar>https_proxy</envar>：</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+<para>请参见<olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink>中的“指定代理”。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>不应经过任何代理的主机名的列表。如果仅设置为星号 (*)，则与所有主机匹配：将不对任何主机进行代理操作。使用下面的语法设置 <envar>no_proxy</envar>：</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1734,7 +1744,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -1768,7 +1778,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<literal>glob</literal>(3C)、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.2 中添加和更新软件</citetitle>》</olink></para>
+<para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

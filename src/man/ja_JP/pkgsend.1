@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkgsend-1">
-<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 30 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgsend</refname><refpurpose>Image Packaging System の発行クライアント</refpurpose>
@@ -105,7 +104,42 @@
 </variablelist>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
-<variablelist>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。</para>
+<para>デフォルト値: 60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>クライアントが操作を中止するまでの、トランスポート操作中に <literal>lowspeed</literal> 制限 (1024 バイト/秒) を下回っていられる秒数。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。</para>
+<para>デフォルト値: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>、<envar>https_proxy</envar></term>
+<listitem><para>HTTP または HTTPS プロキシサーバー。<envar>http_proxy</envar> または <envar>https_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>プロキシ経由にするべきでないホストの名前のリスト。アスタリスク (*) のみに設定すると、すべてのホストが一致するため、どのホストもプロキシ経由になりません。<envar>no_proxy</envar> を設定するには、次の構文を使用します。</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_REPO</envar></term>
 <listitem><para>公開先リポジトリのパスまたは URI です。</para>
 </listitem>
@@ -115,7 +149,7 @@
 <refsect1 role="examples"><title></title>
 <example><title>パッケージの生成と公開</title>
 <para><command>pkgsend generate</command> を使用してパッケージを作成し、そのパッケージを公開します。</para>
-<screen>$ <userinput>pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m</userinput></screen>
+<screen>$ <userinput>pkgsend generate /path/to/proto &#62; /path/to/manifests/foo.p5m</userinput></screen>
 <para><literal>example.com</literal> パブリッシャーのパッケージ FMRI を、<filename>foo.p5m</filename> の先頭に追加します。</para>
 <programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0</programlisting>
 <para>結果として生成されるマニフェストは、次のようになります。</para>
@@ -164,7 +198,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -198,7 +232,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

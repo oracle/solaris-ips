@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2016 年 4 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -16,31 +15,61 @@
 </refsect1>
 <refsect1 role="other"><title>パッケージの FMRI とバージョン</title>
 <para>各パッケージは、スキーム <literal>pkg:</literal> を使用して、障害管理リソース識別子 (FMRI) によって表されます。パッケージの完全な FMRI は、次の形式のスキーム、パブリッシャー、パッケージ名、およびバージョン文字列で構成されます。</para>
-<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
-</screen>
-<para><literal>solaris</literal> は発行元です。<literal>system/library/c++-runtime</literal> はパッケージ名です。名前空間は階層的であり、その深さは任意ですが、適用される包含関係は存在しません。名前は基本的に任意です。発行元情報はオプションですが、存在する場合は <literal>pkg://</literal> を前に付ける必要があります。パブリッシャーを含む FMRI は、しばしば「完全修飾」されていると言われます。パブリッシャー情報が存在しない場合、通常はパッケージ名の前に <literal>pkg:/</literal> が付けられます。</para>
-<para>クライアントをパッケージ化すると、通常、FMRI にパブリッシャー情報が含まれていない場合に FMRI のスキームを省略できます。たとえば、<literal>pkg:/system/library/c++-runtime</literal> は <literal>system/library/c++-runtime</literal> と書くことができます。スキームが省略される場合、クライアントは照合の目的で、パッケージ名の最後のコンポーネントを除くすべてのコンポーネントを省略することもできます。たとえば、<literal>system/library/c++-runtime</literal> は <literal>library/c++-runtime</literal> または <literal>c++-runtime</literal> と書くことができ、これらは <literal>c++-runtime</literal> という名前のパッケージまたは <literal>/c++-runtime</literal> で終わるパッケージ名に一致します。</para>
+<screen>pkg://solaris/system/library/c++-runtime@11.4-11.4.0.0.1.1.2:20170919T184404Z</screen>
+<para><literal>solaris</literal> はパブリッシャーです。<literal>system/library/c++-runtime</literal> はパッケージ名です。名前空間は階層的であり、その深さは任意ですが、適用される包含関係は存在しません。名前は任意です。パブリッシャー情報はオプションですが、存在する場合は、前に <literal>pkg://</literal> を付ける必要があります。パブリッシャーを含む FMRI は、しばしば「完全修飾」されていると言われます。パブリッシャー情報が存在しない場合、通常はパッケージ名の前に <literal>pkg:/</literal> が付けられるべきです。</para>
+<para>クライアントをパッケージ化すると、通常、FMRI にパブリッシャー情報が含まれていない場合に FMRI のスキームを省略できます。たとえば、<literal>pkg:/system/library/c++-runtime</literal> は <literal>system/library/c++-runtime</literal> と書くことができます。スキームが省略される場合、クライアントは照合の目的で、パッケージ名の最後のコンポーネントを除くすべてのコンポーネントを省略することもできます。たとえば、<literal>system/library/c++-runtime</literal> は <literal>library/c++-runtime</literal> または <literal>c++-runtime</literal> と書くことができ、これらは <literal>c++-runtime</literal> というパッケージまたは <literal>/c++-runtime</literal> で終わるパッケージ名に一致します。</para>
 <para>パブリッシャーの名前によって、人、人のグループ、または組織が 1 つ以上のパッケージのソースとして識別されます。パブリッシャーの名前の競合を避け、パブリッシャーを識別しやすくするために、パッケージを公開するエンティティーを表すドメイン名をパブリッシャーの名前として使用することがベストプラクティスです。</para>
-<para>パッケージ名のあとに、アットマーク記号 (@) で区切られたバージョンが続きます。バージョンは、句読文字で区切られた 4 つの数字の並びで構成されます。最初の 3 つの並びに含まれる要素はドットで区切られ、これらの並びの長さは任意です。バージョンコンポーネント内の先頭のゼロ (たとえば、01.1 または 1.01) は許可されません。末尾のゼロ (たとえば、1.10) は許可されます。</para>
-<para>バージョンの最初の部分はコンポーネントバージョンです。オペレーティングシステムに緊密に結合されたコンポーネントの場合、これは通常、そのバージョンのオペレーティングシステムでの <command>uname -r</command> の値です。独自の開発ライフサイクルを持つコンポーネントの場合、この並びはドットで区切られたリリース番号 (2.4.10 など) です。</para>
-<para>バージョンの 2 番目の部分 (存在する場合はコンマ (,) に続いている必要があります) はビルドバージョンです。ビルドバージョンは、パッケージの内容が構築されたオペレーティングシステムのバージョンを指定し、その内容が正常に実行されることを予測できるオペレーティングシステムのバージョンに関する最小の境界が提供されます。</para>
-<para>バージョンの 3 番目の部分 (存在する場合はハイフン (<literal>-</literal>) に続いている必要があります) はブランチバージョンです。ブランチバージョンは、ベンダー固有の情報を提供するバージョン管理コンポーネントです。ブランチバージョンは、コンポーネントバージョンとは独立に、パッケージ化のメタデータが変更されたときに 1 増やすことができます。ブランチバージョンには、ビルド番号やその他の情報が含まれていることがあります。</para>
-<para>バージョンの 4 番目の部分 (存在する場合はコロン (:) に続いている必要があります) はタイムスタンプです。タイムスタンプは、そのパッケージがいつ公開されたかを表します。</para>
+<para>パッケージ名のあとに、アットマーク (@) 記号で区切られたバージョンが続きます。バージョンは、コンポーネントバージョン、ブランチバージョン、およびタイムスタンプで構成されます。コンポーネントバージョンとブランチバージョンは、ハイフン (-) で区切ります。ブランチバージョンとタイムスタンプは、コロン (:) で区切ります。コンポーネントバージョンまたはブランチバージョンの要素には、先頭のゼロ (たとえば、01.1 または 1.01) は許可されません。末尾のゼロ (たとえば、1.10) は許可されます。</para>
+<para><emphasis role="strong">コンポーネントバージョン: 11.4</emphasis>オペレーティングシステムに緊密に結合されたコンポーネントの場合、コンポーネントバージョン番号は <replaceable>minor.update</replaceable> です。独自の開発ライフサイクルを持つコンポーネント (FOSS コンポーネントなど) には、独自のバージョン番号 (2.4.10 など) があります。コンポーネントバージョンの長さは任意です。</para>
+<para><emphasis role="strong">ブランチバージョン: 11.4.0.0.1.1.2</emphasis>ブランチバージョン (存在する場合) は、ハイフン (-) のあとに続ける必要があります。ブランチバージョン文字列は、<command>pkg info</command> の出力の「Branch」と同じです。</para>
+<para>Oracle Solaris パッケージでは、パッケージ FMRI のバージョン文字列のブランチバージョン部分に次の情報が示されます。</para>
+<programlisting><replaceable>minor.update.sru.order.platform.build.rev</replaceable></programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">マイナーリリース番号: 11</emphasis></term>
+<listitem><para><command>uname -r</command> で出力される <replaceable>major.minor</replaceable> の <replaceable>minor</replaceable> 部分。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">更新リリース番号: 4</emphasis></term>
+<listitem><para>この Oracle Solaris リリースの更新リリース番号。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">SRU 番号: 0</emphasis></term>
+<listitem><para>この更新リリースのサポート・リポジトリの更新 (SRU) 番号。SRU はほぼ 1 か月に 1 回、更新され、バグを修正したり、セキュリティーの問題を修正したり、新しいハードウェアに対するサポートを提供します。Oracle サポート・リポジトリはサポート契約下のシステムでのみ使用できます。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">Order: 0</emphasis></term>
+<listitem><para>この値は内部で使用されます。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">プラットフォーム: 1</emphasis></term>
+<listitem><para>この値は内部で使用されます。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">リリースまたは SRU ビルド番号: 1</emphasis></term>
+<listitem><para>SRU のビルド番号、またはリリースの更新番号。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">リビジョンまたはナイトリービルド番号: 2</emphasis></term>
+<listitem><para>個々のナイトリービルドのビルド番号。</para></listitem></varlistentry>
+</variablelist>
+<para>パッケージが IDR (Interim Diagnostic or Relief) 更新である場合、パッケージ FMRI のブランチバージョンには次の 2 つの追加フィールドが含まれます。IDR は、正式なパッケージ更新が発行されるまで、顧客の問題の診断を支援したり、問題の一時的な解決策を提供したりするためのパッケージ更新です。次の例は idr824 (FMRI <literal>pkg://solaris/idr824@4,5.11:20131114T034951Z</literal> を含む) についてのもので、<literal>pkg://solaris/system/library@11.4-11.4.0.0.1.1.2.824.4</literal> などのパッケージを含んでいます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><emphasis role="strong">IDR: 824</emphasis></term>
+<listitem><para>IDR の名前。</para></listitem></varlistentry>
+<varlistentry><term><emphasis role="strong">IDR ID: 4</emphasis></term>
+<listitem><para>IDR のバージョン。</para></listitem></varlistentry>
+</variablelist>
+<para><emphasis role="strong">タイムスタンプ: 20170919T184404Z</emphasis>タイムスタンプはコロン (:) のあとに続ける必要があります。タイムスタンプは、ISO-8601 基本形式 (<replaceable>YYYYMMDDTHHMMSSZ</replaceable>) のパッケージが発行された日時です。</para>
 <para>バージョン間の比較を実行する場合、その左側にあるコンポーネントが同じでないかぎり、バージョン全体のコンポーネントは考慮されません。したがって、<literal>4.3</literal> が <literal>4.2</literal> より大きいため、<literal>4.3-1</literal> は <literal>4.2-7</literal> より大きく、<literal>3</literal> が <literal>1</literal> より大きいため、<literal>4.3-3</literal> は <literal>4.3-1</literal> より大きくなります。</para>
 <para><literal>pkg.human-version</literal> 属性は、人間が読むことのできるバージョンの文字列を表示するために使用できます。<literal>pkg.human-version</literal> 属性の値は、パッケージ FMRI の前述のパッケージバージョンに追加して指定できますが、パッケージ FMRI バージョンを置き換えることはできません。人間が読むことのできるバージョンの文字列は、表示目的でのみ使用されます。詳細は、「設定アクション」を参照してください。</para>
 <para>システムの多くの部分では、表示される情報量や必要な情報量を減らすために、必要に応じて FMRI を表示するときには短縮し、入力も短い形式を受け入れます。通常、スキーム、パブリッシャー、ビルドバージョン、およびタイムスタンプは省略できます。すべてのバージョン管理情報を省略できることもあります。</para>
 </refsect1>
 <refsect1 role="other"><title>アクション</title>
-<para>アクションはシステム上のインストール可能オブジェクトを表します。アクションはパッケージのマニフェストに記述されます。すべてのアクションは、最初に名前とキー属性を含みます。また、これらはバージョン履歴をたどる過程で一意のオブジェクトを参照します。アクションには、このほかの属性も含まれます。一部の属性は、パッケージシステムによって直接解釈されます。その他の属性は、システム管理者またはエンドユーザーにのみ役立つ可能性があります。</para>
+<para>アクションはシステム上のインストール可能オブジェクトを表します。アクションはパッケージのマニフェストに記述されます。</para>
+<para>ファイルまたはその他のインストール可能オブジェクトをイメージから削除するには、関連するアクションをパッケージマニフェストから削除します。そのオブジェクトは、<command>pkg update</command> コマンドを使用してパッケージが更新されたときにイメージから削除されます。詳細は、<olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink>を参照してください。</para>
+<para>すべてのアクションは、最初に名前とキー属性を含みます。また、これらはバージョン履歴をたどる過程で一意のオブジェクトを参照します。アクションには、このほかの属性も含まれます。一部の属性は、パッケージシステムによって直接解釈されます。その他の属性は、システム管理者またはエンドユーザーにのみ役立つ可能性があります。</para>
 <para>アクションには、次の単純なテキスト表現があります。</para>
-<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
-value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
-</programlisting>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...</programlisting>
 <para>属性の名前に、空白、引用符、または等号 (=) を含めることはできません。最初の等号のあとの文字はすべて、値に属します。値にはすべての文字を含めることができますが、スペースは単一引用符または二重引用符で囲む必要があります。二重引用符で囲まれている文字列の内部で単一引用符をエスケープする必要はなく、単一引用符で囲まれている文字列の内部で二重引用符をエスケープする必要はありません。引用符の前にバックスラッシュ (\) 文字を付けて、引用文字列が終了しないようにすることができます。バックスラッシュは、バックスラッシュでエスケープできます。</para>
 <para>アクションは複数の属性を含むことができます。一部の属性は、単一のアクションに対して異なる値を使用して、複数回名前を付けることができます。同じ名前を持つ複数の属性は、順序付けされていないリストとして扱われます。</para>
 <para>多くの属性を持つアクションによって、マニフェストファイル内に長い行が作成されることがあります。このような行は、不完全な各行をバックスラッシュで終了することにより折り返すことができます。この継続文字は、属性と値のペアの間に置く必要があることに注意してください。属性も、その値も、さらにその組み合わせも分割することはできません。</para>
 <para>下に示されている属性セットは、これがすべてではありません。実際、アクションに付加できる属性は任意であるため、標準の属性セットは、将来の開発を実装するために容易に拡張できます。</para>
 <para>一部の属性によって、パッケージングコンテキストの外部で追加の操作が実行されます。これらの属性は、下の「アクチュエータ」のセクションで説明されています。</para>
+<para>パスにインストールされるアクションは、次のすべてのパスに内容を提供しないでください。</para>
+<programlisting>/system/volatile
+/tmp
+/var/share
+/var/tmp</programlisting>
+<para>また、次のディレクトリはシステム用に予約されており、これらもアクションで使用するべきではありません。</para>
+<programlisting>/var/pkg</programlisting>
 <refsect2><title>ファイルアクション</title>
 <para><literal>file</literal> アクションは、通常ファイルを表します。<literal>file</literal> アクションはペイロードを参照し、次の 4 つの標準属性があります。</para>
 <variablelist>
@@ -101,7 +130,8 @@ value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</
 <listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、アップグレードされるパッケージ内の <literal>preserve</literal> 値が <literal>legacy</literal> で、現在インストール済みのバージョンのパッケージとは <literal>preserve</literal> 値が異なる場合、既存のファイルは拡張子 <literal>.legacy</literal> を使用して名前変更され、新しいファイルは、更新されたアクセス権およびタイムスタンプ (存在する場合) を使用してインストールされます。</para></listitem>
 <listitem><para>アップグレードされるバージョンのパッケージによって提供されるファイルがイメージ内に存在し、アップグレードされるパッケージと、現在インストール済みのバージョンのパッケージの両方で <literal>preserve</literal> 値が <literal>legacy</literal> の場合、既存のファイルのアクセス権およびタイムスタンプ (存在する場合) がリセットされます。</para></listitem>
 </itemizedlist>
-<para>パッケージがアンインストールされるとき、現在インストール済みのバージョンのパッケージによって提供される <literal>file</literal> アクションの持つ <literal>preserve</literal> 値が <literal>abandon</literal> または <literal>install-only</literal> で、ファイルがイメージ内に存在する場合、ファイルは削除されません。</para></listitem>
+<para>上記で特に指定されていないかぎり、パッケージによって以前提供されていた <literal>file</literal> アクションは、新しいパッケージバージョンのリストに示されていない場合システムから削除されます。また、パッケージがアンインストールされるとき、パッケージによって提供される <literal>file</literal> アクションは削除されます。</para>
+<para>パッケージがアンインストールされるとき、現在インストール済みのバージョンのパッケージによって提供される <literal>file</literal> アクションの持つ <literal>preserve</literal> 値が <literal>abandon</literal> で、ファイルがイメージ内に存在する場合、ファイルは削除されません。ただし、削除されるそのパッケージによって提供されているその他の <literal>file</literal> アクションのうち、<literal>preserve</literal> 属性が指定されていて、最初のインストール以降に変更されているものは、<filename>/var/pkg/lost+found</filename> に移動されます。</para></listitem>
 </varlistentry>
 <varlistentry><term><literal>overlay</literal></term>
 <listitem><para>このアクションによってほかのパッケージが同じ場所にファイルを提供できるか、またはそれによって別のファイルをオーバーレイすることを目的にしたファイルが提供されるかを指定します。この機能は、どの自己アセンブリにも参加しておらず (たとえば、<filename>/etc/motd</filename>)、かつ安全に上書きできる構成ファイルで使用されることを目的にしています。</para>
@@ -118,6 +148,11 @@ value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</
 </varlistentry>
 </variablelist>
 <para>インストールされたファイルへの変更は、オーバーレイしているファイルの <literal>preserve</literal> 属性の値に基づいて保持されます。削除時、ファイルの内容は、<literal>preserve</literal> 属性が指定されたかどうかには関係なく、オーバーレイされているアクションがまだインストールされている場合は保持されます。別のファイルをオーバーレイできるのは 1 つのアクションだけであり、<literal>mode</literal>、<literal>owner</literal>、および <literal>group</literal> 属性が一致している必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay-attributes</literal></term>
+<listitem><para>インストールや更新などのイメージ変更操作で、オーバーレイするアクションとオーバーレイされるアクションとで <literal>owner</literal>、<literal>group</literal>、<literal>mode</literal>、または <literal>sysattr</literal> が異なっている場合に、エラーを報告するべきかどうかを指定します。<literal>overlay-attributes</literal> は通常、<literal>overlay</literal> が <literal>allow</literal> または <literal>deny</literal> に等しいアクションで使用されます。オーバーレイするアクションとオーバーレイされるアクションのどちらかで <literal>overlay-attributes</literal> の値が <literal>deny</literal> である場合は、イメージ変更操作時にエラーが生成されます。また、オーバーレイするアクションとオーバーレイされるアクションのペアの <literal>overlay</literal> が <literal>deny</literal> に等しい場合は、検証操作でも <literal>owner</literal>、<literal>group</literal>、および <literal>mode</literal> 属性の不一致でエラーが生成されます。それ以外の場合は、ペアで上記の属性が一致していないと情報メッセージが生成されます。<literal>overlay-attributes</literal> の値に関係なく、ファイルの属性をディスク上とパッケージ内とで比較したときに、一致していない属性は常にエラーとして報告されます。
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>dehydrate</literal></term>
@@ -225,7 +260,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
 <listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<literal>pkg </literal>(7) によって文字列が任意に選択されます。</para>
-<para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後の @ のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定します。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
+<para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後のアットマーク (@) 記号のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定するべきです。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
 <para>特定のパスにある実装メディエーションリンクの 1 つのインスタンスだけがシステムにインストールされている場合は、その 1 つのインスタンスが自動的に選択されます。このパスにある将来のリンクがインストールされても、ベンダー、サイト、またはローカルのオーバーライドが適用されないかぎり、またはいずれかのリンクのバージョンがメディエートされた場合、このリンクは切り替えられません。</para>
 </listitem>
 </varlistentry>
@@ -315,7 +350,8 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>origin</literal></term>
-<listitem><para>このパッケージのインストールの前に、依存関係のターゲット (存在する場合) は変更されるイメージ上の指定された値以上である必要があります。<literal>root-image</literal> 属性の値が <literal>true</literal> である場合、このパッケージをインストールするには、/ をルートとするイメージ上にターゲットが存在する必要があります。<literal>root-image</literal> 属性の値が <literal>true</literal> で、<literal>fmri</literal> 属性の値が <literal>pkg:/feature/firmware/</literal> で始まる場合、<literal>fmri</literal> 値の残りの部分は、ファームウェアの依存関係を評価する <filename>/usr/lib/fwenum</filename> 内のコマンドとして扱われます。例については、「<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>」を参照してください。</para>
+<listitem><para>このパッケージのインストールの前に、変更されるイメージ内で依存関係のターゲット (インストールされている場合) が指定された値以上である必要があります。ただし、<literal>root-image</literal> 属性の値が <literal>true</literal> の場合、これは / にマウントされたイメージに適用されます。</para>
+<para><literal>root-image</literal> 属性の値が <literal>true</literal> で、<literal>fmri</literal> 属性の値が <literal>pkg:/feature/firmware/</literal> で始まる場合、<literal>fmri</literal> 値の残りの部分は、ファームウェアの依存関係を評価する <filename>/usr/lib/fwenum</filename> 内のコマンドとして扱われます。例については、<olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink>を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal> </term>
@@ -552,8 +588,41 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
-<listitem><para>これらの各アクチュエータは、パッケージのインストールまたは削除時に操作するサービスインスタンスの FMRI の値を取得します。<literal>disable_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の <literal>disable</literal> サブコマンドに従って、アクションの削除の前に特定の FMRI が無効になります。<literal>refresh_fmri</literal> および <literal>restart_fmri</literal> を指定すると、<literal>svcadm</literal>(8) の対応するサブコマンドに従って、アクションのインストール、更新、または削除のあとに特定の FMRI が更新または再起動されます。最後に、<literal>suspend_fmri</literal> を指定すると、アクションのインストールフェーズの前に特定の FMRI が一時的に無効になり、そのフェーズが完了したあとに有効になります。</para>
-<para>この値には、複数のサービスインスタンスに一致するパターンを含めることができます。ただし、それをインスタンスを示さずに暗黙的に行うのではなく、<literal>svcs</literal>(1) によって受け入れられた glob を使用して明示的に行う必要があります。</para>
+<listitem><para>これらの各アクチュエータは、パッケージのインストールまたは削除中に操作するサービスインスタンスの FMRI の値を取ります。あいまいさをなくすために、サービスインスタンスは完全に指定してください。</para>
+<para><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、および <literal>restart_fmri</literal> の FMRI 値には、複数のサービスインスタンスに一致するパターンを含めることができます。照合するパターンの指定は、インスタンスを示さずに暗黙的に行うのではなく、<command>svcs</command> コマンドで受け入れられる glob を使用して明示的に行う必要があります。</para>
+<para>複数のアクション (複数のパッケージに含まれている場合もある) が同じサービス FMRI にタグ付けしている場合、そのアクチュエータによって指定された操作は 1 回だけ実行されます。たとえば、複数の <literal>restart_fmri</literal> アクチュエータが同じ FMRI を指定している場合、そのサービスはその <command>pkg</command> 操作で 1 回だけ再起動されます。</para>
+<para>次の SMF アクチュエータのリストには、指定された各アクチュエータの値である、サービス FMRI への影響が説明されています。これらの説明では、「パッケージのアンインストール」は、サービスを別のパッケージに提供する <literal>file</literal> アクションの移動も含みます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>disable_fmri</literal></term>
+<listitem>
+<para>パッケージをアンインストールする前に、指定されたサービスを無効にします (<command>svcadm disable</command>)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>refresh_fmri</literal></term>
+<listitem>
+<para>パッケージのインストール、更新、またはアンインストール後に、指定されたサービスをリフレッシュします (<command>svcadm refresh</command>)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>restart_fmri</literal></term>
+<listitem>
+<para>パッケージのインストール、更新、またはアンインストール後に、指定されたサービスを再起動します (<command>svcadm restart</command>)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>suspend_fmri</literal></term>
+<listitem>
+<para>パッケージを更新する前に指定されたサービスを一時的に無効化し (<command>svcadm disable -t</command>)、パッケージを更新したあとでサービスを有効化します (<command>svcadm enable</command>)。指定するサービスの値は、完全指定のサービスインスタンス FMRI である必要があり (たとえば、<literal>svc:/site/mysvc</literal> ではなく <literal>svc:/site/mysvc:default</literal>)、グロブ文字を含むことはできません。<literal>suspend_fmri</literal> は、有効になっているサービスに対してのみ実行でき、パッケージ更新操作にのみ適用されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>SMF アクチュエータは次のような場合は実行されません。</para>
+<itemizedlist>
+<listitem>
+<para>代替ルートで実行されているとき (<command>pkg -R /<replaceable>path</replaceable>/<replaceable>to</replaceable>/<replaceable>BE</replaceable></command>)。</para>
+</listitem>
+<listitem>
+<para>大域ゾーンから再帰呼び出しするとき (<command>pkg <replaceable>subcommand</replaceable> -r</command>)。</para>
+</listitem>
+</itemizedlist>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -628,7 +697,7 @@ file group=sys mode=0644 overlay=allow owner=root &bsol;
 <listitem><para>ファセットタグとバリアントタグの両方があるアクションは、ファセットとバリアントの両方でアクションのインストールが許可されている場合にインストールされます。</para>
 </listitem>
 </itemizedlist>
-<para>カスタムのファセットタグとバリアントタグを作成できます。詳細については、「<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>」を参照してください。Oracle Solaris では、次のタグが一般に使用されます。</para>
+<para>カスタムのファセットタグとバリアントタグを作成できます。詳細は、<olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink>を参照してください。Oracle Solaris では、次のタグが一般に使用されます。</para>
 <informaltable frame="topbot">
 <textobject><simpara>バリアントとそれらの取り得る値。</simpara></textobject>
 <tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*" /><colspec colwidth="50*" /><thead>
@@ -709,7 +778,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -743,9 +812,9 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="svcadm-8"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
-<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

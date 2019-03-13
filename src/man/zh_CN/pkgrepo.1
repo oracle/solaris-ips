@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>映像包管理系统的系统信息库管理实用程序</refpurpose></refnamediv>
@@ -357,7 +356,7 @@
 <listitem><para>文件权限</para><para>还将检查指向系统信息库的路径，确保 <literal>pkg5srv</literal> 用户可以读取系统信息库内容。对于在系统具有非全局区域时使用 <literal>svc:/application/pkg/server</literal> 服务或使用 <literal>svc:/application/pkg/system-repository</literal> 服务变为可用的系统信息库，需要进行此检查。</para>
 </listitem>
 <listitem><para>软件包清单权限</para></listitem>
-<listitem><para>软件包清单内容</para></listitem>
+<listitem><para>软件包清单内容（包括依赖项）</para><para>依赖项检查过程验证每个软件包清单中引用的每个文件是否在系统信息库中。另请参见下面的 <option>d</option>、<option>i</option> 和 <option>-disable</option> 选项。</para></listitem>
 <listitem><para>软件包签名</para><para>基于 <literal>repository/signature-required-names</literal>、<literal>repository/trust-anchor-directory</literal> 和 <literal>repository/check-certificate-revocation</literal> 属性的值计算软件包清单签名。</para>
 </listitem>
 </itemizedlist>
@@ -370,11 +369,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>d</option></term>
-<listitem><para>执行完整的依赖性验证。此选项不能与 <option>-disable</option> <literal>dependency</literal> 一起使用。</para>
+<listitem><para>执行完整的依赖性验证。此选项不能与 <command>--disable dependency</command> 一起使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
-<listitem><para>执行依赖性验证，但忽略文件中指定的依赖性。此选项不能与 <option>-disable</option> <literal>dependency</literal> 一起使用。</para>
+<listitem><para>执行依赖性验证，但忽略文件中指定的依赖性。此选项不能与 <command>--disable dependency</command> 一起使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
@@ -556,7 +555,7 @@ solaris   repository related-uris     ()</screen>
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -590,7 +589,7 @@ solaris   repository related-uris     ()</screen>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.4 中创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

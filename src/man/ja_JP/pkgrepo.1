@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="ja" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2015 年 5 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System リポジトリ管理ユーティリティー</refpurpose></refnamediv>
@@ -121,8 +120,8 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo get</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>section/property</replaceable> ...]</term>
 <listitem><para>リポジトリまたはその発行元のプロパティー情報を表示します。</para>
-<para>デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (<literal>""</literal>) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (<literal>\</literal>) でエスケープする必要があります。</para>
-<programlisting>; &amp; ( ) | ^ &lt; > &bsol; " ' `</programlisting>
+<para>デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (<literal>&#34;&#34;</literal>) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (<literal>\</literal>) でエスケープする必要があります。</para>
+<programlisting>; &#38; ( ) | ^ &#60; &#62; &bsol; &#34; &#39; `</programlisting>
 <para>発行元とリポジトリプロパティーの表示例については、「使用例」セクションを参照してください。</para>
 <para>プロパティーのリスト、および各プロパティーの目的と値については、下の <command>set</command> サブコマンドを参照してください。</para>
 <variablelist termlength="wholeline">
@@ -211,7 +210,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo refresh</command> [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>-no-catalog</option>] [<option>-no-index</option>] </term>
-<listitem><para>リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延発行 (<command>pkgsend</command> の <option>-no-catalog</option> または <option>-no-index</option> オプション) で使用されることを目的にしています。</para>
+<listitem><para>リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延公開 (<command>pkgsend</command> の <option>-no-catalog</option> または <option>-no-index</option> オプション) で使用されることを目的にしています。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 <literal>all</literal> が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。</para>
@@ -357,7 +356,7 @@
 <listitem><para>ファイルのアクセス権</para><para><literal>pkg5srv</literal> ユーザーがリポジトリの内容を読み取ることができることを確認するために、リポジトリへのパスも検査されます。この検査は、<literal>svc:/application/pkg/server</literal> サービスを使用するか、システムに非大域ゾーンがある場合に <literal>svc:/application/pkg/system-repository</literal> サービスを使用することによって使用できるようになるリポジトリに対して必要になることがあります。</para>
 </listitem>
 <listitem><para>パッケージマニフェストのアクセス権</para></listitem>
-<listitem><para>パッケージマニフェストの内容</para></listitem>
+<listitem><para>パッケージマニフェストの内容 (依存関係も含む)</para><para>依存関係チェックは、各パッケージマニフェストで参照されているすべてのファイルがリポジトリ内にあるかどうかを確認します。下記の <option>d</option>、<option>i</option>、および <option>-disable</option> オプションも参照してください。</para></listitem>
 <listitem><para>パッケージ署名</para><para>パッケージマニフェスト署名は、<literal>repository/signature-required-names</literal>、<literal>repository/trust-anchor-directory</literal>、および <literal>repository/check-certificate-revocation </literal> プロパティーの値に基づいて計算されます。</para>
 </listitem>
 </itemizedlist>
@@ -370,11 +369,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>d</option></term>
-<listitem><para>完全な依存関係の検証を実行します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+<listitem><para>完全な依存関係の検証を実行します。このオプションは <command>--disable dependency</command> と一緒に使用することはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>i</option> <replaceable>ignored_dep_file</replaceable></term>
-<listitem><para>依存関係の検証を実行しますが、ファイル内で指定された依存関係は無視します。このオプションは <option>-disable</option> <literal>dependency</literal> と一緒に使用することはできません。</para>
+<listitem><para>依存関係の検証を実行しますが、ファイル内で指定された依存関係は無視します。このオプションは <command>--disable dependency</command> と一緒に使用することはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-disable</option> <replaceable>verification</replaceable></term>
@@ -505,7 +504,7 @@ solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.releas
 solaris   repository name             Oracle&bsol; Solaris&bsol; 11&bsol; Package&bsol; Repository
 solaris   repository origins          ()
 solaris   repository refresh-seconds
-solaris   repository registration-uri ""
+solaris   repository registration-uri &#34;&#34;
 solaris   repository related-uris     ()</screen>
 </example>
 <example><title>デフォルトのパブリッシャーを設定する</title>
@@ -556,7 +555,7 @@ solaris   repository related-uris     ()</screen>
 <para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -590,7 +589,7 @@ solaris   repository related-uris     ()</screen>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>

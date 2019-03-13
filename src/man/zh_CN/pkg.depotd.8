@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
 <refentry lang="zh" id="pkg.depotd-8">
-<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depotd</refname><refpurpose>映像包管理系统 depot 服务器</refpurpose>
@@ -29,7 +28,7 @@
 <para>库不提供任何自己的访问控制方法。缺省情况下，所有能够连接的客户机都能够读取所有软件包数据和发布新的软件包版本。在服务管理工具 (Service Management Facility, SMF) 下运行时例外，缺省情况为在只读模式中运行。下列“附注”部分描述了维护具有不断变化内容的公共 depot 服务器的一些最佳做法。</para>
 </refsect1>
 <refsect1 role="other"><title>SMF 属性</title>
-<para><literal>pkg.depotd</literal> 服务器通常通过与其服务关联的 SMF 属性配置。<literal>svc:/application/pkg/server</literal> 服务运行一个 <literal>pkg.depot</literal> 服务器进程，或者为 <literal>svc:/application/pkg/depot</literal> 服务提供配置。请参见 <literal>pkg.depot-config</literal>(8) 手册页和下文中的 <literal>pkg/standalone</literal> 属性。</para>
+<para><literal>pkg.depotd</literal> 服务器通常通过与其服务关联的 SMF 属性配置。<literal>svc:/application/pkg/server</literal> 服务运行一个 <literal>pkg.depot</literal> 服务器进程，或者为 <literal>svc:/application/pkg/depot</literal> 服务提供配置。请参见 <literal>pkg.depot-config</literal>(8) 手册页和下文中的 <literal>pkg/standalone</literal> 属性。要安装 <literal>pkg.depot-config</literal> 工具和手册页，请安装 <literal>package/pkg/depot</literal> 软件包。</para>
 <para>有关 SMF 属性的信息，请参见 <literal>smf</literal>(7) 手册页。可以识别以下属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/address</literal></term>
@@ -121,7 +120,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/standalone</literal></term>
-<listitem><para>(<literal>boolean</literal>) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 <literal>false</literal> 并将此 <literal>pkg/server</literal> 实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。<literal>pkg/standalone</literal> 的缺省值为 <literal>false</literal>，<literal>pkg/readonly</literal> 的缺省值为 <literal>true</literal>。有关更多信息，请参见 <literal>pkg.depot-config</literal>(8) 手册页。</para>
+<listitem><para>(<literal>boolean</literal>) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 <literal>false</literal> 并将此 <literal>pkg/server</literal> 实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。<literal>pkg/standalone</literal> 的缺省值为 <literal>true</literal>，<literal>pkg/readonly</literal> 的缺省值为 <literal>true</literal>。有关更多信息，请参见 <literal>pkg.depot-config</literal>(8) 手册页。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/threads</literal></term>
@@ -335,7 +334,7 @@ feed_description = example.com's software
 <para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>Table shows applicable attribute types and related values.</simpara>
+<simpara>表中显示了适用的属性类型和相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
@@ -369,7 +368,7 @@ feed_description = example.com's software
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<literal>syslogd</literal>(8)、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.2 中复制和创建软件包系统信息库</citetitle>》</olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.4 中创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
