@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -2094,7 +2094,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 'mediators' is a dict of dicts of the mediators to set version
                 and implementation for.  If the dict for a given mediator-name
-                is empty, it will be intepreted as a request to revert the
+                is empty, it will be interpreted as a request to revert the
                 specified mediator to the default, "optimal" mediation.  It
                 should be of the form:
 
@@ -2180,6 +2180,14 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 else:
                         op = API_OP_CHANGE_FACET
                         for facet in facets:
+                                # Explict check for not None so that we can fix
+                                # a broken system from the past by clearing
+                                # the facet. Neither True of False should be
+                                # allowed for this special facet.
+                                if facet == "facet.version-lock.*" and \
+                                    facets[facet] is not None:
+                                        raise apx.UnsupportedFacetChange(facet,
+                                            facets[facet])
                                 if not misc.valid_varcet_name(facet):
                                         invalid_names.append(facet)
                 if invalid_names:
@@ -4555,7 +4563,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         self.__cancel_state_callable(self.__can_be_canceled)
 
         def reset(self):
-                """Resets the API back the the initial state. Note:
+                """Resets the API back the initial state. Note:
                 this does not necessarily return the disk to its initial state
                 since the indexes or download cache may have been changed by
                 the prepare method."""
