@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os.path
@@ -396,7 +396,9 @@ def parse_smf_manifest(smf_file):
                 smf_doc = minidom.parse(smf_file)
         # catching ValueError, as minidom has been seen to raise this on some
         # invalid XML files.
-        except (xml.parsers.expat.ExpatError, ValueError):
+        # catching IOError to ensure we don't fail for files not accessible
+        # by the current user.
+        except (xml.parsers.expat.ExpatError, ValueError, IOError):
                 return None, None
 
         if not smf_doc.doctype:
