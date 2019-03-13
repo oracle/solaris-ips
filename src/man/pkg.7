@@ -6,11 +6,11 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">15 Nov 2017</refmiscinfo>
+<refmiscinfo class="date">3 May 2018</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -683,13 +683,14 @@ the <literal>predicate</literal> attribute is present on the system.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>origin</literal></term>
-<listitem><para>Prior to installation of this package, the dependency target must, if present, be at the
-specified value or greater on the image to be modified. If the value of the
-<literal>root-image</literal> attribute is <literal>true</literal>, the target must be present on
-the image rooted at / in order to install this package. If the value of the
-<literal>root-image</literal> attribute is <literal>true</literal> and the value of the
-<literal>fmri</literal> attribute starts with <literal>pkg:/feature/firmware/</literal>, the
-remainder of the <literal>fmri</literal> value is treated as a command in
+<listitem><para>Prior to installation of this package, the dependency target
+must, if installed, be at the specified value or greater in the image to be
+modified. If the value of the <literal>root-image</literal> attribute is
+<literal>true</literal>, this applies to the image mounted at / instead.</para>
+<para>If the value of the <literal>root-image</literal> attribute is
+<literal>true</literal> and the value of the <literal>fmri</literal> attribute
+starts with <literal>pkg:/feature/firmware/</literal>, the remainder of the
+<literal>fmri</literal> value is treated as a command in
 <filename>/usr/lib/fwenum</filename> that evaluates the firmware dependency. See
 <olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.4</citetitle></olink> for examples.</para>
 </listitem>
@@ -1019,11 +1020,11 @@ of January 1, 2007. See <literal>shadow</literal>(4).</para>
 <para>In certain contexts, additional operations can be appropriate to execute
 in preparation for or following the introduction of a particular action. These
 additional operations are operating system specific and are generally needed
-only on a live system image. A live image is the image mounted at <literal>/</literal> of
-the active, running boot environment of the current zone. When multiple actions
-involved in a package installation or removal have identical actuators, then
-the operation corresponding to actuator presence is executed once for that
-installation or removal.</para>
+only on a live system image. A live image is the image mounted at
+<literal>/</literal> of the active, running boot environment of the current
+zone. When multiple actions involved in a package installation or removal have
+identical actuators, then the operation corresponding to actuator presence is
+executed once for that installation or removal.</para>
 <para>Incorrectly specified actuators can result in package installation failure
 if the actuator cannot determine a means of making safe installation progress.</para>
 <para>The following actuators are defined:</para>
@@ -1032,34 +1033,71 @@ if the actuator cannot determine a means of making safe installation progress.</
 <listitem><para>Can be set to <literal>true</literal> or <literal>false</literal>.
 This actuator declares that update or removal of the tagged action must be
 performed in a new boot environment if the package system is operating on
-a live image. Creation of a new boot environment is controlled by the <literal>be-policy
-</literal> image property. See the &ldquo;Image Properties&rdquo; section
-in the <literal>pkg</literal>(1) man page for more information about the
-<literal>be-policy</literal> property.</para>
+a live image. Creation of a new boot environment is controlled by the
+<literal>be-policy</literal> image property. See the &ldquo;Image
+Properties&rdquo; section in the <literal>pkg</literal>(1) man page for more
+information about the <literal>be-policy</literal> property.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, <literal>restart_fmri</literal>, <literal>suspend_fmri</literal></term>
 <listitem><para>Each of these actuators takes the value of an FMRI of a service
-instance to operate on during the installation or removal of the package.</para>
-<para><literal>disable_fmri</literal> causes the given FMRI to be disabled prior
-to action removal, per the <command>disable</command> subcommand to the
-<command>svcadm</command> command.</para>
-<para><literal>refresh_fmri</literal> and <literal>restart_fmri</literal> cause
-the given FMRI to be refreshed or restarted after action installation, update,
-or removal per the respective subcommands of <command>svcadm</command>.</para>
-<para><literal>suspend_fmri</literal> causes the given FMRI to be disabled
-temporarily prior to the action update phase, and then enabled after the
-completion of that phase. <literal>suspend_fmri</literal> only applies to
-update, not to install, only applies to services that are loaded and running
-(<literal>enabled</literal>), and only applies when a fully qualified service
-instance is specified (for example,
-<literal>svc:/system/pkgserv:default</literal> instead of
-<literal>svc:/system/pkgserv</literal>).</para>
-<para>For <literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, and
-<literal>restart_fmri</literal>, the value can contain a pattern that matches
-multiple service instances. However, the pattern to match must be specified
-explicitly with a glob as accepted by the <command>svcs</command> command,
+instance to operate on during the installation or removal of the package. Fully
+specify the service instance to avoid ambiguity.</para>
+<para>With <literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, and
+<literal>restart_fmri</literal>, the FMRI value can contain a pattern that
+matches multiple service instances. The pattern to match must be specified
+explicitly with a glob that is accepted by the <command>svcs</command> command,
 rather than implicitly by not indicating any instances.</para>
+<para>If the same service FMRI is tagged by multiple actions, possibly in
+multiple packages, the operation specified by that actuator is performed only
+once. For example, if multiple <literal>restart_fmri</literal> actuators
+specify the same FMRI, that service is restarted only one time for that
+<command>pkg</command> operation.</para>
+<para>The following list of SMF actuators describes the effect on the service
+FMRI that is the value of each named actuator. In these descriptions,
+&ldquo;uninstalling the package&rdquo; also includes moving the
+<literal>file</literal> action that delivers the service to a different package.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>disable_fmri</literal></term>
+<listitem>
+<para>Disable (<command>svcadm disable</command>) the specified service prior
+to uninstalling the package.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>refresh_fmri</literal></term>
+<listitem>
+<para>Refresh (<command>svcadm refresh</command>) the specified service after
+installing, updating, or uninstalling the package.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>restart_fmri</literal></term>
+<listitem>
+<para>Restart (<command>svcadm restart</command>) the specified service after
+installing, updating, or uninstalling the package.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>suspend_fmri</literal></term>
+<listitem>
+<para>Temporarily disable (<command>svcadm disable -t</command>) the specified
+service prior to updating the package, and then enable
+(<command>svcadm enable</command>) the service after updating the package. The
+specified service value must be a fully specified service instance FMRI (for
+example, <literal>svc:/site/mysvc:default</literal> instead of
+<literal>svc:/site/mysvc</literal>) and cannot include globbing characters.
+<literal>suspend_fmri</literal> can be performed only on services that are
+enabled and applies only to package update operations.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>SMF actuators are not executed in the following cases:</para>
+<itemizedlist>
+<listitem>
+<para>When operating on an alternate root (<command>pkg -R /<replaceable>path</replaceable>/<replaceable>to</replaceable>/<replaceable>BE</replaceable></command>).</para>
+</listitem>
+<listitem>
+<para>When recursing from the global zone (<command>pkg <replaceable>subcommand</replaceable> -r</command>).</para>
+</listitem>
+</itemizedlist>
 </listitem>
 </varlistentry>
 </variablelist>
