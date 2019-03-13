@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,11 +6,11 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">9 Jan 2017</refmiscinfo>
+<refmiscinfo class="date">17 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System retrieval client</refpurpose>
@@ -174,10 +173,12 @@ packages into those images. Packages are published by publishers, who can
 make their packages available at one or more repositories, or in package
 archives. <command>pkg</command> retrieves packages from a publisher's
 repository or package archives and installs the packages into an image.</para>
-<para>Packages can only be installed into file systems that are part of a BE.
+<para>Packages can only be installed into file systems that are part of a boot
+environment (BE).
 For example, on a default Oracle Solaris 11 installation, only datasets under
 <filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> are supported
-for package operations.</para>
+for package operations.
+The currently active image or BE is mounted on /.</para>
 <para>A publisher name identifies a person, group of persons, or an organization
 as the source of one or more packages. To avoid publisher name collisions
 and help identify the publisher, a best practice is to use a domain name that
@@ -205,7 +206,20 @@ do not provide a complete system on their own; and user images.</para>
 <varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
 <listitem><para>Operate on the image rooted at <replaceable>dir</replaceable>.
 If no directory was specified or determined based on environment, the default
-is /. See the &ldquo;Environment Variables&rdquo; section for more information.</para>
+is /, the currently active image. See also <envar>PKG_IMAGE</envar> in
+&ldquo;Environment Variables&rdquo; below.</para>
+<para>If <replaceable>dir</replaceable> or <envar>PKG_IMAGE</envar> is not set
+to the currently active image, BE options such as
+<literal>--require-new-be</literal> and <literal>--require-backup-be</literal>
+are ignored and image policy settings about when to create a new or backup BE
+(see <literal>be-policy</literal> in &ldquo;Image Properties&rdquo; below) are
+ignored. When you operate on an image that is not the currently active image,
+changes are made directly to that image; a new or backup BE is not created.</para>
+<para>The <option>R</option> option is a global option. It can be used with any
+<command>pkg</command> subcommand, although for some subcommands (such as
+<command>help</command> and <command>version</command>) it is ignored. The
+<option>R</option> option is required with the <command>dehydrate</command> and
+<command>rehydrate</command> subcommands.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-network-cache</option></term>
@@ -264,8 +278,8 @@ to preserve, and how these files are preserved during package upgrades, see &ldq
 Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
 <para>Packages are selected based on publisher search order and stickiness.
 See the <command>pkg publisher</command> and <command>pkg set-publisher</command> commands
-for information about search order and stickiness. If the <replaceable>pkg_fmri_pattern
-</replaceable> does not specify the publisher, the first publisher that provides
+for information about search order and stickiness. If the
+<replaceable>pkg_fmri_pattern</replaceable> does not specify the publisher, the first publisher that provides
 a matching package is used as the installation source. If that publisher does
 not provide a version of the package that can be installed in this image,
 then the installation operation fails. Use the <command>pkg list -a</command> command
@@ -351,38 +365,41 @@ publishers to retrieve the newest list of available packages and other metadata.
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-be-activate</option></term>
-<listitem><para>If a boot environment is created, do not set it as the active
-boot environment on the next boot. See the <command>beadm</command>(8) man
+<listitem><para>If a BE is created, do not set it as the active
+BE on the next boot. See the <command>beadm</command>(8) man
 page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-backup-be</option></term>
-<listitem><para>Do not create a backup boot environment.</para>
+<listitem><para>Do not create a backup BE.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-require-backup-be</option></term>
-<listitem><para>Always create a backup boot environment if a new boot environment will not be created. Without this option, a backup boot environment is created based on image policy. See <literal>be-policy</literal> in &ldquo;Image Properties&rdquo; below for an explanation of when backup boot environments are created automatically.</para>
+<listitem><para>Create a backup BE if a new BE will not be created. Without this option, a backup BE is created based on image policy. See <literal>be-policy</literal> in &ldquo;Image Properties&rdquo; below for an explanation of when backup BEs are created automatically. This option is only effective when you are operating on the currently active image. This option is ignored when you are operating on an image that is not the currently active image. See the <option>R</option> option and the <envar>PKG_IMAGE</envar> environment variable for more information about the image on which you are operating.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-backup-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>Name the created backup boot environment using the given argument.
-Use of <option>-backup-be-name</option> implies <option>-require-backup-be</option>.
-See also the <command>beadm</command>(8) man page.</para>
+<listitem><para>Name the created backup BE using the given
+argument. Use of <option>-backup-be-name</option> implies
+<option>-require-backup-be</option>. This option is ignored if the
+<option>R</option> option is used. See also the <command>beadm</command>(8)
+man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-deny-new-be</option></term>
-<listitem><para>Do not create a new boot environment. This operation is not
-performed if a new boot environment is required.</para>
+<listitem><para>Do not create a new BE. This operation is not
+performed if a new BE is required.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-require-new-be</option></term>
-<listitem><para>Always create a new boot environment. Without this option, a boot environment is created based on image policy. See <literal>be-policy</literal> in &ldquo;Image Properties&rdquo; below for an explanation of when boot environments are created automatically. This option cannot be combined with <option>-require-backup-be</option>.</para>
+<listitem><para>Create a new BE and perform this operation in the new BE. Without this option, a BE is created based on image policy. See <literal>be-policy</literal> in &ldquo;Image Properties&rdquo; below for an explanation of when BEs are created automatically. This option cannot be combined with <option>-require-backup-be</option>. This option is only effective when you are operating on the currently active image. This option is ignored when you are operating on an image that is not the currently active image. See the <option>R</option> option and the <envar>PKG_IMAGE</envar> environment variable for more information about the image on which you are operating.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>Rename the newly created boot environment to be the argument
+<listitem><para>Rename the newly created BE to be the argument
 given. Use of <option>-be-name</option> implies <option>-require-new-be</option>.
-See also the <command>beadm</command>(8) man page.</para>
+This option is ignored if the <option>R</option> option is used. See also the
+<command>beadm</command>(8) man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable></term>
@@ -416,10 +433,10 @@ times.</para>
 </replaceable>.</para>
 <para>If a package is the subject of a group dependency, uninstalling it places
 it on the avoid list. See the <command>avoid</command> subcommand below.</para>
-<para>In the command output, note any messages that say a new boot environment has been created. If
-a new boot environment has been created and activated, that is the environment that is booted by
+<para>In the command output, note any messages that say a new BE has been created. If
+a new BE has been created and activated, that is the environment that is booted by
 default on next reboot. See the <command>beadm</command>(8) man page for information about managing
-boot environments.</para>
+BEs.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-ignore-missing</option></term>
 <listitem><para>Ignore packages that are not installed. Using this option prevents <command>pkg uninstall</command> from failing when attempting to uninstall a package that is not currently installed.</para>
@@ -433,11 +450,11 @@ boot environments.</para>
 <listitem><para>Update all packages installed in the current image to the
 newest version allowed by the constraints imposed on the system by installed
 packages and publisher configuration.</para>
-<para>In the command output, note any messages that say a new boot environment
-has been created. If a new boot environment has been created and activated,
+<para>In the command output, note any messages that say a new BE
+has been created. If a new BE has been created and activated,
 that is the environment that is booted by default on next reboot if you do
 not specify the <option>-no-be-activate</option> option. See the <command>beadm</command>(8)
-man page for information about managing boot environments.</para>
+man page for information about managing BEs.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>Update only the specified packages installed in the current
@@ -995,7 +1012,7 @@ only if the license has changed.</para>
 </varlistentry>
 <varlistentry><term><option>-parsable</option> <replaceable>version</replaceable></term>
 <listitem><para>Parsable output. The supported version is 0. Use of this option
-implies <option>-q</option>.</para>
+implies <option>q</option>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-unpackaged</option></term>
@@ -1477,7 +1494,7 @@ environment variable names. If you use an environment variable to set the
 proxy URI, you must also set the appropriate proxy property of the
 <literal>svc:/application/pkg/system-repository</literal> SMF service to the
 same value. See &ldquo;Specifying a Proxy&rdquo; in
-<citetitle>Adding and Updating Software in Oracle Solaris 11.2</citetitle>.</para>
+<olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property
@@ -1567,7 +1584,7 @@ and the outcome of the operation (Succeeded or Failed).</para>
 <varlistentry><term><option>l</option></term>
 <listitem><para>Display the long form of the command history of the image.
 Additional information displayed includes the version of the client, the name
-of the user who performed the operation, whether a new boot environment was
+of the user who performed the operation, whether a new BE was
 created, the time the operation completed and total time taken, the complete
 command that was issued, and any errors that were encountered while executing
 the command. For operations such as <command>update</command>, complete FMRIs
@@ -1589,12 +1606,12 @@ as the argument to one <option>o</option> option by separating the column
 names with commas. Valid column names are:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be</literal></term>
-<listitem><para>The name of the boot environment this operation was started
+<listitem><para>The name of the BE this operation was started
 on.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>be_uuid</literal></term>
-<listitem><para>The <literal>uuid</literal> of the boot environment this operation
+<listitem><para>The <literal>uuid</literal> of the BE this operation
 was started on.</para>
 </listitem>
 </varlistentry>
@@ -1619,11 +1636,11 @@ was started on.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>new_be</literal></term>
-<listitem><para>The new boot environment created by this operation.</para>
+<listitem><para>The new BE created by this operation.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>new_be_uuid</literal></term>
-<listitem><para>The <literal>uuid</literal> of the new boot environment created
+<listitem><para>The <literal>uuid</literal> of the new BE created
 by this operation.</para>
 </listitem>
 </varlistentry>
@@ -1666,10 +1683,10 @@ are specified, they must be the last item in the <option>o</option> list,
 in order to preserve output field separation. These two columns cannot be
 shown in the same <command>history</command> command.</para>
 <para>An asterisk (*) is shown after the values for <literal>be</literal> or <literal>
-new_be</literal> if the boot environment is no longer present on the system.</para>
+new_be</literal> if the BE is no longer present on the system.</para>
 <para>The values for <literal>be</literal> and <literal>new_be</literal> are
-obtained by looking up the current boot environment name, using the <literal>be_uuid
-</literal> or <literal>new_be_uuid</literal> fields. If a boot environment
+obtained by looking up the current BE name, using the <literal>be_uuid
+</literal> or <literal>new_be_uuid</literal> fields. If a BE
 was subsequently renamed, and later deleted, the values displayed for <literal>be
 </literal> and <literal>new_be</literal> are the values recorded at the time
 of the <command>pkg</command> operation.</para>
@@ -1769,7 +1786,7 @@ about variants.</para>
 
 <varlistentry><term><command>pkg <option>R</option> <replaceable>dir</replaceable> dehydrate</command> [<option>nvq</option>] [<option>p</option> <replaceable>publisher</replaceable>]...</term>
 <listitem><para>Remove all non-editable packaged files and packaged hardlinks from the image specified by the <option>R</option> option to create a fully dehydrated image. Packaged files and packaged hardlinks are files and hardlinks that are delivered by the currently installed version of a package. A non-editable file cannot have any <literal>preserve</literal> or <literal>overlay</literal> attribute and cannot have a <literal>dehydrate</literal> attribute with a value of <literal>false</literal>.</para>
-<para>The <command>pkg dehydrate</command> command only operates on an alternate root. Use the <option>R</option> option to specify the alternate root. If the alternate root belongs to a boot environment, dehydration will render it unbootable.</para>
+<para>The <command>pkg dehydrate</command> command only operates on an alternate root. Use the <option>R</option> option to specify the alternate root. If the alternate root belongs to a BE, dehydration will render it unbootable.</para>
 <para>If the <command>pkg dehydrate</command> command succeeds, a property named <command>dehydrated</command> is set on the <replaceable>dir</replaceable> image specified by the <option>R</option> option. The value of the <command>dehydrated</command> property is a list of all publishers set in the <replaceable>dir</replaceable> image that have a configured package repository.</para>
 <para>Package installation operations on packages from a dehydrated publisher are automatically dehydrated. If you install a package in a dehydrated image, the package content is installed and then dehydrated. Package installation operations can include operations such as <command>update</command> and <command>change-facet</command> as well as <command>install</command>.</para>
 <variablelist termlength="wholeline">
@@ -1813,18 +1830,18 @@ properties, use the <command>pkg set-property</command> and
 <command>pkg unset-property</command> commands.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be-policy</literal></term>
-<listitem><para>(string) Specify when a boot environment is created during
+<listitem><para>(string) Specify when a BE is created during
 packaging operations. The following values are allowed:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>default</literal></term>
-<listitem><para>Apply the default boot environment creation policy, <literal>create-backup
+<listitem><para>Apply the default BE creation policy, <literal>create-backup
 </literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>always-new</literal></term>
 <listitem><para>Requires a reboot for all package operations by performing them
-in a new boot environment set as active on the next boot. A backup boot
-environment is not created unless explicitly requested.</para>
+in a new BE set as active on the next boot. A backup BE is not created unless
+explicitly requested.</para>
 <para>This policy is the safest, but is more strict than most sites need since
 no packages can be added without a reboot.</para>
 </listitem>
@@ -1833,22 +1850,22 @@ no packages can be added without a reboot.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>create-backup</literal></term>
-<listitem><para>For package operations that require a reboot, a new boot environment
+<listitem><para>For package operations that require a reboot, a new BE
 is created and set as active on the next boot. If packages are modified or
 content that could affect the kernel is installed and the operation affects
-the live boot environment, a backup boot environment is created but not set
-as active. A backup boot environment can also be explicitly requested.</para>
+the live BE, a backup BE is created but not set
+as active. A backup BE can also be explicitly requested.</para>
 <para>This policy is potentially risky only if newly installed software causes
 system instability, which is possible but relatively rare.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>when-required</literal></term>
-<listitem><para>For package operations that require a reboot, a new boot environment
-is created and set as active on the next boot. A backup boot environment is
+<listitem><para>For package operations that require a reboot, a new BE
+is created and set as active on the next boot. A backup BE is
 not created unless explicitly requested.</para>
 <para>This policy carries the greatest risk since if a packaging change to
-the live boot environment makes further changes impossible, there might be
-no recent boot environment to which one can fallback.</para>
+the live BE makes further changes impossible, there might be
+no recent BE to which one can fallback.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ca-path</literal></term>
@@ -1891,8 +1908,8 @@ revoked since being issued.</para>
 <varlistentry><term><literal>flush-content-cache-on-success</literal></term>
 <listitem><para>(boolean) If this is set to <literal>True</literal>, the package
 client removes the files in its content-cache when image-modifying operations
-complete successfully. For operations that create a boot environment, the
-content will be removed from both the source and destination boot
+complete successfully. For operations that create a BE, the
+content will be removed from both the source and destination BE
 environment.</para>
 <para>This property can be used to keep the content-cache small on systems
 with limited disk space. This property can cause operations to take longer
@@ -2282,11 +2299,6 @@ origin.</para>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <variablelist termlength="wholeline">
-<varlistentry><term><envar>PKG_IMAGE</envar></term>
-<listitem><para>The directory containing the image to use for package operations.
-Ignored if <option>R</option> is specified.</para>
-</listitem>
-</varlistentry>
 <varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
 <listitem><para>Seconds to wait trying to connect during transport operations
 (for each attempt) before the client aborts the operation. A value of 0 means
@@ -2314,6 +2326,12 @@ the operation.</para>
 <para>Default value: 5</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>Maximum number of transport attempts per host before the client
+aborts the operation. A value of 0 means do not abort the operation.</para>
+<para>Default value: 4</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_CONCURRENCY</envar></term>
 <listitem><para>The number of child images to update in parallel. Ignored
 if the <option>C</option> option is specified.</para>
@@ -2321,14 +2339,22 @@ if the <option>C</option> option is specified.</para>
 <para>Default value: 1</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
-<listitem><para>Maximum number of transport attempts per host before the client
-aborts the operation. A value of 0 means do not abort the operation.</para>
-<para>Default value: 4</para>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>The directory containing the image to use for package operations.
+Ignored if <option>R</option> is specified.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>http_proxy</envar>, <envar>https_proxy</envar></term>
-<listitem><para>HTTP or HTTPS proxy server.</para>
+<listitem><para>HTTP or HTTPS proxy server. Use the following syntax to set
+either <envar>http_proxy</envar> or <envar>https_proxy</envar>:</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>List of host names that should not go through any proxy. If set
+to asterisk (*) only, all hosts are matched: no hosts will be proxied. Use the
+following syntax to set <envar>no_proxy</envar>:</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -2455,7 +2481,7 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <literal>glob</literal>(3C), <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 </refentry>

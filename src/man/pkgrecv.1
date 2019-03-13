@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--Arbortext, Inc., 1988-2008, v.4002-->
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
@@ -7,11 +6,11 @@
 
 <refentry id="pkgrecv-1">
 <refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">08 Oct 2015</refmiscinfo>
+<refmiscinfo class="date">17 Nov 2017</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname>
@@ -319,7 +318,40 @@ dependencies into 'extra' during republishing.</para>
 </refsect1>
 <refsect1 role="environment-variables"><title></title>
 <para>The following environment variables are supported:</para>
-<variablelist>
+<variablelist termlength="wholeline">
+<varlistentry><term><envar>PKG_CLIENT_CONNECT_TIMEOUT</envar></term>
+<listitem><para>Seconds to wait trying to connect during transport operations
+(for each attempt) before the client aborts the operation. A value of 0 means
+wait indefinitely.</para>
+<para>Default value: 60</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_LOWSPEED_TIMEOUT</envar></term>
+<listitem><para>Seconds below the <literal>lowspeed</literal> limit (1024
+bytes/second) during transport operations before the client aborts the operation.
+A value of 0 means do not abort the operation.</para>
+<para>Default value: 30</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_CONSECUTIVE_ERROR</envar></term>
+<listitem><para>Maximum number of transient transport errors before the client
+aborts the operation. A value of 0 means do not abort the operation.</para>
+<para>Default value: 4</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_REDIRECT</envar></term>
+<listitem><para>Maximum number of HTTP or HTTPS redirects allowed during transport
+operations before a connection is aborted. A value of 0 means do not abort
+the operation.</para>
+<para>Default value: 5</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_CLIENT_MAX_TIMEOUT</envar></term>
+<listitem><para>Maximum number of transport attempts per host before the client
+aborts the operation. A value of 0 means do not abort the operation.</para>
+<para>Default value: 4</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><envar>PKG_DEST</envar></term>
 <listitem><para>The path of a directory to save the retrieved package to,
 or the file system path or URI of a repository or package archive where the
@@ -335,6 +367,19 @@ pkg</literal>(7) repository or package archive from which to retrieve packages.<
 <listitem><para>The absolute path of the directory where temporary data should
 be stored during program execution. If not set, the default is to store temporary
 data in <filename>/var/tmp</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>http_proxy</envar>, <envar>https_proxy</envar></term>
+<listitem><para>HTTP or HTTPS proxy server. Use the following syntax to set
+either <envar>http_proxy</envar> or <envar>https_proxy</envar>:</para>
+<programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>no_proxy</envar></term>
+<listitem><para>List of host names that should not go through any proxy. If set
+to asterisk (*) only, all hosts are matched: no hosts will be proxied. Use the
+following syntax to set <envar>no_proxy</envar>:</para>
+<programlisting>no_proxy [* | <replaceable>host</replaceable>[,<replaceable>host</replaceable>]...]</programlisting>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -405,7 +450,7 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
-<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
