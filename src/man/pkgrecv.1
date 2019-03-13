@@ -6,7 +6,7 @@
 
 <refentry id="pkgrecv-1">
 <refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">17 Nov 2017</refmiscinfo>
+<refmiscinfo class="date">3 May 2018</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -35,7 +35,10 @@
 <literal>pkg</literal>(7) repository or package archive specified by the
 <option>s</option> option and optionally republishes the retrieved packages to
 the package repository or package archive specified by the <option>d</option>
-option. By default, packages are retrieved in package repository format suitable
+option. This republication copies the package intact &ndash; including package
+signatures &ndash; except for the time stamp. To preserve the same time stamp,
+see the -<option>clone</option> option.</para>
+<para>By default, packages are retrieved in package repository format suitable
 for use with <command>pkg</command>, <command>pkg.depotd</command>, and package
 publication tools.</para>
 <para>Packages that have not changed are not republished. Therefore, the time
@@ -245,6 +248,9 @@ PROCESS       ITEMS     GET (MB)    SEND (MB)
 Completed       1/1      3.5/3.5      0.0/0.0
 $ <userinput>ls /local/repo</userinput>
 pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
+<para>Because packages that have not changed are not republished, the MB to
+SEND (republish) can be fewer than the MB to GET (examine). This example is
+retrieving raw data, not republishing to a <option>d</option> repository.</para>
 </example>
 <example><title>Retrieve Dependencies From a System</title>
 <para>Receive the package <literal>editor/vim</literal> and all of its dependencies
@@ -359,8 +365,9 @@ packages will be copied.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
-<listitem><para>A URI or file system path representing the location of a <literal>
-pkg</literal>(7) repository or package archive from which to retrieve packages.</para>
+<listitem><para>A URI or file system path representing the location of a
+<literal>pkg</literal>(7) repository or package archive from which to retrieve
+packages.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
@@ -373,6 +380,8 @@ data in <filename>/var/tmp</filename>.</para>
 <listitem><para>HTTP or HTTPS proxy server. Use the following syntax to set
 either <envar>http_proxy</envar> or <envar>https_proxy</envar>:</para>
 <programlisting>http_proxy [<replaceable>protocol</replaceable>://]<replaceable>host</replaceable>[:<replaceable>port</replaceable>]</programlisting>
+<para>See &ldquo;Specifying a Proxy&rdquo; in
+<olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>no_proxy</envar></term>
