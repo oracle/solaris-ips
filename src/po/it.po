@@ -4663,7 +4663,7 @@ msgstr "Errore di dipendenza firmware: impossibile eseguire {0}: {1}"
 #: ../modules/client/firmware.py:137
 #, python-brace-format
 msgid ""
-"cpu dependency error: '{0}' does not meet the the minimum requirement for "
+"cpu dependency error: '{0}' does not meet the minimum requirement for "
 "{1} {2}\n"
 msgstr "errore di dipendenza cpu: '{0}' non soddisfa il requisito minimo per {1} {2}\n"
 
