@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -1134,11 +1134,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     self.secret2, self.secret3, self.secret4, self.secret5,
                     self.secret6])
 
-                # Try to install in /tmp which does not support system
-                # attributes. Just make sure we fail gracefully.
-                self.image_create(self.rurl)
-                self.pkg("install secret1")
-                self.assertTrue("WARNING" in self.errout)
 
                 # Need to create an image in /var/tmp since sysattrs don't work
                 # in tmpfs.
