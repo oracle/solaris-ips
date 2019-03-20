@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -21,9 +21,13 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
+# We should be using pkg.no_site_packages here but doing so stops us being
+# able to find Python dependencies in site-packages, so this is disabled
+# for now
+#import pkg.no_site_packages
 import errno
 import getopt
 import gettext

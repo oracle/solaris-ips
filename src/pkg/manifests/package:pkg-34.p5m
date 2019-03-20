@@ -1,4 +1,3 @@
-#
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -18,7 +17,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-34@$(PKGVERS)
@@ -178,6 +177,8 @@ file path=$(PY34DIRVP)/pkg/manifest.py pkg.depend.bypass-generate=.*six.*
 file path=$(PY34DIRVP)/pkg/mediator.py
 file path=$(PY34DIRVP)/pkg/misc.py pkg.depend.bypass-generate=.*six.*
 file path=$(PY34DIRVP)/pkg/mogrify.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PY34DIRVP)/pkg/no_site_packages
+file path=$(PY34DIRVP)/pkg/no_site_packages/__init__.py
 file path=$(PY34DIRVP)/pkg/nrlock.py
 file path=$(PY34DIRVP)/pkg/p5i.py pkg.depend.bypass-generate=.*six.*
 file path=$(PY34DIRVP)/pkg/p5p.py pkg.depend.bypass-generate=.*six.*

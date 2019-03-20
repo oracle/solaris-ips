@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -66,17 +66,29 @@ ALL_MANIFESTS:sh  = \
 	print *.p5m | sed -e 's/:/\\:/g'; \
 	exit 0
 $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
+
+# PKGCMDENV needs to specify the interpreter used
+# so that the shell ignores the one specified in the
+# file because those suppress the use of non-default
+# environments which are actually used as part of the
+# build. Bit of a smoke and mirrors. 
+PYTHON27	  = python2.7
+PYTHON34	  = python3.4
+PYDIR		  = usr/lib/$(PYTHON27)
+PY34DIR		  = usr/lib/$(PYTHON34)
+PYDIRVP		  = $(PYDIR)/vendor-packages
+PY34DIRVP	  = $(PY34DIR)/vendor-packages
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-	PYTHONPATH=$(PKGROOT)/usr/lib/python2.7/vendor-packages
-PKG               = $(PKGCMDENV) pkg
-PKGDEPEND         = $(PKGCMDENV) pkgdepend
-PKGDIFF           = $(PKGCMDENV) pkgdiff
-PKGFMT            = $(PKGCMDENV) pkgfmt
-PKGLINT           = $(PKGCMDENV) pkglint
-PKGMOGRIFY        = $(PKGCMDENV) pkgmogrify
-PKGREPO           = $(PKGCMDENV) pkgrepo
-PKGSEND           = $(PKGCMDENV) pkgsend
+	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON27) $(PKGROOT)/usr/bin/
+PKG               = $(PKGCMDENV)/pkg
+PKGDEPEND         = $(PKGCMDENV)/pkgdepend
+PKGDIFF           = $(PKGCMDENV)/pkgdiff
+PKGFMT            = $(PKGCMDENV)/pkgfmt
+PKGLINT           = $(PKGCMDENV)/pkglint
+PKGMOGRIFY        = $(PKGCMDENV)/pkgmogrify
+PKGREPO           = $(PKGCMDENV)/pkgrepo
+PKGSEND           = $(PKGCMDENV)/pkgsend
 MOGRIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.mog)
 ALL_MOGRIFESTS    = $(ALL_MANIFESTS:%.p5m=$(PDIR)/%.mog)
 PUBLIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.pub)
@@ -102,10 +114,10 @@ PKGMOG_DEFVALS    = \
 	PKGVERS_BRANCH=$(PKGVERS_BRANCH) \
 	PKGVERS=$(PKGVERS) \
 	REV=$(REV) \
-	PYDIR=usr/lib/python2.7 \
-	PY34DIR=usr/lib/python3.4 \
-	PYDIRVP=usr/lib/python2.7/vendor-packages \
-	PY34DIRVP=usr/lib/python3.4/vendor-packages \
+	PYDIR=$(PYDIR) \
+	PY34DIR=$(PY34DIR) \
+	PYDIRVP=$(PYDIRVP) \
+	PY34DIRVP=$(PY34DIRVP) \
 	CHANGESET=$(CHANGESET) \
 	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)

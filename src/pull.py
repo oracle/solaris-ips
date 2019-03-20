@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
+import pkg.no_site_packages
 import calendar
 import errno
 import getopt
@@ -864,7 +865,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         # the package files themselves.
                         arc_bytes += arccb
 
-                        # Also include the the manifest file itself in the
+                        # Also include the manifest file itself in the
                         # amount of bytes to archive.
                         try:
                                 fs = os.stat(nm.pathname)

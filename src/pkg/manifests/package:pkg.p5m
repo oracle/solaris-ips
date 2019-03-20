@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -187,6 +187,8 @@ file path=$(PYDIRVP)/pkg/manifest.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/mediator.py
 file path=$(PYDIRVP)/pkg/misc.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/mogrify.py pkg.depend.bypass-generate=.*six.*
+dir  path=$(PYDIRVP)/pkg/no_site_packages
+file path=$(PYDIRVP)/pkg/no_site_packages/__init__.py
 file path=$(PYDIRVP)/pkg/nrlock.py
 file path=$(PYDIRVP)/pkg/p5i.py pkg.depend.bypass-generate=.*six.*
 file path=$(PYDIRVP)/pkg/p5p.py pkg.depend.bypass-generate=.*six.*
