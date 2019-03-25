@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -356,6 +356,7 @@ packages = [
         'pkg.file_layout',
         'pkg.flavor',
         'pkg.lint',
+        'pkg.no_site_packages',
         'pkg.portable',
         'pkg.publish',
         'pkg.server'

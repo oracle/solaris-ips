@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -43,6 +43,21 @@
 #       XXX or is this in the Image configuration?
 
 from __future__ import print_function
+try:
+    import pkg.no_site_packages
+except ImportError:
+    import sys
+
+    if sys.platform == "sunos5":
+        print("""
+The Python environment on this system is damaged and missing a critical core
+component (pkg.no_site_packages) and can not be repaired with pkg(1).
+
+To recover this system reboot and select an alternate Boot Environment (BE)
+from the boot menu. From the alternate BE mount and run 'pkg fix' on this BE.
+""")
+        sys.exit(1)
+
 try:
         import calendar
         import collections

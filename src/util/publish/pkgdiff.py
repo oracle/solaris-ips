@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
+import pkg.no_site_packages
 import getopt
 import gettext
 import locale

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.7 -Es
 #
 # CDDL HEADER START
 #
@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
+import pkg.no_site_packages
 import errno
 import getopt
 import gettext
@@ -841,7 +842,7 @@ def main_func():
                         if bool(ssl_ca_cert_file) != bool(ssl_ca_key_file):
                                 usage(_("server CA certificate and key files "
                                     "must be presented at the same time."))
-                        # If fmri is specifed for pkg/depot instance, we need
+                        # If fmri is specified for pkg/depot instance, we need
                         # record the proporty values for updating.
                         if smf_fmri:
                                 orig = (ssl_ca_cert_file, ssl_ca_key_file,
