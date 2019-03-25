@@ -84,7 +84,7 @@ class PythonSyntaxError(base.DependencyAnalysisError):
                 return _("The file to be installed at {ip} appears to be a "
                     "python file but contains a syntax error that prevents "
                     "it from being analyzed.  The text of the file can be found"
-                    "at {lp}.  The error happened on line {line} at offset "
+                    " at {lp}.  The error happened on line {line} at offset "
                     "{col}. The problem was:\n{txt}").format(**self.__dict__)
 
 
