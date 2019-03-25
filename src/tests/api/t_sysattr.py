@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2019, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -96,9 +96,6 @@ class TestSysattr(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(ValueError, portable.fsetattr, self.test_fn,
                     "xyz")
                 self.assertRaises(OSError, portable.fsetattr, "/nofile",
-                    "H")
-                # FS does not support system attributes.
-                self.assertRaises(OSError, portable.fsetattr, self.test_fn2,
                     "H")
 
                 # fgetattr
