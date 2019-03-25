@@ -4663,7 +4663,7 @@ msgstr "펌웨어 종속성 오류: {0}을(를) 실행할 수 없음: {1}"
 #: ../modules/client/firmware.py:137
 #, python-brace-format
 msgid ""
-"cpu dependency error: '{0}' does not meet the the minimum requirement for "
+"cpu dependency error: '{0}' does not meet the minimum requirement for "
 "{1} {2}\n"
 msgstr "CPU 종속성 오류: '{0}'이(가) {1} {2}에 대한 최소 요구 사항을 충족하지 않습니다.\n"
 

@@ -4663,7 +4663,7 @@ msgstr "Erreur de dépendance de microprogramme : impossible d'exécuter {0} : {
 #: ../modules/client/firmware.py:137
 #, python-brace-format
 msgid ""
-"cpu dependency error: '{0}' does not meet the the minimum requirement for "
+"cpu dependency error: '{0}' does not meet the minimum requirement for "
 "{1} {2}\n"
 msgstr "Erreur de dépendance de CPU : '{0}' ne répond pas aux conditions minimales requises pour {1} {2}\n"
 

@@ -4663,7 +4663,7 @@ msgstr "韌體相依性錯誤：無法執行 {0}：{1}"
 #: ../modules/client/firmware.py:137
 #, python-brace-format
 msgid ""
-"cpu dependency error: '{0}' does not meet the the minimum requirement for "
+"cpu dependency error: '{0}' does not meet the minimum requirement for "
 "{1} {2}\n"
 msgstr "CPU 相依性錯誤：'{0}' 不符合 {1} {2} 的最低需求\n"
 
