@@ -37,3 +37,4 @@ src/util/publish/pkgfmt.py
 src/util/publish/pkglint.py
 src/util/publish/pkgmerge.py
 src/util/publish/pkgmogrify.py
+src/svc/svc-pkg-*
