@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -289,7 +289,7 @@ class LintEngine(object):
         see the comment for <LintEngine>.execute()"""
 
         def __init__(self, formatter, verbose=False, config_file=None,
-            use_tracker=None):
+            use_tracker=None, extension_path=[]):
                 """Creates a lint engine a given pkg.lint.log.LogFormatter.
                 'verbose' overrides any log_level settings in the config file
                 to DEBUG
@@ -329,8 +329,14 @@ class LintEngine(object):
                 # whether to ignore publisher differences when comparing vers
                 self.ignore_pubs = True
 
+                # Ensure extension_path is always a list even if empty
+                self.extension_path = extension_path
+                if not self.extension_path:
+                    self.extension_path = []
+
                 self.conf = self.load_config(config_file, verbose=verbose)
-                # overrides config_file entry
+
+                # override config_file entry
                 if use_tracker is not None:
                         self.use_tracker = use_tracker
 
@@ -359,8 +365,15 @@ class LintEngine(object):
                 instances of the checker classes the module declares,
                 assuming they haven't been excluded by the config object."""
 
+                # Make a copy of sys.path so we can revert it after module load
+                _preserved_sys_path = list(sys.path)
                 try:
                         self.logger.debug("Loading module {0}".format(name))
+                        # Temporarily add the extension paths to sys.path
+                        # Any paths specified in the init call take precedence
+                        # over the config file.
+                        sys.path.extend(self.extension_path)
+
                         # the fifth parameter is 'level', which defautls to -1
                         # in Python 2 and 0 in Python 3.
                         __import__(name, None, None, [])
@@ -369,6 +382,9 @@ class LintEngine(object):
                         return (checkers, excluded)
                 except (KeyError, ImportError) as err:
                         raise base.LintException(err)
+                finally:
+                        # Reset sys.path
+                        sys.path = _preserved_sys_path
 
         def _unique_checkers(self):
                 """Ensure that the engine has unique names for all of the loaded
@@ -423,6 +439,12 @@ class LintEngine(object):
                 try:
                         self.version_pattern = conf.get("pkglint",
                             "version.pattern")
+                except configparser.NoOptionError:
+                        pass
+
+                try:
+                        self.extension_path.extend(conf.get("pkglint",
+                            "extension_path").split(os.pathsep))
                 except configparser.NoOptionError:
                         pass
 

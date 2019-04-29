@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System package lint</refpurpose>
@@ -18,7 +18,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
-    [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
+    [-e <replaceable>extension_path</replaceable>] [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
     [-v] [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
@@ -101,6 +101,11 @@ display the method that implements the check instead of the description.</para>
 config_file</replaceable> configuration file.</para>
 </listitem>
 </varlistentry>
+<varlistentry><term><option>e</option> <replaceable>extension_path</replaceable></term>
+<listitem><para>Directroy to add to the Python search path when loading
+<command>pkglint</command> extensions.</para>
+</listitem>
+</varlistentry>
 <varlistentry><term><option>p</option> <replaceable>regexp</replaceable></term>
 <listitem><para>Specify a regular expression used to narrow the list of packages
 to be checked from the lint repository. All manifests from the reference repository
@@ -143,7 +148,15 @@ make sense for published packages. The default value is <literal>True</literal>.
 <listitem><para>The plugin mechanism of <command>pkglint</command> allows
 for additional lint modules to be added at runtime. Any key that starts with <literal>
 pkglint.ext.</literal> takes a value that must be a fully-specified Python
-module. See the &ldquo;Developers&rdquo; section for more information.</para>
+module. See the &ldquo;Developers&rdquo; section for more information.
+The <literal>extension_path</literal> option specifies additional directory
+locations to search when loading extensions</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>extension_path</literal></term>
+<listitem><para>An list of directories, separated by ':' no most platforms, to search
+for extension modules.  If the -e flag is specified on the CLI it is added higher
+in the search order than this config file option.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkglint.exclude</literal></term>
