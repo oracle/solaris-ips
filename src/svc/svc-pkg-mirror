@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -301,7 +301,8 @@ function update_repository {
 		sslcert=$($PKG -R $ref_image publisher $pub \
 		    | $GREP 'SSL Cert:' \
 		    | $GREP -v None | $SED -e 's/.* //g')
-		$PKG -R $ref_image publisher -F tsv > /tmp/pkg.mirror.$$
+		pubtmp=$(mktemp pkg.mirror.XXXXXX)
+		$PKG -R $ref_image publisher -F tsv > $pubtmp
 
 		#
 		# this function depends on the output of
@@ -337,8 +338,8 @@ configured for publisher $pub"
 			clones[$index]=""
 			pubs[$index]=$pub
 			index=$(( $index + 1 ))
-		done < /tmp/pkg.mirror.$$
-		$RM /tmp/pkg.mirror.$$
+		done < $pubtmp
+		$RM $pubtmp
 		i=$(( $i + 1 ))
 
 		# If only one origin for this publisher
