@@ -29,6 +29,7 @@ import codecs
 import logging
 import six
 import sys
+import os
 import gettext
 import locale
 import traceback
@@ -72,6 +73,7 @@ def main_func():
             _("\n"
             "        %prog [-b branch] [-c cache_dir] [-f file]\n"
             "            [-l uri ...] [-p regexp] [-r uri ...] [-v]\n"
+            "            [-e extension_path ...]\n"
             "            manifest ...\n"
             "        %prog -L")
         parser = OptionParser(usage=usage)
@@ -91,9 +93,10 @@ def main_func():
             help=_("pattern to match FMRIs in lint URI"))
         parser.add_option("-r", dest="ref_uris", metavar="uri",
             action="append", help=_("reference repository URI"))
+        parser.add_option("-e", dest="extension_path", metavar="dir",
+            action="append", help=_("extension_path"))
         parser.add_option("-v", dest="verbose", action="store_true",
-            help=_("produce verbose output, overriding settings in pkglintrc")
-            )
+            help=_("produce verbose output, overriding settings in pkglintrc"))
 
         opts, args = parser.parse_args(sys.argv[1:])
 
@@ -126,7 +129,8 @@ def main_func():
                 if not opts.list_checks:
                         msg(_("Lint engine setup..."))
                 lint_engine = engine.LintEngine(lint_logger,
-                    config_file=opts.config, verbose=opts.verbose)
+                    config_file=opts.config, verbose=opts.verbose,
+                    extension_path=opts.extension_path)
 
                 if opts.list_checks:
                         list_checks(lint_engine.checkers,
