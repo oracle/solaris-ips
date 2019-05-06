@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import unicode_literals, print_function
@@ -81,8 +81,8 @@ class SpawnFileAction(object):
         _check_error(rc)
 
     def add_close(self, fd):
-        """Add the file descriptor fd to the list of descriptors to be closed in
-        the new process."""
+        """Add the file descriptor fd to the list of descriptors to be closed
+        in the new process."""
 
         if not isinstance(fd, int):
             raise TypeError("fd must be int type")
