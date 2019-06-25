@@ -301,7 +301,7 @@ function update_repository {
 		sslcert=$($PKG -R $ref_image publisher $pub \
 		    | $GREP 'SSL Cert:' \
 		    | $GREP -v None | $SED -e 's/.* //g')
-		pubtmp=$(mktemp pkg.mirror.XXXXXX)
+		pubtmp=$(mktemp /tmp/pkg.mirror.XXXXXX)
 		$PKG -R $ref_image publisher -F tsv > $pubtmp
 
 		#
