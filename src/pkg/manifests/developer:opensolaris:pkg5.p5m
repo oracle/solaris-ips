@@ -46,11 +46,11 @@ depend type=require fmri=pkg:/library/python/jsonrpclib-27
 depend type=require fmri=pkg:/library/python/jsonrpclib-34
 depend type=require fmri=pkg:/library/python/jsonschema-27
 depend type=require fmri=pkg:/library/python/jsonschema-34
-depend type=require fmri=pkg:/library/python/pep8
 depend type=require fmri=pkg:/library/python/portend-27
 depend type=require fmri=pkg:/library/python/portend-34
 depend type=require fmri=pkg:/library/python/prettytable-27
 depend type=require fmri=pkg:/library/python/prettytable-34
+depend type=require fmri=pkg:/library/python/pycodestyle
 depend type=require fmri=pkg:/library/python/six-27
 depend type=require fmri=pkg:/library/python/six-34
 depend type=require fmri=pkg:/package/svr4
