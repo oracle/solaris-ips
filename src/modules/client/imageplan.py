@@ -1537,6 +1537,12 @@ class ImagePlan(object):
                                 # delete preserve and preserve-version
                                 # attributes to both find and enable
                                 # replacement of modified editable files.
+                                # Note: preserve=abandon should be skipped
+                                # because, by definition, these files should
+                                # not be restored (they have been abandoned)
+                                if act.attrs.get("preserve") == "abandon":
+                                        continue
+
                                 act.attrs.pop("preserve", None)
                                 act.attrs.pop("preserve-version", None)
                                 act.verify(self.image, forever=True)

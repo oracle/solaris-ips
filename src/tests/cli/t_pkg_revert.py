@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -111,8 +111,24 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             close
             """
 
+        # pkg with preserve=abandon
+        pkgs4 = """
+            open abd1@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file etc/file6.cfg mode=0555 owner=root group=bin path=etc/file6.cfg preserve=abandon
+            close
+            open abd2@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file etc/file7.cfg mode=0555 owner=root group=bin path=etc/file7.cfg preserve=abandon revert-tag=bart
+            close
+            open abd3@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file etc/file8.cfg mode=0555 owner=root group=bin path=etc/file8.cfg revert-tag=bart
+            close
+            """
+
         misc_files = ["etc/file1", "etc/file2", "etc/file3", "etc/file4",
-            "etc/file5"]
+            "etc/file5", "etc/file6.cfg", "etc/file7.cfg", "etc/file8.cfg"]
 
         additional_files = ["dev/foo", "dev/cfg/bar", "dev/cfg/blah",
             "dev/cfg/bar1", "dev/cfg/bar2"]
@@ -149,6 +165,8 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 else:
                         self.plist.extend(self.pkgsend_bulk(self.rurl,
                             self.pkgs3))
+
+                self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs4))
 
         def test_revert(self):
                 self.image_create(self.rurl)
@@ -262,6 +280,25 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 # since tags can be missing, just nothing to do for
                 # tags that we cannot find
                 self.pkg("revert --tagged no-such-tag", exit=4)
+
+                # check that we don't revert files tagged as 'abandon'
+                self.pkg("install abd1@1.0 abd2@1.0 abd3@1.0")
+                self.remove_file("etc/file6.cfg")
+                self.pkg("revert /etc/file6.cfg", exit=4)
+                self.file_doesnt_exist("etc/file6.cfg")
+
+                # check that we don't revert files tagged as 'abandon
+                # and revert-tag
+                self.remove_file("etc/file7.cfg")
+                self.pkg("revert /etc/file7.cfg", exit=4)
+                self.file_doesnt_exist("etc/file7.cfg")
+
+                # check that we only revert files with revert-tag
+                # without 'abandon' attribute
+                self.remove_file("etc/file8.cfg")
+                self.pkg("revert --tagged bart", exit=0)
+                self.file_exists("etc/file8.cfg")
+                self.file_doesnt_exist("etc/file7.cfg")
 
         def test_revert_2(self):
                 """exercise new directory revert facility"""
