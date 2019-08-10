@@ -6,11 +6,11 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">3 May 2018</refmiscinfo>
+<refmiscinfo class="date">08 Aug 2019</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -250,6 +250,11 @@ of the package, the upgrade is done in the following way:</para>
 a <literal>preserve</literal> value of <literal>abandon</literal> or
 <literal>install-only</literal> in the upgraded package, the new file will
 not be installed and the existing file will not be modified.
+</para></listitem>
+<listitem><para>If the file delivered by the package has a 
+<literal>preserve</literal> value of <literal>abandon</literal> then any
+attempt to revert the file will not restore the file. Any
+<literal>revert-tag</literal> associated with the file will be ignored.
 </para></listitem>
 <listitem><para>If the file does not exist in the image, the new file is installed.
 </para></listitem>
