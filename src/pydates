@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
 
 
 # Create a dictionary (timestamps) mapping paths of python files in the modules
@@ -26,11 +26,21 @@ import os
 import time
 import mercurial.cmdutil as cmdutil
 import mercurial.match as matchmod
-from mercurial.localrepo import localrepository
+from mercurial import localrepo
 from mercurial.ui import ui
 
 myui = ui()
-repo = localrepository(myui, cmdutil.findrepo(os.getcwd()))
+try:
+    # Since Mercurial 4.8:
+    repo = localrepo.instance(myui, cmdutil.findrepo(os.getcwd()), False)
+except TypeError:
+    # Mercurial 4.8+ causes pylint to complain about the old use of the
+    # __init__ constructor, which is valid when running using versions prior
+    # to 4.8 (the arg count jumped from 3 to 13). So to pass pylint with both
+    # old and new versions, we need to disable the arg check around this call.
+    # pylint: disable=no-value-for-parameter
+    repo = localrepo.localrepository(myui, cmdutil.findrepo(os.getcwd()))
+    # pylint: disable=no-value-for-parameter
 
 # Match only python files in src/modules.
 matchfn = matchmod.match(repo.root, os.getcwd(), patterns=["re:src/modules/.*\.py$"])

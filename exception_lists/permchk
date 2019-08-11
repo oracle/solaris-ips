@@ -24,6 +24,7 @@
 #
 syntax: glob
 
+src/pydates
 src/client.py
 src/depot-config.py
 src/depot.py
