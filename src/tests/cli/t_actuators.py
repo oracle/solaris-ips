@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -65,7 +65,7 @@ case $4 in
                 ;;
         # the following are too relaxed, eg. "svcs sys/foo/tZst_suspend_svc:defXX"
         # would match, but is sufficient for this test case as we only
-        # ever resolve services that truely exist here.
+        # ever resolve services that truly exist here.
         *sy*t?st_suspend_svc:def*)
                 FMRI=svc:/system/test_suspend_svc:default
                 ;;
@@ -782,7 +782,11 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # entire contents are there verbatim
                 with open(field, encoding="utf-8") as f:
                         release_note = force_text(f.read())
-                assert self.multi_unicode == release_note
+
+                # Note the package name is prepended to the release note
+                # and so it needs to be added here.
+                concatted = "\npkg://test/hovercraft\n" + self.multi_unicode
+                assert concatted == release_note
                 self.pkg("uninstall '*'")
 
 
