@@ -22,7 +22,7 @@
 #
 # Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
 #
-re:src/(?!(man/.*$|modules/choose\.py$|modules/cpiofile\.py$|modules/flavor/depthlimitedmf\.py$)|modules/solver/.*$|pydates).+
+re:src/(?!(man/.*$|modules/choose\.py$|modules/cpiofile\.py$|modules/flavor/depthlimitedmf\.py$)|modules/solver/.*$|pydates|pkg/external_deps.*$).+
 glob:*Makefile*
 glob:src/tests/*
 glob:src/*\.py$
