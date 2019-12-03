@@ -2907,6 +2907,13 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        release_name = """
+            open release/name@1.0
+            add set name=com.oracle.info.suggested_bename value=livetest
+            add file tmp/liveroot1 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            close
+        """
+
         renameold1 = """
             open renold@1.0
             add file tmp/renold1 path=testme mode=0644 owner=root group=root preserve=renameold
@@ -3747,6 +3754,31 @@ adm
 
                 self.pkg("update -vvv dumdir@3.0")
                 self.pkg("verify -v")
+
+        def test_newbe_liveroot(self):
+                """Test to verify the command output, when modifying a live
+                image has the correct initial information for the user."""
+
+                self.pkgsend_bulk(self.rurl, (self.release_name))
+                self.image_create(self.rurl)
+
+                # Verify the name of the boot environment is printed
+                # on install.
+                self.pkg("--debug simulate_live_root={0} install "
+                    " release/name@1.0".format(
+                    self.get_img_path()))
+                self.assertTrue("environment: livetest" in self.output)
+
+                # Ensure that the uninstall case prints a create
+                # boot environment message. The command will fail due
+                # to test framework limitations.
+                self.pkg("--debug simulate_live_root={0} uninstall "
+                    "release/name@1.0".format(self.get_img_path()), exit=1)
+                self.assertTrue("Create boot environment: Yes" in self.output)
+                # Ensure the failure is for the correct reason.
+                self.assertTrue(
+                    "pkg: Unable to clone the current boot environment" in
+                    self.errout)
 
         def test_upgrade_liveroot(self):
                 """Test to make sure upgrade of package fails if on live root
