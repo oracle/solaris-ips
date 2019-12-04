@@ -747,11 +747,14 @@ made will not be reflected on the next boot.
                         status.append((_("Create boot environment:"),
                             bool_str(plan.new_be)))
 
-                        if plan.new_be and (verbose or not plan.activate_be):
-                                # Only show activation status if verbose or
-                                # if new BE will not be activated.
+                        if plan.new_be:
                                 status.append((_("Activate boot environment:"),
                                     bool_str(plan.activate_be)))
+                        # plan.be_name can be undefined in the uninstall case
+                        # so test it before trying to print it out.
+                        if plan.be_name:
+                                status.append((_("Name of boot environment:"),
+                                    plan.be_name))
 
                         status.append((_("Create backup boot environment:"),
                             bool_str(plan.backup_be)))
