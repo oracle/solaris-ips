@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -584,7 +584,6 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # ensure we can install our new packages through the system
                 # publisher url
                 self.pkg("install new")
-                self.pkg("publisher")
 
                 # remove the p5p file, which should still allow us to uninstall
                 renamed_p5p_path = p5p_path + ".renamed"

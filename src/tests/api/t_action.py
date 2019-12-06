@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -86,7 +86,7 @@ class TestActions(pkg5unittest.Pkg5TestCase):
             "file 12345 name='f\"o\"o' value=bar path=/tmp/foo",
             "file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo",
             "file 12345 name=foo\tvalue=bar path=/tmp/foo",
-            "driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega",
+            "driver alias=pci1234,56 alias=pci4567:,89 class=scsi name=lsimega",
             "signature 12345 algorithm=foo",
         ]
 
@@ -306,7 +306,7 @@ Incorrect attribute list.
                     "hash=abc=123": "abc=123",
                     "hash=\"one with spaces\"": "one with spaces",
                     "hash='one with \" character'": 'one with " character',
-                    "hash=\"'= !@$%^\)(*\"": "'= !@$%^\)(*",
+                    "hash=\"'= !@$%^\\)(*\"": "'= !@$%^\\)(*",
                     """hash="\\"'= \\ " """:""""'= \\ """,
                     '\\' : '\\'
                 }

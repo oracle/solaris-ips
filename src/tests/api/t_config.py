@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -812,13 +812,13 @@ class TestPropertyTemplate(pkg5unittest.Pkg5TestCase):
                         self.assertRaises(cfg.InvalidPropertyTemplateNameError,
                             propcls, n)
 
-                prop = propcls("^facet\..*$")
-                self.assertEqual(prop.name, "^facet\..*$")
+                prop = propcls(r"^facet..*$")
+                self.assertEqual(prop.name, r"^facet..*$")
 
         def test_create_match(self):
                 """Verify that create and match operations work as expected."""
 
-                proptemp = cfg.PropertyTemplate("^facet\..*$")
+                proptemp = cfg.PropertyTemplate(r"^facet..*$")
 
                 # Verify match will match patterns as expected.
                 self.assertEqual(proptemp.match("facet.devel"), True)
@@ -1066,7 +1066,7 @@ class _TestConfigBase(pkg5unittest.Pkg5TestCase):
 
         _templated_defs = {
             0: [cfg.PropertySection("facet", properties=[
-                    cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool)
+                    cfg.PropertyTemplate(r"^facet..*", prop_type=cfg.PropBool)
                 ]),
             ],
             1: [cfg.PropertySectionTemplate("^authority_.*", properties=[
