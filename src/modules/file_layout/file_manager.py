@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -39,7 +39,11 @@ wil be moved to that location.  When a file is removed, the layouts are
 checked in turn until a file is found and removed.  The FileManager also
 provides a way to generate all hashes stored by the FileManager."""
 
-import collections
+try:
+	from collections.abc import Iterable
+except ImportError:
+	from collections import Iterable
+
 import errno
 import os
 
@@ -127,7 +131,7 @@ class FileManager(object):
                 self.root = root
                 self.readonly = readonly
                 if layouts is not None:
-                        if not isinstance(layouts, collections.Iterable):
+                        if not isinstance(layouts, Iterable):
                                 layouts = [layouts]
                         self.layouts = layouts
                 else:

@@ -28,4 +28,6 @@ syntax: glob
 src/man/*.txt
 src/pkg/external_deps.txt
 src/tests/baseline.txt
+src/util/apache2/sysrepo/*.mako
+src/util/apache22/sysrepo/*.mako
 doc/*

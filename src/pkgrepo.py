@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -65,7 +65,10 @@ import textwrap
 import traceback
 import warnings
 import itertools
-from imp import reload
+if six.PY2:
+        from imp import reload
+else:
+        from importlib import reload
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues

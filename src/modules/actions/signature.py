@@ -21,11 +21,13 @@
 #
 
 #
-# Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
+import abc
 import hashlib
 import os
+import six
 import shutil
 import tempfile
 
@@ -181,9 +183,15 @@ class SignatureAction(generic.Action):
                 """Get the cryptopgraphy Hash() class based on the OpenSSL
                 algorithm name."""
 
-                for h in hashes.HashAlgorithm._abc_registry:
-                        if h.name == name:
-                                return h
+                if six.PY2:
+                        for h in hashes.HashAlgorithm._abc_registry:
+                                if h.name == name:
+                                        return h
+                else :
+                        for h in abc._get_dump(hashes.HashAlgorithm)[0]:
+                                ref = h()
+                                if ref.name == name:
+                                        return ref
 
         def get_size(self):
                 res = generic.Action.get_size(self)

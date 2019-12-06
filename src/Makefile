@@ -25,6 +25,7 @@
 
 PYTHON27 = /usr/bin/python2.7
 PYTHON34 = /usr/bin/python3.4
+PYTHON37 = /usr/bin/python3.7
 
 all := TARGET = all
 install := TARGET = install
@@ -71,6 +72,7 @@ clobber: $(SUBDIRS)
 install: $(SUBDIRS)
 	$(PYTHON27) setup.py install
 	$(PYTHON34) setup.py install
+	$(PYTHON37) setup.py install
 
 lint:
 	$(PYTHON27) setup.py lint
@@ -108,8 +110,11 @@ test-27:
 test-34:
 	$(PYTHON34) tests/run.py -j ${JOBS} -v
 
+test-37:
+	$(PYTHON37) tests/run.py -j ${JOBS} -v
+
 test:
-	$(MAKE) -k test-27 test-34 JOBS=${JOBS}
+	$(MAKE) -k test-27 test-34 test-37 JOBS=${JOBS}
 
 test-verbose:
 	$(PYTHON27) setup.py test -v

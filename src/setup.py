@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -105,7 +105,7 @@ cffi_dir = os.path.normpath(os.path.join(pwd, "cffi_src"))
 
 # Extract Python minor version.
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('2.7', '3.4')
+assert py_version in ('2.7', '3.4', '3.7')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 py64_executable = None
@@ -767,10 +767,8 @@ class install_func(_install):
                                 else:
                                         file_util.copy_file(src, dest, update=1)
 
-                # XXX Uncomment it when we need to deliver python 3.4 version
-                # of modules.
-                # Don't install the scripts for python 3.4.
-                if py_version == '3.4':
+                # Don't install the scripts for python 3.*
+                if py_version in ('3.4', '3.7'):
                         return
                 for d, files in six.iteritems(scripts[osname]):
                         for (srcname, dstname) in files:
@@ -1837,5 +1835,6 @@ setup(cmdclass = cmdclasses,
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.7',
     ]
 )

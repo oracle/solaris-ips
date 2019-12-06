@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -84,16 +84,7 @@ else:
         from imp import reload
 from six.moves.urllib.parse import urlparse, urlunparse
 
-try:
-        import cherrypy
-        version = cherrypy.__version__.split('.')
-        # comparison requires same type, therefore list conversion is needed
-        if list(map(int, version)) < [3, 1, 0]:
-                raise ImportError
-except ImportError:
-        print("""cherrypy 3.1.0 or greater is required to use this program.""",
-            file=sys.stderr)
-        sys.exit(2)
+import cherrypy
 
 import cherrypy.process.servers
 from cherrypy.process.plugins import Daemonizer
@@ -936,8 +927,8 @@ if __name__ == "__main__":
                     "robots.txt")
             },
         }
-        if list(map(int, version)) >= [3, 2, 0]:
-                conf["/"]["request.dispatch"] = Pkg5Dispatcher()
+
+        conf["/"]["request.dispatch"] = Pkg5Dispatcher()
 
         proxy_base = dconf.get_property("pkg", "proxy_base")
         if proxy_base:
