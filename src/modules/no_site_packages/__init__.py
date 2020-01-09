@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Remove site-packages directories from sys.path.
@@ -33,5 +33,5 @@ import sys
 if sys.platform == "sunos5":
     from site import getsitepackages as getsitepackages
 
-    pkglist = getsitepackages()
-    sys.path = [ d for d in sys.path if d not in pkglist ]
+    sys.path = list(set(sys.path) - set([d for d in sys.path
+                    for p in getsitepackages() if d.startswith(p)]))
