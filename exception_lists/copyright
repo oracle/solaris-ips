@@ -20,11 +20,12 @@
 #
 
 #
-# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 syntax: glob
 
+.arclint
 src/man/*.txt
 src/pkg/external_deps.txt
 src/tests/baseline.txt
