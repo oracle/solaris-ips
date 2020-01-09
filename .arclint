@@ -1,0 +1,10 @@
+{
+    "linters": {
+        "hgnits": {
+            "include": "(\\.*$)",
+            "script-and-regex.regex": "/^(?P<filename>.*): (?P<line>.*): (?P<message>.*)$/m",
+            "script-and-regex.script": "sh -c 'hg nits \"$0\" 2>&1 || true'",
+            "type": "script-and-regex"
+        }
+    }
+}
