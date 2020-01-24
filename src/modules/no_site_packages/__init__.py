@@ -33,5 +33,11 @@ import sys
 if sys.platform == "sunos5":
     from site import getsitepackages as getsitepackages
 
-    sys.path = list(set(sys.path) - set([d for d in sys.path
-                    for p in getsitepackages() if d.startswith(p)]))
+    sitepackages = getsitepackages()
+    newpath = list(sys.path)
+    for pathent in sys.path:
+        for siteent in sitepackages:
+            if pathent.startswith(siteent):
+                newpath.remove(pathent)
+                break
+    sys.path = newpath
