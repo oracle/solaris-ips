@@ -1,0 +1,70 @@
+#!/usr/bin/python3.7 -Es
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+#
+
+import pkg.no_site_packages
+import os
+import sys
+import subprocess
+import pkg.smf as smf
+import json
+
+SMF_FMRI = 'svc:/system/auto-update:default'
+PARSABLE_OUTPUT = '/system/volatile/' + SMF_FMRI + '/parsable_output.json'
+
+auto_reboot = (smf.get_prop(SMF_FMRI, 'config/auto-reboot') == 'true')
+
+cmd = ['/usr/bin/pkg', 'install']
+
+if smf.get_prop(SMF_FMRI, 'config/require-new-be') == 'true':
+	cmd.append('--require-new-be')
+
+if smf.get_prop(SMF_FMRI, 'config/activate-new-be') == 'false':
+	if auto_reboot:
+		print("Invalid configuration: config/auto-reboot = true "
+		      "with config/activate-new-be = false")
+		sys.exit(smf.EXIT_INVALID_OPTION)
+	cmd.append('--no-be-activate')
+
+packages = smf.get_prop(SMF_FMRI, 'config/packages').split(' ')
+cmd.extend(packages)
+
+pkg_status = subprocess.call(cmd)
+
+if pkg_status == 4:	# Nothing to do so exit cleanly.
+	sys.exit(smf.EXIT_OK)
+elif pkg_status != 0:
+	sys.exit(smf.EXIT_FATAL)
+
+with open(PARSABLE_OUTPUT) as pkg_out:
+	pkgplan = json.loads(pkg_out.read())
+
+new_be_created = pkgplan['create-new-be']
+new_be_activated = pkgplan['activate-be']
+if new_be_created and new_be_activated and auto_reboot:
+	print('Reboot after auto update')
+	msg = SMF_FMRI  + ' : automatic reboot after update'
+	subprocess.call(['shutdown', '-yr', msg])
+elif not new_be_created:
+	print('Auto update completed, no reboot needed')

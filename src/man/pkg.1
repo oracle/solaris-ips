@@ -6,11 +6,11 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">3 May 2018</refmiscinfo>
+<refmiscinfo class="date">27 Jan 2020</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System retrieval client</refpurpose>
@@ -2010,6 +2010,63 @@ the particular publisher.</para>
 </varlistentry>
 </variablelist>
 </refsect1>
+<refsect1 role="other"><title>Periodic Package Update Service</title>
+<para>
+The SMF service <literal>svc:/system/auto-update:default</literal> provides a
+mechanism to automatically update and reboot the system on an administrator
+defined scheduled.  This is particularly useful when the system is deployed
+with an immutable root filesystem profile.
+</para>
+
+<variablelist>
+
+<varlistentry><term><literal>config/auto-reboot</literal></term>
+<listitem><para>Automatically reboot if updates are performed, defaults to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/activate-new-be</literal></term>
+<listitem><para>Automatically activate the new boot environment, default to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/require-new-be</literal></term>
+<listitem><para>Create a new BE for any updates rather than using the live BE.
+The BE is automatically named by pkg(1), where possible using metadata stored in
+<literal>pkg:/release/name</literal>.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/packages</literal></term>
+<listitem><para>List of packages to explicitly update. Defaults to empty, which
+instructs pkg to update all packages to newest within the constraints allowed.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>scheduled/*</literal></term>
+<listitem><para>The deafult configuration is to attempt the update and reboot
+weekly at midnight on a Sunday. An alternative scheduled can be configured by
+setting the appropriate properties in the scheduled property group, see
+<literal>svc.periodicd(8)</literal>.</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+<para>
+The SMF service <literal>svc:/system/auto-update:cleanup</literal> manages
+the boot environments created by the automatic update service.
+To opt an auto-update boot evnironment out of automatic removal and allow
+it to be preserved and managed manually use <literal>'beadm set-policy -nstatic bename'</literal>.
+</para>
+<variablelist>
+<varlistentry><term><literal>config/keep</literal></term>
+<listitem><para>The maximum number of boot environments created by the auto update service to keep.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+
+</refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>Create an Image With Publisher Configured</title>
 <para>Create a new, full image, with publisher <literal>example.com</literal>,
@@ -2479,7 +2536,14 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <literal>glob</literal>(3C), <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
+<literal>glob</literal>(3C),
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
+</para>
 <para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -117,6 +117,8 @@ except KeyboardInterrupt:
 
 CLIENT_API_VERSION = 83
 PKG_CLIENT_NAME = "pkg"
+
+AUTO_UPDATE_FMRI = 'svc:/system/auto-update:default'
 
 JUST_UNKNOWN = 0
 JUST_LEFT = -1
@@ -1342,10 +1344,26 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
         if not quiet and not quiet_plan:
                 __display_plan(api_inst, verbose, noexecute, op=op)
 
-        if parsable_version is not None:
-                parsable_plan = plan.get_parsable_plan(parsable_version,
+        auto_update_svc = (os.getenv('SMF_FMRI') == AUTO_UPDATE_FMRI)
+
+        if parsable_version is not None or auto_update_svc:
+                # parsable_version needs to be set to 0 for auto_update_svc
+                pv = 0 if auto_update_svc else parsable_version
+                parsable_plan = plan.get_parsable_plan(pv,
                     child_image_plans, api_inst=api_inst)
-                logger.info(json.dumps(parsable_plan))
+                if auto_update_svc:
+                    svcdir = '/system/volatile/' + AUTO_UPDATE_FMRI
+                    if six.PY2:
+                        try:
+                            os.makedirs(svcdir)
+                        except OSError:
+                            pass
+                    else:
+                        os.makedirs(svcdir, exists_ok=True)
+                    with open(svcdir + '/parsable_output.json', 'w') as poj:
+                        poj.write(json.dumps(parsable_plan))
+                else:
+                    logger.info(json.dumps(parsable_plan))
         elif not quiet:
                 if not quiet_plan:
                         # Ensure a blank line is inserted before the message
