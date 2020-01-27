@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -2732,7 +2732,7 @@ pkg unset-publisher {0}
 
                 try:
                         exts = cert.extensions
-                except (ValueError, x509.UnrecognizedExtension) as e:
+                except ValueError as e:
                         raise api_errors.InvalidCertificateExtensions(
                             cert, e)
 
