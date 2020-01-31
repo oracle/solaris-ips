@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -181,6 +181,9 @@ scripts_sunos = {
                 ['cronjob-removal.sh', 'cronjob-removal.sh'],
                 ],
         svc_method_dir: [
+                ['svc/svc-pkg-auto-update', 'svc-pkg-auto-update'],
+                ['svc/svc-pkg-auto-update-cleanup',
+                    'svc-pkg-auto-update-cleanup'],
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
                 ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
                 ['svc/svc-pkg-mirror', 'svc-pkg-mirror'],
@@ -398,6 +401,7 @@ for entry in os.walk("web"):
                     ]))
 
 smf_app_files = [
+        'svc/pkg-auto-update.xml',
         'svc/pkg-depot.xml',
         'svc/pkg-mdns.xml',
         'svc/pkg-mirror.xml',

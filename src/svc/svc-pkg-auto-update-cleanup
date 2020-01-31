@@ -1,0 +1,49 @@
+#!/usr/bin/python3.7 -Es
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+#
+
+import pkg.no_site_packages
+import os
+import subprocess
+import pkg.smf as smf
+
+keep = int(smf.get_prop(os.getenv('SMF_FMRI'), 'config/keep'))
+print('config/keep = {0} boot environments'.format(keep))
+candidates = []
+with subprocess.Popen(['beadm', 'list', '-Ho', 'created,policy,fmri'],
+                      stdout=subprocess.PIPE) as beadm_out:
+        for be in beadm_out.stdout.readlines():
+                creation, policy, be_fmri = be.decode().strip().split(';')
+                if 'auto' in policy.split(','):
+                        candidates.append(be_fmri)
+
+print('Discovered {0} auto-update boot environments'.format(len(candidates)))
+remove_bes = candidates[:len(candidates) - keep]
+
+if remove_bes:
+	print('Removing the following boot environments:', *remove_bes)
+	for be in remove_bes:
+		subprocess.call(['beadm', 'destroy', '-fF', be])
+else:
+	print('No auto-update boot environments to remove')
