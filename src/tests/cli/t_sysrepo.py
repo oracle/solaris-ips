@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -1011,10 +1011,15 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                 # lives outside our normal search path
                 mod_name = "sysrepo_p5p"
                 src_name = "{0}.py".format(mod_name)
-                sysrepo_p5p_file = open(os.path.join(self.sysrepo_template_dir,
-                    src_name))
-                self.sysrepo_p5p = imp.load_module(mod_name, sysrepo_p5p_file,
-                    src_name, ("py", "r", imp.PY_SOURCE))
+                sysrepo_p5p_file = os.path.join(self.sysrepo_template_dir, src_name)
+                if six.PY2:
+                    self.sysrepo_p5p = imp.load_module(mod_name, open(sysrepo_p5p_file),
+                        src_name, ("py", "r", imp.PY_SOURCE))
+                elif six.PY3:
+                    import importlib.machinery
+                    loader = importlib.machinery.SourceFileLoader(mod_name, sysrepo_p5p_file)
+                    self.sysrepo_p5p = loader.load_module()
+
 
                 # now create a simple p5p file that we can use in our tests
                 self.make_misc_files(self.misc_files)
