@@ -18,15 +18,23 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_BUILTON   = 5.11
 MINORNUM          = 11
-UPDATENUM         = 5
-SRUNUM            = 0
+UPDATENUM         = 4
+#
+# The SRUNUM will need to be reset once the final trunk build for
+# the delivery from trunk has been delivered.
+#
+SRUNUM            = 21
 ORDER             = 0
-PLATNUM           = 0
+#
+# In the normal case the PLATNUM should be 0, however when
+# producing an SRU build from trunk it should be set to 1
+#
+PLATNUM           = 1
 PKGVERS_COMPONENT = $(MINORNUM).$(UPDATENUM)
 BUILDID.cmd       = \
 	hg tags | \
