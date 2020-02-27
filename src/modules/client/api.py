@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -3561,7 +3561,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                         if not a.startswith("set"):
                                                                 continue
                                                         if not ("pkg.obsolete" in a or \
-                                                            "pkg.renamed" in a):
+                                                            "pkg.renamed" in a or \
+                                                            "pkg.legacy" in a):
                                                                 continue
 
                                                         try:
@@ -3584,6 +3585,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                                         continue
                                                                 states.append(
                                                                     pkgdefs.PKG_STATE_RENAMED)
+                                                        elif act.attrs["name"] == "pkg.legacy":
+                                                                states.append(
+                                                                    pkgdefs.PKG_STATE_LEGACY)
 
                                         mdata["states"] = states
 

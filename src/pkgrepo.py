@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 import pkg.no_site_packages
 
@@ -957,6 +957,9 @@ def subcmd_list(conf, args):
                                         elif pkgdefs.PKG_STATE_RENAMED in \
                                             states:
                                                 state = "r"
+                                        elif pkgdefs.PKG_STATE_LEGACY in \
+                                            states:
+                                                state = "l"
 
                                 if out_format == "default":
                                     fver = str(f.version.get_version(

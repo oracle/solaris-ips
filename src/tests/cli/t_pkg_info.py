@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -588,7 +588,6 @@ Packaging Date: Sat Sep 10 00:45:46 2011
 
                 # because we compare date strings we must run this in
                 # a consistent locale, which we made 'C'
-
                 os.environ['LC_ALL'] = 'C'
 
                 target10 = """
@@ -712,6 +711,109 @@ Packaging Date: {pkg_date}
          State: Not installed (Renamed)
      Publisher: test
        Version: 1.0
+        Branch: None
+Packaging Date: {pkg_date}
+          Size: 0.00 B
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
+                self.assertEqualDiff(expected, actual)
+
+                if six.PY3:
+                        os.environ["LC_ALL"] = "en_US.UTF-8"
+
+        def test_legacy_packages(self):
+                """Verify that info returns the expected output for legacy
+                packages."""
+
+                # because we compare date strings we must run this in
+                # a consistent locale, which we made 'C'
+                os.environ['LC_ALL'] = 'C'
+
+                target10 = """
+                    open target@1.0
+                    close
+                """
+
+                # Basic legacy package.
+                legacy_basic10 = """
+                    open legacy_basic@1.0
+                    add set name=pkg.legacy value=true
+                    close
+                """
+
+                # Legacy package which is also renamed.
+                legacy_renamed10 = """
+                    open legacy_renamed@1.0
+                    add set name=pkg.legacy value=true
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=target@1.0
+                    close
+                """
+
+                # Another legacy & renamed package with
+                # a different order of attributes.
+                legacy_renamed20 = """
+                    open legacy_renamed@2.0
+                    add set name=pkg.renamed value=true
+                    add set name=pkg.legacy value=true
+                    add depend type=require fmri=target@1.0
+                    close
+                """
+
+                plist = self.pkgsend_bulk(self.rurl, (target10, legacy_basic10,
+                    legacy_renamed10, legacy_renamed20))
+
+                # Create an image.
+                self.image_create(self.rurl)
+
+                # Verify that a legacy package will provide the expected info.
+                self.pkg("info -r legacy_basic")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[1])
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: legacy_basic
+         State: Not installed (Legacy)
+     Publisher: test
+       Version: 1.0
+        Branch: None
+Packaging Date: {pkg_date}
+          Size: 0.00 B
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
+                self.assertEqualDiff(expected, actual)
+
+                # Next, verify that a legacy package, which is also renamed,
+                # will provide the expected info (rename takes precedence).
+                self.pkg("info -r legacy_renamed@1.0")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[2])
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: legacy_renamed
+         State: Not installed (Renamed)
+    Renamed to: target@1.0
+     Publisher: test
+       Version: 1.0
+        Branch: None
+Packaging Date: {pkg_date}
+          Size: 0.00 B
+          FMRI: {pkg_fmri}
+""".format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
+                self.assertEqualDiff(expected, actual)
+
+                # Next, verify that rename takes precedence no matter the
+                # order of attributes.
+                self.pkg("info -r legacy_renamed@2.0")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[3])
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: legacy_renamed
+         State: Not installed (Renamed)
+    Renamed to: target@1.0
+     Publisher: test
+       Version: 2.0
         Branch: None
 Packaging Date: {pkg_date}
           Size: 0.00 B

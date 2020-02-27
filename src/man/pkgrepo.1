@@ -6,7 +6,7 @@
 
 <refentry id="pkgrepo-1">
 <refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">17 Nov 2017</refmiscinfo>
+<refmiscinfo class="date">2 Apr 2020</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -227,8 +227,10 @@ of the package. The second column contains the name of the package. The third
 column is a flag that shows the status of the package. A value of <literal>o</literal> in
 the status column indicates the package is obsolete. A value of <literal>r</literal> in
 the status column indicates the package has been renamed, which is a form
-of obsoletion. The fourth column contains the release and branch versions
-of the package. See <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for information about release
+of obsoletion. A value of <literal>l</literal> in the status column indicates
+the package is legacy, meaning that it will be removed in the future. The fourth
+column contains the release and branch versions of the package.
+See <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for information about release
 and branch versions.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>

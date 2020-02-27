@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -94,6 +94,7 @@ class CatalogInterface(_Interface):
         # functions.
         PKG_STATE_OBSOLETE = pkgdefs.PKG_STATE_OBSOLETE
         PKG_STATE_RENAMED = pkgdefs.PKG_STATE_RENAMED
+        PKG_STATE_LEGACY = pkgdefs.PKG_STATE_LEGACY
 
         def fmris(self, ordered=False):
                 """A generator function that produces FMRIs as it iterates
@@ -135,6 +136,8 @@ class CatalogInterface(_Interface):
                 sr = frozenset((pkgdefs.PKG_STATE_RENAMED,))
                 # Package obsoleted.
                 so = frozenset((pkgdefs.PKG_STATE_OBSOLETE,))
+                # Package in legacy namespace.
+                sl = frozenset((pkgdefs.PKG_STATE_LEGACY,))
 
                 # Seed the set of allowed packages with the set of FMRIs that
                 # were started with since they don't likely incorporate
@@ -177,6 +180,11 @@ class CatalogInterface(_Interface):
                                         if aname == "pkg.obsolete":
                                                 allowed[pkg_name].append((f,
                                                     so))
+                                                del a
+                                                break
+                                        if aname == "pkg.legacy":
+                                                allowed[pkg_name].append((f,
+                                                    sl))
                                                 del a
                                                 break
                                         del a
@@ -251,6 +259,11 @@ class CatalogInterface(_Interface):
                                                         if avalue == "true":
                                                                 states.add(
                                                                     pkgdefs.PKG_STATE_OBSOLETE)
+                                                        break
+                                                if aname == "pkg.legacy":
+                                                        if avalue == "true":
+                                                                states.add(
+                                                                    pkgdefs.PKG_STATE_LEGACY)
                                                         break
 
                                         aset.add((f, frozenset(states)))

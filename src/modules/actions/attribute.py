@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a package attribute
@@ -156,7 +156,7 @@ class AttributeAction(generic.Action):
 
                 name = self.attrs["name"]
                 if name in ("pkg.summary", "pkg.obsolete", "pkg.renamed",
-                    "pkg.description", "pkg.depend.explicit-install"):
+                    "pkg.legacy", "pkg.description", "pkg.depend.explicit-install"):
                         # If set action is for any of the above, only a single
                         # value is permitted.
                         generic.Action._validate(self, fmri=fmri,

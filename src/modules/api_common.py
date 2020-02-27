@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
@@ -121,6 +121,7 @@ class PackageInfo(object):
         UPGRADABLE = pkgdefs.PKG_STATE_UPGRADABLE
         OBSOLETE = pkgdefs.PKG_STATE_OBSOLETE
         RENAMED = pkgdefs.PKG_STATE_RENAMED
+        LEGACY = pkgdefs.PKG_STATE_LEGACY
         UNSUPPORTED = pkgdefs.PKG_STATE_UNSUPPORTED
         FROZEN = pkgdefs.PKG_STATE_FROZEN
 
