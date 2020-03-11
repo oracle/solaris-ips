@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.sysrepo</refname><refpurpose>Image Packaging System system repository configuration</refpurpose></refnamediv>
@@ -35,8 +35,8 @@ non-global zones to access the repositories configured in the global zone.
 The SMF services <literal>svc:/application/pkg/zones-proxyd</literal> and <literal>
 svc:/application/pkg/zones-proxy-client</literal> are responsible for providing
 the transport between non-global zones and the global zone. This transport
-is only used by <literal>pkg</literal>(7).</para>
-<para>The system repository can proxy <literal>http</literal>, <literal>https</literal>, <literal>file</literal>, and <filename>.p5p</filename> archive repositories. Only version 4 file system repositories are supported, which is the default format for the <command>pkgrepo create</command> command. See the <literal>pkgrepo</literal>(1) man page for more information about repository versions.</para>
+is only used by <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>.</para>
+<para>The system repository can proxy <literal>http</literal>, <literal>https</literal>, <literal>file</literal>, and <filename>.p5p</filename> archive repositories. Only version 4 file system repositories are supported, which is the default format for the <command>pkgrepo create</command> command. See the <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for more information about repository versions.</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>The following options are supported:</para>
@@ -108,7 +108,7 @@ repositories. This setting can be configured using the <literal>config/https_pro
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>

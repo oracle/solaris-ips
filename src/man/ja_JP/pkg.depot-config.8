@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="ja" id="pkg.depot-config-8">
-<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2018 年 4 月 25 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2018 年 4 月 25 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depot-config</refname> <refpurpose>Image Packaging System HTTP デポ構成ジェネレータ</refpurpose></refnamediv>
@@ -33,11 +33,11 @@
 </itemizedlist>
 <para>各リポジトリは、<literal>pkg/server</literal> サービスインスタンスによってサポートされます。リポジトリは、<literal>pkg/depot:default</literal> サービスによってサポートされることもあります。特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーが <literal>true</literal> に設定されている場合、そのリポジトリは <literal>pkg.depotd</literal> プロセスによって提供されます。特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーが <literal>false</literal> に設定されている場合、そのリポジトリは <literal>pkg/depot:default</literal> サービスによって提供されます。各 <literal>pkg/server</literal> インスタンスは <literal>pkg.depotd</literal> を実行するか、または <literal>pkg/depot:default</literal> に構成情報 (リポジトリの <literal>pkg/inst_root</literal> の場所) を提供します。</para>
 <para><literal>pkg/standalone</literal> プロパティーが <literal>false</literal> に設定され、<literal>pkg/readonly</literal> プロパティーが <literal>true</literal> に設定されている <literal>pkg/server</literal> インスタンスを有効にすると、<literal>pkg/depot:default</literal> 構成がリフレッシュされ、そのリポジトリは <literal>pkg/depot:default</literal> サービスによって提供されます。その同じ <literal>pkg/server</literal> インスタンスを無効にすると、<literal>pkg/depot:default</literal> サービスがリフレッシュされ、そのリポジトリは、<literal>pkg/depot:default</literal> サービスによって提供されなくなります。</para>
-<para><option>F</option> オプションを付けた <command>pkg.depot-config</command> コマンドを使用して、デポを手動で構成できます。<option>F</option> オプションは既存の Web サーバーに追加できる Web サーバー構成ファイルを生成します。この場合、デポは、機能制限付きで実行します。<literal>pkg search</literal> サポートおよびデポブラウザユーザーインタフェースは使用できません。Oracle Solaris 11 システムのインストールと更新に必要な、その他すべての <literal>pkg</literal>(1) 機能は使用できます。</para>
+<para><option>F</option> オプションを付けた <command>pkg.depot-config</command> コマンドを使用して、デポを手動で構成できます。<option>F</option> オプションは既存の Web サーバーに追加できる Web サーバー構成ファイルを生成します。この場合、デポは、機能制限付きで実行します。<literal>pkg search</literal> サポートおよびデポブラウザユーザーインタフェースは使用できません。Oracle Solaris 11 システムのインストールと更新に必要な、その他すべての <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 機能は使用できます。</para>
 <itemizedlist>
 <para>次のいずれかの方法を使用して、デポサーバーにリポジトリパスと構成を渡します。</para>
 <listitem><para><option>S</option> オプションを付けて、<command>pkg.depot-config</command> コマンドを使用します。<option>S</option> オプションにより、<literal>pkg.depotd</literal> はシステムに、<literal>online</literal> としてマークされている <literal>pkg/server</literal> サービスのすべてのインスタンスをクエリーし、<literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、<literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。</para></listitem>
-<listitem><para><option>d</option> オプションを付けて、<command>pkg.depot-config</command> コマンドを使用します。<option>d</option>オプションは使用する <literal>pkg</literal>(7) リポジトリへのパスを指定します。複数の <option>d</option> オプションが受け入れられます。</para></listitem>
+<listitem><para><option>d</option> オプションを付けて、<command>pkg.depot-config</command> コマンドを使用します。<option>d</option>オプションは使用する <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリへのパスを指定します。複数の <option>d</option> オプションが受け入れられます。</para></listitem>
 </itemizedlist>
 <para>リポジトリには、<literal>pkg5srv</literal> ユーザーによってリポジトリ内のファイルおよびディレクトリが読み取られることを許可するファイル権限が必要です。</para>
 </refsect1>
@@ -45,11 +45,11 @@
 <para>サポートしているオプションは、次のとおりです。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>d</option> <replaceable>prefix</replaceable>=<replaceable>repository_dir</replaceable></term>
-<listitem><para>使用する <literal>pkg</literal>(7) ファイルリポジトリへのパスを指定します。<replaceable>prefix</replaceable> は、このリポジトリにアクセスできる <literal>depot-config</literal> Web サーバー名前空間の接頭辞として使用されます。<replaceable>repository_dir</replaceable> は、バージョン 4 (デフォルト) の <literal>pkg</literal>(7) パッケージリポジトリを格納するディレクトリです。<replaceable>repository_dir</replaceable> の値は、デポサーバー構成に含められます。<option>d</option> オプションは <option>S</option> オプションと一緒に使用できません。<option>S</option> オプションを使用しない場合、少なくとも 1 つの <option>d</option> オプションが必要です。複数の <option>d</option> オプションが許可されます。</para>
+<listitem><para>使用する <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> ファイルリポジトリへのパスを指定します。<replaceable>prefix</replaceable> は、このリポジトリにアクセスできる <literal>depot-config</literal> Web サーバー名前空間の接頭辞として使用されます。<replaceable>repository_dir</replaceable> は、バージョン 4 (デフォルト) の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> パッケージリポジトリを格納するディレクトリです。<replaceable>repository_dir</replaceable> の値は、デポサーバー構成に含められます。<option>d</option> オプションは <option>S</option> オプションと一緒に使用できません。<option>S</option> オプションを使用しない場合、少なくとも 1 つの <option>d</option> オプションが必要です。複数の <option>d</option> オプションが許可されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>S</option></term>
-<listitem><para>使用するリポジトリについて、システムをクエリーします。<option>S</option> オプションにより、<literal>pkg.depotd</literal> はシステムに、<literal>online</literal> としてマークされている <literal>pkg/server</literal> サービスのすべてのインスタンスをクエリーし、<literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、<literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。これらのプロパティー値により、これらのプロパティーが設定されていない <literal>pkg/server</literal> インスタンスと同時にデポを実行できます。<literal>pkg.depotd</literal> については、<literal>pkg.depotd</literal>(8) のマニュアルページを参照してください。<option>S</option>オプションは <option>d</option> オプションと一緒に使用できません。</para>
+<listitem><para>使用するリポジトリについて、システムをクエリーします。<option>S</option> オプションにより、<literal>pkg.depotd</literal> はシステムに、<literal>online</literal> としてマークされている <literal>pkg/server</literal> サービスのすべてのインスタンスをクエリーし、<literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、<literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。これらのプロパティー値により、これらのプロパティーが設定されていない <literal>pkg/server</literal> インスタンスと同時にデポを実行できます。<literal>pkg.depotd</literal> については、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。<option>S</option>オプションは <option>d</option> オプションと一緒に使用できません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>r</option> <replaceable>runtime_dir</replaceable></term>
@@ -57,7 +57,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
-<listitem><para>デポがそのキャッシュを格納するディレクトリを指定します。<option>A</option> オプションも指定されている場合、キャッシュディレクトリはサーバー側 <literal>pkg</literal>(7) 検索インデックスを格納するためにも使用されます。<replaceable>cache_dir</replaceable> ディレクトリは、<literal>pkg/depot</literal> サービスの <literal>config/cache_dir</literal> プロパティーを設定して指定することもできます。</para>
+<listitem><para>デポがそのキャッシュを格納するディレクトリを指定します。<option>A</option> オプションも指定されている場合、キャッシュディレクトリはサーバー側 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 検索インデックスを格納するためにも使用されます。<replaceable>cache_dir</replaceable> ディレクトリは、<literal>pkg/depot</literal> サービスの <literal>config/cache_dir</literal> プロパティーを設定して指定することもできます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
@@ -89,7 +89,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option></term>
-<listitem><para>Web サーバーが既存の Web サービスを使用して、基本の <literal>pkg</literal>(7) インストール操作を提供できるようにする部分的な構成を生成します。Oracle Solaris OS 上で実行されている Apache Web サーバーの場合、部分的な構成ファイルを <filename>/etc/apache2/2.4/conf.d</filename> に配置できます。ほかのオペレーティングシステムの場合は、OS のドキュメントを参照して、この部分的な構成ファイルを使用する方法を判断してください。<option>P</option> オプションも参照してください。
+<listitem><para>Web サーバーが既存の Web サービスを使用して、基本の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> インストール操作を提供できるようにする部分的な構成を生成します。Oracle Solaris OS 上で実行されている Apache Web サーバーの場合、部分的な構成ファイルを <filename>/etc/apache2/2.4/conf.d</filename> に配置できます。ほかのオペレーティングシステムの場合は、OS のドキュメントを参照して、この部分的な構成ファイルを使用する方法を判断してください。<option>P</option> オプションも参照してください。
 </para>
 </listitem>
 </varlistentry>
@@ -192,7 +192,7 @@ online   11:43:56 svc:/application/pkg/depot:default
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>

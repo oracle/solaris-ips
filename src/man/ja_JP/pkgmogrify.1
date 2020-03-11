@@ -8,7 +8,7 @@ Arbortext, Inc., 1988-2008, v.4002
 ]>
 
 <refentry lang="ja" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>Image Packaging System マニフェスト変換ツール</refpurpose></refnamediv>
@@ -85,7 +85,7 @@ operation</replaceable>&#62;</programlisting>
 <para>一致条件の形式は次のとおりです。</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
 </replaceable>=&#60;<replaceable>value-regexp</replaceable>&#62; ...]</programlisting>
-<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<literal>pkg</literal>(7) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
+<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
 <para>複数の条件をスペースで区切って指定できます。</para>
 <para>次の操作が使用できます。</para>
 <variablelist>
@@ -249,7 +249,7 @@ operation</replaceable>&#62;</programlisting>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>

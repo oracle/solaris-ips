@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="ja" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -90,7 +90,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>ペイロードは、名前が付けられないという点で位置属性です。これは、アクション名のあとの最初の単語です。公開されたマニフェストでは、これはファイルの内容の <literal>SHA-1</literal> ハッシュです。これから公開する必要のあるマニフェスト内に存在する場合は、ペイロードを見つけることのできるパスを表します。<command>pkgsend</command>(1) を参照してください。値に等号が含まれている場合は、位置属性の代わりにハッシュ属性を使用できます。この両方を同じアクションで使用できます。ただし、ハッシュは同じである必要があります。</para>
+<para>ペイロードは、名前が付けられないという点で位置属性です。これは、アクション名のあとの最初の単語です。公開されたマニフェストでは、これはファイルの内容の <literal>SHA-1</literal> ハッシュです。これから公開する必要のあるマニフェスト内に存在する場合は、ペイロードを見つけることのできるパスを表します。<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> を参照してください。値に等号が含まれている場合は、位置属性の代わりにハッシュ属性を使用できます。この両方を同じアクションで使用できます。ただし、ハッシュは同じである必要があります。</para>
 <para><literal>preserve</literal> 属性および <literal>overlay</literal> 属性は、<literal>file</literal> アクションがインストールされるかどうか、およびその方法に影響を及ぼします。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>preserve</literal></term>
@@ -188,12 +188,12 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>revert-tag</literal></term>
-<listitem><para>この属性は、セットとして元に戻すべき編集可能なファイルをタグ付けするために使用されます。<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable> です。単一の <literal>file</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。これらのいずれかのタグを指定して <command>pkg revert</command> が呼び出されると、ファイルはマニフェストで定義された状態に戻ります。<command>pkg revert</command> コマンドの詳細については、<command>pkg</command>(1) マニュアルページを参照してください。</para>
+<listitem><para>この属性は、セットとして元に戻すべき編集可能なファイルをタグ付けするために使用されます。<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable> です。単一の <literal>file</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。これらのいずれかのタグを指定して <command>pkg revert</command> が呼び出されると、ファイルはマニフェストで定義された状態に戻ります。<command>pkg revert</command> コマンドの詳細については、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> マニュアルページを参照してください。</para>
 <para><literal>revert-tag</literal> 属性は、ディレクトリレベルでも指定できます。後述の「ディレクトリアクション」を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>sysattr</literal></term>
-<listitem><para>この属性は、このファイルに設定する必要があるシステム属性を指定するために使用されます。<literal>sysattr</literal> 属性の値は、次の例に示すように、詳細システム属性のカンマ区切りリストまたはコンパクトシステム属性オプションの文字列シーケンスの場合があります。サポートされるシステム属性は、<literal>chmod</literal>(1) マニュアルページで説明されています。マニフェストに指定されるシステム属性は、オペレーティングシステムのほかのサブシステムによって設定される場合があるシステム属性に追加で設定されます。</para>
+<listitem><para>この属性は、このファイルに設定する必要があるシステム属性を指定するために使用されます。<literal>sysattr</literal> 属性の値は、次の例に示すように、詳細システム属性のカンマ区切りリストまたはコンパクトシステム属性オプションの文字列シーケンスの場合があります。サポートされるシステム属性は、<olink targetdoc="refman" targetptr="chmod-1"><citerefentry><refentrytitle>chmod</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> マニュアルページで説明されています。マニフェストに指定されるシステム属性は、オペレーティングシステムのほかのサブシステムによって設定される場合があるシステム属性に追加で設定されます。</para>
 <programlisting>file path=opt/secret_file sysattr=hidden,sensitive
 file path=opt/secret_file sysattr=HT</programlisting>
 </listitem>
@@ -230,7 +230,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <varlistentry>
 <term><literal>revert-tag</literal></term>
 <listitem>
-<para>この属性は、セットとして削除する必要があるパッケージ解除されたファイルを識別するために使用します。<literal>file</literal> アクションに対してこの属性を指定する方法についての説明は、上記の「ファイルアクション」を参照してください。ディレクトリの場合、<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable> です。単一の <literal>dir</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。マッチングする <replaceable>tagname</replaceable> を指定して <command>pkg revert</command> が呼び出されると、<replaceable>pattern</replaceable> に一致する (シェルグロビング文字を使用)、この <literal>dir</literal> ディレクトリの下にあるパッケージ解除されたファイルまたはディレクトリが削除されます。<command>pkg revert</command> コマンドの詳細については、<command>pkg</command>(1) マニュアルページを参照してください。</para>
+<para>この属性は、セットとして削除する必要があるパッケージ解除されたファイルを識別するために使用します。<literal>file</literal> アクションに対してこの属性を指定する方法についての説明は、上記の「ファイルアクション」を参照してください。ディレクトリの場合、<literal>revert-tag</literal> 属性の値は <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable> です。単一の <literal>dir</literal> アクションに対して複数の <literal>revert-tag</literal> 属性を指定できます。マッチングする <replaceable>tagname</replaceable> を指定して <command>pkg revert</command> が呼び出されると、<replaceable>pattern</replaceable> に一致する (シェルグロビング文字を使用)、この <literal>dir</literal> ディレクトリの下にあるパッケージ解除されたファイルまたはディレクトリが削除されます。<command>pkg revert</command> コマンドの詳細については、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> マニュアルページを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>salvage-from</literal></term>
@@ -259,7 +259,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
-<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<literal>pkg </literal>(7) によって文字列が任意に選択されます。</para>
+<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<olink targetdoc="refman" targetptr="pkg -7"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> によって文字列が任意に選択されます。</para>
 <para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後のアットマーク (@) 記号のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定するべきです。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
 <para>特定のパスにある実装メディエーションリンクの 1 つのインスタンスだけがシステムにインストールされている場合は、その 1 つのインスタンスが自動的に選択されます。このパスにある将来のリンクがインストールされても、ベンダー、サイト、またはローカルのオーバーライドが適用されないかぎり、またはいずれかのリンクのバージョンがメディエートされた場合、このリンクは切り替えられません。</para>
 </listitem>
@@ -278,7 +278,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>hardlink</literal> アクションは、ハードリンクを表します。このアクションは <literal>link</literal> アクションと同じ属性を持ち、そのキー属性も同じく <literal>path</literal> です。</para>
 </refsect2>
 <refsect2><title>ドライバのアクション</title>
-<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <command>add_drv</command>(8) を参照)。</para>
+<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <olink targetdoc="refman" targetptr="add_drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照)。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>ドライバの名前。多くの場合はドライババイナリのファイル名ですが、必ずしもそうとは限りません。これは <literal>driver</literal> アクションのキー属性です。</para>
@@ -309,7 +309,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>これは <filename>/etc/devlink.tab</filename> 内のエントリを指定します。この値はファイルに書き込まれる行そのものであり、タブは <literal>\t</literal> で示されます。詳細は <literal>devlinks</literal>(8) を参照してください。特定のドライバが複数の <literal>devlink</literal> 属性を持つことができます。</para>
+<listitem><para>これは <filename>/etc/devlink.tab</filename> 内のエントリを指定します。この値はファイルに書き込まれる行そのものであり、タブは <literal>\t</literal> で示されます。詳細は <olink targetdoc="refman" targetptr="devlinks-8"><citerefentry><refentrytitle>devlinks</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照してください。特定のドライバが複数の <literal>devlink</literal> 属性を持つことができます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -355,7 +355,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal> </term>
-<listitem><para>依存関係は、パッケージがイメージ回避リスト上にないかぎり必要です。廃止されたパッケージは、暗黙のうちにグループの依存関係を満たすことに注意してください。<command>pkg</command>(1) の <command>avoid</command> サブコマンドを参照してください。</para>
+<listitem><para>依存関係は、パッケージがイメージ回避リスト上にないかぎり必要です。廃止されたパッケージは、暗黙のうちにグループの依存関係を満たすことに注意してください。<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> の <command>avoid</command> サブコマンドを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-any</literal></term>
@@ -413,7 +413,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </refsect2>
 <refsect2><title>レガシーアクション</title>
 <para><literal>legacy</literal> アクションは、従来のパッケージシステムで使用されるパッケージデータを表します。このアクションに関連付けられた属性は、従来のシステムのデータベースに追加されます。そのため、これらのデータベースに問い合わせを行なっているツールは、従来のパッケージが実際にインストールされているかのように動作できます。特にこれにより、<literal>pkg</literal> 属性で指定されたパッケージがシステムにインストールされていることを従来のシステムに十分に確信させることができるため、このパッケージを、依存関係を満たすために使用できるようになります。</para>
-<para><literal>pkginfo</literal>(4) のパラメータに従って指定された次の属性が認識されます。</para>
+<para><olink targetdoc="refman" targetptr="pkginfo-5"><citerefentry><refentrytitle>pkginfo</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> のパラメータに従って指定された次の属性が認識されます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>category</literal></term>
 <listitem><para><literal>CATEGORY</literal> パラメータの値。デフォルト値は <literal>system</literal> です。</para>
@@ -491,7 +491,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </variablelist>
 </refsect2>
 <refsect2><title>グループアクション</title>
-<para><literal>group</literal> アクションは、<literal>group</literal>(4) で定義されるのと同様の UNIX グループを定義します。グループパスワードのサポートはありません。このアクションで定義されたグループには最初、ユーザーリストがありません。ユーザーは、<literal>user</literal> アクションを使用して追加できます。次の属性が認識されます。</para>
+<para><literal>group</literal> アクションは、<olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> で定義されるのと同様の UNIX グループを定義します。グループパスワードのサポートはありません。このアクションで定義されたグループには最初、ユーザーリストがありません。ユーザーは、<literal>user</literal> アクションを使用して追加できます。次の属性が認識されます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>groupname</literal></term>
 <listitem><para>グループの名前の値。</para>
@@ -513,7 +513,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>password</literal></term>
-<listitem><para>ユーザーの暗号化パスワード。デフォルト値は <literal>*LK*</literal> です。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>ユーザーの暗号化パスワード。デフォルト値は <literal>*LK*</literal> です。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>uid</literal></term>
@@ -537,42 +537,42 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-list</literal></term>
-<listitem><para>ユーザーが属しているセカンダリグループ。<literal>group</literal>(4) を参照してください。
+<listitem><para>ユーザーが属しているセカンダリグループ。<olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ftpuser</literal></term>
-<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。<literal>true</literal> のデフォルト値は、ユーザーが FTP 経由のログインを許可されていることを示します。<literal>ftpusers</literal>(4) を参照してください。</para>
+<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。<literal>true</literal> のデフォルト値は、ユーザーが FTP 経由のログインを許可されていることを示します。<olink targetdoc="refman" targetptr="ftpusers-5"><citerefentry><refentrytitle>ftpusers</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>lastchg</literal></term>
-<listitem><para>1970 年 1 月 1 日と、パスワードが最後に変更された日付の間の日数。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。
+<listitem><para>1970 年 1 月 1 日と、パスワードが最後に変更された日付の間の日数。デフォルト値は空です。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>min</literal> </term>
-<listitem><para>パスワード変更の間の必要な最小日数。パスワードの有効期限を有効にするには、このフィールドを 0 以上に設定する必要があります。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>パスワード変更の間の必要な最小日数。パスワードの有効期限を有効にするには、このフィールドを 0 以上に設定する必要があります。デフォルト値は空です。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>max</literal> </term>
-<listitem><para>パスワードが有効な最大日数。デフォルト値は空です。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>パスワードが有効な最大日数。デフォルト値は空です。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>warn</literal></term>
-<listitem><para>パスワードの期限が切れる前にユーザーに警告が表示される日数。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>パスワードの期限が切れる前にユーザーに警告が表示される日数。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>inactive</literal></term>
-<listitem><para>そのユーザーに許可されている非活動の日数。これはマシンごとにカウントされます。最終ログインに関する情報は、そのマシンの <filename>lastlog</filename> ファイルから取得されます。<literal>shadow</literal>(4) を参照してください。
+<listitem><para>そのユーザーに許可されている非活動の日数。これはマシンごとにカウントされます。最終ログインに関する情報は、そのマシンの <filename>lastlog</filename> ファイルから取得されます。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>expire</literal></term>
-<listitem><para>UNIX エポック (1970 年 1 月 1 日) 以降の日数として表される絶対的な日付。この日数に達すると、ログインを使用できなくなります。たとえば、13514 の期限切れの値は、ログインの有効期限が 2007 年 1 月 1 日であることを指定します。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>UNIX エポック (1970 年 1 月 1 日) 以降の日数として表される絶対的な日付。この日数に達すると、ログインを使用できなくなります。たとえば、13514 の期限切れの値は、ログインの有効期限が 2007 年 1 月 1 日であることを指定します。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>flag</literal></term>
-<listitem><para>空に設定されています。<literal>shadow</literal>(4) を参照してください。</para>
+<listitem><para>空に設定されています。<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> を参照してください。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -584,7 +584,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>次のアクチュエータが定義されています。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>reboot-needed</literal></term>
-<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。このアクチュエータは、パッケージシステムがライブイメージ上で動作している場合、タグ付きアクションの更新または削除を新しいブート環境で実行する必要があることを宣言します。新しいブート環境の作成は、<literal>be-policy</literal> イメージプロパティーによって制御されます。<literal>be-policy</literal> プロパティーについての詳細は、<literal>pkg</literal>(1) のマニュアルページの「イメージプロパティー」セクションを参照してください。</para>
+<listitem><para><literal>true</literal> または <literal>false</literal> に設定できます。このアクチュエータは、パッケージシステムがライブイメージ上で動作している場合、タグ付きアクションの更新または削除を新しいブート環境で実行する必要があることを宣言します。新しいブート環境の作成は、<literal>be-policy</literal> イメージプロパティーによって制御されます。<literal>be-policy</literal> プロパティーについての詳細は、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページの「イメージプロパティー」セクションを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
@@ -632,7 +632,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>次の例は、リンクがバージョンによって選択される、<literal>java</literal> という名前のメディエータの 2 つの異なるインスタンスを示しています。これらの 2 つの <literal>link</literal> アクションは 2 つの異なるパッケージに出現します。</para>
 <programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
 link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
-<para>このリンクパスのバージョンを選択する方法については、<command>pkg</command>(1) のマニュアルページの <command>set-mediator</command> サブコマンドを参照してください。バージョンを選択するには、両方のパッケージがインストールされている必要があります。</para>
+<para>このリンクパスのバージョンを選択する方法については、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページの <command>set-mediator</command> サブコマンドを参照してください。バージョンを選択するには、両方のパッケージがインストールされている必要があります。</para>
 </refsect1>
 <refsect1 role="other"><title>制約と凍結</title>
 <para>パッケージが新しいバージョンに移行される場合、またはシステムに追加されたり、システムから削除されたりする場合、選択されるバージョンや、削除が許可されるかどうかは、そのパッケージに対するさまざまな制約によって決定されます。これらの制約は、依存関係の形式でほかのパッケージが定義するか、または凍結の形式で管理者が定義できます。</para>
@@ -648,18 +648,18 @@ link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</pr
 <refsect1 role="other"><title>パブリッシャーとリポジトリ</title>
 <para>上で詳細に説明したように、パブリッシャーとは単に、パッケージクライアントがパッケージのプロバイダを識別するために使用する名前です。パブリッシャーは、パッケージリポジトリまたはパッケージアーカイブ、あるいはその両方を使用してパッケージを配布できます。現在パッケージシステムでサポートされているリポジトリのタイプには、起点リポジトリとミラーリポジトリの 2 つがあります。</para>
 <para><emphasis>起点</emphasis>は、1 つ以上のパッケージのすべてのメタデータ (カタログ、マニフェスト、検索インデックスなど) と内容 (ファイル) を含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して複数の起点が構成されている場合、パッケージクライアント API は、パッケージデータの取得元として最適な起点を選択しようとします。これはもっとも一般的なタイプのリポジトリであり、パッケージリポジトリ上で <command>pkgsend</command> または <command>pkgrecv</command> が使用された場合は常に、暗黙的に作成されます。</para>
-<para><emphasis>ミラー</emphasis>は、パッケージの内容 (ファイル) のみを含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して 1 つ以上のミラーが構成されている場合、クライアント API はパッケージ内容の取得のためのミラーを優先し、パッケージの内容の取得元として最適なミラーを選択しようとします。ミラーが到達不可能か、必要な内容が含まれていないか、またはより低速な場合、クライアント API は、構成されているいずれかの起点リポジトリから内容を取得します。ミラーは、<command>pkg.depotd</command>(8) の動的ミラー機能を使用している、信頼できる一連のクライアント間の内容共有に使用されることを目的にしています。ミラーはまた、パッケージのメタデータへのアクセスを認証するために使用されることも目的にしています。ただし、パッケージの内容は認証なしで配布します。たとえば、あるクライアントが、アクセスするには SSL キーと証明書のペアが必要な <literal>https</literal> 起点と、パッケージの内容を提供する <literal>http</literal> ミラーを使用して構成される可能性があります。このようにして、認可クライアントだけがパッケージをインストールまたは更新できるようにしながら、パッケージ内容の取得のための認証のオーバーヘッドが回避されます。ミラーは、<filename>file</filename> という名前のサブディレクトリとその親を除く、リポジトリのすべてのサブディレクトリを削除することによって作成できます。また、<command>pkg.depotd</command>(8) のミラーモードを使用すると、起点リポジトリもミラーとしてプロビジョニングできます。</para>
+<para><emphasis>ミラー</emphasis>は、パッケージの内容 (ファイル) のみを含むパッケージリポジトリです。イメージ内の特定のパブリッシャーに対して 1 つ以上のミラーが構成されている場合、クライアント API はパッケージ内容の取得のためのミラーを優先し、パッケージの内容の取得元として最適なミラーを選択しようとします。ミラーが到達不可能か、必要な内容が含まれていないか、またはより低速な場合、クライアント API は、構成されているいずれかの起点リポジトリから内容を取得します。ミラーは、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> の動的ミラー機能を使用している、信頼できる一連のクライアント間の内容共有に使用されることを目的にしています。ミラーはまた、パッケージのメタデータへのアクセスを認証するために使用されることも目的にしています。ただし、パッケージの内容は認証なしで配布します。たとえば、あるクライアントが、アクセスするには SSL キーと証明書のペアが必要な <literal>https</literal> 起点と、パッケージの内容を提供する <literal>http</literal> ミラーを使用して構成される可能性があります。このようにして、認可クライアントだけがパッケージをインストールまたは更新できるようにしながら、パッケージ内容の取得のための認証のオーバーヘッドが回避されます。ミラーは、<filename>file</filename> という名前のサブディレクトリとその親を除く、リポジトリのすべてのサブディレクトリを削除することによって作成できます。また、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のミラーモードを使用すると、起点リポジトリもミラーとしてプロビジョニングできます。</para>
 </refsect1>
 <refsect1 role="other"><title>大域ゾーンと非大域ゾーンの更新</title>
 <para><literal>pkg</literal> システムは、非大域ゾーンを強制的に大域ゾーンと同期された状態に保持します。つまり、同じカーネルが確実に実行されるようにするために、特定のパッケージを大域ゾーンとすべての非大域ゾーンで同じバージョンにする必要があります。このために、<literal>pkg</literal> は <literal>parent</literal> 依存関係を使用して、非大域ゾーンに特定の制約を課します。<literal>parent</literal> 依存関係についての詳細は、上の「依存アクション」を参照してください。</para>
-<para>大域ゾーンが非大域ゾーンに課す制限のため、非大域ゾーンは大域ゾーンのパッケージにアクセスできる必要があり、かつ同様の発行元構成にする必要があります。これらの目的はどちらも、<emphasis role="strong">システムリポジトリ</emphasis> を使用して実現されます (<literal>pkg.sysrepo</literal>(8) のマニュアルページを参照)。システムリポジトリは、大域ゾーン内で構成された発行元へのアクセスと、これらの発行元が構成されている方法に関する情報を提供します。インストールまたは更新中に非大域ゾーンで別のパッケージが選択されないようにするために、発行元の検索順序で、システム発行元には非大域ゾーン内で構成された発行元より高くランク付けされます。発行元の検索順序については、<literal>pkg</literal>(1) のマニュアルページの <command>pkg set-publisher</command> コマンドを参照してください。</para>
+<para>大域ゾーンが非大域ゾーンに課す制限のため、非大域ゾーンは大域ゾーンのパッケージにアクセスできる必要があり、かつ同様の発行元構成にする必要があります。これらの目的はどちらも、<emphasis role="strong">システムリポジトリ</emphasis> を使用して実現されます (<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照)。システムリポジトリは、大域ゾーン内で構成された発行元へのアクセスと、これらの発行元が構成されている方法に関する情報を提供します。インストールまたは更新中に非大域ゾーンで別のパッケージが選択されないようにするために、発行元の検索順序で、システム発行元には非大域ゾーン内で構成された発行元より高くランク付けされます。発行元の検索順序については、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページの <command>pkg set-publisher</command> コマンドを参照してください。</para>
 <para>システム上のすべての非大域ゾーンを更新するには、大域ゾーン内で <command>pkg update</command> コマンドを引数なしで使用します。このコマンドは大域ゾーンに対して、また各非大域ゾーンに対して再帰的に動作します。非大域ゾーンを大域ゾーン内で行われた変更と同期された状態にするために、非大域ゾーンに対して必要な最小の変更が加えられます。たとえば、パッケージ <literal>foo</literal> が大域ゾーンと非大域ゾーンの両方にバージョン 1 でインストールされており、システムリポジトリ内でバージョン 2 が使用可能であると想定します。<literal>foo</literal> に親の依存関係が存在する場合、<literal>parent</literal> 依存関係によってパッケージは強制的に同期された状態に保持されるため、<command>pkg update foo</command> は <literal>foo</literal> を大域ゾーンと非大域ゾーンの両方でバージョン 2 に更新します。<literal>foo</literal> に親の依存関係が存在しない場合、<literal>foo</literal> は大域ゾーンでバージョン 2 に更新されますが、非大域ゾーンではバージョン 1 のままになります。</para>
 </refsect1>
 <refsect1 role="other"><title>ファセットとバリアント</title>
 <para>ソフトウェアには、省略可能なコンポーネントや、相互に排他的なコンポーネントが含まれることがあります。省略可能なコンポーネントの例には、ロケールやドキュメントがあります。相互に排他的なコンポーネントの例には、SPARC バイナリと x86 バイナリや、デバッグバイナリと非デバッグバイナリなどがあります。</para>
 <para>IPS では、省略可能なコンポーネントを<emphasis>ファセット</emphasis>、相互に排他的なコンポーネントを<emphasis>バリアント</emphasis>と呼びます。ファセットとバリアントはパッケージアクションのタグとして指定します。各ファセットタグおよびバリアントタグには名前と値があります。1 つのアクションに複数のファセットタグおよびバリアントタグを付けることができます。複数のファセットおよびバリアントタグのあるコンポーネントの例には、開発者によって使われるアーキテクチャー固有のヘッダーファイルや SPARC 大域ゾーン専用のコンポーネントなどがあります。</para>
 <para>バリアントタグの例は <literal>variant.arch=sparc</literal> です。ファセットタグの例は <literal>facet.devel=true</literal> です。ファセットとバリアントは、<literal>facet.</literal> や <literal> variant.</literal> を先頭に付けずに参照されることがよくあります。</para>
-<para>ファセットとバリアントはイメージの特殊なプロパティーであり、個々のパッケージには設定できません。イメージに設定されたファセットおよびバリアントの現在の値を表示するには、<command>pkg</command>(1) のマニュアルページに示すように、<command>pkg facet</command> コマンドと <command>pkg variant</command> コマンドを使用します。イメージに設定されたファセットおよびバリアントの値を変更するには、<command>pkg change-facet</command> コマンドと <command> pkg change-variant</command> コマンドを使用します。</para>
+<para>ファセットとバリアントはイメージの特殊なプロパティーであり、個々のパッケージには設定できません。イメージに設定されたファセットおよびバリアントの現在の値を表示するには、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページに示すように、<command>pkg facet</command> コマンドと <command>pkg variant</command> コマンドを使用します。イメージに設定されたファセットおよびバリアントの値を変更するには、<command>pkg change-facet</command> コマンドと <command> pkg change-variant</command> コマンドを使用します。</para>
 <para>ファセットは、パッケージクライアントによってブール値として扱われ、ファセットは、イメージ内で <literal>true</literal> (有効) または <literal>false</literal> (無効) にのみ設定できます。デフォルトでは、「facet.debug.」または「facet.optional.」で始まるファセットはすべて、イメージ内で <literal>false</literal> に設定されているとみなされます。その他はすべて、イメージ内で <literal>true</literal> に設定されているとみなされます。</para>
 <para>ファセットは、<command>pkg change-facet</command> コマンドを使用してイメージ内でローカルに設定するか、親イメージから継承することができます。たとえば、非大域ゾーンは大域ゾーンからファセットを継承できます。継承されたファセットは、ローカルで設定されたファセットよりも先に評価され、優先されます。同じファセットが、継承もローカル設定もされた場合、継承されたファセット値によって、ローカルで設定された値がマスクされます。マスクされたファセットは、ファセットの評価とパッケージアクションに影響しません。<command>pkg change-facet</command> コマンドを使用して行われるファセット変更は、ローカルで設定されたファセットにのみ影響します。継承されたファセットは、親イメージ内で変更を行うことによってのみ変更できます。デフォルトでは、<command>pkg facet</command> コマンドはマスクされたファセットを表示しません。</para>
 <para>ファセットが設定されたアクションをクライアントがフィルタ処理する方法を制御するために、アクションのファセットタグの値を <literal>all</literal> または <literal>true</literal> に設定できます。<literal>all</literal> または <literal>true</literal> 以外のすべての値では、未定義の動作が発生します。ファセットタグを持つアクションをインストールするために、イメージ内に存在する必要のある条件の説明については以下を参照してください。</para>
@@ -747,7 +747,7 @@ facet.locale.en_US      facet.locale.fr
 facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </refsect1>
 <refsect1 role="other"><title>イメージポリシー</title>
-<para>イメージポリシーはブール値を持つイメージプロパティーによって定義されます。<literal>flush-content-cache-on-success</literal> および <literal>send-uuid</literal> プロパティーについてとそれらの値の表示および変更方法については、<literal>pkg</literal>(1) のマニュアルページのイメージプロパティーに関する項目を参照してください。</para>
+<para>イメージポリシーはブール値を持つイメージプロパティーによって定義されます。<literal>flush-content-cache-on-success</literal> および <literal>send-uuid</literal> プロパティーについてとそれらの値の表示および変更方法については、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページのイメージプロパティーに関する項目を参照してください。</para>
 </refsect1>
 <refsect1 role="files"><title></title>
 <para><literal>pkg</literal>(7) イメージはより大きなファイルシステム内に任意に配置できるため、トークン <literal>$IMAGE_ROOT</literal> を使用して相対パスが区別されます。標準的なシステムインストールでは、<literal>$IMAGE_ROOT</literal> は / と同等です。</para>
@@ -775,7 +775,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para><literal>$IMAGE_META</literal> ディレクトリ階層内のその他のパスは非公開であり、変更される可能性があります。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>

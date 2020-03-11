@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="zh" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>映像包管理系统的系统信息库管理实用程序</refpurpose></refnamediv>
@@ -50,7 +50,7 @@
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
-<para>通过 <command>pkgrepo</command> 可以创建和管理 <literal> pkg</literal>(7) 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 <command>pkg</command> 和发布客户机（例如 <command>pkgsend </command> 或 <command>pkgrecv</command>）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，<command>pkg.depotd</command> 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。</para>
+<para>通过 <command>pkgrepo</command> 可以创建和管理 <olink targetdoc="refman" targetptr=" pkg-7"><citerefentry><refentrytitle> pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 <command>pkg</command> 和发布客户机（例如 <command>pkgsend </command> 或 <command>pkgrecv</command>）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，<command>pkg.depotd</command> 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>支持以下选项：</para>
@@ -65,7 +65,7 @@
 <para>支持以下子命令：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>在指定的位置创建 <literal>pkg</literal>(7) 系统信息库。</para>
+<listitem><para>在指定的位置创建 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统信息库。</para>
 <para>该子命令仅可以与基于文件系统的系统信息库一起使用。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-version</option></term>
@@ -164,8 +164,8 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
-<listitem><para>列出 <replaceable>repo_uri_or_path</replaceable> 系统信息库中与指定 <replaceable>pkg_fmri_pattern</replaceable> 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
-<para>在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 <literal>o</literal> 值表示软件包已过时。状态列中的 <literal>r</literal> 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 <literal>pkg</literal>(7)。</para>
+<listitem><para>列出 <replaceable>repo_uri_or_path</replaceable> 系统信息库中与指定 <replaceable>pkg_fmri_pattern</replaceable> 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 式通配符，以匹配一个或多个软件包。</para>
+<para>在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 <literal>o</literal> 值表示软件包已过时。状态列中的 <literal>r</literal> 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>仅显示给定发布者的软件包。如果没有提供该选项，将列出所有发布者的软件包。可以多次指定此选项。</para>
@@ -183,7 +183,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>仅显示指定软件包中的指定操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。<replaceable>action_name</replaceable> 的值是 <literal>pkg</literal>(7) 手册页的“操作”中列出的操作之一，例如 <literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal> 或 <literal>set</literal>。</para>
+<listitem><para>仅显示指定软件包中的指定操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。<replaceable>action_name</replaceable> 的值是 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页的“操作”中列出的操作之一，例如 <literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal> 或 <literal>set</literal>。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -229,7 +229,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo remove</command> [<option>n</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</term>
-<listitem><para>从系统信息库中删除与指定的 <replaceable>pkg_fmri_pattern</replaceable> 模式匹配的软件包，其中包括这些软件包所引用的且未被其他任何软件包使用的所有文件。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
+<listitem><para>从系统信息库中删除与指定的 <replaceable>pkg_fmri_pattern</replaceable> 模式匹配的软件包，其中包括这些软件包所引用的且未被其他任何软件包使用的所有文件。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 式通配符，以匹配一个或多个软件包。</para>
 <note><para>删除关联发布者的所有搜索索引数据。</para>
 </note>
 <para>该子命令仅可以与基于文件系统的系统信息库一起使用。</para>
@@ -292,7 +292,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/check-certificate-revocation</literal></term>
-<listitem><para>用于检查证书是否已撤销的布尔值。如果此属性设置为 <literal>True</literal>，则 <command>pkgrepo verify</command> 和 <command>pkgrepo fix</command> 命令将尝试访问用于签名验证的证书中的任何 CRL 分发点，以确定证书自颁发以来是否已被撤销。缺省值为 <literal>False</literal>。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 <literal>pkg</literal>(1) 属性值相同。</para>
+<listitem><para>用于检查证书是否已撤销的布尔值。如果此属性设置为 <literal>True</literal>，则 <command>pkgrepo verify</command> 和 <command>pkgrepo fix</command> 命令将尝试访问用于签名验证的证书中的任何 CRL 分发点，以确定证书自颁发以来是否已被撤销。缺省值为 <literal>False</literal>。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 属性值相同。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/collection_type</literal></term>
@@ -338,11 +338,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/signature-required-names</literal></term>
-<listitem><para>在验证软件包签名时必须视为证书通用名称的名称列表。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。这些值应该与相应的 <literal>pkg</literal>(1) 属性值相同。</para>
+<listitem><para>在验证软件包签名时必须视为证书通用名称的名称列表。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。这些值应该与相应的 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 属性值相同。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/trust-anchor-directory</literal></term>
-<listitem><para>目录的绝对路径名称，包含此系统信息库中的软件包的信任锚。如果未指定，将使用 <filename>/etc/certs/CA/</filename>。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 <literal>pkg</literal>(1) 属性值相同。</para>
+<listitem><para>目录的绝对路径名称，包含此系统信息库中的软件包的信任锚。如果未指定，将使用 <filename>/etc/certs/CA/</filename>。此属性仅由 <command>verify</command> 和 <command>fix</command> 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 属性值相同。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -389,7 +389,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]。。。 <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>通过以下方法修复系统信息库的内容：首先验证系统信息库，然后将所有无效系统信息库内容移至系统信息库内的隔离目录。</para>
-<para>如果发现系统信息库错误，将自动执行系统信息库重新生成操作。如果发现任何错误，将向 <literal>stdout</literal> 发送消息，说明必须使用 <literal>pkgsend</literal>(1) 或 <literal>pkgrecv</literal>(1) 重新导入哪些软件包以便恢复系统信息库内容。</para>
+<para>如果发现系统信息库错误，将自动执行系统信息库重新生成操作。如果发现任何错误，将向 <literal>stdout</literal> 发送消息，说明必须使用 <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 或 <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 重新导入哪些软件包以便恢复系统信息库内容。</para>
 <para>该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
 </para>
 <variablelist termlength="wholeline">
@@ -449,7 +449,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para>显示一个用于唯一标识 <literal>pkg</literal>(7) 系统版本的字符串。由 <command>version</command> 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。</para>
+<listitem><para>显示一个用于唯一标识 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统版本的字符串。由 <command>version</command> 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -552,7 +552,7 @@ solaris   repository related-uris     ()</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>
@@ -593,6 +593,6 @@ solaris   repository related-uris     ()</screen>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>大多数 <command>pkgrepo</command> 操作不可用于软件包归档文件。软件包归档文件是一个文件，通常带有 <filename>.p5p</filename> 扩展名，如 <literal>pkgrecv</literal>(1) 手册页中的 <option>a</option> 选项所述。软件包归档文件包含软件包但不包含系统信息库配置。但是，<command>pkgrepo list</command>、<command>pkgrepo info</command> 和 <command>pkgrepo contents</command> 命令适用于软件包归档文件。</para>
+<para>大多数 <command>pkgrepo</command> 操作不可用于软件包归档文件。软件包归档文件是一个文件，通常带有 <filename>.p5p</filename> 扩展名，如 <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中的 <option>a</option> 选项所述。软件包归档文件包含软件包但不包含系统信息库配置。但是，<command>pkgrepo list</command>、<command>pkgrepo info</command> 和 <command>pkgrepo contents</command> 命令适用于软件包归档文件。</para>
 </refsect1>
 </refentry>

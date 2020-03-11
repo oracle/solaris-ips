@@ -6,7 +6,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">27 Jan 2020</refmiscinfo>
+<refmiscinfo class="date">6 Mar 2020</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -190,7 +190,7 @@ their repository located at the URI <literal>http://example.org/repository</lite
 <para><command>pkg</command> can also uninstall packages, refresh publisher
 metadata (such as the list of available packages), validate package installation
 in an image, and query the image for various tokens. These queries can also
-be made of <literal>pkg</literal>(7) repositories.</para>
+be made of <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repositories.</para>
 <para>Images can be of three types: full images, capable of providing a complete
 system; partial images, which are linked to a full image (parent image), but
 do not provide a complete system on their own; and user images.</para>
@@ -265,7 +265,7 @@ use <literal>latest</literal> for the version portion of
 <replaceable>pkg_fmri_pattern</replaceable>. For example, specify
 <literal>vim@latest</literal>. The <replaceable>pkg_fmri_pattern</replaceable>
 pattern can include the <literal>?</literal> and <literal>*</literal>
-characters as <literal>glob</literal>(3C)-style wildcards to match one or more
+characters as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more
 packages.</para>
 <para>Versions older or newer than what is already installed can be specified
 to perform in-place downgrades or upgrades of specific packages. Updating
@@ -274,7 +274,7 @@ specific packages across package rename or obsolete boundaries is not supported.
 been changed since the original version was installed are renamed using the extension
 <literal>.update</literal>. For more information about how the package system determines which files
 to preserve, and how these files are preserved during package upgrades, see &ldquo;File
-Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
+Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>Packages are selected based on publisher search order and stickiness.
 See the <command>pkg publisher</command> and <command>pkg set-publisher</command> commands
 for information about search order and stickiness. If the <replaceable>pkg_fmri_pattern
@@ -290,7 +290,7 @@ none of the specified packages will be installed.</para>
 <para>Some configuration files might be renamed or replaced during the installation
 process. For more information about how the package system determines which files
 to preserve, and how they are preserved during package operations, see &ldquo;File
-Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
+Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>If a package is on the avoid list, installing it removes it from that
 list.</para>
 <variablelist termlength="wholeline">
@@ -365,7 +365,7 @@ publishers to retrieve the newest list of available packages and other metadata.
 </varlistentry>
 <varlistentry><term><option>-no-be-activate</option></term>
 <listitem><para>If a boot environment is created, do not set it as the active
-boot environment on the next boot. See the <command>beadm</command>(8) man
+boot environment on the next boot. See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man
 page for more information.</para>
 </listitem>
 </varlistentry>
@@ -380,7 +380,7 @@ page for more information.</para>
 <varlistentry><term><option>-backup-be-name</option> <replaceable>name</replaceable></term>
 <listitem><para>Name the created backup boot environment using the given argument.
 Use of <option>-backup-be-name</option> implies <option>-require-backup-be</option>.
-See also the <command>beadm</command>(8) man page.</para>
+See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-deny-new-be</option></term>
@@ -395,7 +395,7 @@ performed if a new boot environment is required.</para>
 <varlistentry><term><option>-be-name</option> <replaceable>name</replaceable></term>
 <listitem><para>Rename the newly created boot environment to be the argument
 given. Use of <option>-be-name</option> implies <option>-require-new-be</option>.
-See also the <command>beadm</command>(8) man page.</para>
+See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable></term>
@@ -407,10 +407,10 @@ times.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators</option></term>
-<listitem><para>Run SMF actuators synchronously. The <command>pkg</command>(1) command will not return until all SMF actuators have finished in the zone in which <command>pkg</command> was invoked (the global zone or a non-global zone).</para></listitem>
+<listitem><para>Run SMF actuators synchronously. The <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> command will not return until all SMF actuators have finished in the zone in which <command>pkg</command> was invoked (the global zone or a non-global zone).</para></listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable></term>
-<listitem><para>Run SMF actuators synchronously. If the actuators do not finish within the given <replaceable>timeout</replaceable> in seconds, <command>pkg</command>(1) will continue operation and exit with return code 8.</para></listitem>
+<listitem><para>Run SMF actuators synchronously. If the actuators do not finish within the given <replaceable>timeout</replaceable> in seconds, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> will continue operation and exit with return code 8.</para></listitem>
 </varlistentry>
 </variablelist>
 </listitem>
@@ -419,7 +419,7 @@ times.</para>
 <listitem><para>Install or update the specified packages as if installing onto a bare system. Any previously installed packages that are not specified on the command line and are not a dependency of the specified packages will be removed. This command ignores restrictions to not install packages that are on the avoid list and not update packages that are on the frozen list. Otherwise, this <command>exact-install</command> subcommand behaves the same way that the <command>install</command> subcommand behaves. To explicitly request the latest version of a package, use <literal>latest</literal> for the version portion of <replaceable>pkg_fmri_pattern</replaceable>. For example, specify <literal>vim@latest</literal>.</para>
 <para>Packages are selected based on publisher search order and stickiness. See the <command>pkg publisher</command> and <command>pkg set-publisher</command> commands for information about search order and stickiness. If the <replaceable>pkg_fmri_pattern</replaceable> does not specify the publisher, the first publisher that provides a matching package is used as the installation source. If that publisher does not provide a version of the package that can be installed in this image, then the installation operation fails. Use the <command>pkg list -a</command> command to see which publishers provide a version of the package that can be installed in this image.</para>
 <para>If more than one <replaceable>pkg_fmri_pattern</replaceable> is specified, and if any of the specified packages cannot be installed in this image, then none of the specified packages will be installed.</para>
-<para>Some configuration files might be renamed or replaced during the installation process. For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see &ldquo;File Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
+<para>Some configuration files might be renamed or replaced during the installation process. For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see &ldquo;File Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>If a package is on the avoid list, installing it removes it from that list.</para>
 <para>For descriptions of options, see the <command>install</command> command above.</para>
 </listitem>
@@ -431,7 +431,7 @@ times.</para>
 it on the avoid list. See the <command>avoid</command> subcommand below.</para>
 <para>In the command output, note any messages that say a new boot environment has been created. If
 a new boot environment has been created and activated, that is the environment that is booted by
-default on next reboot. See the <command>beadm</command>(8) man page for information about managing
+default on next reboot. See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about managing
 boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-ignore-missing</option></term>
@@ -449,7 +449,7 @@ packages and publisher configuration.</para>
 <para>In the command output, note any messages that say a new boot environment
 has been created. If a new boot environment has been created and activated,
 that is the environment that is booted by default on next reboot if you do
-not specify the <option>-no-be-activate</option> option. See the <command>beadm</command>(8)
+not specify the <option>-no-be-activate</option> option. See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
 man page for information about managing boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
@@ -466,7 +466,7 @@ specific packages across package rename or obsolete boundaries is not supported.
 been changed since the original version was installed are renamed using the extension
 <literal>.update</literal>. For more information about how the package system determines which files
 to preserve, and how these files are preserved during package upgrades, see &ldquo;File
-Actions&rdquo; in the <literal>pkg</literal>(7) man page.</para>
+Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>If more than one <replaceable>pkg_fmri_pattern</replaceable> is specified,
 and if any of the specified packages cannot be updated in this image, then
 none of the specified packages will be updated.</para>
@@ -497,7 +497,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 from which the package is installed (or available, if not installed) is not
 the first in the publisher search order, then the publisher name is listed
 in parentheses after the package name. The second column contains the release
-and branch versions of the package. See the <literal>pkg</literal>(7) man
+and branch versions of the package. See the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man
 page for information about release and branch versions and about variants.</para>
 <itemizedlist>
 <para>The last column contains a set of flags that show the status of the
@@ -637,9 +637,9 @@ action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> .
 <listitem><para>Display the contents (action attributes) of all packages installed
 in the image. With no options, display the value of the <literal>path</literal> attribute
 for actions installed in the current image, sorted alphabetically by attribute
-value. If the <option>o</option> option is not specified, the key attributes, as described in <literal>pkg</literal>(7), of the related action name will be displayed instead. In addition, 'depend' actions will also include the 'type' attribute, and 'set' actions will include the 'value' attribute.</para>
+value. If the <option>o</option> option is not specified, the key attributes, as described in <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>, of the related action name will be displayed instead. In addition, 'depend' actions will also include the 'type' attribute, and 'set' actions will include the 'value' attribute.</para>
 <para>When more than one action name is specified, the default attributes are 
-the set of all attributes, as described above, of all the specified actions. For information about actions and their attributes, see &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page. See also the list of pseudo attribute names below.</para>
+the set of all attributes, as described above, of all the specified actions. For information about actions and their attributes, see &ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page. See also the list of pseudo attribute names below.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>Display contents of only the specified packages.</para>
@@ -702,7 +702,7 @@ times.</para>
 can be specified multiple times, or multiple actions can be specified as the
 argument to one <option>t</option> option by separating the action names with
 commas. The value of <replaceable>action_name</replaceable> is one of the
-actions listed in &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man
+actions listed in &ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man
 page, such as <literal>file</literal>, <literal>directory</literal>, <literal>driver
 </literal>, <literal>depend</literal>, <literal>set</literal>.</para>
 </listitem>
@@ -828,7 +828,7 @@ performed.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri</replaceable></term>
-<listitem><para>Search the <literal>pkg</literal>(7) repository located at
+<listitem><para>Search the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository located at
 the given URI. This can be specified multiple times. Package archives are
 not supported.</para>
 </listitem>
@@ -837,7 +837,7 @@ not supported.</para>
 <listitem><para>By default, <replaceable>query</replaceable> is interpreted as a series of terms to be matched
 exactly and multiple terms are ANDed.</para>
 <para>AND and OR are supported.</para>
-<para>The <literal>?</literal> and <literal>*</literal> characters can be used as <literal>glob</literal>(3C)&hyphen;style wildcards, allowing more flexible query matches.</para>
+<para>The <literal>?</literal> and <literal>*</literal> characters can be used as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>&hyphen;style wildcards, allowing more flexible query matches.</para>
 <para>In addition to simple token matching and wildcard search, a more complicated
 query language is supported. Phrases can be searched for by using single or
 double quotation marks (<literal>'</literal> or <literal>"</literal>). Be
@@ -845,14 +845,14 @@ sure to take your shell into account so that <command>pkg</command> actually
 sees the <literal>'</literal> or <literal>"</literal>.</para>
 <para>Which tokens are indexed is action-dependent, but can include content
 hashes and path names. For information about actions and their attributes,
-see &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page. See also
+see &ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page. See also
 the list of pseudo attribute names in <command>pkg contents</command> and <option>
 o</option> above.</para>
 <para>Structured queries are supported with the following syntax:</para>
 <programlisting><replaceable>pkg_name</replaceable>:<replaceable>action_name</replaceable>:<replaceable>
 index</replaceable>:<replaceable>token</replaceable></programlisting>
 <para>The value of <replaceable>action_name</replaceable> is one of the actions
-listed in &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page.
+listed in &ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.
 The <replaceable>index</replaceable> is an attribute of the action. The value
 of <replaceable>index</replaceable> must match <replaceable>token</replaceable>.</para>
 <para>Not all action attributes are searchable. For example, <literal>mode</literal> is
@@ -1025,7 +1025,7 @@ implies <option>q</option>.</para>
 [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name
 </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable>
 tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
-<listitem><para>Revert files delivered by <literal>pkg</literal>(7) packages to their as-delivered condition. File ownership and protections are also restored.</para>
+<listitem><para>Revert files delivered by <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> packages to their as-delivered condition. File ownership and protections are also restored.</para>
 <caution><para>Reverting some editable files to their default values can make
 the system unbootable, or cause other malfunctions.</para></caution>
 <variablelist termlength="wholeline">
@@ -1034,7 +1034,7 @@ the system unbootable, or cause other malfunctions.</para></caution>
 files or directories that are under directories with this tag and that match
 <replaceable>pattern</replaceable>. See the description of the <literal>revert-tag</literal>
 attribute in &ldquo;File Actions&rdquo; and &ldquo;Directory Actions&rdquo; in the
-<literal>pkg</literal>(7) man page for more information about <literal>tag-name</literal> and
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about <literal>tag-name</literal> and
 <replaceable>pattern</replaceable>.</para>
 </listitem>
 </varlistentry>
@@ -1114,7 +1114,7 @@ mediators to the system default.</para>
 </varlistentry>
 <varlistentry><term><command>pkg variant</command> [<option>Haiv</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>variant_pattern</replaceable> ...]</term>
 <listitem><para>Display the current values of all variants set in this image.
-See &ldquo;Facets and Variants&rdquo; in the <literal>pkg</literal>(7) man
+See &ldquo;Facets and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man
 page for more information about variants.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>variant_pattern</replaceable></term>
@@ -1162,7 +1162,7 @@ image.</para>
 <para>Changing the value of a variant can cause package content to be removed,
 updated, or installed. Changing a variant value can also cause entire packages
 to be installed, updated, or removed to satisfy the new image configuration.
-See &ldquo;Facets and Variants&rdquo; in the <literal>pkg</literal>(7) man
+See &ldquo;Facets and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man
 page for more information about variants.</para>
 <para>For descriptions of options, see the <command>install</command> command
 above.</para>
@@ -1171,7 +1171,7 @@ above.</para>
 <varlistentry><term><command>pkg facet</command> [<option>Haim</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>facet_pattern</replaceable> ...]</term>
 <listitem><para>Display the current values and source of all facets that either have been set locally in this
 image by using the <command>pkg change-facet</command> command or have been inherited from a
-parent image (such as a non-global zone inheriting the facet setting from the global zone). See &ldquo;Facets and Variants&rdquo; in the <literal>pkg</literal>(7) man page for
+parent image (such as a non-global zone inheriting the facet setting from the global zone). See &ldquo;Facets and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for
 more information about facets.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>facet_pattern</replaceable></term>
@@ -1219,12 +1219,12 @@ image. The changes also appear in any images that inherit these facets, such as 
 <para>Facets can be set to <literal>True</literal> or <literal>False</literal>.
 Setting a facet to <literal>None</literal> applies the default value of
 <literal>True</literal> to that facet; thus, any actions subject to the facet
-will be installed. See &ldquo;Actions&rdquo; in the <literal>pkg</literal>(7)
+will be installed. See &ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>
 man page for information about actions.</para>
 <para>Changing the value of a facet can cause package content to be removed,
 updated, or installed. Changing a facet value can also cause entire packages
 to be installed, updated, or removed to satisfy the new image configuration.
-See &ldquo;Facets and Variants&rdquo; in the <literal>pkg</literal>(7) man
+See &ldquo;Facets and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man
 page for more information about facets.</para>
 <para>For descriptions of options, see the <command>install</command> command
 above.</para>
@@ -1485,7 +1485,7 @@ used to set an authenticated proxy. The <replaceable>proxy_to_use</replaceable>
 value cannot have the form <literal>protocol://user:password@host</literal>.</para>
 <para>At run time, <literal>http_proxy</literal> or related environment
 variables override this proxy setting. See the &ldquo;Environment&rdquo;
-section of the <literal>curl</literal>(1) man page for the list of accepted
+section of the <olink targetdoc="refman" targetptr="curl-1"><citerefentry><refentrytitle>curl</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for the list of accepted
 environment variable names. If you use an environment variable to set the
 proxy URI, you must also set the appropriate proxy property of the
 <literal>svc:/application/pkg/system-repository</literal> SMF service to the
@@ -1691,7 +1691,7 @@ of the <command>pkg</command> operation.</para>
 <varlistentry><term><option>t</option> <replaceable>time</replaceable></term>
 <term><option>t</option> <replaceable>time</replaceable>-<replaceable>time</replaceable></term>
 <listitem><para>Display log records for a comma-separated list of timestamps,
-formatted with <literal>%Y-%m-%dT%H:%M:%S</literal> (see the <literal>strftime</literal>(3C)
+formatted with <literal>%Y-%m-%dT%H:%M:%S</literal> (see the <olink targetdoc="refman" targetptr="strftime-3C"><citerefentry><refentrytitle>strftime</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>
 man page). To specify a range of times, use a hyphen (<literal>-</literal>)
 between a start and finish timestamp. The keyword <literal>now</literal> can
 be used as an alias for the current time. This option can be specified multiple
@@ -1715,7 +1715,7 @@ is a recovery operation not intended for general use.</para>
 <varlistentry><term><command>pkg update-format</command></term>
 <listitem><para>Update the format of the image to the current version. Once
 this operation has completed, the image can no longer be used with older versions
-of the <literal>pkg</literal>(7) system.</para>
+of the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> system.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg version</command></term>
@@ -1754,7 +1754,7 @@ option should be used with care.</para>
 <varlistentry><term><option>-facet</option> <replaceable>facet_name</replaceable>=(<literal>
 True</literal>|<literal>False</literal>)</term>
 <listitem><para>Set the specified facet to the indicated value. See &ldquo;Facets
-and Variants&rdquo; in the <literal>pkg</literal>(7) man page for more information
+and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information
 about facets.</para>
 </listitem>
 </varlistentry>
@@ -1772,7 +1772,7 @@ Properties&rdquo; below for descriptions of image properties.</para>
 <varlistentry><term><option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable>
 value</replaceable></term>
 <listitem><para>Set the specified variant to the indicated value. See &ldquo;Facets
-and Variants&rdquo; in the <literal>pkg</literal>(7) man page for more information
+and Variants&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information
 about variants.</para>
 </listitem>
 </varlistentry>
@@ -1869,7 +1869,7 @@ no recent boot environment to which one can fallback.</para>
 are kept for SSL operations. The format of this directory is specific to the
 underlying SSL implementation. To use an alternate location for trusted CA
 certificates, change this value to point to a different directory. See the <literal>
-CApath</literal> portions of <literal>SSL_CTX_load_verify_locations</literal>(3openssl)
+CApath</literal> portions of <olink targetdoc="refman" targetptr="SSL_CTX_load_verify_locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink>
 for requirements for the CA directory.</para>
 <para>Default value: <literal>/etc/openssl/certs</literal></para>
 </listitem>
@@ -1917,7 +1917,7 @@ to complete.</para>
 <listitem><para>(boolean) This property tells the client to discover link-local content mirrors using mDNS and
 DNS-SD. If this property is set to <literal>True</literal>, the client attempts to download package
 content from mirrors it dynamically discovers. To run a mirror that advertises its content via mDNS,
-see the <command>pkg.depotd</command>(8) man page.</para>
+see the <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 <para>Default value: <literal>False</literal></para>
 </listitem>
 </varlistentry>
@@ -1981,7 +1981,7 @@ value is <literal>ignore</literal>.</para>
 <listitem><para>(boolean) This property indicates whether the image should
 use the system repository as a source for image and publisher configuration
 and as a proxy for communicating with the publishers provided. The default
-value is <literal>False</literal>. See the <command>pkg.sysrepo</command>(8)
+value is <literal>False</literal>. See the <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
 man page for information about system repositories.</para>
 </listitem>
 </varlistentry>
@@ -2011,10 +2011,9 @@ the particular publisher.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>Periodic Package Update Service</title>
-<para>
-The SMF service <literal>svc:/system/auto-update:default</literal> provides a
+<para>The SMF service <literal>svc:/system/auto-update:default</literal> provides a
 mechanism to automatically update and reboot the system on an administrator
-defined scheduled.  This is particularly useful when the system is deployed
+defined schedule.  This is particularly useful when the system is deployed
 with an immutable root filesystem profile.
 </para>
 
@@ -2032,7 +2031,7 @@ with an immutable root filesystem profile.
 
 <varlistentry><term><literal>config/require-new-be</literal></term>
 <listitem><para>Create a new BE for any updates rather than using the live BE.
-The BE is automatically named by pkg(1), where possible using metadata stored in
+The BE is automatically named by pkg(1), where possible, using metadata stored in
 <literal>pkg:/release/name</literal>.</para>
 </listitem>
 </varlistentry>
@@ -2044,18 +2043,17 @@ instructs pkg to update all packages to newest within the constraints allowed.</
 </varlistentry>
 
 <varlistentry><term><literal>scheduled/*</literal></term>
-<listitem><para>The deafult configuration is to attempt the update and reboot
-weekly at midnight on a Sunday. An alternative scheduled can be configured by
-setting the appropriate properties in the scheduled property group, see
-<literal>svc.periodicd(8)</literal>.</para>
+<listitem><para>The default configuration is to attempt the update and reboot
+weekly at midnight on a Sunday. An alternative schedule can be configured by
+setting the appropriate properties in the <literal>scheduled</literal> property group, see
+<olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 
 </variablelist>
-<para>
-The SMF service <literal>svc:/system/auto-update:cleanup</literal> manages
+<para>The SMF service <literal>svc:/system/auto-update:cleanup</literal> manages
 the boot environments created by the automatic update service.
-To opt an auto-update boot evnironment out of automatic removal and allow
+To opt an auto-update boot environment out of automatic removal and allow
 it to be preserved and managed manually use <literal>'beadm set-policy -nstatic bename'</literal>.
 </para>
 <variablelist>
@@ -2464,7 +2462,7 @@ be modified.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para>A <literal>pkg</literal>(7) image can be located arbitrarily within
+<para>A <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> image can be located arbitrarily within
 a larger file system. In the following file descriptions, the token <envar>$IMAGE_ROOT
 </envar> is used to distinguish relative paths. For a typical system installation, <envar>
 $IMAGE_ROOT</envar> is equivalent to <literal>/</literal></para>
@@ -2498,7 +2496,7 @@ publisher-specific metadata.</para>
 are private and are subject to change.</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
@@ -2540,7 +2538,7 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
-<literal>glob</literal>(3C),
+<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
 </para>

@@ -6,17 +6,17 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">08 Aug 2019</refmiscinfo>
+<refmiscinfo class="date">6 Mar 2020</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
 </refnamediv>
 <refsect1 id="GLHDA" role="description"><title></title>
-<para>The image packaging system, <literal>pkg</literal>(7), is a framework
+<para>The Image Packaging System, <literal>pkg</literal>(7), is a framework
 that provides for software lifecycle management (installation, upgrade, and
 removal). Image packaging manages software in units of packages, which are
 collections of actions, defined by a set of key/value pairs and possibly a
@@ -187,7 +187,7 @@ are simple permissions only, not ACLs.</para>
 the first word after the action name. In a published manifest, it is the <literal>
 SHA-1</literal> hash of the file contents. If present in a manifest that has
 yet to be published, it represents the path where the payload can be found.
-See <command>pkgsend</command>(1). The hash attribute can be used instead
+See <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>. The hash attribute can be used instead
 of the positional attribute, should the value include an equals sign. Both
 can be used in the same action. However, the hashes must be identical.</para>
 <para>The <literal>preserve</literal> and <literal>overlay</literal> attributes
@@ -426,13 +426,13 @@ reverted as a set. The value of the <literal>revert-tag</literal> attribute
 is a <replaceable>tagname</replaceable>. Multiple <literal>revert-tag</literal> attributes
 can be specified for a single <literal>file</literal> action. The file reverts
 to its manifest-defined state when <command>pkg revert</command> is invoked
-with any of those tags specified. See the <command>pkg</command>(1) man page
+with any of those tags specified. See the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page
 for information about the <command>pkg revert</command> command.</para>
 <para>The <literal>revert-tag</literal> attribute can also be specified at the directory level. See &ldquo;Directory Actions&rdquo; below.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>sysattr</literal></term>
-<listitem><para>This attribute is used to specify any system attributes that should be set for this file. The value of the <literal>sysattr</literal> attribute can be a comma-separated list of verbose system attributes or a string sequence of compact system attribute options, as shown in the following examples. Supported system attributes are explained in the <literal>chmod</literal>(1) man page. System attributes specified in the manifest are set additionally to system attributes that might have been set by other subsystems of the operating system.</para>
+<listitem><para>This attribute is used to specify any system attributes that should be set for this file. The value of the <literal>sysattr</literal> attribute can be a comma-separated list of verbose system attributes or a string sequence of compact system attribute options, as shown in the following examples. Supported system attributes are explained in the <olink targetdoc="refman" targetptr="chmod-1"><citerefentry><refentrytitle>chmod</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page. System attributes specified in the manifest are set additionally to system attributes that might have been set by other subsystems of the operating system.</para>
 <programlisting>file path=opt/secret_file sysattr=hidden,sensitive
 file path=opt/secret_file sysattr=HT</programlisting>
 </listitem>
@@ -488,7 +488,7 @@ attribute is
 action. When <command>pkg revert</command> is invoked with a matching
 <replaceable>tagname</replaceable>, any unpackaged files or directories under this
 <literal>dir</literal> directory that match <replaceable>pattern</replaceable> (using shell globbing
-characters) are removed. See the <command>pkg</command>(1) man page for information about the
+characters) are removed. See the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for information about the
 <command>pkg revert</command> command.</para>
 </listitem>
 </varlistentry>
@@ -583,7 +583,7 @@ also its key attribute.</para>
 <para>The <literal>driver</literal> action represents a device driver. The <literal>
 driver</literal> action does not reference a payload. The driver files themselves
 must be installed as <literal>file</literal> actions. The following attributes
-are recognized (see <command>add_drv</command>(8) for more information):</para>
+are recognized (see <olink targetdoc="refman" targetptr="add_drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information):</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>The name of the driver. This is usually, but not always, the
@@ -624,7 +624,7 @@ can have more than one <literal>privs</literal> attribute.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>This specifies an entry in <filename>/etc/devlink.tab</filename>. The value is the exact line to go into the file, with tabs denoted by <literal>&bsol;t</literal>. See <literal>devlinks</literal>(8) for more information. A given driver can have more than one <literal>devlink</literal> attribute.</para>
+<listitem><para>This specifies an entry in <filename>/etc/devlink.tab</filename>. The value is the exact line to go into the file, with tabs denoted by <literal>&bsol;t</literal>. See <olink targetdoc="refman" targetptr="devlinks-8"><citerefentry><refentrytitle>devlinks</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information. A given driver can have more than one <literal>devlink</literal> attribute.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -703,7 +703,7 @@ starts with <literal>pkg:/feature/firmware/</literal>, the remainder of the
 <varlistentry><term><literal>group</literal></term>
 <listitem><para>The dependency is required unless the package is on the image
 avoid list. Note that obsolete packages silently satisfy the group dependency.
-See the <command>avoid</command> subcommand in <command>pkg</command>(1).</para>
+See the <command>avoid</command> subcommand in <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-any</literal></term>
@@ -800,8 +800,8 @@ databases can operate as if the legacy package were actually installed. In
 particular, this should be sufficient to convince the legacy system that the
 package named by the <literal>pkg</literal> attribute is installed on the
 system, so that the package can be used to satisfy dependencies.</para>
-<para>The following attributes, named in accordance with the parameters on <literal>
-pkginfo</literal>(4), are recognized:</para>
+<para>The following attributes, named in accordance with the parameters on
+<olink targetdoc="refman" targetptr="pkginfo-5"><citerefentry><refentrytitle>pkginfo</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>, are recognized:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>category</literal></term>
 <listitem><para>The value for the <literal>CATEGORY</literal> parameter. The
@@ -907,7 +907,7 @@ can have any number of set actions.</para>
 </refsect2>
 <refsect2><title>Group Actions</title>
 <para>The <literal>group</literal> action defines a UNIX group as defined
-in <literal>group</literal>(4). No support is present for group passwords.
+in <olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>. No support is present for group passwords.
 Groups defined with this action initially have no user list. Users can be
 added with the <literal>user</literal> action. The following attributes are
 recognized:</para>
@@ -939,7 +939,7 @@ to define administrative or interactive accounts.</para>
 </varlistentry>
 <varlistentry><term><literal>password</literal></term>
 <listitem><para>The encrypted password of the user. Default value is <literal>*LK*
-</literal>. See <literal>shadow</literal>(4).</para>
+</literal>. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>uid</literal></term>
@@ -968,54 +968,54 @@ Default value is <literal>/</literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-list</literal></term>
-<listitem><para>Secondary groups to which the user belongs. See <literal>group</literal>(4).
+<listitem><para>Secondary groups to which the user belongs. See <olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ftpuser</literal></term>
 <listitem><para>Can be set to <literal>true</literal> or <literal>false</literal>.
 The default value of <literal>true</literal> indicates that the user is permitted
-to login via FTP. See <literal>ftpusers</literal>(4).</para>
+to login via FTP. See <olink targetdoc="refman" targetptr="ftpusers-5"><citerefentry><refentrytitle>ftpusers</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>lastchg</literal></term>
 <listitem><para>The number of days between January 1, 1970, and the date that
-the password was last modified. Default value is empty. See <literal>shadow</literal>(4).
+the password was last modified. Default value is empty. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>min</literal></term>
 <listitem><para>The minimum number of days required between password changes.
 This field must be set to 0 or above to enable password aging. Default value
-is empty. See <literal>shadow</literal>(4).</para>
+is empty. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>max</literal></term>
 <listitem><para>The maximum number of days the password is valid. Default
-value is empty. See <literal>shadow</literal>(4).</para>
+value is empty. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>warn</literal></term>
 <listitem><para>The number of days before password expires that the user is
-warned. See <literal>shadow</literal>(4).</para>
+warned. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>inactive</literal></term>
 <listitem><para>The number of days of inactivity allowed for that user. This
 is counted on a per-machine basis. The information about the last login is
-taken from the machine's <filename>lastlog</filename> file. See <literal>shadow</literal>(4).
+taken from the machine's <filename>lastlog</filename> file. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>expire</literal></term>
 <listitem><para>An absolute date expressed as the number of days since the
 UNIX Epoch (January 1, 1970). When this number is reached, the login can no
-longer be used. For example, an expire value of 13514 specifies a login expiration
-of January 1, 2007. See <literal>shadow</literal>(4).</para>
+longer be used. For example, an expire value of 17410 specifies a login expiration
+of September 1, 2017. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>flag</literal></term>
-<listitem><para>Set to empty. See <literal>shadow</literal>(4).</para>
+<listitem><para>Set to empty. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1040,7 +1040,7 @@ This actuator declares that update or removal of the tagged action must be
 performed in a new boot environment if the package system is operating on
 a live image. Creation of a new boot environment is controlled by the
 <literal>be-policy</literal> image property. See the &ldquo;Image
-Properties&rdquo; section in the <literal>pkg</literal>(1) man page for more
+Properties&rdquo; section in the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for more
 information about the <literal>be-policy</literal> property.</para>
 </listitem>
 </varlistentry>
@@ -1118,7 +1118,7 @@ java</literal> where the link choices are between versions. These two <literal>l
 </literal> actions would appear in two different packages.</para>
 <programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
 link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
-<para>See the <command>set-mediator</command> subcommand in the <command>pkg</command>(1)
+<para>See the <command>set-mediator</command> subcommand in the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>
 man page for information about how to select the version you want for this
 link path. To have a choice of versions, both packages must be installed.</para>
 </refsect1>
@@ -1187,7 +1187,7 @@ content retrieval and attempts to choose the best one to retrieve package
 content from. If the mirror is unreachable, does not have the required content,
 or is slower, the client API retrieves the content from any configured origin
 repositories. Mirrors are intended for content sharing among a trusted set
-of clients using the dynamic mirror functionality of <command>pkg.depotd</command>(8).
+of clients using the dynamic mirror functionality of <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>.
 Mirrors are also intended to be used to authenticate access to package metadata,
 but distribute the package content without authentication. For example, a
 client might be configured with an <literal>https</literal> origin that requires
@@ -1197,7 +1197,7 @@ install or update the packages, while the overhead of authentication for package
 content retrieval is avoided. A mirror can be created by removing all subdirectories
 of a repository except those named <filename>file</filename> and their parents.
 An origin repository can be also be provisioned as a mirror by using the mirror
-mode of <command>pkg.depotd</command>(8).</para>
+mode of <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>.</para>
 </refsect1>
 <refsect1 role="other"><title>Global and Non-Global Zone Update</title>
 <para>The <literal>pkg</literal> system forces non-global zones to be kept
@@ -1210,12 +1210,12 @@ above for more information about <literal>parent</literal> dependencies.</para>
 the non-global zones must have access to the packages of the global zone and
 must have a similar publisher configuration. Both of these objectives are
 achieved by using a <emphasis role="strong">system repository</emphasis> (see
-the <literal>pkg.sysrepo</literal>(8) man page). The system repository provides
+the <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page). The system repository provides
 access to the publishers configured in the global zone and information about
 how those publishers are configured. To prevent non-global zones from choosing
 different packages during installation or update, system publishers are ranked
 higher in the publisher search order than publishers configured in the non-global
-zone. See the <command>pkg set-publisher</command> command in the <literal>pkg</literal>(1)
+zone. See the <command>pkg set-publisher</command> command in the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>
 man page for information about publisher search order.</para>
 <para>To update all non-global zones on the system, use the <command>pkg update</command> command
 with no arguments in the global zone. This command operates on the global
@@ -1249,7 +1249,7 @@ variant.</literal>.</para>
 <para>Facets and variants are special properties of the image and cannot be
 set on individual packages. To view the current values of the facets and variants
 set on the image, use the <command>pkg facet</command> and <command>pkg variant</command> commands
-as shown in the <command>pkg</command>(1) man page. To modify the values of
+as shown in the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page. To modify the values of
 the facets and variants set on the image, use the <command>pkg change-facet</command> and <command>
 pkg change-variant</command> commands.</para>
 <para>Facets are treated as boolean values by package clients: Facets can
@@ -1389,7 +1389,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </refsect1>
 <refsect1 role="other"><title>Image Policies</title>
 <para>Image policies are defined by image properties with boolean values.
-See &ldquo;Image Properties&rdquo; in the <literal>pkg</literal>(1) man page
+See &ldquo;Image Properties&rdquo; in the <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page
 for descriptions of the <literal>flush-content-cache-on-success</literal> and <literal>
 send-uuid</literal> properties and information about how to view and modify
 their values.</para>
@@ -1429,7 +1429,7 @@ publisher-specific metadata.</para>
 are Private, and are subject to change.</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
@@ -1468,7 +1468,17 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
 <para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgdiff-1"><citerefentry><refentrytitle>pkgdiff</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgfmt-1"><citerefentry><refentrytitle>pkgfmt</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkglint-1"><citerefentry><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgmerge-1"><citerefentry><refentrytitle>pkgmerge</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgmogrify-1"><citerefentry><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgsign-1"><citerefentry><refentrytitle>pkgsign</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgsurf-1"><citerefentry><refentrytitle>pkgsurf</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>,
 <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,

@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="ja" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -22,7 +22,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <para><command>pkglint</command> は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。</para>
 <para><command>pkglint</command> は、パッケージ発行前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
 <para>lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。</para>
-<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <literal>pkg</literal>(7) ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
+<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
 <para><command>pkglint</command> の以降の呼び出しではキャッシュディレクトリを再利用できるため、<option>r</option> または <option>l</option> 引数はすべて省略できます。</para>
 <para><command>pkglint</command> では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、<command>pkg</command> を使用します。</para>
 <para><command>pkglint</command> では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。<literal>True</literal> に設定された属性 <literal>pkg.linted</literal> を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。</para>
@@ -202,7 +202,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>

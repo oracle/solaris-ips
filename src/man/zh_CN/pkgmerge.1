@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgmerge-1">
-<refmeta><refentrytitle>pkgmerge</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgmerge</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 11 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmerge</refname><refpurpose>映像包管理系统软件包合并实用程序</refpurpose></refnamediv>
@@ -52,7 +52,7 @@
 <para>支持下列操作数：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
-<listitem><para>指定要合并的软件包。<replaceable>pkg_fmri_pattern</replaceable> 操作数可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <literal>glob</literal>(3C) 式通配符，以匹配一个或多个软件包。</para>
+<listitem><para>指定要合并的软件包。<replaceable>pkg_fmri_pattern</replaceable> 操作数可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 式通配符，以匹配一个或多个软件包。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -191,7 +191,7 @@ dir group=sys mode=0755 owner=root path=usr</programlisting>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>

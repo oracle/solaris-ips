@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depot-config</refname><refpurpose>Image Packaging System HTTP depot configuration generator</refpurpose></refnamediv>
@@ -79,7 +79,7 @@ The <option>F</option> option
 produces a web server configuration file that can be added to an existing
 web server. In this case, the depot runs with reduced functionality:
 <literal>pkg search</literal> support and the depot browser user interface are not
-available. All other <literal>pkg</literal>(1) functionality required to install
+available. All other <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> functionality required to install
 and update Oracle Solaris 11 systems is available.</para>
 <itemizedlist>
 <para>Use one of the following methods to pass repository paths and configuration
@@ -92,7 +92,7 @@ that are marked as <literal>online</literal> and have the
 the <literal>pkg/readonly</literal> property set to <literal>true</literal>.</para></listitem>
 <listitem><para>Use the <command>pkg.depot-config</command> command with the
 <option>d</option> option. The <option>d</option> option provides a path to the
-<literal>pkg</literal>(7) repository to use. Multiple <option>d</option> options
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository to use. Multiple <option>d</option> options
 are accepted.</para></listitem>
 </itemizedlist>
 <para>Repositories must have file permissions that permit the files and directories
@@ -102,11 +102,11 @@ in the repositories to be read by the <literal>pkg5srv</literal> user.</para>
 <para>The following options are supported:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>d</option> <replaceable>prefix</replaceable>=<replaceable>repository_dir</replaceable></term>
-<listitem><para>Specify the path to a <literal>pkg</literal>(7) file repository
+<listitem><para>Specify the path to a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> file repository
 to use. The <replaceable>prefix</replaceable> is used as a prefix into the
 <literal>depot-config</literal> web server namespace where this repository can be accessed.
 The <replaceable>repository_dir</replaceable> is a directory that contains
-a version 4 (the default) <literal>pkg</literal>(7) package repository. The
+a version 4 (the default) <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> package repository. The
 value of <replaceable>repository_dir</replaceable> will be included in
 the depot server configuration. The <option>d</option> option cannot be used
 with the <option>S</option> option. At least one <option>d</option> option
@@ -122,7 +122,7 @@ instances of the <literal>pkg/server</literal> service that are marked as
 property set to <literal>false</literal> and the <literal>pkg/readonly</literal>
 property set to <literal>true</literal>. These property values allow the depot
 to run concurrently with <literal>pkg/server</literal> instances that do not
-have these properties set. See the <literal>pkg.depotd</literal>(8) man page
+have these properties set. See the <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page
 for information about <literal>pkg.depotd</literal>. The <option>S</option>
 option cannot be used with the <option>d</option> option.</para>
 </listitem>
@@ -137,7 +137,7 @@ during <literal>pkg/depot</literal> service startup.</para>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
 <listitem><para>Specify the directory where the depot stores its cache. If
 the <option>A</option> option is also specified, the cache directory is also used
-to store server-side <literal>pkg</literal>(7) search indexes. The
+to store server-side <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> search indexes. The
 <replaceable>cache_dir</replaceable> directory
 can also be specified by setting the <literal>config/cache_dir</literal> property
 in the <literal>pkg/depot</literal> service.</para>
@@ -209,7 +209,7 @@ the default value is <literal>apache2</literal> (Apache 2.4), and the accepted v
 </varlistentry>
 <varlistentry><term><option>F</option></term>
 <listitem><para>Produce a partial configuration that enables a web server
-to serve basic <literal>pkg</literal>(7) installation operations for clients
+to serve basic <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> installation operations for clients
 using an existing web service. For an Apache web server running on the Oracle
 Solaris OS, the partial configuration file could be placed in
 <filename>/etc/apache2/2.4/conf.d</filename>. For other operating systems, consult your OS documentation to
@@ -349,7 +349,7 @@ online   11:43:56 svc:/application/pkg/depot:default
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
