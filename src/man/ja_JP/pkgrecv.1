@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="ja" id="pkgrecv-1">
-<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname><refpurpose>Image Packaging System 内容取得ユーティリティー</refpurpose>
@@ -24,7 +24,7 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> は、<literal>pkg</literal>(7) リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。この再発行では、タイムスタンプ以外は変更されず、パッケージ署名も含めてパッケージがそのままコピーされます。同じタイムスタンプを保持するには、-<option>clone</option> オプションを参照してください。</para>
+<para><command>pkgrecv</command> は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。この再発行では、タイムスタンプ以外は変更されず、パッケージ署名も含めてパッケージがそのままコピーされます。同じタイムスタンプを保持するには、-<option>clone</option> オプションを参照してください。</para>
 <para>デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
 <para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
 <para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
@@ -40,7 +40,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>a</option></term>
-<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <literal>pkg</literal>(7) アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
+<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -94,7 +94,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
-<listitem><para>パッケージデータ受信先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
+<listitem><para>パッケージデータ受信先の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
@@ -246,7 +246,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
-<listitem><para>パッケージ取得先の <literal>pkg</literal>(7) リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
+<listitem><para>パッケージ取得先の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
@@ -292,7 +292,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
@@ -333,6 +333,6 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<command>pkg.depotd</command>(8) を参照してください。</para>
+<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照してください。</para>
 </refsect1>
 </refentry>

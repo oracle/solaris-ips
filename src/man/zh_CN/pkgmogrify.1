@@ -6,7 +6,7 @@
 ]>
 
 <refentry lang="zh" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>映像包管理系统清单变换程序</refpurpose></refnamediv>
@@ -83,7 +83,7 @@ operation</replaceable>></programlisting>
 <para>匹配条件的格式为：</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
 </replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
-<para>必须至少匹配一个指定的 <replaceable>action-name</replaceable>。必须匹配指定的每个 <replaceable>attribute</replaceable>。操作名称和属性列在 <literal>pkg</literal>(7) 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或请参见 <literal>http://docs.python.org/dev/howto/regex.html </literal> 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 <literal>.*</literal>，且应当包含结尾 <literal> $</literal>。</para>
+<para>必须至少匹配一个指定的 <replaceable>action-name</replaceable>。必须匹配指定的每个 <replaceable>attribute</replaceable>。操作名称和属性列在 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或请参见 <literal>http://docs.python.org/dev/howto/regex.html </literal> 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 <literal>.*</literal>，且应当包含结尾 <literal> $</literal>。</para>
 <para>可以指定多个条件，以空格分隔。</para>
 <para>有以下操作可用：</para>
 <variablelist>
@@ -247,7 +247,7 @@ operation</replaceable>></programlisting>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>

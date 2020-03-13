@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="zh" id="pkg.depot-config-8">
-<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2018 年 4 月25 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2018 年 4 月25 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depot-config</refname><refpurpose>映像包管理系统 HTTP 库 (depot) 配置生成器</refpurpose></refnamediv>
@@ -33,11 +33,11 @@
 </itemizedlist>
 <para>每个系统信息库都由一个 <literal>pkg/server</literal> 服务实例提供支持。系统信息库还可能由 <literal>pkg/depot:default</literal> 服务提供支持。如果特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>true</literal>，则系统信息库由 <literal>pkg.depotd</literal> 进程提供服务。如果特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal>，则系统信息库由 <literal>pkg/depot:default</literal> 服务提供服务。每个 <literal>pkg/server</literal> 实例要么运行 <literal>pkg.depotd</literal>，要么为 <literal>pkg/depot:default</literal> 贡献配置信息（系统信息库的 <literal>pkg/inst_root</literal> 位置）。</para>
 <para>在启用其 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal> 的 <literal>pkg/server</literal> 实例时，<literal>pkg/depot:default</literal> 配置会进行刷新，该系统信息库将由 <literal>pkg/depot:default</literal> 服务提供服务。当您禁用同一个 <literal>pkg/server</literal> 实例时，<literal>pkg/depot:default</literal> 服务会进行刷新，该系统信息库将不再由 <literal>pkg/depot:default</literal> 服务提供服务。</para>
-<para>可以通过使用带有 <option>F</option> 选项的 <command>pkg.depot-config</command> 命令来手动配置库 (depot)。<option>F</option> 选项会生成可添加到现有 Web 服务器的 Web 服务器配置文件。在这种情况下，库 (depot) 可以运行，但其功能会减少：<literal>pkg search</literal> 支持和库 (depot) 浏览器用户界面将不可用。为了安装和更新 Oracle Solaris 11 系统而需要的所有其他 <literal>pkg</literal>(1) 功能均可用。</para>
+<para>可以通过使用带有 <option>F</option> 选项的 <command>pkg.depot-config</command> 命令来手动配置库 (depot)。<option>F</option> 选项会生成可添加到现有 Web 服务器的 Web 服务器配置文件。在这种情况下，库 (depot) 可以运行，但其功能会减少：<literal>pkg search</literal> 支持和库 (depot) 浏览器用户界面将不可用。为了安装和更新 Oracle Solaris 11 系统而需要的所有其他 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 功能均可用。</para>
 <itemizedlist>
 <para>使用下列方法之一可以将系统信息库路径和配置传递到 depot 服务器：</para>
 <listitem><para>使用带有 <option>S</option> 选项的 <command>pkg.depot-config</command> 命令。<option>S</option> 选项导致 <literal>pkg.depotd</literal> 在系统中查询 <literal>pkg/server</literal> 服务的符合以下条件的所有实例：标记为 <literal>online</literal>、<literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 而且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。</para></listitem>
-<listitem><para>使用带有 <option>d</option> 选项的 <command>pkg.depot-config</command> 命令。<option>d</option> 选项提供要使用的 <literal>pkg</literal>(7) 系统信息库的路径。接受多个 <option>d</option> 选项。</para></listitem>
+<listitem><para>使用带有 <option>d</option> 选项的 <command>pkg.depot-config</command> 命令。<option>d</option> 选项提供要使用的 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统信息库的路径。接受多个 <option>d</option> 选项。</para></listitem>
 </itemizedlist>
 <para>系统信息库必须具有允许 <literal>pkg5srv</literal> 用户读取系统信息库中文件和目录的文件权限。</para>
 </refsect1>
@@ -45,11 +45,11 @@
 <para>支持以下选项：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>d</option> <replaceable>prefix</replaceable>=<replaceable>repository_dir</replaceable></term>
-<listitem><para>指定要使用的 <literal>pkg</literal>(7) 文件系统信息库的路径。<replaceable>prefix</replaceable> 用作可从其中访问此系统信息库的 <literal>depot-config</literal> Web 服务器名称空间的前缀。<replaceable>repository_dir</replaceable> 是一个包含版本 4（缺省）<literal>pkg</literal>(7) 软件包系统信息库的目录。<replaceable>repository_dir</replaceable> 的值将包括在 depot 服务器配置中。<option>d</option> 选项不能与 <option>S</option> 选项一起使用。如果不使用 <option>S</option> 选项，则至少需要一个 <option>d</option> 选项。允许使用多个 <option>d</option> 选项。</para>
+<listitem><para>指定要使用的 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 文件系统信息库的路径。<replaceable>prefix</replaceable> 用作可从其中访问此系统信息库的 <literal>depot-config</literal> Web 服务器名称空间的前缀。<replaceable>repository_dir</replaceable> 是一个包含版本 4（缺省）<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 软件包系统信息库的目录。<replaceable>repository_dir</replaceable> 的值将包括在 depot 服务器配置中。<option>d</option> 选项不能与 <option>S</option> 选项一起使用。如果不使用 <option>S</option> 选项，则至少需要一个 <option>d</option> 选项。允许使用多个 <option>d</option> 选项。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>S</option></term>
-<listitem><para>在系统中查询要使用的系统信息库。<option>S</option> 选项导致 <literal>pkg.depotd</literal> 在系统中查询 <literal>pkg/server</literal> 服务的符合以下条件的所有实例：标记为 <literal>online</literal>、<literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 而且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。这些属性值允许库 (depot) 同时运行多个未设置这些属性的 <literal>pkg/server</literal> 实例。有关 <literal>pkg.depotd</literal> 的信息，请参见 <literal>pkg.depotd</literal>(8) 手册页。<option>S</option> 选项不能与 <option>d</option> 选项一起使用。</para>
+<listitem><para>在系统中查询要使用的系统信息库。<option>S</option> 选项导致 <literal>pkg.depotd</literal> 在系统中查询 <literal>pkg/server</literal> 服务的符合以下条件的所有实例：标记为 <literal>online</literal>、<literal>pkg/standalone</literal> 属性设置为 <literal>false</literal> 而且 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。这些属性值允许库 (depot) 同时运行多个未设置这些属性的 <literal>pkg/server</literal> 实例。有关 <literal>pkg.depotd</literal> 的信息，请参见 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。<option>S</option> 选项不能与 <option>d</option> 选项一起使用。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>r</option> <replaceable>runtime_dir</replaceable></term>
@@ -57,7 +57,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
-<listitem><para>指定库 (depot) 用来存储其高速缓存的目录。如果同时指定了 <option>A</option> 选项，则还可以使用高速缓存目录来存储服务器端 <literal>pkg</literal>(7) 搜索索引。<replaceable>cache_dir</replaceable> 目录还可以通过在 <literal>pkg/depot</literal> 服务中设置 <literal>config/cache_dir</literal> 属性来指定。</para>
+<listitem><para>指定库 (depot) 用来存储其高速缓存的目录。如果同时指定了 <option>A</option> 选项，则还可以使用高速缓存目录来存储服务器端 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 搜索索引。<replaceable>cache_dir</replaceable> 目录还可以通过在 <literal>pkg/depot</literal> 服务中设置 <literal>config/cache_dir</literal> 属性来指定。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
@@ -89,7 +89,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option></term>
-<listitem><para>生成一个部分配置，该配置允许 Web 服务器使用现有的 Web 服务为客户机提供基本的 <literal>pkg</literal>(7) 安装操作。对于 Oracle Solaris OS 上运行的 Apache Web 服务器，该部分配置文件可以放在 <filename>/etc/apache2/2.4/conf.d</filename> 中。对于其他操作系统，请查阅 OS 文档以确定如何使用这个部分配置文件。另请参见 <option>P</option> 选项。
+<listitem><para>生成一个部分配置，该配置允许 Web 服务器使用现有的 Web 服务为客户机提供基本的 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 安装操作。对于 Oracle Solaris OS 上运行的 Apache Web 服务器，该部分配置文件可以放在 <filename>/etc/apache2/2.4/conf.d</filename> 中。对于其他操作系统，请查阅 OS 文档以确定如何使用这个部分配置文件。另请参见 <option>P</option> 选项。
 </para>
 </listitem>
 </varlistentry>
@@ -192,7 +192,7 @@ online   11:43:56 svc:/application/pkg/depot:default
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>

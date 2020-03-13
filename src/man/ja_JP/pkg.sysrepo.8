@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="ja" id="pkg.sysrepo-8">
-<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.sysrepo</refname><refpurpose>Image Packaging System システムリポジトリ構成</refpurpose></refnamediv>
@@ -18,8 +18,8 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 <refsect1 id="pkgsysrepo-8-desc" role="description"><title></title>
 <para><command>pkg.sysrepo</command> は、Image Packaging System (IPS) システムリポジトリの構成ファイルを生成するために使用されます。<command>pkg.sysrepo </command> は、<literal>svc:/application/pkg/system-repository</literal> サービス管理機能 (SMF) サービスから呼び出されます。構成の変更は、SMF サービスのプロパティーに対して行うようにしてください。</para>
 <para>システムリポジトリは、参照イメージ内に構成されたパッケージリポジトリへのアクセスを、集中管理プロキシを通して提供する役割を果たします。その参照イメージに加えられたパブリッシャーの構成の変更は、そのシステムリポジトリを使用するように構成されたすべてのクライアントにただちに認識されます。</para>
-<para>システムリポジトリは、大域ゾーン内に構成されたリポジトリに非大域ゾーンからアクセスできるようにするために、主に大域ゾーンで使用されます。SMF サービス <literal>svc:/application/pkg/zones-proxyd</literal> および <literal>svc:/application/pkg/zones-proxy-client</literal> は、非大域ゾーンと大域ゾーンの間のトランスポートを提供する役割を果たします。このトランスポートは、<literal>pkg</literal>(7) でのみ使用されます。</para>
-<para>システムリポジトリは <literal>http</literal>、<literal>https</literal>、<literal>file</literal>、および <filename>.p5p</filename> アーカイブリポジトリをプロキシ設定できます。ファイルシステムリポジトリバージョン 4 のみがサポートされており、これは <command>pkgrepo create</command> コマンドのデフォルトの形式です。リポジトリバージョンについての詳細は、<literal>pkgrepo</literal>(1) のマニュアルページを参照してください。</para>
+<para>システムリポジトリは、大域ゾーン内に構成されたリポジトリに非大域ゾーンからアクセスできるようにするために、主に大域ゾーンで使用されます。SMF サービス <literal>svc:/application/pkg/zones-proxyd</literal> および <literal>svc:/application/pkg/zones-proxy-client</literal> は、非大域ゾーンと大域ゾーンの間のトランスポートを提供する役割を果たします。このトランスポートは、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> でのみ使用されます。</para>
+<para>システムリポジトリは <literal>http</literal>、<literal>https</literal>、<literal>file</literal>、および <filename>.p5p</filename> アーカイブリポジトリをプロキシ設定できます。ファイルシステムリポジトリバージョン 4 のみがサポートされており、これは <command>pkgrepo create</command> コマンドのデフォルトの形式です。リポジトリバージョンについての詳細は、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>サポートしているオプションは、次のとおりです。</para>
@@ -74,7 +74,7 @@ cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>]
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<literal>attributes</literal>(7) を参照してください。</para>
+<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>

@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname>
@@ -32,7 +32,7 @@
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
 <para><command>pkgrecv</command> retrieves all versions of each matching
 <replaceable>fmri</replaceable> or <replaceable>pattern</replaceable> from the
-<literal>pkg</literal>(7) repository or package archive specified by the
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository or package archive specified by the
 <option>s</option> option and optionally republishes the retrieved packages to
 the package repository or package archive specified by the <option>d</option>
 option. This republication copies the package intact &ndash; including package
@@ -66,7 +66,7 @@ on that repository to update search indexes.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>a</option></term>
-<listitem><para>Store the retrieved package data in a <literal>pkg</literal>(7)
+<listitem><para>Store the retrieved package data in a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>
 archive at the location specified by the <option>d</option> option. The file
 specified by <option>d</option> cannot already exist. The <option>a</option> option
 can be used only with file system based destinations. Although not required,
@@ -156,7 +156,7 @@ times. The <option>p</option> option is valid only with the
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
-<listitem><para>Specify the file system path or URI of a <literal>pkg</literal>(7)
+<listitem><para>Specify the file system path or URI of a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>
 repository or package archive from which to receive package data. If <option>s</option> is
 not specified, the value of <envar>PKG_SRC</envar> is used. See &ldquo;Environment
 Variables&rdquo; below.</para>
@@ -200,7 +200,7 @@ operation.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-mog-file</option></term>
-<listitem><para>Specifies a file containing pkgmogrify(1) transforms to be
+<listitem><para>Specifies a file containing <olink targetdoc="refman" targetptr="pkgmogrify-1"><citerefentry><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> transforms to be
 applied to the manifest of each package before it is copied to the destination
 package repository. '-' can be specified to use stdin as input. If both files
 and '-' are specified together, '-' will be ignored and only files specified
@@ -366,7 +366,7 @@ packages will be copied.</para>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
 <listitem><para>A URI or file system path representing the location of a
-<literal>pkg</literal>(7) repository or package archive from which to retrieve
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository or package archive from which to retrieve
 packages.</para>
 </listitem>
 </varlistentry>
@@ -420,7 +420,7 @@ succeeded.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
@@ -463,6 +463,6 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>When using a file system based destination repository, any <command>pkg.depotd</command> processes that are serving that repository must be restarted after package transfer is completed for the changes to be reflected in its web interface or search responses. See <command>pkg.depotd</command>(8) for more information.</para>
+<para>When using a file system based destination repository, any <command>pkg.depotd</command> processes that are serving that repository must be restarted after package transfer is completed for the changes to be reflected in its web interface or search responses. See <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information.</para>
 </refsect1>
 </refentry>

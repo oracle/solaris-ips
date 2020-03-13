@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="zh" id="pkgsend-1">
-<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgsend</refname><refpurpose>映像包管理系统发布客户机</refpurpose>
@@ -20,7 +20,7 @@
     [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgsend-1-desc" role="description"><title></title>
-<para>通过 <command>pkgsend</command>，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 <command>pkgrepo</command>(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 <command>pkgrecv</command>(1)。有关软件包清单的更多信息，请参见 <literal>pkg</literal>(7)。</para>
+<para>通过 <command>pkgsend</command>，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>。要从现有系统信息库的软件包中创建软件包归档文件，请参见 <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>。有关软件包清单的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>。</para>
 <para>完成 <command>pkgsend publish</command> 操作后，如果您的 <replaceable> repo_uri_or_path</replaceable> 系统信息库必须支持 <command>pkg search</command> 操作，请在系统信息库上运行 <command>pkgrepo refresh</command> 以更新搜索索引。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -74,7 +74,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
 <listitem><para>将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则将从 <literal>stdin</literal> 中读取清单。</para>
-<para>如果未指定，则 <command>pkgsend publish</command> 向软件包 FMRI 添加内部版本。<command>publish</command> 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 <literal>pkg</literal>(7) 手册页。</para>
+<para>如果未指定，则 <command>pkgsend publish</command> 向软件包 FMRI 添加内部版本。<command>publish</command> 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页。</para>
 <para>如果可能会有多个 <command>pkgsend publish</command> 进程同时发布到同一 <option>s</option> 系统信息库，建议指定 <option>-no-catalog</option> 选项。请参见下文对 <option>-no-catalog</option> 选项的说明。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
@@ -195,7 +195,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>
@@ -237,7 +237,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </refsect1>
 <refsect1 role="notes"><title></title>
 <para>由于发布协议限制，当发布大小超过 128 MB 的单个软件包文件时，必须使用基于文件系统的发布。当需要系统信息库的访问控制时，也建议使用基于文件系统的发布。</para>
-<para>当使用基于文件系统的发布时，在完成发布后必须重新启动提供目标系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <command>pkg.depotd</command>(8)。</para>
+<para>当使用基于文件系统的发布时，在完成发布后必须重新启动提供目标系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>。</para>
 </refsect1>
 </refentry>
 

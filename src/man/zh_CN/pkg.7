@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="zh" id="pkg-7">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man7;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统</refpurpose>
@@ -90,7 +90,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>有效负荷是一个位置属性，因为它未命名。它是操作名称后面的第一个词。在发布的清单中，它是文件内容的 <literal>SHA-1</literal> 散列。如果存在于尚待发布的清单中，则它表示可以找到有效负荷的路径。请参见 <command>pkgsend</command>(1)。如果值包括一个等号，则可以使用散列属性代替位置属性。这两种属性可用于同一操作中。但是，散列必须完全相同。</para>
+<para>有效负荷是一个位置属性，因为它未命名。它是操作名称后面的第一个词。在发布的清单中，它是文件内容的 <literal>SHA-1</literal> 散列。如果存在于尚待发布的清单中，则它表示可以找到有效负荷的路径。请参见 <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>。如果值包括一个等号，则可以使用散列属性代替位置属性。这两种属性可用于同一操作中。但是，散列必须完全相同。</para>
 <para><literal>preserve</literal> 和 <literal>overlay</literal> 属性影响是否以及如何安装 <literal>file</literal> 操作。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>preserve</literal></term>
@@ -188,12 +188,12 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>revert-tag</literal></term>
-<listitem><para>此属性用于标记应恢复为一个组的可编辑文件。<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable>。可为单个 <literal>file</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用所指定的任意标记调用 <command>pkg revert</command> 时，文件将恢复为其清单定义的状态。有关 <command>pkg revert</command> 命令的更多信息，请参见 <command>pkg</command>(1) 手册页。</para>
+<listitem><para>此属性用于标记应恢复为一个组的可编辑文件。<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable>。可为单个 <literal>file</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用所指定的任意标记调用 <command>pkg revert</command> 时，文件将恢复为其清单定义的状态。有关 <command>pkg revert</command> 命令的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页。</para>
 <para>还可以在目录级别指定 <literal>revert-tag</literal> 属性。请参见下文中的“目录操作”。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>sysattr</literal></term>
-<listitem><para>此属性用于指定应该为此文件设置的任何系统属性。<literal>sysattr</literal> 属性的值可以是逗号分隔的详细系统属性列表，也可以是精简系统属性选项的字符串序列，如以下示例中所示。支持的系统属性在 <literal>chmod</literal>(1) 手册页中有介绍。在清单中指定的系统属性是一种额外设置，是对可能已由操作系统的其他子系统设置的系统属性的进一步设置。</para>
+<listitem><para>此属性用于指定应该为此文件设置的任何系统属性。<literal>sysattr</literal> 属性的值可以是逗号分隔的详细系统属性列表，也可以是精简系统属性选项的字符串序列，如以下示例中所示。支持的系统属性在 <olink targetdoc="refman" targetptr="chmod-1"><citerefentry><refentrytitle>chmod</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中有介绍。在清单中指定的系统属性是一种额外设置，是对可能已由操作系统的其他子系统设置的系统属性的进一步设置。</para>
 <programlisting>file path=opt/secret_file sysattr=hidden,sensitive
 file path=opt/secret_file sysattr=HT</programlisting>
 </listitem>
@@ -230,7 +230,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <varlistentry>
 <term><literal>revert-tag</literal></term>
 <listitem>
-<para>此属性用于标识应作为一个集合删除的未打包文件。有关如何为 <literal>file</literal> 操作指定此属性的说明，请参见上文中的“文件操作”。对于目录，<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable>。可为单个 <literal>dir</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用匹配的 <replaceable>tagname</replaceable> 调用 <command>pkg revert</command> 时，将删除此 <literal>dir</literal> 目录下匹配 <replaceable>pattern</replaceable>（使用 shell glob 字符）的所有未打包文件或目录。有关 <command>pkg revert</command> 命令的更多信息，请参见 <command>pkg</command>(1) 手册页。</para>
+<para>此属性用于标识应作为一个集合删除的未打包文件。有关如何为 <literal>file</literal> 操作指定此属性的说明，请参见上文中的“文件操作”。对于目录，<literal>revert-tag</literal> 属性的值为 <replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable>。可为单个 <literal>dir</literal> 操作指定多个 <literal>revert-tag</literal> 属性。在使用匹配的 <replaceable>tagname</replaceable> 调用 <command>pkg revert</command> 时，将删除此 <literal>dir</literal> 目录下匹配 <replaceable>pattern</replaceable>（使用 shell glob 字符）的所有未打包文件或目录。有关 <command>pkg revert</command> 命令的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>salvage-from</literal></term>
@@ -278,7 +278,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>hardlink</literal> 操作表示硬链接。它具有与 <literal>link</literal> 操作相同的属性，<literal>path</literal> 也是其关键属性。</para>
 </refsect2>
 <refsect2><title>驱动程序操作</title>
-<para><literal>driver</literal> 操作表示设备驱动程序。<literal>driver</literal> 操作不引用有效负荷。驱动程序文件自身必须作为 <literal>file</literal> 操作进行安装。可识别下列属性（有关更多信息，请参见 <command>add_drv</command>(8)）：</para>
+<para><literal>driver</literal> 操作表示设备驱动程序。<literal>driver</literal> 操作不引用有效负荷。驱动程序文件自身必须作为 <literal>file</literal> 操作进行安装。可识别下列属性（有关更多信息，请参见 <olink targetdoc="refman" targetptr="add_drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>）：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>驱动程序的名称。这通常是（但并不总是）二进制驱动程序文件的文件名。此属性是 <literal>driver</literal> 操作的关键属性。</para>
@@ -309,7 +309,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>devlink</literal></term>
-<listitem><para>此属性指定 <filename>/etc/devlink.tab</filename> 中的条目。该值是定义了进入文件的确切行，带有由 <literal>\t</literal> 表示的制表符。有关更多信息，请参见 <literal>devlinks</literal>(8)。给定的驱动程序可以具有多个 <literal>devlink</literal> 属性。</para>
+<listitem><para>此属性指定 <filename>/etc/devlink.tab</filename> 中的条目。该值是定义了进入文件的确切行，带有由 <literal>\t</literal> 表示的制表符。有关更多信息，请参见 <olink targetdoc="refman" targetptr="devlinks-8"><citerefentry><refentrytitle>devlinks</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>。给定的驱动程序可以具有多个 <literal>devlink</literal> 属性。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -355,7 +355,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal></term>
-<listitem><para>除非软件包出现在映像避免列表上，否则该依赖性是必需的。请注意，过时软件包会无提示地满足组依赖性。请参见 <command>pkg</command>(1) 中的 <command>avoid</command> 子命令。</para>
+<listitem><para>除非软件包出现在映像避免列表上，否则该依赖性是必需的。请注意，过时软件包会无提示地满足组依赖性。请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 中的 <command>avoid</command> 子命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-any</literal></term>
@@ -413,7 +413,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </refsect2>
 <refsect2><title>传统操作</title>
 <para><literal>legacy</literal> 操作表示由传统包管理系统使用的软件包数据。与此操作相关联的属性将添加到传统系统的数据库中，以便查询这些数据库的工具可以像实际安装了传统软件包一样工作。需特别指出的是，这应足以使传统系统确信系统上已安装了 <literal>pkg</literal> 属性指定的软件包，如此便可使用软件包来满足依赖性。</para>
-<para>可识别根据 <literal>pkginfo</literal>(4) 上的参数指定的下列属性：</para>
+<para>可识别根据 <olink targetdoc="refman" targetptr="pkginfo-5"><citerefentry><refentrytitle>pkginfo</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> 上的参数指定的下列属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>category</literal></term>
 <listitem><para><literal>CATEGORY</literal> 参数的值。缺省值为 <literal>system</literal>。</para>
@@ -491,7 +491,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </variablelist>
 </refsect2>
 <refsect2><title>组操作</title>
-<para><literal>group</literal> 操作定义 UNIX 组，如 <literal>group</literal>(4) 中所定义。不存在对于组口令的支持。使用此操作定义的组最初不具有用户列表。可以使用 <literal>user</literal> 操作添加用户。可以识别下列属性：</para>
+<para><literal>group</literal> 操作定义 UNIX 组，如 <olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> 中所定义。不存在对于组口令的支持。使用此操作定义的组最初不具有用户列表。可以使用 <literal>user</literal> 操作添加用户。可以识别下列属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>groupname</literal></term>
 <listitem><para>组名的值。</para>
@@ -513,7 +513,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>password</literal></term>
-<listitem><para>用户的加密口令。缺省值为 <literal>*LK*</literal>。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>用户的加密口令。缺省值为 <literal>*LK*</literal>。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>uid</literal></term>
@@ -537,42 +537,42 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group-list</literal></term>
-<listitem><para>用户所属的辅助组。请参见 <literal>group</literal>(4)。
+<listitem><para>用户所属的辅助组。请参见 <olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ftpuser</literal></term>
-<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。缺省值 <literal>true</literal> 指示允许用户通过 FTP 登录。请参见 <literal>ftpusers</literal>(4)。</para>
+<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。缺省值 <literal>true</literal> 指示允许用户通过 FTP 登录。请参见 <olink targetdoc="refman" targetptr="ftpusers-5"><citerefentry><refentrytitle>ftpusers</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>lastchg</literal></term>
-<listitem><para>1970 年 1 月 1 日至上次修改口令的日期之间的天数。缺省值为空。请参见 <literal>shadow</literal>(4)。
+<listitem><para>1970 年 1 月 1 日至上次修改口令的日期之间的天数。缺省值为空。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>min</literal></term>
-<listitem><para>所需的相邻两次更改口令之间的最小天数。必须将此字段设置为 0 或更大值才能启用口令有效期。缺省值为空。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>所需的相邻两次更改口令之间的最小天数。必须将此字段设置为 0 或更大值才能启用口令有效期。缺省值为空。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>max</literal></term>
-<listitem><para>口令的最大有效天数。缺省值为空。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>口令的最大有效天数。缺省值为空。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>warn</literal></term>
-<listitem><para>用户在口令到期之前多少天收到警告。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>用户在口令到期之前多少天收到警告。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>inactive</literal></term>
-<listitem><para>允许该用户不活动的天数。按每台计算机对此进行计数。可从计算机的 <filename>lastlog</filename> 文件获取有关上次登录的信息。请参见 <literal>shadow</literal>(4)。
+<listitem><para>允许该用户不活动的天数。按每台计算机对此进行计数。可从计算机的 <filename>lastlog</filename> 文件获取有关上次登录的信息。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>expire</literal></term>
-<listitem><para>表示为自 UNIX 纪元（1970 年 1 月 1 日）后的天数的绝对日期。达到此数字时，将无法再进行登录。例如，到期值为 13514 指定登录将在 2007 年 1 月 1 日失效。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>表示为自 UNIX 纪元（1970 年 1 月 1 日）后的天数的绝对日期。达到此数字时，将无法再进行登录。例如，到期值为 13514 指定登录将在 2007 年 1 月 1 日失效。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>flag</literal></term>
-<listitem><para>设置为空。请参见 <literal>shadow</literal>(4)。</para>
+<listitem><para>设置为空。请参见 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -584,7 +584,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>系统定义了以下执行器：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>reboot-needed</literal></term>
-<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。此执行器声明：如果软件包系统在实时映像上操作，则必须在新引导环境中更新或删除标记的操作。<literal>be-policy</literal> 映像属性控制新引导环境的创建。有关 <literal>be-policy</literal> 属性的更多信息，请参见 <literal>pkg</literal>(1) 手册页的“映像属性”部分。</para>
+<listitem><para>可设置为 <literal>true</literal> 或 <literal>false</literal>。此执行器声明：如果软件包系统在实时映像上操作，则必须在新引导环境中更新或删除标记的操作。<literal>be-policy</literal> 映像属性控制新引导环境的创建。有关 <literal>be-policy</literal> 属性的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页的“映像属性”部分。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>disable_fmri</literal>、<literal>refresh_fmri</literal>、<literal>restart_fmri</literal>、<literal>suspend_fmri</literal></term>
@@ -632,7 +632,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para>以下示例显示名为 <literal>java</literal> 的中介的两个不同实例（其中，链接选择的区别为版本）。这两个 <literal>link</literal> 操作会显示在两个不同软件包中。</para>
 <programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
 link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
-<para>有关如何为此链接路径选择所需版本的信息，请参见 <command>pkg</command>(1) 手册页中的 <command>set-mediator</command> 子命令。要选择版本，必须安装两个软件包。</para>
+<para>有关如何为此链接路径选择所需版本的信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中的 <command>set-mediator</command> 子命令。要选择版本，必须安装两个软件包。</para>
 </refsect1>
 <refsect1 role="other"><title>约束和冻结</title>
 <para>在将软件包转换为新版本、添加到系统中或从系统中删除时，所选的版本或是否允许删除由对软件包施加的各种约束确定。这些约束可由其他软件包以依赖性的形式进行定义，或者由管理员以冻结的形式进行定义。</para>
@@ -648,18 +648,18 @@ link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</pr
 <refsect1 role="other"><title>发布者和系统信息库</title>
 <para>如上所述，发布者只是软件包客户端用来标识软件包提供者的一个名称。发布者可使用软件包系统信息库和/或软件包归档来发行其软件包。软件包系统当前支持以下两种类型的系统信息库：源系统信息库和镜像系统信息库。</para>
 <para><emphasis>源</emphasis>是包含一个或多个软件包的所有元数据（例如，目录、清单和搜索索引）和内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了多个源，则软件包客户端 API 会尝试选择从其检索软件包数据的最佳源。这是最常见的系统信息库类型，当每次在软件包系统信息库上使用 <command>pkgsend</command> 或 <command>pkgrecv</command> 时进行隐式创建。</para>
-<para><emphasis>mirror</emphasis> 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 <command>pkg.depotd</command>(8) 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 <literal>https</literal> 源，以及提供软件包内容的 <literal>http</literal> 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 <filename>file</filename> 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 <command>pkg.depotd</command>(8) 的镜像模式还可将源系统信息库置备为镜像。</para>
+<para><emphasis>mirror</emphasis> 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 <literal>https</literal> 源，以及提供软件包内容的 <literal>http</literal> 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 <filename>file</filename> 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 的镜像模式还可将源系统信息库置备为镜像。</para>
 </refsect1>
 <refsect1 role="other"><title>全局和非全局区域更新</title>
 <para><literal>pkg</literal> 系统会强制使非全局区域与全局区域保持同步。这表示某些软件包在全局区域和所有非全局区域中必须处于同一版本，以确保运行相同的内核。为此，<literal>pkg</literal> 会使用 <literal>parent</literal> 依赖性对非全局区域施加某些约束。有关 <literal>parent</literal> 依赖性的更多信息，请参见“依赖操作”。</para>
-<para>由于全局区域对非全局区域施加的限制，非全局区域必须可以访问全局区域的软件包且必须具有相似的发布者配置。使用<emphasis role="strong">系统信息库</emphasis>可实现上述两个目标（请参见 <literal>pkg.sysrepo</literal>(8) 手册页）。系统信息库可提供全局区域中配置的发布者的访问权，以及有关如何配置这些发布者的信息。要阻止非全局区域在安装或更新期间选择不同软件包，在发布者搜索顺序中系统发布者的排列顺序需要高于非全局区域中配置的发布者的顺序。有关发布者搜索顺序的信息，请参见 <literal>pkg</literal>(1) 手册页中的 <command>pkg set-publisher</command> 命令。</para>
+<para>由于全局区域对非全局区域施加的限制，非全局区域必须可以访问全局区域的软件包且必须具有相似的发布者配置。使用<emphasis role="strong">系统信息库</emphasis>可实现上述两个目标（请参见 <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页）。系统信息库可提供全局区域中配置的发布者的访问权，以及有关如何配置这些发布者的信息。要阻止非全局区域在安装或更新期间选择不同软件包，在发布者搜索顺序中系统发布者的排列顺序需要高于非全局区域中配置的发布者的顺序。有关发布者搜索顺序的信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中的 <command>pkg set-publisher</command> 命令。</para>
 <para>要更新系统上的所有非全局区域，请使用不带全局区域中参数的 <command>pkg update</command> 命令。此命令会在全局区域上执行并以递归方式在每个非全局区域上执行。将对非全局区域仅进行最少的必要更改，以使其与全局区域中所进行的更改同步。例如，假设全局区域和非全局区域中都安装了版本 1 的软件包 <literal>foo</literal>，并假设系统信息库中存在版本 2。如果 <literal>foo</literal> 具有父项依赖性，则 <command>pkg update foo</command> 会在全局区域和非全局区域中将 <literal>foo</literal> 更新至版本 2，这是因为 <literal>parent</literal> 依赖性会强制使软件包保持同步。如果 <literal>foo</literal> 不具有父项依赖性，则 <literal>foo</literal> 在全局区域中会更新至版本 2，但在非全局区域中仍为版本 1。</para>
 </refsect1>
 <refsect1 role="other"><title>侧面和变量</title>
 <para>软件可以具有可选组件和互斥组件。可选组件的示例包括语言环境和文档。互斥组件的示例包括 SPARC 或 x86 和调试或非调试二进制文件。</para>
 <para>在 IPS 中，可选组件称为<emphasis>侧面</emphasis>，互斥组件称为<emphasis>变量</emphasis>。侧面和变量指定为软件包操作中的标记。每个侧面和变量标记都有一个名称和值。单个操作可以具有多个侧面和变量标记。具有多个侧面和变量标记的组件有多种，例如供开发者使用的特定于体系结构的头文件，或仅用于 SPARC 全局区域的组件。</para>
 <para>以下是变量标记的一个示例 <literal>variant.arch=sparc</literal>。以下是侧面标记的一个示例 <literal>variant.arch=sparc</literal>。引用侧面和变量时，通常不带前导字符串 <literal>facet.</literal> 和 <literal>variant.</literal>。</para>
-<para>侧面和变量是映像的特殊属性，无法在单个软件包上设置。要查看映像上设置的侧面和变量的当前值，请按 <command>pkg</command>(1) 手册页中所示，使用 <command>pkg facet</command> 和 <command>pkg variant</command> 命令。要修改映像上设置的侧面和变量的值，请使用 <command>pkg change-facet</command> 和 <command>pkg change-variant</command> 命令。</para>
+<para>侧面和变量是映像的特殊属性，无法在单个软件包上设置。要查看映像上设置的侧面和变量的当前值，请按 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中所示，使用 <command>pkg facet</command> 和 <command>pkg variant</command> 命令。要修改映像上设置的侧面和变量的值，请使用 <command>pkg change-facet</command> 和 <command>pkg change-variant</command> 命令。</para>
 <para>软件包客户机将侧面处理为布尔值：侧面在映像中仅能设置为 <literal>true</literal>（启用）或 <literal>false</literal>（禁用）。缺省情况下，以 'facet.debug.' 或 'facet.optional.' 开头的所有侧面在映像中均被视为设置为 <literal>false</literal>；所有其他侧面在映像中均被视为设置为 <literal>true</literal>。</para>
 <para>可以使用 <command>pkg change-facet</command> 命令在映像内本地设置侧面，也可从父映像继承侧面。例如，非全局区域可从全局区域继承侧面。继承的侧面会在本地设置的侧面之前计算结果，并且优先于本地设置的侧面。如果同一个侧面既是继承的，又是本地设置的，则继承的侧面值会屏蔽本地设置的值。屏蔽的侧面不会影响侧面计算结果和软件包操作。使用 <command>pkg change-facet</command> 命令所做的侧面更改仅影响本地设置的侧面。只能通过更改父映像来更改继承的侧面。缺省情况下，<command>pkg facet</command> 命令不显示屏蔽的侧面。</para>
 <para>操作的侧面标记值可以设置为 <literal>all</literal> 或 <literal> true</literal>，以控制客户机如何过滤有侧面标记的操作。除 <literal>all</literal> 或 <literal>true</literal> 之外的所有值都具有未定义的行为。有关要安装具有侧面标记的操作而必须在镜像中存在的条件的说明，请参见下文。</para>
@@ -747,7 +747,7 @@ facet.locale.en_US      facet.locale.fr
 facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 </refsect1>
 <refsect1 role="other"><title>映像策略</title>
-<para>映像策略由具有布尔值的映像属性所定义。有关 <literal>flush-content-cache-on-success</literal> 和 <literal>send-uuid</literal> 属性的说明以及如何查看和修改其值的信息，请参见 <literal>pkg</literal>(1) 手册页中的“映像属性”。</para>
+<para>映像策略由具有布尔值的映像属性所定义。有关 <literal>flush-content-cache-on-success</literal> 和 <literal>send-uuid</literal> 属性的说明以及如何查看和修改其值的信息，请参见 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页中的“映像属性”。</para>
 </refsect1>
 <refsect1 role="files"><title></title>
 <para>因为 <literal>pkg</literal>(7) 映像可位于任意一个较大的文件系统内，需要使用标记 <literal>$IMAGE_ROOT</literal> 来区分相对路径。对于典型的系统安装，<literal>$IMAGE_ROOT</literal> 等效于 /。</para>
@@ -775,7 +775,7 @@ facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
 <para><literal>$IMAGE_META</literal> 目录分层结构中的其他路径是专用的，但可以进行更改。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>

@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depotd</refname><refpurpose>Image Packaging System depot server</refpurpose>
@@ -54,11 +54,11 @@ the SMF properties associated with its service. The
 <literal>svc:/application/pkg/server</literal> service runs a
 <literal>pkg.depot</literal> server process, or contributes configuration to
 the <literal>svc:/application/pkg/depot</literal> service. See
-the <literal>pkg.depot-config</literal>(8) man page and the
+the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page and the
 <literal>pkg/standalone</literal> property below. To install the
 <literal>pkg.depot-config</literal> tool and man page, install the
 <literal>package/pkg/depot</literal> package.</para>
-<para>See the <literal>smf</literal>(7) man page for information about SMF
+<para>See the <olink targetdoc="refman" targetptr="smf-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about SMF
 properties. The following properties are recognized:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/address</literal></term>
@@ -105,7 +105,7 @@ instance should find its repository data. Required unless
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_access</literal></term>
-<listitem><para>(<literal>astring</literal>) The destination for any access related information logged by the depot process. Possible values are: <filename>stderr</filename>, <filename>stdout</filename>, <literal>none</literal>, or an absolute path name. The default value is <filename>stdout</filename> if <filename>stdout</filename> is a <literal>tty</literal>. If <filename>stdout</filename> is not a <literal>tty</literal>, the default value is <literal>none</literal>. If you run <literal>pkg</literal> as a service, the default value for <literal>log_access</literal> is <literal>none</literal> and output is written to <filename>/var/svc/log/application-pkg-server:*</filename>. See the <literal>logadm</literal>(8) man page for examples of managing large log files.</para>
+<listitem><para>(<literal>astring</literal>) The destination for any access related information logged by the depot process. Possible values are: <filename>stderr</filename>, <filename>stdout</filename>, <literal>none</literal>, or an absolute path name. The default value is <filename>stdout</filename> if <filename>stdout</filename> is a <literal>tty</literal>. If <filename>stdout</filename> is not a <literal>tty</literal>, the default value is <literal>none</literal>. If you run <literal>pkg</literal> as a service, the default value for <literal>log_access</literal> is <literal>none</literal> and output is written to <filename>/var/svc/log/application-pkg-server:*</filename>. See the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large log files.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_errors</literal></term>
@@ -113,7 +113,7 @@ instance should find its repository data. Required unless
 or other information logged by the depot process. Possible values are: <filename>
 stderr</filename>, <filename>stdout</filename>, <literal>none</literal>, or
 an absolute path name. The default value is <filename>stderr</filename>. See
-the <literal>logadm</literal>(8) man page for examples of managing large
+the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large
 log files.</para>
 </listitem>
 </varlistentry>
@@ -204,7 +204,7 @@ set this property to <literal>false</literal> and set the
 instance to <literal>true</literal>. The default value of
 <literal>pkg/standalone</literal> is <literal>true</literal> and the default
 value of <literal>pkg/readonly</literal> is <literal>true</literal>. See the
-<literal>pkg.depot-config</literal>(8) man page for more information.</para>
+<olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/threads</literal></term>
@@ -264,7 +264,7 @@ feed.</para>
 </varlistentry>
 </variablelist>
 <para>The package depot is also able to act as a mirror server for local client
-images from <literal>pkg</literal>(7). This enables clients that share a subnet
+images from <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>. This enables clients that share a subnet
 on a LAN to mirror their file caches. Clients can download files from one
 another, thereby reducing load on the package depot server. This functionality
 is available as an alternate depot service configured by SMF. It uses mDNS
@@ -469,7 +469,7 @@ content.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
@@ -507,7 +507,7 @@ align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <literal>syslogd</literal>(8), <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="syslogd-8"><citerefentry><refentrytitle>syslogd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
@@ -524,7 +524,7 @@ minimal Apache configuration, set the <literal>pkg/standalone</literal> property
 of a particular <literal>pkg/server</literal> instance to
 <literal>false</literal> and set the <literal>pkg/readonly</literal> property of
 that instance to <literal>true</literal>. See the
-<literal>pkg.depot-config</literal>(8) man page for more information.</para>
+<olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 <para>Changes to configuration, or changes to package data using file system
 based operations, require a restart of the depot server process so that the
 changes can be reflected in operations and output. Use one of the following

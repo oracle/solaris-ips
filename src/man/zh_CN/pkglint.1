@@ -5,7 +5,7 @@
 ]>
 
 <refentry lang="zh" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>映像包管理系统软件包 lint</refpurpose>
@@ -22,7 +22,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <para><command>pkglint</command> 对一个或多个软件包清单运行一系列检查，并有选择性地引用其他系统信息库。</para>
 <para>应该在发布软件包之前，在软件包构建期间使用 <command>pkglint</command>。<command>pkglint</command> 将对清单执行全面的测试，在 <command>pkgsend</command> 或 <command>pkg.depotd</command> 正常操作期间，执行这种测试可能会消耗过多的资源。<command> pkglint</command> 检查包括对重复操作、缺少的属性和非正常文件权限的测试。</para>
 <para>可以在命令行上将用于 lint 的清单作为本地文件的空格分隔列表进行传递，也可以从系统信息库检索清单。</para>
-<para>从系统信息库检索清单时，首次运行时 <command>pkglint</command> 将在指定的高速缓存目录中创建并填充 <literal>pkg</literal>(7) 用户映像。如果提供了 <option>r</option> 选项，则为引用系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/ref_image</literal> 的用户映像。如果提供了 <option>l</option> 选项，则为 lint 系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/lint_image</literal> 的用户映像。不会在这些映像中安装任何内容。<command>pkglint</command> 只使用这些映像从系统信息库中检索清单。</para>
+<para>从系统信息库检索清单时，首次运行时 <command>pkglint</command> 将在指定的高速缓存目录中创建并填充 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 用户映像。如果提供了 <option>r</option> 选项，则为引用系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/ref_image</literal> 的用户映像。如果提供了 <option>l</option> 选项，则为 lint 系统信息库创建名为 <replaceable> cache_dir</replaceable><literal>/lint_image</literal> 的用户映像。不会在这些映像中安装任何内容。<command>pkglint</command> 只使用这些映像从系统信息库中检索清单。</para>
 <para><command>pkglint</command> 的后续调用可以重新使用高速缓存目录，并可以省略任何 <option>r</option> 或 <option>l</option> 参数。</para>
 <para><command>pkglint</command> 对在高速缓存目录中配置发布者提供有限的支持。使用 <command>pkg</command> 可对这些映像执行更复杂的发布者配置。</para>
 <para><command>pkglint</command> 使软件包作者能够绕过对给定清单或操作进行的检查。其中的属性 <literal> pkg.linted</literal> 设置为 <literal>True</literal> 的清单或操作不会为该清单或操作生成任何 lint 输出。</para>
@@ -202,7 +202,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>有关下列属性的说明，请参见 <literal>attributes</literal>(7)：</para>
+<para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
 <simpara>表中显示了适用的属性类型和相关值。</simpara>

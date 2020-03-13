@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System repository management utility</refpurpose></refnamediv>
@@ -56,7 +56,7 @@
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
 <para><command>pkgrepo</command> provides the ability to create and manage
-<literal>pkg</literal>(7) package repositories. Package repositories are a
+<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> package repositories. Package repositories are a
 predefined set of directories and files that permit the storage and retrieval of
 package data by <command>pkg</command> and publication clients such as
 <command>pkgsend</command> or <command>pkgrecv</command>. In addition, when
@@ -77,7 +77,7 @@ store and/or retrieve package data.</para>
 <para>The following subcommands are supported:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>Create a <literal>pkg</literal>(7) repository at the specified
+<listitem><para>Create a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository at the specified
 location.</para>
 <para>This subcommand can be used only with file system based repositories.</para>
 <variablelist termlength="wholeline">
@@ -221,14 +221,14 @@ that match the specified <replaceable>pkg_fmri_pattern</replaceable> patterns.
 If no patterns are specified, all packages in the repository are listed. The
 <replaceable>pkg_fmri_pattern</replaceable> pattern can include the
 <literal>?</literal> and <literal>*</literal> characters as
-<literal>glob</literal>(3C)-style wildcards to match one or more packages.</para>
+<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
 <para>In the default output, the first column contains the name of the publisher
 of the package. The second column contains the name of the package. The third
 column is a flag that shows the status of the package. A value of <literal>o</literal> in
 the status column indicates the package is obsolete. A value of <literal>r</literal> in
 the status column indicates the package has been renamed, which is a form
 of obsoletion. The fourth column contains the release and branch versions
-of the package. See <literal>pkg</literal>(7) for information about release
+of the package. See <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for information about release
 and branch versions.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
@@ -258,7 +258,7 @@ The <option>t</option> option can be specified multiple times, or multiple
 actions can be specified as the argument to one <option>t</option> option by
 separating the action names with commas. The value of
 <replaceable>action_name</replaceable> is one of the actions listed in 
-&ldquo;Actions&rdquo; in the <literal>pkg</literal>(7) man page, such as
+&ldquo;Actions&rdquo; in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page, such as
 <literal>file</literal>, <literal>dir</literal>, <literal>driver</literal>, <literal>depend</literal>, or <literal>set</literal>.</para>
 </listitem>
 </varlistentry>
@@ -324,7 +324,7 @@ above.</para>
 including any files they reference that are not in use by any other package.
 The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the
 <literal>?</literal> and <literal>*</literal> characters as
-<literal>glob</literal>(3C)-style wildcards to match one or more packages.</para>
+<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
 <note><para>All search index data for related publishers is removed.</para>
 </note>
 <para>This subcommand can be used only with file system based repositories.</para>
@@ -416,7 +416,7 @@ to determine whether the certificate has been revoked since being issued.
 The default value is <literal>False</literal>. This property is only used
 by the <command>verify</command> and <command>fix</command> subcommands to
 validate the contents of the repository. This property does not affect client
-settings. This value should be the same as the corresponding <literal>pkg</literal>(1)
+settings. This value should be the same as the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>
 property value.</para>
 </listitem>
 </varlistentry>
@@ -484,7 +484,7 @@ that users might be interested in.</para>
 while validating the signatures of a package. This property is only used by
 the <command>verify</command> and <command>fix</command> subcommands to validate
 the contents of the repository. This property does not affect client settings.
-These values should be the same as the corresponding <literal>pkg</literal>(1)
+These values should be the same as the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>
 property values.</para>
 </listitem>
 </varlistentry>
@@ -494,7 +494,7 @@ trust anchors for packages in this repository. If not specified, <filename>/etc/
 </filename> is used. This property is only used by the <command>verify</command> and <command>
 fix</command> subcommands to validate the contents of the repository. This
 property does not affect client settings. This value should be the same as
-the corresponding <literal>pkg</literal>(1) property value.</para>
+the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> property value.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -563,7 +563,7 @@ within the repository.</para>
 <para>If repository errors are found, a repository rebuild is automatically
 performed. If any errors are found, a message is emitted to
 <literal>stdout</literal> showing which packages must be re-imported using
-<literal>pkgsend</literal>(1) or <literal>pkgrecv</literal>(1) in order to
+<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> or <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> in order to
 restore the repository contents.</para>
 <para>This subcommand can be used only with version 4 file system based repositories.
 </para>
@@ -645,7 +645,7 @@ repository.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para>Display a unique string that identifies the version of the <literal>pkg</literal>(7) system. The values produced by the <command>version</command> operation are not sortable and are not safe for comparison beyond equality.</para>
+<listitem><para>Display a unique string that identifies the version of the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> system. The values produced by the <command>version</command> operation are not sortable and are not safe for comparison beyond equality.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -750,7 +750,7 @@ succeeded.</para>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>See <literal>attributes</literal>(7) for descriptions of the following
+<para>See <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for descriptions of the following
 attributes:</para>
 <informaltable frame="all" orient="port">
 <textobject>
@@ -793,6 +793,6 @@ align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>Most <command>pkgrepo</command> operations are not available for package archives. A package archive is a file, typically with a <filename>.p5p</filename> extension, as described in the <option>a</option> option in the <literal>pkgrecv</literal>(1) man page. A package archive contains packages but does not contain repository configuration. However, the <command>pkgrepo list</command>, <command>pkgrepo info</command>, and <command>pkgrepo contents</command> commands work with package archives.</para>
+<para>Most <command>pkgrepo</command> operations are not available for package archives. A package archive is a file, typically with a <filename>.p5p</filename> extension, as described in the <option>a</option> option in the <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page. A package archive contains packages but does not contain repository configuration. However, the <command>pkgrepo list</command>, <command>pkgrepo info</command>, and <command>pkgrepo contents</command> commands work with package archives.</para>
 </refsect1>
 </refentry>
