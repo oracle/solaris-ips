@@ -1099,33 +1099,6 @@ def localizablexml(src, dst):
         fsrc.close()
         fdst.close()
 
-def xml2po_gen(src, dst):
-        """Input is English XML file. Output is pkg_help.pot, message
-        source for next translation update.
-        """
-        if not dep_util.newer(src, dst):
-                return
-
-        args = ["/usr/bin/xml2po", "-o", dst, src]
-        print(" ".join(args))
-        run_cmd(args, os.getcwd())
-
-def xml2po_merge(src, dst, mofile):
-        """Input is English XML file and <lang>.po file (which contains
-        translations). Output is translated XML file.
-        """
-        msgfmt(mofile[:-3] + ".po", mofile)
-
-        monewer = dep_util.newer(mofile, dst)
-        srcnewer = dep_util.newer(src, dst)
-
-        if not srcnewer and not monewer:
-                return
-
-        args = ["/usr/bin/xml2po", "-t", mofile, "-o", dst, src]
-        print(" ".join(args))
-        run_cmd(args, os.getcwd())
-
 class installfile(Command):
         user_options = [
             ("file=", "f", "source file to copy"),

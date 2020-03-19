@@ -4,7 +4,6 @@
     pkg:/developer/build/make
     pkg:/developer/build/onbld
     pkg:/developer/documentation-tool/xml2roff
-    pkg:/developer/gnome/gnome-doc-utils
     pkg:/developer/intltool
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
