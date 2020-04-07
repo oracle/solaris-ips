@@ -6,7 +6,7 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">6 Mar 2020</refmiscinfo>
+<refmiscinfo class="date">3 Apr 2020</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -924,13 +924,13 @@ first free group under 100.</para>
 </variablelist>
 </refsect2>
 <refsect2><title>User Actions</title>
-<para>The <literal>user</literal> action defines a UNIX user as defined in <filename>
+<para>The <literal>user</literal> action defines a local account as defined in <filename>
 /etc/passwd</filename>, <filename>/etc/shadow</filename>, <filename>/etc/group</filename>,
 and <filename>/etc/ftpd/ftpusers</filename> files. Entries are added to the
 appropriate files for users defined with this <literal>user</literal> action.</para>
-<para>The <literal>user</literal> action is intended to define a user for
-a daemon or other software to use. Do not use the <literal>user</literal> action
-to define administrative or interactive accounts.</para>
+<para>The <literal>user</literal> action is intended to define a user or role account for
+use by a system commonent or application. The <literal>user</literal> action should not
+be used for end user or administrator accounts.</para>
 <para>The following attributes are recognized:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>username</literal></term>
@@ -939,7 +939,18 @@ to define administrative or interactive accounts.</para>
 </varlistentry>
 <varlistentry><term><literal>password</literal></term>
 <listitem><para>The encrypted password of the user. Default value is <literal>*LK*
-</literal>. See <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.</para>
+</literal>. See 
+<olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.
+</para>
+<para>The special value "UP" can be used to indicate that the
+<olink targetdoc="refman" targetptr="passwd-1"><citerefentry><refentrytitle>passwd</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> command
+may be used to set a login password for the user/role account.  When the
+value of "UP" is listed in the manifest a <literal>pkg verify</literal>
+will not report an unexpected change and <literal>pkg fix</literal> will not
+change the value back to that of the manifest.</para>
+<para>Best practice is to deliver role accounts with password="NP" and deliver a 
+<olink targetdoc="refman" targetptr="user_attr-4"><citerefentry><refentrytitle>user_attr</refentrytitle><manvolnum>4</manvolnum></citerefentry></olink> file that sets <literal>roleauth=user</literal>.
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>uid</literal></term>
