@@ -19,9 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
-
-from __future__ import print_function
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 
 import codecs
 import datetime
@@ -2361,7 +2359,7 @@ class _RepoStore(object):
 
                 (error_code, path, message, reason) where
 
-                'error_code'  an integer error, correponding to REPO_VERIFY_*
+                'error_code'  an integer error, corresponding to REPO_VERIFY_*
                 'path'        the path to the broken file in the repository
                 'message'     a human-readable summary of the error
                 'reason'      a dictionary of strings containing more detail
@@ -3699,7 +3697,7 @@ class Repository(object):
 
                 (error_code, path, message, details) where
 
-                'error_code'  an integer error, correponding to REPO_VERIFY_*
+                'error_code'  an integer error, corresponding to REPO_VERIFY_*
                 'path'        the path to the broken file in the repository
                 'message'     a summary of the error
                 'details'     a dictionary of strings containing more detail

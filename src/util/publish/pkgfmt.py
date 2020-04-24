@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -20,10 +20,9 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 import pkg.no_site_packages
 
 # Prefixes should be ordered alphabetically with most specific first.
@@ -144,12 +143,12 @@ def read_line(f):
                 # but force standard leading space formatting.
                 if line.endswith("\\"):
                         accumulate += line[:-1]
-                        wrap_accumulate += re.sub("^\s+", "    ",
+                        wrap_accumulate += re.sub(r"^\s+", "    ",
                             wrap_line.rstrip(" \t"))
                         continue
                 elif accumulate:
                         line = accumulate + line
-                        wrap_line = wrap_accumulate + re.sub("^\s+", "    ",
+                        wrap_line = wrap_accumulate + re.sub(r"^\s+", "    ",
                             wrap_line)
                         accumulate = ""
                         wrap_accumulate = ""

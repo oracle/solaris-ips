@@ -20,9 +20,8 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
 
-from __future__ import print_function
 from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -1318,9 +1318,9 @@ def __api_plan_save(api_inst, logger=None):
                 # cleanup any old style imageplan save files
                 for f in os.listdir(api_inst.img_plandir):
                         path = os.path.join(api_inst.img_plandir, f)
-                        if re.search("^actions\.[0-9]+\.json$", f):
+                        if re.search(r"^actions\.[0-9]+\.json$", f):
                                 os.unlink(path)
-                        if re.search("^pkgs\.[0-9]+\.json$", f):
+                        if re.search(r"^pkgs\.[0-9]+\.json$", f):
                                 os.unlink(path)
         except OSError as e:
                 raise api_errors._convert_error(e)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
 
 import re
 import six
@@ -34,7 +34,7 @@ def valid_mediator(value):
         and 'error' is None or a string containing the error."""
 
         if isinstance(value, six.string_types):
-                if re.match("^[a-zA-Z0-9\-]+$", value):
+                if re.match(r"^[a-zA-Z0-9\-]+$", value):
                         return True, None
         return False, _("'{0}' is not a valid mediator; only alphanumeric "
             "characters are allowed").format(value)
@@ -107,7 +107,7 @@ def valid_mediator_implementation(value, allow_empty_version=False):
                         except version.VersionError as e:
                                 error = str(e)
 
-                if not error and iname and re.match("^[a-zA-Z0-9\-]+$", iname):
+                if not error and iname and re.match(r"^[a-zA-Z0-9\-]+$", iname):
                         return True, None
 
         if error:

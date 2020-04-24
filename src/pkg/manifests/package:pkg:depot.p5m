@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/depot@$(PKGVERS)
@@ -31,10 +31,6 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc
 dir  path=etc/pkg
 dir  path=etc/pkg/depot
-dir  path=etc/pkg/depot/apache22
-file path=etc/pkg/depot/apache22/depot.conf.mako
-file path=etc/pkg/depot/apache22/depot_httpd.conf.mako
-file path=etc/pkg/depot/apache22/depot_httpd_ssl_protocol.conf
 dir  path=etc/pkg/depot/conf.d
 file path=etc/pkg/depot/depot.conf.mako
 file path=etc/pkg/depot/depot_httpd.conf.mako
@@ -76,4 +72,4 @@ license cr_Oracle license=cr_Oracle
 depend type=require fmri=web/server/apache-24
 depend type=require fmri=web/server/apache-24/module/apache-ssl
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-24/module/apache-wsgi-27
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-37

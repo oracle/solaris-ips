@@ -80,10 +80,9 @@ $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 # file because those suppress the use of non-default
 # environments which are actually used as part of the
 # build. Bit of a smoke and mirrors. 
-PYTHON27	  = python2.7
 PYTHON34          = python3.4
 PYTHON37	  = python3.7
-PYDIR		  = usr/lib/$(PYTHON27)
+PYDIR		  = usr/lib/$(PYTHON37)
 PY34DIR		  = usr/lib/$(PYTHON34)
 PY37DIR		  = usr/lib/$(PYTHON37)
 PYDIRVP		  = $(PYDIR)/vendor-packages
@@ -91,7 +90,7 @@ PY34DIRVP	  = $(PY34DIR)/vendor-packages
 PY37DIRVP	  = $(PY37DIR)/vendor-packages
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON27) $(PKGROOT)/usr/bin/
+	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON37) $(PKGROOT)/usr/bin/
 PKG               = $(PKGCMDENV)/pkg
 PKGDEPEND         = $(PKGCMDENV)/pkgdepend
 PKGDIFF           = $(PKGCMDENV)/pkgdiff

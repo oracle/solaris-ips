@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 from collections import defaultdict, namedtuple
 import contextlib
 import errno

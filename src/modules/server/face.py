@@ -20,13 +20,12 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """face - provides the BUI (Browser User Interface) for the image packaging
 server"""
 
-from __future__ import print_function
 import cherrypy
 import cherrypy.lib.static
 import os

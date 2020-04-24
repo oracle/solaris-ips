@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import unicode_literals, print_function
+from __future__ import unicode_literals
 import os
 import six
 from pkg._pspawn import lib, ffi

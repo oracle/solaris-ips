@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -68,7 +68,6 @@ A RPC client can be implemented as follows:
         del client_rpc
 """
 
-from __future__ import print_function
 import errno
 import fcntl
 import logging
@@ -207,7 +206,7 @@ class PipeFile(object):
                         # the fd we received over the pipe is empty
                         self.__readfh = None
 
-                # recieve a file descriptor from the pipe
+                # receive a file descriptor from the pipe
                 fd = self.recvfd()
                 if fd == -1:
                         return b"" if self.__http_enc else ""
@@ -227,7 +226,7 @@ class PipeFile(object):
                         # the fd we received over the pipe is empty
                         self.__readfh = None
 
-                # recieve a file descriptor from the pipe
+                # receive a file descriptor from the pipe
                 fd = self.recvfd()
                 if fd == -1:
                         return ""

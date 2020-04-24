@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -39,7 +39,6 @@ class TestPkgCpuDependencies(pkg5unittest.SingleDepotTestCase):
         # leverage smf test infrastructure here
         smf_cmds = {
             "cpu": """#!/usr/bin/python
-from __future__ import print_function
 import os
 import resource
 import sys

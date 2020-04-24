@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -46,7 +46,6 @@ property sections or property objects can be used as well if advanced access or
 manipulation of configuration data is needed.
 """
 
-from __future__ import print_function
 import ast
 import codecs
 import copy

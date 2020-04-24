@@ -28,10 +28,8 @@
 """
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
-
-from __future__ import print_function
 
 #---------
 # Imports
@@ -791,7 +789,7 @@ class CpioFile(object):
         def getmember(self, name):
                 """Return a CpioInfo object for member `name'. If `name' can not be
                 found in the archive, KeyError is raised. If a member occurs more
-                than once in the archive, its last occurence is assumed to be the
+                than once in the archive, its last occurrence is assumed to be the
                 most up-to-date version.
                 """
                 cpioinfo = self._getmember(name)

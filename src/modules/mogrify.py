@@ -20,11 +20,9 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-
-from __future__ import print_function
 import os
 import re
 import shlex
@@ -337,7 +335,7 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
 
         newmsg = ""
         prevend = 0
-        for i in re.finditer("%\((.+?)\)|%\{(.+?)\}", msg):
+        for i in re.finditer(r"%\((.+?)\)|%\{(.+?)\}", msg):
                 m = i.string[slice(*i.span())]
                 assert m[1] in "({"
                 if m[1] == "(":

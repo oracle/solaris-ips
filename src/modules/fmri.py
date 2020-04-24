@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -44,7 +44,7 @@ PREF_PUB_PFX = "_PRE"
 PREF_PUB_PFX_ = PREF_PUB_PFX + "_"
 
 g_valid_pkg_name = \
-    re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
+    re.compile(r"^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
 
 class FmriError(Exception):
         """Base exception class for FMRI errors."""
@@ -557,7 +557,7 @@ class PkgFmri(object):
 class MatchingPkgFmri(PkgFmri):
         """ A subclass of PkgFmri with (much) weaker rules about package names.
         This is intended to accept user input with globbing characters. """
-        valid_pkg_name = re.compile("^[A-Za-z0-9_/\-\.\+\*\?]*$")
+        valid_pkg_name = re.compile(r"^[A-Za-z0-9_/\-\.\+\*\?]*$")
 
         def __init__(self, *args, **kwargs):
                 try:

@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 import calendar
 import datetime
 import errno
@@ -414,7 +413,7 @@ class Transaction(object):
                 the corresponding package, and its current state in the catalog.
                 """
                 def split_trans_id(tid):
-                        m = re.match("(\d+)_(.*)", tid)
+                        m = re.match(r"(\d+)_(.*)", tid)
                         return m.group(1), unquote(m.group(2))
 
                 trans_id = self.get_basename()

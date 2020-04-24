@@ -20,9 +20,8 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
 
-from __future__ import print_function
 from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -99,7 +98,7 @@ case $4 in
         # the following are too relaxed, eg.
         # "svcs sys/foo/tZst_suspend_svc:defXX"
         # would match, but is sufficient for this test case as we only
-        # ever resolve services that truely exist here.
+        # ever resolve services that truly exist here.
         *sy*t?st_suspend_svc:def*)
                 FMRI=svc:/system/test_suspend_svc:default
                 ;;

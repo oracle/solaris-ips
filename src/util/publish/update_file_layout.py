@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3.7
 #
 # CDDL HEADER START
 #
@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This program converts a directory structure from the V0layout to the
@@ -66,7 +66,7 @@ def error(text, cmd=None):
 
 def main_func():
         if len(sys.argv) != 2:
-                emsg(_("pkg.migrate takes a single directory as a paramter."))
+                emsg(_("pkg.migrate takes a single directory as a parameter."))
                 return 2
         
         dir_loc = os.path.abspath(sys.argv[1])

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """\
@@ -45,7 +45,6 @@ The model is that the summary is printed to standard out, and a fuller report is
 printed to catalog.html in the current directory.
 """
 
-from __future__ import print_function
 import datetime
 import fileinput
 import getopt
