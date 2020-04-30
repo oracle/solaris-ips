@@ -20,12 +20,12 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pylint.interfaces import IAstroidChecker
 from pylint.checkers import BaseChecker
-from logilab.common.modutils import get_module_part
+from astroid.modutils import get_module_part
 
 class MultiPlatformAPIChecker(BaseChecker):
     """

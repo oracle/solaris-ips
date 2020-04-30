@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/consolidation/ips/ips-incorporation@$(PKGVERS)
@@ -28,3 +28,4 @@ set name=pkg.description \
 set name=pkg.depend.install-hold value=core-os.ips
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)

@@ -21,13 +21,12 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
 # that use this module to not use it on other operating systems.
 
-from __future__ import print_function
 import datetime
 import errno
 import os

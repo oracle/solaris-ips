@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """SystemV / Solaris packages.
@@ -36,7 +36,6 @@ XXX Some caveats about rewinding a datastream or multiple packages per
 datastream.
 """
 
-from __future__ import print_function
 import errno
 import gzip
 import os

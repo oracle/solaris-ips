@@ -19,12 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
 
-from __future__ import  print_function
 import copy
 import calendar
 import collections
@@ -3404,7 +3403,7 @@ class Catalog(object):
                 """Returns a list of the catalog files needed to update
                 the existing catalog parts, based on the contents of the
                 catalog.attrs file in the directory indicated by 'path'.
-                A value of None will be returned if the the catalog has
+                A value of None will be returned if the catalog has
                 not been modified, while an empty list will be returned
                 if no catalog parts need to be updated, but the catalog
                 itself has changed."""

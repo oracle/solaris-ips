@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 import os
 import fnmatch
 import re
@@ -452,7 +451,7 @@ class Query(object):
                 RETURN_ACTIONS and determines whether the query is expected to
                 return packages or actions to the querier.
 
-                The "num_to_return" paramter is the maximum number of results to
+                The "num_to_return" parameter is the maximum number of results to
                 return.
 
                 The "start_point" parameter is the number of results to skip
@@ -1024,7 +1023,7 @@ class TermQuery(object):
 
         __dict_locks = {}
 
-        has_non_wildcard_character = re.compile('.*[^\*\?].*')
+        has_non_wildcard_character = re.compile(r'.*[^\*\?].*')
 
         fmris = None
 

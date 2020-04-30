@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 from collections import namedtuple, defaultdict
 from functools import reduce
 

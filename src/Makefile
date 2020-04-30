@@ -20,11 +20,9 @@
 #
 
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-PYTHON27 = /usr/bin/python2.7
-PYTHON34 = /usr/bin/python3.4
 PYTHON37 = /usr/bin/python3.7
 
 all := TARGET = all
@@ -55,14 +53,14 @@ JOBS = 4
 SUBDIRS=zoneproxy util/mkcert
 
 all: $(SUBDIRS)
-	$(PYTHON27) setup.py build
+	$(PYTHON37) setup.py build
 
 clean: $(SUBDIRS)
-	$(PYTHON27) setup.py clean
+	$(PYTHON37) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
-	$(PYTHON27) setup.py clobber
+	$(PYTHON37) setup.py clobber
 	@cd pkg; pwd; make clobber
 
 #
@@ -70,21 +68,18 @@ clobber: $(SUBDIRS)
 # it's the best way to ensure things stay pylint clean.
 #
 install: $(SUBDIRS)
-	$(PYTHON27) setup.py install
-	$(PYTHON34) setup.py install
 	$(PYTHON37) setup.py install
 
 lint:
-	$(PYTHON27) setup.py lint
+	$(PYTHON37) setup.py lint
 	@cd zoneproxy; pwd; make lint
 
 clint:
-	$(PYTHON27) setup.py clint
+	$(PYTHON37) setup.py clint
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
-	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint
-	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint_py3k
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
 
 check:
 	$(PYCODESTYLE) --statistics --count `cat tests/pycodestyle-whitelist.txt`
@@ -104,22 +99,16 @@ packages: install pylint check
 dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
 
-test-27:
-	$(PYTHON27) tests/run.py -j ${JOBS} -v
-
-test-34:
-	$(PYTHON34) tests/run.py -j ${JOBS} -v
-
 test-37:
 	$(PYTHON37) tests/run.py -j ${JOBS} -v
 
 test:
-	$(MAKE) -k test-27 test-34 test-37 JOBS=${JOBS}
+	$(MAKE) -k test-37 JOBS=${JOBS}
 
 test-verbose:
-	$(PYTHON27) setup.py test -v
+	$(PYTHON37) setup.py test -v
 
 test-generate:
-	$(PYTHON27) setup.py test -g
+	$(PYTHON37) setup.py test -g
 
 FRC:

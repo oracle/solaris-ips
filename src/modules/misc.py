@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 
 """
 Misc utility functions used by the packaging system.
@@ -292,7 +292,7 @@ def valid_pub_prefix(prefix):
         if not prefix:
                 return False
 
-        # This is a workaround for the the hostname_re being slow when
+        # This is a workaround for the hostname_re being slow when
         # it comes to finding invalid characters in the prefix string.
         if _invalid_host_chars.match(prefix):
                 # prefix bad chars
@@ -1130,6 +1130,7 @@ class DictProperty(object):
 
                 # for Python 3 compatibility
                 def items(self):
+                        # pylint: disable=W1620
                         return self.iteritems()
 
                 def keys(self):

@@ -34,8 +34,6 @@
 # modules/client/api.py:__init__.
 #
 
-from __future__ import print_function
-
 import calendar
 import collections
 import copy

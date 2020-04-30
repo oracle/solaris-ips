@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -42,7 +42,6 @@
 # PKG_IMAGE_TYPE [entire, partial, user] - type of image
 #       XXX or is this in the Image configuration?
 
-from __future__ import print_function
 try:
     import pkg.no_site_packages
 except ImportError:
@@ -1815,9 +1814,9 @@ def __api_plan_save(api_inst):
                 # cleanup any old style imageplan save files
                 for f in os.listdir(api_inst.img_plandir):
                         path = os.path.join(api_inst.img_plandir, f)
-                        if re.search("^actions\.[0-9]+\.json$", f):
+                        if re.search(r"^actions\.[0-9]+\.json$", f):
                                 os.unlink(path)
-                        if re.search("^pkgs\.[0-9]+\.json$", f):
+                        if re.search(r"^pkgs\.[0-9]+\.json$", f):
                                 os.unlink(path)
         except OSError as e:
                 raise api_errors._convert_error(e)

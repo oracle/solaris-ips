@@ -19,10 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 import os
 import shlex
 import signal

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -30,7 +30,6 @@ This module contains the DriverAction class, which represents a driver-type
 packaging object.
 """
 
-from __future__ import print_function
 import os
 from . import generic
 import six
@@ -292,7 +291,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
                         os.chown(datp, st.st_uid, st.st_gid)
                         os.rename(datp, dap)
 
-                # In the case where the the packaging system thinks the driver
+                # In the case where the packaging system thinks the driver
                 # is installed and the driver database doesn't, do a fresh
                 # install instead of an update.  If the system thinks the driver
                 # is installed but the packaging has no previous knowledge of

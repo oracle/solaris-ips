@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This script will generate the certificates needed for testing.
@@ -36,7 +36,6 @@
 # so there may be additional .pem files that need to be added
 # or removed from the mercurial commit.
 
-from __future__ import print_function
 import os
 import pkg.pkgsubprocess as subprocess
 import shutil

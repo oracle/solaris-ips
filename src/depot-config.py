@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 -Es
+#!/usr/bin/python3.7 -Es
 #
 # CDDL HEADER START
 #
@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.no_site_packages

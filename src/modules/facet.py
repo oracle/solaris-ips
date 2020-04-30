@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic facet support
@@ -479,6 +479,7 @@ class Facets(dict):
                         rv.append((value, src, masked))
                 return rv
 
+        # pylint: disable=W1620
         def items(self):
                 return [a for a in self.iteritems()]
 

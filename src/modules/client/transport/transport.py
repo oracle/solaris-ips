@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import  print_function
 import copy
 import datetime as dt
 import errno
@@ -890,7 +889,7 @@ class Transport(object):
                         # This returns a list of transient errors
                         # that occurred during the transport operation.
                         # An exception handler here isn't necessary
-                        # unless we want to supress a permanent failure.
+                        # unless we want to suppress a permanent failure.
                         try:
                                 errlist = d.get_catalog1(flist, download_dir,
                                     header, ts, progtrack=progtrack, pub=pub,
@@ -1813,7 +1812,7 @@ class Transport(object):
                         # This returns a list of transient errors
                         # that occurred during the transport operation.
                         # An exception handler here isn't necessary
-                        # unless we want to supress a permanant failure.
+                        # unless we want to suppress a permanent failure.
                         try:
                                 errlist = d.get_files(filelist, download_dir,
                                     progtrack, v, header, pub=pub)

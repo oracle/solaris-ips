@@ -22,7 +22,6 @@
 # Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-from __future__ import print_function
 import errno
 import fnmatch
 import os
@@ -103,9 +102,8 @@ pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
 extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 cffi_dir = os.path.normpath(os.path.join(pwd, "cffi_src"))
 
-# Extract Python minor version.
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('2.7', '3.4', '3.7')
+assert py_version in ('3.7')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 py64_executable = None
@@ -137,11 +135,9 @@ execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 userattrd_dir = 'etc/user_attr.d'
 sysrepo_dir = 'etc/pkg/sysrepo'
-sysrepo_dir_22 = 'etc/pkg/sysrepo/apache22'
 sysrepo_logs_dir = 'var/log/pkg/sysrepo'
 sysrepo_cache_dir = 'var/cache/pkg/sysrepo'
 depot_dir = 'etc/pkg/depot'
-depot_dir_22 = 'etc/pkg/depot/apache22'
 depot_conf_dir = 'etc/pkg/depot/conf.d'
 depot_logs_dir = 'var/log/pkg/depot'
 depot_cache_dir = 'var/cache/pkg/depot'
@@ -427,10 +423,6 @@ sysrepo_files = [
         'util/apache2/sysrepo/sysrepo_httpd.conf.mako',
         'util/apache2/sysrepo/sysrepo_publisher_response.mako',
         ]
-sysrepo_files_22 = [
-        'util/apache22/sysrepo/sysrepo_httpd.conf.mako',
-        'util/apache22/sysrepo/sysrepo_publisher_response.mako',
-        ]
 sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
@@ -441,11 +433,6 @@ depot_files = [
         'util/apache2/depot/depot_httpd.conf.mako',
         'util/apache2/depot/depot_index.py',
         'util/apache2/depot/depot_httpd_ssl_protocol.conf',
-        ]
-depot_files_22 = [
-        'util/apache22/depot/depot.conf.mako',
-        'util/apache22/depot/depot_httpd.conf.mako',
-        'util/apache22/depot/depot_httpd_ssl_protocol.conf',
         ]
 depot_log_stubs = [
         'util/apache2/depot/logs/access_log',
@@ -771,9 +758,6 @@ class install_func(_install):
                                 else:
                                         file_util.copy_file(src, dest, update=1)
 
-                # Don't install the scripts for python 3.*
-                if py_version in ('3.4', '3.7'):
-                        return
                 for d, files in six.iteritems(scripts[osname]):
                         for (srcname, dstname) in files:
                                 dst_dir = util.change_root(self.root_dir, d)
@@ -1695,11 +1679,9 @@ if osname == 'sunos':
                 (authattrd_dir, authattrd_files),
                 (userattrd_dir, userattrd_files),
                 (sysrepo_dir, sysrepo_files),
-                (sysrepo_dir_22, sysrepo_files_22),
                 (sysrepo_logs_dir, sysrepo_log_stubs),
                 (sysrepo_cache_dir, {}),
                 (depot_dir, depot_files),
-                (depot_dir_22, depot_files_22),
                 (depot_conf_dir, {}),
                 (depot_logs_dir, depot_log_stubs),
                 (depot_cache_dir, {}),
@@ -1808,10 +1790,7 @@ setup(cmdclass = cmdclasses,
     ext_package = 'pkg',
     ext_modules = ext_modules,
     classifiers = [
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.7',
     ]
 )

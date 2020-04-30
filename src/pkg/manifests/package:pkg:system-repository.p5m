@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
@@ -31,9 +31,6 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc
 dir  path=etc/pkg
 dir  path=etc/pkg/sysrepo
-dir  path=etc/pkg/sysrepo/apache22
-file path=etc/pkg/sysrepo/apache22/sysrepo_httpd.conf.mako
-file path=etc/pkg/sysrepo/apache22/sysrepo_publisher_response.mako
 file path=etc/pkg/sysrepo/sysrepo_httpd.conf.mako
 file path=etc/pkg/sysrepo/sysrepo_p5p.py pkg.tmp.autopyc=false
 file path=etc/pkg/sysrepo/sysrepo_publisher_response.mako
@@ -71,7 +68,7 @@ file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
 # force a dependency on the six package because we bypass dependency check for it
-depend type=require fmri=library/python/six-27
+depend type=require fmri=library/python/six-37
 #
 # The manual dependency on apache results from our calling apachectl from
 # our method script, and can't be detected by pkgdepend.
@@ -79,4 +76,4 @@ depend type=require fmri=library/python/six-27
 depend type=require fmri=web/server/apache-24
 depend type=require fmri=web/server/apache-24/module/apache-ssl
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-24/module/apache-wsgi-27
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-37

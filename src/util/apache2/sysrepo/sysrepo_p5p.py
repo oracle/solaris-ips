@@ -19,9 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
 
-from __future__ import print_function
 import pkg.p5p
 
 import errno

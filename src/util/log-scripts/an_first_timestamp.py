@@ -21,14 +21,13 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 
 """an_first_timestamp.py - read first line of an Apache HTTPD log, and print 
    Unix timestamp"""
 
-from __future__ import print_function
 import datetime
 import fileinput
 import re

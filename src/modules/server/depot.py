@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import division
@@ -65,7 +65,7 @@ from six.moves.urllib.parse import quote, urlunsplit
 # getgrgid for every file downloaded.  This in turn leads to nscd usage which
 # limits the throughput of the depot process.  Setting these attributes to
 # undefined causes tarfile to skip these calls in tarfile.gettarinfo().  This
-# information is unnecesary as it will not be used by the client.
+# information is unnecessary as it will not be used by the client.
 tarfile.pwd = None
 tarfile.grp = None
 
@@ -212,7 +212,7 @@ class DepotHTTP(_Depot):
                 # Determine available operations and disable as requested.
                 self.vops = {}
                 for name, func in inspect.getmembers(self, inspect.ismethod):
-                        m = re.match("(.*)_(\d+)", name)
+                        m = re.match(r"(.*)_(\d+)", name)
 
                         if not m:
                                 continue
