@@ -824,7 +824,11 @@ def main_func():
         ref = publisher.RepositoryURI(misc.parse_uri(ref_repo_uri))
         if ref.scheme == "file":
                 try:
-                        ref_repo = sr.Repository(read_only=dry_run,
+                        # It is possible that the client does not
+                        # have write access to the reference repo
+                        # so open it read-only to prevent the
+                        # attempt to create a lock file in it.
+                        ref_repo = sr.Repository(read_only=True,
                             root=ref.get_pathname())
                 except sr.RepositoryError as e:
                         abort(str(e))

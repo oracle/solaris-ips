@@ -292,7 +292,7 @@ def cmplines(a, b):
                         b_sk = b[0].attrs[key_attr]
 
                 c = misc.cmp(a_sk, b_sk)
-                # misc.cmp raises NotImplemented for uncomparable types in
+                # misc.cmp returns NotImplemented for uncomparable types in
                 # Python 3. Sort them based on stringified key attribute.
                 if c is NotImplemented:
                         c = misc.cmp(str(a_sk), str(b_sk))
@@ -449,7 +449,14 @@ def write_line(line, fileobj):
                         # Simple comparison for V1 format.
                         return misc.cmp(a, b)
                 # For V2 format, order aliases by interpreted value.
-                return misc.cmp(get_alias_key(a), get_alias_key(b))
+                c = misc.cmp(get_alias_key(a), get_alias_key(b))
+                # misc.cmp returns NotImplemented for uncomparable types in
+                # Python 3. Instead fallback to using the string of the key
+                # generated from the alias and sort alphabetically. This
+                # maintains the python 2 sorting behaviour.
+                if c is NotImplemented:
+                    c = -misc.cmp(str(get_alias_key(a)), str(get_alias_key(b)))
+                return c
 
         def astr(aout):
                 # Number of attribute values for first line and remaining.
