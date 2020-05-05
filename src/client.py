@@ -1352,13 +1352,7 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
                     child_image_plans, api_inst=api_inst)
                 if auto_update_svc:
                     svcdir = '/system/volatile/' + AUTO_UPDATE_FMRI
-                    if six.PY2:
-                        try:
-                            os.makedirs(svcdir)
-                        except OSError:
-                            pass
-                    else:
-                        os.makedirs(svcdir, exists_ok=True)
+                    os.makedirs(svcdir, exist_ok=True)
                     with open(svcdir + '/parsable_output.json', 'w') as poj:
                         poj.write(json.dumps(parsable_plan))
                 else:
