@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -1020,6 +1020,14 @@ driver name=intel_nb5000 alias=pci8086,25c0 alias=pci8086,25d0 alias=pci8086,25d
 # alphabetically or asciibetically.
 driver alias=usb1044,800a alias=usb13b1,20 alias=usb148f,2573 alias=usb15a9,4 alias=usb7d1,3c03 alias=usb7d1,3c04 alias=usbb05,1723 clone_perms="rum 0666 root sys" name=rum perms="* 0666 root sys" variant.arch=i386
 
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbser_edge perms="* 0666 root sys" alias=usbif1608,1.config1.0 alias=usbif1608,1.100.config1.0 alias=usbif1608,3.config1.0 alias=usbif1608,4.config1.0 alias=usbif1608,5.config1.0 alias=usbif1608,6.config1.0
+
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbvc perms="* 0666 root sys" alias=usbia46d,8c1.config1.0 alias=usbia46d,8c5.config1.0 alias=usbia46d,8c2.config1.0 alias=usbia,classe alias=usbia46d,8c3.config1.0
+
 # This driver's attributes should appear in the order: name, perms, clone_perms,
 # privs, policy, devlink, alias.
 driver name=driver alias="bobcat" clone_perms="driver 0666 root sys" devlink=type=ddi_pseudo;name=sv\\t\\D perms="driver 0666 root sys" policy="write_priv_set=net_rawaccess" privs=sys_config
@@ -1120,6 +1128,25 @@ driver name=rum clone_perms="rum 0666 root sys" perms="* 0666 root sys" \\
     alias=usb7d1,3c03 \\
     alias=usb7d1,3c04 \\
     alias=usbb05,1723 variant.arch=i386
+
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbser_edge perms="* 0666 root sys" \\
+    alias=usbif1608,1.100.config1.0 \\
+    alias=usbif1608,1.config1.0 \\
+    alias=usbif1608,3.config1.0 \\
+    alias=usbif1608,4.config1.0 \\
+    alias=usbif1608,5.config1.0 \\
+    alias=usbif1608,6.config1.0
+
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbvc perms="* 0666 root sys" \\
+    alias=usbia,classe \\
+    alias=usbia46d,8c1.config1.0 \\
+    alias=usbia46d,8c2.config1.0 \\
+    alias=usbia46d,8c3.config1.0 \\
+    alias=usbia46d,8c5.config1.0
 file path=etc/example group=root mode=0755 owner=root facet.devel=true \\
     variant.arch=i386
 
@@ -1266,6 +1293,25 @@ driver name=rum perms="* 0666 root sys" clone_perms="rum 0666 root sys" \\
     alias=usb13b1,20 \\
     alias=usb148f,2573 \\
     alias=usb15a9,4 variant.arch=i386
+
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbser_edge perms="* 0666 root sys" \\
+    alias=usbif1608,1.100.config1.0 \\
+    alias=usbif1608,1.config1.0 \\
+    alias=usbif1608,3.config1.0 \\
+    alias=usbif1608,4.config1.0 \\
+    alias=usbif1608,5.config1.0 \\
+    alias=usbif1608,6.config1.0
+
+# Ensure the correct sorting for an alias that does not fit with the main
+# searching aliases meaning it falls to an alphabetical sort.
+driver name=usbvc perms="* 0666 root sys" \\
+    alias=usbia46d,8c1.config1.0 \\
+    alias=usbia46d,8c2.config1.0 \\
+    alias=usbia46d,8c3.config1.0 \\
+    alias=usbia46d,8c5.config1.0 \\
+    alias=usbia,classe
 legacy pkg=SUNWipkg arch=i386 category=system \\
     desc="The Image Packaging System (IPS), or pkg(7), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server." \\
     hotline="Please contact your local service provider" \\
