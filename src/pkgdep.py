@@ -595,8 +595,10 @@ if __name__ == "__main__":
             codeset=locale.getpreferredencoding())
         misc.set_fd_limits(printer=error)
 
+        # Commented out for now while ON fixes the invalid escape
+        # sequences problems.
         # Make all warnings be errors.
-        warnings.simplefilter('error')
+        # warnings.simplefilter('error')
         if six.PY3:
                 # disable ResourceWarning: unclosed file
                 warnings.filterwarnings("ignore", category=ResourceWarning)
