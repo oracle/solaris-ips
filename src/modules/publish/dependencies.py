@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -1101,7 +1101,7 @@ def __predicate_path_id_attrget(d):
         # VariantCombination isn't useful for our grouping needs.
         try:
                 return d[0].attrs["predicate"], \
-                    d[0].attrs.get(path_id_prefix, None)
+                    d[0].attrs.get(path_id_prefix, '')
         except KeyError:
                 raise RuntimeError("Expected this to have a predicate:{0}".format(
                     d[0]))
@@ -1193,13 +1193,13 @@ def __collapse_conditionals(deps):
                         if no_collapse:
                                 new_group.append((path_id, no_collapse))
 
-                        # If path_id is None, then these conditional
+                        # If path_id has no value, then these conditional
                         # dependencies were not inferred links needed to reach a
                         # file dependency.  In that case, the conditional
                         # dependencies can be individually collapsed to require
                         # dependencies but cannot be collapsed together into a
                         # require-any dependency.
-                        if path_id is None:
+                        if len(path_id) == 0:
                                 for ds, v in collapse_deps:
                                         for d in ds:
                                                 res_dep = actions.depend.DependencyAction(**d.attrs)
@@ -1225,7 +1225,7 @@ def __collapse_conditionals(deps):
                                                         (t_pfmri, res_dep, v))
                                 continue
 
-                        # Since path_id is not None, these conditional
+                        # Since path_id has a value, these conditional
                         # dependencies were all inferred while trying to satisfy
                         # a dependency on the same "file."  Since they all have
                         # the same predicate, they must be collapsed into a
@@ -1417,7 +1417,7 @@ def __remove_extraneous_conditionals(deps, omitted_req_any):
                     include_scheme=False)
 
         def path_id_attrget(d):
-                return d[0].attrs.get(path_id_prefix, None)
+                return d[0].attrs.get(path_id_prefix, '')
 
         req_dict = {}
         for target, group in itertools.groupby(sorted(
@@ -1539,7 +1539,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
         for (predicate, path_id), group in itertools.groupby(sorted(
             [(d, v) for d, v in res if d.attrs["type"] == "conditional"],
             key=__predicate_path_id_attrget), __predicate_path_id_attrget):
-                if not path_id:
+                if len(path_id) == 0:
                         continue
                 group = list(group)
                 for i, (d1, v1) in enumerate(group):
