@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -1287,6 +1287,13 @@ def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
                         return True
                 if new.version.release < old.version.release:
                         return False
+
+                # The release values are the same and so if
+                # there is no branch sequence associated with
+                # the 'old' then the 'new' must be a successor
+                # of it.
+                if old.version.branch is None:
+                        return True
 
                 if new.version.branch > old.version.branch:
                         return True
