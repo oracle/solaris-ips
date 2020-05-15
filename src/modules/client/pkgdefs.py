@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -184,6 +184,9 @@ PKG_STATE_UNSUPPORTED = 10      # Package contains invalid or
 
 # This state indicates that this package is frozen.
 PKG_STATE_FROZEN = 11
+
+# This state indicates that this package is in legacy namespace.
+PKG_STATE_LEGACY = 12
 
 # This is a transitory state used for temporary package sources to
 # indicate that the package entry should be removed if it does not

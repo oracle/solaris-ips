@@ -2102,7 +2102,7 @@ class Catalog(object):
                                 if name.startswith("variant") or \
                                     name.startswith("facet") or \
                                     name.startswith("pkg.depend.") or \
-                                    name in ("pkg.obsolete", "pkg.renamed"):
+                                    name in ("pkg.obsolete", "pkg.renamed", "pkg.legacy"):
                                         # variant and facet data goes to the
                                         # dependency catalog part.
                                         dep_acts["C"].append(str(act))
@@ -3123,6 +3123,10 @@ class Catalog(object):
                                                         states.add(
                                                             pkgdefs.PKG_STATE_OBSOLETE)
                                                 continue
+                                        if atname == "pkg.legacy":
+                                                if atvalue == "true":
+                                                        states.add(
+                                                            pkgdefs.PKG_STATE_LEGACY)
                         except api_errors.InvalidPackageErrors:
                                 # Ignore errors for packages that have invalid
                                 # or unsupported metadata.

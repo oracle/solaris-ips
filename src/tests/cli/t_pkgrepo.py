@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -91,6 +91,12 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             open amber@3.0,5.11-0:20110804T203458Z
             add set name=pkg.renamed value=true
             add depend fmri=pkg:/bronze@1.0 type=require
+            close
+        """
+
+        amber35 = """
+            open amber@3.5,5.11-0:20110804T203458Z
+            add set name=pkg.legacy value=true
             close
         """
 
@@ -1593,7 +1599,7 @@ publisher\tprefix\texample.net
 
                 # Publish some packages.
                 self.pkgsend_bulk(repo_uri, (self.tree10, self.amber10,
-                    self.amber20, self.amber30, self.amber40))
+                    self.amber20, self.amber30, self.amber35, self.amber40))
 
                 # Verify graceful exit if invalid or incomplete set of
                 # options specified.
@@ -1622,6 +1628,11 @@ publisher\tprefix\texample.net
 "pkg.obsolete": [{"value": ["true"]}], "publisher": "test", \
 "release": "4.0", "timestamp": "20110804T203458Z", \
 "version": "4.0,5.11-0:20110804T203458Z"}, \
+{"branch": "0", "build-release": "5.11", "name": "amber", \
+"pkg.fmri": "pkg://test/amber@3.5,5.11-0:20110804T203458Z", \
+"pkg.legacy": [{"value": ["true"]}], "publisher": "test", \
+"release": "3.5", "timestamp": "20110804T203458Z", \
+"version": "3.5,5.11-0:20110804T203458Z"}, \
 {"branch": "0", "build-release": "5.11", "name": "amber", \
 "pkg.fmri": "pkg://test/amber@3.0,5.11-0:20110804T203458Z", \
 "pkg.renamed": [{"value": ["true"]}], "publisher": "test", \
@@ -1655,6 +1666,7 @@ publisher\tprefix\texample.net
                 expected = """\
 PUBLISHER NAME                                          O VERSION
 test      amber                                         o 4.0-0:20110804T203458Z
+test      amber                                         l 3.5-0:20110804T203458Z
 test      amber                                         r 3.0-0:20110804T203458Z
 test      amber                                           2.0-0:20110804T203458Z
 test      amber                                           1.0-0:20110804T203458Z
@@ -1666,6 +1678,7 @@ test      tree                                            1.0-0:20110804T203458Z
                 self.pkgrepo("list -s {0} -H".format(repo_path))
                 expected = """\
 test      amber                                         o 4.0-0:20110804T203458Z
+test      amber                                         l 3.5-0:20110804T203458Z
 test      amber                                         r 3.0-0:20110804T203458Z
 test      amber                                           2.0-0:20110804T203458Z
 test      amber                                           1.0-0:20110804T203458Z
@@ -1678,6 +1691,7 @@ test      tree                                            1.0-0:20110804T203458Z
                 expected = """\
 PUBLISHER	NAME	O	RELEASE	BUILD RELEASE	BRANCH	PACKAGING DATE	FMRI
 test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	amber	l	3.5	5.11	0	20110804T203458Z	pkg://test/amber@3.5,5.11-0:20110804T203458Z
 test	amber	r	3.0	5.11	0	20110804T203458Z	pkg://test/amber@3.0,5.11-0:20110804T203458Z
 test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
 test	amber		1.0	5.11	0	20110804T203458Z	pkg://test/amber@1.0,5.11-0:20110804T203458Z
@@ -1705,6 +1719,23 @@ test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T20345
     "release": "4.0",
     "timestamp": "20110804T203458Z",
     "version": "4.0,5.11-0:20110804T203458Z"
+  },
+  {
+    "branch": "0",
+    "build-release": "5.11",
+    "name": "amber",
+    "pkg.fmri": "pkg://test/amber@3.5,5.11-0:20110804T203458Z",
+    "pkg.legacy": [
+      {
+        "value": [
+          "true"
+        ]
+      }
+    ],
+    "publisher": "test",
+    "release": "3.5",
+    "timestamp": "20110804T203458Z",
+    "version": "3.5,5.11-0:20110804T203458Z"
   },
   {
     "branch": "0",
@@ -1848,6 +1879,7 @@ test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T20345
                 self.pkgrepo("list -s {0} -H -F tsv".format(repo_path))
                 expected = """\
 test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	amber	l	3.5	5.11	0	20110804T203458Z	pkg://test/amber@3.5,5.11-0:20110804T203458Z
 test	amber	r	3.0	5.11	0	20110804T203458Z	pkg://test/amber@3.0,5.11-0:20110804T203458Z
 test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
 test	amber		1.0	5.11	0	20110804T203458Z	pkg://test/amber@1.0,5.11-0:20110804T203458Z

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -71,6 +71,22 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
             open hier/foo@1.0,5.11-0
             close """
 
+        renamed10 = """
+            open renamed@1.0,5.11-0
+            add set name=pkg.renamed value=true
+            add depend type=require fmri=foo10@1.0
+            close """
+
+        legacy10 = """
+            open legacy@1.0,5.11-0
+            add set name=pkg.legacy value=true
+            close """
+
+        obsolete10 = """
+            open obsolete@1.0,5.11-0
+            add set name=pkg.obsolete value=true
+            close """
+
         def __check_qoutput(self, errout=False):
                 self.assertEqualDiff(self.output, "")
                 if errout:
@@ -87,7 +103,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo1, self.foo10,
                     self.foo11, self.foo12, self.foo121, self.food12,
-                    self.hierfoo10))
+                    self.hierfoo10, self.renamed10, self.legacy10,
+                    self.obsolete10))
 
                 # Ensure that the second repo's packages have exactly the same
                 # timestamps as those in the first ... by copying the repo over.
@@ -132,7 +149,13 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     "food 1.2-0 ---\n"
                     "food (test2) 1.2-0 ---\n"
                     "hier/foo 1.0-0 ---\n"
-                    "hier/foo (test2) 1.0-0 ---\n")
+                    "hier/foo (test2) 1.0-0 ---\n"
+                    "legacy 1.0-0 --l\n"
+                    "legacy (test2) 1.0-0 --l\n"
+                    "obsolete 1.0-0 --o\n"
+                    "obsolete (test2) 1.0-0 --o\n"
+                    "renamed 1.0-0 --r\n"
+                    "renamed (test2) 1.0-0 --r\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -155,7 +178,13 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     "food 1.2-0 ---\n"
                     "food (test2) 1.2-0 ---\n"
                     "hier/foo 1.0-0 ---\n"
-                    "hier/foo (test2) 1.0-0 ---\n")
+                    "hier/foo (test2) 1.0-0 ---\n"
+                    "legacy 1.0-0 --l\n"
+                    "legacy (test2) 1.0-0 --l\n"
+                    "obsolete 1.0-0 --o\n"
+                    "obsolete (test2) 1.0-0 --o\n"
+                    "renamed 1.0-0 --r\n"
+                    "renamed (test2) 1.0-0 --r\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
