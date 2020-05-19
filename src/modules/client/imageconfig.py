@@ -62,6 +62,7 @@ MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
 USE_SYSTEM_REPO = "use-system-repo"
 CHECK_CERTIFICATE_REVOCATION = "check-certificate-revocation"
+BE_USE_SUGGESTED_NAME = "be-use-suggested-name"
 
 default_policies = {
     BE_POLICY: "default",
@@ -71,7 +72,8 @@ default_policies = {
     MIRROR_DISCOVERY: False,
     SEND_UUID: True,
     SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY,
-    USE_SYSTEM_REPO: False
+    USE_SYSTEM_REPO: False,
+    BE_USE_SUGGESTED_NAME: True,
 }
 
 default_policy_map = {
@@ -192,7 +194,9 @@ class ImageConfig(cfg.FileConfig):
                     cfg.Property(CHECK_CERTIFICATE_REVOCATION,
                         default=default_policies[
                             CHECK_CERTIFICATE_REVOCATION]),
-                    cfg.PropList("dehydrated")
+                    cfg.PropList("dehydrated"),
+                    cfg.PropBool(BE_USE_SUGGESTED_NAME,
+                        default=default_policies[BE_USE_SUGGESTED_NAME]),
                 ]),
                 cfg.PropertySection("facet", properties=[
                     cfg.PropertyTemplate(r"^facet\..*", prop_type=cfg.PropBool),
