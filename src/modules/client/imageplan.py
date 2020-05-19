@@ -4012,6 +4012,19 @@ class ImagePlan(object):
                 pt.plan_start(pt.PLAN_PKGPLAN, goal=max_items)
                 same_excludes = self.__old_excludes == self.__new_excludes
 
+                # The admin can opt-out of using the suggested be-name
+                # by setting the image level property
+                # be-use-suggested-name to False.  If there is no value
+                # for the property in this image assume they want the
+                # default of True.
+                try:
+                    use_suggested = self.image.cfg.get_property("property",
+                        pkg.client.imageconfig.BE_USE_SUGGESTED_NAME)
+                except pkg.config.UnknownPropertyError:
+                    use_suggested = True
+                if type(use_suggested) != type(True):
+                    raise pkg.config.InvalidPropertyValueError
+
                 for oldfmri, old_in, newfmri, new_in in eval_list:
                         pp = pkgplan.PkgPlan(self.image)
                         m = self.__get_manifest(newfmri, new_in,
@@ -4038,7 +4051,7 @@ class ImagePlan(object):
                         # have the manifest for the new version to hand now
                         # we abuse that to lookup the suggested BE name for
                         # the case where the plan doesn't have one already.
-                        if self.pd._be_name == None and \
+                        if self.pd._be_name is None and use_suggested and\
                            self.image.is_liveroot() and newfmri and \
                            newfmri.get_name() == 'release/name':
                             self.pd._be_name = m.get(

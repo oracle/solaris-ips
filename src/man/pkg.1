@@ -1830,40 +1830,35 @@ properties, use the <command>pkg set-property</command> and
 <varlistentry><term><literal>be-policy</literal></term>
 <listitem><para>(string) Specify when a boot environment is created during
 packaging operations. The following values are allowed:</para>
-<variablelist termlength="wholeline">
-<varlistentry><term><literal>default</literal></term>
-<listitem><para>Apply the default boot environment creation policy, <literal>create-backup
-</literal>.</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>always-new</literal></term>
-<listitem><para>Requires a reboot for all package operations by performing them
-in a new boot environment set as active on the next boot. A backup boot
-environment is not created unless explicitly requested.</para>
-<para>This policy is the safest, but is more strict than most sites need since
-no packages can be added without a reboot.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>create-backup</literal></term>
-<listitem><para>For package operations that require a reboot, a new boot environment
-is created and set as active on the next boot. If packages are modified or
-content that could affect the kernel is installed and the operation affects
-the live boot environment, a backup boot environment is created but not set
-as active. A backup boot environment can also be explicitly requested.</para>
-<para>This policy is potentially risky only if newly installed software causes
-system instability, which is possible but relatively rare.</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>when-required</literal></term>
-<listitem><para>For package operations that require a reboot, a new boot environment
-is created and set as active on the next boot. A backup boot environment is
-not created unless explicitly requested.</para>
-<para>This policy carries the greatest risk since if a packaging change to
-the live boot environment makes further changes impossible, there might be
-no recent boot environment to which one can fallback.</para>
+	<variablelist termlength="wholeline">
+		<varlistentry><term><literal>default</literal></term>
+		<listitem><para>Apply the default boot environment creation policy, <literal>create-backup</literal>.</para>
+		</listitem> </varlistentry>
+		<varlistentry><term><literal>always-new</literal></term>
+		<listitem><para>Requires a reboot for all package operations by performing them
+		in a new boot environment set as active on the next boot. A backup boot
+		environment is not created unless explicitly requested.</para>
+		<para>This policy is the safest, but is more strict than most sites need since
+		no packages can be added without a reboot.</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>create-backup</literal></term>
+		<listitem><para>For package operations that require a reboot, a new boot environment
+		is created and set as active on the next boot. If packages are modified or
+		content that could affect the kernel is installed and the operation affects
+		the live boot environment, a backup boot environment is created but not set
+		as active. A backup boot environment can also be explicitly requested.</para>
+		<para>This policy is potentially risky only if newly installed software causes
+		system instability, which is possible but relatively rare.</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>when-required</literal></term>
+		<listitem><para>For package operations that require a reboot, a new boot environment
+		is created and set as active on the next boot. A backup boot environment is
+		not created unless explicitly requested.</para>
+		<para>This policy carries the greatest risk since if a packaging change to
+		the live boot environment makes further changes impossible, there might be
+		no recent boot environment to which one can fallback.</para>
+		</listitem></varlistentry>
+	</variablelist>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ca-path</literal></term>
@@ -1928,6 +1923,13 @@ see the <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refent
 when performing network operations. Although users can disable this option,
 some network repositories might refuse to talk to clients that do not supply
 a UUID.</para>
+<para>Default value: <literal>True</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>be-use-suggested-be-name</literal></term>
+<listitem><para>(boolean) Use the suggested Boot Environment name from pkg:/release/name
+when updates where a new BE is created and <literal>--be-name</literal> has not been
+supplied.</para>
 <para>Default value: <literal>True</literal></para>
 </listitem>
 </varlistentry>
