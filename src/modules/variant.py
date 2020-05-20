@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic variant support
@@ -221,6 +221,9 @@ class VariantCombinations(object):
                 #  [(1, "b"), (2, "x"), (3, "n")],
                 #  [(1, "b"), (2, "y"), (3, "m")],
                 #  [(1, "b"), (2, "y"), (3, "n")]]
+                # The use of frozenset means that the order of the elements
+                # within each frozenset will be non-deterministic,
+                # so any code using them must NOT rely upon the order.
                 self.__combinations = [frozenset(l) for l in tmp]
                 res = set(self.__combinations)
                 if satisfied:
@@ -427,6 +430,18 @@ class VariantCombinations(object):
                 reduce the instances to the empty set if the instances cover all
                 possible combinations of the template provided.
 
+                Example:
+                With the following template: A(a, b), Z(x, y) the following
+                combinations are possible:
+                    (A(a), Z(x)), (A(a), Z(y)), (A(b), Z(x)), (A(b), Z(y))
+                if a set of combinations, using the above, has the following:
+                    (A(a), Z(x)), (A(a), Z(y))
+                then a simplification of this set results in:
+                    (A(a))
+                because all possible values of Z are present and so we
+                just need to know what is left to describe the contents
+                of the set.
+
                 A general approach to simplification is currently deemed to
                 difficult in the face of arbitrary numbers of variant types and
                 arbitrary numbers of variant."""
@@ -464,8 +479,12 @@ class VariantCombinations(object):
                         for variant_name in sorted(self.__simpl_template,
                             reverse=True):
                                 def exclude_name(item):
+                                        # item is a frozenset and so we need
+                                        # to ensure it is processed in order
+                                        # so the returned key (k) will match
+                                        # across the values rel_set.
                                         return [
-                                            (k, v) for k, v in item
+                                            (k, v) for k, v in sorted(item)
                                             if k != variant_name
                                         ]
                                 # For sanity, instead of modifying rel_set on
