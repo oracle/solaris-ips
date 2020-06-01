@@ -38,7 +38,7 @@ class TestPkgCpuDependencies(pkg5unittest.SingleDepotTestCase):
         persistent_setup = True
         # leverage smf test infrastructure here
         smf_cmds = {
-            "cpu": """#!/usr/bin/python
+            "cpu": """#!/usr/bin/python3
 import os
 import resource
 import sys
