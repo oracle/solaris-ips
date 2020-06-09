@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 
 from . import testutils
 if __name__ == "__main__":
@@ -70,6 +70,14 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             close
             """
 
+        bla10 = """
+            open bla@1.0,5.11-0
+            add dir mode=0755 owner=root group=sys path=/opt
+            add dir mode=0755 owner=root group=sys path=/opt/mybin
+            add file test_perm mode=644 owner=root group=sys path=/opt/mybin/test_perm
+            close
+            """
+
         sysattr = """
             open sysattr@1.0-0
             add dir mode=0755 owner=root group=bin path=/p1
@@ -92,7 +100,8 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
            "dricon_ep": """\n""",
            "permission": "",
            "bronze1": "",
-           "bronze2": ""
+           "bronze2": "",
+           "test_perm": "Test File"
         }
 
         def setUp(self):
@@ -319,6 +328,21 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("uninstall foo bar")
 
+        def test_verify_perms_py3(self):
+                """Test that verify does adhear to file permission like other
+                cmds, and do not exit octal notation"""
+
+                self.pkgsend_bulk(self.rurl, self.bla10)
+                self.image_create(self.rurl)
+                self.pkg("install bla")
+                fpath = os.path.join(self.img_path(),"opt/mybin/test_perm")
+                os.chmod(fpath, 0o600)
+                self.pkg_verify("bla", exit=1)
+                self.assertTrue("ERROR: Mode: 0600 should be 0644"
+                    in self.output)
+
+                self.pkg("uninstall bla")
+
         def test_mix_verify_input(self):
                 """Test that when input is mix of FMRIs and paths, verbose output
                 is correct"""
@@ -397,7 +421,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
                 self.pkg("install foo")
-                self.pkg_verify("foo nonexistent", exit=1)
+                self.pkg_verify("foo non-existent", exit=1)
                 self.pkg("uninstall foo")
 
         def test_03_invalid(self):

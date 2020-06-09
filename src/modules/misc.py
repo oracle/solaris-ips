@@ -202,7 +202,8 @@ def copytree(src, dst):
                 elif S_IFMT(s.st_mode) == 0xe000: # event ports
                         pass
                 else:
-                        print("unknown file type:", oct(S_IFMT(s.st_mode)))
+                        type = oct(S_IFMT(s.st_mode)).replace('0o', '0')
+                        print("unknown file type:{0}".format(type)) 
 
         os.chmod(dst, S_IMODE(src_stat.st_mode))
         os.chown(dst, src_stat.st_uid, src_stat.st_gid)
