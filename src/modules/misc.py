@@ -3052,8 +3052,9 @@ else:
         force_str = force_text
 
 def open_image_file(root, path, flag, mode=None):
-        """Safely open files that ensures that the path we'are accessing resides
-        within a specified image root.
+        """Open 'path' ensuring that we don't follow a symlink which may lead
+        outside of the specified image.
+        When it is a symlink open path relative to root.
 
         'root' is a directory that the path must reside in.
         """
