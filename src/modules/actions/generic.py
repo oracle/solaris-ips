@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -1036,10 +1036,12 @@ class Action(six.with_metaclass(NSG, object)):
                             expected_id=group))
 
                 if mode is not None and stat.S_IMODE(lstat.st_mode) != mode:
+                        found=oct(stat.S_IMODE(lstat.st_mode)).replace(
+                                  '0o', '0')
+                        expected=oct(mode).replace('0o', '0')
                         errors.append(_("Mode: {found} should be "
                             "{expected}").format(
-                            found=oct(stat.S_IMODE(lstat.st_mode)),
-                            expected=oct(mode)))
+                            found=found, expected=expected))
                 return lstat, errors, warnings, info, abort
 
         def needsdata(self, orig, pkgplan):
