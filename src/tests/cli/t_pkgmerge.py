@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -223,13 +223,61 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
+        depend_conds = """
+            open dependcond1@1.0
+            add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            add depend type=conditional fmri=appdep@1.0 predicate=app-3
+            close
+        """
+
+        depend_condx = """
+            open dependcond1@1.0
+            add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            add depend type=conditional fmri=appdep@1.0 predicate=app-3
+            close
+        """
+
+        depend_same_conds = """
+            open dependcond2@1.0
+            add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            close
+        """
+
+        depend_same_condx = """
+            open dependcond2@1.0
+            add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            add depend type=conditional fmri=appdep@1.0 predicate=app-2
+            close
+        """
+
+        depend_reqs = """
+            open dependreq@1.0
+            add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
+            add depend type=require fmri=appdep@1.0
+            add depend type=incorporate fmri=appdep@1.0
+            close
+        """
+
+        depend_reqx = """
+            open dependreq@1.0
+            add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
+            add depend type=require fmri=appdep@1.0
+            add depend type=incorporate fmri=appdep@1.0
+            close
+        """
+
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
             "tmp/sh", "tmp/scheme", "tmp/sparc-only", "tmp/sparc1", "tmp/sparc2",
             "tmp/sparc3", "tmp/sparc4", "tmp/i3861", "tmp/i3862", "tmp/i3863"]
 
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, 18 * ["os.org"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, 20 * ["os.org"])
                 self.make_misc_files(self.misc_files)
 
                 self.rurl1 = self.dcs[1].get_repo_url()
@@ -257,6 +305,10 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 # mediator testing
                 self.rurl16 = self.dcs[16].get_repo_url()
                 self.rurl17 = self.dcs[17].get_repo_url()
+
+                # depend action checks
+                self.rurl18 = self.dcs[18].get_repo_url()
+                self.rurl19 = self.dcs[19].get_repo_url()
 
                 # Publish a set of packages to one repository.
                 self.published = self.pkgsend_bulk(self.rurl1, (self.amber10,
@@ -363,6 +415,14 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                     (self.mediatorPPC))
                 self.published_17 = self.pkgsend_bulk(self.rurl17,
                     (self.mediatorARM))
+
+                # publish the depend packages
+                self.published_deps = self.pkgsend_bulk(self.rurl18,
+                    (self.depend_conds, self.depend_same_conds,
+                     self.depend_reqs))
+                self.published_depx = self.pkgsend_bulk(self.rurl19,
+                    (self.depend_condx, self.depend_same_condx,
+                     self.depend_reqx))
 
         def test_0_options(self):
                 """Verify that pkgmerge gracefully fails when given bad option
@@ -1055,6 +1115,7 @@ set name=variant.arch value=sparc value=i386\
                     "-s arch=i386,{0}".format(self.rurl9),
                     "-d {0} tin".format(repodir)
                 ]), exit=1)
+                self.assertTrue("pkgmerge: Duplicate action(s):" in self.errout)
                 shutil.rmtree(repodir)
 
         def test_6_blend(self):
@@ -1333,6 +1394,72 @@ set name=variant.arch value=PPC value=ARM\
                 shutil.rmtree(repodir)
 
 
+        def test_9_dependency(self):
+             """Test dependency actions duplication detection. 
+             """
+             repodir = os.path.join(self.test_root, "9dependency")
+             self.create_repo(repodir)
+
+             # Test that conditional dependency with different
+             # predicates do not fail.
+             self.pkgmerge(" ".join([
+                     "-s arch=sparc,{0}".format(self.rurl18),
+                     "-s arch=i386,{0}".format(self.rurl19),
+                     "-d {0} dependcond1".format(repodir)
+             ]))
+
+             # The same dependencies will be collapsed
+             self.pkgmerge(" ".join([
+                     "-s arch=sparc,{0}".format(self.rurl18),
+                     "-s arch=i386,{0}".format(self.rurl19),
+                     "-d {0} dependcond2".format(repodir)
+             ]))
+
+             self.pkgmerge(" ".join([
+                     "-s arch=sparc,{0}".format(self.rurl18),
+                     "-s arch=i386,{0}".format(self.rurl19),
+                     "-d {0} dependreq".format(repodir)
+             ]))
+
+             repo = self.get_repo(repodir)
+             cat = repo.get_catalog(pub="os.org")
+
+             merged_expected = {
+                "dependcond1": """\
+depend fmri=appdep@1.0 predicate=app-2 type=conditional
+depend fmri=appdep@1.0 predicate=app-3 type=conditional
+dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
+dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
+set name=pkg.fmri value={0}
+set name=variant.arch value=sparc value=i386\
+""".format(self.published_depx[0]), # pkg://os.org/dependcond1@1.0
+                "dependcond2": """\
+depend fmri=appdep@1.0 predicate=app-2 type=conditional
+dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
+dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
+set name=pkg.fmri value={0}
+set name=variant.arch value=sparc value=i386\
+""".format(self.published_depx[1]), # pkg://os.org/dependcond2@1.0
+                "dependreq": """\
+depend fmri=appdep@1.0 type=incorporate
+depend fmri=appdep@1.0 type=require
+dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
+dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
+set name=pkg.fmri value={0}
+set name=variant.arch value=sparc value=i386\
+""".format(self.published_depx[2]) # pkg://os.org/dependreq@1.0
+                }
+
+             # Verify the merge has worked and that real
+             # duplicate dependencies have been merged
+             # correctly (dependcond2).
+             for f in cat.fmris():
+                     with open(repo.manifest(f), "r") as m:
+                             actual = "".join(sorted(l for l in m)).strip()
+                     expected = merged_expected[f.pkg_name]
+                     self.assertEqualDiff(expected, actual)
+             shutil.rmtree(repodir)
+  
         def get_manifest(self, repodir, pubs=["os.org"]):
                 repository = self.get_repo(repodir)
                 actual = ""

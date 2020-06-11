@@ -154,7 +154,7 @@ class Manifest(object):
         manifest.null is provided as the null manifest.  Differences against the
         null manifest result in the complete set of attributes and actions of
         the non-null manifest, meaning that all operations can be viewed as
-        tranitions between the manifest being installed and the manifest already
+        transitions between the manifest being installed and the manifest already
         present in the image (which may be the null manifest).
         """
 
@@ -300,7 +300,20 @@ class Manifest(object):
                                 # type, key attribute, and unique variants set
                                 # on the action.
                                 try:
-                                        key = set(a.attrlist(a.key_attr))
+                                        key_val = a.attrlist(a.key_attr)
+                                        # For dependencies include the type
+                                        # for the key, or the value of
+                                        # predicate with conditional.
+                                        if a.name == "depend":
+                                            ktype = a.attrs.get("type")
+                                            if ktype == "conditional":
+                                                ktype = a.attrs.\
+                                                    get("predicate")
+                                            key = {"{0}->{1}".format(
+                                                key_val[0], ktype)}
+                                        else:
+                                            key = set(key_val)
+
                                         if (a.name == "link" or
                                            a.name == "hardlink") and \
                                            a.attrs.get("mediator"):
@@ -309,6 +322,7 @@ class Manifest(object):
                                                         key.update([
                                                             "{0}={1}".format(v,
                                                             a.attrs.get(v))])
+
                                         key.update(
                                             "{0}={1}".format(v, a.attrs[v])
                                             for v in a.get_varcet_keys()[0]
@@ -321,14 +335,22 @@ class Manifest(object):
                                         # id for the action as its identifier.
                                         key = (id(a),)
 
-                                # catch duplicate actions here...
+                                # For blending of packages (during a pkgmerge)
+                                # there is the possibility of actions defining
+                                # the same path but with different attributes.
+                                # It is not possible to detect which action is
+                                # to be used and so report it as a duplicate.
+                                # Include the fmri so the bad manifest can
+                                # be easily identified.
                                 if m_dict.setdefault((a.name, key), a) != a:
-                                        dups.append((m_dict[(a.name, key)], a))
+                                        dups.append((m.fmri or id(m),
+                                                     m_dict[(a.name, key)],
+                                                     a))
 
                         m_dicts.append(m_dict)
 
                 if dups:
-                        raise ManifestError(duplicates=dups)
+                        raise ManifestDuplicateError(duplicates=dups)
 
                 # construct list of key sets in each dict
                 m_sets = [
@@ -2026,8 +2048,9 @@ class EmptyFactoredManifest(Manifest):
 
 NullFactoredManifest = EmptyFactoredManifest()
 
-class ManifestError(Exception):
-        """Simple Exception class to handle manifest specific errors"""
+class ManifestDuplicateError(Exception):
+        """Simple Exception class to report on duplicate
+           actions within a manifest. """
 
         def __init__(self, duplicates=EmptyI):
                 self.__duplicates = duplicates
@@ -2035,6 +2058,6 @@ class ManifestError(Exception):
         def __str__(self):
                 ret = []
                 for d in self.__duplicates:
-                        ret.append("{0}\n{1}\n\n".format(*d))
+                        ret.append("{0}\n{1}\n{2}\n".format(*d))
 
-                return "\n".join(ret)
+                return "Duplicate action(s):\n{0}".format("\n".join(ret))
