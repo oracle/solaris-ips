@@ -442,6 +442,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
         new_p = 0  # target pkg not in ref
         sucs = 0   # ref pkg is successor to pkg in targ
         nrevs = 0  # pkgs requested to not be reversioned by user
+        manifest_errors = set()
 
         for p in latest_pkgs:
                 # First check if the package is in the list of FMRIs the user
@@ -480,8 +481,12 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
 
                 # Diff target and ref manifest.
                 # action only in targ, action only in ref, common action
-                ta, ra, ca = manifest.Manifest.comm([dm, rm],
-                    cmp_policy=cmp_policy)
+                try:
+                        ta, ra, ca = manifest.Manifest.comm([dm, rm],
+                             cmp_policy=cmp_policy)
+                except manifest.ManifestDuplicateError as e:
+                        manifest_errors.add(e)
+                        continue
 
                 # Check for manifest changes.
                 if not all(use_ref(a, tdeps, ignores) for a in ta) \
@@ -511,6 +516,12 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                 reversioned_pkgs.add(pfmri.get_pkg_stem(anarchy=True))
 
         tracker.manifest_fetch_done()
+
+        # No point continuing if errors in the manifests have
+        # been detected.
+        if manifest_errors:
+                errmsg = ''.join(str(i) for i in manifest_errors)
+                abort(err=_("Manifest error(s) found:\n{}").format(errmsg))
 
         def has_changed(pstem, seen=None, depth=0):
                 """Determine if a package or any of its dependencies has

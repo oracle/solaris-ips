@@ -775,10 +775,8 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
         # list of actions that are the same in each manifest.
         try:
                 action_lists = list(manifest.Manifest.comm(manifest_list))
-        except manifest.ManifestError as e:
-                raise PkgmergeException(
-                    "Duplicate action(s) in package \"{0}\": \n{1}".format(
-                    new_fmri.pkg_name, e))
+        except manifest.ManifestDuplicateError as e:
+                raise PkgmergeException(e)
 
         # Declare new package FMRI.
         action_lists[-1].insert(0,
