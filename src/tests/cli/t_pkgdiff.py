@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 from . import testutils
@@ -45,6 +45,12 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             dir owner=root group=root mode=0755 path=etc
             file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
             file tmp/truck1 mode=0444 owner=root group=bin path=/etc/ditch """
+
+        depend_any = """
+            depend fmri=pkg:/pkg1 fmri=pkg:/pkg2 type=require-any"""
+
+        depend_require = """
+            depend fmri=pkg:/pkg1 type=require variant.opensolaris.zone=global"""
 
         tree10 = """
             set name=pkg.fmri value=tree@1.0,5.11-0:20110804T203458Z
@@ -140,6 +146,8 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                     "tmp/noaccess"])
                 self.stub1_p5m = self.make_manifest(self.stub1)
                 self.stub2_p5m = self.make_manifest(self.stub2)
+                self.depend_any_p5m = self.make_manifest(self.depend_any)
+                self.depend_require_p5m = self.make_manifest(self.depend_require)
                 self.tree10_p5m = self.make_manifest(self.tree10)
                 self.tree20_p5m = self.make_manifest(self.tree20)
                 self.tree30_p5m = self.make_manifest(self.tree30)
@@ -372,6 +380,22 @@ license license=lic_OTN
                 # Again, ignoring hash attributes (should find no differences).
                 self.pkgdiff(" ".join(("-t license -i hash -i chash",
                     self.hashed20_p5m, self.hashed10_p5m)), exit=0)
+
+        def test_04_dependency(self):
+                """Verify that pkgdiff that different types of dependency
+                   do not cause failures.
+                """
+                # Verify require vers require-any work.
+                self.pkgdiff(" ".join((self.depend_require_p5m,
+                    self.depend_any_p5m)), exit=1)
+
+                expected = """\
++ depend fmri=pkg:/pkg1 fmri=pkg:/pkg2 type=require-any
+- depend fmri=pkg:/pkg1 type=require variant.opensolaris.zone=global
+"""
+
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
 
 
 if __name__ == "__main__":

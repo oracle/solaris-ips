@@ -249,17 +249,20 @@ def main_func():
                 if hasattr(a, "key_attr") and hasattr(b, "key_attr") and \
                     a.key_attr == b.key_attr:
                         res = misc.cmp(a.attrs[a.key_attr], b.attrs[b.key_attr])
-                        if res:
+                        if res != NotImplemented:
                                 return res
                         # sort by variant
                         res = misc.cmp(sorted(list(a.get_variant_template())),
                             sorted(list(b.get_variant_template())))
-                        if res:
+                        if res != NotImplemented:
                                 return res
                 else:
                         res = misc.cmp(a.ordinality, b.ordinality)
-                        if res:
+                        if res != NotImplemented:
                                 return res
+                # Fall back to a simple string compare if we have
+                # differing types (indicated by the above NotImplemented
+                # return values.
                 return misc.cmp(str(a), str(b))
 
         # sort and....
