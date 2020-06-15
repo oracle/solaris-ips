@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -375,9 +375,9 @@ class PkgRemote(object):
                 # truncates its output file after each operation, so we always
                 # read output from the beginning of the file.
                 fstdout.seek(0)
-                stdout = b"".join(fstdout.readlines())
+                stdout = (b"".join(fstdout.readlines())).decode()
                 fstderr.seek(0)
-                stderr = b"".join(fstderr.readlines())
+                stderr = (b"".join(fstderr.readlines())).decode()
 
                 self.__debug_msg("exiting", t1=True)
                 return (rv, e, stdout, stderr)
