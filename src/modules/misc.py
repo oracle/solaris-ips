@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 
 """
 Misc utility functions used by the packaging system.
@@ -57,6 +57,7 @@ import zlib
 from binascii import hexlify, unhexlify
 from collections import defaultdict
 from io import BytesIO
+from io import StringIO
 from operator import itemgetter
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
@@ -416,6 +417,11 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
                 shasum = hash_func()
         dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
 
+        def writeout(buf):
+               if isinstance(outfile, StringIO):
+                     outfile.write(ubuf.decode())
+               outfile.write(ubuf)
+
         while True:
                 buf = gz.read(64 * 1024)
                 if buf == b"":
@@ -427,7 +433,7 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
                                         sha.update(ubuf)
                         else:
                                 shasum.update(ubuf) # pylint: disable=E1101
-                        outfile.write(ubuf)
+                        writeout(ubuf)
                         break
                 ubuf = dcobj.decompress(buf)
                 if ignore_hash:
@@ -437,7 +443,7 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
                                 sha.update(ubuf)
                 else:
                         shasum.update(ubuf) # pylint: disable=E1101
-                outfile.write(ubuf)
+                writeout(ubuf)
 
         if ignore_hash:
                 return
