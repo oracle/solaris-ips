@@ -21,6 +21,6 @@
 # Copyright (c) 2020, Oracle and/or its affiliates.
 #
 
-set name=pkg.fmri value=pkg:/package/pkg-34@11.4,5.11-11.4.21.0.1.76.0
+set name=pkg.fmri value=pkg:/package/pkg-34@11.4,5.11-11.4.21.0.1.75.0
 set name=pkg.obsolete value=true
 set name=variant.arch value=i386 value=sparc
