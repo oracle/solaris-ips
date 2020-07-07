@@ -21,9 +21,8 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 import gzip
 
@@ -37,7 +36,7 @@ class PkgGzipFile(gzip.GzipFile):
             fileobj=None):
 
                gzip.GzipFile.__init__(self, filename, mode, compresslevel,
-                    fileobj) 
+                    fileobj)
 
         #
         # This is a gzip header conforming to RFC1952.  The first two bytes
@@ -50,7 +49,12 @@ class PkgGzipFile(gzip.GzipFile):
         # "unknown").
         magic = b"\037\213\010\000\000\000\000\000\002\377"
 
-        def _write_gzip_header(self):
+        # The compresslevel parameter is needed as it is an expected
+        # parameter within the Python3.7.8 gzip.py code. Note
+        # the default value of compresslevel=9 (_COMPRESS_LEVEL_BEST)
+        # means that the value of '\002' is used within the gzip.py
+        # code which matches the value in magic.
+        def _write_gzip_header(self, compresslevel=9):
                 self.fileobj.write(self.magic)
 
         @staticmethod
