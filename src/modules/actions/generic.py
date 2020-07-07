@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 """module describing a generic packaging object
@@ -972,7 +972,7 @@ class Action(six.with_metaclass(NSG, object)):
                         try:
                                 owner = img.get_user_by_name(owner)
                         except KeyError:
-                                errors.append(_("Owner: {0} is unknown").format(
+                                errors.append(_("owner: {0} is unknown").format(
                                     owner))
                                 owner = None
                 if "group" in self.attrs:
@@ -980,7 +980,7 @@ class Action(six.with_metaclass(NSG, object)):
                         try:
                                 group = img.get_group_by_name(group)
                         except KeyError:
-                                errors.append(_("Group: {0} is unknown ").format(
+                                errors.append(_("group: {0} is unknown ").format(
                                     group))
                                 group = None
 
@@ -998,27 +998,27 @@ class Action(six.with_metaclass(NSG, object)):
                                         return (lstat, errors, warnings, info,
                                             abort)
                                 errors.append(
-                                    _("Missing: {0} does not exist").format(
+                                    _("missing: {0} does not exist").format(
                                     ftype_to_name(ftype)))
                         elif e.errno == errno.EACCES:
-                                errors.append(_("Skipping: Permission denied"))
+                                errors.append(_("skipping: permission denied"))
                         else:
                                 errors.append(
-                                    _("Unexpected Error: {0}").format(e))
+                                    _("unexpected error: {0}").format(e))
                         abort = True
 
                 if abort:
                         return lstat, errors, warnings, info, abort
 
                 if ftype is not None and ftype != stat.S_IFMT(lstat.st_mode):
-                        errors.append(_("File Type: '{found}' should be "
+                        errors.append(_("file type: '{found}' should be "
                             "'{expected}'").format(
                             found=ftype_to_name(stat.S_IFMT(lstat.st_mode)),
                             expected=ftype_to_name(ftype)))
                         abort = True
 
                 if owner is not None and lstat.st_uid != owner:
-                        errors.append(_("Owner: '{found_name} "
+                        errors.append(_("owner: '{found_name} "
                             "({found_id:d})' should be '{expected_name} "
                             "({expected_id:d})'").format(
                             found_name=img.get_name_by_uid(lstat.st_uid,
@@ -1027,7 +1027,7 @@ class Action(six.with_metaclass(NSG, object)):
                             expected_id=owner))
 
                 if group is not None and lstat.st_gid != group:
-                        errors.append(_("Group: '{found_name} "
+                        errors.append(_("group: '{found_name} "
                             "({found_id})' should be '{expected_name} "
                             "({expected_id})'").format(
                             found_name=img.get_name_by_gid(lstat.st_gid,
@@ -1039,7 +1039,7 @@ class Action(six.with_metaclass(NSG, object)):
                         found=oct(stat.S_IMODE(lstat.st_mode)).replace(
                                   '0o', '0')
                         expected=oct(mode).replace('0o', '0')
-                        errors.append(_("Mode: {found} should be "
+                        errors.append(_("mode: {found} should be "
                             "{expected}").format(
                             found=found, expected=expected))
                 return lstat, errors, warnings, info, abort

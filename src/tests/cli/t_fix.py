@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -705,7 +705,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify -v -p {0}".format(file_path), exit=1)
                 self.assertTrue("pkg://test/gss" in self.output)
                 self.assertTrue("pkg://test/krb5" in self.output)
-                self.assertTrue("ERROR: Owner: 'bin (2)' should be 'root (0)'"
+                self.assertTrue("ERROR: owner: 'bin (2)' should be 'root (0)'"
                     in self.output)
 
                 # Verify overlaid package should turn into checking its
@@ -737,7 +737,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify -v -p {0}".format(file_path), exit=1)
                 self.assertTrue("pkg://test/krb5-no-attr" in self.output)
                 self.assertTrue("pkg://test/gss-no-attr" in self.output)
-                self.assertTrue("ERROR: Owner: 'bin (2)' should be 'root (0)'"
+                self.assertTrue("ERROR: owner: 'bin (2)' should be 'root (0)'"
                     in self.output)
 
                 # Changing on-disk action attributes should always fail.
