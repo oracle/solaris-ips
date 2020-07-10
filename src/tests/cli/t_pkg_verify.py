@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -338,7 +338,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 fpath = os.path.join(self.img_path(),"opt/mybin/test_perm")
                 os.chmod(fpath, 0o600)
                 self.pkg_verify("bla", exit=1)
-                self.assertTrue("ERROR: Mode: 0600 should be 0644"
+                self.assertTrue("ERROR: mode: 0600 should be 0644"
                     in self.output)
 
                 self.pkg("uninstall bla")
