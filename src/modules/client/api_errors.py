@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 #
 
 import errno
@@ -2321,8 +2321,12 @@ class UntrustedSelfSignedCert(CertificateException):
         self-signed certificate."""
 
         def __str__(self):
-                return _("Chain was rooted in an untrusted self-signed "
-                    "certificate.\n") + CertificateException.__str__(self)
+                return _("The signing certificate chain is rooted in a " + \
+                    "certificate not present in the trust-anchor-directory.\n" + \
+                    "See the image properties section of pkg(1).\n") + \
+                    "Certificate  Subject:" + \
+                    self.cert.subject.rfc4514_string() + "\n" + \
+                    CertificateException.__str__(self)
 
 
 class BrokenChain(CertificateException):
