@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2020, Oracle and/or its affiliates
  */
 
 #include <libelf.h>
@@ -56,6 +56,8 @@
 
 #include <liblist.h>
 #include <elfextract.h>
+
+PyObject *ElfError;
 
 char *
 pkg_string_from_type(int type)
@@ -358,12 +360,14 @@ getelfhash(Elf *elf, char *base, unsigned char *elfhash)
 				 * Convert to network byte-order first.
 				 */
 				uint64_t n = shdr.sh_size;
-				uint32_t top = htonl((uint32_t)((n & mask) >> 32));
+				uint32_t top = htonl(
+				    (uint32_t)((n & mask) >> 32));
 				uint32_t bot = htonl((uint32_t)n);
 				SHA1Update(&shc, &top, sizeof (top));
 				SHA1Update(&shc, &bot, sizeof (bot));
 			} else {
-				SHA1Update(&shc, base + shdr.sh_offset, shdr.sh_size);
+				SHA1Update(&shc, base + shdr.sh_offset,
+				    shdr.sh_size);
 			}
 		}
 
@@ -394,7 +398,7 @@ getdynamic(int fd)
 
 	char		*name = NULL;
 	size_t		sh_str = 0;
-	size_t		vernum = 0, verdefnum = 0;
+	size_t		vernum = 0, verdefnum = 0, v = 0;
 	int		t = 0, num_dyn = 0, dynstr = -1;
 
 	dyninfo_t	*dyn = NULL;
@@ -517,11 +521,11 @@ getdynamic(int fd)
 				t++;
 			}
 		case DT_FLAGS_1:
-		    if (gd.d_un.d_val & DF_1_PIE) {
-		        obj_type = "pie";
-		    } else if (gd.d_un.d_val & DF_1_KMOD) {
-		        obj_type = "kmod";
-		    }
+			if (gd.d_un.d_val & DF_1_PIE) {
+				obj_type = "pie";
+			} else if (gd.d_un.d_val & DF_1_KMOD) {
+				obj_type = "kmod";
+			}
 			break;
 		}
 	}
@@ -543,7 +547,7 @@ getdynamic(int fd)
 		cp = buf;
 	}
 
-	for (t = 0; t < vernum; t++) {
+	for (v = 0; v < vernum; v++) {
 		liblist_t *veraux = NULL;
 		if (ev)
 			cp += ev->vn_next;
@@ -594,7 +598,7 @@ getdynamic(int fd)
 		cp = buf;
 	}
 
-	for (t = 0; t < verdefnum; t++) {
+	for (v = 0; v < verdefnum; v++) {
 		if (vd)
 			cp += vd->vd_next;
 		vd = (GElf_Verdef*)cp;
@@ -757,10 +761,10 @@ gethashes(int fd, int doelf, int do256, int do512)
 
 		*hp = '\0';
 	}
-	
+
 	if (doelfrange > 0 &&
 	    !gelf_sign_range(elf, elf_contenthash_cb,
-			     ELF_SR_SIGNED_INTERPRET, &hdata)) {
+	    ELF_SR_SIGNED_INTERPRET, &hdata)) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
 		goto hash_error;
 	}
@@ -773,7 +777,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 		SHA256Final(&rawhash[0], hdata.s256c);
 
 		(void) snprintf(hashes->hash_sha256, 13, "gelf:sha256:");
-		
+
 		for (i = 0; i < 32; i++) {
 			*hp++ = hexchars[(rawhash[i] & 0xf0) >> 4];
 			*hp++ = hexchars[rawhash[i] & 0x0f];
@@ -792,7 +796,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 		SHA512_t_Final(&rawhash[0], hdata.s512c);
 
 		(void) snprintf(hashes->hash_sha512t_256, 18,
-				"gelf:sha512t_256:");
+		    "gelf:sha512t_256:");
 
 		for (i = 0; i < 32; i++) {
 			*hp++ = hexchars[(rawhash[i] & 0xf0) >> 4];
@@ -806,7 +810,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 
 	if (doelfrange > 0 &&
 	    !gelf_sign_range(elf, elf_contenthash_cb,
-			     ELF_SR_INTERPRET, &hdata)) {
+	    ELF_SR_INTERPRET, &hdata)) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
 		goto hash_error;
 	}
@@ -819,7 +823,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 		SHA256Final(&rawhash[0], hdata.s256c);
 
 		(void) snprintf(hashes->uhash_sha256, 22,
-				"gelf.unsigned:sha256:");
+		    "gelf.unsigned:sha256:");
 
 		for (i = 0; i < 32; i++) {
 			*hp++ = hexchars[(rawhash[i] & 0xf0) >> 4];
@@ -837,7 +841,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 		SHA512_t_Final(&rawhash[0], hdata.s512c);
 
 		(void) snprintf(hashes->uhash_sha512t_256, 27,
-				"gelf.unsigned:sha512t_256:");
+		    "gelf.unsigned:sha512t_256:");
 
 		for (i = 0; i < 32; i++) {
 			*hp++ = hexchars[(rawhash[i] & 0xf0) >> 4];

@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2008, 2020, Oracle and/or its affiliates.
  */
 
 #ifndef _ELFEXTRACT_H
@@ -54,25 +54,25 @@ typedef struct hashinfo {
 	/* Legacy SHA1 hash of subset of sections */
 	char	elfhash[41];
 
-	/* 
+	/*
 	 * SHA-256 hash of data extracted via
 	 * gelf_sign_range(ELF_SR_SIGNED_INTERPRET)
 	 */
-     	char	hash_sha256[77];
+	char	hash_sha256[77];
 
-	/* 
+	/*
 	 * SHA-256 hash of data extracted via
 	 * gelf_sign_range(ELF_SR_INTERPRET)
 	 */
 	char	uhash_sha256[86];
 
-	/* 
+	/*
 	 * SHA-512/256 hash of data extracted via
 	 * gelf_sign_range(ELF_SR_SIGNED_INTERPRET)
 	 */
 	char	hash_sha512t_256[82];
 
-	/* 
+	/*
 	 * SHA-512/256 hash of data extracted via
 	 * gelf_sign_range(ELF_SR_INTERPRET)
 	 */
@@ -99,7 +99,7 @@ extern char *pkg_string_from_arch(int arch);
 extern char *pkg_string_from_data(int data);
 extern char *pkg_string_from_osabi(int osabi);
 
-PyObject *ElfError;
+extern PyObject *ElfError;
 
 #ifdef	__cplusplus
 }

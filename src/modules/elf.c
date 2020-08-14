@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2009, 2020, Oracle and/or its affiliates.
  */
 
 #include <sys/stat.h>
@@ -267,7 +267,7 @@ get_info(PyObject *self, PyObject *args)
 	if (dyn->obj_type != NULL) {
 		type = dyn->obj_type;
 	} else {
-		type = pkg_string_from_type(hi->type);	
+		type = pkg_string_from_type(hi->type);
 	}
 
 	GI_SET_ITEM("type", "s", type);
@@ -319,7 +319,7 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 	}
 
 	if ((h = gethashes(hargs.fd, hargs.elfhash,
-			   hargs.sha256, hargs.sha512t_256)) == NULL) {
+	    hargs.sha256, hargs.sha512t_256)) == NULL) {
 		goto out;
 	}
 
@@ -331,10 +331,9 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 	 * From here forward, error exits from get_hashes() should
 	 * jump to label err instead of label out.
 	 */
-	
 	if (hargs.elfhash > 0) {
 		PyObject	*ent;
-		
+
 		ent = Py_BuildValue("s", h->elfhash);
 		if (PyDict_SetItemString(pdict, "elfhash", ent) != 0) {
 			goto err;
@@ -346,12 +345,12 @@ get_hashes(PyObject *self, PyObject *args, PyObject *keywords)
 		plist = PyList_New(0);
 		if (plist == NULL ||
 		    PyDict_SetItemString(
-		        pdict, "pkg.content-hash", plist) != 0) {
+		    pdict, "pkg.content-hash", plist) != 0) {
 			goto err;
 		}
 		Py_DECREF(plist);
 	}
-	
+
 	if (hargs.sha512t_256 > 0) {
 		PyObject *ent;
 
@@ -422,7 +421,6 @@ err:
 static PyObject *
 get_dynamic(PyObject *self, PyObject *args)
 {
-	int		i;
 	int		fd;
 	dyninfo_t	*dyn = NULL;
 	PyObject	*ent = NULL;
