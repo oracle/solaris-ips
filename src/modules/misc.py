@@ -420,7 +420,8 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
         def writeout(buf):
                if isinstance(outfile, StringIO):
                      outfile.write(ubuf.decode())
-               outfile.write(ubuf)
+               else:
+                     outfile.write(ubuf)
 
         while True:
                 buf = gz.read(64 * 1024)
