@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2020, Oracle and/or its affiliates.
  */
 
 #include <Python.h>
@@ -135,7 +135,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 
 prep_ret:
 		if (facet_ret != NULL) {
-			char *vs = PyBytes_AS_STRING(value);
+			char *vs = PyBytes_AS_STRING(PyObject_Str(value));
 			if (vs == NULL) {
 				/*
 				 * value is not a string; probably a list, so
