@@ -10,7 +10,7 @@
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -71,8 +71,8 @@ version portion of the version string of a package FMRI:</para>
 <programlisting><replaceable>minor.update.sru.order.platform.build.rev</replaceable></programlisting>
 <variablelist termlength="wholeline">
 <varlistentry><term><emphasis role="strong">Minor release number: 11</emphasis></term>
-<listitem><para>The <replaceable>minor</replaceable> portion of 
-<replaceable>major.minor</replaceable> that is output by the 
+<listitem><para>The <replaceable>minor</replaceable> portion of
+<replaceable>major.minor</replaceable> that is output by the
 <command>uname -r</command>.</para></listitem></varlistentry>
 <varlistentry><term><emphasis role="strong">Update release number: 4</emphasis></term>
 <listitem><para>The update release number for this Oracle Solaris release.</para></listitem></varlistentry>
@@ -251,7 +251,7 @@ a <literal>preserve</literal> value of <literal>abandon</literal> or
 <literal>install-only</literal> in the upgraded package, the new file will
 not be installed and the existing file will not be modified.
 </para></listitem>
-<listitem><para>If the file delivered by the package has a 
+<listitem><para>If the file delivered by the package has a
 <literal>preserve</literal> value of <literal>abandon</literal> then any
 attempt to revert the file will not restore the file. Any
 <literal>revert-tag</literal> associated with the file will be ignored.
@@ -583,7 +583,7 @@ also its key attribute.</para>
 <para>The <literal>driver</literal> action represents a device driver. The <literal>
 driver</literal> action does not reference a payload. The driver files themselves
 must be installed as <literal>file</literal> actions. The following attributes
-are recognized (see <olink targetdoc="refman" targetptr="add_drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information):</para>
+are recognized (see <olink targetdoc="refman" targetptr="add-drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information):</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>The name of the driver. This is usually, but not always, the
@@ -944,7 +944,7 @@ be used for end user or administrator accounts.</para>
 </varlistentry>
 <varlistentry><term><literal>password</literal></term>
 <listitem><para>The encrypted password of the user. Default value is <literal>*LK*
-</literal>. See 
+</literal>. See
 <olink targetdoc="refman" targetptr="shadow-5"><citerefentry><refentrytitle>shadow</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>.
 </para>
 <para>The special value "UP" can be used to indicate that the
@@ -953,8 +953,8 @@ may be used to set a login password for the user/role account.  When the
 value of "UP" is listed in the manifest a <literal>pkg verify</literal>
 will not report an unexpected change and <literal>pkg fix</literal> will not
 change the value back to that of the manifest.</para>
-<para>Best practice is to deliver role accounts with password="NP" and deliver a 
-<olink targetdoc="refman" targetptr="user_attr-4"><citerefentry><refentrytitle>user_attr</refentrytitle><manvolnum>4</manvolnum></citerefentry></olink> file that sets <literal>roleauth=user</literal>.
+<para>Best practice is to deliver role accounts with password="NP" and deliver a
+<olink targetdoc="refman" targetptr="user-attr-5"><citerefentry><refentrytitle>user_attr</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink> file that sets <literal>roleauth=user</literal>.
 </para>
 </listitem>
 </varlistentry>

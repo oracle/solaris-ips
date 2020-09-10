@@ -259,7 +259,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mediator-implementation</literal></term>
-<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<olink targetdoc="refman" targetptr="pkg -7"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> によって文字列が任意に選択されます。</para>
+<listitem><para><literal>mediator-version</literal> に加えて、またはこの代わりに使用するメディエータの実装を指定します。実装の文字列は順序付けられているとは見なされず、システム管理者によって明示的に指定されていない場合は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> によって文字列が任意に選択されます。</para>
 <para>この値は、英数字とスペースで構成された任意の長さの文字列にすることができます。実装自体をバージョン管理できるか、または実際にバージョン管理されている場合は、文字列の最後のアットマーク (@) 記号のあとに (負にならない整数のドットで区切られた並びとして表された) バージョンを指定するべきです。実装の複数のバージョンが存在する場合、デフォルトの動作では、最大のバージョンを持つ実装が選択されます。</para>
 <para>特定のパスにある実装メディエーションリンクの 1 つのインスタンスだけがシステムにインストールされている場合は、その 1 つのインスタンスが自動的に選択されます。このパスにある将来のリンクがインストールされても、ベンダー、サイト、またはローカルのオーバーライドが適用されないかぎり、またはいずれかのリンクのバージョンがメディエートされた場合、このリンクは切り替えられません。</para>
 </listitem>
@@ -278,7 +278,7 @@ file path=usr/lib/python2.7/vendor-packages/pkg/__init__.py &bsol;
 <para><literal>hardlink</literal> アクションは、ハードリンクを表します。このアクションは <literal>link</literal> アクションと同じ属性を持ち、そのキー属性も同じく <literal>path</literal> です。</para>
 </refsect2>
 <refsect2><title>ドライバのアクション</title>
-<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <olink targetdoc="refman" targetptr="add_drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照)。</para>
+<para><literal>driver</literal> アクションはデバイスドライバを表します。<literal>driver</literal> アクションはペイロードを参照しません。ドライバファイル自体を <literal>file</literal> アクションとしてインストールする必要があります。次の属性が認識されます (詳細は <olink targetdoc="refman" targetptr="add-drv-8"><citerefentry><refentrytitle>add_drv</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照)。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>name</literal></term>
 <listitem><para>ドライバの名前。多くの場合はドライババイナリのファイル名ですが、必ずしもそうとは限りません。これは <literal>driver</literal> アクションのキー属性です。</para>
