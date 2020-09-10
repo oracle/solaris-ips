@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 PYTHON37 = /usr/bin/python3.7
@@ -50,7 +50,7 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
 
-SUBDIRS=zoneproxy util/mkcert
+SUBDIRS=zoneproxy util/mkcert man
 
 all: $(SUBDIRS)
 	$(PYTHON37) setup.py build

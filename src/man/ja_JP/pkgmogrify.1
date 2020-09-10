@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 Arbortext, Inc., 1988-2008, v.4002
 -->
@@ -7,8 +7,8 @@ Arbortext, Inc., 1988-2008, v.4002
 %ent;
 ]>
 
-<refentry lang="ja" id="pkgmogrify-1">
-<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkgmogrify-1">
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2016 年 3 月 8 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgmogrify</refname><refpurpose>Image Packaging System マニフェスト変換ツール</refpurpose></refnamediv>
@@ -20,7 +20,7 @@ outputfile</replaceable>]
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="GKVND" role="description"><title></title>
-<para><command>pkgmogrify</command> は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの発行を自動化するときに必要な標準的な変換を簡略化します。</para>
+<para><command>pkgmogrify</command> は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの公開を自動化するときに必要な標準的な変換を簡略化します。</para>
 <para>これは指定された順序ですべてのファイルを読み取り、次の「埋め込みのディレクティブ」セクションで詳しく説明されているような、内部から検出された埋め込みのディレクティブをすべて適用します。指定されたファイルがない場合、入力は標準入力から読み取られます。標準入力を単独で、またはほかのファイルと組み合わせて入力として使用する場合、ファイル名として &#39;-&#39; を指定することもできます。</para>
 <itemizedlist>
 <para><command>pkgmogrify</command> は、次の機能を提供します。</para>
@@ -75,17 +75,17 @@ outputfile</replaceable>]
 <refsect1 role="other"><title>埋め込みの指令</title>
 <para>マニフェストファイルでは、インクルード指令と変換指令という 2 つのタイプの指令がサポートされています。</para>
 <para>インクルード指令の形式は次のとおりです。</para>
-<programlisting>&#60;include <replaceable>file</replaceable>&#62;</programlisting>
+<programlisting>&lt;include <replaceable>file</replaceable>></programlisting>
 <para>この指令により、<command>pkgmogrify</command> は <literal>file</literal> という名前のファイルを、最初に現在のディレクトリで、次に <option>I</option> オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、この指令が置かれている場所に挿入されます。見つからなかった場合、<command>pkgmogrify</command> はエラーで終了します。</para>
-<para>変換ディレクティブの形式は次のとおりです。</para>
-<programlisting>&#60;transform <replaceable>matching-criteria</replaceable> -&#62; <replaceable>
-operation</replaceable>&#62;</programlisting>
-<para>これらのディレクティブは、すべての入力がメモリー内に読み取られるまで累積されたあと、各ディレクティブが検出された順序でアクションに適用されます。
+<para>変換指令の形式は次のとおりです。</para>
+<programlisting>&lt;transform <replaceable>matching-criteria</replaceable> -> <replaceable>
+operation</replaceable>></programlisting>
+<para>これらの指令は、すべての入力がメモリー内に読み取られるまで累積されたあと、各指令が検出された順序でアクションに適用されます。
 </para>
 <para>一致条件の形式は次のとおりです。</para>
 <programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
-</replaceable>=&#60;<replaceable>value-regexp</replaceable>&#62; ...]</programlisting>
-<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
+</replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
+<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。Action names and attributes are listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
 <para>複数の条件をスペースで区切って指定できます。</para>
 <para>次の操作が使用できます。</para>
 <variablelist>
@@ -129,7 +129,7 @@ operation</replaceable>&#62;</programlisting>
 </varlistentry>
 </variablelist>
 <para><literal>delete</literal> と <literal>drop</literal> を除くすべての操作は、出力ストリームにその内容が出力される (オプションである可能性がある) 引数を取ります。これらの文字列には、3 種類の特殊なトークンを含めることができます。これらのトークンにより、各アクションの固定された変換に基づかない情報を出力に含めることが可能になります。</para>
-<para>最初の種類の置換を使用すると、パーセント記号に続けて属性の名前を丸括弧に入れて指定することによって、操作で現在のアクションの属性の値を参照できます。たとえば、<literal>&#37;(alias)</literal> は、アクションの <literal>alias</literal> 属性の値を参照します。</para>
+<para>最初の種類の置換を使用すると、パーセント記号に続けて属性の名前を丸括弧に入れて指定することによって、操作で現在のアクションの属性の値を参照できます。たとえば、<literal>%(alias)</literal> は、アクションの <literal>alias</literal> 属性の値を参照します。</para>
 <itemizedlist>
 <para>いくつかの合成属性が存在します。次の 2 つは <command>pkgmogrify</command> に固有です
 </para>
@@ -144,79 +144,79 @@ operation</replaceable>&#62;</programlisting>
 <listitem><para><literal>action.name</literal> は、アクションの名前を参照します。</para>
 </listitem>
 </itemizedlist>
-<para>値を要求された属性が存在しない場合、<command>pkgmogrify</command> はエラーで終了します。エラーで終了することを回避するには、属性名のあとに <literal>;notfound=</literal> と、属性値の代わりに置換する値を指定します。たとえば、<literal>&#37;(alias;notfound=&#39;no alias&#39;)</literal> は、属性 <literal>alias</literal> の値が存在する場合はその値を出力し、それ以外の場合は <literal>no alias</literal> を出力します。</para>
+<para>値を要求された属性が存在しない場合、<command>pkgmogrify</command> はエラーで終了します。エラーで終了することを回避するには、属性名のあとに <literal>;notfound=</literal> と、属性値の代わりに置換する値を指定します。たとえば、<literal>%(alias;notfound='no alias')</literal> は、属性 <literal>alias</literal> の値が存在する場合はその値を出力し、それ以外の場合は <literal>no alias</literal> を出力します。</para>
 <para>値を要求された属性が複数値の場合は、各値がスペースで区切られて出力されます。<literal>notfound</literal> トークンと同様に、トークン <literal>prefix</literal>、<literal>suffix</literal>、および <literal>sep</literal> を使用してこの動作を変更できます。<literal>prefix</literal> で指定された文字列は各値の先頭に追加され、<literal>suffix</literal> で指定された文字列は各値の末尾に追加され、<literal>sep</literal> はある値の接尾辞とその次の値の接頭辞の間に配置されます。</para>
-<para>アクション属性と同様に、<command>pkgmogrify</command> 指令では <literal>&#37;{pkg.fmri}</literal> のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は <literal>set</literal> アクションで定義されている必要があります。そうしないと、この属性は上で説明した <literal>notfound</literal> として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。</para>
+<para>アクション属性と同様に、<command>pkgmogrify</command> 指令では <literal>%{pkg.fmri}</literal> のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は <literal>set</literal> アクションで定義されている必要があります。そうしないと、この属性は上で説明した <literal>notfound</literal> として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。</para>
 <para>これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 <literal>pkg</literal> を (<command>pkgmogrify</command> のコンテキストでのみ) 使用できます。
 </para>
-<para><command>pkgmogrify</command> がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで <literal>pkg.fmri</literal> パッケージ属性が定義されている場合、<command>pkgmogrify</command> はこの合成アクション <literal>pkg</literal> を作成します。属性はパッケージの属性になります。その後、<literal>&#60;transform&#62;</literal> 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。</para>
-<para><literal>pkg</literal> アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、<literal>add</literal>、<literal>default</literal>、または <literal>set</literal> 操作を使用して <literal>pkg</literal> アクションに属性を設定しようとしても、照合するほかの <literal>&#60;transform&#62;</literal> 指令では使用可能であるにもかかわらず、<literal>set</literal> アクションがマニフェストに追加されません。<literal>pkg</literal> アクションに対して <literal>emit</literal> を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに <literal>set</literal> アクションに対して <literal>emit</literal> を実行します。</para>
-<para>3 番目の種類の置換は後方参照です。この置換は <literal>edit</literal> 操作で使用可能なものとは異なり、<literal>-&#62;</literal> の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、<literal>&#37;&#60;1&#62;</literal>、<literal>&#37;&#60;2&#62;</literal> などによって指定されます。</para>
+<para><command>pkgmogrify</command> がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで <literal>pkg.fmri</literal> パッケージ属性が定義されている場合、<command>pkgmogrify</command> はこの合成アクション <literal>pkg</literal> を作成します。属性はパッケージの属性になります。その後、<literal>&lt;transform></literal> 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。</para>
+<para><literal>pkg</literal> アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、<literal>add</literal>、<literal>default</literal>、または <literal>set</literal> 操作を使用して <literal>pkg</literal> アクションに属性を設定しようとしても、照合するほかの <literal>&lt;transform&gt;</literal> 指令では使用可能であるにもかかわらず、<literal>set</literal> アクションがマニフェストに追加されません。<literal>pkg</literal> アクションに対して <literal>emit</literal> を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに <literal>set</literal> アクションに対して <literal>emit</literal> を実行します。</para>
+<para>3 番目の種類の置換は後方参照です。この置換は <literal>edit</literal> 操作で使用可能なものとは異なり、<literal>-&gt;</literal> の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、<literal>%&lt;1&gt;</literal>、<literal>%&lt;2&gt;</literal> などによって指定されます。</para>
 <orderedlist>
 <para>処理の順序は次のとおりです。</para>
 <listitem><para>入力ファイルから行が読み取られます。</para></listitem>
 <listitem><para>マクロが適用されます。</para></listitem>
-<listitem><para><literal>&#60;include ...&#62;</literal> および <literal>&#60;transform&#62;</literal> 指令が処理されることにより、追加のファイルが検出され、読み取られます。</para></listitem>
+<listitem><para><literal>&lt;include ...&gt;</literal> および <literal>&lt;transform&gt;</literal> 指令が処理されることにより、追加のファイルが検出され、読み取られます。</para></listitem>
 <listitem><para>すべての入力が累積されたあと、入力内の各行がアクションに変換され、すべての変換が適用されます。</para></listitem>
 <listitem><para>処理が正常に完了すると、出力が書き込まれます。</para></listitem>
 </orderedlist></refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>SMF マニフェストにタグを追加する</title>
 <para>サービス管理機能 (SMF) マニフェストにタグを追加して、パッケージがライブシステムにインストールされたときにこれらのマニフェストがインポートされるようにします。</para>
-<programlisting>&#60;transform file path=(var|lib)/svc/manifest/.*&bsol;.xml -&#62; &bsol;
-    add restart_fmri svc:/system/manifest-import:default&#62;</programlisting>
+<programlisting>&lt;transform file path=(var|lib)/svc/manifest/.*&bsol;.xml -> &bsol;
+    add restart_fmri svc:/system/manifest-import:default></programlisting>
 </example>
 <example><title>ファイルを移動する</title>
 <para>ファイルを <filename>usr/sfw/bin</filename> から <filename>usr/bin</filename> に移動します。
 </para>
-<programlisting>&#60;transform file -&#62; edit path usr/sfw/bin usr/bin&#62;</programlisting>
+<programlisting>&lt;transform file -> edit path usr/sfw/bin usr/bin></programlisting>
 </example>
 <example><title>リブートの必要性を指定する</title>
 <para><literal>reboot-needed</literal> タグを、<filename>/kernel</filename> の下にある、<filename>.conf</filename> ファイル以外のファイルに追加します。この例では、入力ファイルに存在する順序で各アクションに変換が適用されることを利用しています。</para>
-<programlisting>&#60;transform file path=kernel/.* -&#62; set reboot-needed true&#62;
-&#60;transform file path=kernel/.*&bsol;.conf -&#62; delete reboot-needed .*&#62;</programlisting>
+<programlisting>&lt;transform file path=kernel/.* -> set reboot-needed true>
+&lt;transform file path=kernel/.*&bsol;.conf -> delete reboot-needed .*></programlisting>
 <para>これはまた、正規表現を使用した 1 つの変換規則でも実行できます。</para>
 </example>
 <example><title>FMRI 属性を依存アクションに変換する</title>
 <para>パッケージ属性 <literal>pkg.fmri</literal> を incorporation の一部になるように <literal>depend</literal> アクションに変換します。</para>
-<programlisting>&#60;transform set name=pkg.fmri -&#62; &bsol;
-    emit depend type=incorporate fmri=&#37;(value)&#62;
-&#60;transform set name=pkg.fmri -&#62; drop&#62;</programlisting>
+<programlisting>&lt;transform set name=pkg.fmri -> &bsol;
+    emit depend type=incorporate fmri=%(value)>
+&lt;transform set name=pkg.fmri -> drop></programlisting>
 </example>
 <example><title>バグ番号のリストを出力する</title>
 <para>引用符で囲まれた、接頭辞付きのバグ番号のコンマ区切りリストを出力します。</para>
 <programlisting>set name=bugs value=12345 value=54321 value=13579 value=97531
-&#60;transform set name=bugs -&#62; &bsol;
-    print &#37;(value;sep=&#34;,&#34;;prefix=&#34;bug=&#39;&#34;;suffix=&#34;&#39;&#34;)&#62;</programlisting>
+&lt;transform set name=bugs -> &bsol;
+    print %(value;sep=",";prefix="bug='";suffix="'")></programlisting>
 </example>
 <example><title>欠落した属性を許可する</title>
 <para>属性がない場合でも、安全にメッセージを出力します。</para>
-<programlisting>&#60;transform driver -&#62; print Found aliases: &#37;(alias;notfound=&#60;none&#62;)&#62;
+<programlisting>&lt;transform driver -> print Found aliases: %(alias;notfound=&lt;none>)>
 </programlisting>
 </example>
 <example><title>デフォルト値を設定する</title>
 <para>所有者、グループ、およびアクセス権のデフォルト値を設定します。</para>
-<programlisting>&#60;transform file dir -&#62; default owner root&#62;
-&#60;transform file dir -&#62; default group bin&#62;
-&#60;transform file -&#62; default mode 0444&#62;
-&#60;transform dir -&#62; default mode 0755&#62;</programlisting>
+<programlisting>&lt;transform file dir -> default owner root>
+&lt;transform file dir -> default group bin>
+&lt;transform file -> default mode 0444>
+&lt;transform dir -> default mode 0755></programlisting>
 </example>
 <example><title>廃止としてマークされていないパッケージに依存関係を追加する</title>
 <para>廃止としてマークされていないすべてのパッケージについて、そのパッケージを提供する統合のための incorporation への依存関係を追加します。この一連の変換は、マニフェストが読み取られたあとに実行される必要があります。そうしないと、依存関係が常に出力されます。<literal>pkg</literal> アクションの変更には永続的な効果がないため、<literal>pkg.obsolete=false</literal> に一致する属性をクリーンアップする必要はありません。</para>
-<programlisting>&#60;transform pkg -&#62; default pkg.obsolete false&#62;
-&#60;transform pkg pkg.obsolete=false -&#62; emit depend &bsol;
-    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require&#62;</programlisting>
+<programlisting>&lt;transform pkg -> default pkg.obsolete false>
+&lt;transform pkg pkg.obsolete=false -> emit depend &bsol;
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require></programlisting>
 </example>
 <example><title>エラーが検出された場合は終了してメッセージを出力する</title>
 <para>廃止された属性がマニフェスト内に検出された場合は、エラーメッセージを出力します。
 </para>
-<programlisting>&#60;transform file dir link hardlink opensolaris.zone=.* -&#62; &bsol;
-    exit 1 The opensolaris.zone attribute is obsolete.&#62;</programlisting>
+<programlisting>&lt;transform file dir link hardlink opensolaris.zone=.* -> &bsol;
+    exit 1 The opensolaris.zone attribute is obsolete.></programlisting>
 </example>
 <example><title>適切なロケールファセットを設定する</title>
 <para>対象のパス名に適したロケールファセットを設定します。</para>
-<programlisting>&#60;transform dir file link hardlink path=.*/locale/([^/]+).* -&#62; &bsol;
-    default facet.locale.&#37;&#60;1&#62; true&#62;</programlisting>
+<programlisting>&lt;transform dir file link hardlink path=.*/locale/([^/]+).* -> &bsol;
+    default facet.locale.%&lt;1> true></programlisting>
 </example>
 </refsect1>
 <refsect1 role="exit-status"><title></title>
@@ -235,7 +235,7 @@ operation</replaceable>&#62;</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>99</returnvalue></term>
-<listitem><para>予期しない処理エラー。</para>
+<listitem><para>Unexpected processing error.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -249,18 +249,18 @@ operation</replaceable>&#62;</programlisting>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>

@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkgrecv-1">
-<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkgrecv-1">
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrecv</refname><refpurpose>Image Packaging System 内容取得ユーティリティー</refpurpose>
@@ -24,11 +24,11 @@
 </synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrecv-1-desc" role="description"><title></title>
-<para><command>pkgrecv</command> は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたは <option>s</option> オプションで指定されたパッケージアーカイブから一致する各 <replaceable>fmri</replaceable> または <replaceable>pattern</replaceable> のすべてのバージョンを取得し、取得したパッケージを、<option>d</option> オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。この再発行では、タイムスタンプ以外は変更されず、パッケージ署名も含めてパッケージがそのままコピーされます。同じタイムスタンプを保持するには、-<option>clone</option> オプションを参照してください。</para>
-<para>デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ発行ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
+<para><command>pkgrecv</command> retrieves all versions of each matching <replaceable>fmri</replaceable> or <replaceable>pattern</replaceable> from the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository or package archive specified by the <option>s</option> option and optionally republishes the retrieved packages to the package repository or package archive specified by the <option>d</option> option.この再発行では、タイムスタンプ以外は変更されず、パッケージ署名も含めてパッケージがそのままコピーされます。同じタイムスタンプを保持するには、-<option>clone</option> オプションを参照してください。</para>
+<para>デフォルトでは、パッケージは <command>pkg</command>、<command>pkg.depotd</command>、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。</para>
 <para>変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。</para>
 <para><option>m</option> オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。</para>
-<para>取得対象に <literal>&#39;*&#39;</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
+<para>取得対象に <literal>'*'</literal> を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、<option>r</option> オプションを指定したい場合があります。</para>
 <note><para>同じ公開先リポジトリまたはアーカイブにパッケージを再発行するために、<command>pkgrecv</command> の複数インスタンスを同時に使用しないでください。この場合、新しく受け取ったパッケージに、重複するアクションが含まれる可能性があります。</para></note>
 <para><replaceable>dest_uri</replaceable> に対してパッケージを取得する <command>pkgrecv</command> 操作後に、<replaceable>dest_uri</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、そのリポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
 </refsect1>
@@ -40,7 +40,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>a</option></term>
-<listitem><para>取得されたパッケージデータを、<option>d</option> オプションで指定された場所にある <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> アーカイブ内に格納します。<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
+<listitem><para>Store the retrieved package data in a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> archive at the location specified by the <option>d</option> option.<option>d</option> で指定されたファイルが存在していてはいけません。<option>a</option> オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、<literal>.p5p</literal> のファイル拡張子 (たとえば、<literal>archive.p5p</literal>) を使用することを強くお勧めします。<option>a</option> オプションを <option>-raw</option> オプションと一緒に組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
@@ -94,7 +94,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
-<listitem><para>パッケージデータ受信先の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
+<listitem><para>Specify the file system path or URI of a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository or package archive from which to receive package data.<option>s</option> が指定されていない場合は、<envar>PKG_SRC</envar> の値が使用されます。以下の「環境変数」を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>v</option></term>
@@ -110,7 +110,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-dkey</option> <replaceable>dest_key</replaceable></term>
-<listitem><para>宛先の HTTPS リポジトリにパッケージを発行するために使用するクライアント SSL キーファイルを指定します。</para>
+<listitem><para>公開先の HTTPS リポジトリにパッケージを公開するために使用するクライアント SSL キーファイルを指定します。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-dcert</option> <replaceable>dest_cert</replaceable></term>
@@ -122,7 +122,7 @@ pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</program
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-mog-file</option></term>
-<listitem><para>pkgmogrify(1) 変換を含むファイルを、出力先のパッケージリポジトリにコピーされる前に、各パッケージのマニフェストに適用されるように指定します。&#39;-&#39; を指定すると stdin を入力として使用できます。ファイルと &#39;-&#39; の両方が一緒に指定された場合、&#39;-&#39; は無視され、指定されたファイルのみが使用されます。このオプションを使用すると、自動的に既存のパッケージ署名がパッケージから削除されます。ファイルおよびライセンスなどの新しいハッシュ可能アクションの追加は許可されません。このオプションは複数回指定できます。このオプションは --clone と組み合わせることはできません。</para>
+<listitem><para>Specifies a file containing <olink targetdoc="refman" targetptr="pkgmogrify-1"><citerefentry><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> transforms to be applied to the manifest of each package before it is copied to the destination package repository. '-' can be specified to use stdin as input.ファイルと '-' の両方が一緒に指定された場合、'-' は無視され、指定されたファイルのみが使用されます。このオプションを使用すると、自動的に既存のパッケージ署名がパッケージから削除されます。ファイルおよびライセンスなどの新しいハッシュ可能アクションの追加は許可されません。このオプションは複数回指定できます。このオプションは --clone と組み合わせることはできません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-newest</option></term>
@@ -153,7 +153,7 @@ Retrieving and evaluating 1 package(s)...
 PROCESS       ITEMS     GET (MB)    SEND (MB)
 Completed       1/1      3.5/3.5      0.0/0.0
 $ <userinput>ls /local/repo</userinput>
-pkg5.repository  publisher  system&#37;2Flibrary&#37;2Fc&#37;2B&#37;2B-runtime</screen>
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
 <para>変更のないパッケージは再発行されないため、SEND (再発行) の MB は GET (検査) の MB より少なくなる場合があります。この例では、<option>d</option> リポジトリへの再発行は行わずに raw データを取得しています。</para>
 </example>
 <example><title>システムから依存関係を取得する</title>
@@ -190,12 +190,12 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <example><title>追加パッケージおよび変更された内容の取得</title>
 <para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>http://pkg.oracle.com/solaris/release/</literal> にあるリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。</para>
 <screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
-<userinput>-d /export/repoSolaris11 -m all-timestamps &#39;*&#39;</userinput></screen>
+<userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
 <para>まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、<literal>https://pkg.oracle.com/solaris/support/</literal> にあるセキュアなリポジトリから <literal>/export/repoSolaris11</literal> にあるリポジトリに受信します。 </para>
 <screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
 <userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
 <userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
-<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem &#39;*&#39;</userinput></screen>
+<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'</userinput></screen>
 </example>
 <example><title>パッケージアーカイブを作成する</title>
 <para><literal>http://example.com:10000</literal> にあるリポジトリから、パッケージ <literal>editor/gnu-emacs</literal> とそのすべての依存関係を含むパッケージアーカイブを作成します。</para>
@@ -204,12 +204,12 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </example>
 <example><title>パッケージをアーカイブからリポジトリにコピーする</title>
 <para>パッケージアーカイブ内のすべてのパッケージを <filename>/export/repo</filename> にある既存のリポジトリにコピーします。</para>
-<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo &#39;*&#39;</userinput></screen>
+<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
 </example>
 <example><title>パブリッシャー名を変更する</title>
 <para>再公開時に、パッケージ &#39;foo&#39; とそのすべての依存関係のパブリッシャー名を &#39;extra&#39; に変更します。</para>
-<screen>$ <userinput>echo &#39;&#60;transform set name=pkg.fmri -&#62; edit value
-(pkg://).*?(/.*) \\\1extra\\\2&#62;&#39; | pkgrecv -s repo1 -d repo2 --mog-file - foo
+<screen>$ <userinput>echo '&lt;transform set name=pkg.fmri -&gt; edit value
+(pkg://).*?(/.*) \\\1extra\\\2&gt;' | pkgrecv -s repo1 -d repo2 --mog-file - foo
 </userinput></screen>
 </example>
 </refsect1>
@@ -246,7 +246,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>PKG_SRC</envar></term>
-<listitem><para>パッケージ取得先の <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリまたはパッケージアーカイブの場所を表す URI またはファイルシステムのパス。</para>
+<listitem><para>A URI or file system path representing the location of a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository or package archive from which to retrieve packages.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><envar>TMPDIR</envar></term>
@@ -274,7 +274,7 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生しました。</para>
+<listitem><para>エラーが発生した。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -292,18 +292,18 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -333,6 +333,6 @@ Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。See <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information.</para>
 </refsect1>
 </refentry>

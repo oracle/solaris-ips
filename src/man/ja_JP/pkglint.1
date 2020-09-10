@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkglint-1">
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">6 Mar 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -13,16 +13,16 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
 repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
-    [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
+    [-e <replaceable>extension_path</replaceable>] [-f <replaceable>config_file</replaceable>] [-b <replaceable>branch</replaceable>]
     [-v] [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
 </synopsis>
 <synopsis>/usr/bin/pkglint -L [-v]</synopsis>
 </refsynopsisdiv>
 <refsect1 role="description"><title></title>
 <para><command>pkglint</command> は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。</para>
-<para><command>pkglint</command> は、パッケージ発行前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
+<para><command>pkglint</command> は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
 <para>lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。</para>
-<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
+<para>When retrieving manifests from repositories, on first run <command>pkglint</command> creates and populates <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> user images in the specified cache directory.<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
 <para><command>pkglint</command> の以降の呼び出しではキャッシュディレクトリを再利用できるため、<option>r</option> または <option>l</option> 引数はすべて省略できます。</para>
 <para><command>pkglint</command> では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、<command>pkg</command> を使用します。</para>
 <para><command>pkglint</command> では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。<literal>True</literal> に設定された属性 <literal>pkg.linted</literal> を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。</para>
@@ -46,7 +46,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><option>l</option> <replaceable>lint_uri</replaceable></term>
-<listitem><para>lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の発行がサポートされています。<option>l</option> を指定する場合は、<option>c</option> も指定する必要があります。<option>l</option> オプションは複数回指定できます。</para>
+<listitem><para>lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。<option>l</option> を指定する場合は、<option>c</option> も指定する必要があります。<option>l</option> オプションは複数回指定できます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>L</option></term>
@@ -55,6 +55,10 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </varlistentry>
 <varlistentry><term><option>f</option> <replaceable>config_file</replaceable></term>
 <listitem><para><replaceable>config_file</replaceable> 構成ファイルを使用して <command>pkglint</command> セッションを構成します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>e</option> <replaceable>extension_path</replaceable></term>
+<listitem><para>Directory to add to the Python search path when loading <command>pkglint</command> extensions.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>p</option> <replaceable>regexp</replaceable></term>
@@ -85,7 +89,11 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkglint.ext.</literal>*</term>
-<listitem><para><command>pkglint</command> のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。<literal>pkglint.ext.</literal> で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」のセクションを参照してください。</para>
+<listitem><para><command>pkglint</command> のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。<literal>pkglint.ext.</literal> で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」のセクションを参照してください。The <literal>extension_path</literal> option specifies additional directory locations to search when loading extensions</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>extension_path</literal></term>
+<listitem><para>An list of directories, separated by &#39;:&#39; no most platforms, to search for extension modules.If the -e flag is specified on the CLI it is added higher in the search order than this config file option.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkglint.exclude</literal></term>
@@ -158,7 +166,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 <example><title>絞り込まれたマニフェストセットでの lint リポジトリの使用</title>
 <para>lint リポジトリでの <command>pkglint</command> セッションの実行と、チェックするマニフェストのサブセットの指定。</para>
 <screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
-<userinput>-p &#39;.*firefox.*&#39;</userinput></screen>
+<userinput>-p '.*firefox.*'</userinput></screen>
 </example>
 <example><title>ブランチの指定</title>
 <para>冗長モードでの特定のブランチに対する <command>pkglint</command> セッションの実行。</para>
@@ -202,18 +210,18 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>

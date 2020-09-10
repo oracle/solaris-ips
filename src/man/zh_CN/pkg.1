@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="zh" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkg-1">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2 Apr 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统的检索客户端</refpurpose>
@@ -166,7 +166,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <para>只能将软件包安装到属于引导环境的文件系统中。例如，在缺省的 Oracle Solaris 11 安装上，软件包操作仅支持 <filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> 下的数据集。</para>
 <para>发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。</para>
 <para>系统信息库是客户端可在其中发布和检索软件包内容（该软件包包含的文件，例如程序和文档）和元数据（有关该软件包的信息，例如其名称和说明）的位置。例如，有一个名为 <literal>example.org</literal> 的发布者，其系统信息库位于 URI <literal>http://example.org/repository</literal>。</para>
-<para><command>pkg</command> 还可以卸载软件包、刷新发布者元数据（例如可用软件包的列表）、验证映像中的软件包安装，以及查询映像中的各个标记。也可以对 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统信息库执行这些查询。</para>
+<para><command>pkg</command> 还可以卸载软件包、刷新发布者元数据（例如可用软件包的列表）、验证映像中的软件包安装，以及查询映像中的各个标记。These queries can also be made of <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repositories.</para>
 <para>映像有三种类型：完整映像：能够提供完整的系统；部分映像：与完整映像（父映像）链接，但本身无法提供完整的系统；用户映像。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -203,19 +203,19 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-full</option></term>
-<listitem><para>强制完全检索所有发布者元数据（而不是尝试增量更新），并请求操作期间使用的所有代理忽略缓存的数据。此选项用于进行故障排除，正常情况下不应使用。</para>
+<listitem><para>强制完全检索所有发布者元数据（而不是尝试增量更新），并请求操作期间使用的所有代理忽略高速缓存的数据。此选项用于进行故障排除，正常情况下不应使用。</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
-<listitem><para>安装指定软件包并将其更新到最新版本，该版本与映像中安装的软件包所允许的 <replaceable>pkg_fmri_pattern</replaceable> 匹配。要显式请求安装软件包的最新版本，请在 <replaceable>pkg_fmri_pattern</replaceable> 的版本部分使用 <literal>latest</literal>。例如，指定 <literal>vim@latest</literal>。<replaceable>pkg_fmri_pattern</replaceable> 模式可以包含 <literal>?</literal> 和 <literal>*</literal> 字符作为 <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 式通配符，以匹配一个或多个软件包。</para>
+<listitem><para>安装指定软件包并将其更新到最新版本，该版本与映像中安装的软件包所允许的 <replaceable>pkg_fmri_pattern</replaceable> 匹配。要显式请求安装软件包的最新版本，请在 <replaceable>pkg_fmri_pattern</replaceable> 的版本部分使用 <literal>latest</literal>。例如，指定 <literal>vim@latest</literal>。The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the <literal>?</literal> and <literal>*</literal> characters as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
 <para>可以指定比已安装版本更高或更低的版本，以便对特定软件包执行就地降级或升级。不支持跨越软件包重命名边界或过时边界更新特定的软件包。</para>
-<para>作为将要降级的软件包的一部分、自原始版本安装以来更改了的任何保留配置文件，将使用扩展名 <literal>.update</literal> 进行重命名。有关软件包系统如何确定要保留的文件，以及在软件包升级期间如何保留这些文件的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“文件操作”。</para>
+<para>作为将要降级的软件包的一部分、自原始版本安装以来更改了的任何保留配置文件，将使用扩展名 <literal>.update</literal> 进行重命名。For more information about how the package system determines which files to preserve, and how these files are preserved during package upgrades, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>软件包基于发布者搜索顺序和粘性进行选择。有关搜索顺序和粘性的信息，请参见 <command>pkg publisher</command> 和 <command>pkg set-publisher</command> 命令。如果 <replaceable>pkg_fmri_pattern</replaceable> 未指定发布者，则会将第一个提供匹配软件包的发布者用作安装源。如果该发布者未提供可以安装在此映像中的软件包版本，则安装操作将失败。使用 <command>pkg list -a</command> 命令可查看哪些发布者提供可以安装在此映像中的软件包版本。</para>
 <para>指定了多个 <replaceable>pkg_fmri_pattern</replaceable> 时，如果指定的软件包中有任何一个无法在此映像中安装，则指定的所有软件包都不会安装。</para>
-<para>安装过程中，某些配置文件可能被重命名或替换。有关软件包系统如何确定要保留的文件以及在软件包操作期间如何保留这些文件的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“文件操作”。</para>
+<para>安装过程中，某些配置文件可能被重命名或替换。For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>如果某个软件包在避免列表中，则安装该软件包会将它从该列表中删除。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>C</option> <replaceable>n</replaceable></term>
@@ -266,7 +266,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-be-activate</option></term>
-<listitem><para>如果创建了一个引导环境，不将其设置为下次引导时的活动引导环境。有关更多信息，请参见 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>如果创建了一个引导环境，不将其设置为下次引导时的活动引导环境。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-backup-be</option></term>
@@ -278,7 +278,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-backup-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>使用给定参数命名创建的备份引导环境。使用 <option>-backup-be-name</option> 表示 <option>-require-backup-be</option>。另请参见 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>使用给定参数命名创建的备份引导环境。使用 <option>-backup-be-name</option> 表示 <option>-require-backup-be</option>。See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-deny-new-be</option></term>
@@ -290,7 +290,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>将新创建的引导环境重命名为给定的参数。使用 <option>-be-name</option> 表示 <option>-require-new-be</option>。另请参见 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>将新创建的引导环境重命名为给定的参数。使用 <option>-be-name</option> 表示 <option>-require-new-be</option>。See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable></term>
@@ -298,10 +298,10 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators</option></term>
-<listitem><para>同步运行 SMF 执行器。除非所有 SMF 执行器在调用了 <command>pkg</command> 的区域（全局区域或非全局区域）中已完成，否则 <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 命令不会返回。</para></listitem>
+<listitem><para>同步运行 SMF 执行器。The <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> command will not return until all SMF actuators have finished in the zone in which <command>pkg</command> was invoked (the global zone or a non-global zone).</para></listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable></term>
-<listitem><para>同步运行 SMF 执行器。如果执行器未在给定的 <replaceable>timeout</replaceable>（以秒为单位）内完成，<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 将继续运行并以返回代码 8 退出。</para></listitem>
+<listitem><para>同步运行 SMF 执行器。If the actuators do not finish within the given <replaceable>timeout</replaceable> in seconds, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> will continue operation and exit with return code 8.</para></listitem>
 </varlistentry>
 </variablelist>
 </listitem>
@@ -310,7 +310,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <listitem><para>像在裸系统中安装一样安装或更新指定的软件包。将删除未在命令行中指定且不是指定软件包的依赖项的所有之前安装的软件包。此命令将忽略不安装避免列表上的软件包以及不更新冻结列表上的软件包的限制。在其他方面，此 <command>exact-install</command> 子命令的行为与 <command>install</command> 子命令的行为相同。要显式请求安装软件包的最新版本，请在 <replaceable>pkg_fmri_pattern</replaceable> 的版本部分使用 <literal>latest</literal>。例如，指定 <literal>vim@latest</literal>。</para>
 <para>软件包基于发布者搜索顺序和粘性进行选择。有关搜索顺序和粘性的信息，请参见 <command>pkg publisher</command> 和 <command>pkg set-publisher</command> 命令。如果 <replaceable>pkg_fmri_pattern</replaceable> 未指定发布者，则会将第一个提供匹配软件包的发布者用作安装源。如果该发布者未提供可以安装在此映像中的软件包版本，则安装操作将失败。使用 <command>pkg list -a</command> 命令可查看哪些发布者提供可以安装在此映像中的软件包版本。</para>
 <para>指定了多个 <replaceable>pkg_fmri_pattern</replaceable> 时，如果指定的软件包中有任何一个无法在此映像中安装，则指定的所有软件包都不会安装。</para>
-<para>安装过程中，某些配置文件可能被重命名或替换。有关软件包系统如何确定要保留的文件以及在软件包操作期间如何保留这些文件的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“文件操作”。</para>
+<para>安装过程中，某些配置文件可能被重命名或替换。For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>如果某个软件包在避免列表中，则安装该软件包会将它从该列表中删除。</para>
 <para>有关选项的说明，请参见上述 <command>install</command> 命令。</para>
 </listitem>
@@ -318,7 +318,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <varlistentry><term><command>pkg uninstall</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-ignore-missing</option>] [<option>-no-index</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
 <listitem><para>删除与 <replaceable>pkg_fmri_pattern</replaceable> 匹配的已安装软件包。</para>
 <para>如果某个软件包是组依赖性的主体，则卸载该软件包会将它放置在避免列表中。请参见下文的 <command>avoid</command> 子命令。</para>
-<para>在命令输出中，请注意任何指出已创建新引导环境的消息。如果已创建并激活新引导环境，缺省情况下，下次重新引导时会引导该环境。有关管理引导环境的信息，请参见 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<para>在命令输出中，请注意任何指出已创建新引导环境的消息。如果已创建并激活新引导环境，缺省情况下，下次重新引导时会引导该环境。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about managing boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-ignore-missing</option></term>
 <listitem><para>忽略未安装的软件包。使用此选项可防止 <command>pkg uninstall</command> 在尝试卸载当前未安装的软件包时失败。</para>
@@ -330,13 +330,13 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><command>pkg update</command> [<option>fnvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-ignore-missing</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>将当前映像中安装的所有软件包更新到最新版本，该版本需符合已安装的软件包和发布者配置对系统施加的约束。</para>
-<para>在命令输出中，请注意任何指出已创建新引导环境的消息。如果已创建并激活新引导环境，在未指定 <option>-no-be-activate</option> 选项时，缺省情况下，下次重新引导时会引导该环境。有关管理引导环境的信息，请参见 <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<para>在命令输出中，请注意任何指出已创建新引导环境的消息。如果已创建并激活新引导环境，在未指定 <option>-no-be-activate</option> 选项时，缺省情况下，下次重新引导时会引导该环境。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about managing boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>仅更新当前映像中安装的指定软件包。如果在所提供的 <replaceable>pkg_fmri_pattern</replaceable> 模式中有一个为星号 (*)，则会更新当前映像中安装的所有软件包，就像未提供 <replaceable>pkg_fmri_pattern</replaceable> 一样。</para>
 <para>要显式请求安装软件包的最新版本，请在 <replaceable>pkg_fmri_pattern</replaceable> 的版本部分使用 <literal>latest</literal>。例如，指定 <literal>vim@latest</literal>。</para>
 <para>可以指定比已安装版本更高或更低的版本，以便对特定软件包执行就地降级或升级。不支持跨越软件包重命名边界或过时边界更新特定的软件包。</para>
-<para>作为将要降级的软件包的一部分、自原始版本安装以来更改了的任何保留配置文件，将使用扩展名 <literal>.update</literal> 进行重命名。有关软件包系统如何确定要保留的文件，以及在软件包升级期间如何保留这些文件的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“文件操作”。</para>
+<para>作为将要降级的软件包的一部分、自原始版本安装以来更改了的任何保留配置文件，将使用扩展名 <literal>.update</literal> 进行重命名。For more information about how the package system determines which files to preserve, and how these files are preserved during package upgrades, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>指定了多个 <replaceable>pkg_fmri_pattern</replaceable> 时，如果指定的软件包中有任何一个无法在此映像中更新，则指定的所有软件包都不会更新。</para>
 </listitem>
 </varlistentry>
@@ -357,12 +357,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <programlisting>NAME (PUBLISHER)       VERSION                IFO
 system/core-os         0.5.11-0.175.0.0.0.2.1 i--
 x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
-<para>第一列包含软件包的名称。如果安装（或者提供）该软件包的发布者在发布者搜索顺序上不是第一个，则该发布者名称将列在软件包名称的后面，并括在括号中。第二列包含软件包的发行版本和分支版本。有关发行版本和分支版本以及变量的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页。</para>
+<para>第一列包含软件包的名称。如果安装（或者提供）该软件包的发布者在发布者搜索顺序上不是第一个，则该发布者名称将列在软件包名称的后面，并括在括号中。第二列包含软件包的发行版本和分支版本。See the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about release and branch versions and about variants.</para>
 <itemizedlist>
 <para>最后一列包含一组标志，用于显示软件包的状态：</para>
 <listitem><para><literal>I</literal> 列中的 <literal>i</literal> 表明软件包已安装。</para></listitem>
 <listitem><para><literal>F</literal> 列中的 <literal>f</literal> 表明软件包已冻结。</para></listitem>
-<listitem><para><literal>O</literal> 列中的 <literal>o</literal> 表明软件包已过时。<literal>O</literal> 列中的 <literal>r</literal> 表明软件包已重命名（一种形式的过时）。</para>
+<listitem><para><literal>O</literal> 列中的 <literal>o</literal> 表明软件包已过时。<literal>O</literal> 列中的 <literal>r</literal> 表明软件包已重命名（一种形式的过时）。</para> An <literal>l</literal> in the <literal>O</literal> column shows that the package is legacy, meaning that it will be removed in the future.
 </listitem>
 </itemizedlist>
 <variablelist termlength="wholeline">
@@ -448,8 +448,8 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg contents</command> [<option>Hmr</option>] [<option>a</option> <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]... [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>o</option> <replaceable> attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable> sort_key</replaceable>] [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable> action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
-<listitem><para>显示映像中安装的所有软件包的内容（操作属性）。未指定选项时，显示当前映像中安装的操作的 <literal>path</literal> 属性值，按属性值的字母顺序排列。如果未指定 <option>o</option> 选项，将改为显示相关操作名称的关键属性（如 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 中所述）。此外，'depend' 操作还将包括 'type' 属性，'set' 操作将包括 'value' 属性。</para>
-<para>指定多个操作名称时，缺省属性是所有指定操作的所有属性集，如上所述。有关操作及其属性的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“操作”。另请参见以下伪属性名称列表。</para>
+<listitem><para>显示映像中安装的所有软件包的内容（操作属性）。未指定选项时，显示当前映像中安装的操作的 <literal>path</literal> 属性值，按属性值的字母顺序排列。If the <option>o</option> option is not specified, the key attributes, as described in <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>, of the related action name will be displayed instead.此外，'depend' 操作还将包括 'type' 属性，'set' 操作将包括 'value' 属性。</para>
+<para>指定多个操作名称时，缺省属性是所有指定操作的所有属性集，如上所述。For information about actions and their attributes, see “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.另请参见以下伪属性名称列表。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>仅显示指定软件包的内容。</para>
@@ -484,7 +484,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>仅列出指定的操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。<replaceable>action_name</replaceable> 的值是 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页的“操作”中列出的操作之一，例如 <literal>file</literal>、<literal>directory</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal>。</para>
+<listitem><para>仅列出指定的操作。可以多次指定 <option>t</option> 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 <option>t</option> 选项的参数。The value of <replaceable>action_name</replaceable> is one of the actions listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page, such as <literal>file</literal>, <literal>directory</literal>, <literal>driver </literal>, <literal>depend</literal>, <literal>set</literal>.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -575,19 +575,19 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri</replaceable></term>
-<listitem><para>搜索位于给定 URI 的 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统信息库。可以多次指定此选项。不支持软件包归档。</para>
+<listitem><para>Search the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository located at the given URI.可以多次指定此选项。不支持软件包归档。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><replaceable>query</replaceable></term>
 <listitem><para>缺省情况下，会将 <replaceable>query</replaceable> 解释为要精确匹配的一系列条件（多个条件用 AND 连接）。</para>
 <para>支持 AND 和 OR。</para>
-<para>可将 <literal>?</literal> 和 <literal>*</literal> 字符用作 <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 式通配符，以更灵活地获取查询匹配项。</para>
+<para>The <literal>?</literal> and <literal>*</literal> characters can be used as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards, allowing more flexible query matches.</para>
 <para>除了支持简单的标记匹配和通配符搜索外，还支持更复杂的查询语言。可通过使用单引号或双引号（<literal>'</literal> 或 <literal>"</literal>）来搜索短语。请务必考虑所用的 shell，使 <command>pkg</command> 能够真正识别 <literal>'</literal> 或 <literal>"</literal>。</para>
-<para>要为哪些标记建立索引是与操作相关的，不过可以包括内容散列和路径名称。有关操作及其属性的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“操作”。另请参见上面 <command>pkg contents</command> 和 <option>o</option> 中的伪属性名称列表。</para>
+<para>要为哪些标记建立索引是与操作相关的，不过可以包括内容散列和路径名称。For information about actions and their attributes, see “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.另请参见上面 <command>pkg contents</command> 和 <option>o</option> 中的伪属性名称列表。</para>
 <para>结构化查询支持以下语法：</para>
 <programlisting><replaceable>pkg_name</replaceable>:<replaceable>action_name</replaceable>:<replaceable>
 index</replaceable>:<replaceable>token</replaceable></programlisting>
-<para><replaceable>action_name</replaceable> 的值是 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页的“操作”中列出的操作之一。<replaceable>index</replaceable> 是操作的属性。<replaceable>index</replaceable> 的值必须与 <replaceable>token</replaceable> 匹配。</para>
+<para>The value of <replaceable>action_name</replaceable> is one of the actions listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.<replaceable>index</replaceable> 是操作的属性。<replaceable>index</replaceable> 的值必须与 <replaceable>token</replaceable> 匹配。</para>
 <para>并非所有操作属性都是可搜索的。例如，<literal>mode</literal> 是 <literal>file</literal> 操作的一个属性，但是 <literal>mode</literal> 不是 <replaceable>index</replaceable> 的有效值。</para>
 <para><replaceable>index</replaceable> 的某些值并不是操作属性，而是从其他属性派生的值。例如，<replaceable>index</replaceable> 可以是 <literal>basename</literal>，其不是任何操作的属性，而是派生自 <literal>file</literal> 或 <literal>dir</literal> 操作的 <literal>path</literal> 属性，它采用了路径的最后组成部分。</para>
 <para>不同的操作类型有不同的 <replaceable>index</replaceable> 有效值。本文档并未列出所有可能的值。一些更为有用的 <replaceable>index</replaceable> 值包括，对应于文件系统操作的 <literal>basename</literal> 和 <literal>path</literal>、对应于 <literal>depend</literal> 操作的依赖性类型（例如 <literal>require</literal>、<literal>optional</literal>、<literal>group</literal>），以及对应于 <literal>driver</literal> 操作的 <literal>driver_name</literal> 和 <literal>alias</literal>。</para>
@@ -689,11 +689,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg revert</command> [<option>nv</option>] [<option> -no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable> tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
-<listitem><para>将 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 软件包提供的文件恢复为其交付时的状态。文件所有权和保护也会得到恢复。</para>
+<listitem><para>Revert files delivered by <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> packages to their as-delivered condition.文件所有权和保护也会得到恢复。</para>
 <caution><para>将某些可编辑文件恢复为其缺省值可能会使系统无法引导，或导致其他故障。</para></caution>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-tagged</option> <replaceable>tag-name</replaceable></term>
-<listitem><para>恢复使用 <replaceable>tag-name</replaceable> 标记的所有文件，并删除带有此标记的目录下匹配 <replaceable>pattern</replaceable> 的所有未打包的文件或目录。有关 <literal>tag-name</literal> 和 <replaceable>pattern</replaceable> 的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页“文件操作”和“目录操作”中对 <literal>revert-tag</literal> 属性的说明。</para>
+<listitem><para>恢复使用 <replaceable>tag-name</replaceable> 标记的所有文件，并删除带有此标记的目录下匹配 <replaceable>pattern</replaceable> 的所有未打包的文件或目录。See the description of the <literal>revert-tag</literal> attribute in “File Actions” and “Directory Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about <literal>tag-name</literal> and <replaceable>pattern</replaceable>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><replaceable>path-to-file</replaceable></term>
@@ -757,7 +757,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg variant</command> [<option>Haiv</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>variant_pattern</replaceable> ...]</term>
-<listitem><para>显示在此映像中设置的所有变量的当前值。有关变量的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<listitem><para>显示在此映像中设置的所有变量的当前值。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>variant_pattern</replaceable></term>
 <listitem><para>仅显示在此映像中设置的指定变量的当前值。</para>
@@ -794,12 +794,12 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><command>pkg change-variant</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>variant_name</replaceable>=<replaceable>value</replaceable> ...</term>
 <listitem><para>更改在当前映像中设置的指定变量的值。</para>
-<para>更改变量的值可能会导致删除、更新或安装某些软件包内容。更改变量值还可能会导致安装、更新或删除整个软件包，以满足新的映像配置。有关变量的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<para>更改变量的值可能会导致删除、更新或安装某些软件包内容。更改变量值还可能会导致安装、更新或删除整个软件包，以满足新的映像配置。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 <para>有关选项的说明，请参见上述 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg facet</command> [<option>Haim</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>facet_pattern</replaceable> ...]</term>
-<listitem><para>显示使用 <command>pkg change-facet</command> 命令在此映像中本地设置或从父映像继承（例如非全局区域继承全局区域的侧面设置）的所有侧面的当前值和源。有关侧面的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<listitem><para>显示使用 <command>pkg change-facet</command> 命令在此映像中本地设置或从父映像继承（例如非全局区域继承全局区域的侧面设置）的所有侧面的当前值和源。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>facet_pattern</replaceable></term>
 <listitem><para>仅显示在此映像中设置的指定侧面的当前值。</para>
@@ -838,8 +838,8 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><command>pkg change-facet</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>|<literal>None</literal>) ...</term>
 <listitem><para>更改当前映像中设置的指定侧面的值。更改也将发生在继承这些侧面的所有映像中，例如非全局区域。</para>
-<para>可以将侧面设置为 <literal>True</literal> 或 <literal>False</literal>。将侧面设置为 <literal>None</literal> 时，系统会将缺省值 <literal>True</literal> 应用于该侧面；因此将安装任何由此侧面约束的操作。有关操作的信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“操作”。</para>
-<para>更改侧面的值可能会导致删除、更新或安装某些软件包内容。更改侧面值还可能会导致安装、更新或删除整个软件包，以满足新的映像配置。有关侧面的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<para>可以将侧面设置为 <literal>True</literal> 或 <literal>False</literal>。将侧面设置为 <literal>None</literal> 时，系统会将缺省值 <literal>True</literal> 应用于该侧面；因此将安装任何由此侧面约束的操作。See “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about actions.</para>
+<para>更改侧面的值可能会导致删除、更新或安装某些软件包内容。更改侧面值还可能会导致安装、更新或删除整个软件包，以满足新的映像配置。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 <para>有关选项的说明，请参见上述 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>
@@ -1010,7 +1010,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
 <listitem><para>使用指定的代理 URI 检索指定源 (<option>g</option>) 或镜像 (<option>m</option>) 的内容。代理值被存储为发布者配置的一部分，这意味着子映像所使用的系统信息库是自动更新的。此选项不能用于设置验证代理。<replaceable>proxy_to_use</replaceable> 值不能使用 <literal>protocol://user:password@host</literal> 格式。</para>
-<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。有关接受的环境变量名列表，请参见 <olink targetdoc="refman" targetptr="curl-1"><citerefentry><refentrytitle>curl</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> 手册页的“环境”部分。如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见<olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink>中的“指定代理”</para>
+<para>在运行时，<literal>http_proxy</literal> 或相关环境变量会覆盖此代理设置。See the “Environment” section of the <olink targetdoc="refman" targetptr="curl-1"><citerefentry><refentrytitle>curl</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for the list of accepted environment variable names.如果使用环境变量来设置代理 URI，则必须也将 <literal>svc:/application/pkg/system-repository</literal> SMF 服务的相应代理属性设置为同一值。请参见<olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink>中的“指定代理”</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
@@ -1160,7 +1160,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>time</replaceable></term> <term><option>t</option> <replaceable>time</replaceable>-<replaceable>time</replaceable></term>
-<listitem><para>显示以逗号分隔列表指定的时间戳（格式为 <literal>%Y-%m-%dT%H:%M:%S</literal>）对应的日志记录（请参见 <olink targetdoc="refman" targetptr="strftime-3C"><citerefentry><refentrytitle>strftime</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 手册页）。要指定时间范围，请在开始和完成时间戳之间放置连字符 (<literal>-</literal>)。可以将关键字 <literal>now</literal> 用作当前时间的别名。可以多次指定此选项。如果指定的时间戳包含重复的时间戳或重叠的范围，则不显示重复的历史记录事件。仅显示每个历史记录事件的一个实例。</para>
+<listitem><para>Display log records for a comma-separated list of timestamps, formatted with <literal>%Y-%m-%dT%H:%M:%S</literal> (see the <olink targetdoc="refman" targetptr="strftime-3C"><citerefentry><refentrytitle>strftime</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> man page).要指定时间范围，请在开始和完成时间戳之间放置连字符 (<literal>-</literal>)。可以将关键字 <literal>now</literal> 用作当前时间的别名。可以多次指定此选项。如果指定的时间戳包含重复的时间戳或重叠的范围，则不显示重复的历史记录事件。仅显示每个历史记录事件的一个实例。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1175,7 +1175,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg update-format</command></term>
-<listitem><para>将映像格式更新到当前版本。完成此操作后，该映像无法再在早期版本的 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 系统上使用。</para>
+<listitem><para>将映像格式更新到当前版本。Once this operation has completed, the image can no longer be used with older versions of the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> system.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg version</command></term>
@@ -1206,7 +1206,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-facet</option> <replaceable>facet_name</replaceable>=(<literal> True</literal>|<literal>False</literal>)</term>
-<listitem><para>将指定的侧面设置为指示值。有关侧面的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<listitem><para>将指定的侧面设置为指示值。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-refresh</option></term>
@@ -1218,7 +1218,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable> value</replaceable></term>
-<listitem><para>将指定的变量设置为指示值。有关变量的更多信息，请参见 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页中的“侧面和变量”。</para>
+<listitem><para>将指定的变量设置为指示值。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1267,31 +1267,27 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be-policy</literal></term>
 <listitem><para>（字符串）指定在打包操作期间何时创建引导环境。允许使用以下值：</para>
-<variablelist termlength="wholeline">
-<varlistentry><term><literal>default</literal></term>
-<listitem><para>应用缺省引导环境创建策略 <literal>create-backup</literal>。</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>always-new</literal></term>
-<listitem><para>所有软件包操作均需要重新引导：在下次引导时设为活动状态的新引导环境中执行这些操作。除非显式请求，否则不创建备份引导环境。</para>
-<para>该策略最为安全，但是它比大多数站点的需要更为严格，因为在不重新引导的情况下无法添加任何软件包。</para>
-</listitem>
-</varlistentry>
-</variablelist>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>create-backup</literal></term>
-<listitem><para>对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的引导环境并将其设置为活动状态。如果修改了软件包或安装了可能影响内核的内容，并且该操作影响实时引导环境，将创建备份引导环境，但不会将其设置为活动状态。也可以显式请求创建备份引导环境。</para>
-<para>仅当新安装的软件导致系统不稳定时（有可能发生，但比较少见），该策略才可能存在风险。</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>when-required</literal></term>
-<listitem><para>对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的引导环境并将其设置为活动状态。除非显式请求，否则不创建备份引导环境。</para>
-<para>该策略的风险最高，因为如果对实时引导环境的打包更改使得以后无法再进行更改，则可能没有可回退的最近引导环境。</para>
+	<variablelist termlength="wholeline">
+		<varlistentry><term><literal>default</literal></term>
+		<listitem><para>Apply the default boot environment creation policy, <literal>create-backup</literal>.</para>
+		</listitem> </varlistentry>
+		<varlistentry><term><literal>always-new</literal></term>
+		<listitem><para>所有软件包操作均需要重新引导：在下次引导时设为活动状态的新引导环境中执行这些操作。除非显式请求，否则不创建备份引导环境。</para>
+		<para>该策略最为安全，但是它比大多数站点的需要更为严格，因为在不重新引导的情况下无法添加任何软件包。</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>create-backup</literal></term>
+		<listitem><para>对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的引导环境并将其设置为活动状态。如果修改了软件包或安装了可能影响内核的内容，并且该操作影响实时引导环境，将创建备份引导环境，但不会将其设置为活动状态。也可以显式请求创建备份引导环境。</para>
+		<para>仅当新安装的软件导致系统不稳定时（有可能发生，但比较少见），该策略才可能存在风险。</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>when-required</literal></term>
+		<listitem><para>对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的引导环境并将其设置为活动状态。除非显式请求，否则不创建备份引导环境。</para>
+		<para>该策略的风险最高，因为如果对实时引导环境的打包更改使得以后无法再进行更改，则可能没有可回退的最近引导环境。</para>
+		</listitem></varlistentry>
+	</variablelist>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ca-path</literal></term>
-<listitem><para>（字符串）一个路径名称，指向为执行 SSL 操作而将 CA 证书保存到的目录。此目录的格式特定于底层 SSL 实现。要对可信 CA 证书使用替代位置，请将此值更改为指向另一个目录。有关 CA 目录的要求，请参见 <olink targetdoc="refman" targetptr="SSL_CTX_load_verify_locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> 的 <literal>CApath</literal> 部分。</para>
+<listitem><para>（字符串）一个路径名称，指向为执行 SSL 操作而将 CA 证书保存到的目录。此目录的格式特定于底层 SSL 实现。要对可信 CA 证书使用替代位置，请将此值更改为指向另一个目录。See the <literal> CApath</literal> portions of <olink targetdoc="refman" targetptr="SSL_CTX_load_verify_locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> for requirements for the CA directory.</para>
 <para>缺省值：<literal>/etc/openssl/certs</literal></para>
 </listitem>
 </varlistentry>
@@ -1322,17 +1318,22 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <varlistentry><term><literal>flush-content-cache-on-success</literal></term>
 <listitem><para>（布尔型）如果此属性设置为 <literal>True</literal>，则映像修改操作成功完成时软件包客户机将删除其内容高速缓存中的文件。对于创建引导环境的操作，将同时从源和目标引导环境中删除内容。</para>
 <para>在磁盘空间有限的系统上，可以使用此属性使内容高速缓存保持为较小的大小。此属性可能会导致花费更长的时间来完成操作。</para>
-<para>缺省值：<literal>True</literal></para>
+<para>Default value: <literal>True</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mirror-discovery</literal></term>
-<listitem><para>（布尔型）此属性通知客户端使用 mDNS 和 DNS-SD 发现本地链路内容镜像。如果此属性设置为 <literal>True</literal>，则客户机尝试从其动态发现的镜像中下载软件包内容。要运行一个通过 mDNS 通告其内容的镜像，请参见 <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>（布尔型）此属性通知客户端使用 mDNS 和 DNS-SD 发现本地链路内容镜像。如果此属性设置为 <literal>True</literal>，则客户机尝试从其动态发现的镜像中下载软件包内容。To run a mirror that advertises its content via mDNS, see the <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 <para>缺省值：<literal>False</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>send-uuid</literal></term>
 <listitem><para>（布尔型）执行网络操作时发送映像的通用唯一标识符 (Universally Unique Identifier, UUID)。尽管用户可以禁用此选项，但是某些网络系统信息库可能会拒绝与不提供 UUID 的客户机通信。</para>
-<para>缺省值：<literal>True</literal></para>
+<para>Default value: <literal>True</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>be-use-suggested-be-name</literal></term>
+<listitem><para>(boolean) Use the suggested Boot Environment name from pkg:/release/name when updates where a new BE is created and <literal>--be-name</literal> has not been supplied.</para>
+<para>Default value: <literal>True</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>signature-policy</literal></term>
@@ -1366,12 +1367,12 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>use-system-repo</literal></term>
-<listitem><para>（布尔型）此属性指示映像是否应使用系统信息库作为映像和发布者配置的源，以及作为与提供的发布者通信的代理。缺省值为 <literal>False</literal>。有关系统信息库的信息，请参见 <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>（布尔型）此属性指示映像是否应使用系统信息库作为映像和发布者配置的源，以及作为与提供的发布者通信的代理。缺省值为 <literal>False</literal>。See the <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about system repositories.</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </refsect1>
-<refsect1 role="other"><title>发布者属性</title>
+<refsect1 role="other"><title>Publisher Properties</title>
 <para>以下属性定义了特定发布者的签名策略。具有相同名称的映像属性定义了该映像的签名策略。要查看特定发布者的这些属性的当前值，请使用 <command>pkg publisher</command> <replaceable>publisher_name</replaceable> 命令。要修改发布者的这些签名策略属性的值，请使用 <command>pkg set-publisher</command> 命令的 <option>-set-property</option> 和 <option>-unset-property</option> 选项。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>signature-policy</literal></term>
@@ -1383,6 +1384,49 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 </variablelist>
+</refsect1>
+<refsect1 role="other"><title>Periodic Package Update Service</title>
+<para>The SMF service <literal>svc:/system/auto-update:default</literal> provides a mechanism to automatically update and reboot the system on an administrator defined schedule.This is particularly useful when the system is deployed with an immutable root filesystem profile.
+</para>
+
+<variablelist>
+
+<varlistentry><term><literal>config/auto-reboot</literal></term>
+<listitem><para>Automatically reboot if updates are performed, defaults to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/activate-new-be</literal></term>
+<listitem><para>Automatically activate the new boot environment, default to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/require-new-be</literal></term>
+<listitem><para>Create a new BE for any updates rather than using the live BE.The BE is automatically named by pkg(1), where possible, using metadata stored in <literal>pkg:/release/name</literal>.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/packages</literal></term>
+<listitem><para>List of packages to explicitly update.Defaults to empty, which instructs pkg to update all packages to newest within the constraints allowed.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>scheduled/*</literal></term>
+<listitem><para>The default configuration is to attempt the update and reboot weekly at midnight on a Sunday.An alternative schedule can be configured by setting the appropriate properties in the <literal>scheduled</literal> property group, see <olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>.</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+<para>The SMF service <literal>svc:/system/auto-update:cleanup</literal> manages the boot environments created by the automatic update service.To opt an auto-update boot environment out of automatic removal and allow it to be preserved and managed manually use <literal>'beadm set-policy -nstatic bename'</literal>.
+</para>
+<variablelist>
+<varlistentry><term><literal>config/keep</literal></term>
+<listitem><para>The maximum number of boot environments created by the auto update service to keep.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+
 </refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>在配置了发布者的情况下创建映像</title>
@@ -1716,7 +1760,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </variablelist>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para>可将 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 映像放置在较大文件系统中的任意位置。在以下文件说明中，标记 <envar>$IMAGE_ROOT</envar> 用于区分相对路径。对于典型的系统安装，<envar>$IMAGE_ROOT</envar> 等效于 <literal>/</literal>。</para>
+<para>A <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> image can be located arbitrarily within a larger file system.在以下文件说明中，标记 <envar>$IMAGE_ROOT</envar> 用于区分相对路径。对于典型的系统安装，<envar>$IMAGE_ROOT</envar> 等效于 <literal>/</literal>。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
 <listitem><para>完整或部分映像的元数据目录。</para>
@@ -1744,15 +1788,15 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表中显示了适用的属性类型和相关值。</simpara>
+<simpara>表中显示适用的属性类型及相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性类型</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性值</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -1777,7 +1821,8 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
+</para>
 <para><olink targetdoc="AUOSS">《<citetitle remap="book">在 Oracle Solaris 11.4 中更新系统和添加软件</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
