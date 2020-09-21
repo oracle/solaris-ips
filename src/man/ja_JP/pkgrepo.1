@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkgrepo-1">
-<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkgrepo-1">
+<refmeta><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2 Apr 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgrepo</refname><refpurpose>Image Packaging System リポジトリ管理ユーティリティー</refpurpose></refnamediv>
@@ -50,7 +50,7 @@
 <synopsis>/usr/bin/pkgrepo version</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgrepo-1-desc" role="description"><title></title>
-<para><command>pkgrepo</command> を使用すると、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの発行クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
+<para><command>pkgrepo</command> provides the ability to create and manage <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> package repositories.パッケージリポジトリは、<command>pkg</command> や、<command>pkgsend</command> または <command>pkgrecv</command> などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、<command>pkg.depotd</command> は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
 <para>サポートしているオプションは、次のとおりです。</para>
@@ -65,11 +65,11 @@
 <para>サポートされているサブコマンドは次のとおりです。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><command>pkgrepo create</command> [<option>-version</option> <replaceable>ver</replaceable>] <replaceable>uri_or_path</replaceable></term>
-<listitem><para>指定された場所に <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリを作成します。</para>
+<listitem><para>Create a <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository at the specified location.</para>
 <para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-version</option></term>
-<listitem><para>指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。サポートされるバージョンは次のとおりです。</para>
+<listitem><para>指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。Supported versions are:</para>
 <variablelist>
 <varlistentry><term>3</term>
 <listitem><para>1 つのパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。</para>
@@ -120,8 +120,8 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo get</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>section/property</replaceable> ...]</term>
 <listitem><para>リポジトリまたはその発行元のプロパティー情報を表示します。</para>
-<para>デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (<literal>&#34;&#34;</literal>) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (<literal>\</literal>) でエスケープする必要があります。</para>
-<programlisting>; &#38; ( ) | ^ &#60; &#62; &bsol; &#34; &#39; `</programlisting>
+<para>デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (<literal>""</literal>) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (<literal>\</literal>) でエスケープする必要があります。</para>
+<programlisting>; &amp; ( ) | ^ &lt; > &bsol; " ' `</programlisting>
 <para>発行元とリポジトリプロパティーの表示例については、「使用例」セクションを参照してください。</para>
 <para>プロパティーのリスト、および各プロパティーの目的と値については、下の <command>set</command> サブコマンドを参照してください。</para>
 <variablelist termlength="wholeline">
@@ -164,8 +164,8 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo list</command> [<option>F</option> <replaceable>format</replaceable>] [<option>H</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
-<listitem><para>指定された <replaceable>pkg_fmri_pattern</replaceable> にマッチする <replaceable>repo_uri_or_path</replaceable> リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
-<para>デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の <literal>o</literal> の値は、パッケージが廃止されていることを示します。ステータス列の <literal>r</literal> の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<listitem><para>指定された <replaceable>pkg_fmri_pattern</replaceable> にマッチする <replaceable>repo_uri_or_path</replaceable> リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the <literal>?</literal> and <literal>*</literal> characters as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
+<para>デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の <literal>o</literal> の値は、パッケージが廃止されていることを示します。ステータス列の <literal>r</literal> の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。A value of <literal>l</literal> in the status column indicates the package is legacy, meaning that it will be removed in the future.4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。See <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> for information about release and branch versions.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
 <listitem><para>指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが一覧表示されます。このオプションは複数回指定できます。</para>
@@ -183,7 +183,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>指定されたパッケージ内の指定されたアクションのみを表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページの「アクション」に一覧表示されているアクションのいずれか (<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> など) です。</para>
+<listitem><para>指定されたパッケージ内の指定されたアクションのみを表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。The value of <replaceable>action_name</replaceable> is one of the actions listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page, such as <literal>file</literal>, <literal>dir</literal>, <literal>driver</literal>, <literal>depend</literal>, or <literal>set</literal>.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -229,7 +229,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo remove</command> [<option>n</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable> <replaceable>pkg_fmri_pattern</replaceable> ...</term>
-<listitem><para>リポジトリから、指定された <replaceable>pkg_fmri_pattern</replaceable> パターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<listitem><para>リポジトリから、指定された <replaceable>pkg_fmri_pattern</replaceable> パターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the <literal>?</literal> and <literal>*</literal> characters as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
 <note><para>関連するパブリッシャーのすべての検索インデックスデータが削除されます。</para>
 </note>
 <para>このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。</para>
@@ -292,7 +292,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/check-certificate-revocation</literal></term>
-<listitem><para>証明書が失効したかどうかを検査する boolean。このプロパティーを <literal>True</literal> に設定すると、<command>pkgrepo verify</command> および <command>pkgrepo fix</command> コマンドは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。デフォルト値は <literal>False</literal> です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> プロパティー値と同じである必要があります。</para>
+<listitem><para>証明書が失効したかどうかを検査する boolean。このプロパティーを <literal>True</literal> に設定すると、<command>pkgrepo verify</command> および <command>pkgrepo fix</command> コマンドは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。デフォルト値は <literal>False</literal> です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。This value should be the same as the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> property value.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/collection_type</literal></term>
@@ -338,11 +338,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/signature-required-names</literal></term>
-<listitem><para>パッケージの署名の検証中に、証明書の共通名として表示される必要のある名前の一覧です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。これらの値は、対応する <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> プロパティー値と同じである必要があります。</para>
+<listitem><para>パッケージの署名の検証中に、証明書の共通名として表示される必要のある名前の一覧です。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。These values should be the same as the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> property values.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>repository/trust-anchor-directory</literal></term>
-<listitem><para>このリポジトリ内のパッケージのトラストアンカーを含むディレクトリの絶対パス名。指定しない場合、<filename>/etc/certs/CA/</filename> が使用されます。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> プロパティー値と同じである必要があります。</para>
+<listitem><para>このリポジトリ内のパッケージのトラストアンカーを含むディレクトリの絶対パス名。指定しない場合、<filename>/etc/certs/CA/</filename> が使用されます。このプロパティーは、リポジトリの内容を検証するために、<command>verify</command> および <command>fix</command> サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。This value should be the same as the corresponding <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> property value.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -389,7 +389,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgrepo fix</command> [<option>v</option>] [<option>p</option> <replaceable>publisher</replaceable>]... <option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
 <listitem><para>最初にリポジトリを検証し、無効なリポジトリの内容をリポジトリ内の検疫ディレクトリに移動することによって、リポジトリの内容を修正します。</para>
-<para>リポジトリエラーが見つかった場合は、リポジトリの再構築が自動的に実行されます。エラーが見つかった場合は、メッセージが <literal>stdout</literal> に出力され、リポジトリ内容を復元するために <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> または <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> を使用して再インポートする必要があるパッケージが示されます。</para>
+<para>リポジトリエラーが見つかった場合は、リポジトリの再構築が自動的に実行されます。If any errors are found, a message is emitted to <literal>stdout</literal> showing which packages must be re-imported using <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> or <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> in order to restore the repository contents.</para>
 <para>このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
 </para>
 <variablelist termlength="wholeline">
@@ -449,7 +449,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgrepo version</command></term>
-<listitem><para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> システムのバージョンを識別する一意の文字列を表示します。<command>version</command> 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。</para>
+<listitem><para>Display a unique string that identifies the version of the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> system.<command>version</command> 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -458,7 +458,7 @@
 <example><title>パッケージリポジトリを作成する</title>
 <screen>$ <userinput>pkgrepo create /my/repository</userinput></screen>
 </example>
-<example><title>情報を表示する</title>
+<example><title>Display Information</title>
 <para>パブリッシャーのサマリーと、リポジトリ内のパッケージの数を表示します。
 </para>
 <screen>$ <userinput>pkgrepo info -s /my/repository</userinput>
@@ -504,7 +504,7 @@ solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.releas
 solaris   repository name             Oracle&bsol; Solaris&bsol; 11&bsol; Package&bsol; Repository
 solaris   repository origins          ()
 solaris   repository refresh-seconds
-solaris   repository registration-uri &#34;&#34;
+solaris   repository registration-uri ""
 solaris   repository related-uris     ()</screen>
 </example>
 <example><title>デフォルトのパブリッシャーを設定する</title>
@@ -552,18 +552,18 @@ solaris   repository related-uris     ()</screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -593,6 +593,6 @@ solaris   repository related-uris     ()</screen>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para><command>pkgrepo</command> のほとんどの操作は、パッケージアーカイブでは使用できません。パッケージアーカイブは、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページの <option>a</option> オプションで説明されているように、通常は <filename>.p5p</filename> 拡張子を持つファイルです。パッケージアーカイブには、パッケージが含まれていますが、リポジトリ構成は含まれていません。ただし、<command>pkgrepo list</command>、<command>pkgrepo info</command>、および <command>pkgrepo contents</command> コマンドは、パッケージアーカイブに対して動作します。</para>
+<para><command>pkgrepo</command> のほとんどの操作は、パッケージアーカイブでは使用できません。A package archive is a file, typically with a <filename>.p5p</filename> extension, as described in the <option>a</option> option in the <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page.パッケージアーカイブには、パッケージが含まれていますが、リポジトリ構成は含まれていません。ただし、<command>pkgrepo list</command>、<command>pkgrepo info</command>、および <command>pkgrepo contents</command> コマンドは、パッケージアーカイブに対して動作します。</para>
 </refsect1>
 </refentry>

@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkg.depotd-8">
-<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkg.depotd-8">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
-<refname>pkg.depotd</refname><refpurpose>Image Packaging System のデポサーバー</refpurpose>
+<refname>pkg.depotd</refname><refpurpose>Image Packaging System の集積サーバー</refpurpose>
 </refnamediv>
 <refsynopsisdiv><title></title>
 <synopsis>/usr/lib/pkg.depotd [--cfg <replaceable>source</replaceable>] [-a <replaceable>address</replaceable>]
@@ -22,14 +22,14 @@
     [-t <replaceable>socket_timeout</replaceable>] [--writable-root <replaceable>path</replaceable>]</synopsis>
 </refsynopsisdiv>
 <refsect1 id="GLHAR" role="description"><title></title>
-<para><command>pkg.depotd</command> は、Image Packaging System のデポサーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージデポを使用します。</para>
+<para><command>pkg.depotd</command> は、Image Packaging System の集積サーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージ集積庫を使用します。</para>
 <para>取得クライアントである<command>pkg</command> などのクライアントは、直接リポジトリから、または集積サーバーを通じてパッケージおよびパッケージメタデータのリストを取得できます。公開クライアントである <command>pkgsend</command> は、直接リポジトリに、または集積サーバーを通じて新しいバージョンのパッケージを送信できます。<command>pkgrepo</command> を使用して、集積サーバーで使用するリポジトリを作成したり、集積サーバーで直接、および集積サーバーを通じてこれらのリポジトリを管理したりすることができます。</para>
 <para><command>pkg.depotd</command> は通常、システム上のサービスとして実行されます。パッケージおよびソフトウェアの開発者が、テスト目的で非公開のコピーを実行することが必要になる場合があります。</para>
-<para>デポは、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開デポサーバーを保守するためのベストプラクティスをいくつか説明します。</para>
+<para>集積庫は、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開集積サーバーを保守するためのベストプラクティスをいくつか説明します。</para>
 </refsect1>
-<refsect1 role="other"><title>SMF プロパティー</title>
-<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。<olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> マニュアルページおよび後述の <literal>pkg/standalone</literal> プロパティーを参照してください。<literal>pkg.depot-config</literal> ツールおよびマニュアルページをインストールするには、<literal>package/pkg/depot</literal> パッケージをインストールします。</para>
-<para>SMF プロパティーについては、<olink targetdoc="refman" targetptr="smf-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> マニュアルページを参照してください。次のようなプロパティーがあります。</para>
+<refsect1 role="other"><title>SMF Properties</title>
+<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page and the <literal>pkg/standalone</literal> property below.<literal>pkg.depot-config</literal> ツールおよびマニュアルページをインストールするには、<literal>package/pkg/depot</literal> パッケージをインストールします。</para>
+<para>See the <olink targetdoc="refman" targetptr="smf-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about SMF properties.次のようなプロパティーがあります。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/address</literal></term>
 <listitem><para>(<literal>net_address</literal>) 接続を待機する IP アドレス。デフォルト値は 0.0.0.0 (<literal>INADDR_ANY</literal>) で、これはすべてのアクティブなインタフェースで待機することを示します。すべてのアクティブな IPv6 インタフェースで待機するには、<literal>::</literal> を使用します。最初の値のみが使用されます。</para>
@@ -62,11 +62,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_access</literal></term>
-<listitem><para>(<literal>astring</literal>) デポプロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。<filename>stdout</filename> が <literal>tty</literal> の場合、デフォルト値は <filename>stdout</filename> です。<filename>stdout</filename> が <literal>tty</literal> でない場合、デフォルト値は <literal>none</literal> です。<literal>pkg</literal> をサービスとして実行する場合、<literal>log_access</literal> のデフォルト値は <literal>none</literal> で、出力は <filename>/var/svc/log/application-pkg-server:*</filename> に書き込まれます。大きいログファイルの管理例については、<olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>(<literal>astring</literal>) 集積プロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。<filename>stdout</filename> が <literal>tty</literal> の場合、デフォルト値は <filename>stdout</filename> です。<filename>stdout</filename> が <literal>tty</literal> でない場合、デフォルト値は <literal>none</literal> です。<literal>pkg</literal> をサービスとして実行する場合、<literal>log_access</literal> のデフォルト値は <literal>none</literal> で、出力は <filename>/var/svc/log/application-pkg-server:*</filename> に書き込まれます。See the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large log files.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_errors</literal></term>
-<listitem><para>(<literal>astring</literal>) デポプロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。デフォルト値は <filename>stderr</filename> です。大きいログファイルの管理例については、<olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>(<literal>astring</literal>) 集積プロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。デフォルト値は <filename>stderr</filename> です。See the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large log files.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/mirror</literal></term>
@@ -105,7 +105,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
-<listitem><para>指定された外部プログラムを実行して、パスフレーズを取得します。プログラムの最初の引数は <literal>&#39;&#39;</literal> であり、予約されています。プログラムの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
+<listitem><para>指定された外部プログラムを実行して、パスフレーズを取得します。プログラムの最初の引数は <literal>''</literal> であり、予約されています。プログラムの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>smf:fmri</literal></term>
@@ -116,11 +116,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/ssl_key_file</literal></term>
-<listitem><para>(<literal>astring</literal>) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、<literal>ssl_cert_file</literal> プロパティーとともに使用してください。<literal>/ssl_key_file</literal> および <literal>ssl_cert_file</literal> の両方が指定された場合、デポのみが SSL 要求に応答します。</para>
+<listitem><para>(<literal>astring</literal>) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、<literal>ssl_cert_file</literal> プロパティーとともに使用してください。<literal>/ssl_key_file</literal> および <literal>ssl_cert_file</literal> の両方が指定された場合、集積庫のみが SSL 要求に応答します。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/standalone</literal></term>
-<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>true</literal>、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。詳細は、<olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>true</literal>、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/threads</literal></term>
@@ -151,7 +151,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg_bui/feed_name</literal></term>
-<listitem><para>(<literal>astring</literal>) リポジトリにサービスを提供するデポによって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。</para>
+<listitem><para>(<literal>astring</literal>) リポジトリにサービスを提供する集積庫によって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg_bui/feed_window</literal></term>
@@ -159,7 +159,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>パッケージデポは、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージデポサーバーの負荷が軽減されます。この機能は、SMF によって構成される代替デポサービスとして利用可能です。この機能はサービス検出のために mDNS および <literal>dns-sd</literal> を使用します。</para>
+<para>The package depot is also able to act as a mirror server for local client images from <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>.これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージ集積サーバーの負荷が軽減されます。この機能は、SMF によって構成される代替集積サービスとして利用可能です。この機能はサービス検出のために mDNS および <literal>dns-sd</literal> を使用します。</para>
 <para>mDNS ミラーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。次のようなプロパティーがあります。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/image_root</literal></term>
@@ -273,7 +273,7 @@ port = 80
 inst_root = /export/repo
 
 [pub_example_com]
-feed_description = example.com&#39;s software
+feed_description = example.com's software
   update log</programlisting>
 </refsect1>
 <refsect1 role="examples"><title></title>
@@ -325,24 +325,24 @@ feed_description = example.com&#39;s software
 <refsect1 role="files"><title></title>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
-<listitem><para>デフォルトのプレゼンテーションコンテンツの場所。別の場所を選択するには、<literal>pkg/content_root </literal> を変更します。</para>
+<listitem><para>デフォルトの表示コンテンツの場所。別の場所を選択するには、<literal>pkg/content_root</literal> を変更します。</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -367,19 +367,19 @@ feed_description = example.com&#39;s software
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="syslogd-8"><citerefentry><refentrytitle>syslogd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="syslogd-8"><citerefentry><refentrytitle>syslogd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP"><citetitle remap="book">Creating Package Repositories in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
 <para><literal>pkd.depotd</literal> サービスは、サービス識別子 <literal>svc:/application/pkg/server</literal> のもとで SMF によって管理されます。</para>
 <para>mDNS ミラーサービスは、サービス識別子 <literal>svc:/application/pkg/dynamic-mirror</literal> のもとで SMF によって管理されます。</para>
-<para>デポへの読み取りアクセスを制御するために、<command>pkg</command> がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。</para>
-<para>最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、そのインスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。詳細は、<olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
-<para>ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、デポサーバープロセスを再起動する必要があります。デポサーバープロセスを再起動するには、次のいずれかの方法を使用します。</para>
+<para>集積庫への読み取りアクセスを制御するために、<command>pkg</command> がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。</para>
+<para>最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、そのインスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
+<para>ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、集積サーバープロセスを再起動する必要があります。集積サーバープロセスを再起動するには、次のいずれかの方法を使用します。</para>
 <itemizedlist>
 <listitem><para><command>svcadm</command> を使用して、<literal>application/pkg/server</literal> インスタンスを再起動します。</para></listitem>
-<listitem><para><command>kill</command> を使用して、<literal>SIGUSR1</literal> シグナルをデポサーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。</para>
+<listitem><para><command>kill</command> を使用して、<literal>SIGUSR1</literal> シグナルを集積サーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。</para>
 <screen># <userinput>kill -USR1 <replaceable>pid</replaceable></userinput></screen>
 </listitem>
 </itemizedlist>

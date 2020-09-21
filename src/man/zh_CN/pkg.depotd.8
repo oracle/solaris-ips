@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="zh" id="pkg.depotd-8">
-<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkg.depotd-8">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum> <refmiscinfo class="date">2017 年 11 月 15 日</refmiscinfo> <refmiscinfo class="sectdesc">&man8;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depotd</refname><refpurpose>映像包管理系统 depot 服务器</refpurpose>
@@ -27,9 +27,9 @@
 <para><command>pkg.depotd</command> 通常在系统上作为服务运行。软件包和软件开发者可能希望运行专用副本进行测试。</para>
 <para>库不提供任何自己的访问控制方法。缺省情况下，所有能够连接的客户机都能够读取所有软件包数据和发布新的软件包版本。在服务管理工具 (Service Management Facility, SMF) 下运行时例外，缺省情况为在只读模式中运行。下列“附注”部分描述了维护具有不断变化内容的公共 depot 服务器的一些最佳做法。</para>
 </refsect1>
-<refsect1 role="other"><title>SMF 属性</title>
-<para><literal>pkg.depotd</literal> 服务器通常通过与其服务关联的 SMF 属性配置。<literal>svc:/application/pkg/server</literal> 服务运行一个 <literal>pkg.depot</literal> 服务器进程，或者为 <literal>svc:/application/pkg/depot</literal> 服务提供配置。请参见 <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页和下文中的 <literal>pkg/standalone</literal> 属性。要安装 <literal>pkg.depot-config</literal> 工具和手册页，请安装 <literal>package/pkg/depot</literal> 软件包。</para>
-<para>有关 SMF 属性的信息，请参见 <olink targetdoc="refman" targetptr="smf-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 手册页。可以识别以下属性：</para>
+<refsect1 role="other"><title>SMF Properties</title>
+<para><literal>pkg.depotd</literal> 服务器通常通过与其服务关联的 SMF 属性配置。<literal>svc:/application/pkg/server</literal> 服务运行一个 <literal>pkg.depot</literal> 服务器进程，或者为 <literal>svc:/application/pkg/depot</literal> 服务提供配置。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page and the <literal>pkg/standalone</literal> property below.要安装 <literal>pkg.depot-config</literal> 工具和手册页，请安装 <literal>package/pkg/depot</literal> 软件包。</para>
+<para>See the <olink targetdoc="refman" targetptr="smf-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about SMF properties.可以识别以下属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/address</literal></term>
 <listitem><para>(<literal>net_address</literal>) 在其上侦听连接的 IP 地址。缺省值为 0.0.0.0 (<literal>INADDR_ANY</literal>)，该地址侦听所有活动接口。要侦听所有活动的 IPv6 接口，请使用 <literal>::</literal>。只使用第一个值。</para>
@@ -62,11 +62,11 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_access</literal></term>
-<listitem><para>(<literal>astring</literal>) 库进程记录的任何与访问相关的信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。如果 <filename>stdout</filename> 是 <literal>tty</literal>，则缺省值为 <filename>stdout</filename>。如果 <filename>stdout</filename> 不是 <literal>tty</literal>，则缺省值为 <literal>none</literal>。如果您将 <literal>pkg</literal> 作为服务运行，则 <literal>log_access</literal> 的缺省值为 <literal>none</literal>，且输出将写入 <filename>/var/svc/log/application-pkg-server:* </filename> 中。有关管理大日志文件的示例，请参见 <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>(<literal>astring</literal>) 库进程记录的任何与访问相关的信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。如果 <filename>stdout</filename> 是 <literal>tty</literal>，则缺省值为 <filename>stdout</filename>。如果 <filename>stdout</filename> 不是 <literal>tty</literal>，则缺省值为 <literal>none</literal>。如果您将 <literal>pkg</literal> 作为服务运行，则 <literal>log_access</literal> 的缺省值为 <literal>none</literal>，且输出将写入 <filename>/var/svc/log/application-pkg-server:* </filename> 中。See the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large log files.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/log_errors</literal></term>
-<listitem><para>(<literal>astring</literal>) 库进程记录的任何错误或其他信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。缺省值为 <filename>stderr</filename>。有关管理大日志文件的示例，请参见 <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>(<literal>astring</literal>) 库进程记录的任何错误或其他信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。缺省值为 <filename>stderr</filename>。See the <olink targetdoc="refman" targetptr="logadm-8"><citerefentry><refentrytitle>logadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for examples of managing large log files.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/mirror</literal></term>
@@ -120,7 +120,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/standalone</literal></term>
-<listitem><para>(<literal>boolean</literal>) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 <literal>false</literal> 并将此 <literal>pkg/server</literal> 实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。<literal>pkg/standalone</literal> 的缺省值为 <literal>true</literal>，<literal>pkg/readonly</literal> 的缺省值为 <literal>true</literal>。有关更多信息，请参见 <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<listitem><para>(<literal>boolean</literal>) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 <literal>false</literal> 并将此 <literal>pkg/server</literal> 实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。<literal>pkg/standalone</literal> 的缺省值为 <literal>true</literal>，<literal>pkg/readonly</literal> 的缺省值为 <literal>true</literal>。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>pkg/threads</literal></term>
@@ -159,7 +159,7 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>软件包库还可以用作来自 <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> 的本地客户机映像的镜像服务器。这使得在 LAN 上共享一个子网的客户机可以对它们的文件高速缓存进行镜像。客户机可以相互下载文件，从而减少软件包 depot 服务器上的负载。此功能是作为由 SMF 配置的替代 depot 服务提供的。它为服务发现使用 mDNS 和 <literal>dns-sd</literal>。</para>
+<para>The package depot is also able to act as a mirror server for local client images from <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>.这使得在 LAN 上共享一个子网的客户机可以对它们的文件高速缓存进行镜像。客户机可以相互下载文件，从而减少软件包 depot 服务器上的负载。此功能是作为由 SMF 配置的替代 depot 服务提供的。它为服务发现使用 mDNS 和 <literal>dns-sd</literal>。</para>
 <para>mDNS 镜像通常是通过与其服务关联的 SMF 属性配置的。可以识别以下属性：</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>pkg/image_root</literal></term>
@@ -325,7 +325,7 @@ feed_description = example.com's software
 <refsect1 role="files"><title></title>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
-<listitem><para>缺省显示内容的位置。修改 <literal>pkg/content_root</literal> 以选择其他位置。</para>
+<listitem><para>缺省显示内容的位置。修改 <literal>pkg/content_root </literal> 以选择备用位置。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -334,15 +334,15 @@ feed_description = example.com's software
 <para>有关下列属性的说明，请参见 <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>：</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表中显示了适用的属性类型和相关值。</simpara>
+<simpara>表中显示适用的属性类型及相关值。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性类型</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性值</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -367,7 +367,7 @@ feed_description = example.com's software
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="syslogd-8"><citerefentry><refentrytitle>syslogd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-8"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-8"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="syslogd-8"><citerefentry><refentrytitle>syslogd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="SMF-7"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
 <para><olink targetdoc="CCOSP">《<citetitle remap="book">在 Oracle Solaris 11.4 中创建软件包系统信息库</citetitle>》</olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
@@ -375,7 +375,7 @@ feed_description = example.com's software
 <para><literal>pkd.depotd</literal> 服务由 SMF 管理，在服务标识符 <literal>svc:/application/pkg/server</literal> 下。</para>
 <para>mDNS 镜像服务由 <literal>svc:/application/pkg/dynamic-mirror</literal> 服务标识符下的 SMF 管理。</para>
 <para>要控制对库的读取访问权限，可以将 HTTP 反向代理与验证方法（例如 <command>pkg</command> 本身就支持的基于客户机的 SSL 证书访问权限）结合使用。</para>
-<para>要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal>，并将该实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。有关更多信息，请参见 <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> 手册页。</para>
+<para>要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal>，并将该实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。See the <olink targetdoc="refman" targetptr="pkg.depot-config-8"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 <para>配置的更改，或使用基于文件系统的操作对软件包数据的更改，需要重新启动 depot 服务器进程，从而使更改能够反映在操作和输出中。使用下列方法之一来重新启动 depot 服务器进程：</para>
 <itemizedlist>
 <listitem><para>使用 <command>svcadm</command> 重新启动 <literal>application/pkg/server</literal> 实例。</para></listitem>

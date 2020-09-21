@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkgdepend-1">
-<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkgdepend-1">
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgdepend</refname><refpurpose>Image Packaging System 依存関係アナライザ</refpurpose></refnamediv>
@@ -150,7 +150,7 @@ path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
 <refsect1 role="examples"><title></title>
 <example><title>依存関係を生成する</title>
 <para><filename>foo</filename> (このコンテンツディレクトリは <filename>./bar/baz</filename> 内に存在する) に書き込まれているマニフェストの依存関係を生成し、その結果を <filename>foo.fdeps</filename> に格納します。</para>
-<screen>$ <userinput>pkgdepend generate -d ./bar/baz foo &#62; foo.fdeps</userinput></screen>
+<screen>$ <userinput>pkgdepend generate -d ./bar/baz foo > foo.fdeps</userinput></screen>
 </example>
 <example><title>依存関係を解決する</title>
 <para><filename>foo.fdeps</filename> と <filename> bar.fdeps</filename> における互いに対するファイル依存関係と、システムに現在インストールされているパッケージに対するファイル依存関係を解決します。</para>
@@ -161,16 +161,16 @@ foo.fdeps.res    bar.fdeps.res</screen>
 <example><title>2 つのマニフェストの依存関係を生成および解決する</title>
 <para>2 つのマニフェスト (<literal>foo</literal> と <literal>bar</literal>) へのファイル依存関係を生成し、すべての情報を元のマニフェスト内に保持します。次に、これらのファイル依存関係を解決し、結果のマニフェストを <filename>./res</filename> 内に格納します。これらの結果のマニフェストは、<command>pkgsend publish</command> で使用できます。
 </para>
-<screen>$ <userinput>pkgdepend generate -d /proto/foo -m foo &#62; ./deps/foo</userinput>
-$ <userinput>pkgdepend generate -d /proto/bar -m bar &#62; ./deps/bar</userinput>
+<screen>$ <userinput>pkgdepend generate -d /proto/foo -m foo > ./deps/foo</userinput>
+$ <userinput>pkgdepend generate -d /proto/bar -m bar > ./deps/bar</userinput>
 $ <userinput>pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar</userinput>
 $ <userinput>ls ./res</userinput>
 foo    bar</screen>
 </example>
 <example><title>ELF ファイル依存関係のためのトークンに値を追加する</title>
 <para>コンテンツディレクトリが / 内に存在する <literal>foo</literal> に書き込まれているマニフェストの依存関係を生成するときに、ELF ファイルの実行パス内のすべての <envar>PLATFORM</envar> トークンを <literal>sun4v</literal> と <literal>sun4u</literal> に置き換えます。</para>
-<screen>$ <userinput>pkgdepend generate -d / -D &#39;PLATFORM=sun4v&#39; &bsol;</userinput>
-<userinput>-D &#39;PLATFORM=sun4u&#39; foo</userinput></screen>
+<screen>$ <userinput>pkgdepend generate -d / -D 'PLATFORM=sun4v' &bsol;</userinput>
+<userinput>-D 'PLATFORM=sun4u' foo</userinput></screen>
 </example>
 <example><title>カーネルモジュールディレクトリを指定する</title>
 <para>コンテンツディレクトリが / 内に存在する <filename>foo</filename> に書き込まれているマニフェストの依存関係を生成するときに、カーネルモジュールを検索するディレクトリとして <filename>/kmod</filename> を指定します。</para>
@@ -181,7 +181,7 @@ foo    bar</screen>
 <para><filename>usr/lib/python2.7/vendor-packages/xdg</filename> で提供されたすべてのファイルに対する依存関係の生成を回避します。</para>
 <screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
-set name=pkg.summary value=&#34;My test package&#34;
+set name=pkg.summary value="My test package"
 dir path=opt mode=0755 group=sys owner=root
 dir path=opt/python mode=0755 group=sys owner=root
 dir path=opt/python/foo mode=0755 group=sys owner=root
@@ -230,18 +230,18 @@ $ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>

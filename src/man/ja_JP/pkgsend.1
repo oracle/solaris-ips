@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkgsend-1">
-<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkgsend-1">
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2017 年 11 月 17 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
-<refname>pkgsend</refname><refpurpose>Image Packaging System の発行クライアント</refpurpose>
+<refname>pkgsend</refname><refpurpose>Image Packaging System の公開クライアント</refpurpose>
 </refnamediv>
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
@@ -20,7 +20,7 @@
     [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
 </refsynopsisdiv>
 <refsect1 id="pkgsend-1-desc" role="description"><title></title>
-<para><command>pkgsend</command> では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに発行できます。リポジトリを作成または管理するには、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> を参照してください。既存のリポジトリ内でパッケージからパッケージアーカイブを作成するには、<olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> を参照してください。パッケージのマニフェストの詳細は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para><command>pkgsend</command> では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに公開できます。To create or manage repositories, see <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>.To create package archives from packages in an existing repository, see <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>.For more information about package manifests, see <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>.</para>
 <para><command>pkgsend publish</command> 操作のあとで、<replaceable>repo_uri_or_path</replaceable> リポジトリが <command>pkg search</command> 操作をサポートする必要がある場合は、リポジトリ上で <command>pkgrepo refresh</command> を実行して、検索インデックスを更新してください。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -74,7 +74,7 @@
 </varlistentry>
 <varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
 <listitem><para>指定されたパッケージマニフェストを使用するパッケージをターゲットパッケージリポジトリに公開します。これにより、指定されたソースからそのパッケージ用のファイルが取得されます。複数のマニフェストが指定されている場合、それらのマニフェストは指定された順序で追加されます。マニフェストが指定されていない場合は、<literal>stdin</literal> からマニフェストが読み取られます。</para>
-<para>指定しない場合、<command>pkgsend publish</command> はビルドバージョンをパッケージ FMRI に追加します。<command>publish</command> ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。パッケージ FMRI のバージョン文字列については、<olink targetdoc="refman" targetptr="pkg -7"><citerefentry><refentrytitle>pkg </refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<para>指定しない場合、<command>pkgsend publish</command> はビルドバージョンをパッケージ FMRI に追加します。<command>publish</command> ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。See the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about the version string of a package FMRI.</para>
 <para>複数の <command>pkgsend publish</command> プロセスが同じ <option>s</option> リポジトリに同時に公開する場合は、<option>-no-catalog</option> オプションを指定することをお勧めします。下記の <option>-no-catalog</option> オプションの説明を参照してください。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
@@ -86,7 +86,7 @@
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
-<listitem><para>特定の URI またはファイルシステムパスに存在しているリポジトリにパッケージが公開されます。発行についての制限事項と推奨事項の詳細は、次の「注意事項」のセクションを参照してください。また、「環境変数」のセクションも参照してください。</para>
+<listitem><para>特定の URI またはファイルシステムパスに存在しているリポジトリにパッケージが公開されます。公開についての制限事項と推奨事項の詳細は、次の「注意事項」のセクションを参照してください。また、「環境変数」のセクションも参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
@@ -149,7 +149,7 @@
 <refsect1 role="examples"><title></title>
 <example><title>パッケージの生成と公開</title>
 <para><command>pkgsend generate</command> を使用してパッケージを作成し、そのパッケージを公開します。</para>
-<screen>$ <userinput>pkgsend generate /path/to/proto &#62; /path/to/manifests/foo.p5m</userinput></screen>
+<screen>$ <userinput>pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m</userinput></screen>
 <para><literal>example.com</literal> パブリッシャーのパッケージ FMRI を、<filename>foo.p5m</filename> の先頭に追加します。</para>
 <programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0</programlisting>
 <para>結果として生成されるマニフェストは、次のようになります。</para>
@@ -168,7 +168,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 <screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /exdir</userinput></screen>
 </example>
 <example><title>既存のマニフェストの使用</title>
-<para>ファイルシステムベースの発行と既存のマニフェストを使用してパッケージを発行します。</para>
+<para>ファイルシステムベースの公開と既存のマニフェストを使用してパッケージを公開します。</para>
 <screen>$ <userinput>pkgsend publish -s /tmp/example_repo -d /tmp/pkg_files &bsol;</userinput>
 <userinput>/tmp/pkg_manifest</userinput></screen>
 </example>
@@ -181,7 +181,7 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>1</returnvalue></term>
-<listitem><para>エラーが発生しました。</para>
+<listitem><para>エラーが発生した。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><returnvalue>2</returnvalue></term>
@@ -195,18 +195,18 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 </variablelist>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -236,8 +236,8 @@ file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
 <refsect1 role="notes"><title></title>
-<para>発行プロトコルの制限事項により、サイズが 128MB を超えるパッケージファイルを個別に発行する場合には、ファイルシステムベースの発行を使用する必要があります。ファイルシステムベースの発行は、リポジトリのアクセス制御が必要な場合にも推奨されます。</para>
-<para>ファイルシステムベースの発行を使用する場合、発行が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、発行先リポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。詳細は、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>公開プロトコルの制限事項により、サイズが 128MB を超えるパッケージファイルを個別に公開する場合には、ファイルシステムベースの公開を使用する必要があります。ファイルシステムベースの公開は、リポジトリのアクセス制御が必要な場合にも推奨されます。</para>
+<para>ファイルシステムベースの公開を使用する場合、公開が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、公開先リポジトリを提供している <command>pkg.depotd</command> プロセスを再開する必要があります。See <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> for more information.</para>
 </refsect1>
 </refentry>
 

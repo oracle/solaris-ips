@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
 <!ENTITY % ent SYSTEM "entities.ent">
 %ent;
 ]>
 
-<refentry lang="ja" id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2018 年 5 月 3 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refentry id="pkg-1">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2 Apr 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -166,7 +166,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <para>パッケージは、BE の一部であるファイルシステムにのみインストールできます。たとえば、デフォルトの Oracle Solaris 11 インストール環境では、パッケージ操作がサポートされるのは、<filename>rpool/ROOT/<replaceable>BEname</replaceable>/</filename> の下のデータセットのみです。</para>
 <para>パブリッシャーの名前によって、人、人のグループ、または組織が 1 つ以上のパッケージのソースとして識別されます。パブリッシャーの名前の競合を避け、パブリッシャーを識別しやすくするために、パッケージを公開するエンティティーを表すドメイン名をパブリッシャーの名前として使用することがベストプラクティスです。</para>
 <para>リポジトリは、クライアントがパッケージの内容 (プログラムやドキュメントなど、パッケージの内部に含まれるファイル) とメタデータ (パッケージの名前や説明など、パッケージについての情報) を公開および取得できる場所です。たとえば、<literal>example.org</literal> という名前のパブリッシャーは、<literal>http://example.org/repository</literal> という URI にリポジトリを配置することができます。</para>
-<para><command>pkg</command> では、パッケージをアンインストールしたり、(利用可能なパッケージの一覧などの) パブリッシャーメタデータをリフレッシュしたり、イメージにインストールされたパッケージを検証したり、イメージからさまざまなトークンを照会したりすることもできます。これらのクエリーは <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリで構成することもできます。</para>
+<para><command>pkg</command> では、パッケージをアンインストールしたり、(利用可能なパッケージの一覧などの) パブリッシャーメタデータをリフレッシュしたり、イメージにインストールされたパッケージを検証したり、イメージからさまざまなトークンを照会したりすることもできます。These queries can also be made of <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repositories.</para>
 <para>イメージには 3 つの種類があります。完全なシステムを提供できるフルイメージ、フルイメージ (親イメージ) にリンクされるがそれ自身では完全なシステムを提供しない部分イメージ、およびユーザーイメージです。</para>
 </refsect1>
 <refsect1 role="options"><title></title>
@@ -210,12 +210,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg install</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
-<listitem><para>指定されたパッケージをインストールし、イメージにインストールされたパッケージで許容されている <replaceable>pkg_fmri_pattern</replaceable> と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。<replaceable>pkg_fmri_pattern</replaceable> パターンには、<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 形式のワイルドカードとして 1 つ以上のパッケージと一致する <literal>?</literal> および <literal>*</literal> 文字を含めることができます。</para>
+<listitem><para>指定されたパッケージをインストールし、イメージにインストールされたパッケージで許容されている <replaceable>pkg_fmri_pattern</replaceable> と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。The <replaceable>pkg_fmri_pattern</replaceable> pattern can include the <literal>?</literal> and <literal>*</literal> characters as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards to match one or more packages.</para>
 <para>すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。</para>
-<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。For more information about how the package system determines which files to preserve, and how these files are preserved during package upgrades, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、<command>pkg publisher</command> および <command>pkg set-publisher</command> コマンドを参照してください。<replaceable>pkg_fmri_pattern </replaceable> が発行元を指定しない場合、一致するパッケージを提供する最初の発行元がインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、<command>pkg list -a</command> コマンドを使用します。</para>
 <para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。</para>
-<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>パッケージが回避リストにある場合は、インストールすると回避リストから削除されます。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>C</option> <replaceable>n</replaceable></term>
@@ -266,7 +266,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-be-activate</option></term>
-<listitem><para>ブート環境が作成される場合に、それを次回ブート時にアクティブなブート環境として設定しません。詳細は、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>ブート環境が作成される場合に、それを次回ブート時にアクティブなブート環境として設定しません。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for more information.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-backup-be</option></term>
@@ -278,7 +278,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-backup-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>指定された引数を使って、作成されたバックアップブート環境に名前を付けます。<option>-backup-be-name</option> を使用すると <option>-require-backup-be</option> が暗黙的に指定されます。<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページも参照してください。</para>
+<listitem><para>指定された引数を使って、作成されたバックアップブート環境に名前を付けます。<option>-backup-be-name</option> を使用すると <option>-require-backup-be</option> が暗黙的に指定されます。See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-deny-new-be</option></term>
@@ -290,7 +290,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-be-name</option> <replaceable>name</replaceable></term>
-<listitem><para>新たに作成されたブート環境の名前を、指定された引数になるように変更します。<option>-be-name</option> の使用は、暗黙的に <option>-require-new-be</option> を示します。<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページも参照してください。</para>
+<listitem><para>新たに作成されたブート環境の名前を、指定された引数になるように変更します。<option>-be-name</option> の使用は、暗黙的に <option>-require-new-be</option> を示します。See also the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable></term>
@@ -298,10 +298,10 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators</option></term>
-<listitem><para>SMF アクチュエータを同期的に実行します。<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> コマンドは、<command>pkg</command> が呼び出されたゾーン (大域ゾーンまたは非大域ゾーン) ですべての SMF アクチュエータが完了するまで戻りません。</para></listitem>
+<listitem><para>SMF アクチュエータを同期的に実行します。The <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> command will not return until all SMF actuators have finished in the zone in which <command>pkg</command> was invoked (the global zone or a non-global zone).</para></listitem>
 </varlistentry>
 <varlistentry><term><option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable></term>
-<listitem><para>SMF アクチュエータを同期的に実行します。アクチュエータが指定された <replaceable>timeout</replaceable> (秒単位) までに完了しない場合、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> は操作を継続し、リターンコード 8 で終了します。</para></listitem>
+<listitem><para>SMF アクチュエータを同期的に実行します。If the actuators do not finish within the given <replaceable>timeout</replaceable> in seconds, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> will continue operation and exit with return code 8.</para></listitem>
 </varlistentry>
 </variablelist>
 </listitem>
@@ -310,7 +310,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <listitem><para>指定されたパッケージを、空のシステムにインストールする場合と同じようにインストールまたは更新します。以前にインストールされたパッケージのうち、コマンド行で指定されず、指定されたパッケージの依存関係でもないものは、削除されます。このコマンドは、回避リストに含まれるパッケージのインストールや凍結リストに含まれるパッケージの更新を行わないようにする制約を無視します。それ以外については、この <command>exact-install</command> サブコマンドは <command>install</command> サブコマンドと同じように動作します。パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。</para>
 <para>パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、<command>pkg publisher</command> および <command>pkg set-publisher</command> コマンドを参照してください。<replaceable>pkg_fmri_pattern</replaceable> でパブリッシャーを指定しない場合は、一致するパッケージを提供する最初のパブリッシャーがインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、<command>pkg list -a</command> コマンドを使用します。</para>
 <para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。</para>
-<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>インストールプロセスの間に、一部の構成ファイルの名前変更または置換が行われる場合があります。For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>パッケージが回避リストにある場合は、インストールすると回避リストから削除されます。</para>
 <para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
@@ -318,7 +318,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <varlistentry><term><command>pkg uninstall</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-ignore-missing</option>] [<option>-no-index</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>pkg_fmri_pattern</replaceable> ...</term>
 <listitem><para><replaceable>pkg_fmri_pattern</replaceable> に一致するインストール済みパッケージを削除します。</para>
 <para>パッケージがグループ依存関係の対象である場合、パッケージをアンインストールするとそのパッケージは回避リストに登録されます。後述する <command>avoid</command> サブコマンドを参照してください。</para>
-<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回リブート時のデフォルトのブート環境になります。ブート環境の管理については、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回リブート時のデフォルトのブート環境になります。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about managing boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-ignore-missing</option></term>
 <listitem><para>インストールされていないパッケージを無視します。このオプションを使用すると、<command>pkg uninstall</command> で現在インストールされていないパッケージをアンインストールしようとしたときに、失敗しなくなります。</para>
@@ -330,13 +330,13 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 </varlistentry>
 <varlistentry><term><command>pkg update</command> [<option>fnvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-ignore-missing</option>] [<option>-licenses</option>] [<option>-no-index</option>] [<option>-no-refresh</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-reject</option> <replaceable>pkg_fmri_pattern</replaceable>]... [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] [<replaceable>pkg_fmri_pattern</replaceable> ...]</term>
 <listitem><para>現在のイメージ内のすべてのインストール済みパッケージを、インストール済みパッケージと発行元構成によりシステムに適用される制約で許可される最新のバージョンに更新します。</para>
-<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回、<option>-no-be-activate</option> オプションを指定しない場合のリブート時のデフォルトブート環境になります。ブート環境の管理については、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<para>コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回、<option>-no-be-activate</option> オプションを指定しない場合のリブート時のデフォルトブート環境になります。See the <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about managing boot environments.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>現在のイメージにインストール済みの、指定されたパッケージのみを更新します。指定された <replaceable>pkg_fmri_pattern</replaceable> パターンの 1 つがアスタリスク (*) である場合は、<replaceable>pkg_fmri_pattern</replaceable> を指定しなかった場合と同じ方法で現在のイメージ内のすべてのインストール済みパッケージを更新します。</para>
 <para>パッケージの最新バージョンを明示的に要求するには、<replaceable>pkg_fmri_pattern</replaceable> のバージョン部分に <literal>latest</literal> を使用します。たとえば、<literal>vim@latest</literal> のように指定します。</para>
 <para>すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。</para>
-<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファイルアクションに関する項目を参照してください。</para>
+<para>保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 <literal>.update</literal> を使用して名前が変更されます。For more information about how the package system determines which files to preserve, and how these files are preserved during package upgrades, see “File Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.</para>
 <para>複数の <replaceable>pkg_fmri_pattern</replaceable> が指定され、かつ指定されたパッケージのいずれかをこのイメージに更新できない場合、指定されたパッケージは一切更新されません。</para>
 </listitem>
 </varlistentry>
@@ -357,12 +357,12 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <programlisting>NAME (PUBLISHER)       VERSION                IFO
 system/core-os         0.5.11-0.175.0.0.0.2.1 i--
 x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
-<para>最初の列にはパッケージの名前が表示されます。パッケージのインストール元 (または、インストールされていない場合は提供元) であるパブリッシャーがパブリッシャー検索順で先頭でない場合、パッケージ名のあとに一覧表示されるパブリッシャー名は括弧で囲まれています。2 番目の列にはパッケージのリリースバージョンとブランチバージョンが表示されます。リリースバージョンとブランチバージョンについて、およびバリアントについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<para>最初の列にはパッケージの名前が表示されます。パッケージのインストール元 (または、インストールされていない場合は提供元) であるパブリッシャーがパブリッシャー検索順で先頭でない場合、パッケージ名のあとに一覧表示されるパブリッシャー名は括弧で囲まれています。2 番目の列にはパッケージのリリースバージョンとブランチバージョンが表示されます。See the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about release and branch versions and about variants.</para>
 <itemizedlist>
 <para>最後の列には、パッケージのステータスを示す一連のフラグが表示されます。</para>
 <listitem><para><literal>I</literal> 列の <literal>i</literal> は、パッケージがインストールされていることを示します。</para></listitem>
 <listitem><para><literal>F</literal> 列の <literal>f</literal> は、パッケージが凍結されていることを示します。</para></listitem>
-<listitem><para><literal>O</literal> 列の <literal>o</literal> は、パッケージが廃止されていることを示します。<literal>O</literal> 列の <literal>r</literal> は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。</para>
+<listitem><para><literal>O</literal> 列の <literal>o</literal> は、パッケージが廃止されていることを示します。<literal>O</literal> 列の <literal>r</literal> は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。</para> An <literal>l</literal> in the <literal>O</literal> column shows that the package is legacy, meaning that it will be removed in the future.
 </listitem>
 </itemizedlist>
 <variablelist termlength="wholeline">
@@ -448,8 +448,8 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg contents</command> [<option>Hmr</option>] [<option>a</option> <replaceable>attribute</replaceable>=<replaceable>pattern</replaceable>]... [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>o</option> <replaceable> attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [<option>s</option> <replaceable> sort_key</replaceable>] [<option>t</option> <replaceable>action_name</replaceable>[,<replaceable> action_name</replaceable>]...]... [<replaceable>pkg_fmri_pattern</replaceable> ...] </term>
-<listitem><para>イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの <literal>path</literal> 属性の値をアルファベット順で並べ替えて表示します。<option>o</option> オプションが指定されていない場合、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> で説明されている、関連するアクション名のキー属性が代わりに表示されます。さらに、「depend」アクションには「type」属性も含められ、「set」アクションには「value」属性が含められます。</para>
-<para>複数のアクション名が指定されている場合、デフォルトの属性は、前述のように、指定されたすべてのアクションのすべての属性セットです。アクションとそれらの属性については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのアクションに関する項目を参照してください。下の疑似属性名のリストも参照してください。</para>
+<listitem><para>イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの <literal>path</literal> 属性の値をアルファベット順で並べ替えて表示します。If the <option>o</option> option is not specified, the key attributes, as described in <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>, of the related action name will be displayed instead.さらに、「depend」アクションには「type」属性も含められ、「set」アクションには「value」属性が含められます。</para>
+<para>複数のアクション名が指定されている場合、デフォルトの属性は、前述のように、指定されたすべてのアクションのすべての属性セットです。For information about actions and their attributes, see “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.下の疑似属性名のリストも参照してください。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>指定したパッケージの内容のみを表示します。</para>
@@ -484,7 +484,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>action_name</replaceable></term>
-<listitem><para>指定されたアクションのみを一覧表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。<replaceable>action_name</replaceable> の値は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページの「アクション」内に一覧表示されているアクションのいずれかで、<literal>file</literal>、<literal>directory</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal> などです。</para>
+<listitem><para>指定されたアクションのみを一覧表示します。<option>t</option> オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの <option>t</option> オプションの引数として複数のアクションを指定できます。The value of <replaceable>action_name</replaceable> is one of the actions listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page, such as <literal>file</literal>, <literal>directory</literal>, <literal>driver </literal>, <literal>depend</literal>, <literal>set</literal>.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -566,7 +566,7 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>p</option></term>
-<listitem><para>一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (<literal>&#60;&#62;</literal>) で囲むことと等価です。<literal>&#60;&#62;</literal> 演算子の詳細は、次の <replaceable>query</replaceable> を参照してください。</para>
+<listitem><para>一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (<literal>&lt;&gt;</literal>) で囲むことと等価です。<literal>&lt;></literal> 演算子の詳細は、次の <replaceable>query</replaceable> を参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>r</option></term>
@@ -575,19 +575,19 @@ x11/wm/fvwm (fvwm.org) 2.6.5                  i--</programlisting>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>s</option> <replaceable>repo_uri</replaceable></term>
-<listitem><para>指定された URI に位置する <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> リポジトリを検索します。これは複数回指定できます。パッケージアーカイブはサポートされていません。</para>
+<listitem><para>Search the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> repository located at the given URI.これは複数回指定できます。パッケージアーカイブはサポートされていません。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><replaceable>query</replaceable></term>
 <listitem><para>デフォルトでは、<replaceable>query</replaceable> は完全一致する一連の条件として解釈され、複数の条件は AND でつながれます。</para>
 <para>AND と OR がサポートされています。</para>
-<para><literal>?</literal> および <literal>*</literal> 文字を <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> 形式のワイルドカードとして使用でき、より柔軟なクエリー一致が可能になります。</para>
-<para>単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (<literal>&#39;</literal> または <literal>&#34;</literal>) を使用することにより、語句を検索できます。<command>pkg</command> が実際に <literal>&#39;</literal> または <literal>&#34;</literal> を認識するように、必ずシェルを考慮に入れてください。</para>
-<para>どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。アクションとそれらの属性については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのアクションに関する項目を参照してください。前述の <command>pkg contents</command> および <option> o</option> 内の擬似属性名のリストも参照してください。</para>
+<para>The <literal>?</literal> and <literal>*</literal> characters can be used as <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>-style wildcards, allowing more flexible query matches.</para>
+<para>単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (<literal>'</literal> または <literal>"</literal>) を使用することにより、語句を検索できます。<command>pkg</command> が実際に <literal>'</literal> または <literal>"</literal> を認識するように、必ずシェルを考慮に入れてください。</para>
+<para>どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。For information about actions and their attributes, see “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.前述の <command>pkg contents</command> および <option> o</option> 内の擬似属性名のリストも参照してください。</para>
 <para>構造化されたクエリーは、次の構文でサポートされます:</para>
 <programlisting><replaceable>pkg_name</replaceable>:<replaceable>action_name</replaceable>:<replaceable>
 index</replaceable>:<replaceable>token</replaceable></programlisting>
-<para><replaceable>action_name</replaceable> の値は、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> マニュアルページの「アクション」に一覧表示されているアクションのいずれかです。<replaceable>index</replaceable> は、アクションの属性です。<replaceable>index</replaceable> の値は、<replaceable>token</replaceable> と一致している必要があります。</para>
+<para>The value of <replaceable>action_name</replaceable> is one of the actions listed in “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page.<replaceable>index</replaceable> は、アクションの属性です。<replaceable>index</replaceable> の値は、<replaceable>token</replaceable> と一致している必要があります。</para>
 <para>すべてのアクション属性が検索可能なわけではありません。たとえば、<literal>mode</literal> は <literal>file</literal> アクションの属性ですが、<literal>mode</literal> は <replaceable>index</replaceable> の有効な値ではありません。</para>
 <para><replaceable>index</replaceable> の一部の値は、アクション属性ではなく、ほかの属性から派生した値です。たとえば、パスの最後のコンポーネントを取ることにより、<replaceable>index</replaceable> を、どのアクションの属性でもないが、<literal>file</literal> または <literal> dir</literal> アクションの <literal>path</literal> 属性から派生した <literal>basename</literal> にできます。</para>
 <para>アクションタイプが異なると、有効な <replaceable>index</replaceable> 値も異なります。このドキュメントには、使用可能な値がすべて含まれているわけではありません。より有用な <replaceable> index</replaceable> 値には、ファイルシステムアクションの <literal>basename</literal> および <literal>path</literal>、<literal>depend</literal> アクションの依存性タイプ (たとえば、<literal>require</literal>、<literal> optional</literal>、<literal>group</literal>)、および <literal>driver </literal> アクションの <literal>driver_name</literal> および <literal>alias</literal> などがあります。</para>
@@ -606,12 +606,12 @@ INDEX    ACTION VALUE       PACKAGE
 basename file   usr/bin/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1</screen>
 <para><replaceable>pkg_name</replaceable> および <replaceable>token</replaceable> フィールドでは明示的ワイルドカードがサポートされます。<replaceable>action_name</replaceable> および <replaceable> index</replaceable> は、正確に一致する必要があります。</para>
 <para>ファイルと依存関係の検索例については、「使用例」セクションを参照してください。</para>
-<para>アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、<literal> &#60;&#62;</literal> を使用します:</para>
-<screen>$ <userinput>pkg search &bsol;&#60;pkg&bsol;&#62;</userinput>
+<para>アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、<literal> &lt;></literal> を使用します:</para>
+<screen>$ <userinput>pkg search &bsol;&lt;pkg&bsol;></userinput>
 PACKAGE                                  PUBLISHER
 pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1  solaris
 pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
-<para><option>a</option> オプションを使用する場合 (デフォルト)、<literal>token</literal> を検索した結果は <literal>token</literal> に一致するアクションについての情報である一方で、<literal>&#60;token&#62;</literal> を検索した結果は、<literal>token</literal> に一致するアクションを包含しているパッケージの一覧です。</para>
+<para><option>a</option> オプションを使用する場合 (デフォルト)、<literal>token</literal> を検索した結果は <literal>token</literal> に一致するアクションについての情報である一方で、<literal>&lt;token></literal> を検索した結果は、<literal>token</literal> に一致するアクションを包含しているパッケージの一覧です。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -689,11 +689,11 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg revert</command> [<option>nv</option>] [<option> -no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be </option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name </option> <replaceable>name</replaceable>] (<option>-tagged</option> <replaceable> tag-name</replaceable> ... | <replaceable>path-to-file</replaceable> ...)</term>
-<listitem><para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> パッケージにより配布されたパッケージを、配布時の状態に戻します。ファイルの所有権および保護も復元されます。</para>
+<listitem><para>Revert files delivered by <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> packages to their as-delivered condition.ファイルの所有権および保護も復元されます。</para>
 <caution><para>一部の編集可能ファイルをデフォルト値に戻すと、システムがブート不可になったり、その他の異常動作の原因になったりする可能性があります。</para></caution>
 <variablelist termlength="wholeline">
 <varlistentry><term><option>-tagged</option> <replaceable>tag-name</replaceable></term>
-<listitem><para><replaceable>tag-name</replaceable> でタグ付けされたすべてのファイルを元に戻し、このタグが付けられているディレクトリの下に <replaceable>pattern</replaceable> と一致するパッケージ解除されたファイルまたはディレクトリがある場合は削除します。<literal>tag-name</literal> および <replaceable>pattern</replaceable> の詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページの「ファイルアクション」および「ディレクトリアクション」で <literal>revert-tag</literal> 属性の説明を参照してください。</para>
+<listitem><para><replaceable>tag-name</replaceable> でタグ付けされたすべてのファイルを元に戻し、このタグが付けられているディレクトリの下に <replaceable>pattern</replaceable> と一致するパッケージ解除されたファイルまたはディレクトリがある場合は削除します。See the description of the <literal>revert-tag</literal> attribute in “File Actions” and “Directory Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about <literal>tag-name</literal> and <replaceable>pattern</replaceable>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><replaceable>path-to-file</replaceable></term>
@@ -757,7 +757,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg variant</command> [<option>Haiv</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>variant_pattern</replaceable> ...]</term>
-<listitem><para>このイメージに設定されているすべてのバリアントの現在値を表示します。バリアントの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<listitem><para>このイメージに設定されているすべてのバリアントの現在値を表示します。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>variant_pattern</replaceable></term>
 <listitem><para>このイメージで設定されている、指定されたバリアントのみの現在値を表示します。</para>
@@ -794,12 +794,12 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><command>pkg change-variant</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>variant_name</replaceable>=<replaceable>value</replaceable> ...</term>
 <listitem><para>現在のイメージに設定され、指定されているバリアントの値を変更します。</para>
-<para>バリアントの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。バリアントの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。バリアントの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<para>バリアントの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。バリアントの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 <para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg facet</command> [<option>Haim</option>] [<option>F</option> <replaceable>format</replaceable>] [<replaceable>facet_pattern</replaceable> ...]</term>
-<listitem><para><command>pkg change-facet</command> コマンドを使用してこのイメージにローカルで設定されたか、(大域ゾーンからファセット設定を継承する非大域ゾーンなどで) 親イメージから継承されたすべてのファセットの現在の値とソースを表示します。ファセットの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<listitem><para><command>pkg change-facet</command> コマンドを使用してこのイメージにローカルで設定されたか、(大域ゾーンからファセット設定を継承する非大域ゾーンなどで) 親イメージから継承されたすべてのファセットの現在の値とソースを表示します。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><replaceable>facet_pattern</replaceable></term>
 <listitem><para>このイメージに設定されている、指定されたファセットのみの現在値を表示します。</para>
@@ -838,8 +838,8 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><command>pkg change-facet</command> [<option>nvq</option>] [<option>C</option> <replaceable>n</replaceable>] [<option>g</option> <replaceable>path_or_uri</replaceable>]... [<option>r</option> [[<option>z</option> <replaceable>zonename</replaceable>]... | [<option>Z</option> <replaceable>zonename</replaceable>]... ]] [<option>-accept</option>] [<option>-licenses</option>] [<option>-no-be-activate</option>] [<option>-no-backup-be</option> | <option>-require-backup-be</option>] [<option>-backup-be-name</option> <replaceable>name</replaceable>] [<option>-deny-new-be</option> | <option>-require-new-be</option>] [<option>-be-name</option> <replaceable>name</replaceable>] [<option>-sync-actuators</option> | <option>-sync-actuators-timeout</option> <replaceable>timeout</replaceable>] <replaceable>facet_name</replaceable>=(<literal>True</literal>|<literal>False</literal>|<literal>None</literal>) ...</term>
 <listitem><para>現在のイメージに設定され、指定されたファセットの値を変更します。これらの変更は、これらのファセットを継承するイメージ (非大域ゾーンなど) にも現れます。</para>
-<para>ファセットは <literal>True</literal> または <literal>False</literal> に設定できます。ファセットを <literal>None</literal> に設定すると、デフォルト値の <literal>True</literal> がそのファセットに適用されるため、ファセットに依存するすべてのアクションがインストールされます。アクションについては、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのアクションに関する項目を参照してください。</para>
-<para>ファセットの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。ファセットの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。ファセットの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<para>ファセットは <literal>True</literal> または <literal>False</literal> に設定できます。ファセットを <literal>None</literal> に設定すると、デフォルト値の <literal>True</literal> がそのファセットに適用されるため、ファセットに依存するすべてのアクションがインストールされます。See “Actions” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for information about actions.</para>
+<para>ファセットの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。ファセットの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 <para>オプションの説明については、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>
@@ -1010,7 +1010,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 <varlistentry><term><option>-proxy</option> <replaceable>proxy_to_use</replaceable></term>
 <listitem><para>指定したプロキシ URI を使用して、指定した起点 (<option>g</option>) またはミラー (<option>m</option>) のコンテンツを取得します。プロキシ値は、パブリッシャーの構成の一部として格納されます。つまり、子イメージが使用するシステムリポジトリは自動的に更新されます。このオプションを使用して認証済みプロキシを設定することはできません。<replaceable>proxy_to_use</replaceable> の値を <literal>protocol://user:password@host</literal> の形式にすることはできません。</para>
-<para>実行時には、<literal>$http_proxy</literal> または関連する環境変数がこのプロキシ設定をオーバーライドします。受け入れられる環境変数名のリストについては、<olink targetdoc="refman" targetptr="curl-1"><citerefentry><refentrytitle>curl</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> のマニュアルページの「環境」セクションを参照してください。環境変数を使用してプロキシ URI を設定する場合は、<literal>svc:/application/pkg/system-repository</literal> SMF サービスの該当するプロキシプロパティーも同じ値に設定する必要があります。<olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>の、プロキシの指定に関する説明を参照してください</para>
+<para>実行時には、<literal>$http_proxy</literal> または関連する環境変数がこのプロキシ設定をオーバーライドします。See the “Environment” section of the <olink targetdoc="refman" targetptr="curl-1"><citerefentry><refentrytitle>curl</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink> man page for the list of accepted environment variable names.環境変数を使用してプロキシ URI を設定する場合は、<literal>svc:/application/pkg/system-repository</literal> SMF サービスの該当するプロキシプロパティーも同じ値に設定する必要があります。<olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink>の、プロキシの指定に関する説明を参照してください</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-remove-property-value</option> <replaceable>name_of_property </replaceable>=<replaceable>value_to_remove</replaceable></term>
@@ -1160,7 +1160,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>time</replaceable></term> <term><option>t</option> <replaceable>time</replaceable>-<replaceable>time</replaceable></term>
-<listitem><para><literal>&#37;Y-&#37;m-&#37;dT&#37;H:&#37;M:&#37;S</literal> 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (<olink targetdoc="refman" targetptr="strftime-3C"><citerefentry><refentrytitle>strftime</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> マニュアルページを参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (<literal>-</literal>) を使用します。キーワード <literal>now</literal> は、現在の日時の別名として使用できます。このオプションは複数回指定できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントは表示されません。各履歴イベントの 1 つのインスタンスのみが表示されます。</para>
+<listitem><para>Display log records for a comma-separated list of timestamps, formatted with <literal>%Y-%m-%dT%H:%M:%S</literal> (see the <olink targetdoc="refman" targetptr="strftime-3C"><citerefentry><refentrytitle>strftime</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink> man page).日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (<literal>-</literal>) を使用します。キーワード <literal>now</literal> は、現在の日時の別名として使用できます。このオプションは複数回指定できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントは表示されません。各履歴イベントの 1 つのインスタンスのみが表示されます。</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1175,7 +1175,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg update-format</command></term>
-<listitem><para>イメージの形式を現在のバージョンに更新します。この操作が完了したあとは、古いバージョンの <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> システムと組み合わせてイメージを使用することはできなくなります。</para>
+<listitem><para>イメージの形式を現在のバージョンに更新します。Once this operation has completed, the image can no longer be used with older versions of the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> system.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkg version</command></term>
@@ -1206,7 +1206,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-facet</option> <replaceable>facet_name</replaceable>=(<literal> True</literal>|<literal>False</literal>)</term>
-<listitem><para>指定されたファセットを指定された値に設定します。ファセットの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<listitem><para>指定されたファセットを指定された値に設定します。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about facets.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-no-refresh</option></term>
@@ -1218,7 +1218,7 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-variant</option> <replaceable>variant_name</replaceable>=<replaceable> value</replaceable></term>
-<listitem><para>指定されたバリアントを指定された値に設定します。バリアントの詳細については、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> のマニュアルページのファセットとバリアントに関する項目を参照してください。</para>
+<listitem><para>指定されたバリアントを指定された値に設定します。See “Facets and Variants” in the <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> man page for more information about variants.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -1267,31 +1267,27 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>be-policy</literal></term>
 <listitem><para>(文字列) パッケージ操作中にいつブート環境が作成されるかを指定します。次の値が許可されます。</para>
-<variablelist termlength="wholeline">
-<varlistentry><term><literal>default</literal></term>
-<listitem><para>デフォルトブート環境作成ポリシー <literal>create-backup</literal> を適用します。</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>always-new</literal></term>
-<listitem><para>次のブート時にアクティブに設定されている新しいブート環境でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
-<para>このポリシーはもっとも安全ですが、リブートしないとパッケージを追加できないため、ほとんどのサイトの要求よりも厳格です。</para>
-</listitem>
-</varlistentry>
-</variablelist>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>create-backup</literal></term>
-<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響を及ぼす可能性のある内容がインストールされて、ライブブート環境がこの操作の影響を受ける場合、バックアップブート環境は作成されますが、アクティブには設定されません。バックアップブート環境を明示的にリクエストすることもできます。</para>
-<para>このポリシーは、新しくインストールされたソフトウェアによりシステムが不安定になっている場合にのみ潜在的に危険です。この可能性はありますが、比較的まれです。</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><literal>when-required</literal></term>
-<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
-<para>ライブブート環境へのパッケージ変更によりそれ以上の変更が不可能になる場合、フォールバック可能な最近のブート環境が存在しない可能性があるため、このポリシーには最大の危険が伴います。</para>
+	<variablelist termlength="wholeline">
+		<varlistentry><term><literal>default</literal></term>
+		<listitem><para>Apply the default boot environment creation policy, <literal>create-backup</literal>.</para>
+		</listitem> </varlistentry>
+		<varlistentry><term><literal>always-new</literal></term>
+		<listitem><para>次のブート時にアクティブに設定されている新しいブート環境でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
+		<para>このポリシーはもっとも安全ですが、リブートしないとパッケージを追加できないため、ほとんどのサイトの要求よりも厳格です。</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>create-backup</literal></term>
+		<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響を及ぼす可能性のある内容がインストールされて、ライブブート環境がこの操作の影響を受ける場合、バックアップブート環境は作成されますが、アクティブには設定されません。バックアップブート環境を明示的にリクエストすることもできます。</para>
+		<para>このポリシーは、新しくインストールされたソフトウェアによりシステムが不安定になっている場合にのみ潜在的に危険です。この可能性はありますが、比較的まれです。</para>
+		</listitem></varlistentry>
+		<varlistentry><term><literal>when-required</literal></term>
+		<listitem><para>リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。</para>
+		<para>ライブブート環境へのパッケージ変更によりそれ以上の変更が不可能になる場合、フォールバック可能な最近のブート環境が存在しない可能性があるため、このポリシーには最大の危険が伴います。</para>
+		</listitem></varlistentry>
+	</variablelist>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ca-path</literal></term>
-<listitem><para>(文字列) SSL 操作用の CA 証明書が格納されたディレクトリを指すパス名。このディレクトリの形式は、ベースとなる SSL 実装に固有です。信頼できる CA 証明書のために別の場所を使用するには、別のディレクトリを指すようにこの値を変更します。CA ディレクトリの要件については、<olink targetdoc="refman" targetptr="SSL_CTX_load_verify_locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> の <literal>CApath</literal> に関する項目を参照してください。</para>
+<listitem><para>(文字列) SSL 操作用の CA 証明書が格納されたディレクトリを指すパス名。このディレクトリの形式は、ベースとなる SSL 実装に固有です。信頼できる CA 証明書のために別の場所を使用するには、別のディレクトリを指すようにこの値を変更します。See the <literal> CApath</literal> portions of <olink targetdoc="refman" targetptr="SSL_CTX_load_verify_locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> for requirements for the CA directory.</para>
 <para>デフォルト値: <literal>/etc/openssl/certs</literal></para>
 </listitem>
 </varlistentry>
@@ -1322,17 +1318,22 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 <varlistentry><term><literal>flush-content-cache-on-success</literal></term>
 <listitem><para>(ブール型) これが <literal>True</literal> に設定されている場合、パッケージクライアントはイメージ変更操作が正常に完了したときに内容キャッシュ内のファイルを削除します。ブート環境を作成する操作の場合は、ソースと出力先の両方のブート環境から内容が削除されます。</para>
 <para>このプロパティーを使用して、ディスク容量の限られたシステムで内容キャッシュを小さく保つことができます。このプロパティーを使用すると、操作が完了するまでの時間が長くなる可能性があります。</para>
-<para>デフォルト値: <literal>True</literal></para>
+<para>Default value: <literal>True</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>mirror-discovery</literal></term>
-<listitem><para>(ブール型) このプロパティーは、mDNS および DNS-SD を使用してリンクローカル内容ミラーを検出するようにクライアントに命令します。このプロパティーを <literal>True</literal> に設定すると、クライアントはミラーを動的に検出し、そのミラーからパッケージ内容のダウンロードを試みます。mDNS を介してその内容を通知するミラーの実行方法については、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>(ブール型) このプロパティーは、mDNS および DNS-SD を使用してリンクローカル内容ミラーを検出するようにクライアントに命令します。このプロパティーを <literal>True</literal> に設定すると、クライアントはミラーを動的に検出し、そのミラーからパッケージ内容のダウンロードを試みます。To run a mirror that advertises its content via mDNS, see the <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page.</para>
 <para>デフォルト値: <literal>False</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>send-uuid</literal></term>
 <listitem><para>(ブール型) ネットワーク操作の実行時にイメージの汎用一意識別子 (UUID) を送信します。ユーザーはこのオプションを無効にできますが、一部のネットワークリポジトリは UUID を供給しないクライアントとのやり取りを拒否する場合があります。</para>
-<para>デフォルト値: <literal>True</literal></para>
+<para>Default value: <literal>True</literal></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>be-use-suggested-be-name</literal></term>
+<listitem><para>(boolean) Use the suggested Boot Environment name from pkg:/release/name when updates where a new BE is created and <literal>--be-name</literal> has not been supplied.</para>
+<para>Default value: <literal>True</literal></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>signature-policy</literal></term>
@@ -1366,12 +1367,12 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>use-system-repo</literal></term>
-<listitem><para>(ブール型) このプロパティーではシステムリポジトリを、イメージおよびパブリッシャー構成のソースとして、および提供されたパブリッシャーと通信するためのプロキシとしてイメージで使用するべきかどうかを指定します。デフォルト値は <literal>False</literal> です。システムリポジトリについては、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> のマニュアルページを参照してください。</para>
+<listitem><para>(ブール型) このプロパティーではシステムリポジトリを、イメージおよびパブリッシャー構成のソースとして、および提供されたパブリッシャーと通信するためのプロキシとしてイメージで使用するべきかどうかを指定します。デフォルト値は <literal>False</literal> です。See the <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink> man page for information about system repositories.</para>
 </listitem>
 </varlistentry>
 </variablelist>
 </refsect1>
-<refsect1 role="other"><title>パブリッシャープロパティー</title>
+<refsect1 role="other"><title>Publisher Properties</title>
 <para>次のプロパティーは、特定の発行元の署名ポリシーを定義します。同じ名前のイメージプロパティーはイメージの署名ポリシーを定義します。特定の発行元のこれらのプロパティーの現在の値を表示するには、<command>pkg publisher</command> <replaceable>publisher_name</replaceable> コマンドを使用します。これらの発行元の署名ポリシープロパティーの値を変更するには、<command>pkg set-publisher</command> コマンドの <option>-set-property</option> オプションと <option>-unset-property</option> オプションを使用します。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>signature-policy</literal></term>
@@ -1383,6 +1384,49 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </listitem>
 </varlistentry>
 </variablelist>
+</refsect1>
+<refsect1 role="other"><title>Periodic Package Update Service</title>
+<para>The SMF service <literal>svc:/system/auto-update:default</literal> provides a mechanism to automatically update and reboot the system on an administrator defined schedule.This is particularly useful when the system is deployed with an immutable root filesystem profile.
+</para>
+
+<variablelist>
+
+<varlistentry><term><literal>config/auto-reboot</literal></term>
+<listitem><para>Automatically reboot if updates are performed, defaults to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/activate-new-be</literal></term>
+<listitem><para>Automatically activate the new boot environment, default to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/require-new-be</literal></term>
+<listitem><para>Create a new BE for any updates rather than using the live BE.The BE is automatically named by pkg(1), where possible, using metadata stored in <literal>pkg:/release/name</literal>.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/packages</literal></term>
+<listitem><para>List of packages to explicitly update.Defaults to empty, which instructs pkg to update all packages to newest within the constraints allowed.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>scheduled/*</literal></term>
+<listitem><para>The default configuration is to attempt the update and reboot weekly at midnight on a Sunday.An alternative schedule can be configured by setting the appropriate properties in the <literal>scheduled</literal> property group, see <olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>.</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+<para>The SMF service <literal>svc:/system/auto-update:cleanup</literal> manages the boot environments created by the automatic update service.To opt an auto-update boot environment out of automatic removal and allow it to be preserved and managed manually use <literal>'beadm set-policy -nstatic bename'</literal>.
+</para>
+<variablelist>
+<varlistentry><term><literal>config/keep</literal></term>
+<listitem><para>The maximum number of boot environments created by the auto update service to keep.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+
 </refsect1>
 <refsect1 role="examples"><title></title>
 <example><title>パブリッシャーを構成してイメージを作成する</title>
@@ -1477,7 +1521,7 @@ usr/bin/vim    editor/vim/vim-core</screen>
 <example id="GMEGA"><title>どのパッケージがどの SMF サービスを提供するかを表示する</title>
 <para>構造化された検索内で <replaceable>index</replaceable> に値 <literal>org.opensolaris.smf.fmri</literal> を指定し、<replaceable> token</replaceable> に検索対象のサービスの名前を指定することにより、特定の SMF サービスを提供するのはどのパッケージかを表示します。値 <literal>org.opensolaris.smf.fmri</literal> は、<literal>set</literal> アクションの属性の名前です。サービスの名前では、「:」を確実にエスケープしてください。</para>
 <para>たとえば、使用可能な HTTP サーバーを表示するには、<replaceable>token</replaceable> に値 <literal>svc:/network/http</literal> を指定します。</para>
-<screen>$ <userinput>pkg search &#39;org.opensolaris.smf.fmri:svc&bsol;:/network/http*&#39;</userinput>
+<screen>$ <userinput>pkg search 'org.opensolaris.smf.fmri:svc&bsol;:/network/http*'</userinput>
 INDEX                    ACTION VALUE                        PACKAGE
 org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
 org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
@@ -1597,7 +1641,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </example>
 <example><title>パブリッシャーの起点とミラーをすべて削除する</title>
 <para>パブリッシャーのすべての起点およびミラーを削除し、新しい起点を追加します。</para>
-<screen>$ <userinput>pkg set-publisher -G &#39;*&#39; -M &#39;*&#39; -g http://example.com:10000 &bsol;</userinput>
+<screen>$ <userinput>pkg set-publisher -G '*' -M '*' -g http://example.com:10000 &bsol;</userinput>
 <userinput>example.com</userinput></screen>
 </example>
 <example><title>イメージをデハイドレートおよびリハイドレートする</title>
@@ -1716,7 +1760,7 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </variablelist>
 </refsect1>
 <refsect1 role="files"><title></title>
-<para><olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> イメージは、より大きなファイルシステム内の任意の場所に置くことができます。次のファイル説明で、トークン <envar>$IMAGE_ROOT</envar> は相対パスを区別するために使用されています。一般的なシステムインストールでは、<envar> $IMAGE_ROOT</envar> は <literal>/</literal> と等価です。</para>
+<para>A <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> image can be located arbitrarily within a larger file system.次のファイル説明で、トークン <envar>$IMAGE_ROOT</envar> は相対パスを区別するために使用されています。一般的なシステムインストールでは、<envar> $IMAGE_ROOT</envar> は <literal>/</literal> と等価です。</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
 <listitem><para>完全または部分的なイメージのメタデータディレクトリ。</para>
@@ -1741,18 +1785,18 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 <para><envar>$IMAGE_META</envar> ディレクトリ階層内のほかのパスは非公開であり、変更される可能性があります。</para>
 </refsect1>
 <refsect1 role="attributes"><title></title>
-<para>次の属性については、<olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
+<para>属性についての詳細は、マニュアルページの <olink targetdoc="refman" targetptr="attributes-7"><citerefentry><refentrytitle>attributes</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink> を参照してください。</para>
 <informaltable frame="all" orient="port">
 <textobject>
-<simpara>表は、適用可能な属性タイプおよび関連する値を示しています。</simpara>
+<simpara>表に、該当する属性タイプと関連する値を示します。</simpara>
 </textobject>
 <tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
 <row>
 <entry align="center">
-<para>属性タイプ</para>
+<para>ATTRIBUTE TYPE</para>
 </entry>
 <entry align="center">
-<para>属性値</para>
+<para>ATTRIBUTE VALUE</para>
 </entry>
 </row>
 </thead>
@@ -1777,7 +1821,8 @@ incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet
 </tgroup>
 </informaltable></refsect1>
 <refsect1 role="see-also"><title></title>
-<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="beadm-8"><citerefentry><refentrytitle>beadm</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-8"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.sysrepo-8"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="glob-3C"><citerefentry><refentrytitle>glob</refentrytitle><manvolnum>3C</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-7"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svc.periodicd-8"><citerefentry><refentrytitle>svc.periodicd</refentrytitle><manvolnum>8</manvolnum></citerefentry></olink>
+</para>
 <para><olink targetdoc="AUOSS"><citetitle remap="book">Updating Systems and Adding Software in Oracle Solaris 11.4</citetitle></olink></para>
 <para><literal>https://github.com/oracle/solaris-ips</literal></para>
 </refsect1>
