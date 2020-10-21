@@ -9578,7 +9578,7 @@ class TestObsoletionNestedIncorporations(pkg5unittest.SingleDepotTestCase):
             open osnet-incorporation@1.2,5.11-0
             add depend type=incorporate fmri=oldperl@2.0
             close
-       """
+        """
 
         def test_15713570(self):
                 """If an unincorporated package has its dependency obsoleted
@@ -9599,6 +9599,68 @@ class TestObsoletionNestedIncorporations(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue("oldcompiler" in self.errout and
                     "oldperl" in self.errout,
                     "error message does not mention oldcompiler and oldperl packages")
+
+
+class TestNotInstalledIncorp(pkg5unittest.SingleDepotTestCase):
+
+        persistent_setup = True
+
+        bug_31762523 = """
+            open topinc@1.0.0
+            add depend type=incorporate fmri=osnet-inc@1.0.0
+            add depend type=require fmri=osnet-inc
+            close
+            open topinc@1.0.1
+            add depend type=incorporate fmri=osnet-inc@1.0.1
+            add depend type=require fmri=osnet-inc
+            close
+            open osnet-inc@1.0.0
+            add depend type=incorporate fmri=testinc@1.0.0
+            add depend type=incorporate fmri=test-os@1.0.0
+            close
+            open osnet-inc@1.0.1
+            add depend type=incorporate fmri=testinc@1.0.1
+            add depend type=incorporate fmri=test-os@1.0.1
+            close
+            open testinc@1.0.0
+            add depend type=incorporate fmri=basepkg@1.0.0
+            add depend type=require fmri=basepkg
+            close
+            open testinc@1.0.1
+            add depend type=incorporate fmri=basepkg@1.0.1
+            add depend type=require fmri=basepkg
+            close
+            open test-os@1.0.0
+            close
+            open test-os@1.0.1
+            close
+            open basepkg@1.0.0
+            close
+            open basepkg@1.0.1
+            close
+            open basepkg@1.1.0
+            close
+        """
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+
+        def test_31762523(self):
+            """ Test to ensure that an uninstalled incorporation is not considered
+                as part of the packaging solution. """
+            self.pkgsend_bulk(self.rurl, self.bug_31762523)
+            self.image_create(self.rurl)
+
+            # Install the base packages and then the basepkg
+            self.pkg("install topinc@1.0.0 osnet-inc@1.0.0 test-os basepkg@1.1.0")
+
+            # Verify the installed packages can be updated
+            # without involving the not-installed incorporation (testinc)
+            self.pkg("update -nv topinc@1.0.1")
+
+            # This will cause the basepkg to be downgraded
+            self.pkg("install -v topinc@1.0.1 testinc")
+            self.pkg("list basepkg@1.0.1")
 
 
 class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
