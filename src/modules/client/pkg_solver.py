@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 """Provides the interfaces and exceptions needed to determine which packages
@@ -2085,6 +2085,11 @@ class PkgSolver(object):
 
                 while work:
                         fmris = work.pop()
+                        enc_pkg_name = fmris[0].get_name()
+                        # If the package is not installed then any dependenices
+                        # it has are irrelevant.
+                        if enc_pkg_name not in self.__installed_dict:
+                                continue
                         processed.add(frozenset(fmris))
                         d = self.__combine_incorps(fmris, excludes)
                         for name in d:
