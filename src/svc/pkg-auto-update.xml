@@ -19,7 +19,7 @@
 
   CDDL HEADER END
 
-  Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+  Copyright (c) 2019, 2020, Oracle and/or its affiliates.
 
   NOTE:  This service manifest is not editable; its contents will
   be overwritten by package or patch operations, including
@@ -51,9 +51,8 @@
 
 	<instance name='default' enabled='false'>
 		<scheduled_method
-			interval='week'
-			day='Sunday'
-			hour='0'
+			interval='day'
+			hour='3'
 			minute='0'
 			recover='true'
 			exec='/lib/svc/method/svc-pkg-auto-update'
@@ -65,11 +64,12 @@
 		</scheduled_method>
 		<property_group type='application' name='config'>
 			<propval type='boolean' name='auto-reboot' value='false' />
-			<propval type='boolean' name='require-new-be' value='true' />
+			<propval type='boolean' name='require-new-be' value='false' />
 			<propval type='boolean' name='activate-new-be' value='true' />
 			<property name='packages' type='astring'>
+				<!-- Set an empty value so it is visible with editprop -->
 				<astring_list>
-					<value_node value='entire@latest' />
+					<value_node value='' />
 				</astring_list>
 			</property>
 		</property_group>
