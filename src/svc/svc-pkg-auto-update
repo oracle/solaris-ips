@@ -42,6 +42,10 @@ try:
     # The property may have been set to the empty string.
     if len(packages) == 1 and len(packages[0]) == 0:
         packages = []
+    packages = smf.get_prop(SMF_FMRI, 'config/packages').split(' ')
+    # The property may have been set to the empty string.
+    if len(packages) == 1 and (len(packages[0]) == 0 or packages[0] == '""'):
+        packages = []
 except pkg.smf.NonzeroExitException:
     packages = []
 
@@ -62,6 +66,15 @@ if smf.get_prop(SMF_FMRI, 'config/activate-new-be') == 'false':
               "with config/activate-new-be = false")
         sys.exit(smf.EXIT_INVALID_OPTION)
     cmd.append('--no-be-activate')
+
+# Add any extra args that should be passed to pkg, eg for verbose output
+# for zones related arguments.
+try:
+    extra_args = smf.get_prop(SMF_FMRI, 'config/pkg_extra_args').split(' ')
+except pkg.smf.NonzeroExitException:
+    pass
+else:
+    cmd.extend(extra_args)
 
 # Finally add the list of packages if it is non empty.
 if len(packages) > 0:
