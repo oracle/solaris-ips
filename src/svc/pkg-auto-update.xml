@@ -72,7 +72,16 @@
 					<value_node value='' />
 				</astring_list>
 			</property>
+			<propval type='astring' name='reboot-check-hook' value='' />
 		</property_group>
+
+		<template>
+			<common_name>
+				<loctext xml:lang='C'>
+					Automatic Package Update Service
+				</loctext>
+			</common_name>
+		</template>
 	</instance>
 
 	<instance name='cleanup' enabled='true'>
@@ -92,6 +101,13 @@
 		<property_group type='application' name='config'>
 			<propval type='integer' name='keep' value='6' />
 		</property_group>
+		<template>
+			<common_name>
+				<loctext xml:lang='C'>
+					Automatic Boot Environment Cleanup
+				</loctext>
+			</common_name>
+		</template>
 	</instance>
 
 </service>

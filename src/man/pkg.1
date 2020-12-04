@@ -2028,8 +2028,19 @@ with an immutable root filesystem profile.
 </listitem>
 </varlistentry>
 
+<varlistentry><term><literal>config/reboot-check-hook</literal></term>
+<listitem><para>Path to an optional executable script/program that returns 0 when it
+safe to perform the reboot.</para>
+<para>The program may block until such time as it is safe to
+reboot, or may choose to return at any time with a non-zero exit code if the reboot
+should not be performed. If the reboot is not performed the service will enter
+the degraded state; any output from the command is used as the reason for the
+degraded state.</para>
+</listitem>
+</varlistentry>
+
 <varlistentry><term><literal>config/activate-new-be</literal></term>
-<listitem><para>Automatically activate the new boot environment, default to true.</para>
+<listitem><para>Automatically activate the new boot environment, defaults to true.</para>
 </listitem>
 </varlistentry>
 
@@ -2041,16 +2052,18 @@ The BE is automatically named by pkg(1), where possible, using metadata stored i
 </varlistentry>
 
 <varlistentry><term><literal>config/packages</literal></term>
-<listitem><para>List of packages to explicitly update or install. Defaults to empty, which
-instructs pkg to update all packages to newest within the constraints allowed.
-Any packages in the list that are not currently present on the system it will be installed,
-if the image constraits allow.</para>
+<listitem><para>List of packages to explicitly update or install.</para>
+<para>Defaults to empty, which instructs pkg to update the currently installed packages
+to the newest version allowed by the constraints imposed on the system by installed
+packages and publisher configuration.</para>
+<para>Any packages in the list that are not currently present on the system
+will be installed, if the image constraints allow.</para>
 </listitem>
 </varlistentry>
 
 <varlistentry><term><literal>config/pkg_extra_args</literal></term>
 <listitem><para>List of extra CLI arguments to pass to the pkg command.
-For example to record verbose output or to operate on all zones.</para>
+For example to record verbose output (<literal>-vvv</literal>) or to operate on all zones (<literal>-r</literal>).</para>
 </listitem>
 </varlistentry>
 
