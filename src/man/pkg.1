@@ -2041,8 +2041,10 @@ The BE is automatically named by pkg(1), where possible, using metadata stored i
 </varlistentry>
 
 <varlistentry><term><literal>config/packages</literal></term>
-<listitem><para>List of packages to explicitly update. Defaults to empty, which
-instructs pkg to update all packages to newest within the constraints allowed.</para>
+<listitem><para>List of packages to explicitly update or install. Defaults to empty, which
+instructs pkg to update all packages to newest within the constraints allowed.
+Any packages in the list that are not currently present on the system it will be installed,
+if the image constraits allow.</para>
 </listitem>
 </varlistentry>
 

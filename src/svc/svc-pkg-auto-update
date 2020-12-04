@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -35,36 +35,55 @@ PARSABLE_OUTPUT = '/system/volatile/' + SMF_FMRI + '/parsable_output.json'
 
 auto_reboot = (smf.get_prop(SMF_FMRI, 'config/auto-reboot') == 'true')
 
-cmd = ['/usr/bin/pkg', 'install']
+cmd = ['/usr/bin/pkg']
+
+try:
+    packages = smf.get_prop(SMF_FMRI, 'config/packages').split(' ')
+    # The property may have been set to the empty string.
+    if len(packages) == 1 and len(packages[0]) == 0:
+        packages = []
+except pkg.smf.NonzeroExitException:
+    packages = []
+
+# If we have a list of packages use 'pkg install' so that this can be
+# used to change the installed set.  If packages is empty then perform
+# an unconstrained update.
+if len(packages) > 0:
+    cmd.extend(['install'])
+else:
+    cmd.extend(['update'])
 
 if smf.get_prop(SMF_FMRI, 'config/require-new-be') == 'true':
-	cmd.append('--require-new-be')
+    cmd.append('--require-new-be')
 
 if smf.get_prop(SMF_FMRI, 'config/activate-new-be') == 'false':
-	if auto_reboot:
-		print("Invalid configuration: config/auto-reboot = true "
-		      "with config/activate-new-be = false")
-		sys.exit(smf.EXIT_INVALID_OPTION)
-	cmd.append('--no-be-activate')
+    if auto_reboot:
+        print("Invalid configuration: config/auto-reboot = true "
+              "with config/activate-new-be = false")
+        sys.exit(smf.EXIT_INVALID_OPTION)
+    cmd.append('--no-be-activate')
 
-packages = smf.get_prop(SMF_FMRI, 'config/packages').split(' ')
-cmd.extend(packages)
+# Finally add the list of packages if it is non empty.
+if len(packages) > 0:
+    cmd.extend(packages)
 
+# To help debugging print out the full command what we are actually running
+print('Running:', ' '.join(cmd))
 pkg_status = subprocess.call(cmd)
 
-if pkg_status == 4:	# Nothing to do so exit cleanly.
-	sys.exit(smf.EXIT_OK)
+if pkg_status == 4:    # Nothing to do so exit cleanly.
+    sys.exit(smf.EXIT_OK)
 elif pkg_status != 0:
-	sys.exit(smf.EXIT_FATAL)
+    sys.exit(smf.EXIT_FATAL)
 
 with open(PARSABLE_OUTPUT) as pkg_out:
-	pkgplan = json.loads(pkg_out.read())
+    pkgplan = json.loads(pkg_out.read())
 
 new_be_created = pkgplan['create-new-be']
 new_be_activated = pkgplan['activate-be']
 if new_be_created and new_be_activated and auto_reboot:
-	print('Reboot after auto update')
-	msg = SMF_FMRI  + ' : automatic reboot after update'
-	subprocess.call(['shutdown', '-yr', msg])
+    print('Reboot after auto update')
+    msg = SMF_FMRI + ' : automatic reboot after update'
+    subprocess.call(['shutdown', '-yr', msg])
 elif not new_be_created:
-	print('Auto update completed, no reboot needed')
+    print('Auto update completed, no reboot needed')
