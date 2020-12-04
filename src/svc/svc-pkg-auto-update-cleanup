@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -33,17 +33,16 @@ print('config/keep = {0} boot environments'.format(keep))
 candidates = []
 with subprocess.Popen(['beadm', 'list', '-Ho', 'created,policy,fmri'],
                       stdout=subprocess.PIPE) as beadm_out:
-        for be in beadm_out.stdout.readlines():
-                creation, policy, be_fmri = be.decode().strip().split(';')
-                if 'auto' in policy.split(','):
-                        candidates.append(be_fmri)
+    for be in beadm_out.stdout.readlines():
+        creation, policy, be_fmri = be.decode().strip().split(';')
+        if 'auto' in policy.split(','):
+            candidates.append(be_fmri)
 
 print('Discovered {0} auto-update boot environments'.format(len(candidates)))
-remove_bes = candidates[:len(candidates) - keep]
-
-if remove_bes:
-	print('Removing the following boot environments:', *remove_bes)
-	for be in remove_bes:
-		subprocess.call(['beadm', 'destroy', '-fF', be])
+if len(candidates) - keep > 0:
+    remove_bes = candidates[:len(candidates) - keep]
+    print('Removing the following boot environments:', *remove_bes)
+    for be in remove_bes:
+        subprocess.call(['beadm', 'destroy', '-fF', be])
 else:
-	print('No auto-update boot environments to remove')
+    print('No auto-update boot environments to remove')
