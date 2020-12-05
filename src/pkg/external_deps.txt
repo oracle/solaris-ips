@@ -50,6 +50,7 @@
     pkg:/system/library
     pkg:/system/library/libc
     pkg:/system/library/math
+    pkg:/system/library/python/solaris-core-37
     pkg:/system/library/security/crypto
     pkg:/system/library/smf
     pkg:/system/linker
