@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 from collections import defaultdict, namedtuple
@@ -3911,14 +3911,18 @@ class ImagePlan(object):
                 return False
 
         def __get_note_text(self, act, pfmri):
-                """Retrieve text for release note from repo"""
+                """Retrieve text for release note from repo
+
+                If there are UTF-8 encoding errors in the text replace them
+                so that we still have a note to show rather than failing
+                the entire operation.  The copy saved on disk is left as is."""
                 try:
                         pub = self.image.get_publisher(pfmri.publisher)
                         hash_attr, hash_val, hash_func = \
                             digest.get_least_preferred_hash(act)
 
                         return self.image.transport.get_content(pub, hash_val,
-                            fmri=pfmri, hash_func=hash_func)
+                            fmri=pfmri, hash_func=hash_func, errors="replace")
                 finally:
                         self.image.cleanup_downloads()
 
