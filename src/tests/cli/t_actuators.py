@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -590,6 +590,8 @@ stop/type astring method
 class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -630,6 +632,12 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
             add file tmp/release-note-6 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-6 release-note=feature/pkg/self@0
             close """
 
+        badencoding10 = """
+            open badencoding@1.0,5.11-0
+            add file tmp/release-note-7 mode=0644 owner=root group=bin path=/usr/share/doc/release-notes/release-note-7 release-note=feature/pkg/self@0
+            close """
+
+
         multi_unicode = u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n"
         multi_ascii = "multi-line release notes\nshould work too,\nwe'll see if they do.\n"
         misc_files = {
@@ -644,9 +652,13 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
+                badenc_relnote = os.path.join(self.ro_data_root,
+                                                   "badencoding.relnote")
+                self.make_misc_files({"tmp/release-note-7": badenc_relnote},
+                                     copy=True)
                 self.pkgsend_bulk(self.rurl, self.foo10 + self.foo11 +
-                    self.foo12 + self.foo13 + self.bar10 + self.bar11 + self.baz10 +
-                    self.hovercraft)
+                    self.foo12 + self.foo13 + self.bar10 + self.bar11 +
+                    self.baz10 + self.hovercraft + self.badencoding10)
                 self.image_create(self.rurl)
 
         def test_release_note_1(self):
@@ -787,6 +799,10 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # and so it needs to be added here.
                 concatted = "\npkg://test/hovercraft\n" + self.multi_unicode
                 assert concatted == release_note
+                self.pkg("uninstall '*'")
+
+        def test_release_note_bad_encoding(self):
+                self.pkg("install -v badencoding@1.0")
                 self.pkg("uninstall '*'")
 
 
