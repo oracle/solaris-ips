@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -492,7 +492,7 @@ if __name__ == "__main__":
                 # output to be str. This is a no-op in Python 2.
                 encoding = "utf-8"
                 # For testing encoding other than utf-8, we need to pass the
-                # encoding to fore_str.
+                # encoding to force_str.
                 if newenv.get("LC_ALL", None) not in (None, "en_US.utf-8"):
                         # locale is a form of "x.y" and we ignore the C locale
                         index = newenv["LC_ALL"].find(".")
@@ -874,7 +874,7 @@ if __name__ == "__main__":
                             "Tried: {0}.  Try setting $CC to a valid"
                             "compiler.".format(compilers))
 
-        def make_file(self, path, content, mode=0o644):
+        def make_file(self, path, content, mode=0o644, copy=False):
                 if not os.path.exists(os.path.dirname(path)):
                         os.makedirs(os.path.dirname(path), 0o777)
                 self.debugfilecreate(content, path)
@@ -884,11 +884,15 @@ if __name__ == "__main__":
                         with open(path, "wb") as fh:
                                 fh.write(content)
                 else:
-                        with open(path, "w", encoding="utf-8") as fh:
+                        if copy:
+                            shutil.copy(content, path)
+                        else:
+                            with open(path, "w", encoding="utf-8") as fh:
                                 fh.write(content)
                 os.chmod(path, mode)
 
-        def make_misc_files(self, files, prefix=None, mode=0o644):
+        def make_misc_files(self, files, prefix=None, mode=0o644,
+                            copy=False):
                 """ Make miscellaneous text files.  Files can be a
                 single relative pathname, a list of relative pathnames,
                 or a hash mapping relative pathnames to specific contents.
@@ -922,7 +926,7 @@ if __name__ == "__main__":
                         assert not f.startswith("/"), \
                             ("{0}: misc file paths must be relative!".format(f))
                         path = os.path.join(prefix, f)
-                        self.make_file(path, content, mode)
+                        self.make_file(path, content, mode, copy)
                         outpaths.append(path)
                 return outpaths
 

@@ -44,6 +44,7 @@ import sys
 import tempfile
 import time
 import unittest
+import locale
 from six.moves import range
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen, build_opener, ProxyHandler, Request
@@ -9849,19 +9850,19 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
         # Packages with copyright in non-ascii character
         nonascii10 = """
             open nonascii@1.0,5.11-0
-            add license 88591enc.copyright license=copyright
+            add license 88591enc.copyright license=88591enc.copyright
             close """
 
         # Packages with copyright in non-ascii character
         utf8enc10 = """
             open utf8enc@1.0,5.11-0
-            add license utf8enc.copyright license=copyright
+            add license utf8enc.copyright license=utf8enc.copyright
             close """
 
         # Packages with copyright in unsupported character set
         unsupported10 = """
             open unsupported@1.0,5.11-0
-            add license unsupported.copyright license=copyright
+            add license unsupported.copyright license=unsupported.copyright
             close """
 
         def setUp(self):
@@ -9870,18 +9871,21 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
 
                 # Use license with latin1 i.e 88591 encoding
                 n_copyright = os.path.join(self.ro_data_root,
-                    "88591enc.copyright")
-                self.make_misc_files({"88591enc.copyright": n_copyright})
+                                           "88591enc.copyright")
+                self.make_misc_files({"88591enc.copyright": n_copyright},
+                                     copy=True)
 
                 # Use utf-8 encoding license
                 utf_copyright = os.path.join(self.ro_data_root,
-                    "utf8enc.copyright")
-                self.make_misc_files({"utf8enc.copyright": utf_copyright})
+                                             "utf8enc.copyright")
+                self.make_misc_files({"utf8enc.copyright": utf_copyright},
+                                     copy=True)
 
                 # Use unsupported license
                 u_copyright = os.path.join(self.ro_data_root,
-                    "unsupported.copyright")
-                self.make_misc_files({"unsupported.copyright": u_copyright})
+                                           "unsupported.copyright")
+                self.make_misc_files({"unsupported.copyright": u_copyright},
+                                     copy=True)
 
                 self.plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
                     self.licensed12, self.licensed13, self.baz10,
@@ -9959,14 +9963,38 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                             "license.licensed", True, False]]])
                 self.pkg("info licensed@1.3")
 
-        def test_02_bug_7127117(self):
+        def test_02_bug_7127117_C(self):
                 """Verifies that install with --parsable handles licenses
                 with non-ascii & non UTF locale"""
-                self.image_create(self.rurl, prefix="bobcat")
 
-                self.pkg("install --parsable=0 nonascii@1.0")
+                os.environ["LC_ALL"] = "C"
+                self.image_create(self.rurl, prefix="bobcat")
                 self.pkg("install --parsable=0 utf8enc@1.0")
+                self.pkg("install --parsable=0 nonascii@1.0")
                 self.pkg("install --parsable=0 unsupported@1.0")
+                self.image_destroy()
+
+        def test_02_bug_7127117_ISO8859(self):
+                """Verifies that install with --parsable handles licenses
+                with non-ascii & non UTF locale"""
+
+                os.environ["LC_ALL"] = "en_US.ISO8859-1"
+                self.image_create(self.rurl, prefix="bobcat")
+                self.pkg("install --parsable=0 utf8enc@1.0")
+                self.pkg("install --parsable=0 nonascii@1.0")
+                self.pkg("install --parsable=0 unsupported@1.0")
+                self.image_destroy()
+
+        def test_02_bug_7127117_UTF8(self):
+                """Verifies that install with --parsable handles licenses
+                with non-ascii & non UTF locale"""
+
+                os.environ["LC_ALL"] = "en_US.UTF-8"
+                self.image_create(self.rurl, prefix="bobcat")
+                self.pkg("install --parsable=0 utf8enc@1.0")
+                self.pkg("install --parsable=0 nonascii@1.0")
+                self.pkg("install --parsable=0 unsupported@1.0")
+                self.image_destroy()
 
 
 class TestActionErrors(pkg5unittest.SingleDepotTestCase):
