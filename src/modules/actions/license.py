@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 """module describing a license packaging object
@@ -194,6 +194,9 @@ class LicenseAction(generic.Action):
                 should be text).  This may require remote retrieval of
                 resources and so this could raise a TransportError or other
                 ApiException.
+                If there are UTF-8 encoding errors in the text replace them
+                so that we still have a license to show rather than failing
+                the entire operation.  The copy saved on disk is left as is.
 
                 'alt_pub' is an optional alternate Publisher to use for
                 any required transport operations.
@@ -209,19 +212,17 @@ class LicenseAction(generic.Action):
                                     length=length, return_content=True,
                                     hash_func=hash_func)
                                 if chash == hash_attr_val:
-                                        return misc.force_str(txt)
+                                        return misc.force_str(txt,
+                                                              errors="replace")
                 except EnvironmentError as e:
                         if e.errno != errno.ENOENT:
                                 raise
-                # If we get here, either the license file wasn't on disk, or the
-                # hash didn't match.  In either case, go retrieve it from the
-                # publisher.
                 try:
                         if not alt_pub:
                                 alt_pub = img.get_publisher(pfmri.publisher)
                         assert pfmri.publisher == alt_pub.prefix
                         return img.transport.get_content(alt_pub, hash_attr_val,
-                            fmri=pfmri, hash_func=hash_func)
+                            fmri=pfmri, hash_func=hash_func, errors="replace")
                 finally:
                         img.cleanup_downloads()
 

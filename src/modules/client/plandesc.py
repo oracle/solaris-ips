@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2020, Oracle and/or its affiliates.
 #
 
 """
@@ -806,18 +806,14 @@ class PlanDescription(object):
                             self.get_licenses():
                                 src_tup = ()
                                 if src_li:
-                                        li_txt = pkg.misc.decode(
-                                            src_li.get_text())
                                         src_tup = (str(src_li.fmri),
-                                            src_li.license, li_txt,
+                                            src_li.license, src_li.get_text(),
                                             src_li.must_accept,
                                             src_li.must_display)
                                 dest_tup = ()
                                 if dest_li:
-                                        li_txt = pkg.misc.decode(
-                                            dest_li.get_text())
                                         dest_tup = (str(dest_li.fmri),
-                                            dest_li.license, li_txt,
+                                            dest_li.license, dest_li.get_text(),
                                             dest_li.must_accept,
                                             dest_li.must_display)
                                 licenses.append(
