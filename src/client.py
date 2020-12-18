@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
 #
 
 #
@@ -1080,16 +1080,14 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
                     plan.get_licenses():
                         src_tup = ()
                         if src_li:
-                                li_txt = misc.decode(src_li.get_text())
                                 src_tup = (str(src_li.fmri), src_li.license,
-                                    li_txt, src_li.must_accept,
+                                    src_li.get_text(), src_li.must_accept,
                                     src_li.must_display)
                         dest_tup = ()
                         if dest_li:
-                                li_txt = misc.decode(dest_li.get_text())
-                                dest_tup = (str(dest_li.fmri),
-                                    dest_li.license, li_txt,
-                                    dest_li.must_accept, dest_li.must_display)
+                                dest_tup = (str(dest_li.fmri), dest_li.license,
+                                    dest_li.get_text(), dest_li.must_accept,
+                                    dest_li.must_display)
                         licenses.append(
                             (str(dfmri), src_tup, dest_tup))
                         api_inst.set_plan_license_status(dfmri, dest_li.license,
