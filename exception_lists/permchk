@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
 #
 syntax: glob
 
@@ -39,3 +39,4 @@ src/util/publish/pkglint.py
 src/util/publish/pkgmerge.py
 src/util/publish/pkgmogrify.py
 src/svc/svc-pkg-*
+src/tests/run.py
