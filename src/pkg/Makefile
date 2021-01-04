@@ -1,5 +1,4 @@
-#
-# CDDL HEADER START
+
 #
 # The contents of this file are subject to the terms of the
 # Common Development and Distribution License (the "License").
@@ -34,7 +33,7 @@ ORDER             = 0
 # In the normal case the PLATNUM should be 0, however when
 # producing an SRU build from trunk it should be set to 1
 #
-PLATNUM           = 0
+PLATNUM           = 1
 PKGVERS_COMPONENT = $(MINORNUM).$(UPDATENUM)
 BUILDID.cmd       = \
 	hg tags | \
@@ -79,7 +78,7 @@ $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 # so that the shell ignores the one specified in the
 # file because those suppress the use of non-default
 # environments which are actually used as part of the
-# build. Bit of a smoke and mirrors. 
+# build. Bit of a smoke and mirrors.
 PYTHON37	  = python3.7
 PYDIR		  = usr/lib/$(PYTHON37)
 PY37DIR		  = usr/lib/$(PYTHON37)
