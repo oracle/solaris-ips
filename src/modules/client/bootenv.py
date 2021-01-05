@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 
 import errno
 import os
@@ -40,7 +40,7 @@ import pkg.pkgsubprocess as subprocess
 # However, in order to provide recovery feature,
 # it will try to use the BE management module if it exists.
 # We will first try to import the pybemgmt module, which is only
-# available in Solaris 12.  If it's not found, we will
+# available in Solaris 11.4 onwards.  If it's not found, we will
 # also attempt to use the old libbe module, if it exists.
 try:
         # First, try importing the pybemgmt module.
@@ -449,10 +449,11 @@ class BeadmV2BootEnv(GenericBootEnv):
                         raise api_errors.BENameGivenOnDeadBE(be_name)
 
         def init_image_recovery(self, img, be_name=None):
-                """Initialize for an update.  If a be_name is given,
-                validate it.  If we're operating on a live BE then clone the
-                live BE and operate on the clone.  If we're operating on a
-                non-live BE we use the already created snapshot"""
+                """Initialize for an update.  If we're operating on
+                a live BE then clone the live BE and operate on the
+                clone.  If we're operating on a non-live BE we use
+                the already created snapshot. Validation of the
+                be_name is performed at the api level."""
 
                 self.img = img
                 if not self.is_live_BE and be_name is not None:
@@ -468,8 +469,6 @@ class BeadmV2BootEnv(GenericBootEnv):
 
                 # Create a clone of the live BE and mount it.
                 self.destroy_snapshot()
-
-                self.check_be_name(be_name)
 
                 try:
                         self.be_clone = self.bemgr.copy(
