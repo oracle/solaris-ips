@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -669,6 +669,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__be_name = be_name
                 for val in (self.__be_name, self.__backup_be_name):
                         if val is not None:
+                                # Check the be_name passed by the cli.
                                 self.check_be_name(val)
                                 if not self._img.is_liveroot():
                                         self._cancel_cleanup_exception()
@@ -1491,6 +1492,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         self._activity_lock.release()
                         yield self.__plan_desc
                         self._activity_lock.acquire()
+
+                        # The self.__be_name is set by the cli and has been
+                        # verified. But if it is not set there could still
+                        # be a name set by the package metadata (suggest_bename)
+                        # so verify that.
+                        if not self.__be_name:
+                            self.check_be_name(self.__plan_desc.be_name)
 
                         # plan operation in child images.  This currently yields
                         # either a dictionary representing the parsable output
