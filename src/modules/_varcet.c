@@ -20,15 +20,11 @@
  */
 
 /*
- * Copyright (c) 2012, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates.
  */
 
 #include <Python.h>
 
-#if PY_MAJOR_VERSION >= 3
-	#define PyBytes_AS_STRING PyUnicode_AsUTF8
-	#define PyBytes_AsString PyUnicode_AsUTF8
-#endif
 
 /*ARGSUSED*/
 static PyObject *
@@ -79,7 +75,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 	Py_DECREF(res);
 
 	while (PyDict_Next(act_attrs, &fpos, &attr, &value)) {
-		char *as = PyBytes_AS_STRING(attr);
+		const char *as = PyUnicode_AsUTF8(attr);
 		if (strncmp(as, "facet.", 6) != 0)
 			continue;
 
@@ -135,7 +131,7 @@ _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 
 prep_ret:
 		if (facet_ret != NULL) {
-			char *vs = PyBytes_AS_STRING(PyObject_Str(value));
+			const char *vs = PyUnicode_AsUTF8(PyObject_Str(value));
 			if (vs == NULL) {
 				/*
 				 * value is not a string; probably a list, so
@@ -211,9 +207,9 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 		return (NULL);
 
 	while (PyDict_Next(act_attrs, &pos, &attr, &value)) {
-		char *as = PyBytes_AS_STRING(attr);
+		const char *as = PyUnicode_AsUTF8(attr);
 		if (strncmp(as, "variant.", 8) == 0) {
-			char *av = PyBytes_AsString(value);
+			const char *av = PyUnicode_AsUTF8(value);
 			if (av == NULL) {
 				/*
 				 * value is not a string; probably a list, so
@@ -240,7 +236,7 @@ _allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 				continue;
 			}
 
-			char *sysav = PyBytes_AsString(sysv);
+			const char *sysav = PyUnicode_AsUTF8(sysv);
 			if (strcmp(av, sysav) != 0) {
 				/*
 				 * If system variant value doesn't match action

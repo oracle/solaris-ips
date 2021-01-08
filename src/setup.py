@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 import errno
@@ -488,6 +488,14 @@ solver_srcs = [
 solver_link_args = ["-lm", "-lc"]
 if osname == 'sunos':
         solver_link_args = ["-ztext"] + solver_link_args
+
+# solver code is external code with all its
+# associated compiler warnings. Suppress them.
+solver_suppress_args = ["-Wno-return-type",
+                        "-Wno-strict-aliasing",
+                        "-Wno-unused-function",
+                        "-Wno-unused-variable"
+                        ]
 
 # Runs lint on the extension module source code
 class pylint_func(Command):
@@ -1124,7 +1132,7 @@ class build_func(_build):
 
 def get_hg_version():
         try:
-                p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE)
+                p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)
                 return p.communicate()[0].strip()
         except OSError:
                 print("ERROR: unable to obtain mercurial version",
@@ -1614,7 +1622,7 @@ ext_modules = [
                 'solver',
                 solver_srcs,
                 include_dirs = include_dirs + ["."],
-                extra_compile_args = compile_args,
+                extra_compile_args = compile_args + solver_suppress_args,
                 extra_link_args = link_args + solver_link_args,
                 define_macros = [('_FILE_OFFSET_BITS', '64')],
                 build_64 = True
