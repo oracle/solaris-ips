@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates.
  */
 
 /*
@@ -31,12 +31,6 @@
 
 static PyObject *nohash;
 
-#if PY_MAJOR_VERSION >= 3
-#define	PyBytes_AS_STRING PyUnicode_AsUTF8
-#define	PyBytes_AsString PyUnicode_AsUTF8
-#define	PyBytes_GET_SIZE PyUnicode_GET_LENGTH
-#define	PyBytes_FromStringAndSize PyUnicode_FromStringAndSize
-#endif
 
 static void
 set_invalid_action_error(const char *name, PyObject *action,
@@ -90,7 +84,7 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 	PyObject *key_aname = NULL;
 	PyObject *key_attr = NULL;
 	PyObject *path_attr = NULL;
-	char *path = NULL;
+	const char *path = NULL;
 	char invalid_path = 0;
 
 	/*
@@ -133,7 +127,7 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 
 	if ((key_attr = PyDict_GetItem(attrs, key_aname)) == NULL) {
 		PyObject *aname = PyObject_GetAttrString(action, "name");
-		char *ns = PyBytes_AS_STRING(aname);
+		const char *ns = PyUnicode_AsUTF8(aname);
 
 		/*
 		 * set actions allow an alternate value form, so
@@ -156,7 +150,7 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 
 	if (PyList_CheckExact(key_attr)) {
 		PyObject *aname = PyObject_GetAttrString(action, "name");
-		char *ns = PyBytes_AS_STRING(aname);
+		const char *ns = PyUnicode_AsUTF8(aname);
 		int multi_error = 0;
 
 		if (strcmp(ns, "depend") != 0) {
@@ -173,10 +167,10 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 			 */
 			PyObject *dt = PyDict_GetItemString(attrs, "type");
 			if (dt != NULL) {
-				char *ts = PyBytes_AsString(dt);
+				const char *ts = PyUnicode_AsUTF8(dt);
 				if (ts == NULL) {
 					PyObject *type_aname =
-					    PyBytes_FromStringAndSize("type",
+					    PyUnicode_FromStringAndSize("type",
 					    4);
 					set_invalid_action_error(
 					    "KeyAttributeMultiValueError",
@@ -205,7 +199,7 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 		Py_RETURN_NONE;
 	}
 
-	if ((path = PyBytes_AsString(path_attr)) != NULL) {
+	if ((path = PyUnicode_AsUTF8(path_attr)) != NULL) {
 		if (path[0] == '/') {
 			PyObject *stripped = PyObject_CallMethod(
 			    path_attr, "lstrip", "(s)", "/");
@@ -219,11 +213,11 @@ _generic_init_common(PyObject *action, PyObject *data, PyObject *attrs)
 				Py_DECREF(stripped);
 				return (NULL);
 			}
-			if (PyBytes_GET_SIZE(stripped) == 0)
+			if (PyUnicode_GET_LENGTH(stripped) == 0)
 				invalid_path = 1;
 			Py_DECREF(stripped);
 		} else {
-			if (PyBytes_GET_SIZE(path_attr) == 0)
+			if (PyUnicode_GET_LENGTH(path_attr) == 0)
 				invalid_path = 1;
 		}
 	} else {
@@ -288,7 +282,6 @@ static PyMethodDef methods[] = {
 	{ NULL, NULL, 0, NULL }
 };
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef commonmodule = {
 	PyModuleDef_HEAD_INIT,
 	"_common",
@@ -296,7 +289,6 @@ static struct PyModuleDef commonmodule = {
 	-1,
 	methods
 };
-#endif
 
 static PyObject *
 moduleinit(void)
@@ -304,17 +296,8 @@ moduleinit(void)
 	PyObject *pkg_actions = NULL;
 	PyObject *m;
 
-#if PY_MAJOR_VERSION >= 3
 	if ((m = PyModule_Create(&commonmodule)) == NULL)
 		return (NULL);
-#else
-	/*
-	 * Note that module initialization functions are void and may not return
-	 * a value.  However, they should set an exception if appropriate.
-	 */
-	if (Py_InitModule("_common", methods) == NULL)
-		return (NULL);
-#endif
 
 	if ((pkg_actions = PyImport_ImportModule("pkg.actions")) == NULL) {
 		/* No exception is set */
@@ -322,7 +305,7 @@ moduleinit(void)
 		return (NULL);
 	}
 
-	if ((nohash = PyBytes_FromStringAndSize("NOHASH", 6)) == NULL) {
+	if ((nohash = PyUnicode_FromStringAndSize("NOHASH", 6)) == NULL) {
 		PyErr_SetString(PyExc_ValueError,
 		    "Unable to create nohash string object.");
 		return (NULL);
@@ -331,16 +314,8 @@ moduleinit(void)
 	return (m);
 }
 
-#if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC
 PyInit__common(void)
 {
 	return (moduleinit());
 }
-#else
-PyMODINIT_FUNC
-init_common(void)
-{
-	moduleinit();
-}
-#endif
