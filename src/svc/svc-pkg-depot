@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2021, Oracle and/or its affiliates.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -92,8 +92,8 @@ function abspath {
 	# print a normalized version of a path, needed because
 	# many utilities will not dereference non-existent directories
 	# in path names, e.g. cat /etc/no-such-dir/../motd will fail.
-	echo $1 | /usr/bin/python -c \
-    'import os.path ; import sys ; print os.path.normpath(sys.stdin.read())'
+	echo $1 | /usr/bin/python3 -c \
+    'import os.path ; import sys ; print(os.path.normpath(sys.stdin.read()))'
 }
 
 function run_depot {
@@ -170,7 +170,7 @@ function run_htcacheclean {
 
 function kill_htcacheclean {
 	pid_file=$(abspath ${depot_cache_dir}/../depot_htcacheclean.pid)
-	if [ -f $pid_file ]; then
+	if [ -f "$pid_file" ]; then
                 PID=$(< $pid_file)
                 /usr/bin/kill -TERM $PID
                 check_failure $? "failed to kill htcacheclean process\
@@ -188,7 +188,7 @@ function kill_apache {
 	# transitioning to maintenance: normal Apache shutdown is
 	# preferable.
 	pid_file=$(abspath ${depot_runtime_dir}/../depot_httpd.pid)
-	if [ -f $pid_file ]; then
+	if [ -f "$pid_file" ]; then
 		PID=$(< $pid_file)
 		/usr/bin/ptree $PID | /usr/bin/awk '{print $1}' | \
 		    /usr/bin/xargs /usr/bin/kill -TERM
