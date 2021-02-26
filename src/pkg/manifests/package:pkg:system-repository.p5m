@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
@@ -67,6 +67,10 @@ file path=var/log/pkg/sysrepo/access_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
+# Ensure that the corresponding FIPS 140 Apache SSL module is installed
+# if the system could be placed into fips-140 mode.
+depend type=conditional fmri=web/server/apache-24/module/apache-ssl-fips-140 \
+    predicate=library/security/openssl/openssl-fips-140
 # force a dependency on the six package because we bypass dependency check for it
 depend type=require fmri=library/python/six-37
 #
