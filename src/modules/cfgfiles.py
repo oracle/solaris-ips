@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -91,10 +91,15 @@ class CfgFile(object):
 
     def readfile(self):
         if os.path.exists(self.filename):
-            file = open(self.filename)
+            file = open(self.filename, 'rb')	
             lineno = 1
             for line in file:
                 linecnt = 1;
+                try:
+                    line = line.decode("utf-8")
+                except UnicodeDecodeError:
+                    # ignore bad utf-8 lines
+                    continue
 
                 while self.continuation_lines and line[-2:] == "\\\n":
                     linecnt += 1

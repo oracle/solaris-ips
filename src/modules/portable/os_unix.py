@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 """
@@ -200,9 +200,13 @@ def load_passwd(dirpath):
                 return
         users[dirpath] = user = {}
         uids[dirpath] = uid = {}
-        f = open(passwd_file)
-        for line in f:
-                arr = line.rstrip().split(":")
+        f = open(passwd_file, 'rb')
+        for line in f.readlines():
+                try:
+                        arr = line.decode("utf-8").rstrip().split(":")
+                except UnicodeDecodeError:
+                        # Skip any line we can't make sense of.
+                        continue
                 if len(arr) != 7:
                         # Skip any line we can't make sense of.
                         continue
@@ -231,9 +235,13 @@ def load_groups(dirpath):
                 return
         groups[dirpath] = group = {}
         gids[dirpath] = gid = {}
-        f = open(group_file)
+        f = open(group_file, 'rb')
         for line in f:
-                arr = line.rstrip().split(":")
+                try:
+                        arr = line.decode("utf-8").rstrip().split(":")
+                except UnicodeDecodeError:
+                        # Skip any line we can't make sense of.
+                        continue
                 if len(arr) != 4:
                         # Skip any line we can't make sense of.
                         continue
