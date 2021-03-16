@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -139,6 +139,29 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "cache", "publisher")))
                 shutil.rmtree(pub_cache_path)
                 self.assertTrue(not os.path.exists(pub_cache_path))
+
+                self.pkg("unset-publisher test")
+
+        def test_publisher_uri(self):
+                """Verify the URI specification"""
+
+                # Create a repository for the test publisher.
+                rpath = os.path.join(self.test_root, "example_repo")
+                self.create_repo(rpath, properties={ "publisher": {
+                    "prefix": "test" } })
+                self.image_create("file:{0}".format(rpath))
+                slash = "/"
+
+                # Verify that an invalid URI specification fails
+                self.pkg("set-publisher -O file:{0}{1} test".format(slash, rpath), exit=1)
+                self.pkg("set-publisher --no-refresh -O file:{0}{1} test".format(slash, rpath), exit=1)
+
+                # Verify that an over specified '/' are reduced correctly
+                for slashes in [ "///", "////" , "/////"]:
+                    self.pkg("set-publisher -O file:{0}{1} test".format(slashes, rpath))
+                    self.pkg("publisher | grep file://{0}".format(rpath))
+                    self.pkg("set-publisher --no-refresh -O file:{0}{1} test".format(slashes, rpath))
+                    self.pkg("publisher | grep file://{0}".format(rpath))
 
                 self.pkg("unset-publisher test")
 

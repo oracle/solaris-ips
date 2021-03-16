@@ -2660,6 +2660,8 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                 # For compatibility with old -O behaviour, treat -O as a wipe
                 # of existing origins and add the new one.
 
+                origin_uri = misc.parse_uri(origin_uri, cwd=_get_orig_cwd())
+
                 # Only use existing cert information if the new URI uses
                 # https for transport.
                 if repo.origins and not (ssl_cert or ssl_key) and \
