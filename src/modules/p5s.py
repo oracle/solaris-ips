@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 import copy
 import os
-import simplejson as json
+import json
 from six.moves.urllib.parse import urlparse, urlunparse
 
 import pkg.client.api_errors as api_errors

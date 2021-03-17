@@ -63,7 +63,7 @@ import glob
 import itertools
 import os
 import shutil
-import simplejson as json
+import json
 import sys
 import tempfile
 import threading
@@ -1545,7 +1545,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         pd_json1 = self.__plan_desc.getstate(self.__plan_desc,
                             reset_volatiles=True)
                         fobj = tempfile.TemporaryFile(mode="w+")
-                        json.dump(pd_json1, fobj, encoding="utf-8")
+                        json.dump(pd_json1, fobj)
                         pd_new = plandesc.PlanDescription(_op)
                         pd_new._load(fobj)
                         pd_json2 = pd_new.getstate(pd_new, reset_volatiles=True)

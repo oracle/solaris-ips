@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -32,7 +32,7 @@ import pkg5unittest
 import os
 import pkg.client.client_api as cli_api
 import pkg.client.progress as progress
-import simplejson as json
+import json
 import jsonschema
 
 from pkg.client import global_settings

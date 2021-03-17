@@ -21,14 +21,14 @@
 #
 
 #
-# Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2021, Oracle and/or its affiliates.
 #
 
 import errno
 import itertools
 import os
 import shutil
-import simplejson as json
+import json
 import six
 import sys
 import tempfile

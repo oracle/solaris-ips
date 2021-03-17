@@ -30,7 +30,7 @@ import datetime
 import errno
 import getopt
 import itertools
-import simplejson as json
+import json
 import os
 import re
 import six

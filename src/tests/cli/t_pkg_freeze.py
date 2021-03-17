@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import simplejson as json
+import json
 import stat
 import time
 

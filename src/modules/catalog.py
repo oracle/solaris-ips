@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -32,7 +32,7 @@ import errno
 import fnmatch
 import hashlib
 import os
-import simplejson as json
+import json
 import six
 import stat
 import threading
@@ -122,10 +122,10 @@ class _JSONWriter(object):
 
         def _dump(self, obj, fp, skipkeys=False, ensure_ascii=True,
             check_circular=True, allow_nan=True, cls=json.JSONEncoder,
-            indent=None, separators=None, encoding='utf-8', default=None, **kw):
+            indent=None, separators=None, default=None, **kw):
                 iterable = cls(skipkeys=skipkeys, ensure_ascii=ensure_ascii,
                     check_circular=check_circular, allow_nan=allow_nan,
-                    indent=indent, separators=separators, encoding=encoding,
+                    indent=indent, separators=separators,
                     default=default, **kw).iterencode(obj,
                     _one_shot=self.__single_pass)
                 fp.writelines(misc.force_bytes(i) for i in iterable)

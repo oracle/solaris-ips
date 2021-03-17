@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 """
@@ -47,7 +47,7 @@ import itertools
 import operator
 import os
 import select
-import simplejson as json
+import json
 
 # Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
 # Imports from package six are not grouped: pylint: disable=C0412
@@ -3615,7 +3615,7 @@ def save_data(path, data, root="/", catch_exception=True):
                 fd = ar.ar_open(root, pathtmp, os.O_WRONLY,
                     mode=0o644, create=True, truncate=True)
                 fobj = os.fdopen(fd, "w")
-                json.dump(data, fobj, encoding="utf-8",
+                json.dump(data, fobj,
                     cls=pkg.client.linkedimage.PkgEncoder)
                 fobj.close()
 
@@ -3642,7 +3642,7 @@ def load_data(path, missing_ok=False, root="/", decode=True,
 
                 fd = ar.ar_open(root, path, os.O_RDONLY)
                 fobj = os.fdopen(fd, "r")
-                data = json.load(fobj, encoding="utf-8",
+                data = json.load(fobj,
                     object_hook=object_hook)
                 fobj.close()
         except OSError as e:

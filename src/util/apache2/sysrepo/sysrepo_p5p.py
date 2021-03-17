@@ -19,14 +19,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2021, Oracle and/or its affiliates.
 
 import pkg.p5p
 
 import errno
 import os
 import shutil
-import simplejson
+import json
 import six
 import sys
 import threading
@@ -250,8 +250,8 @@ class SysrepoP5p(object):
                             pub=pub)
                         with open(os.path.join(cat_dir, "catalog.attrs"),
                             "rb") as catalog_attrs:
-                                json = simplejson.load(catalog_attrs)
-                                for part in json["parts"]:
+                                cattrs = json.load(catalog_attrs)
+                                for part in cattrs["parts"]:
                                         self.p5p.extract_catalog1(part, cat_dir,
                                             pub=pub)
 

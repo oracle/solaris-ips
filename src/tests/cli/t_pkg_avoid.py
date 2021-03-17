@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 import os
 
-import simplejson as json
+import json
 
 class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

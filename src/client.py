@@ -65,7 +65,7 @@ try:
         import getopt
         import gettext
         import itertools
-        import simplejson as json
+        import json
         import locale
         import logging
         import os

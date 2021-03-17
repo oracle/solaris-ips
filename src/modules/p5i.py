@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2021, Oracle and/or its affiliates.
 #
 
 import os
-import simplejson as json
+import json
 
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.parse import urlunparse

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -33,7 +33,7 @@ import locale
 import logging
 import os
 import shutil
-import simplejson
+import json
 import six
 import socket
 import stat
@@ -341,8 +341,8 @@ def _load_publisher_info(api_inst, image_dir):
 
                 with open(cache_path, "r") as cache_file:
                         try:
-                                pub_info_tuple = simplejson.load(cache_file)
-                        except simplejson.JSONDecodeError:
+                                pub_info_tuple = json.load(cache_file)
+                        except json.JSONDecodeError:
                                 error(_("Invalid config cache file at {0} "
                                     "generating fresh configuration.").format(
                                     cache_path))
@@ -396,7 +396,7 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
                         pass
 
                 with open(cache_path, "w") as cache_file:
-                        simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
+                        json.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
                         os.chmod(cache_path, 0o600)
         except IOError as e:
