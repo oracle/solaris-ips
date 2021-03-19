@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -1586,6 +1586,15 @@ publisher\tprefix\texample.net
                                 if not rstore.publisher:
                                         continue
                                 self.assertTrue(not os.listdir(rstore.file_root))
+
+                # Verify that removing a package does not fail if some files are
+                # already removed/missing.
+                repo_path = self.dc.get_repodir()
+                published = self.pkgsend_bulk(repo_path, (self.tree10))
+                missing_file = self.__inject_nofile("tmp/truck1")
+                tree = fmri.PkgFmri(published[0])
+
+                self.pkgrepo("remove -s {0} tree".format(repo_path))
 
                 # Cleanup.
                 shutil.rmtree(src_repo)

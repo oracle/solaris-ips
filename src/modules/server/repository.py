@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 import codecs
 import datetime
@@ -1690,8 +1690,8 @@ class _RepoStore(object):
                                 fpath = self.cache_store.lookup(h)
                                 if fpath is not None:
                                         portable.remove(fpath)
-                                        progtrack.job_add_progress(
-                                            progtrack.JOB_REPO_RM_FILES)
+                                progtrack.job_add_progress(
+                                        progtrack.JOB_REPO_RM_FILES)
                         progtrack.job_done(progtrack.JOB_REPO_RM_FILES)
 
                         # Finally, tidy up repository structure by discarding
