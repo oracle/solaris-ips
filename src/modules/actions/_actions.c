@@ -128,7 +128,9 @@ set_invaliderr(const char *str, const char *msg)
  */
 
 /*ARGSUSED*/
+
 static PyObject *
+__attribute__((hot))
 fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 {
 	char *s = NULL;
