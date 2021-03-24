@@ -6,11 +6,11 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">2 Apr 2020</refmiscinfo>
+<refmiscinfo class="date">10 March 2021</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System retrieval client</refpurpose>
@@ -2025,6 +2025,12 @@ with an immutable root filesystem profile.
 
 <varlistentry><term><literal>config/auto-reboot</literal></term>
 <listitem><para>Automatically reboot if updates are performed, defaults to true.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><literal>config/shutdown-grace-period</literal></term>
+<listitem><para>Time in seconds to wait before <literal>shutdown(8)</literal>
+is used to automatically reboot the system.</para>
 </listitem>
 </varlistentry>
 

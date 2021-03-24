@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -109,7 +109,11 @@ if new_be_created and new_be_activated and auto_reboot:
                                 'reboot-check-hook failed', output)
     print('Reboot after auto update')
     msg = SMF_FMRI + ' : automatic reboot after update'
-    subprocess.call(['shutdown', '-yr', msg])
+    try:
+        grace_period = get_prop(SMF_FMRI, 'config/shutdown-grace-period')
+    except pkg.smf.NonzeroExitException:
+        grace_period = 60
+    subprocess.call(['shutdown', '-yrg', grace_period, msg])
 elif not new_be_created:
     print('Auto update completed, no reboot needed')
 
