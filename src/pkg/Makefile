@@ -1,4 +1,5 @@
-
+#
+# CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
 # Common Development and Distribution License (the "License").
@@ -17,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -182,11 +183,16 @@ $(PDIR)/.resolved: $(DEPENDED)
 	$(PKGDEPEND) resolve -e external_deps.txt -m $(DEPENDED)
 	touch $@
 
+# The final run of pkgmogrify to strip those versions that
+# do not matter.
+$(PDIR)/%.strip: $(PDIR)/.resolved
+	$(PKGMOGRIFY) -I transforms -O $@ strip_versions $(@:%.strip=%.dep.res)
+
 # The main publication rule
-$(PDIR)/%.pub: $(PDIR)/.resolved $(PKGDEST)/repo
+$(PDIR)/%.pub: $(PDIR)/%.strip $(PKGDES)/repo
 	$(PKGSEND) -s file://$(PKGDEST)/repo publish -d $(PKGROOT) \
 		-d license_files -T \*.py --fmri-in-manifest --no-index \
-		--no-catalog $(@:%.pub=%.dep.res)
+		--no-catalog $(@:%.pub=%.strip)
 	touch $@
 
 # Compare the proto area with the package manifests; if they've got different
