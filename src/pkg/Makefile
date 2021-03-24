@@ -189,7 +189,7 @@ $(PDIR)/%.strip: $(PDIR)/.resolved
 	$(PKGMOGRIFY) -I transforms -O $@ strip_versions $(@:%.strip=%.dep.res)
 
 # The main publication rule
-$(PDIR)/%.pub: $(PDIR)/%.strip $(PKGDES)/repo
+$(PDIR)/%.pub: $(PDIR)/%.strip $(PKGDEST)/repo
 	$(PKGSEND) -s file://$(PKGDEST)/repo publish -d $(PKGROOT) \
 		-d license_files -T \*.py --fmri-in-manifest --no-index \
 		--no-catalog $(@:%.pub=%.strip)
