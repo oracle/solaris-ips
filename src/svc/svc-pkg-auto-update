@@ -40,7 +40,7 @@ if auto_reboot:
     try:
         reboot_check_hook = get_prop(SMF_FMRI, 'config/reboot-check-hook')
         check_before_reboot = os.access(reboot_check_hook, os.X_OK)
-    except pkg.smf.NonzeroExitEception:
+    except pkg.smf.NonzeroExitException:
         check_before_reboot = False
 
 cmd = ['/usr/bin/pkg']
