@@ -22,7 +22,10 @@
 #
 
 #
-# Any generated pyopenssl dependency needs to be un-versioned due to
-# a premature upgrade to pyopenssl@20 that was reverted back to @19
+# Any generated pyopenssl and cryptography dependencies need to
+# be un-versioned due to a premature upgrade to pyopenssl@20 and
+# cryptography@3.3.1 that were reverted back to pyopenssl@19 and
+# cryptography@2.5
 #
 <transform depend fmri=pkg:/library/python/pyopenssl.* -> edit fmri '@.+' ''>
+<transform depend fmri=pkg:/library/python/cryptography.* -> edit fmri '@.+' ''>
