@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 import copy
@@ -71,6 +71,8 @@ RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 RESULT_FAILED_ACTUATOR = ["Failed", "Actuator"]
 # Indicates that the operation failed due to not enough memory
 RESULT_FAILED_OUTOFMEMORY = ["Failed", "Out of Memory"]
+# Indicates that the operation failed due to insufficient disk space
+RESULT_FAILED_DISKSPACE = ["Failed", "Insufficient Disk Space"]
 # Indicates that the operation failed because of conflicting actions
 RESULT_CONFLICTING_ACTIONS = ["Failed", "Conflicting Actions"]
 # Indicates that the operation failed for an unknown reason.

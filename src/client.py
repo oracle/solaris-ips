@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 #
@@ -104,7 +104,7 @@ try:
             RESULT_FAILED_CONFIGURATION, RESULT_FAILED_CONSTRAINED,
             RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE, RESULT_NOTHING_TO_DO,
             RESULT_SUCCEEDED, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
-            RESULT_FAILED_OUTOFMEMORY)
+            RESULT_FAILED_OUTOFMEMORY, RESULT_FAILED_DISKSPACE)
         from pkg.client.debugvalues import DebugValues
         from pkg.client.pkgdefs import *
         from pkg.misc import EmptyI, msg, emsg, PipeError
@@ -5682,6 +5682,11 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                         _api_inst.abort(result=RESULT_CANCELED)
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
+                __ret = EXIT_OOPS
+        except api_errors.ImageInsufficentSpace as __e:
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_DISKSPACE)
+                error(__e)
                 __ret = EXIT_OOPS
         except api_errors.LinkedImageException as __e:
                 error(_("Linked image exception(s):\n{0}").format(

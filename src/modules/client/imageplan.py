@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 from collections import defaultdict, namedtuple
@@ -3838,6 +3838,14 @@ class ImagePlan(object):
                 # filesystem.
                 pd._bytes_added += pd._cbytes_added
                 self.__update_avail_space()
+
+                # Verify that there is enough space for the change.
+                if self.pd._bytes_added > self.pd._bytes_avail:
+                        raise api_errors.ImageInsufficentSpace(
+                            self.pd._bytes_added,
+                            self.pd._bytes_avail,
+                            _("Root filesystem"))
+
 
         def evaluate(self):
                 """Given already determined fmri changes,
