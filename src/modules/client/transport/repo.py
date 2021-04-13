@@ -681,7 +681,7 @@ class HTTPRepo(TransportRepo):
 
                 # Transient errors are part of standard control flow.
                 # The repo's caller will look at these and decide whether
-                # to throw them or not.  Permanant failures are raised
+                # to throw them or not.  Permanent failures are raised
                 # by the transport engine as soon as they occur.
                 #
                 # This adds an attribute that describes the request to the
@@ -735,7 +735,7 @@ class HTTPRepo(TransportRepo):
 
                 # Transient errors are part of standard control flow.
                 # The repo's caller will look at these and decide whether
-                # to throw them or not.  Permanant failures are raised
+                # to throw them or not.  Permanent failures are raised
                 # by the transport engine as soon as they occur.
                 #
                 # This adds an attribute that describes the request to the
@@ -1579,7 +1579,7 @@ class _FilesystemRepo(TransportRepo):
 
                 # Transient errors are part of standard control flow.
                 # The repo's caller will look at these and decide whether
-                # to throw them or not.  Permanant failures are raised
+                # to throw them or not.  Permanent failures are raised
                 # by the transport engine as soon as they occur.
                 #
                 # This adds an attribute that describes the request to the
@@ -1655,7 +1655,7 @@ class _FilesystemRepo(TransportRepo):
 
                 # Transient errors are part of standard control flow.
                 # The repo's caller will look at these and decide whether
-                # to throw them or not.  Permanant failures are raised
+                # to throw them or not.  Permanent failures are raised
                 # by the transport engine as soon as they occur.
                 #
                 # This adds an attribute that describes the request to the
