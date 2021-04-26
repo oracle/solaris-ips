@@ -1871,7 +1871,7 @@ class _RepoStore(object):
                                         with codecs.EncodedFile(f, "utf-8") as ef:
                                                 p5i.write(ef, [pub])
                         else:
-                               # we use simpleson.dump() in p5i.write(),
+                               # we use json.dump() in p5i.write(),
                                # json module will produce str objects
                                # in Python 3, therefore fp.write()
                                # must support str input.

@@ -7,38 +7,22 @@
     pkg:/developer/intltool
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
-    pkg:/library/python/asn1crypto-27
     pkg:/library/python/asn1crypto-37
-    pkg:/library/python/cffi-27
     pkg:/library/python/cffi-37
-    pkg:/library/python/cryptography-27
     pkg:/library/python/cryptography-37
-    pkg:/library/python/cherrypy-27
     pkg:/library/python/cherrypy-37
-    pkg:/library/python/coverage-27
     pkg:/library/python/coverage-37
-    pkg:/library/python/jsonrpclib-27
     pkg:/library/python/jsonrpclib-37
-    pkg:/library/python/jsonschema-27
     pkg:/library/python/jsonschema-37
-    pkg:/library/python/mako-27
     pkg:/library/python/mako-37
     pkg:/library/python/pycodestyle
-    pkg:/library/python/ply-27
     pkg:/library/python/ply-37
-    pkg:/library/python/portend-27
     pkg:/library/python/portend-37
-    pkg:/library/python/prettytable-27
     pkg:/library/python/prettytable-37
-    pkg:/library/python/pybonjour-27
-    pkg:/library/python/pycurl-27
     pkg:/library/python/pycurl-37
-    pkg:/library/python/pyopenssl-27
     pkg:/library/python/pyopenssl-37
-    pkg:/library/python/six-27
     pkg:/library/python/six-37
     pkg:/package/svr4
-    pkg:/runtime/python-27
     pkg:/runtime/python-37
     pkg:/service/network/dns/mdns
     pkg:/shell/ksh
@@ -61,5 +45,4 @@
     pkg:/text/tidy
     pkg:/web/server/apache-24
     pkg:/web/server/apache-24/module/apache-ssl
-    pkg:/web/server/apache-24/module/apache-wsgi-27
     pkg:/web/server/apache-24/module/apache-wsgi-37

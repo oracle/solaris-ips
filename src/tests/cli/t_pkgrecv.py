@@ -1571,7 +1571,7 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 
 
         def test_01_basics(self):
-                """Test that transfering a package from an https repo to
+                """Test that transferring a package from an https repo to
                 another https repo works"""
 
                 self.ac.start()

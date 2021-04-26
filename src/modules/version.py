@@ -374,6 +374,7 @@ class Version(object):
                     id(self))
 
         def get_version(self, include_build=True):
+                # A fast path with python's f-strings that is often taken.
                 if include_build and self.branch and self.timestr:
                         return f'{self.release},{self.build_release}-{self.branch}:{self.timestr}'
 
