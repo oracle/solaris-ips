@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 #
@@ -34,7 +34,7 @@ import inspect
 import itertools
 import math
 import sys
-import simplejson as json
+import json
 import time
 from collections import deque
 from functools import wraps

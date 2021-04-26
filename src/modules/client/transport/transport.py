@@ -21,14 +21,14 @@
 #
 
 #
-# Copyright (c) 2009, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2021, Oracle and/or its affiliates.
 #
 
 import copy
 import datetime as dt
 import errno
 import os
-import simplejson as json
+import json
 import six
 import tempfile
 import zlib

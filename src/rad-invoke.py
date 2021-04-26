@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2021, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -34,7 +34,7 @@ import os
 import pkg
 import pkg.client.rad_pkg as entry
 import pkg.misc as misc
-import simplejson as json
+import json
 
 
 class _InfoFilter(logging.Filter):

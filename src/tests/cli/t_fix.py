@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -33,7 +33,7 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
 import shutil
-import simplejson as json
+import json
 import tempfile
 import time
 import unittest

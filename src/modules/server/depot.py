@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 from __future__ import division
@@ -51,7 +51,7 @@ import random
 import re
 import shutil
 import six
-import simplejson as json
+import json
 import socket
 import tarfile
 import tempfile

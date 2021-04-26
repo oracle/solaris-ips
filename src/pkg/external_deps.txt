@@ -35,8 +35,6 @@
     pkg:/library/python/pycurl-37
     pkg:/library/python/pyopenssl-27
     pkg:/library/python/pyopenssl-37
-    pkg:/library/python/simplejson-27
-    pkg:/library/python/simplejson-37
     pkg:/library/python/six-27
     pkg:/library/python/six-37
     pkg:/package/svr4

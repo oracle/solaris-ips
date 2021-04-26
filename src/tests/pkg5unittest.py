@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -48,7 +48,7 @@ import os
 import pprint
 import shutil
 import signal
-import simplejson as json
+import json
 import six
 import stat
 import subprocess

@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -39,7 +39,7 @@ import pkg.p5p
 import shutil
 import unittest
 import shutil
-import simplejson
+import json
 import six
 import stat
 import sys
@@ -768,7 +768,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 rubbish = {"food preference": "I like noodles."}
                 other = ["nonsense here"]
                 with open(full_cache_path, "w") as cache_file:
-                        simplejson.dump((rubbish, other), cache_file)
+                        json.dump((rubbish, other), cache_file)
                 self.sysrepo("", stderr=True)
                 self.assertTrue("Invalid config cache at" in self.errout)
                 self.file_doesnt_contain(cache_path, "noodles")
@@ -796,11 +796,11 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 # same configuration as the image, simulating an older version
                 # of pkg(1) having changed publisher configuration.
                 with open(full_cache_path, "r") as cache_file:
-                        uri_pub_map, no_uri_pubs = simplejson.load(cache_file)
+                        uri_pub_map, no_uri_pubs = json.load(cache_file)
 
                 with open(full_cache_path, "w") as cache_file:
                         del uri_pub_map[self.durl1]
-                        simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
+                        json.dump((uri_pub_map, no_uri_pubs), cache_file,
                             indent=True)
                 # make sure we've definitely broken it
                 self.file_doesnt_contain(cache_path, self.durl1)

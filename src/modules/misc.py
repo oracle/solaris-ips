@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 
 """
 Misc utility functions used by the packaging system.
@@ -43,7 +43,7 @@ import re
 import resource
 import shutil
 import signal
-import simplejson as json
+import json
 import socket
 import struct
 import sys

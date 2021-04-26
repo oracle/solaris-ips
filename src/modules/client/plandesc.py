@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2021, Oracle and/or its affiliates.
 #
 
 """
@@ -40,7 +40,7 @@ modified within an image during an image-modifying operation.
 import collections
 import itertools
 import operator
-import simplejson as json
+import json
 import six
 
 import pkg.actions
@@ -327,7 +327,7 @@ class PlanDescription(object):
                     reset_volatiles=reset_volatiles)
                 try:
                         fobj.truncate()
-                        json.dump(state, fobj, encoding="utf-8")
+                        json.dump(state, fobj)
                         fobj.flush()
                 except OSError as e:
                         # Access to protected member; pylint: disable=W0212
@@ -343,7 +343,7 @@ class PlanDescription(object):
 
                 try:
                         fobj.seek(0)
-                        state = json.load(fobj, encoding="utf-8",
+                        state = json.load(fobj,
                             object_hook=pkg.misc.json_hook)
                 except OSError as e:
                         # Access to protected member; pylint: disable=W0212

@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
-import simplejson as json
+import json
 import multiprocessing
 import os
 import sys

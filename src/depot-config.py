@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2021, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -34,7 +34,7 @@ import os
 import re
 import shutil
 import six
-import simplejson as json
+import json
 import socket
 import sys
 import traceback

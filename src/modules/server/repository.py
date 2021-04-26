@@ -1872,7 +1872,7 @@ class _RepoStore(object):
                                                 p5i.write(ef, [pub])
                         else:
                                # we use simpleson.dump() in p5i.write(),
-                               # simplejson module will produce str objects
+                               # json module will produce str objects
                                # in Python 3, therefore fp.write()
                                # must support str input.
 

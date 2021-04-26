@@ -42,7 +42,7 @@ import pkg.server.repository as sr
 import pkg.client.api_errors as apx
 import pkg.p5p
 import shutil
-import simplejson as json
+import json
 import six
 import subprocess
 import tempfile

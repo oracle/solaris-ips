@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 import pkg.no_site_packages
 
@@ -84,7 +84,7 @@ import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repository as sr
-import simplejson as json
+import json
 
 logger = global_settings.logger
 

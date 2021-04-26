@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -31,7 +31,7 @@ import pkg5unittest
 import errno
 import os
 import shutil
-import simplejson
+import json
 import six
 import stat
 import unittest
@@ -1167,11 +1167,11 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 # corrupt it
                 fname = os.path.join(self.test_root, "catalog.attrs")
                 f = open(fname, "r")
-                struct = simplejson.load(f)
+                struct = json.load(f)
                 f.close()
                 del struct["parts"]
                 f = open(fname, "w")
-                print(simplejson.dumps(struct), file=f)
+                print(json.dumps(struct), file=f)
                 f.close()
 
                 self.assertRaises(api_errors.InvalidCatalogFile,
@@ -1187,13 +1187,13 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 # corrupt it
                 fname = os.path.join(self.test_root, "catalog.attrs")
                 f = open(fname, "r")
-                struct = simplejson.load(f)
+                struct = json.load(f)
                 f.close()
                 # corrupt signature by one digit
                 sig = int(struct["_SIGNATURE"]["sha-1"], 16)
                 struct["_SIGNATURE"]["sha-1"] = "{0:x}".format(sig + 1)
                 f = open(fname, "w")
-                print(simplejson.dumps(struct), file=f)
+                print(json.dumps(struct), file=f)
                 f.close()
 
                 c = catalog.Catalog(meta_root=self.test_root)
@@ -1212,11 +1212,11 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 # corrupt it by removing _SIGNATURE
                 fname = os.path.join(self.test_root, "catalog.attrs")
                 f = open(fname, "r")
-                struct = simplejson.load(f)
+                struct = json.load(f)
                 f.close()
                 del struct["_SIGNATURE"]
                 f = open(fname, "w")
-                print(simplejson.dumps(struct), file=f)
+                print(json.dumps(struct), file=f)
                 f.close()
 
                 c = catalog.Catalog(meta_root=self.test_root)
@@ -1235,11 +1235,11 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 # corrupt it by adding a bad name to the set of parts.
                 fname = os.path.join(self.test_root, "catalog.attrs")
                 f = open(fname, "r")
-                struct = simplejson.load(f)
+                struct = json.load(f)
                 f.close()
                 struct["parts"]["/badpartname/"] = {}
                 f = open(fname, "w")
-                print(simplejson.dumps(struct), file=f)
+                print(json.dumps(struct), file=f)
                 f.close()
 
                 # Catalog constructor should reject busted 'parts'
@@ -1270,10 +1270,10 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
 
                         fname = os.path.join(croot, "catalog.attrs")
                         with open(fname, "r") as f:
-                                struct = simplejson.load(f)
+                                struct = json.load(f)
                                 struct["parts"][name] = {}
                         with open(fname, "w") as f:
-                                print(simplejson.dumps(struct), file=f)
+                                print(json.dumps(struct), file=f)
 
                         # Catalog constructor should reject busted 'parts'.
                         self.assertRaises(api_errors.UnrecognizedCatalogPart,
@@ -1282,10 +1282,10 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
 
                         # Clears the contrived subpart for next loop.
                         with open(fname, "r") as f:
-                               struct = simplejson.load(f)
+                               struct = json.load(f)
                                del struct["parts"][name]
                         with open(fname, "w") as f:
-                                print(simplejson.dumps(struct), file=f)
+                                print(json.dumps(struct), file=f)
 
         def test_corrupt_attrs8(self):
                 """Raise UnrecognizedCatalogPart for a catalog.attrs file
