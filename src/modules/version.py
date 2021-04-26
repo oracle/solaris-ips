@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 import calendar
@@ -66,6 +66,9 @@ class DotSequence(list):
         #
         __dotseq_pool = weakref.WeakValueDictionary()
 
+        # Performance optimization: cache version string instead of using join and map.
+        __version_str = ''
+
         @staticmethod
         def dotsequence_val(elem):
                 # Do this first; if the string is zero chars or non-numeric
@@ -93,6 +96,7 @@ class DotSequence(list):
                         list.__init__(self,
                             list(map(DotSequence.dotsequence_val,
                                 dotstring.split("."))))
+                        self.set_version_string(dotstring)
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
@@ -100,10 +104,13 @@ class DotSequence(list):
                         raise IllegalDotSequence("Empty DotSequence")
 
         def __str__(self):
-                return ".".join(map(str, self))
+                return self.__version_str
 
         def __hash__(self):
                 return hash(tuple(self))
+
+        def set_version_string(self, dotstring):
+                self.__version_str = dotstring
 
         def is_subsequence(self, other):
                 """Return true if self is a "subsequence" of other, meaning that
@@ -162,6 +169,7 @@ class MatchingDotSequence(DotSequence):
                         list.__init__(self,
                             list(map(self.dotsequence_val,
                                 dotstring.split("."))))
+                        self.set_version_string(dotstring)
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
@@ -366,6 +374,9 @@ class Version(object):
                     id(self))
 
         def get_version(self, include_build=True):
+                if include_build and self.branch and self.timestr:
+                        return f'{self.release},{self.build_release}-{self.branch}:{self.timestr}'
+
                 if include_build:
                         outstr = str(self.release) + "," + str(self.build_release)
                 else:

@@ -28,6 +28,7 @@
 
 /*ARGSUSED*/
 static PyObject *
+__attribute__((hot))
 _allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *action = NULL;

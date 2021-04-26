@@ -3205,8 +3205,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # reused by this class.
                         bf.write("VERSION 1\n")
 
+                        cnt, offset_update_bytes = 0, 0
                         last_name, last_key, last_offset = None, None, sf.tell()
-                        cnt = 0
                         while heap:
                                 # This is a tight loop, so try to avoid burning
                                 # CPU calling into the progress tracker
@@ -3229,12 +3229,15 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                                     last_name, last_offset,
                                                     cnt, last_key))
                                                 actdict[(last_name, last_key)] = last_offset, cnt
-                                                last_name, last_key, last_offset = \
-                                                    act.name, key, sf.tell()
+                                                last_name, last_key = act.name, key
+                                                last_offset += offset_update_bytes
+                                                offset_update_bytes = 0
                                                 cnt = 1
                                 else:
                                         cnt += 1
-                                sf.write("{0} {1}\n".format(fmri, act))
+                                sf_line = f"{fmri} {act}\n"
+                                sf.write(sf_line)
+                                offset_update_bytes += len(sf_line.encode('utf-8'))
                         if last_name is not None:
                                 assert last_key is not None
                                 assert last_offset is not None
