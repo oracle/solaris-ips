@@ -117,7 +117,7 @@ except KeyboardInterrupt:
 CLIENT_API_VERSION = 83
 PKG_CLIENT_NAME = "pkg"
 
-AUTO_UPDATE_FMRI = 'svc:/system/auto-update:default'
+AUTO_UPDATE_FMRI = 'svc:/system/auto-update'
 
 JUST_UNKNOWN = 0
 JUST_LEFT = -1
@@ -1342,7 +1342,8 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
         if not quiet and not quiet_plan:
                 __display_plan(api_inst, verbose, noexecute, op=op)
 
-        auto_update_svc = (os.getenv('SMF_FMRI') == AUTO_UPDATE_FMRI)
+        smf_fmri = os.getenv('SMF_FMRI')
+        auto_update_svc = smf_fmri and smf_fmri.startswith(AUTO_UPDATE_FMRI)
 
         if parsable_version is not None or auto_update_svc:
                 # parsable_version needs to be set to 0 for auto_update_svc
@@ -1350,7 +1351,7 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
                 parsable_plan = plan.get_parsable_plan(pv,
                     child_image_plans, api_inst=api_inst)
                 if auto_update_svc:
-                    svcdir = '/system/volatile/' + AUTO_UPDATE_FMRI
+                    svcdir = '/system/volatile/' + smf_fmri
                     os.makedirs(svcdir, exist_ok=True)
                     with open(svcdir + '/parsable_output.json', 'w') as poj:
                         poj.write(json.dumps(parsable_plan))

@@ -32,7 +32,7 @@ from pkg.smf import get_prop
 import smf_include as smf
 import json
 
-SMF_FMRI = 'svc:/system/auto-update:default'
+SMF_FMRI = os.getenv('SMF_FMRI')
 PARSABLE_OUTPUT = '/system/volatile/' + SMF_FMRI + '/parsable_output.json'
 
 auto_reboot = (get_prop(SMF_FMRI, 'config/auto-reboot') == 'true')
