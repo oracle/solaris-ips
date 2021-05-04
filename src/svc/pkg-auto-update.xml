@@ -19,7 +19,7 @@
 
   CDDL HEADER END
 
-  Copyright (c) 2019, 2020, Oracle and/or its affiliates.
+  Copyright (c) 2019, 2021, Oracle and/or its affiliates.
 
   NOTE:  This service manifest is not editable; its contents will
   be overwritten by package or patch operations, including
@@ -73,6 +73,7 @@
 				</astring_list>
 			</property>
 			<propval type='astring' name='reboot-check-hook' value='' />
+			<propval type='count' name='shutdown-grace-period' value=60 />
 		</property_group>
 
 		<template>
