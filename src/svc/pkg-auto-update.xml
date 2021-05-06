@@ -73,7 +73,7 @@
 				</astring_list>
 			</property>
 			<propval type='astring' name='reboot-check-hook' value='' />
-			<propval type='count' name='shutdown-grace-period' value=60 />
+			<propval type='count' name='shutdown-grace-period' value='60' />
 		</property_group>
 
 		<template>
