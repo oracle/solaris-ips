@@ -701,6 +701,21 @@ class clint_func(Command):
                         print(" ".join(sha512_tcmd))
                         os.system(" ".join(sha512_tcmd))
 
+class smflint_func(Command):
+        description = "Validate SMF manifests"
+        user_options = []
+
+        def initialize_options(self):
+                pass
+
+        def finalize_options(self):
+                pass
+
+        def run(self):
+            for manifest in smf_app_files:
+                args = [ "/usr/sbin/svccfg", "validate", manifest ]
+                print(f"SMF manifest validate: {manifest}")
+                run_cmd(args, os.getcwd())
 
 # Runs both C and Python lint
 class lint_func(Command):
@@ -719,6 +734,7 @@ class lint_func(Command):
                 return astring.replace(' ', '\\ ')
 
         def run(self):
+                smflint_func(Distribution()).run()
                 clint_func(Distribution()).run()
                 pylint_func(Distribution()).run()
 
