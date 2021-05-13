@@ -1148,8 +1148,8 @@ class Transport(object):
 
                                 if hash_val != fhash:
                                         exc = tx.InvalidContentException(
-                                            reason="hash failure:  expected: {0}"
-                                            "computed: {1}".format(fhash,
+                                            reason="hash failure: expected: {0}"
+                                            " computed: {1}".format(fhash,
                                             hash_val), url=repouri_key[0],
                                             proxy=repouri_key[1])
                                         repostats.record_error(content=True)
@@ -2772,8 +2772,8 @@ class Transport(object):
                                 s = os.stat(filepath)
                                 portable.remove(filepath)
                                 raise tx.InvalidContentException(action.path,
-                                    "hash failure:  expected: {0}"
-                                    "computed: {1}".format(hash, fhash),
+                                    "hash failure: expected: {0}"
+                                    " computed: {1}".format(hash, fhash),
                                     size=s.st_size)
                         return
 
