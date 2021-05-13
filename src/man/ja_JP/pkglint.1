@@ -5,7 +5,7 @@
 ]>
 
 <refentry id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">6 Mar 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">15 Mar 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
@@ -111,7 +111,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>開発者</title>
-<para><command>pkglint</command> によって実行されるチェックのセットを拡張するには、<literal>pkg.lint.base.Checker</literal> とそのサブクラス <literal>ManifestChecker </literal>、<literal>ActionChecker</literal>、および <literal>ContentChecker</literal> をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい <literal>pkglint.ext.</literal> キーに追加します。</para>
+<para><command>pkglint</command> によって実行されるチェックのセットを拡張するには、<literal>pkg.lint.base.Checker</literal> とそのサブクラス <literal>ManifestChecker </literal>、および <literal>ActionChecker</literal> をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい <literal>pkglint.ext.</literal> キーに追加します。</para>
 <para>これらの新しいサブクラスのインスタンスは、起動時に <command>pkglint</command> によって作成されます。lint セッション中に、特殊なキーワード引数 <literal>pkglint_id</literal> を持つ、各サブクラスの内部のメソッドが呼び出されます。これらのメソッドには、スーパークラス内の対応する <function>check</function> メソッドと同じ署名が含まれているべきです。また、これらのメソッドには、<command>pkglint -L</command> によって出力される説明として使用される <literal>pkglint_desc</literal> 属性も割り当てられていなくてはいけません。</para>
 <para>パラメータは <literal>Checker</literal> サブクラスから使用できます。これにより、これらのサブクラスは自身の動作を調整できます。推奨されるパラメータの命名規則は、<literal><replaceable>pkglint_id</replaceable>.<replaceable>name</replaceable></literal> です。パラメータ値は構成ファイル内に格納するか、または <function>LintEngine.get_param</function> メソッドを使用して取得されるマニフェストまたはアクションでアクセスすることができます。マニフェストからパラメータにアクセスする場合は、<command>pkglint</command> パラメータが既存のどのアクションまたはマニフェスト値とも重複しないようにするために、キー名に接頭辞 <literal>pkg.lint</literal> が付加されます。</para>
 </refsect1>

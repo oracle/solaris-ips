@@ -5,7 +5,7 @@
 ]>
 
 <refentry id="pkglint-1">
-<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">6 Mar 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">15 Mar 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>映像包管理系统软件包 lint</refpurpose>
@@ -111,7 +111,7 @@ repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
 </variablelist>
 </refsect1>
 <refsect1 role="other"><title>开发者</title>
-<para>扩展 <command>pkglint</command>、子类 <literal>pkg.lint.base.Checker</literal> 及其子类 <literal>ManifestChecker </literal>、<literal>ActionChecker</literal> 和 <literal>ContentChecker</literal> 执行的检查集。将包含这些类的 Python 模块名称添加到配置文件中的新 <literal>pkglint.ext.</literal> 键。</para>
+<para>扩展 <command>pkglint</command>、子类 <literal>pkg.lint.base.Checker</literal> 及其子类 <literal>ManifestChecker </literal>、和 <literal>ActionChecker</literal> 执行的检查集。将包含这些类的 Python 模块名称添加到配置文件中的新 <literal>pkglint.ext.</literal> 键。</para>
 <para>这些新子类的实例由 <command>pkglint</command> 在启动时创建。lint 会话过程中，将会调用带有特殊关键字参数 <literal> pkglint_id</literal> 的每个子类中的方法。这些方法应该与超类中的相应 <function>check</function> 方法具有相同的签名。还应该为方法指定一个 <literal>pkglint_desc</literal> 属性，该属性用作 <command>pkglint -L</command> 输出的描述。</para>
 <para>参数可用于 <literal>Checker</literal> 子类，使这些子类能够调优其行为。建议的参数命名约定为 <literal><replaceable> pkglint_id</replaceable>.<replaceable>name</replaceable></literal>。参数值可以存储在配置文件中，或者在使用 <function>LintEngine.get_param</function> 方法检索的清单或操作中访问。从清单访问参数时，将在键名的前面附加前缀 <literal>pkg.lint</literal>，以确保 <command>pkglint</command> 参数不会与任何现有的操作或清单值重叠。</para>
 </refsect1>

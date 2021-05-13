@@ -6,11 +6,11 @@
 
 <refentry id="pkglint-1">
 <refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">6 Mar 2020</refmiscinfo>
+<refmiscinfo class="date">15 Mar 2021</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkglint</refname><refpurpose>Image Packaging System package lint</refpurpose>
@@ -180,8 +180,8 @@ matching all branches.</para>
 </refsect1>
 <refsect1 role="other"><title>Developers</title>
 <para>To extend the set of checks performed by <command>pkglint</command>,
-subclass <literal>pkg.lint.base.Checker</literal> and its subclasses, <literal>ManifestChecker
-</literal>, <literal>ActionChecker</literal>, and <literal>ContentChecker</literal>.
+subclass <literal>pkg.lint.base.Checker</literal> and its subclasses,
+<literal>ManifestChecker</literal>, and <literal>ActionChecker</literal>.
 Add the Python module name that contains those classes to a new <literal>pkglint.ext.
 </literal> key in the configuration file.</para>
 <para>Instances of those new subclasses are created by <command>pkglint</command> on
