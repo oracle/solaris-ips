@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -248,10 +248,10 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
         pkg_multi_ver = """
             open pkg://test/web/server/apache-22/module/apache-php52@5.2.5
             add set name=pkg.summary value="Example multiple version mod_php package"
-            add file tmp/fooc path=usr/apache2/2.2/libexec/mod_php5.2.so owner=root group=bin mode=0555
-            add link path=usr/apache2/2.2/libexec/mod_php5.so target=mod_php5.2.so mediator=php mediator-version=5.2
-            add file tmp/food path=usr/apache2/2.2/libexec/mod_php5.2.5.so owner=root group=bin mode=0555
-            add link path=usr/apache2/2.2/libexec/mod_php5.so target=mod_php5.2.5.so mediator=php mediator-version=5.2.5
+            add file tmp/fooc path=usr/apache2/2.4/libexec/mod_php5.2.so owner=root group=bin mode=0555
+            add link path=usr/apache2/2.4/libexec/mod_php5.so target=mod_php5.2.so mediator=php mediator-version=5.2
+            add file tmp/food path=usr/apache2/2.4/libexec/mod_php5.2.5.so owner=root group=bin mode=0555
+            add link path=usr/apache2/2.4/libexec/mod_php5.so target=mod_php5.2.5.so mediator=php mediator-version=5.2.5
             close """
 
         pkg_variant = """
@@ -506,7 +506,7 @@ vi\tsystem\t\tsystem\tsvr4\t
                 def gen_php_links():
                         for lname in ("mod_php5.so",):
                                 lpath = os.path.join(self.img_path(), "usr",
-                                    "apache2", "2.2", "libexec", lname)
+                                    "apache2", "2.4", "libexec", lname)
                                 yield lpath
 
                 def gen_python_links():

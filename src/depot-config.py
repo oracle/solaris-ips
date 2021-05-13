@@ -80,7 +80,7 @@ DEPOT_PUB_DIRNAME = ["publisher", "1"]
 
 DEPOT_CACHE_FILENAME = "depot.cache"
 
-KNOWN_SERVER_TYPES = ["apache2", "apache22"]
+KNOWN_SERVER_TYPES = ["apache2"]
 
 PKG_SERVER_SVC = "svc:/application/pkg/server"
 
@@ -929,15 +929,12 @@ def main_func():
                         error(e)
 
         # We can produce configuration for different HTTP servers.
-        # For now, We support "apache2" and "apache22".
+        # For now, we only support "apache2" (apache 2.4).
         if server_type not in KNOWN_SERVER_TYPES:
                 usage(_("unknown server type {type}. "
                     "Known types are: {known}").format(
                     type=server_type,
                     known=", ".join(KNOWN_SERVER_TYPES)))
-        # Generate Apache 2.2 configurations.
-        if server_type == "apache22" and not option_T:
-                template_dir = "/etc/pkg/depot/apache22"
 
         try:
                 _check_unique_repo_properties(repo_info)
