@@ -36,9 +36,18 @@ ORDER             = 0
 #
 PLATNUM           = 0
 PKGVERS_COMPONENT = $(MINORNUM).$(UPDATENUM)
+#
+# Generate the BUILDID based upon the tag in the gate.
+# Need to remove the respin number from the tag.
+#
 BUILDID.cmd       = \
 	hg tags | \
-	nawk '$$1 ~ /^st[0-9]+/ {exit} END {print substr($$1, 3) + 0}'
+	awk '$$1 ~ /^st[0-9]+/ {exit} \
+             END { \
+                 build_label=substr($$1, 3); \
+                 split(build_label, pieces, "[.]"); \
+                 print pieces[1] + 0 \
+                 }'
 BUILDID           = $(BUILDID.cmd:sh)
 NIGHTLYID:sh      = hg parents --template '{rev}'
 CHANGESET:sh      = hg id -i
