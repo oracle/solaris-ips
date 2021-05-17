@@ -174,6 +174,20 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add file mech_4 path=etc/gss/mech_1 owner=root group=sys mode=0644 overlay=true preserve=renameold overlay-attributes=deny
             close"""
 
+        ftpd = """
+            open ftpd@1.0-0
+            add dir path=etc mode=0755 owner=root group=sys
+            add dir path=etc/ftpd mode=0755 owner=root group=sys
+            add group gid=0 groupname=root
+            add group gid=3 groupname=sys
+            add file group path=etc/group mode=0644 owner=root group=sys preserve=true
+            add file passwd path=etc/passwd mode=0644 owner=root group=sys preserve=true
+            add file shadow path=etc/shadow mode=0400 owner=root group=sys preserve=true
+            add file ftpusers path=etc/ftpd/ftpusers mode=0644 owner=root group=sys preserve=true
+            add user username=root password=NP uid=0 group=root home-dir=/root gcos-field=Super-User login-shell=/usr/bin/bash ftpuser=false lastchg=13817 group-list=other group-list=bin group-list=sys group-list=adm
+            add user username=daemon ftpuser=false gcos-field="" group=other home-dir=/ lastchg=6445 login-shell=/bin/sh password=NP uid=1 group-list=adm group-list=bin
+            close"""
+
         misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum", "amber1", "amber2",
             "tmp/file1"]
@@ -186,16 +200,55 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             "mech_4": """\n"""
         }
 
+        misc_ftpfile = {
+                "ftpusers" :
+"""# ident      "@(#)ftpusers   1.6     06/11/21 SMI"
+#
+# List of users denied access to the FTP server, see ftpusers(4).
+#
+root
+bin
+sys
+adm
+""",
+                "group" :
+"""root::0:
+other::1:root
+bin::2:root,daemon
+sys::3:root,bin,adm
+adm::4:root,daemon
+keepmembers::102:user1,user2
++::::
+""",
+                "passwd" :
+"""root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
+adm:x:4:4:Admin:/var/adm:
++::::::
+""",
+                "shadow" :
+"""root:NP::::::
+daemon:NP:6445::::::
+bin:NP:6445::::::
+sys:NP:6445::::::
+adm:NP:6445::::::
++::::::::
+"""
+        }
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
                 self.make_misc_files(self.misc_files)
                 self.make_misc_files(self.misc_files2)
+                self.make_misc_files(self.misc_ftpfile)
                 self.plist = {}
                 for p in self.pkgsend_bulk(self.rurl, (self.amber10,
                     self.licensed13, self.dir10, self.file10, self.preserve10,
                     self.preserve11, self.preserve12, self.driver10,
                     self.driver_prep10, self.sysattr, self.sysattr_no_overlay, self.sysattr_o, self.gss,
-                    self.krb, self.pkg_dupfile, self.pkg_duplink, self.mismatched_attr)):
+                    self.krb, self.pkg_dupfile, self.pkg_duplink, self.mismatched_attr, self.ftpd)):
                         pfmri = fmri.PkgFmri(p)
                         old_publisher = pfmri.publisher
                         pfmri.publisher = None
@@ -958,6 +1011,49 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix sysattr_overlay", exit=4)
                 self.pkg("verify sysattr")
                 self.image_destroy()
+
+        def test_fix_with_ftpuser(self):
+            """ Test to check pkg fix works fine for the package which
+            delivers ftpuser file"""
+
+            file_path = "etc/ftpd/ftpusers"
+            pfmri_ftpd = self.plist["ftpd@1.0-0"]
+            self.image_create(self.rurl)
+
+            # First, only install the package that has a file with
+            # the attribute ftpuser=true. Not to be confused with the
+            # user action attribute of ftpuser=false
+            self.pkg("install ftpd")
+
+            # Path verification should report ok.
+            self.pkg("verify -v -p {0}".format(file_path))
+            self.assertTrue("OK" in self.output)
+
+            # Check whether the users are present in the file
+            self.file_contains(file_path,"root")
+            self.file_contains(file_path,"daemon")
+            self.file_exists(file_path)
+            # remove the file and check the same
+            self.file_remove(file_path)
+            self.file_doesnt_exist(file_path)
+
+            # Verify should report an error if the file is missing.
+            self.pkg("verify -v ftpd", exit=1)
+
+            # Path verification should report error.
+            self.pkg("verify -v -p {0}".format(file_path), exit=1)
+            self.assertTrue("OK" not in self.output and
+                    "ERROR" in self.output)
+            self.assertTrue(file_path in self.output and
+                    pfmri_ftpd.get_pkg_stem() in self.output)
+
+            # Fix should be able to repair the file.
+            self.pkg("fix -v ftpd")
+            self.file_exists(file_path)
+            self.file_contains(file_path, "root")
+            self.file_contains(file_path,"daemon")
+            self.__do_alter_verify(pfmri_ftpd, exit=0)
+
 
 if __name__ == "__main__":
         unittest.main()
