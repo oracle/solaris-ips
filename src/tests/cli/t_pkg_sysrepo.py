@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -2445,7 +2445,7 @@ LoadModule proxy_module libexec/mod_proxy.so
 LoadModule proxy_connect_module libexec/mod_proxy_connect.so
 LoadModule proxy_http_module libexec/mod_proxy_http.so
 LoadModule unixd_module libexec/mod_unixd.so
-LoadModule wsgi_module libexec/mod_wsgi-2.7.so
+LoadModule wsgi_module libexec/mod_wsgi-3.7.so
 
 <IfModule unixd_module>
 #
