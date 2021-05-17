@@ -6,11 +6,11 @@
 
 <refentry id="pkg.depot-config-8">
 <refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>8</manvolnum>
-<refmiscinfo class="date">25 Apr 2018</refmiscinfo>
+<refmiscinfo class="date">13 May 2021</refmiscinfo>
 <refmiscinfo class="sectdesc">&man8;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg.depot-config</refname><refpurpose>Image Packaging System HTTP depot configuration generator</refpurpose></refnamediv>
@@ -202,9 +202,8 @@ depot starts.</para>
 </varlistentry>
 <varlistentry><term><option>t</option> <replaceable>server_type</replaceable></term>
 <listitem><para>Specify the type of web server that <command>pkg.depot-config</command> should
-output configuration information for. In this release, for <replaceable>server_type</replaceable>,
-the default value is <literal>apache2</literal> (Apache 2.4), and the accepted values are
-<literal>apache2</literal> and <literal>apache22</literal> (Apache 2.2).</para>
+output configuration information for. Currently, the only possible value for
+<replaceable>server_type</replaceable> is <literal>apache2</literal> (Apache 2.4).</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>F</option></term>

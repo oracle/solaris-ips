@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -497,7 +497,6 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
                     "did not contain {0}: {1}".format(invalid_type, err))
                 # ensure we work with the supported type
                 self.depotconfig("-t apache2")
-                self.depotconfig("-t apache22")
 
         def test_11_htbui(self):
                 """We can perform a series of HTTP requests against the BUI."""
