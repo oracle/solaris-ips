@@ -5366,11 +5366,26 @@ class ImagePlan(object):
                                 # can be re-used.
                                 self.pd.install_actions = []
 
-                                # execute updates
+                                # execute updates; in some cases there may be
+                                # a retryable exception, so capture those and
+                                # retry after running through all the
+                                # actions(which might address the reason for
+                                # the retryable exception).
+                                # An example is a user action that depends
+                                # upon a file existing (ie ftpusers).
+                                retries = []
                                 for p, src, dest in self.pd.update_actions:
-                                        p.execute_update(src, dest)
-                                        pt.actions_add_progress(
-                                            pt.ACTION_UPDATE)
+                                        try:
+                                            p.execute_update(src, dest)
+                                            pt.actions_add_progress(
+                                                pt.ACTION_UPDATE)
+                                        except pkg.actions.ActionRetry:
+                                            retries.append((p, src, dest))
+
+                                for p, src, dest in retries:
+                                    p.execute_retry(src, dest)
+                                    pt.actions_add_progress(pt.ACTION_UPDATE)
+                                retries = []
 
                                 pt.actions_done(pt.ACTION_UPDATE)
                                 pt.actions_all_done()
