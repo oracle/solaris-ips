@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 import os.path
@@ -35,7 +35,10 @@ from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
 # A list of locations beneath a given proto_dir where we expect to
 # find SMF manifest files
-manifest_locations = [ "lib/svc/manifest", "var/svc/manifest" ]
+try:
+    from solaris.smf.manifests import manifest_locations
+except ModuleNotFoundError:
+    manifest_locations = [ "lib/svc/manifest", "var/svc/manifest" ]
 
 class SMFManifestDependency(base.PublishingDependency):
 
