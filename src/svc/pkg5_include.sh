@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2013 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 CP=/usr/bin/cp
@@ -34,6 +34,7 @@ RMDIR=/usr/bin/rmdir
 SLEEP=/usr/bin/sleep
 SVCADM=/usr/sbin/svcadm
 SVCPROP=/usr/bin/svcprop
+EGREP=/usr/bin/egrep
 
 #
 # Check whether the supplied exit code is 0, printing an error message
@@ -152,7 +153,7 @@ function add_cronjob {
 	$CRONTAB -l > $current_crontab
 	EXIT=0
 	# if the crontab doesn't already contain our command, add it
-	$GREP -q "^[0-9, \*]+ $CMD"$ $current_crontab
+	$EGREP -s "^[0-9, \*]+ $CMD"$ $current_crontab
 	if [ $? -ne 0 ]; then
 		$GREP -v " ${CMD}"$ $current_crontab > $new_crontab
 		echo "$SCHEDULE $CMD" >> $new_crontab
@@ -170,7 +171,7 @@ function add_cronjob {
 #
 # Remove a cron job from the current users crontab entry. We pass the
 # FMRI we're doing work for, and the command we wish to remove from
-# the crontab. If the the command does not exist in the crontab, this
+# the crontab. If the command does not exist in the crontab, this
 # is treated as an error. Note that all instances of a given command
 # are removed.
 #
