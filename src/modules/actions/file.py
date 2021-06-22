@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 """module describing a file packaging object
@@ -445,9 +445,10 @@ class FileAction(generic.Action):
                                                 elfhash = [elfhash]
                                         else:
                                                 elfhash = list(digest.ContentHash(elfhash).values())
-                                except RuntimeError as e:
-                                        errors.append(
-                                            "ELF content hash: {0}".format(e))
+                                except elf.ElfError as e:
+                                        # Any ELF error means there is something bad
+                                        # with the file, mark as needing to be replaced.
+                                        elferror = _("ELF failure: {0}").format(e)
 
                                 if (elfhash is not None and
                                      elf_hash_val != elfhash[0]):
@@ -457,19 +458,16 @@ class FileAction(generic.Action):
                                             found=elfhash[0],
                                             expected=elf_hash_val)
 
-                        # If we failed to compute the "gelf:" content hash, or
-                        # the content hash failed to verify, try the "file:"
-                        # hash. If the content hash fails to match but the file
-                        # hash matches, it indicates that the content hash
-                        # algorithm changed, since obviously the file hash is a
-                        # superset of the content hash.
-                        if (elfhash is None or elferror) and not is_mtpt:
+                        # Always check on the file hash because the ELF hash
+                        # check only checks on the ELF parts and does not
+                        # check for some other file integrity issues.
+                        if not is_mtpt:
                                 hash_attr, hash_val, hash_func = \
                                     digest.get_preferred_hash(self)
                                 sha_hash, data = misc.get_data_digest(path,
                                     hash_func=hash_func)
                                 if sha_hash != hash_val:
-                                        # Prefer the content hash error message.
+                                        # Prefer the ELF content hash error message.
                                         if preserve is not None:
                                                 info.append(_(
                                                     "editable file has "

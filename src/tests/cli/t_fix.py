@@ -51,6 +51,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=etc
             add file amber1 mode=0644 owner=root group=bin path=etc/amber1
             add file amber2 mode=0644 owner=root group=bin path=etc/amber2
+            add file ls path=usr/bin/ls mode=755 owner=root group=sys
             add hardlink path=etc/amber.hardlink target=/etc/amber1
             close """
 
@@ -243,6 +244,9 @@ adm:NP:6445::::::
                 self.make_misc_files(self.misc_files)
                 self.make_misc_files(self.misc_files2)
                 self.make_misc_files(self.misc_ftpfile)
+                # Grab a well known ELF file so it can be used for ELF tests.
+                portable.copyfile("/usr/bin/ls", os.path.join(self.test_root,
+                    "ls"))
                 self.plist = {}
                 for p in self.pkgsend_bulk(self.rurl, (self.amber10,
                     self.licensed13, self.dir10, self.file10, self.preserve10,
@@ -320,8 +324,28 @@ adm:NP:6445::::::
                 new_mtime = os.stat(index_file).st_mtime
                 self.assertEqual(orig_mtime, new_mtime)
 
+                # Using the same methodology as above, verify that a corrupted
+                # ELF file can be fixed (the corruption being such that libelf
+                # fails on the file).
+                victim = "usr/bin/ls"
+                size1 = self.file_size(victim)
+                self.file_remove(victim)
+                self.file_append(victim, "This is not an ELF")
+                self.pkg("fix amber")
+                self.assertTrue("ELF failure:" in self.output)
+                size2 = self.file_size(victim)
+                self.assertEqual(size1, size2)
+
+                # Verify that text appended to an ELF file is fixed.
+                self.file_append(victim, "Extra text at end of file")
+                self.pkg("fix amber")
+                self.assertTrue("ERROR: Hash:" in self.output)
+                size2 = self.file_size(victim)
+                self.assertEqual(size1, size2)
+
                 # Verify that removing the publisher of a package that needs
                 # fixing results in graceful failure (not a traceback).
+                victim = "etc/amber2"
                 self.file_append(victim, "foobar")
                 self.pkg("set-publisher -P --no-refresh -g {0} foo".format(self.rurl))
                 self.pkg("unset-publisher test")
