@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 import errno
@@ -220,7 +220,7 @@ class Indexer(object):
                         pt.job_done(pt.JOB_READ_SEARCH)
 
         def __close_sort_fh(self):
-                """Utility fuction used to close and sort the temporary
+                """Utility function used to close and sort the temporary
                 files used to produce a sorted main_dict file."""
 
                 self._sort_fh.close()
@@ -705,7 +705,7 @@ class Indexer(object):
                 The "inputs" parameter iterates over the fmris which have been
                 added or the pkgplans for the change in the image.
 
-                The "input_type" paramter is a value specifying whether the
+                The "input_type" parameter is a value specifying whether the
                 input is fmris or pkgplans.
 
                 The "tmp_index_dir" parameter allows this function to use a
@@ -864,10 +864,16 @@ class Indexer(object):
 
                 # A lock can't be held while the index directory is being
                 # removed as that can cause rmtree() to fail when using
-                # NFS.  As such, attempt to get the lock first, then
-                # unlock, immediately rename the old index directory,
-                # and then remove the old the index directory and
-                # create a new one.
+                # NFS.  As such, remove any stale index.old directory (left
+                # behind by a client (pkgrepo for example) dying), attempt
+                # to get the lock first, then unlock, immediately rename
+                # the old index directory, and then remove the old index
+                # directory and create a new one.
+                try:
+                        shutil.rmtree(self._index_dir + ".old")
+                except FileNotFoundError:
+                        pass
+
                 self.lock()
                 self.unlock()
 
