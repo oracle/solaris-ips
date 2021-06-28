@@ -676,6 +676,9 @@ def __display_plan(api_inst, verbose, noexecute, op=None):
 
         plan = api_inst.describe()
 
+        if not plan:
+            return
+
         if plan.must_display_notes():
                 disp.append("release-notes")
 
@@ -2036,7 +2039,7 @@ def change_variant(op, api_inst, pargs,
                 if not name.startswith("variant."):
                         name = "variant.{0}".format(name)
 
-                # forcibly lower-case for 'true' or 'false'
+                # forcibly lowercase for 'true' or 'false'
                 if not value.islower() and value.lower() in ("true", "false"):
                         value = value.lower()
 
@@ -3263,7 +3266,10 @@ def display_contents_results(actionlist, attrs, sort_attrs, display_headers):
                                 except (ValueError, TypeError):
                                         return 0
                 else:
-                        key_extract = lambda x: x[sortidx]
+                        # typecast all the list elements to string else
+                        # the sorted function fails if there are any
+                        # string and list comparision.
+                        key_extract = lambda x: str(x[sortidx])
                 line_gen = sorted(lines, key=key_extract)
         else:
                 line_gen = lines
