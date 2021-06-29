@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 """
@@ -411,9 +411,19 @@ def _zonename():
 
         # parse the command output
         fout.seek(0)
-        l = fout.readlines()[0].rstrip()
-        fout.close()
-        return l
+        lines = fout.readlines()
+        if lines:
+                zonename = lines[0].rstrip()
+                fout.close()
+                return zonename
+     
+        # If /bin/zonename does not return the expected output,
+        # we raise an exception of LinkedImageException, which
+        # is handled by _in_gz().
+        cmd = " ".join(cmd)
+        raise apx.LinkedImageException(
+                cmd_output_invalid=(cmd, lines))
+
 
 def _zoneadm_list_parse(line, cmd, output):
         """Parse zoneadm list -p output.  It's possible for zonepath to

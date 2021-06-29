@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -137,6 +137,12 @@ class TestLinkedImageName(pkg5unittest.Pkg5TestCase):
                         "e_member": "cmd_failed"}),
                         li.zone._zonename)
 
+                DebugValues["bin_zonename"] = "/bin/true"
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "cmd_output_invalid"}),
+                        li.zone._zonename)
 
 class TestApiLinked(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
