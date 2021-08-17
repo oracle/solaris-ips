@@ -8,6 +8,7 @@
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/library/python/asn1crypto-37
+    pkg:/library/python/bandit
     pkg:/library/python/cffi-37
     pkg:/library/python/cryptography-37
     pkg:/library/python/cherrypy-37
