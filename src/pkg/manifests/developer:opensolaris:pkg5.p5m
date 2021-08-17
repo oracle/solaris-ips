@@ -35,6 +35,7 @@ depend type=require fmri=pkg:/developer/documentation-tool/xml2roff
 depend type=require fmri=pkg:/developer/intltool
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
+depend type=require fmri=pkg:/library/python/bandit
 depend type=require fmri=pkg:/library/python/cffi-37@1.11.4
 depend type=require fmri=pkg:/library/python/coverage-37
 depend type=require fmri=pkg:/library/python/cryptography-37
