@@ -662,6 +662,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         if e.errno in (errno.ENOSPC, errno.EDQUOT):
                                 raise apx.ImageLockingFailedError(
                                     self._img_path, e.strerror)
+                        raise
                 except:
                         self._cancel_cleanup_exception()
                         self._activity_lock.release()
