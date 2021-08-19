@@ -3841,10 +3841,21 @@ class ImagePlan(object):
 
                 # Verify that there is enough space for the change.
                 if self.pd._bytes_added > self.pd._bytes_avail:
-                        raise api_errors.ImageInsufficentSpace(
-                            self.pd._bytes_added,
-                            self.pd._bytes_avail,
-                            _("Root filesystem"))
+                        # During a dry run log a warning and continue to run the
+                        # solver to produce any further warnings/errors.
+                        if self.__noexecute:
+                                msg = api_errors.ImageInsufficentSpace(
+                                          self.pd._bytes_added,
+                                          self.pd._bytes_avail,
+                                          _("Root filesystem"))
+                                timestamp = misc.time_to_timestamp(time.time())
+                                self.pd.add_item_message("warning",
+                                    timestamp, MSG_WARNING, _(msg))
+                        else:
+                                raise api_errors.ImageInsufficentSpace(
+                                    self.pd._bytes_added,
+                                    self.pd._bytes_avail,
+                                    _("Root filesystem"))
 
 
         def evaluate(self):
