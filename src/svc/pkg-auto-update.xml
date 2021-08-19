@@ -36,6 +36,11 @@
     type='service'
     version='1'>
 
+        <restarter>
+                <service_fmri value='svc:/system/svc/periodic-restarter:default'
+                />
+        </restarter>
+
 	<dependency
 	    name='required_dependencies'
 	    grouping='require_all'
