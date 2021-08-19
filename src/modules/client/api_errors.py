@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 import errno
@@ -105,7 +105,6 @@ class HistoryPurgeException(HistoryException):
         """
         pass
 
-
 class ImageLockedError(ApiException):
         """Used to indicate that the image is currently locked by another thread
         or process and cannot be modified."""
@@ -136,6 +135,18 @@ class ImageLockedError(ApiException):
                             pid=self.pid, host=self.hostname)
                 return _("The image cannot be modified as it is currently "
                     "in use by another package client.")
+
+class ImageLockingFailedError(ApiException):
+        """Used to indicate that the image could not be locked."""
+
+        def __init__(self, root_dir, err):
+                ApiException.__init__(self)
+                self.root_dir = root_dir
+                self.err = err
+
+        def __str__(self):
+                return _("Failed to lock the image rooted at {0}: {1}").format(
+                    self.root_dir, self.err)
 
 class ImageNotFoundException(ApiException):
         """Used when an image was not found"""

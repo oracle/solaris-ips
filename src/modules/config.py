@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -1620,10 +1620,11 @@ class FileConfig(Config):
                 fn = None
                 try:
                         dirname = os.path.dirname(self._target)
-                        fd, fn = tempfile.mkstemp(dir=dirname)
 
+                        fd = None
                         st = None
                         try:
+                                fd, fn = tempfile.mkstemp(dir=dirname)
                                 st = os.stat(self._target)
                         except OSError as e:
                                 if e.errno != errno.ENOENT:

@@ -656,6 +656,12 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 raise apx.PlanExistsException(
                                     self.__plan_type)
                         self._img.lock(allow_unprivileged=noexecute)
+                except OSError as e:
+                        self._cancel_cleanup_exception()
+                        self._activity_lock.release()
+                        if e.errno in (errno.ENOSPC, errno.EDQUOT):
+                                raise apx.ImageLockingFailedError(
+                                    self._img_path, e.strerror)
                 except:
                         self._cancel_cleanup_exception()
                         self._activity_lock.release()
@@ -1109,7 +1115,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 elif log_op_end_all:
                         self.log_operation_end(error=exc_value)
 
-                if exc_type != apx.ImageLockedError:
+                if exc_type not in (apx.ImageLockedError,
+                    apx.ImageLockingFailedError):
                         # Must be called before reset_unlock, and only if
                         # the exception was not a locked error.
                         self._img.unlock()
@@ -1405,9 +1412,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     str(set(kwargs)))
                 kwargs.update(args_common)
 
-                # Lock the current image.
-                self.__plan_common_start(_op, _noexecute, _backup_be,
-                    _backup_be_name, _new_be, _be_name, _be_activate)
+                try:
+                        # Lock the current image.
+                        self.__plan_common_start(_op, _noexecute, _backup_be,
+                            _backup_be_name, _new_be, _be_name, _be_activate)
+
+                except:
+                        raise
 
                 try:
                         if _op == API_OP_ATTACH:
