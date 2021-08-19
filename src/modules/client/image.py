@@ -452,6 +452,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         elif e.errno == errno.EROFS:
                                 exc = apx.ReadOnlyFileSystemException(
                                     e.filename)
+                        elif e.errno in (errno.ENOSPC, errno.EDQUOT):
+                                # Failed due to space constraint
+                                raise e
                         else:
                                 self.__lock.release()
                                 raise
@@ -1075,7 +1078,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Now everything is ready for publisher configuration.
                 # Since multiple publishers are allowed, they are all
                 # added at once without any publisher data retrieval.
-                # A single retrieval is then performed afterwards, if
+                # A single retrieval is then performed afterward, if
                 # allowed, to minimize the amount of work the client
                 # needs to perform.
                 for p in pubs:
@@ -1600,7 +1603,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         def destroy(self):
                 """Destroys the image; image object should not be used
-                afterwards."""
+                afterward."""
 
                 if not self.imgdir or not os.path.exists(self.imgdir):
                         return

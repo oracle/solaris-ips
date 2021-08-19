@@ -1078,6 +1078,9 @@ def __api_plan_exception(op, noexecute, verbose, api_inst, errors_json=[],
                 _error_json(_("No image rooted at '{0}'").format(e.user_dir),
                     cmd=op, errors_json=errors_json)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
+        if e_type == api_errors.ImageLockingFailedError:
+                _error_json(_(e), cmd=op, errors_json=errors_json)
+                return __prepare_json(EXIT_OOPS, errors=errors_json)
         if e_type == api_errors.InventoryException:
                 _error_json("\n" + _("{operation} failed (inventory exception):\n"
                     "{err}").format(operation=op, err=e),
