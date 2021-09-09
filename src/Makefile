@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 #
 
 PYTHON37 = /usr/bin/python3.7
@@ -81,6 +81,9 @@ clint:
 pylint: install
 	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
 
+bandit:
+	$(PYTHON37) setup.py bandit
+
 check:
 	$(PYCODESTYLE) --statistics --count `cat tests/pycodestyle-whitelist.txt`
 
@@ -92,8 +95,13 @@ $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 # Use the bits we just built to create the packages.
-packages: install pylint check
+packages: install pylint check bandit
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
+		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
+
+# Just packages with no checking
+justpackages: install
+	@cd pkg; pwd; $(MAKE) $(TARGET) repository-metadata \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
 dist:

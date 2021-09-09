@@ -20,9 +20,9 @@
 #
 
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
 #
-re:src/(?!(man/.*$|modules/choose\.py$|modules/cpiofile\.py$|modules/flavor/depthlimitedmf\.py$)|modules/solver/.*$|pydates|pkg/external_deps.*$|util/apache2/sysrepo/.*mako|util/apache22/sysrepo/.*.mako|tests/ro_data/.*).+
+re:src/(?!(man/.*$|modules/choose\.py$|modules/cpiofile\.py$|modules/flavor/depthlimitedmf\.py$)|modules/solver/.*$|pydates|pkg/external_deps.*$|util/apache2/sysrepo/.*mako|util/apache22/sysrepo/.*.mako|tests/ro_data/.*|tests/bandit-baseline.json).+
 glob:*Makefile*
 glob:src/tests/*.py$
 glob:src/*\.py$
