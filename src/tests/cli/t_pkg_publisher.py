@@ -1054,7 +1054,20 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("set-publisher --no-refresh -k {0} -c {1} test1".format(
                     key_path, cert_path))
-                self.pkg("publisher test1")
+                self.pkg("publisher test1", exit[0, 3])
+
+                # An expiring certificate will cause the pkg client to error
+                # with EXIT_OOPS. If it is a certificate expiring issue give
+                # an indication on how to fix it.
+                self.assertFalse("will expire in" in self.errout,
+                    "\nWARNING: Test certificates are about to expire. "
+                    "Please run:\n"
+                    "$ cd src/tests/ro_data/signing_certs/\n"
+                    "$ ./generate_certs.py \n"
+                    "to regenerate the certificates.")
+
+                # For any other text in the errout fail the test
+                self.assertTrue(self.errout is not None)
 
                 # This test relies on using the same implementation used in
                 # image.py __store_publisher_ssl() which sets the paths to the
