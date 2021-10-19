@@ -1054,7 +1054,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("set-publisher --no-refresh -k {0} -c {1} test1".format(
                     key_path, cert_path))
-                self.pkg("publisher test1", exit[0, 3])
+                self.pkg("publisher test1", exit=[0, 3])
 
                 # An expiring certificate will cause the pkg client to error
                 # with EXIT_OOPS. If it is a certificate expiring issue give
