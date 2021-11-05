@@ -222,7 +222,13 @@ ErrorLog "${sysrepo_log_dir}/error_log"
 # Possible values include: debug, info, notice, warn, error, crit,
 # alert, emerg.
 #
-LogLevel warn rewrite:debug
+LogLevel warn
+#
+# Comment the above, and uncomment the below to turn on rewrite
+# debugging, restart the system-repository service. Output is 
+# sent to ErrorLog.
+#
+#LogLevel warn rewrite:trace6
 
 <IfModule log_config_module>
     #
