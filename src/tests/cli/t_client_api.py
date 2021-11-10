@@ -32,7 +32,7 @@ import pkg5unittest
 import os
 import pkg.client.client_api as cli_api
 import pkg.client.progress as progress
-import json
+import rapidjson as json
 import jsonschema
 
 from pkg.client import global_settings

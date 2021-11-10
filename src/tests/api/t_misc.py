@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -145,8 +145,8 @@ try:
 except MemoryError:
         # give us some breathing room (enough so the test with env var works)
         misc.set_memory_limit({0} * 3, allow_override=False)
-        print subprocess.check_output(['ps', '-o', 'rss=', '-p',
-            str(os.getpid())]).strip()
+        print(subprocess.check_output(['ps', '-o', 'rss=', '-p',
+            str(os.getpid())], text=True).strip())
 """.format(str(mem_cap))
 
                 # Re-setting limits which are higher than original limit can
@@ -159,7 +159,7 @@ except MemoryError:
                 with open(tmpfile, 'w') as f:
                         f.write(waste_mem_py)
 
-                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                res = int(subprocess.check_output(['python3.7', tmpfile]))
                 # convert from kB to bytes
                 res *= 1024
 
@@ -173,7 +173,7 @@ except MemoryError:
 
                 # test if env var works
                 os.environ["PKG_CLIENT_MAX_PROCESS_SIZE"] = str(mem_cap * 2)
-                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                res = int(subprocess.check_output(['python3.7', tmpfile]))
                 res *= 1024
 
                 self.debug("mem_cap:   " + str(mem_cap))
@@ -186,7 +186,7 @@ except MemoryError:
 
                 # test if invalid env var is handled correctly
                 os.environ["PKG_CLIENT_MAX_PROCESS_SIZE"] = "octopus"
-                res = int(subprocess.check_output(['python2.7', tmpfile]))
+                res = int(subprocess.check_output(['python3.7', tmpfile]))
                 res *= 1024
 
                 self.debug("mem_cap:   " + str(mem_cap))

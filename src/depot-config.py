@@ -34,7 +34,7 @@ import os
 import re
 import shutil
 import six
-import json
+import rapidjson as json
 import socket
 import sys
 import traceback

@@ -30,7 +30,7 @@ import subprocess
 import pkg.smf
 from pkg.smf import get_prop
 import smf_include as smf
-import json
+import rapidjson as json
 
 SMF_FMRI = os.getenv('SMF_FMRI')
 PARSABLE_OUTPUT = '/system/volatile/' + SMF_FMRI + '/parsable_output.json'

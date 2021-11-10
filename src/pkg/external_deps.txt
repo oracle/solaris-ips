@@ -22,6 +22,7 @@
     pkg:/library/python/prettytable-37
     pkg:/library/python/pycurl-37
     pkg:/library/python/pyopenssl-37
+    pkg:/library/python/rapidjson-37
     pkg:/library/python/six-37
     pkg:/package/svr4
     pkg:/runtime/python-37

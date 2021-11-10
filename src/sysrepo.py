@@ -33,7 +33,7 @@ import locale
 import logging
 import os
 import shutil
-import json
+import rapidjson as json
 import six
 import socket
 import stat

@@ -63,7 +63,7 @@ import glob
 import itertools
 import os
 import shutil
-import json
+import rapidjson as json
 import sys
 import tempfile
 import threading

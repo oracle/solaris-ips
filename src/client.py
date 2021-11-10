@@ -65,7 +65,7 @@ try:
         import getopt
         import gettext
         import itertools
-        import json
+        import rapidjson as json
         import locale
         import logging
         import os

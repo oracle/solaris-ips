@@ -84,7 +84,7 @@ import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repository as sr
-import json
+import rapidjson as json
 
 logger = global_settings.logger
 

@@ -26,7 +26,7 @@ import pkg.p5p
 import errno
 import os
 import shutil
-import json
+import rapidjson as json
 import six
 import sys
 import threading

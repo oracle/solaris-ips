@@ -34,7 +34,7 @@ import inspect
 import itertools
 import math
 import sys
-import json
+import rapidjson as json
 import time
 from collections import deque
 from functools import wraps

@@ -43,7 +43,7 @@ import re
 import resource
 import shutil
 import signal
-import json
+import rapidjson as json
 import socket
 import struct
 import sys

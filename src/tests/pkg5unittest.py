@@ -48,7 +48,7 @@ import os
 import pprint
 import shutil
 import signal
-import json
+import rapidjson as json
 import six
 import stat
 import subprocess

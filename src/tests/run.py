@@ -24,7 +24,7 @@
 # Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
-import json
+import rapidjson as json
 import multiprocessing
 import os
 import sys

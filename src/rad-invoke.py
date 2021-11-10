@@ -34,7 +34,7 @@ import os
 import pkg
 import pkg.client.rad_pkg as entry
 import pkg.misc as misc
-import json
+import rapidjson as json
 
 
 class _InfoFilter(logging.Filter):
