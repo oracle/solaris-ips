@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -38,6 +38,7 @@ import six
 import stat
 
 ObsoleteFmri = collections.namedtuple("ObsoleteFmri", "is_obsolete, fmri")
+
 
 class PkgDupActionChecker(base.ActionChecker):
         """A class to check duplicate actions/attributes."""
@@ -748,7 +749,7 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Given a list of file actions that all deliver to the same
                 path, return that list minus any actions that are attempting to
                 use overlays. Also return a list of tuples containing any
-                overlay-related errors encountered, in the the format:
+                overlay-related errors encountered, in the format:
 
                     [ (<error msg>, <id>), ... ]
 
@@ -1257,7 +1258,7 @@ class PkgActionChecker(base.ActionChecker):
         def unknown(self, action, manifest, engine, pkglint_id="004"):
                 """We should never have actions called 'unknown'."""
 
-                if action.name is "unknown":
+                if action.name == "unknown":
                         engine.error(_("unknown action found in {0}").format(
                             manifest.fmri),
                             msgid="{0}{1}".format(self.name, pkglint_id))
@@ -1275,7 +1276,7 @@ class PkgActionChecker(base.ActionChecker):
                 noisy if all dependencies are intentionally not present in the
                 repository being linted or referenced.
 
-                The pkglint paramter pkglint.action005.1.missing-deps can be
+                The pkglint parameter pkglint.action005.1.missing-deps can be
                 used to declare which fmris we know could be missing, and for
                 which we should not emit a warning message if those manifests
                 are not available.
@@ -1414,7 +1415,7 @@ class PkgActionChecker(base.ActionChecker):
         def license(self, action, manifest, engine, pkglint_id="007"):
                 """License actions should not have path attributes."""
 
-                if action.name is "license" and "path" in action.attrs:
+                if action.name == "license" and "path" in action.attrs:
                         engine.error(
                             _("license action in {pkg} has a path attribute, "
                             "{path}").format(
@@ -1470,7 +1471,7 @@ class PkgActionChecker(base.ActionChecker):
         def username_format(self, action, manifest, engine, pkglint_id="010"):
                 """Checks username length, and format."""
 
-                if action.name is not "user":
+                if action.name != "user":
                         return
 
                 username = action.attrs["username"]
@@ -1492,7 +1493,7 @@ class PkgActionChecker(base.ActionChecker):
                 if not re.match("[a-z].*", username):
                         engine.warning(
                             _("Username {name} in {pkg} does not have an "
-                            "initial lower-case alphabetical "
+                            "initial lowercase alphabetical "
                             "character").format(
                             name=username,
                             pkg=manifest.fmri),
@@ -1609,7 +1610,7 @@ class PkgActionChecker(base.ActionChecker):
                 """ELF files should be delivered as 64-bit objects, other
                 than libraries.
 
-                The pkglint paramter pkglint.action0014.report_type can change
+                The pkglint parameter pkglint.action0014.report_type can change
                 whether this check issues errors or warnings. The value of
                 this parameter should be "error" or "warning". Any other value
                 defaults to "warning"
@@ -1617,7 +1618,7 @@ class PkgActionChecker(base.ActionChecker):
 
                 # Note that this check is intentionally delivered as disabled
                 # by default in the pkglintrc config file. The check exists
-                # so that we can move packages towards best-practises,
+                # so that we can move packages toward best-practises,
                 # but this may not be appropriate in all cases.
 
                 if action.name != "file":

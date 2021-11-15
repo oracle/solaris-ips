@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ from pkg.lint.engine import lint_fmri_successor
 from pkg.lint.base import linted, DuplicateLintedAttrException
 
 import logging
-log_fmt_string = "{asctime} - {levelname} - {message}"
+log_fmt_string = "%(asctime)s - %(levelname)s - %(message)s"
 
 logger = logging.getLogger("pkglint")
 if not logger.handlers:

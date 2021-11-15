@@ -848,7 +848,7 @@ class Indexer(object):
                 finally:
                         for d in self._data_dict.values():
                                 d.close_file_handle()
-                assert res is not 0
+                assert res != 0
                 return res
 
         def rebuild_index_from_scratch(self, fmris, tmp_index_dir=None):

@@ -103,7 +103,7 @@ extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 cffi_dir = os.path.normpath(os.path.join(pwd, "cffi_src"))
 
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('3.7')
+assert py_version in ('3.7', '3.9')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 py64_executable = None
@@ -500,6 +500,7 @@ solver_suppress_args = ["-Wno-return-type",
                         "-Wno-unused-variable"
                         ]
 
+
 # Runs lint on the extension module source code
 class pylint_func(Command):
         description = "Runs pylint tools over IPS python source code"
@@ -611,12 +612,14 @@ class pylint_func_quiet(pylint_func):
         def run(self, quiet=False):
                 pylint_func.run(self, quiet=True)
 
+
 class pylint_func_py3k(pylint_func):
         def run(self, quiet=False, py3k=False):
                 pylint_func.run(self, py3k=True)
 
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
+
 
 # Runs lint on the extension module source code
 class clint_func(Command):
@@ -704,6 +707,7 @@ class clint_func(Command):
                         print(" ".join(sha512_tcmd))
                         os.system(" ".join(sha512_tcmd))
 
+
 class smflint_func(Command):
         description = "Validate SMF manifests"
         user_options = []
@@ -719,6 +723,7 @@ class smflint_func(Command):
                 args = [ "/usr/sbin/svccfg", "validate", manifest ]
                 print(f"SMF manifest validate: {manifest}")
                 run_cmd(args, os.getcwd())
+
 
 class bandit_func(Command):
         """ Run bandit over the source code. setup.py bandit -g
@@ -757,6 +762,7 @@ class bandit_func(Command):
                 # bandit will exit with a value of 1.
                 run_cmd(args, os.getcwd())
 
+
 # Runs both C and Python lint
 class lint_func(Command):
         description = "Runs C and Python lint checkers"
@@ -777,6 +783,7 @@ class lint_func(Command):
                 smflint_func(Distribution()).run()
                 clint_func(Distribution()).run()
                 pylint_func(Distribution()).run()
+
 
 class install_func(_install):
         def initialize_options(self):
@@ -844,6 +851,7 @@ class install_func(_install):
                                 pass
                         os.symlink(target, dest)
 
+
 class install_lib_func(_install_lib):
         """Remove the target files prior to the standard install_lib procedure
         if the build_py module has determined that they've actually changed.
@@ -863,6 +871,7 @@ class install_lib_func(_install_lib):
                         if self.optimize > 0:
                                 rm_f(id_p + "o")
                 return _install_lib.install(self)
+
 
 class install_data_func(_install_data):
         """Enhance the standard install_data subcommand to take not only a list
@@ -899,6 +908,7 @@ class install_data_func(_install_data):
                                         self.copy_file(infile, outfile)
                                         self.outfiles.append(outfile)
 
+
 def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                 if updenv:
                         # use temp environment modified with the given dict
@@ -928,6 +938,7 @@ def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                         sys.exit(1)
                 if stderr:
                         stderr.close()
+
 
 def _copy_file_contents(src, dst, buffer_size=16*1024):
         """A clone of distutils.file_util._copy_file_contents() that strips the
@@ -990,6 +1001,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
 # Make file_util use our version of _copy_file_contents
 file_util._copy_file_contents = _copy_file_contents
 
+
 def intltool_update_maintain():
         """Check if scope of localization looks up-to-date or possibly not,
         by comparing file set described in po/POTFILES.{in,skip} and
@@ -1036,6 +1048,7 @@ in the workspace:""", file=sys.stderr)
                 file=sys.stderr)
             sys.exit(1)
 
+
 def intltool_update_pot():
         """Generate pkg.pot by extracting localizable strings from source
         files (e.g. .py)
@@ -1054,6 +1067,7 @@ def intltool_update_pot():
             print("Failed in generating pkg.pot.", file=sys.stderr)
             sys.exit(1)
 
+
 def intltool_merge(src, dst):
         if not dep_util.newer(src, dst):
                 return
@@ -1064,6 +1078,7 @@ def intltool_merge(src, dst):
         ]
         print(" ".join(args))
         run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"})
+
 
 def i18n_check():
         """Checks for common i18n messaging bugs in the source."""
@@ -1110,6 +1125,7 @@ The following i18n errors were detected and should be corrected:
                 sys.exit(1)
         os.remove(xgettext_output_path)
 
+
 def msgfmt(src, dst):
         if not dep_util.newer(src, dst):
                 return
@@ -1117,6 +1133,7 @@ def msgfmt(src, dst):
         args = ["/usr/bin/msgfmt", "-o", dst, src]
         print(" ".join(args))
         run_cmd(args, os.getcwd())
+
 
 def localizablexml(src, dst):
         """create XML help for localization, where French part of legalnotice
@@ -1146,6 +1163,7 @@ def localizablexml(src, dst):
 
         fsrc.close()
         fdst.close()
+
 
 class installfile(Command):
         user_options = [
@@ -1179,12 +1197,14 @@ class installfile(Command):
 
                 return ret
 
+
 class build_func(_build):
         sub_commands = _build.sub_commands + [('build_data', None)]
 
         def initialize_options(self):
                 _build.initialize_options(self)
                 self.build_base = build_dir
+
 
 def get_hg_version():
         try:
@@ -1194,6 +1214,7 @@ def get_hg_version():
                 print("ERROR: unable to obtain mercurial version",
                     file=sys.stderr)
                 return "unknown"
+
 
 def syntax_check(filename):
         """ Run python's compiler over the file, and discard the results.
@@ -1218,6 +1239,7 @@ def syntax_check(filename):
                 raise DistutilsError(res)
         finally:
                 os.remove(tmp_file)
+
 
 # On Solaris, ld inserts the full argument to the -o option into the symbol
 # table.  This means that the resulting object will be different depending on
@@ -1260,11 +1282,13 @@ distutils.ccompiler.compiler_class['myunix'] = (
     'standard Unix-style compiler with a link stage modified for Solaris'
 )
 
+
 def my_new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
         return MyUnixCCompiler(None, dry_run, force)
 
 if osname == 'sunos':
         distutils.ccompiler.new_compiler = my_new_compiler
+
 
 class build_ext_func(_build_ext):
 
@@ -1442,6 +1466,7 @@ class build_py_func(_build_py):
 
                 return dst, copied
 
+
 def manpage_input_dir(path):
         """Convert a manpage output path to the directory where its source lives."""
 
@@ -1453,6 +1478,7 @@ def manpage_input_dir(path):
         else:
                 raise RuntimeError("bad manpage path")
         return os.path.join(patharr[0], loc).rstrip("/")
+
 
 def xml2roff(files):
         """Convert XML manpages to ROFF for delivery.
@@ -1480,6 +1506,7 @@ def xml2roff(files):
                 args += do_files
                 print(" ".join(args))
                 run_cmd(args, os.getcwd())
+
 
 class build_data_func(Command):
         description = "build data files whose source isn't in deliverable form"
@@ -1509,6 +1536,7 @@ class build_data_func(Command):
                 xml2roff(man1_ja_files + man7_ja_files + man8_ja_files)
                 xml2roff(man1_zh_CN_files + man7_zh_CN_files + man8_zh_CN_files)
 
+
 def rm_f(filepath):
         """Remove a file without caring whether it exists."""
 
@@ -1517,6 +1545,7 @@ def rm_f(filepath):
         except OSError as e:
                 if e.errno != errno.ENOENT:
                         raise
+
 
 class clean_func(_clean):
         def initialize_options(self):
@@ -1536,6 +1565,7 @@ class clean_func(_clean):
                 rm_f("po/i18n_errs.txt")
 
                 shutil.rmtree(MANPAGE_OUTPUT_ROOT, True)
+
 
 class clobber_func(Command):
         user_options = []
@@ -1565,6 +1595,7 @@ class clobber_func(Command):
                                 continue
                         path = os.path.join(cffi_dir, path)
                         rm_f(path)
+
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py and the
@@ -1625,10 +1656,12 @@ class test_func(Command):
                         cmd.extend(args)
                 subprocess.call(cmd)
 
+
 class dist_func(_bdist):
         def initialize_options(self):
                 _bdist.initialize_options(self)
                 self.dist_dir = dist_dir
+
 
 class Extension(distutils.core.Extension):
         # This class wraps the distutils Extension class, allowing us to set

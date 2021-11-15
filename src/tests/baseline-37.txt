@@ -6,3 +6,5 @@ testsuite.t_setup_teardown.py TestSetupFailingP.test_shoulderror1|error
 testsuite.t_setup_teardown.py TestSetupFailingP.test_shoulderror2|error
 testsuite.t_setup_teardown.py TestTeardownFailing.test_shoulderror1|error
 testsuite.t_setup_teardown.py TestTeardownFailing.test_shoulderror2|error
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_file_preserve_abandon|fail
+cli.t_pkg_depotd.py TestPkgDepot.test_empty_incorp_depend|error

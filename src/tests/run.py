@@ -30,15 +30,26 @@ import os
 import sys
 from functools import reduce
 
-# We need cwd to be the same dir as our program.
-if os.path.dirname(__file__) != "" and \
-    os.path.dirname(__file__) != ".":
-        os.putenv('PYEXE', sys.executable)
+assert(sys.version_info.major == 3 and
+       (sys.version_info.minor == 7 or sys.version_info.minor == 9))
+# Python 3.9 issue 44070 has __file__ always returning
+# an absolute path
+flag = False
+if sys.version_info.minor >= 9:
+    cwd = os.getcwd()
+    if cwd != os.path.dirname(__file__):
         os.chdir(os.path.dirname(__file__))
-        import subprocess
-        cmd = [sys.executable, "run.py"]
-        cmd.extend(sys.argv[1:]) # Skip argv[0]
-        sys.exit(subprocess.call(cmd))
+        flag = True
+elif sys.version_info.minor == 7:
+    if os.path.dirname(__file__) != "" and \
+       os.path.dirname(__file__) != ".":
+        flag = True
+if flag:
+    os.putenv('PYEXE', sys.executable)
+    cmd = [sys.executable, "run.py"]
+    import subprocess
+    cmd.extend(sys.argv[1:])  # Skip argv[0]
+    sys.exit(subprocess.call(cmd))
 
 #
 # Some modules we use are located in our own proto area.  So before doing
@@ -57,6 +68,7 @@ import getopt
 import pkg5testenv
 import warnings
 cov = None
+
 
 def usage(exitcode=2):
         print("Usage: {0} [-dfghlpqtvx] [-a dir] [-b filename] [-c format]\n"\
@@ -124,7 +136,10 @@ if __name__ == "__main__":
                 print("Illegal option -- {0}".format(e.opt), file=sys.stderr)
                 usage(1)
 
-        bfile = os.path.join(os.getcwd(), "baseline.txt")
+        # construct the baseline file based on the python version being used
+        bfile = os.path.join(os.getcwd(), "baseline-" +
+                             str(sys.version_info.major) +
+                             str(sys.version_info.minor) + ".txt")
         generate = False
         onlyval = []
         output = ""
@@ -219,8 +234,10 @@ ostype = os.name
 if ostype == '':
         ostype = 'unknown'
 
+
 class Pkg5TestLoader(unittest.TestLoader):
         suiteClass = pkg5unittest.Pkg5TestSuite
+
 
 def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
     time_estimates=None):
@@ -348,6 +365,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                         suite_list.append(t)
 
         return suite_list
+
 
 def generate_coverage(cov_format, includes, omits, dest):
         if cov_format == "html":

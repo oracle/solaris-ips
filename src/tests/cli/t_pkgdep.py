@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -43,12 +43,14 @@ import pkg.publish.dependencies as dependencies
 
 DDP = base.Dependency.DEPEND_DEBUG_PREFIX
 
-if six.PY2:
-        py_ver_default = "2.7"
-        py_ver_other = "3.7"
+assert(sys.version_info.major == 3)
+if sys.version_info.minor == 7:
+    py_ver_default = "3.7"
+    py_ver_other = "3.9"
 else:
-        py_ver_default = "3.7"
-        py_ver_other = "2.7"
+    py_ver_default = "3.9"
+    py_ver_other = "3.7"
+
 
 class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -660,7 +662,10 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                 discovered.
                 """
 
-                v3 = ver.startswith("3.") and "37m"
+                if ver == "3.7":
+                    v3 = "37m"
+                elif ver == "3.9":
+                    v3 = "39"
 
                 vp = self.get_ver_paths(ver, proto_area)
                 self.debug("ver_paths is {0}".format(vp))
@@ -776,21 +781,10 @@ depend fmri={dummy_fmri} {pfx}.file=python{bin_ver} {pfx}.path=usr/bin {pfx}.rea
                 return tmp + self.make_pyver_python_res(ver, proto, reason,
                     include_os=include_os)
 
-        if six.PY2:
-                # in this case, py_ver_default = "2.7", py_ver_other = "3.7"
-                pyver_resolve_dep_manf = """
+        pyver_resolve_dep_manf = """
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/indexer.py
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/__init__.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/lib-dynload/64/pkg/search_storage.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/misc.py
-file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
-"""
-        else:
-                # py_ver_default = "3.7", py_ver_other = "2.7"
-                pyver_resolve_dep_manf = """
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/indexer.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/__init__.py
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/lib-tk/pkg/search_storage.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/search_storage.py
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python{py_ver}/vendor-packages/pkg/misc.py
 file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
 """
@@ -799,7 +793,11 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                 """Generate the expected results when resolving a manifest which
                 contains a file with a non-default version of python."""
 
-                v3 = py_ver_other.startswith("3.") and "37m"
+                if sys.version_info.minor == 7:
+                    v3 = "39"
+                elif sys.version_info.minor == 9:
+                    v3 = "37m"
+
                 patterns = (
                     "{0}.py", "{0}.pyc", "{0}.pyo",
                     "{0}.so", "64/{0}.so",
@@ -825,12 +823,8 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
                     for f in files + ["__init__"] if f != "search_storage"
                 ]
 
-                if six.PY2:
-                        rel_paths += ["usr/bin/python",
-                            "usr/lib/python{py_ver}/lib-dynload/64/pkg/search_storage.py"]
-                else:
-                        rel_paths += ["usr/bin/python",
-                            "usr/lib/python{py_ver}/lib-tk/pkg/search_storage.py"]
+                rel_paths += ["usr/bin/python",
+                    "usr/lib/python{py_ver}/vendor-packages/pkg/search_storage.py"]
 
                 # Find the potential locations an imported python module might
                 # be found.

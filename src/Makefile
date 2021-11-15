@@ -24,6 +24,7 @@
 #
 
 PYTHON37 = /usr/bin/python3.7
+PYTHON39 = /usr/bin/python3.9
 
 all := TARGET = all
 install := TARGET = install
@@ -44,8 +45,7 @@ test-generate := TARGET = test-generate
 # with the pkg modules in the root filesystem).
 #
 PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
-	/usr/bin/grep Version | \
-	/usr/bin/awk -F: '{print $$2}' | /usr/bin/sed -e 's/ //g'
+	/usr/bin/awk -F: '/Version/ {gsub(/ /, "", $2) ; print $2}'
 
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
@@ -54,13 +54,16 @@ SUBDIRS=zoneproxy util/mkcert man
 
 all: $(SUBDIRS)
 	$(PYTHON37) setup.py build
+	$(PYTHON39) setup.py build
 
 clean: $(SUBDIRS)
 	$(PYTHON37) setup.py clean
+	$(PYTHON39) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
 	$(PYTHON37) setup.py clobber
+	$(PYTHON39) setup.py clobber
 	@cd pkg; pwd; make clobber
 
 #
@@ -69,9 +72,11 @@ clobber: $(SUBDIRS)
 #
 install: $(SUBDIRS)
 	$(PYTHON37) setup.py install
+	$(PYTHON39) setup.py install
 
 lint:
 	$(PYTHON37) setup.py lint
+	$(PYTHON39) setup.py lint
 	@cd zoneproxy; pwd; make lint
 
 clint:
@@ -79,7 +84,7 @@ clint:
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
-	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
+        PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
 
 bandit:
 	$(PYTHON37) setup.py bandit
@@ -97,12 +102,12 @@ $(SUBDIRS): FRC
 # Use the bits we just built to create the packages.
 packages: install pylint check bandit
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
-		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
+                PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
 # Just packages with no checking
 justpackages: install
 	@cd pkg; pwd; $(MAKE) $(TARGET) repository-metadata \
-		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
+                PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
 
 dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
@@ -110,13 +115,19 @@ dist:
 test-37:
 	$(PYTHON37) tests/run.py -j ${JOBS} -v
 
+test-39:
+	$(PYTHON39) tests/run.py -j ${JOBS} -v
+
 test:
 	$(MAKE) -k test-37 JOBS=${JOBS}
+	$(MAKE) -k test-39 JOBS=${JOBS}
 
 test-verbose:
 	$(PYTHON37) setup.py test -v
+	$(PYTHON39) setup.py test -v
 
 test-generate:
 	$(PYTHON37) setup.py test -g
+	$(PYTHON39) setup.py test -g
 
 FRC:
