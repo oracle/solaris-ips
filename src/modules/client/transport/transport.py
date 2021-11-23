@@ -28,7 +28,7 @@ import copy
 import datetime as dt
 import errno
 import os
-import json
+import rapidjson as json
 import six
 import tempfile
 import zlib

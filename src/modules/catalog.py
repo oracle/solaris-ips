@@ -32,7 +32,7 @@ import errno
 import fnmatch
 import hashlib
 import os
-import json
+import rapidjson as json
 import six
 import stat
 import threading
@@ -121,14 +121,11 @@ class _JSONWriter(object):
                 return { "sha-1": self.__sha_1_value }
 
         def _dump(self, obj, fp, skipkeys=False, ensure_ascii=True,
-            check_circular=True, allow_nan=True, cls=json.JSONEncoder,
-            indent=None, separators=None, default=None, **kw):
-                iterable = cls(skipkeys=skipkeys, ensure_ascii=ensure_ascii,
-                    check_circular=check_circular, allow_nan=allow_nan,
-                    indent=indent, separators=separators,
-                    default=default, **kw).iterencode(obj,
-                    _one_shot=self.__single_pass)
-                fp.writelines(misc.force_bytes(i) for i in iterable)
+            allow_nan=True, indent=None, default=None, **kw):
+                json.dump(obj, fp, skipkeys=skipkeys,
+                    ensure_ascii=ensure_ascii, allow_nan=allow_nan,
+                    indent=indent, default=default, chunk_size=self.__bufsz,
+                    **kw)
 
         def save(self):
                 """Serializes and stores the provided data in JSON format."""
@@ -145,8 +142,7 @@ class _JSONWriter(object):
                 if not out:
                         out = self
 
-                self._dump(self.__data, out, check_circular=False,
-                    separators=(",", ":"), sort_keys=self.__sign)
+                self._dump(self.__data, out, sort_keys=self.__sign)
                 out.write(b"\n")
 
                 if self.__fileobj:
@@ -182,8 +178,7 @@ class _JSONWriter(object):
                                 # Catalog is not empty, so a separator is needed.
                                 sfile.write(b",")
                         sfile.write(b'"_SIGNATURE":')
-                        self._dump(self.signatures(), sfile, check_circular=False,
-                            separators=(",", ":"))
+                        self._dump(self.signatures(), sfile)
                         sfile.write(b"}\n")
 
         def write(self, data):

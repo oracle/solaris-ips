@@ -28,7 +28,7 @@ import errno
 import itertools
 import os
 import shutil
-import json
+import rapidjson as json
 import six
 import sys
 import tempfile

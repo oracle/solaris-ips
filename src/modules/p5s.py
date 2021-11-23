@@ -26,7 +26,7 @@
 
 import copy
 import os
-import json
+import rapidjson as json
 from six.moves.urllib.parse import urlparse, urlunparse
 
 import pkg.client.api_errors as api_errors

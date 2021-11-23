@@ -47,7 +47,7 @@ import itertools
 import operator
 import os
 import select
-import json
+import rapidjson as json
 
 # Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
 # Imports from package six are not grouped: pylint: disable=C0412
@@ -3616,7 +3616,7 @@ def save_data(path, data, root="/", catch_exception=True):
                     mode=0o644, create=True, truncate=True)
                 fobj = os.fdopen(fd, "w")
                 json.dump(data, fobj,
-                    cls=pkg.client.linkedimage.PkgEncoder)
+                    default=pkg.client.linkedimage.PkgEncoder().default)
                 fobj.close()
 
                 # atomically create the desired file
@@ -3654,10 +3654,10 @@ def load_data(path, missing_ok=False, root="/", decode=True,
         return data
 
 
-class PkgEncoder(json.JSONEncoder):
+class PkgEncoder(json.Encoder):
         """Utility class used when json encoding linked image metadata."""
 
-        # E0202 An attribute inherited from JSONEncoder hide this method
+        # E0202 An attribute inherited from Encoder hide this method
         # pylint: disable=E0202
         def default(self, obj):
                 """Required routine that overrides the default base
@@ -3674,7 +3674,7 @@ class PkgEncoder(json.JSONEncoder):
                 if isinstance(obj, (set, frozenset)):
                         return list(obj)
 
-                return json.JSONEncoder.default(self, obj)
+                return json.Encoder.default(self, obj)
 
 
 def PkgDecoder(dct):

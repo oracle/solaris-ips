@@ -40,7 +40,7 @@ modified within an image during an image-modifying operation.
 import collections
 import itertools
 import operator
-import json
+import rapidjson as json
 import six
 
 import pkg.actions

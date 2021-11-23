@@ -39,7 +39,7 @@ import pkg.p5p
 import shutil
 import unittest
 import shutil
-import json
+import rapidjson as json
 import six
 import stat
 import sys

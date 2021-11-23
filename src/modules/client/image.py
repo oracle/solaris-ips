@@ -34,7 +34,7 @@ import hashlib
 import os
 import platform
 import shutil
-import json
+import rapidjson as json
 import six
 import stat
 import sys

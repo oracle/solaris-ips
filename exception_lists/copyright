@@ -29,8 +29,8 @@ syntax: glob
 src/man/*.txt
 src/pkg/external_deps.txt
 src/tests/bandit-baseline.json
-src/tests/baseline.txt
 src/tests/ro_data/*
 src/util/apache2/sysrepo/*.mako
 src/util/apache22/sysrepo/*.mako
 doc/*
+src/tests/*.txt

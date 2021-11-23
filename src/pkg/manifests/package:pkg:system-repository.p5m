@@ -65,7 +65,6 @@ dir  path=var/log/pkg/sysrepo owner=pkg5srv
 # we deliver 0-byte log file stubs
 file path=var/log/pkg/sysrepo/access_log owner=pkg5srv mode=0644 preserve=true
 file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
-file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
 # Ensure that the corresponding FIPS 140 Apache SSL module is installed
 # if the system could be placed into fips-140 mode.

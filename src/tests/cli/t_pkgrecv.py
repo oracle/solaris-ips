@@ -30,7 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import json
+import rapidjson as json
 import six
 import pkg.catalog as catalog
 import pkg.config as cfg

@@ -33,7 +33,7 @@ import locale
 import logging
 import os
 import shutil
-import json
+import rapidjson as json
 import six
 import socket
 import stat
@@ -71,15 +71,19 @@ EXIT_OK      = 0
 EXIT_OOPS    = 1
 EXIT_BADOPT  = 2
 
+# Default port used for http traffic.
+HTTP_PORT = 80
+
 #
 # This is a simple python script, run from the method script that starts
 # svc:/application/pkg/system-repository:default.
 #
 # It writes an Apache configuration that is used to serve responses to pkg
 # clients querying the system repository, as well as providing http/https proxy
-# services to those clients, accessing external repositories.
-# file:// repositories on the system running the system repository are also
-# exposed to pkg clients, via Alias directives.
+# services to those clients, accessing external repositories. Note a global
+# zone https publisher uses will be represented as an http publisher in the
+# non-global zone. file:// repositories on the system running the system
+# repository are also exposed to pkg clients, via Alias directives.
 #
 # See src/util/apache2/sysrepo/*.mako for the templates used to create the
 # Apache configuration.
@@ -196,6 +200,38 @@ def _get_image(image_dir):
         os.chdir(cdir)
         return api_inst
 
+def _clean_publisher(uri):
+        """ Remove the HTTP_PORT from the uri otherwise the rewrite rules 
+        (in the mako file) will incorporate it with the subsequent use of
+        libcurl, adhering to RPF7230 section 5.4, removing it and thus break
+        the matching on the rewrite rules leading to the default response of
+        404. There is no need to deal with the default https port (443) here
+        because the proxying transport from the non-global zone will be over
+        http and so libcurl will not remove the port (443) during the proxying
+        process (it is not the default port for the http protocol). So a global
+        zone publisher of https://example.com:443 will have
+        http://example.com:443 proxy requests which will not be modified by
+        the libcurl proxy rule manipulations. The rewrite rules in this
+        system repository service will, in the global zone, convert the
+        http to https.
+        """
+        urlresult = urlparse(uri)
+        if urlresult.port == HTTP_PORT:
+                uri = urlresult._replace(netloc=urlresult.netloc.replace(":" +
+                    str(urlresult.port), "")).geturl()
+        return uri
+
+def _clean_pub_info(pub_info):
+        """ Fix up the publisher information so that any uri key does not
+        have the HTTP_PORT in it.
+        """
+        clean_pub_info = {}
+        for uri in pub_info:
+                cleanuri = _clean_publisher(uri)
+                clean_pub_info[cleanuri] = pub_info[uri]
+
+        return clean_pub_info
+
 def _follow_redirects(uri_list, http_timeout):
         """ Follow HTTP redirects from servers.  Needed so that we can create
         RewriteRules for all repository URLs that pkg clients may encounter.
@@ -300,6 +336,9 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
                 repo = pub.repository
                 for uri in repo.mirrors + repo.origins:
                         uri_key = uri.uri.rstrip("/")
+                        # the pub_info will have been cleaned to remove
+                        # HTTP_PORT, so need to remove it here.
+                        uri_key = _clean_publisher(uri_key)
                         if uri_key not in pub_info:
                                 raise SysrepoException("{0} is not in {1}".format(
                                     uri_key, pub_info))
@@ -371,7 +410,13 @@ def _load_publisher_info(api_inst, image_dir):
                     **locals()))
                 return None, None
 
-        return pub_info, no_uri_pubs
+        # The cache file could have HTTP_PORT in it, cleaning it will
+        # cause the cache file to be rewriten due to the checks in the
+        # _validate_pub_info (the cleaned uri will not be in the cache
+        # file).
+        clean_pub_info = _clean_pub_info(pub_info)
+
+        return clean_pub_info, no_uri_pubs
 
 def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
         """Stores a given pair of (uri_pub_map, no_uri_pubs) objects to a
@@ -513,12 +558,13 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
                                                     "archive file at {0}").format(
                                                     urlresult.path))
 
-                        hash = _uri_hash(uri)
+                        clean_uri = _clean_publisher(uri)
+                        hash = _uri_hash(clean_uri)
                         # we don't have per-uri ssl key/cert information yet,
                         # so we just pull it from one of the RepositoryURIs.
                         cert = repo.origins[-1].ssl_cert
                         key = repo.origins[-1].ssl_key
-                        uri_pub_map.setdefault(uri, []).append(
+                        uri_pub_map.setdefault(clean_uri, []).append(
                             (prefix, cert, key, hash, proxy_map.get(uri), utype)
                             )
 

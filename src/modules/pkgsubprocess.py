@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 #
 
 import os
@@ -38,11 +38,13 @@ except ImportError:
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call"]
 
+
 def call(*args, **kwargs):
         return Popen(*args, **kwargs).wait()
 
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
+
 
 class Popen(subprocess.Popen):
         def __init__(self, args, pass_fds=None, **kwargs):
@@ -186,7 +188,8 @@ class Popen(subprocess.Popen):
                             p2cread, p2cwrite,
                             c2pread, c2pwrite,
                             errread, errwrite,
-                            restore_signals, start_new_session):
+                            restore_signals, start_new_session,
+                            *ids_and_umask):
                                 if isinstance(args, (str, bytes)):
                                         args = [args]
 

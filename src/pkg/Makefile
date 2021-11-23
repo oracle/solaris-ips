@@ -90,10 +90,15 @@ $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 # environments which are actually used as part of the
 # build. Bit of a smoke and mirrors.
 PYTHON37	  = python3.7
-PYDIR		  = usr/lib/$(PYTHON37)
 PY37DIR		  = usr/lib/$(PYTHON37)
-PYDIRVP		  = $(PYDIR)/vendor-packages
 PY37DIRVP	  = $(PY37DIR)/vendor-packages
+
+PYTHON39	  = python3.9
+PY39DIR		  = usr/lib/$(PYTHON39)
+PY39DIRVP	  = $(PY39DIR)/vendor-packages
+
+PYDIR		  = usr/lib/$(PYTHON37)
+PYDIRVP		  = $(PYDIR)/vendor-packages
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
 	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON37) $(PKGROOT)/usr/bin/
@@ -131,9 +136,11 @@ PKGMOG_DEFVALS    = \
 	PKGVERS=$(PKGVERS) \
 	REV=$(REV) \
 	PYDIR=$(PYDIR) \
-	PY37DIR=$(PY37DIR) \
 	PYDIRVP=$(PYDIRVP) \
+	PY37DIR=$(PY37DIR) \
 	PY37DIRVP=$(PY37DIRVP) \
+	PY39DIR=$(PY39DIR) \
+	PY39DIRVP=$(PY39DIRVP) \
 	CHANGESET=$(CHANGESET) \
 	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)

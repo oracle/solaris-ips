@@ -30,7 +30,7 @@ import pkg5unittest
 import os
 import pkg.portable as portable
 import shutil
-import json
+import rapidjson as json
 import subprocess
 import tempfile
 import time

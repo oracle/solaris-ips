@@ -20,14 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import json
+import rapidjson as json
 import os
 import shutil
 import six

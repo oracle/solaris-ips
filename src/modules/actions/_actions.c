@@ -23,6 +23,7 @@
  * Copyright (c) 2008, 2021, Oracle and/or its affiliates.
  */
 
+#define	PY_SSIZE_T_CLEAN    1
 #include <Python.h>
 
 #include <stdbool.h>
@@ -138,7 +139,7 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 	char *hashstr = NULL;
 	char *keystr = NULL;
 	int *slashmap = NULL;
-	int strl, typestrl;
+	Py_ssize_t  strl, typestrl;
 	int i, ks, vs, keysize;
 	int smlen = 0, smpos = 0;
 	int hash_allowed;

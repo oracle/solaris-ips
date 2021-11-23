@@ -43,7 +43,7 @@ import re
 import resource
 import shutil
 import signal
-import json
+import rapidjson as json
 import socket
 import struct
 import sys
@@ -52,12 +52,14 @@ import time
 import traceback
 import urllib
 import zlib
+import ipaddress
 
 # ungrouped-imports: pylint: disable=C0412
 from binascii import hexlify, unhexlify
 from collections import defaultdict
 from io import BytesIO
 from io import StringIO
+from ipaddress import ip_address
 from operator import itemgetter
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
@@ -67,7 +69,7 @@ from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
 # Redefining built-in 'range'; pylint: disable=W0622
 # Module 'urllib' has no 'parse' member; pylint: disable=E1101
 from six.moves import range, zip_longest
-from six.moves.urllib.parse import urlsplit, urlparse, urlunparse
+from six.moves.urllib.parse import urlparse, urlunparse
 from six.moves.urllib.request import pathname2url, url2pathname
 
 import six
@@ -102,6 +104,7 @@ BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&compo
 CMP_UNSIGNED = 0
 CMP_ALL = 1
 
+
 # Traceback message.
 def get_traceback_message():
         """This function returns the standard traceback message.  A function
@@ -113,19 +116,23 @@ This is an internal error in pkg(7) version {version}.  Please log a
 Service Request about this issue including the information above and this
 message.""").format(version=VERSION)
 
+
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
         # XXX optimize?; pylint: disable=W0511
         return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(t))
+
 
 def timestamp_to_time(ts):
         """convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
         # XXX optimize?; pylint: disable=W0511
         return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
 
+
 def timestamp_to_datetime(ts):
         """convert %Y%m%dT%H%M%SZ format to a datetime object"""
         return datetime.datetime.strptime(ts,"%Y%m%dT%H%M%SZ")
+
 
 def copyfile(src_path, dst_path):
         """copy a file, preserving attributes, ownership, etc. where possible"""
@@ -136,6 +143,7 @@ def copyfile(src_path, dst_path):
         except OSError as e:
                 if e.errno != errno.EPERM:
                         raise
+
 
 def copytree(src, dst):
         """Rewrite of shutil.copytree() that can handle special files such as
@@ -212,6 +220,7 @@ def copytree(src, dst):
         if problem:
                 six.reraise(problem[0], problem[1], problem[2])
 
+
 def move(src, dst):
         """Rewrite of shutil.move() that uses our copy of copytree()."""
 
@@ -245,6 +254,7 @@ def move(src, dst):
                 else:
                         raise api_errors._convert_error(e)
 
+
 def expanddirs(dirs):
         """given a set of directories, return expanded set that includes
         all components"""
@@ -255,6 +265,7 @@ def expanddirs(dirs):
                         out.add(p)
                         p = os.path.dirname(p)
         return out
+
 
 def url_affix_trailing_slash(u):
         """if 'u' donesn't have a trailing '/', append one."""
@@ -267,6 +278,7 @@ def url_affix_trailing_slash(u):
 _client_version = "pkg/{0} ({1} {2}; {3} {4}; {{0}}; {{1}})".format(
     VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
+
 
 def user_agent_str(img, client_name):
         """Return a string that can use to identify the client."""
@@ -288,6 +300,7 @@ _hostname_re = re.compile(r"""^(?:[a-zA-Z0-9\-]+[a-zA-Z0-9\-\.]*
 _invalid_host_chars = re.compile(r".*[^a-zA-Z0-9\-\.:\[\]]+")
 _valid_proto = ["file", "http", "https"]
 
+
 def valid_pub_prefix(prefix):
         """Verify that the publisher prefix only contains valid characters."""
 
@@ -305,6 +318,7 @@ def valid_pub_prefix(prefix):
 
         return False
 
+
 def valid_pub_url(url, proxy=False):
         """Verify that the publisher URL contains only valid characters.
         If 'proxy' is set to True, some checks are relaxed."""
@@ -312,33 +326,31 @@ def valid_pub_url(url, proxy=False):
         if not url:
                 return False
 
-        # First split the URL and check if the scheme is one we support
-        o = urlsplit(url)
+        # First parse the URL and check if the scheme is one we support
+        values = urlparse(url)
 
-        if not o[0] in _valid_proto:
+        if values.scheme not in _valid_proto:
                 return False
 
-        if o[0] == "file":
+        if values.scheme == "file":
                 path = urlparse(url, "file", allow_fragments=0)[2]
                 path = url2pathname(path)
                 if not os.path.abspath(path):
                         return False
                 # No further validation to be done.
                 return True
+        if '@' in values.netloc and not proxy:
+               # Authentication URL is only valid for a proxy configuration
+               return False
 
-        # Next verify that the network location is valid
-        if six.PY3:
-                host = urllib.parse.splitport(o[1])[0]
-        else:
-                host = urllib.splitport(o[1])[0]
-
-        if proxy:
-                # We may have authentication details in the proxy URI, which
-                # we must ignore when checking for hostname validity.
-                host_parts = host.split("@")
-                if len(host_parts) == 2:
-                        host = host[1]
-
+        # Now verify the hostname part of the url
+        host = values.hostname
+        # Test if the host is a specified IP address, if so readd the []
+        try:
+            if ip_address(values.hostname).version == 6:
+                host = '[' + values.hostname + ']'
+        except (ValueError):
+            pass
         if not host or _invalid_host_chars.match(host):
                 return False
 
@@ -346,6 +358,7 @@ def valid_pub_url(url, proxy=False):
                 return True
 
         return False
+
 
 def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
     ignore_hash=False):
@@ -455,12 +468,14 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
                 return hexdigests
         return shasum.hexdigest()
 
+
 class PipeError(Exception):
         """ Pipe exception. """
 
         def __init__(self, args=None):
                 Exception.__init__(self)
                 self._args = args
+
 
 def msg(*text):
         """ Emit a message. """
@@ -472,6 +487,7 @@ def msg(*text):
                         raise PipeError(e)
                 raise
 
+
 def emsg(*text):
         """ Emit a message to sys.stderr. """
 
@@ -481,6 +497,7 @@ def emsg(*text):
                 if e.errno == errno.EPIPE:
                         raise PipeError(e)
                 raise
+
 
 def setlocale(category, loc=None, printer=None):
         """Wraps locale.setlocale(), falling back to the C locale if the desired
@@ -506,10 +523,13 @@ def setlocale(category, loc=None, printer=None):
                 printer("Unable to set locale{0}; locale package may be broken "
                     "or\nnot installed.  Reverting to C locale.".format(dl))
                 locale.setlocale(category, "C")
+
+
 def N_(message):
         """Return its argument; used to mark strings for localization when
         their use is delayed by the program."""
         return message
+
 
 def bytes_to_str(nbytes, fmt="{num:>.2f} {unit}"):
         """Returns a human-formatted string representing the number of bytes
@@ -551,6 +571,7 @@ def bytes_to_str(nbytes, fmt="{num:>.2f} {unit}"):
                             shortunit=shortuom
                         )
 
+
 def get_rel_path(request, uri, pub=None):
         """Calculate the depth of the current request path relative to our
         base uri. path_info always ends with a '/' -- so ignore it when
@@ -561,6 +582,7 @@ def get_rel_path(request, uri, pub=None):
                 rpath = rpath.replace("/{0}/".format(pub), "/")
         depth = rpath.count("/") - 1
         return ("../" * depth) + uri
+
 
 def get_pkg_otw_size(action):
         """Takes a file action and returns the over-the-wire size of
@@ -573,6 +595,7 @@ def get_pkg_otw_size(action):
                 size = action.attrs.get("pkg.size", 0)
 
         return int(size)
+
 
 def get_data_digest(data, length=None, return_content=False,
     hash_attrs=None, hash_algs=None, hash_func=None):
@@ -818,6 +841,7 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
                         chashes[attr] = chashes[attr].hexdigest()
         return csize, chashes
 
+
 class ProcFS(object):
         """This class is used as an interface to procfs."""
 
@@ -1007,6 +1031,7 @@ class ProcFS(object):
 
                 return ProcFS._struct_unpack(psinfo_data, "psinfo_t")
 
+
 def __getvmusage():
         """Return the amount of virtual memory in bytes currently in use."""
 
@@ -1015,6 +1040,7 @@ def __getvmusage():
                 return None
         return psinfo.pr_size * 1024
 
+
 def _prstart():
         """Return the process start time expressed as a floating point number
         in seconds since the epoch, in UTC."""
@@ -1022,6 +1048,7 @@ def _prstart():
         if psinfo is None:
                 return 0.0
         return psinfo.pr_start.tv_sec + (float(psinfo.pr_start.tv_nsec) / 1e9)
+
 
 def out_of_memory():
         """Return an out of memory message, for use in a MemoryError handler."""
@@ -1057,6 +1084,7 @@ operation again."""
 
 # EmptyI for argument defaults
 EmptyI = tuple()
+
 
 # ImmutableDict for argument defaults
 class ImmutableDict(dict):
@@ -1095,6 +1123,7 @@ class ImmutableDict(dict):
                 raise TypeError("Item assignment to ImmutableDict")
 
 # A way to have a dictionary be a property
+
 
 class DictProperty(object):
         # Missing docstring; pylint: disable=C0111
@@ -1235,6 +1264,7 @@ def build_cert(path, uri=None, pub=None):
                 raise api_errors.InvalidCertificate(path, uri=uri,
                     publisher=pub)
 
+
 def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
         """Validates the indicated certificate and returns a pyOpenSSL object
         representing it if it is valid."""
@@ -1271,15 +1301,18 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
 
         return cert
 
+
 def binary_to_hex(s):
         """Converts a string of bytes to a hexadecimal representation.
         """
         return force_str(hexlify(s))
 
+
 def hex_to_binary(s):
         """Converts a string of hex digits to the binary representation.
         """
         return unhexlify(s)
+
 
 def config_temp_root():
         """Examine the environment.  If the environment has set TMPDIR, TEMP,
@@ -1299,6 +1332,7 @@ def config_temp_root():
 
         return DEFAULT_TEMP_PATH
 
+
 def get_temp_root_path():
         """Return the directory path where the temporary directories or
         files should be created. If the environment has set TMPDIR
@@ -1312,6 +1346,7 @@ def get_temp_root_path():
                         return env_val
 
         return DEFAULT_TEMP_PATH
+
 
 def parse_uri(uri, cwd=None):
         """Parse the repository location provided and attempt to transform it
@@ -1366,6 +1401,7 @@ def makedirs(pathname):
                             e.filename)
                 elif e.errno != errno.EEXIST or e.filename != pathname:
                         raise
+
 
 class DummyLock(object):
         """This has the same external interface as threading.Lock,
@@ -1422,6 +1458,7 @@ PKG_FILE_MODE = S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH
 PKG_DIR_MODE = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
 PKG_RO_FILE_MODE = S_IRUSR | S_IRGRP | S_IROTH
 
+
 def relpath(path, start="."):
         """Version of relpath to workaround python bug:
             http://bugs.python.org/issue5117
@@ -1429,6 +1466,7 @@ def relpath(path, start="."):
         if path and start and start == "/" and path[0] == "/":
                 return path.lstrip("/")
         return os.path.relpath(path, start=start)
+
 
 def recursive_chown_dir(d, uid, gid):
         """Change the ownership of all files under directory d to uid:gid."""
@@ -1621,6 +1659,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None,
 
         return opt_dict
 
+
 def api_cmdpath():
         """Returns the path to the executable that is invoking the api client
         interfaces."""
@@ -1639,6 +1678,7 @@ def api_cmdpath():
                 cmdpath = DebugValues.get_value("simulate_cmdpath")
 
         return cmdpath
+
 
 def api_pkgcmd():
         """When running a pkg(1) command from within a packaging module, try
@@ -1666,6 +1706,7 @@ def api_pkgcmd():
 
         return pkg_cmd
 
+
 def liveroot():
         """Return path to the current live root image, i.e. the image
         that we are running from."""
@@ -1678,6 +1719,7 @@ def liveroot():
                 live_root = "/"
         return live_root
 
+
 def spaceavail(path):
         """Find out how much space is available at the specified path if
         it exists; return -1 if path doesn't exist"""
@@ -1686,6 +1728,7 @@ def spaceavail(path):
                 return res.f_frsize * res.f_bavail
         except OSError:
                 return -1
+
 
 def get_dir_size(path):
         """Return the size (in bytes) of a directory and all of its contents."""
@@ -1698,6 +1741,7 @@ def get_dir_size(path):
         except EnvironmentError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
+
 
 def get_listing(desired_field_order, field_data, field_values, out_format,
     def_fmt, omit_headers, escape_output=True):
@@ -1880,6 +1924,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
 
         return output
 
+
 def truncate_file(f, size=0):
         """Truncate the specified file."""
         try:
@@ -1889,6 +1934,7 @@ def truncate_file(f, size=0):
         except OSError as e:
                 # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
+
 
 def flush_output():
         """flush stdout and stderr"""
@@ -1915,6 +1961,7 @@ json_types_immediates = (bool, float, six.integer_types, six.string_types,
 json_types_collections = (dict, list)
 json_types = tuple(json_types_immediates + json_types_collections)
 json_debug = False
+
 
 def json_encode(name, data, desc, commonize=None, je_state=None):
         """A generic json encoder.
@@ -2174,6 +2221,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
         # return the encoded element
         return je_return(name, rv, finish, je_state)
 
+
 def json_decode(name, data, desc, commonize=None, jd_state=None):
         """A generic json decoder.
 
@@ -2403,6 +2451,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
         return jd_return(name, rv, desc, finish, jd_state)
 
+
 def json_validate(name, data):
         """Validate that a named piece of data can be represented in json and
         that the data can be passed directly to json.dump().  If the data
@@ -2440,6 +2489,7 @@ def json_validate(name, data):
                 for i in range(len(data)):
                         new_name = "{0}[{1:d}]".format(name, i)
                         json_validate(new_name, data[i])
+
 
 def json_diff(name, d0, d1, alld0, alld1):
         """Compare two json encoded objects to make sure they are
@@ -2479,6 +2529,7 @@ def json_diff(name, d0, d1, alld0, alld1):
                         new_name = "{0}[{1:d}]".format(name, i)
                         json_diff(new_name, d0[i], d1[i], alld0, alld1)
 
+
 def json_hook(dct):
         """Hook routine used by the JSON module to ensure that unicode objects
         are converted to bytes objects in Python 2 and ensures that bytes
@@ -2493,6 +2544,7 @@ def json_hook(dct):
 
                 rvdct[k] = v
         return rvdct
+
 
 class Timer(object):
         """A class which can be used for measuring process times (user,
@@ -2752,6 +2804,7 @@ def get_runtime_proxy(proxy, uri):
 
         return runtime_proxy
 
+
 def decode(s):
         """convert non-ascii strings to unicode;
         replace non-convertable chars"""
@@ -2765,6 +2818,7 @@ def decode(s):
                 # this will encode 8 bit strings into unicode
                 s = s.decode("utf-8", "replace")
         return s
+
 
 def yield_matching(pat_prefix, items, patterns):
         """Helper function for yielding items that match one of the provided
@@ -2805,6 +2859,7 @@ def yield_matching(pat_prefix, items, patterns):
 
 sigdict = defaultdict(list)
 
+
 def signame(signal_number):
         """convert signal number to name(s)"""
         if not sigdict:
@@ -2814,6 +2869,7 @@ def signame(signal_number):
 
         return "/".join(sigdict.get(signal_number,
             ["Unnamed signal: {0:d}".format(signal_number)]))
+
 
 def list_actions_by_attrs(actionlist, attrs, show_all=False,
     remove_consec_dup_lines=False, last_res=None):
@@ -2884,6 +2940,7 @@ def list_actions_by_attrs(actionlist, attrs, show_all=False,
                         last_line = line
                         yield line
 
+
 def _min_edit_distance(word1, word2):
         """Calculate the minimal edit distance for converting word1 to word2,
         based on Wagner-Fischer algorithm."""
@@ -2914,6 +2971,7 @@ def _min_edit_distance(word1, word2):
                                     dp[i-1][j] + del_cost)
 
         return dp[m][n]
+
 
 def suggest_known_words(text, known_words):
         """Given a text, a list of known_words, suggest some correct
@@ -2951,12 +3009,14 @@ def suggest_known_words(text, known_words):
         # Sort the candidates by their distance, and return the words only.
         return [c[0] for c in sorted(candidates, key=itemgetter(1))]
 
+
 def smallest_diff_key(a, b):
         """Return the smallest key 'k' in 'a' such that a[k] != b[k]."""
         keys = [k for k in a if a.get(k) != b.get(k)]
         if not keys:
                 return None
         return min(keys)
+
 
 def dict_cmp(a, b):
         """cmp method for dictionary, translated from the source code
@@ -2972,6 +3032,7 @@ def dict_cmp(a, b):
         if adiff != bdiff:
                 return cmp(adiff, bdiff)
         return cmp(a[adiff], b[bdiff])
+
 
 def cmp(a, b):
         """Implementaion for Python 2.7's built-in function cmp(), which is
@@ -2993,6 +3054,7 @@ def cmp(a, b):
                 if a and b is None:
                         return 1
                 return NotImplemented
+
 
 def set_memory_limit(bytes, allow_override=True):
         """Limit memory consumption of current process to 'bytes'."""
@@ -3059,6 +3121,7 @@ if six.PY2:
 else:
         force_str = force_text
 
+
 def open_image_file(root, path, flag, mode=None):
         """Open 'path' ensuring that we don't follow a symlink which may lead
         outside of the specified image.
@@ -3078,6 +3141,7 @@ def open_image_file(root, path, flag, mode=None):
         # 'path', so we need to call os.path.relpath here.
         from pkg.altroot import ar_open
         return os.fdopen(ar_open(root, os.path.relpath(path, root), flag, mode))
+
 
 def check_ca(cert):
         """Check if 'cert' is a proper CA. For this the BasicConstraints need to
@@ -3100,6 +3164,7 @@ def check_ca(cert):
 
 FILE_DESCRIPTOR_LIMIT = 4096
 
+
 def set_fd_limits(printer=None):
         """Set the open file descriptor soft limit."""
         if printer is None:
@@ -3116,6 +3181,7 @@ def set_fd_limits(printer=None):
                 sys.exit(EXIT_OOPS)
 
 _varcetname_re = re.compile(r"\s")
+
 
 def valid_varcet_name(name):
         """Check if the variant/facet name is valid. A valid variant/facet

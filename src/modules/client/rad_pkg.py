@@ -26,7 +26,7 @@
 
 import os
 import six
-import json
+import rapidjson as json
 import subprocess
 import traceback
 import pkg

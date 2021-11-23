@@ -65,7 +65,7 @@ try:
         import getopt
         import gettext
         import itertools
-        import json
+        import rapidjson as json
         import locale
         import logging
         import os
@@ -142,6 +142,7 @@ for atype, aclass in six.iteritems(actions.types):
 
 _api_inst = None
 
+
 def format_update_error(e):
         # This message is displayed to the user whenever an
         # ImageFormatUpdateNeeded exception is encountered.
@@ -151,6 +152,7 @@ def format_update_error(e):
             "privileged user and then try again.  Please note that updating "
             "the format of the image will render it unusable with older "
             "versions of the pkg(7) system."))
+
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -173,6 +175,7 @@ def error(text, cmd=None):
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
         logger.error(ws + pkg_cmd + text_nows)
+
 
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
     verbose=False, unknown_cmd=None):
@@ -399,7 +402,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
 
         def print_cmds(cmd_list, cmd_dic):
                 for cmd in cmd_list:
-                        if cmd is "":
+                        if cmd == "":
                                 logger.error("")
                         else:
                                 if cmd not in cmd_dic:
@@ -410,7 +413,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False,
                                             "Unable to find usage str for "
                                             "{0}".format(cmd))
                                 use_txt = cmd_dic[cmd]
-                                if use_txt is not "":
+                                if use_txt != "":
                                         logger.error(
                                             "        pkg {cmd} "
                                             "{use_txt}".format(**locals()))
@@ -485,6 +488,7 @@ Miscellaneous        : image-create   dehydrate      rehydrate
 For more info, run: pkg help <command>"""))
         sys.exit(retcode)
 
+
 def get_fmri_args(api_inst, pargs, cmd=None):
         """ Convenience routine to check that input args are valid fmris. """
 
@@ -506,6 +510,7 @@ def get_fmri_args(api_inst, pargs, cmd=None):
         if errors:
                 error("\n".join(str(e) for e in errors), cmd=cmd)
         return len(errors) == 0, res
+
 
 def list_inventory(op, api_inst, pargs,
     li_parent_sync, list_all, list_installed_newest, list_newest,
@@ -612,6 +617,7 @@ def list_inventory(op, api_inst, pargs,
 
         return out_json["status"]
 
+
 def get_tracker():
         if global_settings.client_output_parsable_version is not None:
                 progresstracker = progress.NullProgressTracker()
@@ -636,6 +642,7 @@ def get_tracker():
 
         return progresstracker
 
+
 def accept_plan_licenses(api_inst):
         """Helper function that marks all licenses for the current plan as
         accepted if they require acceptance."""
@@ -649,6 +656,7 @@ def accept_plan_licenses(api_inst):
 
 display_plan_options = ["basic", "fmris", "variants/facets", "services",
     "actions", "boot-archive"]
+
 
 def __display_plan(api_inst, verbose, noexecute, op=None):
         """Helper function to display plan to the desired degree.
@@ -979,6 +987,7 @@ made will not be reflected on the next boot.
                                             "rebooting.").format(tmp_path))
                                 logger.info(_("After rebooting, use 'pkg history -n 1 -N' to view release notes."))
 
+
 def __write_tmp_release_notes(plan):
         """try to write release notes out to a file in /tmp and return the name"""
         if plan.has_release_notes:
@@ -994,6 +1003,7 @@ def __write_tmp_release_notes(plan):
                         return path
                 except Exception:
                         pass
+
 
 def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         """Display the parsable version of the plan."""
@@ -1131,6 +1141,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         # processes this dictionary.
         logger.info(json.dumps(ret))
 
+
 def display_plan_licenses(api_inst, show_all=False, show_req=True):
         """Helper function to display licenses for the current plan.
 
@@ -1158,6 +1169,7 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
 
                 # Mark license as having been displayed.
                 api_inst.set_plan_license_status(pfmri, lic, displayed=True)
+
 
 def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
     parsable_version, quiet, quiet_plan, show_licenses, stage, verbose):
@@ -1233,6 +1245,7 @@ def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
 
                         msg(msg_text)
 
+
 def __print_verify_result(op, api_inst, plan, noexecute, omit_headers,
     verbose, print_packaged=True):
         did_print_something = False
@@ -1302,6 +1315,7 @@ def __print_verify_result(op, api_inst, plan, noexecute, omit_headers,
                                 msg(_("ERROR: {0}").format(msg_text))
                         did_print_something = True
         return did_print_something
+
 
 def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
     omit_headers=False, op=None, parsable_version=None, quiet=False,
@@ -1382,6 +1396,7 @@ def display_plan_cb(api_inst, child_image_plans=None, noexecute=False,
                         __print_verify_result(op, api_inst, plan, noexecute,
                             omit_headers, verbose, print_packaged=False)
 
+
 def __display_plan_messages(api_inst, stages=None):
         """Print out any messages generated during the specified
         stages."""
@@ -1398,6 +1413,7 @@ def __display_plan_messages(api_inst, stages=None):
                         emsg("\n" + _("WARNING: {0}").format(msg_text))
                 else:
                         emsg("\n" + _("ERROR: {0}").format(msg_text))
+
 
 def __api_prepare_plan(operation, api_inst):
         """Prepare plan."""
@@ -1449,6 +1465,7 @@ def __api_prepare_plan(operation, api_inst):
         finally:
                 __display_plan_messages(api_inst, OP_STAGE_PREP)
         return EXIT_OK
+
 
 def __api_execute_plan(operation, api_inst):
         """Execute plan."""
@@ -1555,6 +1572,7 @@ def __api_execute_plan(operation, api_inst):
 
         return rval
 
+
 def __api_alloc(imgdir, exact_match, pkg_image_used):
         """Allocate API instance."""
 
@@ -1580,6 +1598,7 @@ def __api_alloc(imgdir, exact_match, pkg_image_used):
         except api_errors.ImageFormatUpdateNeeded as e:
                 format_update_error(e)
                 return
+
 
 def __api_plan_exception(op, noexecute, verbose, api_inst):
         """Handle plan exception."""
@@ -1677,6 +1696,7 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
         # if we didn't deal with the exception above, pass it on.
         raise
         # NOTREACHED
+
 
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
@@ -1788,11 +1808,13 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
         return EXIT_OK
 
+
 def __api_plan_file(api_inst):
         """Return the path to the PlanDescription save file."""
 
         plandir = api_inst.img_plandir
         return os.path.join(plandir, "plandesc")
+
 
 def __api_plan_save(api_inst):
         """Save an image plan to a file."""
@@ -1820,6 +1842,7 @@ def __api_plan_save(api_inst):
 
         pkg_timer.record("saving plan", logger=logger)
 
+
 def __api_plan_load(api_inst, stage, origins):
         """Loan an image plan from a file."""
 
@@ -1842,6 +1865,7 @@ def __api_plan_load(api_inst, stage, origins):
         if stage == API_STAGE_EXECUTE:
                 __api_plan_delete(api_inst)
 
+
 def __api_plan_delete(api_inst):
         """Delete an image plan file."""
 
@@ -1850,6 +1874,7 @@ def __api_plan_delete(api_inst):
                 os.unlink(path)
         except OSError as e:
                 raise api_errors._convert_error(e)
+
 
 def _verify_exit_code(api_inst):
         """Determine the exit code of pkg verify, which should be based on
@@ -1861,6 +1886,7 @@ def _verify_exit_code(api_inst):
                 if msg_type == MSG_ERROR:
                         return EXIT_OOPS
         return EXIT_OK
+
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
@@ -1919,6 +1945,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         pkg_timer.record("executing", logger=logger)
 
         return ret_code
+
 
 class RemoteDispatch(object):
         """RPC Server Class which invoked by the PipedRPCServer when a RPC
@@ -1989,6 +2016,7 @@ class RemoteDispatch(object):
                 misc.flush_output()
                 return rv
 
+
 def remote(op, api_inst, pargs, ctlfd):
         """Execute commands from a remote pipe"""
 
@@ -2011,6 +2039,7 @@ def remote(op, api_inst, pargs, ctlfd):
 
         pkg_timer.record("rpc startup", logger=logger)
         rpc_server.serve_forever()
+
 
 def change_variant(op, api_inst, pargs,
     accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
@@ -2059,6 +2088,7 @@ def change_variant(op, api_inst, pargs,
             li_parent_sync=li_parent_sync, new_be=new_be,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index, variants=variants)
+
 
 def change_facet(op, api_inst, pargs,
     accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
@@ -2111,6 +2141,7 @@ def change_facet(op, api_inst, pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
+
 def __handle_client_json_api_output(out_json, op, api_inst):
         """This is the main client_json_api output handling function used for
         install, update and uninstall and so on."""
@@ -2125,6 +2156,7 @@ def __handle_client_json_api_output(out_json, op, api_inst):
         __display_plan_messages(api_inst, frozenset([OP_STAGE_PREP,
             OP_STAGE_EXEC]))
         return out_json["status"]
+
 
 def _emit_error_general_cb(status, err, cmd=None, selected_type=[],
     add_info=misc.EmptyDict):
@@ -2212,6 +2244,7 @@ pkg set-publisher -g {0} <publisher>
                         msg(err["info"])
         return True
 
+
 def _generate_error_messages(status, err_list,
     msg_cb=_emit_error_general_cb, selected_type=[], cmd=None,
     add_info=misc.EmptyDict):
@@ -2221,6 +2254,7 @@ def _generate_error_messages(status, err_list,
             selected_type=selected_type, cmd=cmd, add_info=add_info)]
         # Return errors not being printed.
         return errs_left
+
 
 def exact_install(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
@@ -2236,6 +2270,7 @@ def exact_install(op, api_inst, pargs,
             verbose, display_plan_cb=display_plan_cb, logger=logger)
 
         return  __handle_client_json_api_output(out_json, op, api_inst)
+
 
 def install(op, api_inst, pargs,
     accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
@@ -2254,6 +2289,7 @@ def install(op, api_inst, pargs,
 
         return  __handle_client_json_api_output(out_json, op, api_inst)
 
+
 def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
     be_activate, be_name, force, ignore_missing, li_ignore, li_erecurse,
     li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
@@ -2270,6 +2306,7 @@ def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
 
         return __handle_client_json_api_output(out_json, op, api_inst)
 
+
 def uninstall(op, api_inst, pargs,
     act_timeout, backup_be, backup_be_name, be_activate, be_name,
     ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
@@ -2283,6 +2320,7 @@ def uninstall(op, api_inst, pargs,
             display_plan_cb=display_plan_cb, logger=logger)
 
         return __handle_client_json_api_output(out_json, op, api_inst)
+
 
 def verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
     unpackaged, unpackaged_only, verify_paths):
@@ -2302,6 +2340,7 @@ def verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
         # status code needs to be returned.
         return out_json["status"]
 
+
 def revert(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, new_be, noexecute,
     parsable_version, quiet, tagged, verbose):
@@ -2316,17 +2355,20 @@ def revert(op, api_inst, pargs,
             backup_be_name=backup_be_name, be_name=be_name, new_be=new_be,
             _parsable_version=parsable_version, args=pargs, tagged=tagged)
 
+
 def dehydrate(op, api_inst, pargs, noexecute, publishers, quiet, verbose):
         """Minimize image size for later redeployment."""
 
         return __api_op(op, api_inst, _noexecute=noexecute, _quiet=quiet,
             _verbose=verbose, publishers=publishers)
 
+
 def rehydrate(op, api_inst, pargs, noexecute, publishers, quiet, verbose):
         """Restore content removed from a dehydrated image."""
 
         return __api_op(op, api_inst, _noexecute=noexecute, _quiet=quiet,
             _verbose=verbose, publishers=publishers)
+
 
 def fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
     be_name, new_be, noexecute, omit_headers, parsable_version, quiet,
@@ -2344,6 +2386,7 @@ def fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
                     out_json["errors"], cmd=op)
 
         return out_json["status"]
+
 
 def list_mediators(op, api_inst, pargs, omit_headers, output_format,
     list_available):
@@ -2452,6 +2495,7 @@ def list_mediators(op, api_inst, pargs, omit_headers, output_format,
                 return EXIT_OOPS
         return EXIT_OK
 
+
 def set_mediator(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, med_implementation,
     med_version, new_be, noexecute, parsable_version, quiet, update_index,
@@ -2546,6 +2590,7 @@ def set_mediator(op, api_inst, pargs,
 
         return ret_code
 
+
 def unset_mediator(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, med_implementation,
     med_version, new_be, noexecute, parsable_version, quiet, update_index,
@@ -2621,6 +2666,7 @@ def unset_mediator(op, api_inst, pargs,
 
         return ret_code
 
+
 def avoid(api_inst, args):
         """Place the specified packages on the avoid list"""
         if not args:
@@ -2632,6 +2678,7 @@ def avoid(api_inst, args):
         except:
                 return __api_plan_exception("avoid", False, 0, api_inst)
 
+
 def unavoid(api_inst, args):
         """Remove the specified packages from the avoid list"""
         if not args:
@@ -2642,6 +2689,7 @@ def unavoid(api_inst, args):
                 return EXIT_OK
         except:
                 return __api_plan_exception("unavoid", False, 0, api_inst)
+
 
 def __display_avoids(api_inst):
         """Display the current avoid list, and the pkgs that are tracking
@@ -2657,6 +2705,7 @@ def __display_avoids(api_inst):
                         logger.info("    {0}".format(a[0]))
 
         return EXIT_OK
+
 
 def freeze(api_inst, args):
         """Place the specified packages on the frozen list"""
@@ -2699,6 +2748,7 @@ def freeze(api_inst, args):
         except:
                 return __api_plan_exception("freeze", False, 0, api_inst)
 
+
 def unfreeze(api_inst, args):
         """Remove the specified packages from the frozen list"""
 
@@ -2724,6 +2774,7 @@ def unfreeze(api_inst, args):
                 return EXIT_OK
         except:
                 return __api_plan_exception("unfreeze", False, 0, api_inst)
+
 
 def __display_cur_frozen(api_inst, display_headers):
         """Display the current frozen list"""
@@ -2761,6 +2812,7 @@ def __display_cur_frozen(api_inst, display_headers):
                 ))
         return EXIT_OK
 
+
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
         the INDEX, ACTION, and VALUE columns.
@@ -2782,6 +2834,7 @@ def __convert_output(a_str, match):
                 return a.attrs.get(a.key_attr), a.name, match
         return match, a.name, a.attrs.get(a.key_attr)
 
+
 def produce_matching_token(action, match):
         """Given an action and a match value (see convert_output for more
         details on this parameter), return the token which matched the query."""
@@ -2795,6 +2848,7 @@ def produce_matching_token(action, match):
                 return r
         return action.attrs.get(action.key_attr)
 
+
 def produce_matching_type(action, match):
         """Given an action and a match value (see convert_output for more
         details on this parameter), return the kind of match this was.  For
@@ -2805,6 +2859,7 @@ def produce_matching_type(action, match):
         if not isinstance(action, actions.attribute.AttributeAction):
                 return match
         return action.attrs.get("name")
+
 
 def v1_extract_info(tup, return_type, pub):
         """Given a result from search, massages the information into a form
@@ -2844,6 +2899,7 @@ def v1_extract_info(tup, return_type, pub):
         else:
                 pfmri = tup
         return pfmri, action, pub, match, match_type
+
 
 def search(api_inst, args):
         """Search for the given query."""
@@ -3074,6 +3130,7 @@ def search(api_inst, args):
                 retcode = EXIT_OK
         return retcode
 
+
 def info(op, api_inst, pargs, display_license, info_local, info_remote,
     origins, quiet):
         """Display information about a package or packages.
@@ -3126,6 +3183,7 @@ def info(op, api_inst, pargs, display_license, info_local, info_remote,
 
         return ret_json["status"]
 
+
 def calc_widths(lines, attrs, widths=None):
         """Given a set of lines and a set of attributes, calculate the minimum
         width each column needs to hold its contents."""
@@ -3138,6 +3196,7 @@ def calc_widths(lines, attrs, widths=None):
                                 widths[i] = len(str(a))
         return widths
 
+
 def calc_justs(attrs):
         """Given a set of output attributes, find any attributes with known
         justification directions and assign them."""
@@ -3149,6 +3208,7 @@ def calc_justs(attrs):
                 return JUST_UNKNOWN
         return [ __chose_just(attr) for attr in attrs ]
 
+
 def default_left(v):
         """For a given justification "v", use the default of left justification
         if "v" is JUST_UNKNOWN."""
@@ -3156,6 +3216,7 @@ def default_left(v):
         if v == JUST_UNKNOWN:
                 return JUST_LEFT
         return v
+
 
 def print_headers(attrs, widths, justs):
         """Print out the headers for the columns in the output.
@@ -3188,6 +3249,7 @@ def print_headers(attrs, widths, justs):
 
         msg(fmt.format(*headers).rstrip())
 
+
 def guess_unknown(j, v):
         """If the justificaton to use for a value is unknown, assume that if
         it is an integer, the output should be right justified, otherwise it
@@ -3202,6 +3264,7 @@ def guess_unknown(j, v):
                 # attribute is non-numeric or is something like
                 # a list.
                 return JUST_LEFT
+
 
 def create_output_format(display_headers, widths, justs, line):
         """Produce a format string that can be used to display results.
@@ -3242,6 +3305,7 @@ def create_output_format(display_headers, widths, justs, line):
                 fmt += "{{{0}!s}}\t".format(n)
         fmt.rstrip("\t")
         return fmt
+
 
 def display_contents_results(actionlist, attrs, sort_attrs, display_headers):
         """Print results of a "list" operation.  Returns False if no output
@@ -3286,6 +3350,7 @@ def display_contents_results(actionlist, attrs, sort_attrs, display_headers):
                 msg(text)
         return printed_output
 
+
 def check_attrs(attrs, cmd, reference=None, prefixes=None):
         """For a set of output attributes ("attrs") passed to a command ("cmd"),
         if the attribute lives in a known name space, check whether it is valid.
@@ -3300,6 +3365,7 @@ def check_attrs(attrs, cmd, reference=None, prefixes=None):
                         if a.startswith(p) and not a in reference:
                                 usage(_("Invalid attribute '{0}'").format(a),
                                     cmd)
+
 
 def list_contents(api_inst, args):
         """List package contents.
@@ -3639,6 +3705,7 @@ the last retrieval may not be available.
 
         msg(outstr)
 
+
 def __refresh(api_inst, pubs, full_refresh=False):
         """Private helper method for refreshing publisher data."""
 
@@ -3665,6 +3732,7 @@ def __refresh(api_inst, pubs, full_refresh=False):
                 return EXIT_PARTIAL
         return EXIT_OK
 
+
 def publisher_refresh(api_inst, args):
         """Update metadata for the image's publishers."""
 
@@ -3683,6 +3751,7 @@ def publisher_refresh(api_inst, args):
         api_inst.progresstracker.set_major_phase(
             api_inst.progresstracker.PHASE_UTILITY)
         return __refresh(api_inst, pargs, full_refresh=full_refresh)
+
 
 def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
         if ssl_cert is not None or ssl_key is not None:
@@ -3703,6 +3772,7 @@ def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
                                 ssl_key = os.path.normpath(os.path.join(
                                     orig_cwd, ssl_key))
         return ssl_cert, ssl_key
+
 
 def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
         """Helper function to wrap set-publisher private methods.  Returns
@@ -3748,6 +3818,7 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 return EXIT_OOPS, ("\n" + str(e))
+
 
 def publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
     reset_uuid, add_mirrors, remove_mirrors, add_origins, remove_origins,
@@ -3801,6 +3872,7 @@ def publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
 
         return out_json["status"]
 
+
 def publisher_unset(api_inst, pargs):
         """pkg unset-publisher publisher ..."""
 
@@ -3813,6 +3885,7 @@ def publisher_unset(api_inst, pargs):
                     out_json["errors"], cmd="unset-publisher")
 
         return out_json["status"]
+
 
 def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
     inc_disabled, output_format):
@@ -3924,6 +3997,7 @@ def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                                 msg(property_padding, k + " =", str(v))
         return retcode
 
+
 def property_add_value(api_inst, args):
         """pkg add-property-value propname propvalue"""
 
@@ -3946,6 +4020,7 @@ def property_add_value(api_inst, args):
                 return EXIT_OOPS
         return EXIT_OK
 
+
 def property_remove_value(api_inst, args):
         """pkg remove-property-value propname propvalue"""
 
@@ -3967,6 +4042,7 @@ def property_remove_value(api_inst, args):
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
+
 
 def property_set(api_inst, args):
         """pkg set-property propname propvalue [propvalue ...]"""
@@ -4013,6 +4089,7 @@ def property_set(api_inst, args):
                 return EXIT_OOPS
         return EXIT_OK
 
+
 def property_unset(api_inst, args):
         """pkg unset-property propname ..."""
 
@@ -4039,6 +4116,7 @@ def property_unset(api_inst, args):
                         return EXIT_OOPS
 
         return EXIT_OK
+
 
 def property_list(api_inst, args):
         """pkg property [-H] [propname ...]"""
@@ -4071,6 +4149,7 @@ def property_list(api_inst, args):
                 msg(fmt.format(p, img.get_property(p)))
 
         return EXIT_OK
+
 
 def list_variant(op, api_inst, pargs, omit_headers, output_format,
     list_all_items, list_installed, verbose):
@@ -4162,6 +4241,7 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
         # Successful if no variants exist or if at least one matched.
         return EXIT_OK
 
+
 def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
     list_masked, list_installed):
         """pkg facet [-Hai] [-F format] [<facet_pattern> ...]"""
@@ -4239,6 +4319,7 @@ def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
         # Successful if no facets exist or if at least one matched.
         return EXIT_OK
 
+
 def list_linked(op, api_inst, pargs,
     li_ignore, omit_headers):
         """pkg list-linked [-H]
@@ -4267,6 +4348,7 @@ def list_linked(op, api_inst, pargs,
                 msg(fmt.format(*row))
         return EXIT_OK
 
+
 def pubcheck_linked(op, api_inst, pargs):
         """If we're a child image, verify that the parent image
         publisher configuration is a subset of our publisher configuration.
@@ -4280,6 +4362,7 @@ def pubcheck_linked(op, api_inst, pargs):
                 return EXIT_LOCKED
 
         return EXIT_OK
+
 
 def __parse_linked_props(args, op):
         """"Parse linked image property options that were specified on the
@@ -4305,6 +4388,7 @@ def __parse_linked_props(args, op):
                 linked_props[p] = v
 
         return linked_props
+
 
 def list_property_linked(op, api_inst, pargs,
     li_name, omit_headers):
@@ -4344,6 +4428,7 @@ def list_property_linked(op, api_inst, pargs,
 
         return EXIT_OK
 
+
 def set_property_linked(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
     li_md_only, li_name, li_parent_sync, li_pkg_updates, new_be, noexecute,
@@ -4371,6 +4456,7 @@ def set_property_linked(op, api_inst, pargs,
                 return EXIT_OOPS
 
         return EXIT_OK
+
 
 def audit_linked(op, api_inst, pargs,
     li_parent_sync,
@@ -4414,6 +4500,7 @@ def audit_linked(op, api_inst, pargs,
         if err:
                 error(err, cmd=op)
         return rv
+
 
 def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
     be_activate, be_name, li_ignore, li_md_only, li_parent_sync,
@@ -4465,6 +4552,7 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
                         error(e, cmd=op)
                         return EXIT_OOPS
         return rv
+
 
 def attach_linked(op, api_inst, pargs,
     accept, allow_relink, attach_child, attach_parent, be_activate,
@@ -4539,6 +4627,7 @@ def attach_linked(op, api_inst, pargs,
                         return EXIT_OOPS
         return rv
 
+
 def detach_linked(op, api_inst, pargs, force, li_md_only, li_pkg_updates,
     li_target_all, li_target_list, noexecute, quiet, verbose):
         """pkg detach-linked
@@ -4562,6 +4651,7 @@ def detach_linked(op, api_inst, pargs, force, li_md_only, li_pkg_updates,
         if err:
                 error(err, cmd=op)
         return rv
+
 
 def image_create(args):
         """Create an image of the requested kind, at the given path.  Load
@@ -4733,6 +4823,7 @@ def image_create(args):
 
         return EXIT_OK
 
+
 def rebuild_index(api_inst, pargs):
         """pkg rebuild-index
 
@@ -4759,6 +4850,7 @@ def rebuild_index(api_inst, pargs):
                 return EXIT_OOPS
         else:
                 return EXIT_OK
+
 
 def history_list(api_inst, args):
         """Display history about the current image.
@@ -5018,6 +5110,7 @@ def history_list(api_inst, args):
                         msg(history_fmt.format(*items))
         return EXIT_OK
 
+
 def __unique_columns(columns):
         """Return true if each entry in the provided list of columns only
         appears once."""
@@ -5031,6 +5124,7 @@ def __unique_columns(columns):
         for col in dup_cols:
                 logger.error(_("Duplicate column specified: {0}").format(col))
         return not dup_cols
+
 
 def __get_long_history_data(he, hist_info):
         """Return an array of tuples containing long_format history info"""
@@ -5076,10 +5170,12 @@ def __get_long_history_data(he, hist_info):
                 data.append((_("Errors"), "\n" + errors))
         return data
 
+
 def history_purge(api_inst, pargs):
         """Purge image history"""
         api_inst.purge_history()
         msg(_("History purged."))
+
 
 def print_proxy_config():
         """If the user has configured http_proxy or https_proxy in the
@@ -5099,6 +5195,7 @@ def print_proxy_config():
         if https_proxy:
                 logger.error(_("https_proxy: {0}\n").format(https_proxy))
 
+
 def update_format(api_inst, pargs):
         """Update image to newest format."""
 
@@ -5114,6 +5211,7 @@ def update_format(api_inst, pargs):
 
         logger.info(_("Image format already current."))
         return EXIT_NOP
+
 
 def print_version(pargs):
         if pargs:
@@ -5350,6 +5448,7 @@ valid_opt_values = {
 # This list should get shortened and eventually removed by moving more/all
 # functions out of client.py.
 
+
 def opts_cb_remote(api_inst, opts, opts_new):
         options.opts_cb_fd("ctlfd", api_inst, opts, opts_new)
         options.opts_cb_fd("progfd", api_inst, opts, opts_new)
@@ -5363,6 +5462,7 @@ opts_remote = [
     ("ctlfd",                None),
     ("progfd",               None),
 ]
+
 
 def opts_cb_varcet(api_inst, opts, opts_new):
         if opts_new["list_all_items"] and opts_new["list_installed"]:
@@ -5662,6 +5762,8 @@ def main_func():
 # Establish a specific exit status which means: "python barfed an exception"
 # so that we can more easily detect these in testing of the CLI commands.
 #
+
+
 def handle_errors(func, non_wrap_print=True, *args, **kwargs):
         traceback_str = misc.get_traceback_message()
         try:

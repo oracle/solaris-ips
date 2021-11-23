@@ -33,7 +33,7 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
 import shutil
-import json
+import rapidjson as json
 import tempfile
 import time
 import unittest

@@ -51,7 +51,7 @@ import random
 import re
 import shutil
 import six
-import json
+import rapidjson as json
 import socket
 import tarfile
 import tempfile
