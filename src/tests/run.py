@@ -32,6 +32,7 @@ from functools import reduce
 
 assert(sys.version_info.major == 3 and
        (sys.version_info.minor == 7 or sys.version_info.minor == 9))
+# We need cwd to be the same dir as our program.
 # Python 3.9 issue 44070 has __file__ always returning
 # an absolute path
 flag = False
@@ -43,6 +44,7 @@ if sys.version_info.minor >= 9:
 elif sys.version_info.minor == 7:
     if os.path.dirname(__file__) != "" and \
        os.path.dirname(__file__) != ".":
+        os.chdir(os.path.dirname(__file__))
         flag = True
 if flag:
     os.putenv('PYEXE', sys.executable)

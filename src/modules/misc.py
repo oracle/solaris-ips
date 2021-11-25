@@ -69,7 +69,7 @@ from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
 # Redefining built-in 'range'; pylint: disable=W0622
 # Module 'urllib' has no 'parse' member; pylint: disable=E1101
 from six.moves import range, zip_longest
-from six.moves.urllib.parse import urlparse, urlunparse
+from six.moves.urllib.parse import urlsplit, urlparse, urlunparse
 from six.moves.urllib.request import pathname2url, url2pathname
 
 import six
