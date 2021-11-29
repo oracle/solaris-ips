@@ -100,6 +100,7 @@ HTTP_PORT = 80
 # all of the above can be modified with command line arguments.
 #
 
+SYSREPO_CRYPTO_FILENAME = "crypto.txt"
 SYSREPO_HTTP_TEMPLATE = "sysrepo_httpd.conf.mako"
 SYSREPO_HTTP_FILENAME = "sysrepo_httpd.conf"
 
@@ -704,36 +705,32 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                     _("Unable to write sysrepo_httpd.conf: {0}").format(err))
 
 def _write_crypto_conf(runtime_dir, uri_pub_map):
-        """Writes the proxy-creds-${pub}.pem file, containing keys and
-        certificates in order for the system repository to proxy to https
-        repositories."""
+        """Writes the crypto.txt file, containing keys and certificates
+        in order for the system repository to proxy to https repositories."""
 
         try:
-                # It is possible that a remote SSL publisher may not send a CA
-                # name back to identify the key/cert pair to use. 'mod_ssl', in
-                # this instance will use the first key/cert in the
-                # <SSLProxyMachineCertificateFile> but depending upon the order
-                # of the configured publishers it could be wrong. So workaround
-                # this behavior by specifying a file per publisher.
+                crypto_path = os.path.join(runtime_dir, SYSREPO_CRYPTO_FILENAME)
+                open(crypto_path, "w").close()
+                os.chmod(crypto_path, 0o600)
+                written_crypto_content = False
+
                 for repo_list in uri_pub_map.values():
                         for (pub, cert_path, key_path, hash, proxy, utype) in \
                             repo_list:
-                                cred_file = os.path.join(runtime_dir,
-                                    "proxy-creds-" + pub + ".pem")
-                                # Ensure that the file is truncated prior to
-                                # writing to it.
-                                with open(os.open(cred_file, os.O_CREAT |
-                                    os.O_WRONLY, 0o400), 'w') as fh_cred:
-                                        if cert_path and key_path:
-                                                fh_cred.writelines(open(cert_path))
-                                                fh_cred.writelines(open(key_path))
-                                        else:
-                                                fh_cred.write(
-                                                    "# Apache mod_ssl requires "
-                                                    "that this file be more than"
-                                                    " zero length even when it "
-                                                    "does not contain a PEM "
-                                                    "format key/cert.\n")
+                                if cert_path and key_path:
+                                       crypto_file = open(crypto_path, "a")
+                                       crypto_file.writelines(open(cert_path))
+                                       crypto_file.writelines(open(key_path))
+                                       crypto_file.close()
+                                       written_crypto_content = True
+
+                # Apache needs us to have some content in this file
+                if not written_crypto_content:
+                        crypto_file = open(crypto_path, "w")
+                        crypto_file.write(
+                            "# this space intentionally left blank\n")
+                        crypto_file.close()
+                os.chmod(crypto_path, 0o400)
         except OSError as err:
                 raise SysrepoException(
                     _("unable to write crypto.txt file: {0}").format(err))

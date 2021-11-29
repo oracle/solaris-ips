@@ -347,6 +347,7 @@ AllowEncodedSlashes On
 ProxyRequests On
 
 SSLProxyEngine on
+SSLProxyMachineCertificateFile ${sysrepo_runtime_dir}/crypto.txt
 SSLProxyProtocol all
 
 <Proxy "*">
@@ -363,23 +364,6 @@ SSLProxyProtocol all
 # to be substrings of another URI.
 #
 </%doc>
-
-
-# It is possible that a remote SSL publisher may not send a CA name back to
-# identify the key/cert pair to use. 'mod_ssl', in this instance will use the
-# first key/cert in the <SSLProxyMachineCertificateFile> but depending upon
-# the order of the configured publishers it could be wrong. So workaround
-# this behavior by specifying a file per publisher.
-% for uri in reversed(sorted(uri_pub_map.keys())):
-       % for pub, cert_path, key_path, hash, proxy, utype in uri_pub_map[uri]:
-                % if uri.startswith("https:"):
-                        <Proxy "${uri}">
-                            SSLProxyMachineCertificateFile ${sysrepo_runtime_dir}/proxy-creds-${pub}.pem
-                            Require local
-                        </Proxy>
-                % endif
-        % endfor pub
-% endfor uri
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
        % for pub, cert_path, key_path, hash, proxy, utype in uri_pub_map[uri]:

@@ -30,7 +30,6 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import copy
-import glob
 import os
 import shutil
 import six
@@ -512,19 +511,12 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 if os.path.isdir(self.htdocs_dir):
                         shutil.rmtree(self.htdocs_dir)
                 shutil.copytree(base_dir, self.htdocs_dir)
-
-                # We can have multiple crypto conf files
-                cred_path = os.path.join(self.test_root, "apache-conf", name)
-                cred_files = glob.glob(os.path.join(cred_path,
-                    "proxy-creds-*.pem"))
-                for cred_file in cred_files:
-                        destfile = os.path.join(self.common_config_dir,
-                            os.path.basename(cred_file))
-                        if os.path.exists(destfile):
-                                os.chmod(destfile, 0o600)
-                        shutil.copy(cred_file, self.common_config_dir)
-                        os.chmod(destfile, 0o400)
-
+                crypto_path = os.path.join(self.common_config_dir, "crypto.txt")
+                if os.path.exists(crypto_path):
+                        os.chmod(crypto_path, 0o600)
+                shutil.copy(os.path.join(self.test_root, "apache-conf", name,
+                    "crypto.txt"), self.common_config_dir)
+                os.chmod(crypto_path, 0o400)
                 st = os.stat(base_dir)
                 uid = st.st_uid
                 gid = st.st_gid
