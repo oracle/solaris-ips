@@ -1,30 +1,30 @@
 <?xml version="1.0"?>
 <!--
-	CDDL HEADER START
+  CDDL HEADER START
+  
+  The contents of this file are subject to the terms of the
+  Common Development and Distribution License (the "License").
+  You may not use this file except in compliance with the License.
 
-	The contents of this file are subject to the terms of the
-	Common Development and Distribution License (the "License").
-	You may not use this file except in compliance with the License.
+  You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+  or http://www.opensolaris.org/os/licensing.
+  See the License for the specific language governing permissions
+  and limitations under the License.
 
-	You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-	or http://www.opensolaris.org/os/licensing.
-	See the License for the specific language governing permissions
-	and limitations under the License.
+  When distributing Covered Code, include this CDDL HEADER in each
+  file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+  If applicable, add the following below this CDDL HEADER, with the
+  fields enclosed by brackets "[]" replaced with your own identifying
+  information: Portions Copyright [yyyy] [name of copyright owner]
 
-	When distributing Covered Code, include this CDDL HEADER in each
-	file and include the License file at usr/src/OPENSOLARIS.LICENSE.
-	If applicable, add the following below this CDDL HEADER, with the
-	fields enclosed by brackets "[]" replaced with your own identifying
-	information: Portions Copyright [yyyy] [name of copyright owner]
+  CDDL HEADER END
 
-	CDDL HEADER END
+  Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 
-	Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
-
-	NOTE:  This service manifest is not editable; its contents will
-	be overwritten by package or patch operations, including
-	operating system upgrade.  Make customizations in a different
-	file.
+  NOTE:  This service manifest is not editable; its contents will
+  be overwritten by package or patch operations, including
+  operating system upgrade.  Make customizations in a different
+  file.
 -->
 
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
@@ -117,6 +117,8 @@
 
 		<property_group name='config' type='application'>
 			<stability value='Evolving' />
+			<!-- The Image root -->
+			<propval name='image_root' type='astring' value='/' />
 			<!-- The port we listen on -->
 			<propval name='port' type='count' value='1008' />
 			<!-- The host we're running on -->
@@ -178,6 +180,76 @@
 			<documentation>
 				<manpage title='pkg.sysrepo' section='8' />
 			</documentation>
+
+			<pg_pattern name='config'>
+				<!-- Private Internal Properties -->
+				<prop_pattern name='value_authorization'>
+					<visibility value='hidden'/>
+				</prop_pattern>
+				<prop_pattern name='image_root'>
+					<description><loctext xml:lang='C'>
+						Image root. Should almost always be /.
+						Intended for internal tool use only.
+					</loctext></description>
+					<visibility value='hidden'/>
+				</prop_pattern>
+				<prop_pattern name='template_dir'>
+					<description><loctext xml:lang='C'>
+						Intended for internal tool use only.
+					</loctext></description>
+					<visibility value='hidden'/>
+				</prop_pattern>
+				<prop_pattern name='runtime_dir'>
+					<description><loctext xml:lang='C'>
+						Intended for internal tool use only.
+					</loctext></description>
+					<visibility value='hidden'/>
+				</prop_pattern>
+				<prop_pattern name='log_dir'>
+					<description><loctext xml:lang='C'>
+						Intended for internal tool use only.
+					</loctext></description>
+					<visibility value='hidden'/>
+				</prop_pattern>
+				<prop_pattern name='host'>
+					<description><loctext xml:lang='C'>
+						Intended for internal tool use only.
+					</loctext></description>
+					<visibility value='hidden'/>
+				</prop_pattern>
+
+
+				<!-- 
+				    The remainder of the properties are documented,
+				    in pkg.sysrepo(8)
+				-->
+				<prop_pattern name='cache_dir' type='astring'>
+					<description><loctext xml:lang='C'>
+						Absolute path to the directory used for caching responses from the publishers.  A special value of 'memory' indicates that an in-memory cache should be used.  The special value of 'None' indicates that the system repository should not perform caching.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='port' type='count'>
+					<description><loctext xml:lang='C'>
+						The port that the system repository should use to listen on for requests.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='cache_max' type='count'>
+					<description><loctext xml:lang='C'>
+						An integer value in megabytes that defines the maximum cache size for the system repository.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='http_proxy' type='astring'>
+					<description><loctext xml:lang='C'>
+						A string of the form scheme://hostname[:port] that defines a web proxy that the system repository can use to access http-based package repositories.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='https_proxy' type='astring'>
+					<description><loctext xml:lang='C'>
+						A string of the form scheme://hostname[:port] that defines a web proxy that the system repository can use to access https-based package repositories.
+					</loctext></description>
+				</prop_pattern>
+			</pg_pattern>
+
 		</template>
 
 	</instance>
