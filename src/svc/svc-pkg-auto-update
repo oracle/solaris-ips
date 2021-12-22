@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.7 -uEs
 #
 # CDDL HEADER START
 #
@@ -24,97 +24,133 @@
 #
 
 import pkg.no_site_packages
+import pkg.smf as smf
+import pkg.client.pkgdefs as pkgdefs
+import smf_include
 import os
-import sys
 import subprocess
-import pkg.smf
-from pkg.smf import get_prop
-import smf_include as smf
 import rapidjson as json
+import time
 
-SMF_FMRI = os.getenv('SMF_FMRI')
-PARSABLE_OUTPUT = '/system/volatile/' + SMF_FMRI + '/parsable_output.json'
 
-auto_reboot = (get_prop(SMF_FMRI, 'config/auto-reboot') == 'true')
-if auto_reboot:
-    try:
-        reboot_check_hook = get_prop(SMF_FMRI, 'config/reboot-check-hook')
-        check_before_reboot = os.access(reboot_check_hook, os.X_OK)
-    except pkg.smf.NonzeroExitException:
-        check_before_reboot = False
+def start():
+    """ SMF Start/Periodic Method to update system """
 
-cmd = ['/usr/bin/pkg']
+    myfmri = os.getenv('SMF_FMRI')
+    parsable_output = '/system/volatile/' + myfmri + '/parsable_output.json'
 
-try:
-    packages = get_prop(SMF_FMRI, 'config/packages').split(' ')
-    # The property may have been set to the empty string.
-    if len(packages) == 1 and (len(packages[0]) == 0 or packages[0] == '""'):
-        packages = []
-except pkg.smf.NonzeroExitException:
-    packages = []
+    # First clear out any prior degraded state.  This ensures that if this
+    # run needs to degrade the service its reason is shown by 'svcs -x' not
+    # that of a prior degraded state.
+    if 'degraded' in smf.get_prop(myfmri, 'restarter/state'):
+        smf.clear(myfmri)
 
-# If we have a list of packages use 'pkg install' so that this can be
-# used to change the installed set.  If packages is empty then perform
-# an unconstrained update.
-if len(packages) > 0:
-    cmd.extend(['install'])
-else:
-    cmd.extend(['update'])
-
-if get_prop(SMF_FMRI, 'config/require-new-be') == 'true':
-    cmd.append('--require-new-be')
-
-if get_prop(SMF_FMRI, 'config/activate-new-be') == 'false':
+    auto_reboot = (smf.get_prop(myfmri, 'config/auto-reboot') == 'true')
     if auto_reboot:
-        smf_method_exit(smf.SMF_EXIT_ERR_CONFIG,
-                        'invalid configuration',
-                        'Invalid configuration: config/auto-reboot = true '
-                        'with config/activate-new-be = false')
-    cmd.append('--no-be-activate')
+        try:
+            reboot_hook = smf.get_prop(myfmri, 'config/reboot-check-hook')
+            check_before_reboot = os.access(reboot_hook, os.X_OK)
+        except smf.NonzeroExitException:
+            check_before_reboot = False
 
-# Add any extra args that should be passed to pkg, eg for verbose output
-# for zones related arguments.
-try:
-    extra_args = get_prop(SMF_FMRI, 'config/pkg_extra_args').split(' ')
-except pkg.smf.NonzeroExitException:
-    pass
-else:
-    cmd.extend(extra_args)
+    cmd = ['/usr/bin/pkg']
 
-# Finally add the list of packages if it is non empty.
-if len(packages) > 0:
-    cmd.extend(packages)
-
-# To help debugging print out the full command what we are actually running
-print('Running:', ' '.join(cmd))
-pkg_status = subprocess.call(cmd)
-
-if pkg_status == 4:    # Nothing to do so exit cleanly.
-    sys.exit(smf.SMF_EXIT_OK)
-elif pkg_status != 0:
-    sys.exit(smf.SMF_EXIT_ERR_FATAL)
-
-with open(PARSABLE_OUTPUT) as pkg_out:
-    pkgplan = json.loads(pkg_out.read())
-
-new_be_created = pkgplan['create-new-be']
-new_be_activated = pkgplan['activate-be']
-if new_be_created and new_be_activated and auto_reboot:
-    if check_before_reboot:
-        print('Running reboot-check-hook {0}'.format(reboot_check_hook))
-        exitcode, output = subprocess.getstatusoutput(reboot_check_hook)
-        if exitcode != 0:
-            print('reboot-check-hook failed')
-            smf.smf_method_exit(smf.SMF_EXIT_DEGRADED,
-                                'reboot-check-hook failed', output)
-    print('Reboot after auto update')
-    msg = SMF_FMRI + ' : automatic reboot after update'
     try:
-        grace_period = get_prop(SMF_FMRI, 'config/shutdown-grace-period')
-    except pkg.smf.NonzeroExitException:
-        grace_period = 60
-    subprocess.call(['shutdown', '-yrg', grace_period, msg])
-elif not new_be_created:
-    print('Auto update completed, no reboot needed')
+        packages = smf.get_prop(myfmri, 'config/packages').split(' ')
+        # The property may have been set to the empty string.
+        if len(packages) == 1 and \
+                (len(packages[0]) == 0 or packages[0] == '""'):
+            packages = []
+    except smf.NonzeroExitException:
+        packages = []
 
-sys.exit(smf.SMF_EXIT_OK)
+    # If we have a list of packages use 'pkg install' so that this can be
+    # used to change the installed set.  If packages is empty then perform
+    # an unconstrained update.
+    if len(packages) > 0:
+        cmd.extend(['install'])
+    else:
+        cmd.extend(['update'])
+
+    if smf.get_prop(myfmri, 'config/require-new-be') == 'true':
+        cmd.append('--require-new-be')
+
+    if pkg.smf.get_prop(myfmri, 'config/backup-be') == 'true':
+        cmd.append('--require-backup-be')
+    else:
+        cmd.append('--no-backup-be')
+
+    if pkg.smf.get_prop(myfmri, 'config/activate-new-be') == 'false':
+        if auto_reboot:
+            message = 'Invalid configuration: config/auto-reboot = true ' + \
+                'with config/activate-new-be = false'
+            smf_include.smf_method_exit(smf_include.SMF_EXIT_ERR_CONFIG,
+                                        'invalid configuration', message)
+        cmd.append('--no-be-activate')
+
+    # Add any extra args that should be passed to pkg, eg for verbose output
+    # for zones related arguments.
+    try:
+        extra_args = smf.get_prop(myfmri, 'config/pkg_extra_args').split(' ')
+    except smf.NonzeroExitException:
+        pass
+    else:
+        # Make sure we don't add any duplicate arguments
+        repeatable = ["-Z", "-z", "--reject"]
+        cmd.extend(a for a in extra_args if a not in cmd or a in repeatable)
+
+    # Finally add the list of packages if it is non empty.
+    if len(packages) > 0:
+        cmd.extend(packages)
+
+    # Attempt the update 3 times, incase the image is locked,
+    # backing off longer each time.
+    for wait_secs in [60, 120, 300]:
+        print('Running:', ' '.join(cmd), flush=True)
+        pkg_status = subprocess.call(cmd)
+        if pkg_status != pkgdefs.EXIT_LOCKED:
+            break
+        print('Image locked, sleeping for {0} seconds'.format(wait_secs),
+              flush=True)
+        time.sleep(wait_secs)
+
+    if pkg_status == pkgdefs.EXIT_NOP:
+        # Nothing to do so exit cleanly.
+        return smf_include.SMF_EXIT_OK
+    elif pkg_status == pkgdefs.EXIT_LOCKED:
+        # Even though we have retried don't go into maintenance for a
+        # locked image issue, just let the next period deal with this.
+        # Mark the service as degraded so the admin is made aware.
+        message = 'Image remained locked after retries'
+        smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                    'image-locked', message)
+    elif pkg_status != pkgdefs.EXIT_OK:
+        return smf_include.SMF_EXIT_ERR_FATAL
+
+    with open(parsable_output) as pkg_out:
+        pkgplan = json.loads(pkg_out.read())
+
+    new_be_created = pkgplan['create-new-be']
+    new_be_activated = pkgplan['activate-be']
+    if new_be_created and new_be_activated and auto_reboot:
+        if check_before_reboot:
+            print('Running reboot-check-hook {0}'.format(reboot_hook))
+            exitcode, output = subprocess.getstatusoutput(reboot_hook)
+            if exitcode != 0:
+                print('reboot-check-hook failed')
+                smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                            'reboot-check-hook failed', output)
+        print('Reboot after auto update')
+        msg = myfmri + ' : automatic reboot after update'
+        try:
+            grace_period = smf.get_prop(myfmri, 'config/shutdown-grace-period')
+        except smf.NonzeroExitException:
+            grace_period = 60
+        subprocess.call(['shutdown', '-yrg', grace_period, msg])
+    elif not new_be_created:
+        print('Auto update completed, no reboot needed')
+
+    return smf_include.SMF_EXIT_OK
+
+
+smf_include.smf_main()

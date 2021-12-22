@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.7 -uEs
 #
 # CDDL HEADER START
 #
@@ -20,29 +20,32 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
-import os
-import subprocess
 import pkg.smf as smf
+import subprocess
+import smf_include
+import os
 
-keep = int(smf.get_prop(os.getenv('SMF_FMRI'), 'config/keep'))
-print('config/keep = {0} boot environments'.format(keep))
-candidates = []
-with subprocess.Popen(['beadm', 'list', '-Ho', 'created,policy,fmri'],
-                      stdout=subprocess.PIPE) as beadm_out:
-    for be in beadm_out.stdout.readlines():
-        creation, policy, be_fmri = be.decode().strip().split(';')
-        if 'auto' in policy.split(','):
-            candidates.append(be_fmri)
 
-print('Discovered {0} auto-update boot environments'.format(len(candidates)))
-if len(candidates) - keep > 0:
-    remove_bes = candidates[:len(candidates) - keep]
-    print('Removing the following boot environments:', *remove_bes)
-    for be in remove_bes:
-        subprocess.call(['beadm', 'destroy', '-fF', be])
-else:
-    print('No auto-update boot environments to remove')
+def start():
+    keep = int(smf.get_prop(os.getenv('SMF_FMRI'), 'config/keep'))
+    candidates = []
+    # beadm list sorts by the first field so include created date
+    with subprocess.Popen(['beadm', 'list', '-Ho', 'created,policy,fmri'],
+                          stdout=subprocess.PIPE) as beadm_out:
+        for be in beadm_out.stdout.readlines():
+            creation, policy, be_fmri = be.decode().strip().split(';')
+            if 'auto' in policy.split(','):
+                candidates.append(be_fmri)
+
+    if len(candidates) - keep > 0:
+        remove_bes = candidates[:len(candidates) - keep]
+        print('Removing the following boot environments:', *remove_bes)
+        for be in remove_bes:
+            subprocess.call(['beadm', 'destroy', '-fF', be])
+
+
+smf_include.smf_main()

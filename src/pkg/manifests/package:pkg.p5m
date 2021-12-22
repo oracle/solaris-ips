@@ -34,6 +34,11 @@ dir  path=etc/security/auth_attr.d
 file path=etc/security/auth_attr.d/package:pkg
 dir  path=etc/security/exec_attr.d
 file path=etc/security/exec_attr.d/package:pkg
+dir  path=etc/svc group=sys
+dir  path=etc/svc/profile group=sys
+dir  path=etc/svc/profile/system group=sys
+file path=etc/svc/profile/system/pkg-auto-update-cleanup-enable.xml \
+    variant.ak=false variant.opensolaris.zone=global
 dir  path=etc/user_attr.d
 file path=etc/user_attr.d/package:pkg
 dir  path=lib

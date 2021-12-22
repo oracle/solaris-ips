@@ -131,6 +131,7 @@ rad_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
 ignored_deps_dir = 'usr/share/pkg/ignored_deps'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
+smf_profile_dir = 'etc/svc/profile/system'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 userattrd_dir = 'etc/user_attr.d'
@@ -412,6 +413,9 @@ smf_app_files = [
         'svc/pkg-sysrepo-cache.xml',
         'svc/zoneproxy-client.xml',
         'svc/zoneproxyd.xml'
+        ]
+smf_profile_files = [
+        'svc/pkg-auto-update-cleanup-enable.xml'
         ]
 resource_files = [
         'util/opensolaris.org.sections',
@@ -1773,6 +1777,7 @@ if osname == 'sunos':
         # Solaris-specific extensions are added here
         data_files += [
                 (smf_app_dir, smf_app_files),
+                (smf_profile_dir, smf_profile_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
                 (userattrd_dir, userattrd_files),
