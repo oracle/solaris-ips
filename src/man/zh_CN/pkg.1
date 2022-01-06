@@ -5,7 +5,7 @@
 ]>
 
 <refentry id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2 Apr 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">17 Aug 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>映像包管理系统的检索客户端</refpurpose>
@@ -738,6 +738,9 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 </variablelist>
 <para>如果指定的中介版本和/或实现当前不可用，则会删除使用指定中介的任何链接。</para>
+<para>If, during an update, the mediated link target is removed a warning will
+be produced indicating this. If the update had created a new boot environment,
+the boot environment will be left mounted and not activated.</para>
 <para>对于其他所有选项，请参见上面的 <command>install</command> 命令。</para>
 </listitem>
 </varlistentry>

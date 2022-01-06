@@ -153,6 +153,7 @@ class ImagePlan(object):
                 self.__fixups = {}
                 self.operations_pubs = None # pubs being operated in hydrate
 
+                self.invalid_meds = defaultdict(set) # targetless mediated links
                 self.__old_excludes = image.list_excludes()
                 self.__new_excludes = self.__old_excludes
 
@@ -3888,6 +3889,15 @@ class ImagePlan(object):
                 # These must be done after action merging.
                 self.__evaluate_pkg_preserved_files()
                 self.__evaluate_pkg_downloads()
+                # If there are invalid mediators then message about it
+                # for the no execute (-n) or zones case. If an update
+                # in the global zone an exception will be raised later.
+                if self.invalid_meds:
+                        if self.__noexecute or self.image.is_zone():
+                                medmsg = self.__make_med_msg()
+                                timestamp = misc.time_to_timestamp(time.time())
+                                self.pd.add_item_message("warning", timestamp,
+                                                         MSG_WARNING, medmsg)
 
         def __update_avail_space(self):
                 """Update amount of available space on FS"""
@@ -4364,7 +4374,46 @@ class ImagePlan(object):
 
                 return prop_mediators
 
-        def __finalize_mediation(self, prop_mediators):
+        def __full_target_path(self, linkpath):
+                """ Resolves a link target to a relative pathname
+                    of the image being modified. """
+
+                rootpath = os.path.join(self.image.root, linkpath)
+                reallinkpath = os.path.normpath(rootpath)
+
+                targetname = os.path.realpath(reallinkpath)
+                # Should only trigger if there is something wrong with the
+                # associated package manifest.
+                assert(targetname.startswith(self.image.root))
+                # Chop the image.root off as a relative path to match
+                # the package manifests is required.
+                res = targetname[len(self.image.root):]
+                # Zones will have an extra '/' at the start of the pathname,
+                # so remove it.
+                if res.startswith("/"):
+                        return res[1:]
+                return res
+
+        def __make_med_msg(self):
+                """ Helper function to create the message string for poorly
+                    configured mediators. """
+                fmt_str = "  {0:24} {1}\n"
+                res = _("The following mediated link targets do not exist, "
+                        "please reset the links via pkg set-mediator:\n")
+                res = res + fmt_str.format(_("MEDIATOR"), _("REMOVED PATH(S)"))
+                for med in self.invalid_meds:
+                        res = res + fmt_str.format(med,
+                                                   ", ".join(
+                                                   self.invalid_meds[med]))
+                return res
+
+        def __is_target_removed(self, filepath):
+                """ Check to see if the named filepath is being removed in
+                    the plan."""
+                removed = self.pd.find_removal(filepath)
+                return removed
+
+        def __finalize_mediation(self, prop_mediators, mediated_del_path_target):
                 """Merge requested and previously configured mediators that are
                 being set but don't affect the plan and update proposed image
                 configuration."""
@@ -4373,10 +4422,20 @@ class ImagePlan(object):
                 for m in self.pd._new_mediators:
                         prop_mediators.setdefault(m, self.pd._new_mediators[m])
                 for m in cfg_mediators:
-                        if m in prop_mediators:
-                                continue
 
                         mediation = cfg_mediators[m]
+                        # Check to see if the proposed mediator has removed
+                        # targets, if so then upon an update there will be
+                        # invalid mediated links so add the target to the
+                        # invalid list, otherwise it is okay so nothing to
+                        # do.
+                        if m in prop_mediators:
+                                if m in mediated_del_path_target:
+                                     for target in mediated_del_path_target[m]:
+                                         if self.__is_target_removed(target):
+                                               self.invalid_meds[m].add(target)
+                                continue
+
                         new_mediation = mediation.copy()
                         if mediation.get("version-source") != "local":
                                 new_mediation.pop("version", None)
@@ -4521,6 +4580,7 @@ class ImagePlan(object):
                     self.image.cfg.mediators
 
                 mediated_removed_paths = set()
+                mediated_del_path_target = defaultdict(set)
                 for p in self.pd.pkg_plans:
                         pt.plan_add_progress(pt.PLAN_ACTION_MERGE)
                         for src, dest in p.gen_removal_actions():
@@ -4559,12 +4619,22 @@ class ImagePlan(object):
                                         # string.
                                         cfg_version = \
                                             cfg_version.get_short_version()
+
+                                cfg_version_source = mediation.get("version-source")
                                 cfg_impl = mediation.get("implementation")
+                                cfg_impl_source = mediation.get("implementation-source")
 
                                 if src_version == cfg_version and \
                                     mediator_impl_matches(src_impl, cfg_impl):
                                         mediated_removed_paths.add(
                                             src.attrs["path"])
+                                        # Need the target to be a full path
+                                        # so it can be found in the plan.
+                                        if cfg_version_source == "local" or \
+                                             cfg_impl_source == "local":
+                                                 binpath = src.attrs["path"]
+                                                 target = self.__full_target_path(binpath)
+                                                 mediated_del_path_target[mediator].add(target)
 
                 self.pd.update_actions = []
                 self.pd._rm_aliases = {}
@@ -4922,7 +4992,7 @@ class ImagePlan(object):
                 pt.plan_add_progress(pt.PLAN_ACTION_MEDIATION)
 
                 # Finalize link mediation.
-                self.__finalize_mediation(prop_mediators)
+                self.__finalize_mediation(prop_mediators, mediated_del_path_target)
 
                 pt.plan_done(pt.PLAN_ACTION_MEDIATION)
                 pt.plan_start(pt.PLAN_ACTION_FINALIZE)
@@ -5573,6 +5643,13 @@ class ImagePlan(object):
                                         traceback.format_stack())
                         if self.__preexecuted_indexing_error is not None:
                                 raise self.__preexecuted_indexing_error
+
+                # As the very last thing, check if there are any broken
+                # mediators.
+                if self.invalid_meds and not self.image.is_zone():
+                        medmsg = self.__make_med_msg()
+                        raise api_errors.InvalidMediatorTarget(medmsg)
+
 
         def __is_image_empty(self):
                 try:

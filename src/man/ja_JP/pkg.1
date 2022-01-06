@@ -5,7 +5,7 @@
 ]>
 
 <refentry id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2 Apr 2020</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">17 Aug 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -738,6 +738,9 @@ pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris</screen>
 </varlistentry>
 </variablelist>
 <para>指定されたメディエータのバージョンと実装のどちらかまたは両方が現在入手できない場合、指定されたメディエータを使用するリンクはすべて削除されます。</para>
+<para>If, during an update, the mediated link target is removed a warning will
+be produced indicating this. If the update had created a new boot environment,
+the boot environment will be left mounted and not activated.</para>
 <para>その他のすべてのオプションについては、前述の <command>install</command> コマンドを参照してください。</para>
 </listitem>
 </varlistentry>

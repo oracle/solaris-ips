@@ -1,3 +1,10 @@
+Version 84:
+Compatible with clients using versions 72-83.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * Added method:
+                find_removal() returns True if the named file is being removed
+
 Version 83:
 Compatible with clients using versions 72-82.
 

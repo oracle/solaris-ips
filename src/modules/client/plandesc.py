@@ -68,6 +68,7 @@ EXECUTED_ERROR    = 7 # failed
 OP_STAGE_PLAN     = 0
 OP_STAGE_PREP     = 1
 OP_STAGE_EXEC     = 2
+OP_STAGE_PRINTED  = 3 # The message has been consumed by a client
 
 class _ActionPlan(collections.namedtuple("_ActionPlan", "p src dst")):
         """A named tuple used to keep track of all the actions that will be
@@ -447,6 +448,15 @@ class PlanDescription(object):
                         ret.append(out)
 
                 return ret
+
+        def find_removal(self, filename):
+                """ Has the named file been tagged for removal ?"""
+
+                for ap in self.removal_actions:
+                        if ap.src.name == "file" and ap.src.attrs["path"] == filename:
+                               return True
+
+                return False
 
         def get_mediators(self):
                 """Returns list of strings describing mediator changes."""
@@ -919,6 +929,7 @@ class PlanDescription(object):
                                         ordered_list.append([item_id, None] + \
                                             PlanDescription. \
                                                     __msg_dict2list(msg))
+                                        msg["msg_stage"] = OP_STAGE_PRINTED
                         for si, si_list in six.iteritems(
                             self._item_msgs[item_id]):
                                 if si == "messages":
@@ -930,6 +941,7 @@ class PlanDescription(object):
                                         ordered_list.append([si, item_id] + \
                                             PlanDescription. \
                                                     __msg_dict2list(msg))
+                                        msg["msg_stage"] = OP_STAGE_PRINTED
                 for entry in sorted(ordered_list, key=operator.itemgetter(2)):
                         yield entry
 
@@ -948,6 +960,7 @@ class PlanDescription(object):
                                         if (stages is not None and
                                             mp["msg_stage"] not in stages):
                                                 continue
+                                        mp["msg_stage"] = OP_STAGE_PRINTED
                                         yield([iid, pid] + \
                                             PlanDescription.__msg_dict2list(mp))
 

@@ -6,7 +6,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">10 March 2021</refmiscinfo>
+<refmiscinfo class="date">17 August 2021</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -1090,6 +1090,9 @@ To specify an implementation with no version, append an at sign (@).</para>
 </variablelist>
 <para>If the specified mediator version and/or implementation is not currently
 available, any links using the specified mediators are removed.</para>
+<para>If, during an update, the mediated link target is removed a warning will
+be produced indicating this. If the update had created a new boot environment,
+the boot environment will be left mounted and not activated.</para> 
 <para>For all other options, see the <command>install</command> command above.</para>
 </listitem>
 </varlistentry>
