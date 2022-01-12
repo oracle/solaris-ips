@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -229,6 +229,23 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("contents -o noodles -o mice nopathA nopathB")
                 self.assertTrue(nofield_plural in self.errout)
+
+        def test_contents_dash_t(self):
+                """Test the -t option of contents. When pkg contents doesn't
+                find any actions that match the specified action, we produce
+                appropriate error messages."""
+
+                self.image_create(self.rurl)
+                self.pkg("install nopathA")
+
+                # Test that the pkg has a license action
+                self.pkg("contents -t license nopathA", exit=0)
+
+                # Test that the pkg has a no depend action, and we produce
+                # appropriate error
+                self.pkg("contents -t depend nopathA")
+                self.assertFalse("contains no actions specified using the -t option"
+                    in self.output)
 
         def test_bug_4315(self):
                 """Test that when multiple manifests are given and -m is used,

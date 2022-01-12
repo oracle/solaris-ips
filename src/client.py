@@ -3601,6 +3601,14 @@ package manifests.""", """\
 These packages contain no actions with the fields specified using the -o
 option. Please specify other fields, or use the -m option to show the raw
 package manifests.""", len(pargs)))
+                        elif not actionlist:
+                                error(gettext.ngettext("""\
+This package contains no actions specified using the -t option. Please
+specify other fields, or use the -m option to show the raw package
+manifests.""", """\
+These package contains no actions specified using the -t option. Please
+specify other fields, or use the -m option to show the raw package
+manifests.""", len(pargs)))
                         else:
                                 error(gettext.ngettext("""\
 This package delivers no filesystem content, but may contain metadata. Use
