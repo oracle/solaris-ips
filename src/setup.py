@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 #
 
 import errno
@@ -1356,8 +1356,8 @@ class build_py_func(_build_py):
                 self.timestamps = {}
 
                 p = subprocess.Popen(
-                    ["/usr/bin/python2.7", os.path.join(pwd, "pydates")],
-                    stdout=subprocess.PIPE)
+                    ["/usr/bin/python3.7", os.path.join(pwd, "pydates")],
+                    stdout=subprocess.PIPE, text=True)
 
                 for line in p.stdout:
                         stamp, path = line.split()
@@ -1443,10 +1443,10 @@ class build_py_func(_build_py):
                 # The timestamp for __init__.py is the timestamp for the
                 # workspace itself.
                 if outfile.endswith("/pkg/__init__.py"):
-                        src_mtime = self.timestamps[b"."]
+                        src_mtime = self.timestamps["."]
                 else:
-                        src_mtime = self.timestamps.get(
-                            os.path.join("src", infile), self.timestamps[b"."])
+                        src_mtime = self.timestamps.get(os.path.join("src",
+                            infile), self.timestamps["."])
 
                 # Force a copy of the file if the source timestamp is different
                 # from that of the destination, not just if it's newer.  This
