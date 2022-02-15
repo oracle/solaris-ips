@@ -28,6 +28,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.misc as misc
@@ -267,9 +268,55 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             add hardlink path=usr/bin/foo target=foo-2-d mediator=foo mediator-version=2 variant.debug.osnet=true
             close """
 
+        pkg_edit27 = """
+            open pkg://test/application/edition27@2.7.0
+            add set name=pkg.summary value="Example mediated application 2.7"
+            add file tmp/edition27 path=/usr/bin/edition27 owner=root group=bin mode=0555
+            add file tmp/edition27-lib path=/usr/lib/edition27 owner=root group=bin mode=0555
+            add link path=usr/bin/edition target=edition27 mediator=edition mediator-version=2.7 mediator-implementation=edit27 mediator-priority=vendor
+            add link path=usr/bin/edition-lib target=../lib/edition27 mediator=edition mediator-version=2.7 mediator-implementation=edit27 mediator-priority=vendor
+            close """
+
+        pkg_edit271_obsolete = """
+            open pkg://test/application/edition27@2.7.1
+            add set name=pkg.obsolete value=true
+            close """
+
+        pkg_edit37 = """
+            open pkg://test/application/edition37@3.7.0
+            add set name=pkg.summary value="Example mediated application 3.7"
+            add file tmp/edition37 path=/usr/bin/edition37 owner=root group=bin mode=0555
+            add file tmp/edition37-lib path=/usr/lib/edition37 owner=root group=bin mode=0555
+            add link path=usr/bin/edition target=edition37 mediator=edition mediator-version=3.7 mediator-implementation=edit37 mediator-priority=vendor
+            add link path=usr/bin/edition-lib target=../lib/edition37 mediator=edition mediator-version=3.7 mediator-implementation=edit27 mediator-priority=vendor
+            close """
+
+        pkg_edit371 = """
+            open pkg://test/application/edition37@3.7.1
+            add set name=pkg.summary value="Example mediated application 3.7"
+            add file tmp/edition371 path=/usr/bin/edition371 owner=root group=bin mode=0555
+            add file tmp/edition371-lib path=/usr/lib/edition371 owner=root group=bin mode=0555
+            add link path=usr/bin/edition target=edition371 mediator=edition mediator-version=3.7 mediator-implementation=edit37 mediator-priority=vendor
+            add link path=usr/bin/edition-lib target=../lib/edition371 mediator=edition mediator-version=3.7 mediator-implementation=edit37 mediator-priority=vendor
+            close """
+
+        pkg_incorp1 = """
+            open pkg://test/application/edit-incorp@1.0
+            add depend type=incorporate fmri=pkg:/application/edition27@2.7.0
+            add depend type=incorporate fmri=pkg:/application/edition37@3.7.0
+            close """
+
+        pkg_incorp2 = """
+            open pkg://test/application/edit-incorp@2.0
+            add depend type=incorporate fmri=pkg:/application/edition27@2.7.1
+            add depend type=incorporate fmri=pkg:/application/edition37@3.7.1
+            close """
+
         misc_files = ["tmp/fooc", "tmp/food", "tmp/foopl", "tmp/foopy",
             "tmp/foopyus", "tmp/foosm", "tmp/foopf", "tmp/foou", "tmp/foonvi",
-            "tmp/foovi", "tmp/foovim"]
+            "tmp/foovi", "tmp/foovim", "tmp/edition27", "tmp/edition37",
+            "tmp/edition371", "tmp/edition27-lib", "tmp/edition37-lib",
+            "tmp/edition371-lib"]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
@@ -756,12 +803,15 @@ mta\tsystem\t\tsystem\tpostfix\t
                 # the same.
                 self.pkg("install -vvv sendmail-links@2", exit=1)
 
-                # Now install sendmail-links again, and then remove both of them
-                # and verify that the links are gone and verify passes.
+                # Now install sendmail-links again, remove both of them,
+                # check that the link targets are gone and pkg verify passes.
                 self.pkg("install -vvv sendmail-links@1")
                 check_target(gen_mta_links(), "sendmail-mta")
                 self.pkg("verify")
-                self.pkg("uninstall -vvv sendmail sendmail-links")
+                # EXIT_PARTIAL because there is potentially a broken
+                # configuration.
+                self.pkg("uninstall -vvv sendmail sendmail-links",
+                         exit=pkgdefs.EXIT_PARTIAL)
                 check_not_exists(gen_mta_links())
                 self.pkg("verify")
 
@@ -1232,6 +1282,49 @@ foo\tlocal\t1\tsystem\t\t
                 self.__assert_mediation_matches("""\
 foo\tlocal\t1\tsystem\t\t
 """)
+
+        def test_03_obsoleted_mediator(self):
+                """Verify locally set mediators generate a warning message
+                   if the target of the mediated link is removed.
+                """
+
+                self.image_create(self.rurl)
+                self.pkg("install edit-incorp@1.0 edition27 edition37")
+
+                # Verify a disappearing local mediator version
+                # triggers a warning, with an exit of EXIT_PARTIAL.
+                self.pkg("set-mediator -V 2.7 edition")
+                self.pkg("update edit-incorp@2.0", exit=pkgdefs.EXIT_PARTIAL)
+                # The large expression below is because the names of the
+                # removed links can appear in any order due to the code
+                # using a set() as the data structure which does not
+                # guarantee an order.
+                self.assertTrue("usr/lib/edition27, usr/bin/edition27" in
+                                self.errout or
+                                "usr/bin/edition27, usr/lib/edition27" in
+                                self.errout)
+
+                # Verify a disappearing local mediator implemention
+                # triggers a warning, with an exit of EXIT_PARTIAL.
+                self.pkg("install edit-incorp@1.0 edition27")
+                self.pkg("set-mediator -I edit27 edition")
+                self.pkg("update edit-incorp@2.0", exit=pkgdefs.EXIT_PARTIAL)
+                self.assertTrue("usr/lib/edition27, usr/bin/edition27" in
+                                self.errout or
+                                "usr/bin/edition27, usr/lib/edition27" in
+                                self.errout)
+
+                # Verify the setting of a fictious mediator value
+                # has no impact.
+                self.pkg("install edit-incorp@1.0 edition27")
+                self.pkg("set-mediator -V 78 edition")
+                self.pkg("update edit-incorp@2.0")
+
+                # Verify if the mediator is not set to local
+                # update works.
+                self.pkg("install edit-incorp@1.0 edition27")
+                self.pkg("unset-mediator edition")
+                self.pkg("update edit-incorp@2.0")
 
 
 if __name__ == "__main__":

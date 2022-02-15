@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2022, Oracle and/or its affiliates.
 #
 
 #
@@ -703,6 +703,10 @@ WARNING: The boot environment being modified is not the active one.  Changes
 made will not be reflected on the next boot.
 """))
 
+        # a = change(!!!) (due to fix or mediator/variant/facet)
+        # c = update
+        # r = remove
+        # i = install
         a, r, i, c = [], [], [], []
         for src, dest in plan.get_changes():
                 if dest is None:
@@ -783,6 +787,20 @@ made will not be reflected on the next boot.
                 for s in status:
                         logger.info("{0} {1}".format(s[0].rjust(rjust_status),
                             s[1].rjust(rjust_value)))
+
+        # Display list of removed packages in the default output.
+        # Verbose output already has this in a different form.
+        if not verbose and r:
+                logger.info(_("\nRemoved Packages:\n"))
+                removals = [src.pkg_stem for src, dest in r]
+                if len(r) < 5:
+                        logger.info("  " + "\n  ".join(removals))
+                else:
+                        logger.info("  " + "\n  ".join(removals[:5]))
+                        logger.info("  ...")
+                        logger.info("  {0:d} additional removed packages. "
+                                    "Use 'pkg history' to view "
+                                    "the full list.".format(len(r) - 5))
 
         need_blank = True
         if "mediators" in disp and mediators:
@@ -3583,6 +3601,14 @@ package manifests.""", """\
 These packages contain no actions with the fields specified using the -o
 option. Please specify other fields, or use the -m option to show the raw
 package manifests.""", len(pargs)))
+                        elif not actionlist:
+                                error(gettext.ngettext("""\
+This package contains no actions specified using the -t option. Please
+specify other fields, or use the -m option to show the raw package
+manifests.""", """\
+These package contains no actions specified using the -t option. Please
+specify other fields, or use the -m option to show the raw package
+manifests.""", len(pargs)))
                         else:
                                 error(gettext.ngettext("""\
 This package delivers no filesystem content, but may contain metadata. Use

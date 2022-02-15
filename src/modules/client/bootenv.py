@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
 
 import errno
 import os
@@ -607,9 +607,10 @@ beadm activate {be_name_clone}
                 if self.is_live_BE:
                         logger.error(_("The running system has not been "
                             "modified. Modifications were only made to a clone "
-                            "of the running system.  This clone is mounted at "
-                            "{0} should you wish to inspect it.").format(
-                            self.clone_dir))
+                            "({0}) of the running system.  This clone is "
+                            "mounted at {1} should you wish to inspect "
+                            "it.").format(
+                            self.be_name_clone, self.clone_dir))
 
                 else:
                         # Rollback and destroy the snapshot.

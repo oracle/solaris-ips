@@ -55,6 +55,7 @@
     pkg:/library/python/rapidjson
     pkg:/library/python/rapidjson-37
     pkg:/library/python/rapidjson-39
+    pkg:/library/python/rpdb
     pkg:/package/svr4
     pkg:/runtime/python
     pkg:/runtime/python-37

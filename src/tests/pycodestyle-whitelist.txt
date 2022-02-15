@@ -5,3 +5,5 @@ modules/pspawn.py
 modules/sysattr.py
 modules/syscallat.py
 modules/sha512_t.py
+svc/svc-pkg-auto-update
+svc/svc-pkg-auto-update-cleanup

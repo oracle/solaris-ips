@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-37@$(PKGVERS)
@@ -228,12 +228,12 @@ file path=$(PY37DIRVP)/pkg/sysvpkg.py
 file path=$(PY37DIRVP)/pkg/variant.py
 file path=$(PY37DIRVP)/pkg/version.py pkg.depend.bypass-generate=.*six.*
 license lic_gustaebel license="MIT (Lars Gustaebel)" \
+    com.oracle.info.baid=17831 \
     com.oracle.info.description="portions of the tarfile module from Python 2.4" \
-    com.oracle.info.name=tarfile com.oracle.info.tpno=17819 \
-    com.oracle.info.version=2.4
-license lic_minisat license="MIT (MiniSAT)" \
+    com.oracle.info.name=tarfile com.oracle.info.version=2.4
+license lic_minisat license="MIT (MiniSAT)" com.oracle.info.baid=17890 \
     com.oracle.info.description="MiniSAT 1.14.1" com.oracle.info.name=MiniSAT \
-    com.oracle.info.tpno=17867 com.oracle.info.version=1.14.1
+    com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
 # CFFI import is done in C code, so it isn't picked up by pkgdepend
 depend type=require fmri=library/python/cffi-37@1.11.4

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 #
 
 import errno
@@ -131,6 +131,7 @@ rad_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
 ignored_deps_dir = 'usr/share/pkg/ignored_deps'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
+smf_profile_dir = 'etc/svc/profile/system'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 userattrd_dir = 'etc/user_attr.d'
@@ -412,6 +413,9 @@ smf_app_files = [
         'svc/pkg-sysrepo-cache.xml',
         'svc/zoneproxy-client.xml',
         'svc/zoneproxyd.xml'
+        ]
+smf_profile_files = [
+        'svc/pkg-auto-update-cleanup-enable.xml'
         ]
 resource_files = [
         'util/opensolaris.org.sections',
@@ -1352,8 +1356,8 @@ class build_py_func(_build_py):
                 self.timestamps = {}
 
                 p = subprocess.Popen(
-                    ["/usr/bin/python2.7", os.path.join(pwd, "pydates")],
-                    stdout=subprocess.PIPE)
+                    ["/usr/bin/python3.7", os.path.join(pwd, "pydates")],
+                    stdout=subprocess.PIPE, text=True)
 
                 for line in p.stdout:
                         stamp, path = line.split()
@@ -1439,10 +1443,10 @@ class build_py_func(_build_py):
                 # The timestamp for __init__.py is the timestamp for the
                 # workspace itself.
                 if outfile.endswith("/pkg/__init__.py"):
-                        src_mtime = self.timestamps[b"."]
+                        src_mtime = self.timestamps["."]
                 else:
-                        src_mtime = self.timestamps.get(
-                            os.path.join("src", infile), self.timestamps[b"."])
+                        src_mtime = self.timestamps.get(os.path.join("src",
+                            infile), self.timestamps["."])
 
                 # Force a copy of the file if the source timestamp is different
                 # from that of the destination, not just if it's newer.  This
@@ -1773,6 +1777,7 @@ if osname == 'sunos':
         # Solaris-specific extensions are added here
         data_files += [
                 (smf_app_dir, smf_app_files),
+                (smf_profile_dir, smf_profile_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
                 (userattrd_dir, userattrd_files),

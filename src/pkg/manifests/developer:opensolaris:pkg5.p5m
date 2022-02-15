@@ -45,6 +45,7 @@ depend type=require fmri=pkg:/library/python/portend
 depend type=require fmri=pkg:/library/python/prettytable
 depend type=require fmri=pkg:/library/python/pycodestyle
 depend type=require fmri=pkg:/library/python/rapidjson
+depend type=require fmri=pkg:/library/python/rpdb
 depend type=require fmri=pkg:/library/python/six
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-37

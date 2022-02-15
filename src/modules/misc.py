@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2022, Oracle and/or its affiliates.
 
 """
 Misc utility functions used by the packaging system.
@@ -69,7 +69,7 @@ from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
 # Redefining built-in 'range'; pylint: disable=W0622
 # Module 'urllib' has no 'parse' member; pylint: disable=E1101
 from six.moves import range, zip_longest
-from six.moves.urllib.parse import urlparse, urlunparse
+from six.moves.urllib.parse import urlsplit, urlparse, urlunparse
 from six.moves.urllib.request import pathname2url, url2pathname
 
 import six
@@ -3057,7 +3057,8 @@ def cmp(a, b):
 
 
 def set_memory_limit(bytes, allow_override=True):
-        """Limit memory consumption of current process to 'bytes'."""
+        """Limit memory consumption of current process to 'bytes'.
+           This only limits the brk() and mmap() calls made by python."""
 
         if allow_override:
                 try:
@@ -3066,9 +3067,9 @@ def set_memory_limit(bytes, allow_override=True):
                         pass
 
         try:
-                resource.setrlimit(resource.RLIMIT_DATA, (bytes, bytes))
+                resource.setrlimit(resource.RLIMIT_VMEM, (bytes, bytes))
         except AttributeError:
-                # If platform doesn't support RLIMIT_DATA, just ignore it.
+                # If platform doesn't support RLIMIT_VMEM, just ignore it.
                 pass
         except ValueError:
                 # An unprivileged user can not raise a previously set limit,

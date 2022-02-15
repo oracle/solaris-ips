@@ -1023,6 +1023,12 @@ def __api_execute_plan(operation, api_inst):
         except api_errors.ImageInsufficentSpace as e:
                 _error_json(str(e), errors_json=errors_json)
                 rval = __prepare_json(EXIT_OOPS, errors=errors_json)
+        except api_errors.InvalidMediatorTarget as e:
+                _error_json(str(e), errors_json=errors_json)
+                # An invalid target means the operation completed but
+                # the user needs to consider the state of any image so
+                # return a EXIT_PARTIAL.
+                rval = __prepare_json(EXIT_PARTIAL, errors=errors_json)
         except Exception as e:
                 _error_json(_("An unexpected error happened during "
                     "{operation}: {err}").format(

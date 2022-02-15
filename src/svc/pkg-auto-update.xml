@@ -60,7 +60,7 @@
 			hour='3'
 			minute='0'
 			recover='true'
-			exec='/lib/svc/method/svc-pkg-auto-update'
+			exec='/lib/svc/method/svc-pkg-auto-update %m'
 			timeout_seconds='0'>
 			    <method_context>
 				<method_credential trusted_path='true'
@@ -71,6 +71,7 @@
 			<propval type='boolean' name='auto-reboot' value='false' />
 			<propval type='boolean' name='require-new-be' value='false' />
 			<propval type='boolean' name='activate-new-be' value='true' />
+			<propval type='boolean' name='backup-be' value='true' />
 			<property name='packages' type='astring'>
 				<!-- Set an empty value so it is visible with editprop -->
 				<astring_list>
@@ -90,14 +91,14 @@
 		</template>
 	</instance>
 
-	<instance name='cleanup' enabled='true'>
+	<instance name='cleanup' enabled='false'>
 
 		<scheduled_method
 			interval='day'
 			hour='0'
 			minute='0'
 			recover='true'
-			exec='/lib/svc/method/svc-pkg-auto-update-cleanup'
+			exec='/lib/svc/method/svc-pkg-auto-update-cleanup %m'
 			timeout_seconds='0'>
 			    <method_context>
 				<method_credential trusted_path='true'

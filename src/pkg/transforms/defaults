@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
 #
 
 # Set some specific permissions
@@ -104,5 +104,8 @@
 <transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
 set name=org.opensolaris.consolidation value=ips
 set name=variant.opensolaris.zone value=global value=nonglobal
+
+# Set values for an ak variant
+<transform file dir link hardlink driver variant.ak=.* -> emit set name=variant.ak value=false value=true>
 
 # vim: ft=pkg5manifest

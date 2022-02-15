@@ -109,9 +109,9 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 83
+CURRENT_API_VERSION = 84
 COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
-    82, CURRENT_API_VERSION])
+    82, 83, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -2913,7 +2913,14 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                                 error = apx.ActuatorException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-
+                        except apx.InvalidMediatorTarget as e:
+                                # Mount a new BE but do not activate it in case the
+                                # missing mediator target will cause a broken system.
+                                # Allows the admin to take the appropriate action.
+                                if self.__new_be:
+                                        be.restore_image()
+                                self.log_operation_end(error=e)
+                                raise e
                         except Exception as e:
                                 if self.__new_be:
                                         be.restore_image()

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -170,6 +170,21 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
             close
         """
 
+        obsolete = """
+            open goingaway@1.0
+            add dir mode=0755 owner=root group=bin path=/lib
+            close
+            open goingaway@2.0
+            add set name=pkg.obsolete value=true
+            close
+            open moreoldstuff@1.0
+            add dir mode=0755 owner=root group=bin path=/lib
+            close
+            open moreoldstuff@2.0
+            add set name=pkg.obsolete value=true
+            close
+        """
+
         def setUp(self):
                 # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
@@ -182,7 +197,8 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.rurl6 = self.dcs[6].get_repo_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo10, self.foo11,
                     self.baz11, self.qux10, self.qux11, self.quux10,
-                    self.quux11, self.corge11, self.incorp10, self.incorp11))
+                    self.quux11, self.corge11, self.incorp10, self.incorp11,
+                    self.obsolete))
 
                 self.pkgsend_bulk(self.rurl2, (self.foo10, self.bar10,
                     self.bar11, self.baz10, self.qux10, self.qux11,
@@ -331,7 +347,7 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
         def test_nothingtodo(self):
                 """Test that if we have multiple facets of equal length that
-                we don't accidently report that there are image updates when
+                we don't accidentally report that there are image updates when
                 there are not."""
 
                 facet_max = 1000
@@ -470,6 +486,25 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
                     "{0}".format(self.img_path(1)))
                 self.pkg("update -nv", exit=4)
 
+        def test_display_removed_pkgs(self):
+            """Verify that the names of removed packages are displayed during
+            upgrade."""
+
+            self.image_create(self.rurl1)
+            self.pkg("install foo@1.0 goingaway@1.0 moreoldstuff@1.0")
+            self.pkg("update", exit=0)
+
+            # Check the header and the package names without a version are
+            # present.
+            # Ensure that a package that has not been obsoleted is not included.
+            self.assertTrue("Removed Packages:" in self.output)
+
+            self.assertTrue("goingaway" in self.output)
+            self.assertFalse("goingaway@" in self.output)
+            self.assertTrue("moreoldstuff" in self.output)
+            self.assertFalse("moreoldstuff@" in self.output)
+
+            self.assertFalse("foo" in self.output)
 
 class TestIDROps(pkg5unittest.SingleDepotTestCase):
 

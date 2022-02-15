@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
 #
 
 # This module provides a basic interface to smf.
@@ -119,7 +119,7 @@ def is_disabled(fmri, zone=None):
         return get_state(fmri, zone=zone) < SMF_SVC_TMP_ENABLED
 
 def check_fmris(attr, fmris, zone=None):
-        """ Walk a set of fmris checking that each is fully specifed with
+        """ Walk a set of fmris checking that each is fully specified with
         an instance.
         If an FMRI is not fully specified and does not contain at least
         one special match character from fnmatch(7) the fmri is dropped
@@ -242,6 +242,19 @@ def restart(fmris, sync_timeout=0, zone=None):
         if isinstance(fmris, six.string_types):
                 fmris = (fmris,)
         args = [svcadm_path, "restart"]
+        if sync_timeout:
+                args.append("-s")
+                if sync_timeout != -1:
+                        args.append("-T {0:d}".format(sync_timeout))
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris), zone=zone)
+
+def clear(fmris, sync_timeout=0, zone=None):
+        if not fmris:
+                return
+        if isinstance(fmris, six.string_types):
+                fmris = (fmris,)
+        args = [svcadm_path, "clear"]
         if sync_timeout:
                 args.append("-s")
                 if sync_timeout != -1:

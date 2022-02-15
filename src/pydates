@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2
@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2022, Oracle and/or its affiliates.
 
 
 # Create a dictionary (timestamps) mapping paths of python files in the modules
@@ -21,29 +21,20 @@
 # filesystem timestamp.  If it's unchanged, its timestamp is the timestamp of
 # the last changeset which modified it.
 
-from __future__ import print_function
 import os
 import time
 import mercurial.cmdutil as cmdutil
 import mercurial.match as matchmod
 from mercurial import localrepo
 from mercurial.ui import ui
+from mercurial import encoding
 
 myui = ui()
-try:
-    # Since Mercurial 4.8:
-    repo = localrepo.instance(myui, cmdutil.findrepo(os.getcwd()), False)
-except TypeError:
-    # Mercurial 4.8+ causes pylint to complain about the old use of the
-    # __init__ constructor, which is valid when running using versions prior
-    # to 4.8 (the arg count jumped from 3 to 13). So to pass pylint with both
-    # old and new versions, we need to disable the arg check around this call.
-    # pylint: disable=no-value-for-parameter
-    repo = localrepo.localrepository(myui, cmdutil.findrepo(os.getcwd()))
-    # pylint: disable=no-value-for-parameter
+repo = localrepo.instance(myui, cmdutil.findrepo(encoding.getcwd()), False)
 
 # Match only python files in src/modules.
-matchfn = matchmod.match(repo.root, os.getcwd(), patterns=["re:src/modules/.*\.py$"])
+matchfn = matchmod.match(repo.root, encoding.getcwd(),
+                         patterns=[rb"re:src/modules/.*\.py$"])
 
 # Dummy prep function.
 def prep(ctx, fns):
@@ -52,8 +43,8 @@ def prep(ctx, fns):
 # Get the set of matching files in the working directory parent.
 manifest = set(
     f
-    for f in repo["."]
-    if f.startswith("src/modules/") and f.endswith(".py")
+    for f in repo[b"."]
+    if f.startswith(b"src/modules/") and f.endswith(b".py")
 )
 
 # Find out which files have changed.
@@ -81,8 +72,11 @@ for ctx in cmdutil.walkchangerevs(repo, matchfn, {'rev': revs}, prep):
                         timestamps[f] = ctx.date()[0]
                         manifest.remove(f)
 
-for name, stamp in timestamps.iteritems():
-        print(stamp, name)
+for name, stamp in timestamps.items():
+        # This produces output that is consumed by setup.py, the types
+        # returned here must be expected by the setup.py otherwise
+        # the setup.py will default to the timestamp of the workspace.
+        print(stamp, name.decode())
 
 # Get the timestamp of the workspace.  If it's unmodified, then use the
 # timestamp of the parent of the working directory, and the latest timestamp of
@@ -96,4 +90,4 @@ if any(modadd):
             for f in modadd
         )), ".")
 else:
-        print(repo["."].date()[0], ".")
+        print(repo[b"."].date()[0], ".")
