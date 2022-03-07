@@ -3380,7 +3380,7 @@ def check_attrs(attrs, cmd, reference=None, prefixes=None):
                 prefixes = valid_special_prefixes
         for a in attrs:
                 for p in prefixes:
-                        if a.startswith(p) and not a in reference:
+                        if a.startswith(p) and a not in reference:
                                 usage(_("Invalid attribute '{0}'").format(a),
                                     cmd)
 
@@ -3710,7 +3710,7 @@ the last retrieval may not be available.
         for pub in fail_dict:
                 failed = fail_dict[pub]
 
-                if failed is None or not "errors" in failed:
+                if failed is None or "errors" not in failed:
                         # This pub did not have any repo problems, ignore.
                         continue
 
@@ -5934,6 +5934,8 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
                 __ret = EXIT_OOPS
         except (api_errors.PkgUnicodeDecodeError, UnicodeEncodeError) as __e:
                 error("\n" + str(__e))
+                error("the locale environment (LC_ALL, LC_CTYPE) must be"
+                      " a UTF-8 locale or C.")
                 __ret = EXIT_OOPS
         except:
                 if _api_inst:
