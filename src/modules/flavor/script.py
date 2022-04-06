@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2022, Oracle and/or its affiliates.
 #
 
 import os
@@ -111,4 +111,7 @@ def process_script_deps(action, pkg_vars, **kwargs):
                                         pkg_attrs[key].extend(py_attrs[key])
                                 else:
                                         pkg_attrs[key] = py_attrs[key]
+        # Ensure that the reported dependencies are
+        # always in the same order.
+        deps.sort()
         return deps, elist, pkg_attrs

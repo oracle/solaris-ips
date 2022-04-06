@@ -20,17 +20,19 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2022, Oracle and/or its affiliates.
 
 import os
 import sys
 
-# Set the path so that modules can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+# Set the path so that modules can be found. Force this to
+# be a relative path due to Python 3.9 issue 44070 which
+# has __file__ always returning an absolute path.
+path_to_parent = os.path.relpath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path_to_parent)
 
 import pkg5testenv
+
 
 def setup_environment(proto):
         pkg5testenv.setup_environment(proto)

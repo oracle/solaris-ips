@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 
 import unittest
 import tempfile
@@ -42,8 +42,10 @@ import pkg.portable as portable
 import pkg.facet as facet
 import pkg.variant as variant
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+# Set the path so that modules above can be found. Force this to
+# be a relative path due to Python 3.9 issue 44070 which
+# has __file__ always returning an absolute path.
+path_to_parent = os.path.relpath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path_to_parent)
 import pkg5unittest
 
@@ -179,7 +181,7 @@ link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
                 self.m1.set_content(self.m1_contents)
                 self.m2.set_content(self.m2_contents)
                 self.m2.humanized_differences(self.m1)
-                
+
         def test_diffs2(self):
                 self.m1.set_content(self.m1_contents)
                 self.m2.set_content(self.m2_contents)
@@ -199,7 +201,7 @@ link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
 
                 diffs = self.m1.combined_difference(self.m2)
                 self.assertEqual(len(diffs), 0)
-                
+
         def test_diffs4(self):
                 """ ASSERT: Building m' from diff(m, null) should yield m """
 

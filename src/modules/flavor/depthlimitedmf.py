@@ -2,7 +2,7 @@
 # Copyright (c) 2001, 2016, 2003, 2016, 2005, 2016, 2007, 2016, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2022, Oracle and/or its affiliates.
 
 
 """A standalone version of ModuleFinder which limits the depth of exploration
@@ -11,7 +11,8 @@ determining which path contains a module to be loaded.  It is designed to be
 run by any version of python against its set of modules.  To communicate its
 results to the process which ran it, it prints output to stdout.  The format is
 to start a line with 'DEP ' if it contains information about a dependency, and
-'ERR ' if it contains information about a module it couldn't analyze."""
+'ERR ', with an associated type (MISSING, SYNTAX), if it contains information
+about a module it couldn't analyze."""
 
 # This module cannot import other pkg modules because pkg modules are not
 # delivered for all versions of python.  Because of this, we have to duplicate
@@ -228,8 +229,10 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                                         fromlist = [
                                             f for f in fromlist if f != "*"
                                         ]
-                                if what == "absolute_import": level = 0
-                                else: level = -1
+                                if what == "absolute_import":
+                                        level = 0
+                                else:
+                                        level = -1
                                 res.extend(self._safe_import_hook(name, m,
                                     fromlist, level=level))
                         elif what == "relative_import":
@@ -365,7 +368,8 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 cur_parent = q
                 while tail:
                         i = tail.find('.')
-                        if i < 0: i = len(tail)
+                        if i < 0:
+                                i = len(tail)
                         head, tail = tail[:i], tail[i+1:]
                         new_name = "{0}.{1}".format(name, head)
                         r = self.import_module(head, new_name, cur_parent)
@@ -397,7 +401,11 @@ if __name__ == "__main__":
                 ]):
                         sys.stdout.write("DEP {0}\n".format(res))
                 missing, maybe =  mf.any_missing_maybe()
-                sys.stdout.writelines(("ERR {0}\n".format(name) for name in missing))
+                sys.stdout.writelines(("ERR MISSING {0}\n"\
+                                      .format(name) for name in missing))
+        except SyntaxError as e:
+                sys.stdout.writelines(("ERR SYNTAX [{0}:{1}] {2}\n"\
+                                      .format(e.lineno, e.offset, e)))
         except ValueError as e:
                 sys.stdout.write("ERR {0}\n".format(e))
         except MultipleDefaultRunPaths as e:
