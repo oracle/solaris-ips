@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2022, Oracle and/or its affiliates.
 #
 
 import os
@@ -73,12 +73,23 @@ class PythonSyntaxError(base.DependencyAnalysisError):
         """Exception that is raised when a python file to be analyzed contains a
         syntax error."""
 
-        def __init__(self, s_err, installed_path, local_file):
+        def __init__(self, installed_path, local_file, s_err=None, msg=None):
                 self.ip = installed_path
                 self.lp = local_file
-                self.line = s_err.lineno
-                self.col = s_err.offset
-                self.txt = str(s_err)
+                if s_err:
+                    self.line = s_err.lineno
+                    self.col = s_err.offset
+                    self.txt = str(s_err)
+                else:
+                    # This is very dependent upon the message from the
+                    # depthlimitedmf.py output for a SyntaxError:
+                    # ERR SYNTAX [lineno:column] actual error text
+                    # Error text is after the last ']'
+                    self.txt = msg[msg.index(']') + 2:]
+                    # Extract the lineno and column from the [lineno:column]
+                    values = re.search("\[(.+):(.+)\]",msg)
+                    self.line = values.group(1)
+                    self.col = values.group(2)
 
         def __str__(self):
                 return _("The file to be installed at {ip} appears to be a "
@@ -270,8 +281,8 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
                                 errs.append(PythonModuleMissingPath(name,
                                     action.attrs[PD_LOCAL_PATH]))
                 except SyntaxError as e:
-                        errs.append(PythonSyntaxError(e, action.attrs["path"],
-                            local_file))
+                        errs.append(PythonSyntaxError(action.attrs["path"],
+                            local_file, s_err=e))
                 except Exception as e:
                         errs.append(e)
                 return deps, errs, {}
@@ -292,7 +303,7 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
                 cmd.extend(run_paths)
         try:
                 sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+                    stderr=subprocess.PIPE, encoding="utf-8")
         except Exception as e:
                 return [], [PythonSubprocessError(None, " ".join(cmd),\
                     str(e))], {}
@@ -312,7 +323,15 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
                         else:
                                 deps.append(PythonDependency(action, names,
                                     dirs, pkg_vars, action.attrs[PD_PROTO_DIR]))
+                elif l.startswith("ERR MISSING "):
+                        errs.append(
+                            PythonModuleMissingPath(l[len("ERR MISSING "):],
+                            action.attrs[PD_LOCAL_PATH]))
+                elif l.startswith("ERR SYNTAX "):
+                        errs.append(PythonSyntaxError(action.attrs["path"],
+                            local_file, msg=l))
                 elif l.startswith("ERR "):
+                        # Generic error which is assigned as a missing path
                         errs.append(PythonModuleMissingPath(l[4:],
                             action.attrs[PD_LOCAL_PATH]))
                 else:
