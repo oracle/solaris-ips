@@ -21,11 +21,12 @@
 #
 
 #
-# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2022, Oracle and/or its affiliates.
 #
 
 # This module provides a basic interface to smf.
 
+import locale
 import os
 import six
 
@@ -73,6 +74,10 @@ class NonzeroExitException(Exception):
 def __call(args, zone=None):
         # a way to invoke a separate executable for testing
         cmds_dir = DebugValues.get_value("smf_cmds_dir")
+        # returned values will be in the user's locale
+        # so we need to ensure that the force_str uses
+        # their locale.
+        encoding = locale.getpreferredencoding(do_setlocale=False)
         if cmds_dir:
                 args = (
                     os.path.join(cmds_dir,
@@ -86,7 +91,8 @@ def __call(args, zone=None):
         try:
                 proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
-                buf = [misc.force_str(l) for l in proc.stdout.readlines()]
+                buf = [misc.force_str(l, encoding=encoding)
+                       for l in proc.stdout.readlines()]
                 ret = proc.wait()
         except OSError as e:
                 raise RuntimeError("cannot execute {0}: {1}".format(args, e))
