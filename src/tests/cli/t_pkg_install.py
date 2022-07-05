@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -1217,7 +1217,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install b2", exit=1)
                 # this should pass because var/pkg/config is not reserved
                 self.pkg("install b3", exit=0)
-                
+
                 if portable.osname != "sunos":
                         return
                 self.pkg("install b4", exit=1)
@@ -2076,7 +2076,7 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list -Hv kernel@1.0,5.11-0.1 | /usr/bin/awk '{print $1}'")
                 kernel_fmri = self.output
                 # upgrade to next version w/o encountering idrs
-                self.pkg("update -v");
+                self.pkg("update -v")
                 self.pkg("list kernel@1.0,5.11-0.2")
                 self.pkg("list")
 
@@ -7585,7 +7585,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # test to see if solver will fail gracefully when no solution is
                 # possible and a require-any dependency is involved
                 self.pkg("install -vvv pkg-nosol-A pkg-nosol-E",
-                    assert_solution=False, exit=1)
+                    assert_solution=False, exit=9)
 
                 # test to see if solver will pick one
                 self.pkg("install pkg8@1.0")  # install pkg
@@ -7634,7 +7634,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # Test to see if solver will fail gracefully when no solution is
                 # possible and a require-any dependency is involved.
                 self.pkg("exact-install -v pkg-nosol-A pkg-nosol-E",
-                    assert_solution=False, exit=1)
+                    assert_solution=False, exit=9)
 
                 # Test to see if solver will pick one.
                 self.pkg("exact-install pkg8@1.0")

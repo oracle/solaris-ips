@@ -466,8 +466,9 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # required by the new packages.
 
                 # Should fail and result in 'no solution' because user failed to
-                # specify any input.
-                self.pkg("update -nv", exit=1, assert_solution=False)
+                # specify any input. In this case we also get the constrained
+                # operation exit status.
+                self.pkg("update -nv", exit=9, assert_solution=False)
                 self.assertTrue("No solution" in self.errout)
 
                 # Should fail, but not result in 'no solution' because user
