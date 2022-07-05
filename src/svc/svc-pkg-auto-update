@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2022, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -114,9 +114,14 @@ def start():
               flush=True)
         time.sleep(wait_secs)
 
-    if pkg_status == pkgdefs.EXIT_NOP:
-        # Nothing to do so exit cleanly.
+    if pkg_status == pkgdefs.EXIT_NOP or \
+       pkg_status == pkgdefs.EXIT_CONSTRAINED:
+        # A constrained image or no updates available
         return smf_include.SMF_EXIT_OK
+    elif pkg_status == pkgdefs.EXIT_LICENSE:
+        message = 'License acceptance required'
+        smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                    'license', message)
     elif pkg_status == pkgdefs.EXIT_LOCKED:
         # Even though we have retried don't go into maintenance for a
         # locked image issue, just let the next period deal with this.

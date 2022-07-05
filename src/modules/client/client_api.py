@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2022, Oracle and/or its affiliates.
 #
 
 
@@ -434,7 +434,7 @@ def _error_json(text, cmd=None, errors_json=None, errorType=None):
         else:
                 pkg_cmd = "pkg: "
 
-        if errors_json != None:
+        if errors_json is not None:
                 error = {}
                 if errorType:
                         error["errtype"] = errorType
@@ -574,7 +574,7 @@ def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
             "updated{partial}").format(succeeded=succeeded, total=total,
             partial=partial_str)
 
-        if errors != None:
+        if errors is not None:
                 if cre.failed:
                         error = {"reason": txt, "errtype": "catalog_refresh"}
                 else:
@@ -595,13 +595,13 @@ def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
                 return succeeded + partial + len(cre.failed)
 
 
-        if errors != None:
+        if errors is not None:
                 error = {"reason": str(refresh_errstr),
                     "errtype": "catalog_refresh"}
                 errors.append(error)
 
         if cre.errmessage:
-                if errors != None:
+                if errors is not None:
                         error = {"reason": str(cre.errmessage),
                             "errtype": "catalog_refresh"}
                         errors.append(error)
@@ -1143,6 +1143,8 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
                 if e.invalid_mediations:
                         # Bad user input for mediation.
                         return __prepare_json(EXIT_BADOPT, errors=errors_json)
+                if e.no_solution:
+                        return __prepare_json(EXIT_CONSTRAINED, errors=errors_json)
                 return __prepare_json(EXIT_OOPS, errors=errors_json)
 
         if isinstance(e, (api_errors.CertificateError,
@@ -2838,7 +2840,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
         """Private function to invoke pkg subcommands."""
 
         errors_json = []
-        if subcommand == None:
+        if subcommand is None:
                 err = {"reason": "Sub-command cannot be none type."}
                 errors_json.append(err)
                 return None, __prepare_json(EXIT_OOPS, errors=errors_json)
@@ -2850,7 +2852,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
 
         arg_name = "pargs_json"
         try:
-                if pargs_json == None:
+                if pargs_json is None:
                         pargs = []
                 # Pargs_json is already a list, use it.
                 elif isinstance(pargs_json, list):
@@ -2876,7 +2878,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
                 return None, __prepare_json(EXIT_OOPS, errors=errors_json)
 
         try:
-                if opts_json == None:
+                if opts_json is None:
                         opts = {}
                 # If opts_json is already a dict, use it.
                 elif isinstance(opts_json, dict):

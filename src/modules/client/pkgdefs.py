@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2022, Oracle and/or its affiliates.
 #
 
 """
@@ -38,6 +38,7 @@ EXIT_NOTLIVE   =  5 # The requested op cannot be performed on a live image.
 EXIT_LICENSE   =  6 # License acceptance required for requested op.
 EXIT_LOCKED    =  7 # Image is currently locked by another process
 EXIT_ACTUATOR  =  8 # Actuator timed out
+EXIT_CONSTRAINED = 9 # Overly constrained
 
 # private pkg exit codes
 EXIT_EACCESS   = 51 # Can't access requested image
