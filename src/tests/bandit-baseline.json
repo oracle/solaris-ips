@@ -5,7 +5,7 @@
       "reason": "syntax error while parsing AST from file"
     }
   ],
-  "generated_at": "2021-09-07T16:17:10Z",
+  "generated_at": "2022-07-25T13:30:30Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0.0,
@@ -76,7 +76,7 @@
       "SEVERITY.LOW": 2.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 4566,
+      "loc": 4587,
       "nosec": 0
     },
     "./depot-config.py": {
@@ -88,7 +88,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 4.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 759,
+      "loc": 758,
       "nosec": 0
     },
     "./depot.py": {
@@ -400,7 +400,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 1.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 2780,
+      "loc": 2775,
       "nosec": 0
     },
     "./modules/cfgfiles.py": {
@@ -460,7 +460,7 @@
       "SEVERITY.LOW": 2.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 4333,
+      "loc": 4349,
       "nosec": 0
     },
     "./modules/client/api_errors.py": {
@@ -472,7 +472,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 2700,
+      "loc": 2716,
       "nosec": 0
     },
     "./modules/client/bootenv.py": {
@@ -484,7 +484,7 @@
       "SEVERITY.LOW": 2.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 988,
+      "loc": 989,
       "nosec": 0
     },
     "./modules/client/client_api.py": {
@@ -496,7 +496,7 @@
       "SEVERITY.LOW": 1.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 2665,
+      "loc": 2673,
       "nosec": 0
     },
     "./modules/client/debugvalues.py": {
@@ -544,7 +544,7 @@
       "SEVERITY.LOW": 4.0,
       "SEVERITY.MEDIUM": 1.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 3154,
+      "loc": 3156,
       "nosec": 0
     },
     "./modules/client/imageconfig.py": {
@@ -568,7 +568,7 @@
       "SEVERITY.LOW": 1.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 4304,
+      "loc": 4363,
       "nosec": 0
     },
     "./modules/client/imagetypes.py": {
@@ -676,7 +676,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 129,
+      "loc": 130,
       "nosec": 0
     },
     "./modules/client/pkgplan.py": {
@@ -700,7 +700,7 @@
       "SEVERITY.LOW": 2.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 328,
+      "loc": 331,
       "nosec": 0
     },
     "./modules/client/plandesc.py": {
@@ -712,7 +712,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 825,
+      "loc": 835,
       "nosec": 0
     },
     "./modules/client/printengine.py": {
@@ -892,7 +892,7 @@
       "SEVERITY.LOW": 1.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 1412,
+      "loc": 1413,
       "nosec": 0
     },
     "./modules/cpiofile.py": {
@@ -1024,7 +1024,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 305,
+      "loc": 313,
       "nosec": 0
     },
     "./modules/flavor/elf.py": {
@@ -1060,7 +1060,7 @@
       "SEVERITY.LOW": 2.0,
       "SEVERITY.MEDIUM": 1.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 209,
+      "loc": 222,
       "nosec": 0
     },
     "./modules/flavor/script.py": {
@@ -1072,7 +1072,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 69,
+      "loc": 70,
       "nosec": 0
     },
     "./modules/flavor/smf_manifest.py": {
@@ -1252,7 +1252,7 @@
       "SEVERITY.LOW": 1.0,
       "SEVERITY.MEDIUM": 1.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 2174,
+      "loc": 2177,
       "nosec": 0
     },
     "./modules/mogrify.py": {
@@ -1360,7 +1360,7 @@
       "SEVERITY.LOW": 1.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 176,
+      "loc": 177,
       "nosec": 0
     },
     "./modules/pkgtarfile.py": {
@@ -1564,7 +1564,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 658,
+      "loc": 657,
       "nosec": 0
     },
     "./modules/server/api_errors.py": {
@@ -1672,7 +1672,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 180,
+      "loc": 194,
       "nosec": 0
     },
     "./modules/sysattr.py": {
@@ -1804,7 +1804,7 @@
       "SEVERITY.LOW": 8.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 1468,
+      "loc": 1471,
       "nosec": 0
     },
     "./sign.py": {
@@ -1816,7 +1816,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 0.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 298,
+      "loc": 297,
       "nosec": 0
     },
     "./sysrepo.py": {
@@ -1828,7 +1828,7 @@
       "SEVERITY.LOW": 0.0,
       "SEVERITY.MEDIUM": 2.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 728,
+      "loc": 757,
       "nosec": 0
     },
     "./util/apache2/depot/depot_index.py": {
@@ -2132,96 +2132,99 @@
       "SEVERITY.LOW": 84.0,
       "SEVERITY.MEDIUM": 44.0,
       "SEVERITY.UNDEFINED": 0.0,
-      "loc": 96259,
+      "loc": 96461,
       "nosec": 0
     }
   },
   "results": [
     {
-      "code": "994                         return path\n995                 except Exception:\n996                         pass\n",
+      "code": "1021                         return path\n1022                 except Exception:\n1023                         pass\n1024 \n",
       "filename": "./client.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 995,
+      "line_number": 1022,
       "line_range": [
-        995
+        1022,
+        1023
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5826                         _api_inst.abort(result=RESULT_CANCELED)\n5827         except:\n5828                 # If history operation fails for some reason, drive on.\n",
+      "code": "5956                         _api_inst.abort(result=RESULT_CANCELED)\n5957         except:\n5958                 # If history operation fails for some reason, drive on.\n5959                 pass\n5960 \n",
       "filename": "./client.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5827,
+      "line_number": 5957,
       "line_range": [
-        5827
+        5957,
+        5958,
+        5959
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "289                 if fragment:\n290                         conf_template = Template(\n291                             filename=fragment_conf_template_path,\n292                             disable_unicode=disable_unicode, lookup=conf_lookup)\n293                         conf_path = os.path.join(runtime_dir,\n",
+      "code": "285                 if fragment:\n286                         conf_template = Template(\n287                             filename=fragment_conf_template_path,\n288                             lookup=conf_lookup)\n289                         conf_path = os.path.join(runtime_dir,\n",
       "filename": "./depot-config.py",
       "issue_confidence": "HIGH",
       "issue_severity": "MEDIUM",
       "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 290,
+      "line_number": 286,
       "line_range": [
-        290,
-        291,
-        292
+        286,
+        287,
+        288
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
     {
-      "code": "295                 else:\n296                         conf_template = Template(\n297                             filename=httpd_conf_template_path,\n298                             disable_unicode=disable_unicode, lookup=conf_lookup)\n299                         conf_path = os.path.join(runtime_dir,\n",
+      "code": "291                 else:\n292                         conf_template = Template(\n293                             filename=httpd_conf_template_path,\n294                             lookup=conf_lookup)\n295                         conf_path = os.path.join(runtime_dir,\n",
       "filename": "./depot-config.py",
       "issue_confidence": "HIGH",
       "issue_severity": "MEDIUM",
       "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 296,
+      "line_number": 292,
       "line_range": [
-        296,
-        297,
-        298
+        292,
+        293,
+        294
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
     {
-      "code": "464 def _generate_server_cert_key(host, port, ca_cert_file=\"\", ca_key_file=\"\",\n465     output_dir=\"/tmp\"):\n466         \"\"\" Generate certificate and key files for https service.\"\"\"\n467         if os.path.exists(output_dir):\n",
+      "code": "460 def _generate_server_cert_key(host, port, ca_cert_file=\"\", ca_key_file=\"\",\n461     output_dir=\"/tmp\"):\n462         \"\"\" Generate certificate and key files for https service.\"\"\"\n463         if os.path.exists(output_dir):\n",
       "filename": "./depot-config.py",
       "issue_confidence": "MEDIUM",
       "issue_severity": "MEDIUM",
       "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 465,
+      "line_number": 461,
       "line_range": [
-        464,
-        465
+        460,
+        461
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "683         # some sensible defaults\n684         host = \"0.0.0.0\"\n685         # the port we listen on\n686         port = None\n",
+      "code": "679         # some sensible defaults\n680         host = \"0.0.0.0\"\n681         # the port we listen on\n682         port = None\n",
       "filename": "./depot-config.py",
       "issue_confidence": "MEDIUM",
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 684,
+      "line_number": 680,
       "line_range": [
-        684,
-        685
+        680,
+        681
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",
@@ -2302,14 +2305,16 @@
       "test_name": "blacklist"
     },
     {
-      "code": "841                                         os.chmod(pdir, pmode)\n842                                 except Exception as e:\n843                                         # Ignore failure to reset parent mode.\n",
+      "code": "841                                         os.chmod(pdir, pmode)\n842                                 except Exception as e:\n843                                         # Ignore failure to reset parent mode.\n844                                         pass\n845 \n",
       "filename": "./modules/actions/file.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 842,
       "line_range": [
-        842
+        842,
+        843,
+        844
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2323,7 +2328,8 @@
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 110,
       "line_range": [
-        110
+        110,
+        111
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2372,70 +2378,77 @@
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "748                                 self.__progresstracker.flush()\n749                 except:\n750                         pass\n",
+      "code": "755                                 self.__progresstracker.flush()\n756                 except:\n757                         pass\n758 \n",
       "filename": "./modules/client/api.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 749,
+      "line_number": 756,
       "line_range": [
-        749
+        756,
+        757
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5398                                         portable.remove(path)\n5399                                 except:\n5400                                         continue\n",
+      "code": "5417                                         portable.remove(path)\n5418                                 except:\n5419                                         continue\n5420 \n",
       "filename": "./modules/client/api.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Continue detected.",
-      "line_number": 5399,
+      "line_number": 5418,
       "line_range": [
-        5399
+        5418,
+        5419
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b112_try_except_continue.html",
       "test_id": "B112",
       "test_name": "try_except_continue"
     },
     {
-      "code": "288                                     ignore_errors=True)\n289                 except Exception as e:\n290                     pass\n",
+      "code": "288                                     ignore_errors=True)\n289                 except Exception as e:\n290                     pass\n291 \n",
       "filename": "./modules/client/bootenv.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 289,
       "line_range": [
-        289
+        289,
+        290
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "887                                             be_name)\n888                                 except Exception as e:\n889                                             pass\n",
+      "code": "888                                             be_name)\n889                                 except Exception as e:\n890                                             pass\n891                                 break\n",
       "filename": "./modules/client/bootenv.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 888,
+      "line_number": 889,
       "line_range": [
-        888
+        889,
+        890
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "665 \n666                 except:\n667                         # Ignore the above error and just use what\n",
+      "code": "665 \n666                 except:\n667                         # Ignore the above error and just use what\n668                         # already exists.\n669                         pass\n670 \n",
       "filename": "./modules/client/client_api.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 666,
       "line_range": [
-        666
+        666,
+        667,
+        668,
+        669
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2457,14 +2470,15 @@
       "test_name": "blacklist"
     },
     {
-      "code": "353                                 sys.exc_clear()\n354                         except:\n355                                 pass\n",
+      "code": "353                                 sys.exc_clear()\n354                         except:\n355                                 pass\n356 \n",
       "filename": "./modules/client/history.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 354,
       "line_range": [
-        354
+        354,
+        355
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2500,56 +2514,60 @@
       "test_name": "blacklist"
     },
     {
-      "code": "2223                                 os.rmdir(os.path.dirname(mcdir))\n2224                         except:\n2225                                 pass\n",
+      "code": "2226                                 os.rmdir(os.path.dirname(mcdir))\n2227                         except:\n2228                                 pass\n2229 \n",
       "filename": "./modules/client/image.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2224,
+      "line_number": 2227,
       "line_range": [
-        2224
+        2227,
+        2228
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "2237                                 os.rmdir(os.path.dirname(mpath))\n2238                         except:\n2239                                 pass\n",
+      "code": "2240                                 os.rmdir(os.path.dirname(mpath))\n2241                         except:\n2242                                 pass\n2243                         progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)\n",
       "filename": "./modules/client/image.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2238,
+      "line_number": 2241,
       "line_range": [
-        2238
+        2241,
+        2242
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "3267                                 os.unlink(bp)\n3268                         except:\n3269                                 pass\n",
+      "code": "3270                                 os.unlink(bp)\n3271                         except:\n3272                                 pass\n3273                         raise\n",
       "filename": "./modules/client/image.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 3268,
+      "line_number": 3271,
       "line_range": [
-        3268
+        3271,
+        3272
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "3300                                         os.unlink(conflicting_keys_path)\n3301                                 except:\n3302                                         pass\n",
+      "code": "3303                                         os.unlink(conflicting_keys_path)\n3304                                 except:\n3305                                         pass\n3306                                 six.reraise(exc_info[0], exc_info[1], exc_info[2])\n",
       "filename": "./modules/client/image.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 3301,
+      "line_number": 3304,
       "line_range": [
-        3301
+        3304,
+        3305
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2570,59 +2588,62 @@
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "5460                                     self.image)\n5461                         except:\n5462                                 # Ensure the real cause of failure is raised.\n",
+      "code": "5541                                     self.image)\n5542                         except:\n5543                                 # Ensure the real cause of failure is raised.\n5544                                 pass\n5545                         if six.PY2:\n",
       "filename": "./modules/client/imageplan.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5461,
+      "line_number": 5542,
       "line_range": [
-        5461
+        5542,
+        5543,
+        5544
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1420                                                     opts[avail_opt])\n1421                                         except Exception:\n1422                                                 pass\n",
+      "code": "1420                                                     opts[avail_opt])\n1421                                         except Exception:\n1422                                                 pass\n1423                                 if opts[avail_opt] not in valid_args:\n",
       "filename": "./modules/client/options.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1421,
       "line_range": [
-        1421
+        1421,
+        1422
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "34 import select\n35 import subprocess\n36 import tempfile\n",
+      "code": "35 import select\n36 import subprocess\n37 import tempfile\n",
       "filename": "./modules/client/pkgremote.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with subprocess module.",
-      "line_number": 35,
+      "line_number": 36,
       "line_range": [
-        35
+        36
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "151                         else:\n152                                 p = subprocess.Popen(pkg_cmd,\n153                                     stdout=fstdout, stderr=fstderr,\n154                                     pass_fds=(server_cmd_pipe,\n155                                     server_prog_pipe_fobj.fileno()))\n156 \n",
+      "code": "152                         else:\n153                                 p = subprocess.Popen(pkg_cmd,\n154                                     stdout=fstdout, stderr=fstderr,\n155                                     pass_fds=(server_cmd_pipe,\n156                                     server_prog_pipe_fobj.fileno()))\n157 \n",
       "filename": "./modules/client/pkgremote.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 152,
+      "line_number": 153,
       "line_range": [
-        152,
         153,
         154,
-        155
+        155,
+        156
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -2713,14 +2734,16 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1758                                         continue\n1759                         except Exception:\n1760                                 # Discard anything that isn't an origin.\n",
+      "code": "1758                                         continue\n1759                         except Exception:\n1760                                 # Discard anything that isn't an origin.\n1761                                 pass\n1762 \n",
       "filename": "./modules/client/publisher.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1759,
       "line_range": [
-        1759
+        1759,
+        1760,
+        1761
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -2831,7 +2854,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "29 import json\n30 import subprocess\n31 import traceback\n",
+      "code": "29 import rapidjson as json\n30 import subprocess\n31 import traceback\n",
       "filename": "./modules/client/rad_pkg.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
@@ -2883,7 +2906,7 @@
       "line_range": [
         273
       ],
-      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
@@ -2902,15 +2925,15 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1799                     self._target)\n1800                 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,\n1801                     stderr=subprocess.PIPE)\n1802                 out, err = p.communicate()\n",
+      "code": "1800                     self._target)\n1801                 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,\n1802                     stderr=subprocess.PIPE)\n1803                 out, err = p.communicate()\n",
       "filename": "./modules/config.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "subprocess call with shell=True identified, security issue.",
-      "line_number": 1800,
+      "line_number": 1801,
       "line_range": [
-        1800,
-        1801
+        1801,
+        1802
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html",
       "test_id": "B602",
@@ -3030,29 +3053,29 @@
       "test_name": "blacklist"
     },
     {
-      "code": "293         try:\n294                 sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,\n295                     stderr=subprocess.PIPE)\n296         except Exception as e:\n",
+      "code": "304         try:\n305                 sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,\n306                     stderr=subprocess.PIPE, encoding=\"utf-8\")\n307         except Exception as e:\n",
       "filename": "./modules/flavor/python.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 294,
+      "line_number": 305,
       "line_range": [
-        294,
-        295
+        305,
+        306
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "308                         try:\n309                                 names, dirs = eval(l[4:])\n310                         except Exception:\n",
+      "code": "319                         try:\n320                                 names, dirs = eval(l[4:])\n321                         except Exception:\n",
       "filename": "./modules/flavor/python.py",
       "issue_confidence": "HIGH",
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 309,
+      "line_number": 320,
       "line_range": [
-        309
+        320
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
@@ -3082,7 +3105,7 @@
       "line_range": [
         364
       ],
-      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
@@ -3096,7 +3119,7 @@
       "line_range": [
         399
       ],
-      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
@@ -3115,14 +3138,15 @@
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "983                                 raise\n984                         except Exception:\n985                                 pass\n",
+      "code": "983                                 raise\n984                         except Exception:\n985                                 pass\n986 \n",
       "filename": "./modules/indexer.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 984,
       "line_range": [
-        984
+        984,
+        985
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -3174,58 +3198,63 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1751                                 os.rmdir(cache_root)\n1752                         except:\n1753                                 pass\n",
+      "code": "1751                                 os.rmdir(cache_root)\n1752                         except:\n1753                                 pass\n1754                 except EnvironmentError as e:\n",
       "filename": "./modules/manifest.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1752,
       "line_range": [
-        1752
+        1752,
+        1753
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1789                                         self.clear_cache(self.__cache_root)\n1790                                 except Exception as e:\n1791                                         # Ignore errors encountered during cache\n",
+      "code": "1789                                         self.clear_cache(self.__cache_root)\n1790                                 except Exception as e:\n1791                                         # Ignore errors encountered during cache\n1792                                         # dump for this specific case.\n1793                                         pass\n1794 \n",
       "filename": "./modules/manifest.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1790,
       "line_range": [
-        1790
+        1790,
+        1791,
+        1792,
+        1793
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "86 # Default path where the temporary directories will be created.\n87 DEFAULT_TEMP_PATH = \"/var/tmp\"\n88 \n89 # Minimum number of days to issue warning before a certificate expires\n90 MIN_WARN_DAYS = datetime.timedelta(days=30)\n",
+      "code": "88 # Default path where the temporary directories will be created.\n89 DEFAULT_TEMP_PATH = \"/var/tmp\"\n90 \n91 # Minimum number of days to issue warning before a certificate expires\n92 MIN_WARN_DAYS = datetime.timedelta(days=30)\n",
       "filename": "./modules/misc.py",
       "issue_confidence": "MEDIUM",
       "issue_severity": "MEDIUM",
       "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 87,
+      "line_number": 89,
       "line_range": [
-        87,
-        88,
-        89
+        89,
+        90,
+        91
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "2660                                 self.e.tb = traceback.format_exc()\n2661                         except Exception:\n2662                                 pass\n",
+      "code": "2712                                 self.e.tb = traceback.format_exc()\n2713                         except Exception:\n2714                                 pass\n2715 \n",
       "filename": "./modules/misc.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2661,
+      "line_number": 2713,
       "line_range": [
-        2661
+        2713,
+        2714
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -3373,14 +3402,16 @@
       "test_name": "blacklist"
     },
     {
-      "code": "346                                 pub = self.repo.get_publisher(prefix)\n347                         except Exception as e:\n348                                 # Couldn't get pub.\n",
+      "code": "346                                 pub = self.repo.get_publisher(prefix)\n347                         except Exception as e:\n348                                 # Couldn't get pub.\n349                                 pass\n350                         else:\n",
       "filename": "./modules/server/depot.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 347,
       "line_range": [
-        347
+        347,
+        348,
+        349
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -3613,47 +3644,53 @@
       "line_range": [
         337
       ],
-      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
     {
-      "code": "603                         storage_locked = True\n604                 except:\n605                         pass\n",
+      "code": "603                         storage_locked = True\n604                 except:\n605                         pass\n606                 else:\n",
       "filename": "./modules/server/repository.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 604,
       "line_range": [
-        604
+        604,
+        605
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "619                                 index_locked = True\n620                         except:\n621                                 pass\n",
+      "code": "619                                 index_locked = True\n620                         except:\n621                                 pass\n622                         finally:\n",
       "filename": "./modules/server/repository.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 620,
       "line_range": [
-        620
+        620,
+        621
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1623                                                 pname = unquote(name)\n1624                                         except Exception:\n1625                                                 # Assume error is result of\n",
+      "code": "1623                                                 pname = unquote(name)\n1624                                         except Exception:\n1625                                                 # Assume error is result of\n1626                                                 # unexpected file in directory;\n1627                                                 # just skip it and drive on.\n1628                                                 continue\n1629 \n",
       "filename": "./modules/server/repository.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Continue detected.",
       "line_number": 1624,
       "line_range": [
-        1624
+        1624,
+        1625,
+        1626,
+        1627,
+        1628
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b112_try_except_continue.html",
       "test_id": "B112",
@@ -3675,28 +3712,31 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1621                                         t.close(abandon=True)\n1622                                 except:\n1623                                         # It might not exist already.\n",
+      "code": "1621                                         t.close(abandon=True)\n1622                                 except:\n1623                                         # It might not exist already.\n1624                                         pass\n1625 \n",
       "filename": "./pull.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1622,
       "line_range": [
-        1622
+        1622,
+        1623,
+        1624
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1814                         cleanup(True)\n1815                 except:\n1816                         pass\n",
+      "code": "1814                         cleanup(True)\n1815                 except:\n1816                         pass\n1817         sys.exit(__ret)\n",
       "filename": "./pull.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 1815,
       "line_range": [
-        1815
+        1815,
+        1816
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -3717,212 +3757,198 @@
       "test_name": "blacklist"
     },
     {
-      "code": "690                         print(\" \".join(archcmd))\n691                         os.system(\" \".join(archcmd))\n692                         print(\" \".join(elfcmd))\n",
+      "code": "695                         print(\" \".join(archcmd))\n696                         os.system(\" \".join(archcmd))\n697                         print(\" \".join(elfcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 691,
+      "line_number": 696,
       "line_range": [
-        691
+        696
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "692                         print(\" \".join(elfcmd))\n693                         os.system(\" \".join(elfcmd))\n694                         print(\" \".join(_actionscmd))\n",
+      "code": "697                         print(\" \".join(elfcmd))\n698                         os.system(\" \".join(elfcmd))\n699                         print(\" \".join(_actionscmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 693,
+      "line_number": 698,
       "line_range": [
-        693
+        698
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "694                         print(\" \".join(_actionscmd))\n695                         os.system(\" \".join(_actionscmd))\n696                         print(\" \".join(_actcommcmd))\n",
+      "code": "699                         print(\" \".join(_actionscmd))\n700                         os.system(\" \".join(_actionscmd))\n701                         print(\" \".join(_actcommcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 695,
+      "line_number": 700,
       "line_range": [
-        695
+        700
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "696                         print(\" \".join(_actcommcmd))\n697                         os.system(\" \".join(_actcommcmd))\n698                         print(\" \".join(_varcetcmd))\n",
+      "code": "701                         print(\" \".join(_actcommcmd))\n702                         os.system(\" \".join(_actcommcmd))\n703                         print(\" \".join(_varcetcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 697,
+      "line_number": 702,
       "line_range": [
-        697
+        702
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "698                         print(\" \".join(_varcetcmd))\n699                         os.system(\" \".join(_varcetcmd))\n700                         print(\" \".join(pspawncmd))\n",
+      "code": "703                         print(\" \".join(_varcetcmd))\n704                         os.system(\" \".join(_varcetcmd))\n705                         print(\" \".join(pspawncmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 699,
+      "line_number": 704,
       "line_range": [
-        699
+        704
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "700                         print(\" \".join(pspawncmd))\n701                         os.system(\" \".join(pspawncmd))\n702                         print(\" \".join(syscallatcmd))\n",
+      "code": "705                         print(\" \".join(pspawncmd))\n706                         os.system(\" \".join(pspawncmd))\n707                         print(\" \".join(syscallatcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 701,
+      "line_number": 706,
       "line_range": [
-        701
+        706
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "702                         print(\" \".join(syscallatcmd))\n703                         os.system(\" \".join(syscallatcmd))\n704                         print(\" \".join(sysattrcmd))\n",
+      "code": "707                         print(\" \".join(syscallatcmd))\n708                         os.system(\" \".join(syscallatcmd))\n709                         print(\" \".join(sysattrcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 703,
+      "line_number": 708,
       "line_range": [
-        703
+        708
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "704                         print(\" \".join(sysattrcmd))\n705                         os.system(\" \".join(sysattrcmd))\n706                         print(\" \".join(sha512_tcmd))\n",
+      "code": "709                         print(\" \".join(sysattrcmd))\n710                         os.system(\" \".join(sysattrcmd))\n711                         print(\" \".join(sha512_tcmd))\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 705,
+      "line_number": 710,
       "line_range": [
-        705
+        710
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "706                         print(\" \".join(sha512_tcmd))\n707                         os.system(\" \".join(sha512_tcmd))\n708 \n",
+      "code": "711                         print(\" \".join(sha512_tcmd))\n712                         os.system(\" \".join(sha512_tcmd))\n713 \n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 707,
+      "line_number": 712,
       "line_range": [
-        707
+        712
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "844                                 os.unlink(dest)\n845                         except Exception:\n846                                 pass\n",
+      "code": "853                                 os.unlink(dest)\n854                         except Exception:\n855                                 pass\n856                         os.symlink(target, dest)\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 845,
+      "line_number": 854,
       "line_range": [
-        845
+        854,
+        855
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "919                         stderr = None\n920                 ret = subprocess.Popen(args, cwd=swdir, env=env,\n921                     stderr=stderr).wait()\n922                 if ret != 0:\n",
+      "code": "931                         stderr = None\n932                 ret = subprocess.Popen(args, cwd=swdir, env=env,\n933                     stderr=stderr).wait()\n934                 if ret != 0:\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 920,
+      "line_number": 932,
       "line_range": [
-        920,
-        921
+        932,
+        933
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1192         try:\n1193                 p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n1194                 return p.communicate()[0].strip()\n",
+      "code": "1214         try:\n1215                 p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n1216                 return p.communicate()[0].strip()\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 1193,
+      "line_number": 1215,
       "line_range": [
-        1193
+        1215
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "1192         try:\n1193                 p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n1194                 return p.communicate()[0].strip()\n",
+      "code": "1214         try:\n1215                 p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n1216                 return p.communicate()[0].strip()\n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1193,
+      "line_number": 1215,
       "line_range": [
-        1193
+        1215
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1331 \n1332                 p = subprocess.Popen(\n1333                     [\"/usr/bin/python2.7\", os.path.join(pwd, \"pydates\")],\n1334                     stdout=subprocess.PIPE)\n1335 \n",
+      "code": "1357 \n1358                 p = subprocess.Popen(\n1359                     [\"/usr/bin/python3.7\", os.path.join(pwd, \"pydates\")],\n1360                     stdout=subprocess.PIPE, text=True)\n1361 \n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1332,
+      "line_number": 1358,
       "line_range": [
-        1332,
-        1333,
-        1334
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "1358                         # run the scripts\n1359                         p = subprocess.Popen(\n1360                             [sys.executable, path])\n1361 \n",
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1359,
-      "line_range": [
+        1358,
         1359,
         1360
       ],
@@ -3931,44 +3957,58 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1627                         cmd.extend(args)\n1628                 subprocess.call(cmd)\n1629 \n",
+      "code": "1384                         # run the scripts\n1385                         p = subprocess.Popen(\n1386                             [sys.executable, path])\n1387 \n",
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1628,
+      "line_number": 1385,
       "line_range": [
-        1628
+        1385,
+        1386
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "628                 disable_unicode = True if six.PY2 else False\n629                 httpd_conf_template = Template(\n630                     filename=httpd_conf_template_path,\n631                     disable_unicode=disable_unicode)\n632 \n",
+      "code": "1660                         cmd.extend(args)\n1661                 subprocess.call(cmd)\n1662 \n",
+      "filename": "./setup.py",
+      "issue_confidence": "HIGH",
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 1661,
+      "line_range": [
+        1661
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "668 \n669                 httpd_conf_template = Template(\n670                     filename=httpd_conf_template_path)\n671 \n",
       "filename": "./sysrepo.py",
       "issue_confidence": "HIGH",
       "issue_severity": "MEDIUM",
       "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 629,
+      "line_number": 669,
       "line_range": [
-        629,
-        630,
-        631
+        669,
+        670
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
     {
-      "code": "710                     SYSREPO_PUB_TEMPLATE)\n711                 publisher_template = Template(filename=publisher_template_path)\n712 \n",
+      "code": "753                     SYSREPO_PUB_TEMPLATE)\n754                 publisher_template = Template(filename=publisher_template_path)\n755 \n",
       "filename": "./sysrepo.py",
       "issue_confidence": "HIGH",
       "issue_severity": "MEDIUM",
       "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 711,
+      "line_number": 754,
       "line_range": [
-        711
+        754
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
@@ -3989,14 +4029,15 @@
       "test_name": "blacklist"
     },
     {
-      "code": "653                                                 success = True\n654                                         except Exception as ex:\n655                                                 pass\n",
+      "code": "653                                                 success = True\n654                                         except Exception as ex:\n655                                                 pass\n656                                 if not success:\n",
       "filename": "./util/apache2/depot/depot_index.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 654,
       "line_range": [
-        654
+        654,
+        655
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -4045,28 +4086,31 @@
       "test_name": "blacklist"
     },
     {
-      "code": "91                                         print(host)\n92                                 except:\n93                                         pass\n",
+      "code": "91                                         print(host)\n92                                 except:\n93                                         pass\n94 \n",
       "filename": "./util/log-scripts/log.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 92,
       "line_range": [
-        92
+        92,
+        93
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "539                         t.close(abandon=True)\n540                 except:\n541                         # It might not exist already.\n",
+      "code": "539                         t.close(abandon=True)\n540                 except:\n541                         # It might not exist already.\n542                         pass\n543 \n",
       "filename": "./util/publish/pkgmerge.py",
       "issue_confidence": "HIGH",
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
       "line_number": 540,
       "line_range": [
-        540
+        540,
+        541,
+        542
       ],
       "more_info": "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html",
       "test_id": "B110",

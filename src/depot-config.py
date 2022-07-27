@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2022, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -281,21 +281,17 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                 fragment_conf_template_path = os.path.join(template_dir,
                     DEPOT_FRAGMENT_TEMPLATE)
 
-                # we're disabling unicode here because we want Mako to
-                # passthrough any filesystem path names, whatever the
-                # original encoding.
                 conf_lookup = TemplateLookup(directories=[template_dir])
-                disable_unicode = True if six.PY2 else False
                 if fragment:
                         conf_template = Template(
                             filename=fragment_conf_template_path,
-                            disable_unicode=disable_unicode, lookup=conf_lookup)
+                            lookup=conf_lookup)
                         conf_path = os.path.join(runtime_dir,
                             DEPOT_FRAGMENT_FILENAME)
                 else:
                         conf_template = Template(
                             filename=httpd_conf_template_path,
-                            disable_unicode=disable_unicode, lookup=conf_lookup)
+                            lookup=conf_lookup)
                         conf_path = os.path.join(runtime_dir,
                             DEPOT_HTTP_FILENAME)
 
