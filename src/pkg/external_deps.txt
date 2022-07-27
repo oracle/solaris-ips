@@ -7,6 +7,7 @@
     pkg:/developer/intltool
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
+    pkg:/developer/versioning/mercurial58
     pkg:/library/python/asn1crypto-37
     pkg:/library/python/bandit
     pkg:/library/python/asn1crypto
