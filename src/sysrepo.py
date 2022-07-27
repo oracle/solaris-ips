@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2022, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -666,14 +666,8 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 httpd_conf_template_path = os.path.join(template_dir,
                     SYSREPO_HTTP_TEMPLATE)
 
-                # we're disabling unicode here because we want Mako to
-                # passthrough any filesystem path names, whatever the
-                # original encoding.
-                # Mako for Python 3 doesn't support disabling Unicode. 
-                disable_unicode = True if six.PY2 else False
                 httpd_conf_template = Template(
-                    filename=httpd_conf_template_path,
-                    disable_unicode=disable_unicode)
+                    filename=httpd_conf_template_path)
 
                 # our template expects cache size expressed in Kb
                 httpd_conf_text = httpd_conf_template.render(
