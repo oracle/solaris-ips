@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2022, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
@@ -35,6 +35,7 @@ depend type=require fmri=pkg:/developer/documentation-tool/xml2roff
 depend type=require fmri=pkg:/developer/intltool
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
+depend type=require fmri=pkg:/developer/versioning/mercurial58
 depend type=require fmri=pkg:/library/python/bandit
 depend type=require fmri=pkg:/library/python/cffi
 depend type=require fmri=pkg:/library/python/coverage

@@ -1356,7 +1356,7 @@ class build_py_func(_build_py):
                 self.timestamps = {}
 
                 p = subprocess.Popen(
-                    ["/usr/bin/python3.7", os.path.join(pwd, "pydates")],
+                    ["/usr/bin/python3.9", os.path.join(pwd, "pydates")],
                     stdout=subprocess.PIPE, text=True)
 
                 for line in p.stdout:
