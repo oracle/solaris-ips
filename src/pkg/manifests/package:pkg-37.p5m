@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2019, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2022, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-37@$(PKGVERS)
@@ -32,7 +32,11 @@ set name=variant.arch value=$(ARCH)
 dir  path=$(PY37DIR)
 dir  path=$(PY37DIRVP)
 dir  path=$(PY37DIRVP)/pkg
-file path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info
+dir  path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info
+file path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info/PKG-INFO
+file path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info/SOURCES.txt
+file path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info/dependency_links.txt
+file path=$(PY37DIRVP)/pkg-0.1-py3.7.egg-info/top_level.txt
 file path=$(PY37DIRVP)/pkg/__init__.py
 file path=$(PY37DIRVP)/pkg/_arch.cpython-37m.so
 file path=$(PY37DIRVP)/pkg/_pspawn.cpython-37m.so
