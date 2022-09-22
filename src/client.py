@@ -793,7 +793,7 @@ made will not be reflected on the next boot.
         if not verbose and r:
                 logger.info(_("\nRemoved Packages:\n"))
                 removals = [src.pkg_stem for src, dest in r]
-                if len(r) < 5:
+                if len(r) <= 5:
                         logger.info("  " + "\n  ".join(removals))
                 else:
                         logger.info("  " + "\n  ".join(removals[:5]))
