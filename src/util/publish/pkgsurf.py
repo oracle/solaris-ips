@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2022, Oracle and/or its affiliates.
 #
 
 #
@@ -133,7 +133,7 @@ The target repository has been modified but the operation did not finish
 successfully. It is now in an inconsistent state.
 
 To re-try the operation, run the following commands:
-  /usr/bin/pkgrepo rebuild -s {repo} --no-index
+  /usr/bin/pkgrepo rebuild -s {repo}
   {argv}
 """).format(repo=repo_uri, argv=" ".join(sys.argv)))
 
@@ -453,7 +453,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                         continue
 
                 # Check if the package is in the ref repo, if not: ignore.
-                if not p in latest_ref_pkgs:
+                if p not in latest_ref_pkgs:
                         new_p += 1
                         tracker.manifest_fetch_progress(completion=True)
                         continue
@@ -777,7 +777,7 @@ def main_func():
         ignores = set()
         publishers = set()
         cmp_policy = CMP_ALL
-        
+
         processed_pubs = 0
 
         for opt, arg in opts:
@@ -872,10 +872,11 @@ def main_func():
                 rev = do_reversion(pub, ref_pub, target_repo, ref_xport,
                     changes, ignores, cmp_policy, ref_repo, ref, ref_xport_cfg)
 
-                # Only rebuild catalog if anything got actually reversioned.
+                # If anything was reversioned rebuild the catalog and index
+                # to reflect those changes.
                 if rev and not dry_run:
                         msg(_("Rebuilding repository catalog."))
-                        target_repo.rebuild(pub=pub)
+                        target_repo.rebuild(pub=pub, build_index=True)
                 repo_finished = True
 
         ret = pkgdefs.EXIT_OK
