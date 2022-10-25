@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2022, Oracle and/or its affiliates.
 #
 
 #
@@ -99,6 +99,35 @@ LoadModule unixd_module libexec/mod_unixd.so
 LoadModule wsgi_module libexec/mod_wsgi-{0}.so
 """.format(sys.version[:3]))
 %>
+
+#
+# Prevent the browser from rendering the  web page in an <iframe>
+# unless it comes from the same origin as the page itself. This is to avoid
+# Clickjacking attacks by ensuring that the content is not embedded into other
+# sites. We only allow it if it comes from the same origin since we need that
+# The X-Frame-Options is supported by most browsers.
+# The Content-Security-Policy is a more modern option which will not work for
+# all browsers.
+#
+Header always append X-Frame-Options SAMEORIGIN
+Header always append Content-Security-Policy "frame-ancestors 'self'"
+
+#
+# Enable XSS filtering by having the browser prevent rendering the
+# web page if a cross-site scripting (XSS) attack is detected.
+#
+Header always set X-XSS-Protection "1; mode=block"
+
+#
+# Prevent browsers from trying to guess the type of data in a file. This
+# assumes that the web server correctly reports the content type in the header.
+#
+Header always set X-Content-Type-Options "nosniff"
+
+#
+# Restrict cookie to the current site.
+#
+Header always edit Set-Cookie ^(.*)$ $1;SameSite=strict
 
 # Turn on deflate for file types that support it
 AddOutputFilterByType DEFLATE text/html application/javascript text/css text/plain

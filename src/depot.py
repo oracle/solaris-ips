@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2022, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -103,7 +103,7 @@ import pkg.server.repository as sr
 try:
         import portend
 except ImportError:
-        emsg("Python module: portend not found.");
+        emsg("Python module: portend not found.")
         sys.exit(1)
 
 # Starting in CherryPy 3.2, its default dispatcher converts all punctuation to
@@ -249,6 +249,13 @@ class OptionError(Exception):
 
         def __init__(self, *args):
                 Exception.__init__(self, *args)
+
+        @cherrypy.tools.register('before_finalize', priority=60)
+        def secureheaders():
+            headers = cherrypy.response.headers
+            headers['X-Frame-Options'] = 'SAMEORIGIN'
+            headers['X-XSS-Protection'] = '1; mode=block'
+            headers['Content-Security-Policy'] = "default-src 'self';"
 
 if __name__ == "__main__":
 
@@ -753,6 +760,7 @@ if __name__ == "__main__":
             "tools.log_headers.on": True,
             "tools.encode.on": True,
             "tools.encode.encoding": "utf-8",
+            "tools.secureheaders.on" : True,
         }
 
         if "headers" in dconf.get_property("pkg", "debug"):
