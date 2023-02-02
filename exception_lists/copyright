@@ -20,13 +20,15 @@
 #
 
 #
-# Copyright (c) 2009, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 syntax: glob
 
 .arclint
-src/man/*.txt
+CONTRIBUTING.md
+LICENSE.txt
+SECURITY.md
 src/pkg/external_deps.txt
 src/tests/bandit-baseline.json
 src/tests/ro_data/*
