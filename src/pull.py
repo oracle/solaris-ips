@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -418,9 +418,6 @@ def main_func():
         verbose = False
 
         temp_root = misc.config_temp_root()
-
-        # set process limits for memory consumption to 8GB
-        misc.set_memory_limit(8 * 1024 * 1024 * 1024)
 
         global_settings.client_name = "pkgrecv"
         target = os.environ.get("PKG_DEST", None)
