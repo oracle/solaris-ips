@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The image packaging system (IPS) is a software delivery system with interaction with a network repository as its primary design goal. Other key ideas are: safe execution for zones and other installation contexts, use of ZFS for efficiency and rollback, preventing the introduction of incorrect or incomplete packages, and efficient use of bandwidth.
+The Image Packaging System (IPS) is a software delivery system with interaction with a network repository as its primary design goal. Other key ideas are: safe execution for zones and other installation contexts, use of ZFS for efficiency and rollback, preventing the introduction of incorrect or incomplete packages, and efficient use of bandwidth.
 
 ## Prerequisites
 
@@ -65,21 +65,41 @@ The above command generates IPS related packages and publishes them into package
 
 For more examples, please refer to List of References below or man page pkg(1) on Solaris operating system.
 
-## How to Contribute
+## Help
 
-Please refer to [CONTRIBUTING](https://github.com/oracle/solaris-ips/blob/master/CONTRIBUTING.md) for details.
+See <https://support.oracle.com/> for official Oracle Solaris support.
+
+Discussion forums are available at:
+- <https://community.oracle.com/mosc/categories/oracle_sun_technologies>
+- <https://community.oracle.com/tech/apps-infra/categories/13305-solaris>
+
+## Contributing
+
+Instead of submitting a pull request, please
+[follow our contribution guide](./CONTRIBUTING.md).
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our
+security vulnerability reporting and disclosure process.
 
 ## License
 
+Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+
 The Image Packaging System is primarily distributed under the terms of the CDDL (Common Development and Distribution License), with a few portions covered by BSD-style or MIT-style licenses.
 
-Refer to LICENSE-CDDL, LICENSE-CPIO (applies to src/modules/cpiofile.py), and LICENSE-MINISAT (applies to src/modules/solver/*) for details.
+Refer to [LICENSE.txt](./LICENSE.txt) (the CDDL),
+[LICENSE-CPIO](./LICENSE-CPIO) (applies to src/modules/cpiofile.py),
+and [LICENSE-MINISAT](./LICENSE-MINISAT) (applies to src/modules/solver/*)
+for details.
 
-## List of References
+## Documentation
 
-1. [Packaging and Delivering Software With the Image Packaging System in Oracle&copy; Solaris 11.3](https://docs.oracle.com/cd/E53394_01/html/E54820/)
+1. [Packaging and Delivering Software With the Image Packaging System in Oracle&reg; Solaris 11.4](https://docs.oracle.com/cd/E37838_01/html/E61051/index.html)
 
-2. [Introducing the Basics of Image Packaging System (IPS) on Oracle Solaris 11](http://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html)
+2. [Introducing the Basics of Image Packaging System (IPS) on Oracle Solaris 11](https://www.oracle.com/technical-resources/articles/it-infrastructure/o11-083-ips-basics.html)
 
-3. [Oracle Solaris 11 Cheatsheet for Image Packaging System](http://www.oracle.com/technetwork/server-storage/solaris11/documentation/ips-one-liners-032011-337775.pdf)
+3. [Oracle Solaris 11 Cheatsheet for Image Packaging System](https://www.oracle.com/technetwork/server-storage/solaris11/documentation/ips-one-liners-032011-337775.pdf)
 
+4. [IPS Developer Documentation](./doc)
