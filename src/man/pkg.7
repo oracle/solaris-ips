@@ -6,11 +6,11 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">3 Apr 2020</refmiscinfo>
+<refmiscinfo class="date">06 Mar 2023</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2020, Oracle and/or its affiliates.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2023, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -914,8 +914,12 @@ meaning that it will be removed in the future.</para>
 <para>The <literal>group</literal> action defines a UNIX group as defined
 in <olink targetdoc="refman" targetptr="group-5"><citerefentry><refentrytitle>group</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink>. No support is present for group passwords.
 Groups defined with this action initially have no user list. Users can be
-added with the <literal>user</literal> action. The following attributes are
-recognized:</para>
+added with the <literal>user</literal> action.</para>
+<para>A delivered <literal>group</literal> action, with or without associated 
+<literal>facet</literal> or <literal>variant</literal> values, will override 
+any <literal>group</literal> entry manually added to the system. Subsequent package removals or 
+fixes will use the package definition for the <literal>group</literal>.</para>
+<para>The following attributes are recognized:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>groupname</literal></term>
 <listitem><para>The value for the name of the group.</para>
@@ -936,6 +940,10 @@ appropriate files for users defined with this <literal>user</literal> action.</p
 <para>The <literal>user</literal> action is intended to define a user or role account for
 use by a system commonent or application. The <literal>user</literal> action should not
 be used for end user or administrator accounts.</para>
+<para>A delivered <literal>user</literal> action, with or without associated 
+<literal>facet</literal> or <literal>variant</literal> values, will override 
+any <literal>user</literal> entry manually added to the system. Subsequent package removals or 
+fixes will use the package definition for the <literal>user</literal>.</para>
 <para>The following attributes are recognized:</para>
 <variablelist termlength="wholeline">
 <varlistentry><term><literal>username</literal></term>
@@ -1349,6 +1357,12 @@ of all the variant tags are the same as the values set in the image.</para>
 </listitem>
 <listitem><para>Actions with both facet and variant tags are installed if
 both the facets and the variants allow the action to be installed.</para>
+</listitem>
+<listitem><para>Both user and group actions can also be controlled by
+facets and variants. If any facet tags on the action have a value of
+<literal>true</literal>, then the user or group will be present.
+And if the values of all the variant tags are the same as the values set in
+the image, then the user or group will be present.</para>
 </listitem>
 </itemizedlist>
 <para>You can create custom facet tags and variant tags. See

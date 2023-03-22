@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 """module describing a user packaging object
@@ -91,7 +91,7 @@ class GroupAction(generic.Action):
                                 self.attrs["gid"] = cur_attrs["gid"]
                         elif self.attrs["gid"] != cur_attrs["gid"]:
                                 cur_gid = cur_attrs["gid"]
-                                template = cur_attrs;
+                                template = cur_attrs
                                 template["gid"] = self.attrs["gid"]
                                 # Update the user database with the new gid
                                 # as well in case group is someone's primary
@@ -191,9 +191,18 @@ class GroupAction(generic.Action):
 
                 should_be = grdefval.copy()
                 should_be.update(self.attrs)
-                # Note where attributes are missing
-                for k in should_be:
-                        cur_attrs.setdefault(k, "<missing>")
+
+                # Ignore optional package metadata
+                skip_list = ['variant', 'facet']
+
+                # Note where attributes are missing, but remove those that are
+                # in the skip list
+                for k in list(should_be):
+                        if any (token in k for token in skip_list):
+                                should_be.pop(k, None)
+                        else:
+                                cur_attrs.setdefault(k, "<missing>")
+
                 # Note where attributes should be empty
                 for k in cur_attrs:
                         if cur_attrs[k]:

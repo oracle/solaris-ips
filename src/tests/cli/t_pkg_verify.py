@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -78,6 +78,29 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             close
             """
 
+        var10 = """
+            open var@1.0,5.11-0
+            add dir path=etc mode=0755 owner=root group=sys
+            add dir path=etc/ftpd mode=0755 owner=root group=sys
+            add user username=root password=NP uid=0 group=root home-dir=/root gcos-field=Super-User login-shell=/usr/bin/bash ftpuser=false lastchg=13817 group-list=other group-list=bin group-list=sys group-list=adm
+            add group gid=0 groupname=root
+            add group gid=3 groupname=sys
+            add file empty path=etc/group mode=0644 owner=root group=sys preserve=true
+            add file empty path=etc/passwd mode=0644 owner=root group=sys preserve=true
+            add file empty path=etc/shadow mode=0400 owner=root group=sys preserve=true
+            add file empty path=etc/ftpd/ftpusers mode=0644 owner=root group=sys preserve=true
+            add group groupname=group1 gid=111111 variant.release=prod
+            add user username=user1 group=group1 home-dir=/export/home/user1 login-shell=/bin/sh password=*LK* uid=11111 variant.release=prod
+            close
+            """
+
+        multivar10 = """
+            open multivar@1.0,5.11-0
+            add group groupname=group11 gid=5555511 variant.rel=prod
+            add group groupname=group11 gid=5555522 variant.rel=test
+            close
+            """
+
         sysattr = """
             open sysattr@1.0-0
             add dir mode=0755 owner=root group=bin path=/p1
@@ -101,7 +124,13 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
            "permission": "",
            "bronze1": "",
            "bronze2": "",
-           "test_perm": "Test File"
+           "test_perm": "Test File",
+           "group" :
+"""root::0:
+sys::3:root,bin,adm
++::::
+""",
+           "empty": ""
         }
 
         def setUp(self):
@@ -519,6 +548,85 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg_verify("foo@invalid", exit=1)
                 self.assertTrue("verify" in self.errout and "illegal" in
                     self.errout)
+
+        def test_verify_user(self):
+                """Ensure that verify returns success when variants are
+                used with user actions. And we can correct this with
+                'pkg fix'"""
+
+                self.pkgsend_bulk(self.rurl, self.var10)
+                self.image_create(self.rurl)
+
+                self.pkg("install var")
+
+                self.pkg_verify("var")
+
+                self.pkg("change-variant release=prod")
+
+                # Update the UID manually and see if the verification fails
+                passwd = open(os.path.join(self.get_img_path(), "etc", "passwd"), "w")
+                passwd.write( \
+"""root:x:0:0:Super-User:/root:/usr/bin/bash
+user1:x:10001:111111:& User:/export/home/user1:/bin/sh""")
+                passwd.close()
+
+                self.pkg_verify("var", exit=1)
+                self.assertTrue("ERROR: uid: '10001' should be '11111" \
+                    in self.output)
+
+                # Ensure the package is fixed and sane again
+                self.pkg("fix var")
+                self.pkg_verify("var")
+
+        def test_multi_var_grp(self):
+                """Ensure that verify returns success when variants or facets
+                are used with user or group actions. Induce an error and see
+                if we can verify and fix that."""
+
+                self.pkgsend_bulk(self.rurl, self.multivar10)
+                self.image_create(self.rurl)
+
+                # create the user database files to ensure package
+                # action can create a new user
+                etc_files = ['group', 'passwd', 'shadow', 'ftpusers']
+                for f in etc_files:
+                        fpath = self.get_img_file_path("etc/" + f)
+                        with open(fpath, 'w') as f:
+                                f.close()
+
+                # Now install package.
+                self.pkg("install multivar")
+
+                self.pkg("change-variant rel=prod")
+
+                # Ensure package verify runs wihtout error
+                self.pkg_verify("multivar")
+
+                # Ensure group changes as per controlled by varaint
+                self.pkg("change-variant rel=test")
+                self.assertTrue("group11" == \
+                    portable.get_name_by_gid(5555522, self.get_img_path(), True))
+
+                # Ensure package verify runs wihtout error
+                self.pkg_verify("multivar")
+
+                # Remove Group manually and then verify package
+                grp = open(os.path.join(self.get_img_path(), "etc", "group"), "w")
+                grp.write( \
+"""root::0:
+sys::3:root,bin,adm
++::::""")
+                grp.close()
+
+                self.pkg_verify("multivar", su_wrap=True, exit=1)
+                self.assertTrue("ERROR: groupname: '<missing>' should be 'group11'" \
+                    in self.output)
+
+                # Now ensure that once we fix the package the group appears back
+                self.pkg("fix multivar")
+                self.pkg_verify("multivar")
+                self.assertTrue("group11" == \
+                    portable.get_name_by_gid(5555522, self.get_img_path(), True))
 
         def test_verify_parsable_output(self):
                 """Test parsable output."""
