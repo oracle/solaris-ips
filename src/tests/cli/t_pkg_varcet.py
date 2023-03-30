@@ -309,8 +309,7 @@ doc.txt True local
                 """Verify facet subcommand works as expected."""
 
                 # create an image
-                variants = { "variant.icecream": "strawberry" }
-                self.image_create(self.rurl, variants=variants)
+                self.image_create(self.rurl)
 
                 # Verify invalid options handled gracefully.
                 self.__assert_facet_fails("-z", exit=2)
@@ -424,9 +423,14 @@ app.prod False local
                 """Verify that the group IDs for a group changes correctly,
                 as controlled by the variant tag associated with them."""
 
-                # create an image
+                # create an image which includes the variant to tested
                 variants = { "variant.rel": "prod" }
                 self.image_create(self.rurl, variants=variants)
+
+                # Gather up all the variants now in the image
+                api_obj = self.get_img_api_obj()
+                variants = dict(v[:-1] for v in api_obj.gen_variants(
+                    api_obj.VARIANT_IMAGE))
 
                 # Install package that deliver group with facet
                 self.pkg("install group_var@1.0")
@@ -444,7 +448,7 @@ app.prod False local
 
                 # Verify we have the variant set correctly
                 exp_def = """\
-arch i386
+arch {0[variant.arch]}
 opensolaris.zone global
 rel dev
 """.format(variants)
@@ -459,7 +463,7 @@ rel dev
 
                 # Verify we have the variant set correctly
                 exp_def = """\
-arch i386
+arch {0[variant.arch]}
 opensolaris.zone global
 rel test
 """.format(variants)
