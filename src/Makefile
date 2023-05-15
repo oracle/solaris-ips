@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 PYTHON37 = /usr/bin/python3.7
@@ -87,7 +87,7 @@ pylint: install
         PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
 
 bandit:
-	$(PYTHON37) setup.py bandit
+	$(PYTHON39) setup.py bandit
 
 check:
 	$(PYCODESTYLE) --statistics --count `cat tests/pycodestyle-whitelist.txt`
