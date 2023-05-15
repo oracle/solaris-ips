@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import errno
@@ -752,8 +752,8 @@ class bandit_func(Command):
                 excludes = ",".join(bandit_exclude_files)
                 # Use the local directory so that the location of
                 # the workspace does not matter.
-                args = ["/usr/bin/bandit", "-r", "-q", "-c", rcfile,
-                        "-x", excludes, "." ]
+                args = [sys.executable, "-m", "bandit", "-r", "-q",
+                        "-c", rcfile, "-x", excludes, "." ]
                 # A note about bandit baselines: bandit will report
                 # new errors but it will not fail on a new duplicate
                 # issues (bandit bugs: 466 and 558)
