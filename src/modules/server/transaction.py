@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 import calendar
@@ -667,6 +667,10 @@ class Transaction(object):
 
                 if isinstance(f, six.string_types):
                         f = open(f, "rb")
+                        opened = True
+                else:
+                        opened = False
+
                 # Store the manifest file.
                 fpath = os.path.join(self.dir, "manifest")
                 with open(fpath, "ab+") as wf:
@@ -680,6 +684,10 @@ class Transaction(object):
                                 f.seek(0)
                                 content = f.read()
                                 wf.write(content)
+                        finally:
+                                if opened:
+                                    f.close()
+
                 # Do some sanity checking on packages marked or being marked
                 # obsolete or renamed.
                 m = pkg.manifest.Manifest()
