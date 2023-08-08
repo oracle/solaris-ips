@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -1274,11 +1274,12 @@ class CatalogAttrs(CatalogPartBase):
                                         # that would cause an access to be
                                         # redirected outside of 'file_root'.
                                         try:
-                                                misc.open_image_file(
+                                                with misc.open_image_file(
                                                     self.file_root,
                                                     os.path.join(self.meta_root,
                                                     subpart), os.O_RDONLY,
-                                                    misc.PKG_FILE_MODE)
+                                                    misc.PKG_FILE_MODE):
+                                                        pass
                                         except OSError as e:
                                                 if e.errno == errno.EREMOTE:
                                                         raise api_errors.\
@@ -2184,7 +2185,7 @@ class Catalog(object):
         def append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Appends the entries in the specified 'src' catalog to that
                 of the current catalog.  The caller is responsible for ensuring
-                that no duplicates exist and must call finalize() afterwards to
+                that no duplicates exist and must call finalize() afterward to
                 to ensure consistent catalog state.  This function cannot be
                 used when log_updates or read_only is enabled.
 
