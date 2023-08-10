@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 import abc
@@ -30,6 +30,7 @@ import os
 import six
 import shutil
 import tempfile
+from sys import version_info
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
@@ -180,18 +181,21 @@ class SignatureAction(generic.Action):
                                 self.attrs[attr] = " ".join(chain_chshes[attr])
 
         def __get_hash_by_name(self, name):
-                """Get the cryptopgraphy Hash() class based on the OpenSSL
+                """Get the cryptography Hash() class based on the OpenSSL
                 algorithm name."""
 
-                if six.PY2:
-                        for h in hashes.HashAlgorithm._abc_registry:
-                                if h.name == name:
-                                        return h
-                else :
+                # We deliver different version of cryptography module
+                # for Python 3.7 and different code is needed to find
+                # the requested hash algorithm
+                if version_info.minor == 7:
                         for h in abc._get_dump(hashes.HashAlgorithm)[0]:
                                 ref = h()
                                 if ref.name == name:
                                         return ref
+                else:
+                        for h in hashes.HashAlgorithm.__subclasses__():
+                                if h.name == name:
+                                        return h 
 
         def get_size(self):
                 res = generic.Action.get_size(self)
