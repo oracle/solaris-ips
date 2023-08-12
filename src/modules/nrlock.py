@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 import sys
@@ -30,67 +30,67 @@ import traceback
 __all__ = [ 'NRLock' ]
 
 def NRLock(*args, **kwargs):
-        return _NRLock(*args, **kwargs)
+    return _NRLock(*args, **kwargs)
 
 class _NRLock(threading._RLock):
-        """Interface and implementation for Non-Reentrant locks.  Derived from
-        RLocks (which are reentrant locks).  The default Python base locking
-        type, threading.Lock(), is non-reentrant but it doesn't support any
-        operations other than aquire() and release(), and we'd like to be
-        able to support things like RLocks._is_owned() so that we can "assert"
-        lock ownership assumptions in our code."""
+    """Interface and implementation for Non-Reentrant locks.  Derived from
+    RLocks (which are reentrant locks).  The default Python base locking
+    type, threading.Lock(), is non-reentrant but it doesn't support any
+    operations other than aquire() and release(), and we'd like to be
+    able to support things like RLocks._is_owned() so that we can "assert"
+    lock ownership assumptions in our code."""
 
-        def __init__(self):
-                threading._RLock.__init__(self)
+    def __init__(self):
+        threading._RLock.__init__(self)
 
-        def acquire(self, blocking=1):
-                if self._is_owned():
-                        raise NRLockException("Recursive NRLock acquire")
-                return threading._RLock.acquire(self, blocking)
+    def acquire(self, blocking=1):
+        if self._is_owned():
+            raise NRLockException("Recursive NRLock acquire")
+        return threading._RLock.acquire(self, blocking)
 
-        @property
-        def locked(self):
-                """A boolean indicating whether the lock is currently locked."""
-                return self._is_owned()
+    @property
+    def locked(self):
+        """A boolean indicating whether the lock is currently locked."""
+        return self._is_owned()
 
-        def _debug_lock_release(self):
-                errbuf = ""
-                owner = self._RLock__owner
-                if not owner:
-                        return errbuf
+    def _debug_lock_release(self):
+        errbuf = ""
+        owner = self._RLock__owner
+        if not owner:
+            return errbuf
 
-                # Get stack of current owner, if lock is owned.
-                for tid, stack in sys._current_frames().items():
-                        if tid != owner.ident:
-                                continue
-                        errbuf += "Stack of owner:\n"
-                        for filenm, lno, func, txt in \
-                            traceback.extract_stack(stack):
-                                errbuf += "  File: \"{0}\", line {1:d},in {2}".format(
-                                    filenm, lno, func)
-                                if txt:
-                                        errbuf += "\n    {0}".format(txt.strip())
-                                errbuf += "\n"
-                        break
+        # Get stack of current owner, if lock is owned.
+        for tid, stack in sys._current_frames().items():
+            if tid != owner.ident:
+                continue
+            errbuf += "Stack of owner:\n"
+            for filenm, lno, func, txt in \
+                traceback.extract_stack(stack):
+                errbuf += "  File: \"{0}\", line {1:d},in {2}".format(
+                    filenm, lno, func)
+                if txt:
+                    errbuf += "\n    {0}".format(txt.strip())
+                errbuf += "\n"
+            break
 
-                return errbuf
+        return errbuf
 
-        def release(self):
-                try:
-                        threading._RLock.release(self)
-                except RuntimeError:
-                        errbuf = "Release of unacquired lock\n"
-                        errbuf += self._debug_lock_release()
-                        raise NRLockException(errbuf)
+    def release(self):
+        try:
+            threading._RLock.release(self)
+        except RuntimeError:
+            errbuf = "Release of unacquired lock\n"
+            errbuf += self._debug_lock_release()
+            raise NRLockException(errbuf)
 
 class NRLockException(Exception):
 
-        def __init__(self, *args, **kwargs):
-                if args:
-                        self.data = args[0]
-                else:
-                        self.data = None
-                self._args = kwargs
+    def __init__(self, *args, **kwargs):
+        if args:
+            self.data = args[0]
+        else:
+            self.data = None
+        self._args = kwargs
 
-        def __str__(self):
-                return str(self.data)
+    def __str__(self):
+        return str(self.data)

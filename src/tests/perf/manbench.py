@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
 #
 
 #
@@ -40,8 +40,8 @@ import timeit
 #
 if __name__ == "__main__":
 
-        # I took an existing manifest and randomized the lines.
-        setup1 = """
+    # I took an existing manifest and randomized the lines.
+    setup1 = """
 import pkg.manifest as manifest
 m=\"\"\"
 dir group=sys mode=0755 owner=root path=usr/share
@@ -109,27 +109,27 @@ mf = manifest.Manifest()
 mf.set_content(m)
 """
 
-        n = 1000
-        
-        str1="""
+    n = 1000
+
+    str1 = """
 for act in mf.gen_actions():
         continue
 """
-        str2="""
+    str2 = """
 for act in mf.gen_actions(attr_match={ "mode": "0444" }):
         continue
 """
 
-        try:
-                print("manifest gen_actions")
-                for i in (1, 2, 3):
-                        t = timeit.Timer(str1, setup1).timeit(n)
-                        print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
-                            "({2:d} actions/sec)".format(t, int(n // t), int((n * 60) // t)))
-                print("manifest gen_actions - attr_match")
-                for i in (1, 2, 3):
-                        t = timeit.Timer(str2, setup1).timeit(n)
-                        print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
-                            "({2:d} actions/sec)".format(t, int(n // t), int((n * 60) // t)))
-        except KeyboardInterrupt:
-                sys.exit(0)
+    try:
+        print("manifest gen_actions")
+        for i in (1, 2, 3):
+            t = timeit.Timer(str1, setup1).timeit(n)
+            print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
+                "({2:d} actions/sec)".format(t, int(n // t), int((n * 60) // t)))
+        print("manifest gen_actions - attr_match")
+        for i in (1, 2, 3):
+            t = timeit.Timer(str2, setup1).timeit(n)
+            print("{0:>20f} {1:>8d} manifest gen_actions()/sec " \
+                "({2:d} actions/sec)".format(t, int(n // t), int((n * 60) // t)))
+    except KeyboardInterrupt:
+        sys.exit(0)

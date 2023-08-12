@@ -21,45 +21,45 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import gzip
 
 class PkgGzipFile(gzip.GzipFile):
-        """This is a version of GzipFile that does not include a file
-        pathname or timestamp in the gzip header.  This allows us to get
-        deterministic gzip files on compression, so that we can reliably
-        use a cryptographic hash on the compressed content."""
+    """This is a version of GzipFile that does not include a file
+    pathname or timestamp in the gzip header.  This allows us to get
+    deterministic gzip files on compression, so that we can reliably
+    use a cryptographic hash on the compressed content."""
 
-        def __init__(self, filename=None, mode=None, compresslevel=9,
-            fileobj=None):
+    def __init__(self, filename=None, mode=None, compresslevel=9,
+        fileobj=None):
 
-               gzip.GzipFile.__init__(self, filename, mode, compresslevel,
-                    fileobj)
+        gzip.GzipFile.__init__(self, filename, mode, compresslevel,
+             fileobj)
 
-        #
-        # This is a gzip header conforming to RFC1952.  The first two bytes
-        # (\037,\213) are the gzip magic number.  The third byte is the
-        # compression method (8, deflate).  The fourth byte is the flag byte
-        # (0), which indicates that no FNAME, FCOMMENT or other extended data
-        # is present.  Bytes 5-8 are the MTIME field, zeroed in this case.
-        # Byte 9 is the XFL (Extra Flags) field, set to 2 (compressor used
-        # max compression).  The final bit is the OS type, set to 255 (for
-        # "unknown").
-        magic = b"\037\213\010\000\000\000\000\000\002\377"
+    #
+    # This is a gzip header conforming to RFC1952.  The first two bytes
+    # (\037,\213) are the gzip magic number.  The third byte is the
+    # compression method (8, deflate).  The fourth byte is the flag byte
+    # (0), which indicates that no FNAME, FCOMMENT or other extended data
+    # is present.  Bytes 5-8 are the MTIME field, zeroed in this case.
+    # Byte 9 is the XFL (Extra Flags) field, set to 2 (compressor used
+    # max compression).  The final bit is the OS type, set to 255 (for
+    # "unknown").
+    magic = b"\037\213\010\000\000\000\000\000\002\377"
 
-        # The compresslevel parameter is needed as it is an expected
-        # parameter within the Python3.7.8 gzip.py code. Note
-        # the default value of compresslevel=9 (_COMPRESS_LEVEL_BEST)
-        # means that the value of '\002' is used within the gzip.py
-        # code which matches the value in magic.
-        def _write_gzip_header(self, compresslevel=9):
-                self.fileobj.write(self.magic)
+    # The compresslevel parameter is needed as it is an expected
+    # parameter within the Python3.7.8 gzip.py code. Note
+    # the default value of compresslevel=9 (_COMPRESS_LEVEL_BEST)
+    # means that the value of '\002' is used within the gzip.py
+    # code which matches the value in magic.
+    def _write_gzip_header(self, compresslevel=9):
+        self.fileobj.write(self.magic)
 
-        @staticmethod
-        def test_is_pkggzipfile(path):
-                f = open(path, "rb")
-                hdrstr = f.read(len(PkgGzipFile.magic))
-                f.close()
-                return (hdrstr == PkgGzipFile.magic)
+    @staticmethod
+    def test_is_pkggzipfile(path):
+        f = open(path, "rb")
+        hdrstr = f.read(len(PkgGzipFile.magic))
+        f.close()
+        return (hdrstr == PkgGzipFile.magic)

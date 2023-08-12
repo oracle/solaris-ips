@@ -20,12 +20,12 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import errno
@@ -40,8 +40,8 @@ import unittest
 import pkg.portable
 
 class TestPkgFmt(pkg5unittest.CliTestCase):
-        pkgcontents = \
-            """
+    pkgcontents = \
+        """
 #Begin Comment
 set name=pkg.fmri value=pkg:/system/kernel@$(PKGVERS)
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
@@ -949,7 +949,7 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
 #End Comment
 """
 
-        needs_formatting = """\
+    needs_formatting = """\
 # This comment was the first line in the file.
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
@@ -1052,7 +1052,7 @@ set name=pkg.fmri value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074
 
 # This comment was the last line of the manifest."""
 
-        v1_fmt = """\
+    v1_fmt = """\
 # This comment was the first line in the file.
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
@@ -1192,7 +1192,7 @@ depend fmri=zorch@2.0 type=optional
 # This comment was the last line of the manifest.
 """
 
-        v2_fmt = """\
+    v2_fmt = """\
 # This comment was the first line in the file.
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
@@ -1335,129 +1335,129 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
 # This comment was the last line of the manifest.
 """
 
-        def setUp(self):
-                pkg5unittest.CliTestCase.setUp(self)
+    def setUp(self):
+        pkg5unittest.CliTestCase.setUp(self)
 
-                with open(os.path.join(self.test_root, "source_file"),
-                    "w") as f:
-                        f.write(self.pkgcontents)
+        with open(os.path.join(self.test_root, "source_file"),
+            "w") as f:
+            f.write(self.pkgcontents)
 
-                with open(os.path.join(self.test_root, "needs_fmt_file"),
-                    "w") as f:
-                        f.write(self.needs_formatting)
+        with open(os.path.join(self.test_root, "needs_fmt_file"),
+            "w") as f:
+            f.write(self.needs_formatting)
 
-        def test_0_checkfmt(self):
-                """Verify that pkgfmt -c format checking works as expected."""
+    def test_0_checkfmt(self):
+        """Verify that pkgfmt -c format checking works as expected."""
 
-                man = os.path.join(self.test_root, "man.p5m")
-                original = os.path.join(self.test_root, "needs_fmt_file")
-                portable.copyfile(original, man)
+        man = os.path.join(self.test_root, "man.p5m")
+        original = os.path.join(self.test_root, "needs_fmt_file")
+        portable.copyfile(original, man)
 
-                # Copy man to man2 before executing tests.
-                man2 = os.path.join(self.test_root, "man2.p5m")
-                pkg.portable.copyfile(man, man2)
+        # Copy man to man2 before executing tests.
+        man2 = os.path.join(self.test_root, "man2.p5m")
+        pkg.portable.copyfile(man, man2)
 
-                # Verify pkgfmt exits 1 when checking format for manifest that
-                # needs formatting (both from a file and from stdin).
-                self.pkgfmt("-c {0}".format(man), exit=1)
-                # Ensure "error:" is in output (for the benefit of ON nightly).
-                self.assertTrue("pkgfmt: error:" in self.errout)
-                self.pkgfmt("-c < {0}".format(man), exit=1)
+        # Verify pkgfmt exits 1 when checking format for manifest that
+        # needs formatting (both from a file and from stdin).
+        self.pkgfmt("-c {0}".format(man), exit=1)
+        # Ensure "error:" is in output (for the benefit of ON nightly).
+        self.assertTrue("pkgfmt: error:" in self.errout)
+        self.pkgfmt("-c < {0}".format(man), exit=1)
 
-                # Verify pkgfmt exits 1 when checking format for multiple
-                # manifests that need formatting.
-                self.pkgfmt("-c {0} {1}".format(man, man2), exit=1)
+        # Verify pkgfmt exits 1 when checking format for multiple
+        # manifests that need formatting.
+        self.pkgfmt("-c {0} {1}".format(man, man2), exit=1)
 
-                # Verify formatted manifest is identical to expected.
-                for pfmt, mfmt in (("v1", self.v1_fmt), ("v2", self.v2_fmt)):
-                        portable.copyfile(original, man)
-                        self.pkgfmt("-f {0} {1}".format(pfmt, man))
-                        with open(man, "r") as f:
-                                actual = f.read()
-                                self.assertEqualDiff(mfmt, actual,
-                                    msg="{0} format".format(pfmt))
+        # Verify formatted manifest is identical to expected.
+        for pfmt, mfmt in (("v1", self.v1_fmt), ("v2", self.v2_fmt)):
+            portable.copyfile(original, man)
+            self.pkgfmt("-f {0} {1}".format(pfmt, man))
+            with open(man, "r") as f:
+                actual = f.read()
+                self.assertEqualDiff(mfmt, actual,
+                    msg="{0} format".format(pfmt))
 
-                        # Test using environment variable.
-                        portable.copyfile(original, man)
-                        os.environ["PKGFMT_OUTPUT"] = pfmt
-                        self.pkgfmt(man)
-                        with open(man, "r") as f:
-                                actual = f.read()
-                                self.assertEqualDiff(mfmt, actual,
-                                    msg="{0} format".format(pfmt))
-                os.environ["PKGFMT_OUTPUT"] = ""
+            # Test using environment variable.
+            portable.copyfile(original, man)
+            os.environ["PKGFMT_OUTPUT"] = pfmt
+            self.pkgfmt(man)
+            with open(man, "r") as f:
+                actual = f.read()
+                self.assertEqualDiff(mfmt, actual,
+                    msg="{0} format".format(pfmt))
+        os.environ["PKGFMT_OUTPUT"] = ""
 
-                # Verify pkgfmt exits 1 when any of the manifests named need
-                # formatting.  (Ordering matters here, the good one must be
-                # specified last.)
-                self.pkgfmt("-c {0} {1}".format(man2, man), exit=1)
+        # Verify pkgfmt exits 1 when any of the manifests named need
+        # formatting.  (Ordering matters here, the good one must be
+        # specified last.)
+        self.pkgfmt("-c {0} {1}".format(man2, man), exit=1)
 
-                # Verify pkgfmt exits 0 when a manifest doesn't need formatting.
-                self.pkgfmt("-c {0}".format(man))
+        # Verify pkgfmt exits 0 when a manifest doesn't need formatting.
+        self.pkgfmt("-c {0}".format(man))
 
-                # Format the second manifest.
-                self.pkgfmt(man2)
+        # Format the second manifest.
+        self.pkgfmt(man2)
 
-                # Verify pkgfmt exits 0 when none of the manifests named need
-                # formatting.
-                self.pkgfmt("-c {0} {1}".format(man, man2))
+        # Verify pkgfmt exits 0 when none of the manifests named need
+        # formatting.
+        self.pkgfmt("-c {0} {1}".format(man, man2))
 
-                # Verify pkgfmt -c accepts a manifest in v1 or v2 format, and
-                # that the output for each version matches expected.
-                for contents in (self.v1_fmt, self.v2_fmt):
-                        with open(man, "w") as f:
-                                f.write(contents)
-                        self.pkgfmt("-c {0}".format(man))
+        # Verify pkgfmt -c accepts a manifest in v1 or v2 format, and
+        # that the output for each version matches expected.
+        for contents in (self.v1_fmt, self.v2_fmt):
+            with open(man, "w") as f:
+                f.write(contents)
+            self.pkgfmt("-c {0}".format(man))
 
-                # Verify pkgfmt -c accepts both a v1 and v2 format manifest
-                # at the same time.
-                with open(man, "w") as f:
-                        f.write(self.v1_fmt)
-                with open(man2, "w") as f:
-                        f.write(self.v2_fmt)
-                self.pkgfmt("-c {0} {1}".format(man, man2))
+        # Verify pkgfmt -c accepts both a v1 and v2 format manifest
+        # at the same time.
+        with open(man, "w") as f:
+            f.write(self.v1_fmt)
+        with open(man2, "w") as f:
+            f.write(self.v2_fmt)
+        self.pkgfmt("-c {0} {1}".format(man, man2))
 
-        def test_1_difference(self):
-                """display that pkgfmt makes no diff in manifest"""
-                source_file = os.path.join(self.test_root, "source_file")
-                mod_file = os.path.join(self.test_root, "mod_file")
-                # Remove comments from source file; they don't sort
-                # since pkgfmt tries to maintain comment position in
-                # file.
-                self.cmdline_run("sed '/^#/d' < {0} > {1}; mv {2} {3}".format(
-                                source_file,
-                                mod_file,
-                                mod_file,
-                                source_file))
-                # remove backslashes in place
-                self.pkgfmt("-u < {0} > {1}".format(source_file, mod_file))
-                # sort into alternate order and format
-                self.cmdline_run("/usr/bin/sort -o {0} {1}".format(
-                    mod_file, mod_file), coverage=False)
-                self.pkgfmt("{0}".format(mod_file))
-                self.pkgfmt("{0}".format(source_file))
-                self.cmdline_run("/usr/bin/diff {0} {1}".format(
-                    source_file, mod_file), coverage=False)
+    def test_1_difference(self):
+        """display that pkgfmt makes no diff in manifest"""
+        source_file = os.path.join(self.test_root, "source_file")
+        mod_file = os.path.join(self.test_root, "mod_file")
+        # Remove comments from source file; they don't sort
+        # since pkgfmt tries to maintain comment position in
+        # file.
+        self.cmdline_run("sed '/^#/d' < {0} > {1}; mv {2} {3}".format(
+                        source_file,
+                        mod_file,
+                        mod_file,
+                        source_file))
+        # remove backslashes in place
+        self.pkgfmt("-u < {0} > {1}".format(source_file, mod_file))
+        # sort into alternate order and format
+        self.cmdline_run("/usr/bin/sort -o {0} {1}".format(
+            mod_file, mod_file), coverage=False)
+        self.pkgfmt("{0}".format(mod_file))
+        self.pkgfmt("{0}".format(source_file))
+        self.cmdline_run("/usr/bin/diff {0} {1}".format(
+            source_file, mod_file), coverage=False)
 
-        def test_2_unprivileged(self):
-                """Verify pkgfmt handles unprivileged user gracefully."""
+    def test_2_unprivileged(self):
+        """Verify pkgfmt handles unprivileged user gracefully."""
 
-                source_file = os.path.join(self.test_root, "source_file")
-                # Should fail since manifest needs formatting and user can't
-                # replace file.
-                self.pkgfmt("{0}".format(source_file), su_wrap=True, exit=1)
+        source_file = os.path.join(self.test_root, "source_file")
+        # Should fail since manifest needs formatting and user can't
+        # replace file.
+        self.pkgfmt("{0}".format(source_file), su_wrap=True, exit=1)
 
-                # Now reformat the file.
-                self.pkgfmt("{0}".format(source_file))
+        # Now reformat the file.
+        self.pkgfmt("{0}".format(source_file))
 
-                # Should not fail even though user is unprivileged.
-                self.pkgfmt("-c {0}".format(source_file), su_wrap=True)
+        # Should not fail even though user is unprivileged.
+        self.pkgfmt("-c {0}".format(source_file), su_wrap=True)
 
-        def test_3_handle_comments(self):
-                """Verify pkgfmt handles comments, does stdin"""
-                source_file = os.path.join(self.test_root, "source_file")
-                self.pkgfmt("< {0}".format(source_file))
-                assert "Begin Comment" in self.output
-                assert "Bobcat" not in self.output
-                assert "Middle Comment" in self.output
-                assert "End Comment" in self.output
+    def test_3_handle_comments(self):
+        """Verify pkgfmt handles comments, does stdin"""
+        source_file = os.path.join(self.test_root, "source_file")
+        self.pkgfmt("< {0}".format(source_file))
+        assert "Begin Comment" in self.output
+        assert "Bobcat" not in self.output
+        assert "Middle Comment" in self.output
+        assert "End Comment" in self.output

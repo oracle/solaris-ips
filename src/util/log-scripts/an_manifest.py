@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import datetime
@@ -52,74 +52,74 @@ manifest_by_ver_pkg = {}
 pkg_pat = re.compile("/manifest/(?P<mversion>\d+)/(?P<stem>[^@]*)@(?P<version>.*)")
 
 def report_manifest_by_arch():
-        print("<pre>")
-        for i in manifest_by_arch.keys():
-                print(i, manifest_by_arch[i])
-        print("</pre>")
+    print("<pre>")
+    for i in manifest_by_arch.keys():
+        print(i, manifest_by_arch[i])
+    print("</pre>")
 
 def report_manifest_by_pkg():
-        print("<pre>")
-        for i, n in (sorted(manifest_by_pkg.items(), key=lambda k_v: (k_v[1],k_v[0]))):
-                print(i, n)
-        print("</pre>")
+    print("<pre>")
+    for i, n in (sorted(manifest_by_pkg.items(), key=lambda k_v: (k_v[1], k_v[0]))):
+        print(i, n)
+    print("</pre>")
 
 def report_manifest_by_ver_pkg():
-        print("<pre>")
-        for i, n in (sorted(manifest_by_ver_pkg.items(), key=lambda k_v: (k_v[1],k_v[0]))):
-                print(i, n)
-        print("</pre>")
+    print("<pre>")
+    for i, n in (sorted(manifest_by_ver_pkg.items(), key=lambda k_v: (k_v[1], k_v[0]))):
+        print(i, n)
+    print("</pre>")
 
 def count_manifest(mg, d):
+    try:
+        manifest_by_date[d.date().isoformat()] += 1
+    except KeyError:
+        manifest_by_date[d.date().isoformat()] = 1
+    try:
+        manifest_by_ip[mg["ip"]] += 1
+    except KeyError:
+        manifest_by_ip[mg["ip"]] = 1
+
+    pm = pkg_pat.search(mg["uri"])
+    if pm != None and mg["response"] == "200":
+        pg = pm.groupdict()
+
         try:
-                manifest_by_date[d.date().isoformat()] += 1
+            manifest_by_pkg[unquote(pg["stem"])] += 1
         except KeyError:
-                manifest_by_date[d.date().isoformat()] = 1
+            manifest_by_pkg[unquote(pg["stem"])] = 1
+
         try:
-                manifest_by_ip[mg["ip"]] += 1
+            manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] += 1
         except KeyError:
-                manifest_by_ip[mg["ip"]] = 1
+            manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] = 1
 
-        pm = pkg_pat.search(mg["uri"])
-        if pm != None and mg["response"] == "200":
-                pg = pm.groupdict()
+    agent = pkg_agent_pat.search(mg["agent"])
+    if agent == None:
+        return
 
-                try:
-                        manifest_by_pkg[unquote(pg["stem"])] += 1
-                except KeyError:
-                        manifest_by_pkg[unquote(pg["stem"])] = 1
-
-                try:
-                        manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] += 1
-                except KeyError:
-                        manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] = 1
-
-        agent = pkg_agent_pat.search(mg["agent"])
-        if agent == None:
-                return
-
-        ag = agent.groupdict()
-        try:
-                manifest_by_arch[ag["arch"]] += 1
-        except KeyError:
-                manifest_by_arch[ag["arch"]] = 1
+    ag = agent.groupdict()
+    try:
+        manifest_by_arch[ag["arch"]] += 1
+    except KeyError:
+        manifest_by_arch[ag["arch"]] = 1
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 
 for opt, arg in opts:
-        if opt == "-a":
-                try:
-                        after = datetime.datetime(*(time.strptime(arg, "%Y-%b-%d")[0:6]))
-                except ValueError:
-                        after = datetime.datetime(*(time.strptime(arg, "%Y-%m-%d")[0:6]))
+    if opt == "-a":
+        try:
+            after = datetime.datetime(*(time.strptime(arg, "%Y-%b-%d")[0:6]))
+        except ValueError:
+            after = datetime.datetime(*(time.strptime(arg, "%Y-%m-%d")[0:6]))
 
-        if opt == "-b":
-                before = arg
+    if opt == "-b":
+        before = arg
 
-        if opt == "-s":
-                summary_file = prefix_summary_open("manifest")
+    if opt == "-s":
+        summary_file = prefix_summary_open("manifest")
 
-        if opt == "-w":
-                active_window = arg
+    if opt == "-w":
+        active_window = arg
 
 host_cache_set_file_name()
 host_cache_load()
@@ -128,30 +128,30 @@ lastdate = None
 lastdatetime = None
 
 for l in fileinput.input(args):
-        m = comb_log_pat.search(l)
-        if not m:
-                continue
+    m = comb_log_pat.search(l)
+    if not m:
+        continue
 
-        mg = m.groupdict()
+    mg = m.groupdict()
 
-        d = None
+    d = None
 
-        if lastdatetime and mg["date"] == lastdate:
-                d = lastdatetime
-        else:
-                try:
-                        d = datetime.datetime(*(time.strptime(mg["date"], "%d/%b/%Y")[0:6]))
-                        lastdate = mg["date"]
-                        lastdatetime = d
-                except ValueError:
-                        # In the case the line can't be parsed for a date, it's
-                        # probably corrupt.
-                        continue
+    if lastdatetime and mg["date"] == lastdate:
+        d = lastdatetime
+    else:
+        try:
+            d = datetime.datetime(*(time.strptime(mg["date"], "%d/%b/%Y")[0:6]))
+            lastdate = mg["date"]
+            lastdatetime = d
+        except ValueError:
+            # In the case the line can't be parsed for a date, it's
+            # probably corrupt.
+            continue
 
-        if after and d < after:
-                continue
+    if after and d < after:
+        continue
 
-        count_manifest(mg, d)
+    count_manifest(mg, d)
 
 host_cache_save()
 manifest_by_country = ip_to_country(manifest_by_ip)

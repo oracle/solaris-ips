@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -39,63 +39,63 @@ import pkg.fmri as fmri
 import pkg.publish.transaction as trans
 
 class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
-        """Various publication tests."""
+    """Various publication tests."""
 
-        # Restart the depot and recreate the repository every test.
-        persistent_setup = False
+    # Restart the depot and recreate the repository every test.
+    persistent_setup = False
 
-        def setUp(self):
-                # This test suite needs an actual depot.
-                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
+    def setUp(self):
+        # This test suite needs an actual depot.
+        pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
 
-        def test_stress_http_publish(self):
-                """Publish lots of packages rapidly ensuring that http
-                publication can handle it."""
+    def test_stress_http_publish(self):
+        """Publish lots of packages rapidly ensuring that http
+        publication can handle it."""
 
-                durl = self.dc.get_depot_url()
-                repouriobj = publisher.RepositoryURI(durl)
-                repo = publisher.Repository(origins=[repouriobj])
-                pub = publisher.Publisher(prefix="repo1", repository=repo)
-                xport_cfg = transport.GenericTransportCfg()
-                xport_cfg.add_publisher(pub)
-                xport = transport.Transport(xport_cfg)
+        durl = self.dc.get_depot_url()
+        repouriobj = publisher.RepositoryURI(durl)
+        repo = publisher.Repository(origins=[repouriobj])
+        pub = publisher.Publisher(prefix="repo1", repository=repo)
+        xport_cfg = transport.GenericTransportCfg()
+        xport_cfg.add_publisher(pub)
+        xport = transport.Transport(xport_cfg)
 
-                # Each version number must be unique since multiple packages
-                # will be published within the same second.
-                for i in range(100):
-                        pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
-                        t = trans.Transaction(durl, pkg_name=str(pf),
-                            xport=xport, pub=pub)
-                        t.open()
-                        pkg_fmri, pkg_state = t.close()
-                        self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
+        # Each version number must be unique since multiple packages
+        # will be published within the same second.
+        for i in range(100):
+            pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
+            t = trans.Transaction(durl, pkg_name=str(pf),
+                xport=xport, pub=pub)
+            t.open()
+            pkg_fmri, pkg_state = t.close()
+            self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
 
-        def test_stress_file_publish(self):
-                """Publish lots of packages rapidly ensuring that file
-                publication can handle it."""
+    def test_stress_file_publish(self):
+        """Publish lots of packages rapidly ensuring that file
+        publication can handle it."""
 
-                location = self.dc.get_repodir()
-                location = os.path.abspath(location)
-                location = urlunparse(("file", "",
-                    pathname2url(location), "", "", ""))
+        location = self.dc.get_repodir()
+        location = os.path.abspath(location)
+        location = urlunparse(("file", "",
+            pathname2url(location), "", "", ""))
 
-                repouriobj = publisher.RepositoryURI(location)
-                repo = publisher.Repository(origins=[repouriobj])
-                pub = publisher.Publisher(prefix="repo1", repository=repo)
-                xport_cfg = transport.GenericTransportCfg()
-                xport_cfg.add_publisher(pub)
-                xport = transport.Transport(xport_cfg)
+        repouriobj = publisher.RepositoryURI(location)
+        repo = publisher.Repository(origins=[repouriobj])
+        pub = publisher.Publisher(prefix="repo1", repository=repo)
+        xport_cfg = transport.GenericTransportCfg()
+        xport_cfg.add_publisher(pub)
+        xport = transport.Transport(xport_cfg)
 
-                # Each version number must be unique since multiple packages
-                # will be published within the same second.
-                for i in range(100):
-                        pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
-                        t = trans.Transaction(location, pkg_name=str(pf),
-                            xport=xport, pub=pub)
-                        t.open()
-                        pkg_fmri, pkg_state = t.close()
-                        self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
+        # Each version number must be unique since multiple packages
+        # will be published within the same second.
+        for i in range(100):
+            pf = fmri.PkgFmri("foo@{0:d}.0".format(i))
+            t = trans.Transaction(location, pkg_name=str(pf),
+                xport=xport, pub=pub)
+            t.open()
+            pkg_fmri, pkg_state = t.close()
+            self.debug("{0}: {1}".format(pkg_fmri, pkg_state))
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

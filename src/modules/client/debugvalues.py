@@ -21,40 +21,40 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 import six
 
 class Singleton(type):
-        """Set __metaclass__ to Singleton to create a singleton.
-        See http://en.wikipedia.org/wiki/Singleton_pattern """
+    """Set __metaclass__ to Singleton to create a singleton.
+    See http://en.wikipedia.org/wiki/Singleton_pattern """
 
-        def __init__(self, name, bases, dictionary):
-                super(Singleton, self).__init__(name, bases, dictionary)
-                self.instance = None
+    def __init__(self, name, bases, dictionary):
+        super(Singleton, self).__init__(name, bases, dictionary)
+        self.instance = None
 
-        def __call__(self, *args, **kw):
-                if self.instance is None:
-                        self.instance = super(Singleton, self).__call__(*args,
-                            **kw)
+    def __call__(self, *args, **kw):
+        if self.instance is None:
+            self.instance = super(Singleton, self).__call__(*args,
+                **kw)
 
-                return self.instance
+        return self.instance
 
 
 class DebugValues(six.with_metaclass(Singleton, dict)):
-        """Singleton dict that returns None if unknown value
-        is referenced"""
+    """Singleton dict that returns None if unknown value
+    is referenced"""
 
-        def __getitem__(self, item):
-                """ returns None if not set """
-                return self.get(item, None)
+    def __getitem__(self, item):
+        """ returns None if not set """
+        return self.get(item, None)
 
-        def get_value(self, key):
-                return self[key]
+    def get_value(self, key):
+        return self[key]
 
-        def set_value(self, key, value):
-                self[key] = value
+    def set_value(self, key, value):
+        self[key] = value
 
 
-DebugValues=DebugValues()
+DebugValues = DebugValues()

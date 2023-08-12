@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 
 import pkg5unittest
 import pkg.solver as solver
@@ -35,27 +35,27 @@ import sys
 
 class TestSolver(pkg5unittest.Pkg5TestCase):
 
-        def test_no_solution(self):
-                cnf_test(failing_test_case.splitlines())
+    def test_no_solution(self):
+        cnf_test(failing_test_case.splitlines())
 
-        def test_solution(self):
-                cnf_test(working_test_case.splitlines())
+    def test_solution(self):
+        cnf_test(working_test_case.splitlines())
 
 def cnf_test(lines):
-        s = solver.msat_solver()
-        
-        for l in lines:
-                if l and l[0] in 'pc%0':
-                        pass # comment
-                else:
-                        # skip trailing 0
-                        cl = [int(i) for i in l.split()[0:-1]]
-                        if cl and not s.add_clause(cl):
-                                return False
-        # create new copy of solver instance to test copy code
-        n = solver.msat_solver(s)
-        del s # force gc of old solver instance
-        return n.solve([])
+    s = solver.msat_solver()
+
+    for l in lines:
+        if l and l[0] in 'pc%0':
+            pass # comment
+        else:
+            # skip trailing 0
+            cl = [int(i) for i in l.split()[0:-1]]
+            if cl and not s.add_clause(cl):
+                return False
+    # create new copy of solver instance to test copy code
+    n = solver.msat_solver(s)
+    del s # force gc of old solver instance
+    return n.solve([])
 
 
 failing_test_case = """
@@ -2214,4 +2214,4 @@ p cnf 250  1065
 """
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

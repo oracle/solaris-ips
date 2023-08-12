@@ -20,11 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os.path
@@ -46,12 +46,12 @@ log_fmt_string = "%(asctime)s - %(levelname)s - %(message)s"
 
 logger = logging.getLogger("pkglint")
 if not logger.handlers:
-        logger.setLevel(logging.WARNING)
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter(log_fmt_string)
-        ch.setFormatter(formatter)
-        ch.setLevel(logging.WARNING)
-        logger.addHandler(ch)
+    logger.setLevel(logging.WARNING)
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter(log_fmt_string)
+    ch.setFormatter(formatter)
+    ch.setLevel(logging.WARNING)
+    logger.addHandler(ch)
 
 pkglintrcfile = "{0}/usr/share/lib/pkg/pkglintrc".format(pkg5unittest.g_pkg_path)
 broken_manifests = {}
@@ -1249,7 +1249,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-expected_failures["obsolete-more-actions-linted.mf"] = ["pkglint.manifest001.2","pkglint.action008"]
+expected_failures["obsolete-more-actions-linted.mf"] = ["pkglint.manifest001.2", "pkglint.action008"]
 broken_manifests["obsolete-more-actions-linted.mf"] = \
 """
 #
@@ -2236,145 +2236,145 @@ user gcos-field="pkg(7) server UID" group=pkg5srv uid=97 username="pkg5s0v"
 """
 
 class TestLogFormatter(log.LogFormatter):
-        """Records log messages to a buffer"""
-        def __init__(self):
-                self.messages = []
-                self.ids = []
-                super(TestLogFormatter, self).__init__()
+    """Records log messages to a buffer"""
+    def __init__(self):
+        self.messages = []
+        self.ids = []
+        super(TestLogFormatter, self).__init__()
 
-        def format(self, msg, ignore_linted=False):
-                if isinstance(msg, log.LintMessage):
-                        linted_flag = False
-                        try:
-                                linted_flag = linted(action=self.action,
-                                    manifest=self.manifest, lint_id=msg.msgid)
-                        except DuplicateLintedAttrException as err:
-                                self.messages.append("{0}\t{1}".format(
-                                    "pkglint001.6", "Logging error: {0}".format(err)))
-                                self.ids.append("pkglint001.6")
+    def format(self, msg, ignore_linted=False):
+        if isinstance(msg, log.LintMessage):
+            linted_flag = False
+            try:
+                linted_flag = linted(action=self.action,
+                    manifest=self.manifest, lint_id=msg.msgid)
+            except DuplicateLintedAttrException as err:
+                self.messages.append("{0}\t{1}".format(
+                    "pkglint001.6", "Logging error: {0}".format(err)))
+                self.ids.append("pkglint001.6")
 
-                        if linted_flag and not ignore_linted:
-                                linted_msg = (
-                                    "Linted message: {id}  {msg}").format(
-                                    id=msg.msgid, msg=msg)
-                                self.messages.append("{0}\t{1}".format(
-                                        "pkglint001.5", linted_msg))
-                                self.ids.append("pkglint001.5")
-                                return
+            if linted_flag and not ignore_linted:
+                linted_msg = (
+                    "Linted message: {id}  {msg}").format(
+                    id=msg.msgid, msg=msg)
+                self.messages.append("{0}\t{1}".format(
+                        "pkglint001.5", linted_msg))
+                self.ids.append("pkglint001.5")
+                return
 
-                        if msg.level >= self.level:
-                                self.messages.append("{0}\t{1}".format(
-                                    msg.msgid, str(msg)))
-                                self.ids.append(msg.msgid)
+            if msg.level >= self.level:
+                self.messages.append("{0}\t{1}".format(
+                    msg.msgid, str(msg)))
+                self.ids.append(msg.msgid)
 
-        def close(self):
-                self.messages = []
-                self.ids = []
+    def close(self):
+        self.messages = []
+        self.ids = []
 
 class TestLintEngine(pkg5unittest.Pkg5TestCase):
 
-        def test_lint_checks(self):
-                """Ensure that lint checks are functioning."""
+    def test_lint_checks(self):
+        """Ensure that lint checks are functioning."""
 
-                paths = self.make_misc_files(broken_manifests)
-                paths.sort()
+        paths = self.make_misc_files(broken_manifests)
+        paths.sort()
 
-                for manifest in paths:
-                        self.debug("running lint checks on {0}".format(manifest))
-                        basename = os.path.basename(manifest)
-                        lint_logger = TestLogFormatter()
-                        lint_engine = engine.LintEngine(lint_logger,
-                            config_file=os.path.join(self.test_root,
-                            "pkglintrc"), use_tracker=False)
+        for manifest in paths:
+            self.debug("running lint checks on {0}".format(manifest))
+            basename = os.path.basename(manifest)
+            lint_logger = TestLogFormatter()
+            lint_engine = engine.LintEngine(lint_logger,
+                config_file=os.path.join(self.test_root,
+                "pkglintrc"), use_tracker=False)
 
-                        manifests = read_manifests([manifest], lint_logger)
-                        lint_engine.setup(lint_manifests=manifests)
+            manifests = read_manifests([manifest], lint_logger)
+            lint_engine.setup(lint_manifests=manifests)
 
-                        lint_engine.execute()
-                        lint_engine.teardown()
+            lint_engine.execute()
+            lint_engine.teardown()
 
-                        # look for pkglint001.3 in the output, regardless
-                        # of whether we marked that as linted, since it
-                        # indicates we caught an exception in one of the
-                        # Checker methods.
-                        for message in lint_logger.messages:
-                                self.assertTrue("pkglint001.3" not in message,
-                                    "Checker exception thrown for {0}: {1}".format(
-                                    basename, message))
+            # look for pkglint001.3 in the output, regardless
+            # of whether we marked that as linted, since it
+            # indicates we caught an exception in one of the
+            # Checker methods.
+            for message in lint_logger.messages:
+                self.assertTrue("pkglint001.3" not in message,
+                    "Checker exception thrown for {0}: {1}".format(
+                    basename, message))
 
-                        expected = len(expected_failures[basename])
-                        actual = len(lint_logger.messages)
-                        if (actual != expected):
-                                self.debug("\n".join(lint_logger.messages))
-                                self.assertTrue(actual == expected,
-                                    "Expected {0} failures for {1}, got {2}: {3}".format(
-                                    expected, basename, actual,
-                                    "\n".join(lint_logger.messages)))
-                        else:
-                                reported = lint_logger.ids
-                                known = expected_failures[basename]
-                                reported.sort()
-                                known.sort()
-                                for i in range(0, len(reported)):
-                                        self.assertTrue(reported[i] == known[i],
-                                            "Differences in reported vs. "
-                                            "expected lint ids for {0}: "
-                                            "{1} vs. {2}\n{3}".format(
-                                            basename, str(reported),
-                                            str(known),
-                                            "\n".join(lint_logger.messages)))
-                        lint_logger.close()
+            expected = len(expected_failures[basename])
+            actual = len(lint_logger.messages)
+            if (actual != expected):
+                self.debug("\n".join(lint_logger.messages))
+                self.assertTrue(actual == expected,
+                    "Expected {0} failures for {1}, got {2}: {3}".format(
+                    expected, basename, actual,
+                    "\n".join(lint_logger.messages)))
+            else:
+                reported = lint_logger.ids
+                known = expected_failures[basename]
+                reported.sort()
+                known.sort()
+                for i in range(0, len(reported)):
+                    self.assertTrue(reported[i] == known[i],
+                        "Differences in reported vs. "
+                        "expected lint ids for {0}: "
+                        "{1} vs. {2}\n{3}".format(
+                        basename, str(reported),
+                        str(known),
+                        "\n".join(lint_logger.messages)))
+            lint_logger.close()
 
-        def test_info_classification_data(self):
-                """info.classification check can deal with bad data files."""
+    def test_info_classification_data(self):
+        """info.classification check can deal with bad data files."""
 
-                paths = self.make_misc_files(
-                    {"info_class_valid.mf":
-                    broken_manifests["info_class_valid.mf"]})
+        paths = self.make_misc_files(
+            {"info_class_valid.mf":
+            broken_manifests["info_class_valid.mf"]})
 
-                empty_file = "{0}/empty_file".format(self.test_root)
-                open(empty_file, "w").close()
+        empty_file = "{0}/empty_file".format(self.test_root)
+        open(empty_file, "w").close()
 
-                bad_file = "{0}/bad_file".format(self.test_root)
-                f = open(bad_file, "w")
-                f.write("nothing here")
-                f.close()
+        bad_file = "{0}/bad_file".format(self.test_root)
+        f = open(bad_file, "w")
+        f.write("nothing here")
+        f.close()
 
-                mf_path = paths.pop()
+        mf_path = paths.pop()
 
-                lint_logger = TestLogFormatter()
-                manifests = read_manifests([mf_path], lint_logger)
+        lint_logger = TestLogFormatter()
+        manifests = read_manifests([mf_path], lint_logger)
 
-                for classification_path in ["/dev/null", "/", empty_file,
-                    bad_file]:
+        for classification_path in ["/dev/null", "/", empty_file,
+            bad_file]:
 
-                        rcfile = self.configure_rcfile(
-                            os.path.join(self.test_root, "pkglintrc"),
-                            {"info_classification_path": classification_path},
-                            self.test_root, section="pkglint", suffix=".tmp")
+            rcfile = self.configure_rcfile(
+                os.path.join(self.test_root, "pkglintrc"),
+                {"info_classification_path": classification_path},
+                self.test_root, section="pkglint", suffix=".tmp")
 
-                        lint_engine = engine.LintEngine(lint_logger,
-                            config_file=rcfile,
-                            use_tracker=False)
+            lint_engine = engine.LintEngine(lint_logger,
+                config_file=rcfile,
+                use_tracker=False)
 
-                        lint_engine.setup(lint_manifests=manifests)
-                        lint_engine.execute()
-                        self.assertTrue(
-                            lint_logger.ids == ["pkglint.manifest008.1"],
-                            "Unexpected errors encountered: {0}".format(
-                            lint_logger.messages))
-                        lint_logger.close()
+            lint_engine.setup(lint_manifests=manifests)
+            lint_engine.execute()
+            self.assertTrue(
+                lint_logger.ids == ["pkglint.manifest008.1"],
+                "Unexpected errors encountered: {0}".format(
+                lint_logger.messages))
+            lint_logger.close()
 
 
 class TestLintEngineDepot(pkg5unittest.ManyDepotTestCase):
-        """Tests that exercise reference vs. lint repository checks
-        and test linting of multiple packages at once."""
+    """Tests that exercise reference vs. lint repository checks
+    and test linting of multiple packages at once."""
 
-        persistent_setup = True
+    persistent_setup = True
 
-        ref_mf = {}
+    ref_mf = {}
 
-        ref_mf["ref-ancient-sample1.mf"] = """
+    ref_mf["ref-ancient-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to an earlier release than
 # 139 This manifest has an intentional error, which we should detect when
@@ -2391,7 +2391,7 @@ file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        ref_mf["ref-old-sample1.mf"] = """
+    ref_mf["ref-old-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to an earlier release than
 # 141
@@ -2405,7 +2405,7 @@ set name=variant.arch value=i386 value=sparc
 file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
-        ref_mf["ref-sample1.mf"] = """
+    ref_mf["ref-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to 11.4.0.0.0.141.0
 #
@@ -2419,7 +2419,7 @@ file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        ref_mf["ref-sample2.mf"] = """
+    ref_mf["ref-sample2.mf"] = """
 #
 # A sample package which delivers several actions
 #
@@ -2434,7 +2434,7 @@ dir group=sys mode=0755 owner=root path=etc
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        ref_mf["ref-sample3.mf"] = """
+    ref_mf["ref-sample3.mf"] = """
 #
 # A sample package which delivers several actions
 #
@@ -2448,7 +2448,7 @@ file /etc/group group=sys mode=0644 owner=root path=etc/group
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        ref_mf["ref-sample4-not-obsolete"] = """
+    ref_mf["ref-sample4-not-obsolete"] = """
 #
 # This is not an obsolete package - used to check versioning
 #
@@ -2457,7 +2457,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-        ref_mf["ref-sample4-obsolete"] = """
+    ref_mf["ref-sample4-obsolete"] = """
 #
 # This is a perfectly valid example of an obsolete package
 #
@@ -2467,7 +2467,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-        ref_mf["dummy-ancestor.mf"] = """
+    ref_mf["dummy-ancestor.mf"] = """
 #
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
 # we don't declare a dependency on the package delivering the legacy action.
@@ -2482,7 +2482,7 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=system/more type=require
 """
 
-        ref_mf["twovar.mf"] = """
+    ref_mf["twovar.mf"] = """
 #
 # This package shares the kernel/strmod path with onevar.mf but has a different
 # set of variants for both the action and the package.  This should not cause
@@ -2497,7 +2497,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 set name=pkg.fmri value=pkg://opensolaris.org/variant/twovar@11.4-11.4.0.0.0.148.0:20100910T211706Z
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.opensolaris.zone=global
 """
-        ref_mf["no_rename-dummy-ancestor.mf"] = """
+    ref_mf["no_rename-dummy-ancestor.mf"] = """
 #
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
 # we don't declare a dependency on the FMRI delivered by it.
@@ -2511,7 +2511,7 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=system/kernel type=require
 """
 
-        ref_mf["legacy-uses-renamed-ancestor.mf"] = """
+    ref_mf["legacy-uses-renamed-ancestor.mf"] = """
 #
 # A package with a legacy action that points to a renamed ancestor
 #
@@ -2524,7 +2524,7 @@ set name=variant.arch value=i386 value=sparc
 legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific instruction-set architecture" arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
-        ref_mf["renamed-ancestor-old.mf"] = """
+    ref_mf["renamed-ancestor-old.mf"] = """
 #
 # The ancestor referred to above, but we've renamed it
 #
@@ -2537,7 +2537,7 @@ set name=variant.arch value=i386 value=sparc
 set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-new type=require
 """
-        ref_mf["renamed-ancestor-new.mf"] = """
+    ref_mf["renamed-ancestor-new.mf"] = """
 #
 # The renamed legacy ancestor - this correctly depends on the latest
 # named version
@@ -2552,7 +2552,7 @@ set name=pkg.renamed value=true
 depend fmri=legacy-uses-renamed-ancestor type=require
 """
 
-        ref_mf["compat-renamed-ancestor-old.mf"] = """
+    ref_mf["compat-renamed-ancestor-old.mf"] = """
 #
 # A package with a legacy action that points to a package name that has the
 # leaf name that matches the 'pkg' attribute of the legacy action that it
@@ -2575,7 +2575,7 @@ set name=variant.arch value=i386 value=sparc
 legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific instruction-set architecture" arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
-        ref_mf["depend-possibly-obsolete.mf"] = """
+    ref_mf["depend-possibly-obsolete.mf"] = """
 #
 # We declare a dependency on a package that we intend to make obsolete
 # in the lint repository, though this package itself is perfectly valid.
@@ -2591,16 +2591,16 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=system/obsolete-this type=require
 """
 
-        # A set of manifests to be linted. Note that these are all self
-        # consistent, passing all lint checks on their own.
-        # Errors are designed to show up when linted against the ref_*
-        # manifests, as imported to our reference repository.
-        lint_mf = {}
-        expected_failures = {}
+    # A set of manifests to be linted. Note that these are all self
+    # consistent, passing all lint checks on their own.
+    # Errors are designed to show up when linted against the ref_*
+    # manifests, as imported to our reference repository.
+    lint_mf = {}
+    expected_failures = {}
 
-        expected_failures["deliver-old-sample1.mf"] = ["pkglint.dupaction001.1",
-            "pkglint.manifest004"]
-        lint_mf["deliver-old-sample1.mf"] = """
+    expected_failures["deliver-old-sample1.mf"] = ["pkglint.dupaction001.1",
+        "pkglint.manifest004"]
+    lint_mf["deliver-old-sample1.mf"] = """
 #
 # We deliver something a package older version than our ref_repo has,
 # 140 instead of 141, this should cause errors unless we're
@@ -2619,8 +2619,8 @@ file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        expected_failures["deliver-new-sample1.mf"] = []
-        lint_mf["deliver-new-sample1.mf"] = """
+    expected_failures["deliver-new-sample1.mf"] = []
+    lint_mf["deliver-new-sample1.mf"] = """
 #
 # We deliver a newer version than our reference repo has
 #
@@ -2634,9 +2634,9 @@ file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        expected_failures["deliver-new-sample1-duplicate.mf"] = \
-            ["pkglint.dupaction001.1"]
-        lint_mf["deliver-new-sample1-duplicate.mf"] = """
+    expected_failures["deliver-new-sample1-duplicate.mf"] = \
+        ["pkglint.dupaction001.1"]
+    lint_mf["deliver-new-sample1-duplicate.mf"] = """
 #
 # We deliver a newer version than our reference repo has, intentionally
 # duplicating a file our reference repository has in sample3
@@ -2652,8 +2652,8 @@ file /etc/group path=etc/group group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        expected_failures["no-ancestor-legacy.mf"] = ["pkglint.action003.2"]
-        lint_mf["no-ancestor-legacy.mf"] = \
+    expected_failures["no-ancestor-legacy.mf"] = ["pkglint.action003.2"]
+    lint_mf["no-ancestor-legacy.mf"] = \
 """
 #
 # We deliver a legacy action, but declare a package in the legacy action pkg=
@@ -2670,8 +2670,8 @@ legacy arch=i386 category=system desc="core kernel software for a specific instr
 legacy arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWthisdoesnotexist variant.arch=sparc vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
-        expected_failures["unversioned-dep-obsolete.mf"] = ["pkglint.action005"]
-        lint_mf["unversioned-dep-obsolete.mf"] = """
+    expected_failures["unversioned-dep-obsolete.mf"] = ["pkglint.action005"]
+    lint_mf["unversioned-dep-obsolete.mf"] = """
 #
 # We declare a dependency without a version number, on an obsolete package
 # this should result in a lint error
@@ -2685,8 +2685,8 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=pkg:/system/obsolete type=require
         """
 
-        expected_failures["versioned-dep-obsolete.mf"] = ["pkglint.action005"]
-        lint_mf["versioned-dep-obsolete.mf"] = """
+    expected_failures["versioned-dep-obsolete.mf"] = ["pkglint.action005"]
+    lint_mf["versioned-dep-obsolete.mf"] = """
 #
 # We declare a dependency on a version known to be obsolete
 #
@@ -2699,8 +2699,8 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=pkg://opensolaris.org/system/obsolete@11.4-11.4.0.0.0.141.0 type=require
         """
 
-        expected_failures["versioned-older-obsolete.mf"] = ["pkglint.action005"]
-        lint_mf["versioned-older-obsolete.mf"] = """
+    expected_failures["versioned-older-obsolete.mf"] = ["pkglint.action005"]
+    lint_mf["versioned-older-obsolete.mf"] = """
 #
 # We have dependency on an older version of the packages which was recently
 # made obsolete. Even though we declared the dependency on the non-obsolete
@@ -2716,8 +2716,8 @@ set name=variant.arch value=i386 value=sparc
 depend fmri=system/obsolete@11.4-11.4.0.0.0.140.0 type=require
         """
 
-        expected_failures["onevar.mf"] = []
-        lint_mf["onevar.mf"] = """
+    expected_failures["onevar.mf"] = []
+    lint_mf["onevar.mf"] = """
 #
 # Test that a package which is only published against one variant value doesn't
 # cause an assertion failure when it shares an action with another package.
@@ -2734,9 +2734,9 @@ set name=pkg.description value="A package published against only one variant val
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.opensolaris.zone=global
 """
 
-        expected_failures["broken-renamed-ancestor-new.mf"] = \
-            ["pkglint.manifest002.3"]
-        lint_mf["broken-renamed-ancestor-new.mf"] = """
+    expected_failures["broken-renamed-ancestor-new.mf"] = \
+        ["pkglint.manifest002.3"]
+    lint_mf["broken-renamed-ancestor-new.mf"] = """
 #
 # A new version of one of the packages in the rename chain for
 # legacy-has-renamed-ancestor, which should result in an error.
@@ -2755,8 +2755,8 @@ set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-missing type=require
 """
 
-        expected_failures["self-depend-renamed-ancestor-new.mf"] = ["pkglint.manifest002.4"]
-        lint_mf["self-depend-renamed-ancestor-new.mf"] = """
+    expected_failures["self-depend-renamed-ancestor-new.mf"] = ["pkglint.manifest002.4"]
+    lint_mf["self-depend-renamed-ancestor-new.mf"] = """
 #
 # A new version of one of the packages in the rename chain for
 # legacy-has-renamed-ancestor, which should result in an error.
@@ -2775,8 +2775,8 @@ set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-new type=require
 """
 
-        expected_failures["renamed-obsolete.mf"] = ["pkglint.manifest002.5"]
-        lint_mf["renamed-obsolete.mf"] = """
+    expected_failures["renamed-obsolete.mf"] = ["pkglint.manifest002.5"]
+    lint_mf["renamed-obsolete.mf"] = """
 #
 # We try to rename ourselves to an obsolete package.
 #
@@ -2790,8 +2790,8 @@ set name=pkg.renamed value=true
 depend fmri=system/obsolete type=require
 """
 
-        expected_failures["obsolete-this.mf"] = ["pkglint.manifest001.3"]
-        lint_mf["obsolete-this.mf"] = """
+    expected_failures["obsolete-this.mf"] = ["pkglint.manifest001.3"]
+    lint_mf["obsolete-this.mf"] = """
 #
 # Make this package obsolete.  Since it has a dependency in the ref_repository,
 # we should get a warning, but only when linting against that repo.
@@ -2802,8 +2802,8 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-        lint_move_mf = {}
-        lint_move_mf["move-sample1.mf"] = """
+    lint_move_mf = {}
+    lint_move_mf["move-sample1.mf"] = """
 #
 # A sample package which delivers several actions, to 161. We no longer
 # deliver etc/passwd, moving that to the package in move-sample2.mf below.
@@ -2817,7 +2817,7 @@ set name=variant.arch value=i386 value=sparc
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        lint_move_mf["move-sample2.mf"] = """
+    lint_move_mf["move-sample2.mf"] = """
 #
 # A sample package which delivers several actions, we now deliver etc/passwd
 # also.
@@ -2834,469 +2834,469 @@ dir group=sys mode=0755 owner=root path=etc
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        def setUp(self):
+    def setUp(self):
 
-                pkg5unittest.ManyDepotTestCase.setUp(self,
-                    ["opensolaris.org", "opensolaris.org", "opensolaris.org"],
-                    start_depots=True)
+        pkg5unittest.ManyDepotTestCase.setUp(self,
+            ["opensolaris.org", "opensolaris.org", "opensolaris.org"],
+            start_depots=True)
 
-                self.ref_uri = self.dcs[1].get_depot_url()
-                self.lint_uri = self.dcs[2].get_depot_url()
-                self.empty_lint_uri = self.dcs[3].get_depot_url()
-                self.cache_dir = tempfile.mkdtemp("pkglint-cache", "",
-                    self.test_root)
+        self.ref_uri = self.dcs[1].get_depot_url()
+        self.lint_uri = self.dcs[2].get_depot_url()
+        self.empty_lint_uri = self.dcs[3].get_depot_url()
+        self.cache_dir = tempfile.mkdtemp("pkglint-cache", "",
+            self.test_root)
 
-                paths = self.make_misc_files(self.ref_mf)
+        paths = self.make_misc_files(self.ref_mf)
 
-                for item in paths:
-                        self.pkgsend(depot_url=self.ref_uri,
-                            command="publish {0}".format(item))
-                self.pkgsend(depot_url=self.ref_uri,
-                            command="refresh-index")
+        for item in paths:
+            self.pkgsend(depot_url=self.ref_uri,
+                command="publish {0}".format(item))
+        self.pkgsend(depot_url=self.ref_uri,
+                    command="refresh-index")
 
-                paths = self.make_misc_files(self.lint_mf)
-                for item in paths:
-                        self.pkgsend(depot_url=self.lint_uri,
-                            command="publish {0}".format(item))
-                self.pkgsend(depot_url=self.lint_uri,
-                            command="refresh-index")
-                # we should sign the repositories for additional coverage
-                self.pkgsign(self.lint_uri, "'*'")
-                self.pkgsign(self.ref_uri, "'*'")
+        paths = self.make_misc_files(self.lint_mf)
+        for item in paths:
+            self.pkgsend(depot_url=self.lint_uri,
+                command="publish {0}".format(item))
+        self.pkgsend(depot_url=self.lint_uri,
+                    command="refresh-index")
+        # we should sign the repositories for additional coverage
+        self.pkgsign(self.lint_uri, "'*'")
+        self.pkgsign(self.ref_uri, "'*'")
 
-        def test_lint_repo_basics(self):
-                """Test basic handling of repo URIs with the lint engine,
-                reference repo is error free, cache dir torn down appropriately.
-                """
-                if not os.path.exists(self.cache_dir):
-                        os.makedirs(self.cache_dir)
+    def test_lint_repo_basics(self):
+        """Test basic handling of repo URIs with the lint engine,
+        reference repo is error free, cache dir torn down appropriately.
+        """
+        if not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
 
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=os.path.join(self.test_root, "pkglintrc"))
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=os.path.join(self.test_root, "pkglintrc"))
 
-                lint_engine.setup(cache=self.cache_dir,
-                    lint_uris=[self.ref_uri])
-                lint_engine.execute()
+        lint_engine.setup(cache=self.cache_dir,
+            lint_uris=[self.ref_uri])
+        lint_engine.execute()
 
-                lint_msgs = []
-                # prune out the missing dependency warnings
-                for msg in lint_logger.messages:
-                        if "pkglint.action005.1" not in msg:
-                                lint_msgs.append(msg)
+        lint_msgs = []
+        # prune out the missing dependency warnings
+        for msg in lint_logger.messages:
+            if "pkglint.action005.1" not in msg:
+                lint_msgs.append(msg)
 
-                self.assertTrue(len(lint_msgs) == 0,
-                    "Unexpected lint errors messages reported against "
-                    "reference repo: {0}".format(
-                    "\n".join(lint_msgs)))
-                lint_logger.close()
+        self.assertTrue(len(lint_msgs) == 0,
+            "Unexpected lint errors messages reported against "
+            "reference repo: {0}".format(
+            "\n".join(lint_msgs)))
+        lint_logger.close()
 
-                lint_engine.teardown()
-                self.assertTrue(os.path.exists(self.cache_dir),
-                    "Cache dir does not exist after teardown!")
-                self.assertTrue(os.path.exists(
-                    os.path.join(self.cache_dir, "lint_image")),
-                    "lint image dir still existed after teardown!")
+        lint_engine.teardown()
+        self.assertTrue(os.path.exists(self.cache_dir),
+            "Cache dir does not exist after teardown!")
+        self.assertTrue(os.path.exists(
+            os.path.join(self.cache_dir, "lint_image")),
+            "lint image dir still existed after teardown!")
 
-                # This shouldn't appear when we're not using a reference repo
-                self.assertFalse(os.path.exists(
-                    os.path.join(self.cache_dir, "ref_image")),
-                    "ref image dir existed!")
-                lint_engine.teardown(clear_cache=True)
-                self.assertFalse(os.path.exists(self.cache_dir),
-                    "Cache dir was not torn down as expected")
+        # This shouldn't appear when we're not using a reference repo
+        self.assertFalse(os.path.exists(
+            os.path.join(self.cache_dir, "ref_image")),
+            "ref image dir existed!")
+        lint_engine.teardown(clear_cache=True)
+        self.assertFalse(os.path.exists(self.cache_dir),
+            "Cache dir was not torn down as expected")
 
-        def test_empty_lint_repo(self):
-                """Ensure we can lint an empty repository"""
+    def test_empty_lint_repo(self):
+        """Ensure we can lint an empty repository"""
 
-                paths = self.make_misc_files(self.lint_mf)
-                if not os.path.exists(self.cache_dir):
-                        os.makedirs(self.cache_dir)
+        paths = self.make_misc_files(self.lint_mf)
+        if not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
 
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                        config_file=os.path.join(self.test_root, "pkglintrc"))
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                config_file=os.path.join(self.test_root, "pkglintrc"))
 
-                lint_engine.setup(cache=self.cache_dir,
-                    lint_uris=[self.ref_uri])
-                lint_engine.execute()
+        lint_engine.setup(cache=self.cache_dir,
+            lint_uris=[self.ref_uri])
+        lint_engine.execute()
 
-                lint_msgs = []
-                # prune out the missing dependency warnings
-                for msg in lint_logger.messages:
-                        if "pkglint.action005.1" not in msg:
-                                lint_msgs.append(msg)
+        lint_msgs = []
+        # prune out the missing dependency warnings
+        for msg in lint_logger.messages:
+            if "pkglint.action005.1" not in msg:
+                lint_msgs.append(msg)
 
-                self.assertFalse(lint_msgs,
-                    "Lint messages reported from a clean reference repository.")
-                lint_engine.teardown(clear_cache=True)
+        self.assertFalse(lint_msgs,
+            "Lint messages reported from a clean reference repository.")
+        lint_engine.teardown(clear_cache=True)
 
-                # this should be an empty test: we have no packages in the
-                # lint repository, so we end up doing nothing
-                lint_logger = TestLogFormatter()
-                lint_engine.setup(cache=self.cache_dir,
-                    lint_uris=[self.empty_lint_uri])
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
-                self.assertFalse(lint_logger.messages,
-                    "Lint messages reported from a empty lint repository.")
+        # this should be an empty test: we have no packages in the
+        # lint repository, so we end up doing nothing
+        lint_logger = TestLogFormatter()
+        lint_engine.setup(cache=self.cache_dir,
+            lint_uris=[self.empty_lint_uri])
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
+        self.assertFalse(lint_logger.messages,
+            "Lint messages reported from a empty lint repository.")
 
-        def test_versioning(self):
-                """Package version handling during lint runs.
-                In particular, it verifies that packages for linting are merged
-                correctly into pkglint's view of what the ref repository would
-                look like, were the lint package to be published to the
-                reference repository."""
+    def test_versioning(self):
+        """Package version handling during lint runs.
+        In particular, it verifies that packages for linting are merged
+        correctly into pkglint's view of what the ref repository would
+        look like, were the lint package to be published to the
+        reference repository."""
 
-                paths = self.make_misc_files(self.lint_mf)
-                paths.sort()
+        paths = self.make_misc_files(self.lint_mf)
+        paths.sort()
 
-                for manifest in paths:
-                        self.debug("running lint checks on {0}".format(manifest))
-                        basename = os.path.basename(manifest)
-                        lint_logger = TestLogFormatter()
-                        lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False,
-                            config_file=os.path.join(self.test_root,
-                            "pkglintrc"))
+        for manifest in paths:
+            self.debug("running lint checks on {0}".format(manifest))
+            basename = os.path.basename(manifest)
+            lint_logger = TestLogFormatter()
+            lint_engine = engine.LintEngine(lint_logger,
+                use_tracker=False,
+                config_file=os.path.join(self.test_root,
+                "pkglintrc"))
 
-                        manifests = read_manifests([manifest], lint_logger)
-                        lint_engine.setup(cache=self.cache_dir,
-                            ref_uris=[self.ref_uri],
-                            lint_manifests=manifests)
+            manifests = read_manifests([manifest], lint_logger)
+            lint_engine.setup(cache=self.cache_dir,
+                ref_uris=[self.ref_uri],
+                lint_manifests=manifests)
 
-                        lint_engine.execute()
-                        lint_engine.teardown(clear_cache=True)
+            lint_engine.execute()
+            lint_engine.teardown(clear_cache=True)
 
-                        expected = len(self.expected_failures[basename])
-                        actual = len(lint_logger.messages)
-                        if (actual != expected):
-                                self.debug("\n".join(lint_logger.messages))
-                                self.assertTrue(actual == expected,
-                                    "Expected {0} failures for {1}, got {2}: {3}".format(
-                                    expected, basename, actual,
-                                    "\n".join(lint_logger.messages)))
-                        else:
-                                reported = lint_logger.ids
-                                known = self.expected_failures[basename]
-                                reported.sort()
-                                known.sort()
-                                for i in range(0, len(reported)):
-                                        self.assertTrue(reported[i] == known[i],
-                                            "Differences in reported vs. expected"
-                                            " lint ids for {0}: {1} vs. {2}".format(
-                                            basename, str(reported),
-                                            str(known)))
-                        lint_logger.close()
-
-                # this manifest should report duplicates when
-                # linted against a 11.4.0.0.0.141.0 repository, but none
-                # when linted against a 11.4.0.0.0.140.0 repository. The
-                # duplicates were tested when 'deliver-old-sample1.mf' was
-                # linted above - this time, we lint against 140 and expect
-                # no errors.
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=os.path.join(self.test_root, "pkglintrc"))
-
-                path = os.path.join(self.test_root, "deliver-old-sample1.mf")
-                manifests = read_manifests([path], lint_logger)
-
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri],
-                    lint_manifests=manifests, release="11.4.0.0.0.140.0")
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
-
-                self.assertFalse(lint_logger.messages,
-                    "Unexpected lint messages when linting against old "
-                    "version of reference repo: {0}".format(
+            expected = len(self.expected_failures[basename])
+            actual = len(lint_logger.messages)
+            if (actual != expected):
+                self.debug("\n".join(lint_logger.messages))
+                self.assertTrue(actual == expected,
+                    "Expected {0} failures for {1}, got {2}: {3}".format(
+                    expected, basename, actual,
                     "\n".join(lint_logger.messages)))
+            else:
+                reported = lint_logger.ids
+                known = self.expected_failures[basename]
+                reported.sort()
+                known.sort()
+                for i in range(0, len(reported)):
+                    self.assertTrue(reported[i] == known[i],
+                        "Differences in reported vs. expected"
+                        " lint ids for {0}: {1} vs. {2}".format(
+                        basename, str(reported),
+                        str(known)))
+            lint_logger.close()
 
-                # ensure we detect the error when linting against the reference
-                # 139 repository
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=os.path.join(self.test_root, "pkglintrc"))
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri],
-                    lint_uris=[self.ref_uri], release="11.4.0.0.0.139.0")
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        # this manifest should report duplicates when
+        # linted against a 11.4.0.0.0.141.0 repository, but none
+        # when linted against a 11.4.0.0.0.140.0 repository. The
+        # duplicates were tested when 'deliver-old-sample1.mf' was
+        # linted above - this time, we lint against 140 and expect
+        # no errors.
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=os.path.join(self.test_root, "pkglintrc"))
 
-                if not lint_logger.ids:
-                        self.assertTrue(False,
-                            "No lint messages produced when linting the "
-                            "contents of an old repository")
-                elif len(lint_logger.ids) != 1:
-                        self.assertTrue(False,
-                            "Expected exactly 1 lint message when linting the "
-                            "contents of an old repository, got {0}".format(
-                            len(lint_logger.ids)))
-                elif lint_logger.ids[0] != "pkglint.dupaction001.1":
-                        self.assertTrue(False,
-                            "Expected pkglint.dupaction001.1 message when "
-                            "linting the contents of an old repository, got "
-                            "{0}".format(lint_logger.ids[0]))
+        path = os.path.join(self.test_root, "deliver-old-sample1.mf")
+        manifests = read_manifests([path], lint_logger)
+
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri],
+            lint_manifests=manifests, release="11.4.0.0.0.140.0")
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
+
+        self.assertFalse(lint_logger.messages,
+            "Unexpected lint messages when linting against old "
+            "version of reference repo: {0}".format(
+            "\n".join(lint_logger.messages)))
+
+        # ensure we detect the error when linting against the reference
+        # 139 repository
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=os.path.join(self.test_root, "pkglintrc"))
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri],
+            lint_uris=[self.ref_uri], release="11.4.0.0.0.139.0")
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
+
+        if not lint_logger.ids:
+            self.assertTrue(False,
+                "No lint messages produced when linting the "
+                "contents of an old repository")
+        elif len(lint_logger.ids) != 1:
+            self.assertTrue(False,
+                "Expected exactly 1 lint message when linting the "
+                "contents of an old repository, got {0}".format(
+                len(lint_logger.ids)))
+        elif lint_logger.ids[0] != "pkglint.dupaction001.1":
+            self.assertTrue(False,
+                "Expected pkglint.dupaction001.1 message when "
+                "linting the contents of an old repository, got "
+                "{0}".format(lint_logger.ids[0]))
 
 
-        def test_lint_mf_baseline(self):
-                """The lint manifests in this test class should be lint-clean
-                themselves - they should only report errors when linting against
-                our reference repository."""
+    def test_lint_mf_baseline(self):
+        """The lint manifests in this test class should be lint-clean
+        themselves - they should only report errors when linting against
+        our reference repository."""
 
-                paths = self.make_misc_files(self.lint_mf)
-                paths.sort()
+        paths = self.make_misc_files(self.lint_mf)
+        paths.sort()
 
-                for manifest in paths:
-                        basename = os.path.basename(manifest)
-                        lint_logger = TestLogFormatter()
-                        lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False,
-                            config_file=os.path.join(self.test_root,
-                            "pkglintrc"))
+        for manifest in paths:
+            basename = os.path.basename(manifest)
+            lint_logger = TestLogFormatter()
+            lint_engine = engine.LintEngine(lint_logger,
+                use_tracker=False,
+                config_file=os.path.join(self.test_root,
+                "pkglintrc"))
 
-                        manifests = read_manifests([manifest], lint_logger)
-                        lint_engine.setup(lint_manifests=manifests)
+            manifests = read_manifests([manifest], lint_logger)
+            lint_engine.setup(lint_manifests=manifests)
 
-                        lint_engine.execute()
-                        lint_engine.teardown()
+            lint_engine.execute()
+            lint_engine.teardown()
 
-                        # prune missing dependency and missing rename warnings
-                        lint_msgs = []
-                        for msg in lint_logger.messages:
-                                if "pkglint.manifest002.3" in msg or \
-                                    "pkglint.manifest002.4" in msg or \
-                                    "pkglint.action005.1" in msg:
-                                        pass
-                                else:
-                                        lint_msgs.append(msg)
+            # prune missing dependency and missing rename warnings
+            lint_msgs = []
+            for msg in lint_logger.messages:
+                if "pkglint.manifest002.3" in msg or \
+                    "pkglint.manifest002.4" in msg or \
+                    "pkglint.action005.1" in msg:
+                    pass
+                else:
+                    lint_msgs.append(msg)
 
-                        self.assertFalse(lint_msgs,
-                            "Unexpected lint messages when linting individual "
-                            "manifests that should contain no errors: {0} {1}".format(
-                            basename, "\n".join(lint_msgs)))
+            self.assertFalse(lint_msgs,
+                "Unexpected lint messages when linting individual "
+                "manifests that should contain no errors: {0} {1}".format(
+                basename, "\n".join(lint_msgs)))
 
-        def test_broken_legacy_rename(self):
-                """Tests that linting a package where we break the renaming
-                of a legacy package, we'll get an error."""
+    def test_broken_legacy_rename(self):
+        """Tests that linting a package where we break the renaming
+        of a legacy package, we'll get an error."""
 
-                paths = self.make_misc_files(self.lint_mf)
-                paths.extend(self.make_misc_files(self.ref_mf))
-                rcfile = os.path.join(self.test_root, "pkglintrc")
+        paths = self.make_misc_files(self.lint_mf)
+        paths.extend(self.make_misc_files(self.ref_mf))
+        rcfile = os.path.join(self.test_root, "pkglintrc")
 
-                legacy = os.path.join(self.test_root,
-                    "legacy-uses-renamed-ancestor.mf")
-                renamed_new = os.path.join(self.test_root,
-                    "broken-renamed-ancestor-new.mf")
-                renamed_old = os.path.join(self.test_root,
-                    "renamed-ancestor-old.mf")
-                renamed_self_depend = os.path.join(self.test_root,
-                    "self-depend-renamed-ancestor-new.mf")
-                compat_legacy = os.path.join(self.test_root,
-                    "compat-renamed-ancestor-old.mf")
+        legacy = os.path.join(self.test_root,
+            "legacy-uses-renamed-ancestor.mf")
+        renamed_new = os.path.join(self.test_root,
+            "broken-renamed-ancestor-new.mf")
+        renamed_old = os.path.join(self.test_root,
+            "renamed-ancestor-old.mf")
+        renamed_self_depend = os.path.join(self.test_root,
+            "self-depend-renamed-ancestor-new.mf")
+        compat_legacy = os.path.join(self.test_root,
+            "compat-renamed-ancestor-old.mf")
 
-                # look for a rename that didn't ultimately resolve to the
-                # package that contained the legacy action
-                lint_logger = TestLogFormatter()
-                manifests = read_manifests([legacy, renamed_new], lint_logger)
+        # look for a rename that didn't ultimately resolve to the
+        # package that contained the legacy action
+        lint_logger = TestLogFormatter()
+        manifests = read_manifests([legacy, renamed_new], lint_logger)
 
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        if "pkglint.action005.1" not in msg:
-                                lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            if "pkglint.action005.1" not in msg:
+                lint_msgs.append(msg)
 
-                self.assertTrue(len(lint_msgs) == 2, "Unexpected lint messages "
-                    "{0} produced when linting broken renaming with legacy "
-                    "pkgs".format(lint_msgs))
+        self.assertTrue(len(lint_msgs) == 2, "Unexpected lint messages "
+            "{0} produced when linting broken renaming with legacy "
+            "pkgs".format(lint_msgs))
 
-                seen_2_3 = False
-                seen_3_4 = False
-                for i in lint_logger.ids:
-                        if i == "pkglint.manifest002.3":
-                                seen_2_3 = True
-                        if i == "pkglint.action003.4":
-                                seen_3_4 = True
+        seen_2_3 = False
+        seen_3_4 = False
+        for i in lint_logger.ids:
+            if i == "pkglint.manifest002.3":
+                seen_2_3 = True
+            if i == "pkglint.action003.4":
+                seen_3_4 = True
 
-                self.assertTrue(seen_2_3 and seen_3_4,
-                    "Missing expected broken renaming legacy errors, "
-                    "got {0}".format(lint_msgs))
+        self.assertTrue(seen_2_3 and seen_3_4,
+            "Missing expected broken renaming legacy errors, "
+            "got {0}".format(lint_msgs))
 
-                # make sure we spot renames that depend upon themselves
-                lint_logger = TestLogFormatter()
-                manifests = read_manifests([legacy, renamed_self_depend],
-                    lint_logger)
+        # make sure we spot renames that depend upon themselves
+        lint_logger = TestLogFormatter()
+        manifests = read_manifests([legacy, renamed_self_depend],
+            lint_logger)
 
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            lint_msgs.append(msg)
 
-                self.assertTrue(len(lint_msgs) == 2, "Unexpected lint messages "
-                    "produced when linting broken self-dependent renaming with "
-                    "legacy pkgs")
-                seen_2_4 = False
-                seen_3_5 = False
-                for i in lint_logger.ids:
-                        if i == "pkglint.manifest002.4":
-                                seen_2_4 = True
-                        if i == "pkglint.action003.5":
-                                seen_3_5 = True
-                self.assertTrue(seen_2_3 and seen_3_4,
-                    "Missing expected broken renaming self-dependent errors "
-                    "with legacy pkgs. Got {0}".format(lint_msgs))
+        self.assertTrue(len(lint_msgs) == 2, "Unexpected lint messages "
+            "produced when linting broken self-dependent renaming with "
+            "legacy pkgs")
+        seen_2_4 = False
+        seen_3_5 = False
+        for i in lint_logger.ids:
+            if i == "pkglint.manifest002.4":
+                seen_2_4 = True
+            if i == "pkglint.action003.5":
+                seen_3_5 = True
+        self.assertTrue(seen_2_3 and seen_3_4,
+            "Missing expected broken renaming self-dependent errors "
+            "with legacy pkgs. Got {0}".format(lint_msgs))
 
-                # make sure we can deal with compatibility packages.  We include
-                # the 'renamed_old' package as well as the 'compat_legacy'
-                # to ensure that pkglint is satisfied by the compatability
-                # package, rather that trying to follow renames from the
-                # 'renamed_old' package. (otherwise, if a package pointed to by
-                # the legacy 'pkg' attribute doesn't exist, pkglint wouldn't
-                # complain)
-                lint_logger = TestLogFormatter()
-                manifests = read_manifests([renamed_old, compat_legacy],
-                    lint_logger)
+        # make sure we can deal with compatibility packages.  We include
+        # the 'renamed_old' package as well as the 'compat_legacy'
+        # to ensure that pkglint is satisfied by the compatability
+        # package, rather that trying to follow renames from the
+        # 'renamed_old' package. (otherwise, if a package pointed to by
+        # the legacy 'pkg' attribute doesn't exist, pkglint wouldn't
+        # complain)
+        lint_logger = TestLogFormatter()
+        manifests = read_manifests([renamed_old, compat_legacy],
+            lint_logger)
 
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            lint_msgs.append(msg)
 
-                self.debug(lint_msgs)
-                self.assertTrue(len(lint_msgs) == 0, "Unexpected lint messages "
-                    "produced when linting a compatibility legacy package")
+        self.debug(lint_msgs)
+        self.assertTrue(len(lint_msgs) == 0, "Unexpected lint messages "
+            "produced when linting a compatibility legacy package")
 
-                # the 'legacy' package includes a legacy action which should
-                # also be satisfied by the compat_legacy being installed.
-                lint_logger = TestLogFormatter()
-                manifests = read_manifests([legacy, compat_legacy],
-                    lint_logger)
+        # the 'legacy' package includes a legacy action which should
+        # also be satisfied by the compat_legacy being installed.
+        lint_logger = TestLogFormatter()
+        manifests = read_manifests([legacy, compat_legacy],
+            lint_logger)
 
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            lint_msgs.append(msg)
 
-                self.assertTrue(len(lint_msgs) == 0, "Unexpected lint messages "
-                    "produced when linting a compatibility legacy package")
+        self.assertTrue(len(lint_msgs) == 0, "Unexpected lint messages "
+            "produced when linting a compatibility legacy package")
 
-        def test_relative_path(self):
-                """The engine can start with a relative path to its cache."""
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger,
-                    use_tracker=False,
-                    config_file=os.path.join(self.test_root,
-                    "pkglintrc"))
+    def test_relative_path(self):
+        """The engine can start with a relative path to its cache."""
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger,
+            use_tracker=False,
+            config_file=os.path.join(self.test_root,
+            "pkglintrc"))
 
-                lint_engine.setup(cache=self.cache_dir,
-                    lint_uris=[self.ref_uri])
+        lint_engine.setup(cache=self.cache_dir,
+            lint_uris=[self.ref_uri])
 
-                lint_engine.execute()
-                lint_engine.teardown()
+        lint_engine.execute()
+        lint_engine.teardown()
 
-                relative = os.path.join("..", os.path.basename(self.cache_dir))
-                cache = os.path.join(self.cache_dir, relative)
-                lint_engine.setup(cache=cache)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        relative = os.path.join("..", os.path.basename(self.cache_dir))
+        cache = os.path.join(self.cache_dir, relative)
+        lint_engine.setup(cache=cache)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-        def test_ref_file_move(self):
-                """The dupaction checks can cope with a file that moves between
-                packages, where the old package was delivered in our reference
-                repository and we're linting both new packages: the package
-                from which the file was moved, as well as the package to which
-                the file is moving.
+    def test_ref_file_move(self):
+        """The dupaction checks can cope with a file that moves between
+        packages, where the old package was delivered in our reference
+        repository and we're linting both new packages: the package
+        from which the file was moved, as well as the package to which
+        the file is moving.
 
-                It should report an error when we only lint the new version
-                of the package to which the file is moving, but not the new
-                version of package from which the file was moved."""
+        It should report an error when we only lint the new version
+        of the package to which the file is moving, but not the new
+        version of package from which the file was moved."""
 
-                paths = self.make_misc_files(self.lint_move_mf)
-                paths.sort()
-                rcfile = os.path.join(self.test_root, "pkglintrc")
+        paths = self.make_misc_files(self.lint_move_mf)
+        paths.sort()
+        rcfile = os.path.join(self.test_root, "pkglintrc")
 
-                move_src = os.path.join(self.test_root, "move-sample1.mf")
-                move_dst = os.path.join(self.test_root, "move-sample2.mf")
+        move_src = os.path.join(self.test_root, "move-sample1.mf")
+        move_dst = os.path.join(self.test_root, "move-sample2.mf")
 
-                lint_logger = TestLogFormatter()
+        lint_logger = TestLogFormatter()
 
-                # first check that file moves work properly, that is,
-                # we should report no errors here.
-                manifests = read_manifests([move_src, move_dst], lint_logger)
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        # first check that file moves work properly, that is,
+        # we should report no errors here.
+        manifests = read_manifests([move_src, move_dst], lint_logger)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            lint_msgs.append(msg)
 
-                self.assertTrue(lint_msgs == [], "Unexpected errors during file "
-                    "movement between packages: {0}".format("\n".join(lint_msgs)))
+        self.assertTrue(lint_msgs == [], "Unexpected errors during file "
+            "movement between packages: {0}".format("\n".join(lint_msgs)))
 
-                # next check that when delivering only the moved-to package,
-                # we report a duplicate error.
-                manifests = read_manifests([move_dst], lint_logger)
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_manifests=manifests)
-                lint_engine.execute()
-                lint_engine.teardown(clear_cache=True)
+        # next check that when delivering only the moved-to package,
+        # we report a duplicate error.
+        manifests = read_manifests([move_dst], lint_logger)
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_manifests=manifests)
+        lint_engine.execute()
+        lint_engine.teardown(clear_cache=True)
 
-                lint_msgs = []
-                for msg in lint_logger.messages:
-                        lint_msgs.append(msg)
+        lint_msgs = []
+        for msg in lint_logger.messages:
+            lint_msgs.append(msg)
 
-                self.assertTrue(len(lint_msgs) == 1, "Expected duplicate path "
-                    "error not seen when moving file between packages, but "
-                    "omitting new source package: {0}".format("\n".join(lint_msgs)))
-                self.assertTrue(lint_logger.ids[0] == "pkglint.dupaction001.1",
-                    "Expected pkglint.dupaction001.1, got {0}".format(
-                    lint_logger.ids[0]))
+        self.assertTrue(len(lint_msgs) == 1, "Expected duplicate path "
+            "error not seen when moving file between packages, but "
+            "omitting new source package: {0}".format("\n".join(lint_msgs)))
+        self.assertTrue(lint_logger.ids[0] == "pkglint.dupaction001.1",
+            "Expected pkglint.dupaction001.1, got {0}".format(
+            lint_logger.ids[0]))
 
 
 class TestVolatileLintEngineDepot(pkg5unittest.ManyDepotTestCase):
-        """Tests that exercise reference vs. lint repository checks and tests
-        linting of multiple packages at once, similar to TestLintEngineDepot,
-        but with less overhead during setUp (this test class is not marked
-        as persistent_setup = True, so test methods are responsible for their
-        own setup)"""
+    """Tests that exercise reference vs. lint repository checks and tests
+    linting of multiple packages at once, similar to TestLintEngineDepot,
+    but with less overhead during setUp (this test class is not marked
+    as persistent_setup = True, so test methods are responsible for their
+    own setup)"""
 
-        # used by test_get_manifest(..)
-        get_manifest_data = {}
+    # used by test_get_manifest(..)
+    get_manifest_data = {}
 # The following two manifests check that given a package in the lint repository,
 # that we can access the latest version of that package from the reference
 # repository using LintEngine.get_manifest(.., reference=True)
-        get_manifest_data["get-manifest-ref.mf"] = """
+    get_manifest_data["get-manifest-ref.mf"] = """
 set name=pkg.fmri value=pkg://opensolaris.org/check/parent@0.5.11,5.11-0.100:20100603T215050Z
 set name=variant.arch value=i386 value=sparc
 set name=pkg.summary value="additional content"
@@ -3304,7 +3304,7 @@ set name=pkg.description value="core kernel software for a specific instruction-
 set name=org.opensolaris.consolidation value=osnet
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 """
-        get_manifest_data["get-manifest-oldref.mf"] = """
+    get_manifest_data["get-manifest-oldref.mf"] = """
 set name=pkg.fmri value=pkg://opensolaris.org/check/parent@0.5.11,5.11-0.99:20100603T215050Z
 set name=variant.arch value=i386 value=sparc
 set name=pkg.summary value="additional content"
@@ -3312,7 +3312,7 @@ set name=pkg.description value="core kernel software for a specific instruction-
 set name=org.opensolaris.consolidation value=osnet
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 """
-        get_manifest_data["get-manifest-lint.mf"] = """
+    get_manifest_data["get-manifest-lint.mf"] = """
 #
 # This is the manifest that should appear in the lint repository.
 #
@@ -3324,354 +3324,354 @@ set name=org.opensolaris.consolidation value=osnet
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 """
 
-        def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self,
-                    ["opensolaris.org", "opensolaris.org"],
-                    start_depots=True)
+    def setUp(self):
+        pkg5unittest.ManyDepotTestCase.setUp(self,
+            ["opensolaris.org", "opensolaris.org"],
+            start_depots=True)
 
-                self.ref_uri = self.dcs[1].get_depot_url()
-                self.lint_uri = self.dcs[2].get_depot_url()
-                self.cache_dir = tempfile.mkdtemp("pkglint-cache", "",
-                    self.test_root)
+        self.ref_uri = self.dcs[1].get_depot_url()
+        self.lint_uri = self.dcs[2].get_depot_url()
+        self.cache_dir = tempfile.mkdtemp("pkglint-cache", "",
+            self.test_root)
 
-        def test_get_manifest(self):
-                """Check that <LintEngine>.get_manifest works ensuring
-                it returns appropriate manifests for the lint and reference
-                repositories."""
+    def test_get_manifest(self):
+        """Check that <LintEngine>.get_manifest works ensuring
+        it returns appropriate manifests for the lint and reference
+        repositories."""
 
-                paths = self.make_misc_files(self.get_manifest_data)
-                rcfile = os.path.join(self.test_root, "pkglintrc")
-                lint_mf = os.path.join(self.test_root, "get-manifest-lint.mf")
-                old_ref_mf = os.path.join(self.test_root,
-                    "get-manifest-oldref.mf")
-                ref_mf = os.path.join(self.test_root, "get-manifest-ref.mf")
-                ret, ref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
-                    ref_mf))
-                ret, oldref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
-                    old_ref_mf))
-                ret, lint_fmri =  self.pkgsend(self.lint_uri, "publish {0}".format(
-                    lint_mf))
+        paths = self.make_misc_files(self.get_manifest_data)
+        rcfile = os.path.join(self.test_root, "pkglintrc")
+        lint_mf = os.path.join(self.test_root, "get-manifest-lint.mf")
+        old_ref_mf = os.path.join(self.test_root,
+            "get-manifest-oldref.mf")
+        ref_mf = os.path.join(self.test_root, "get-manifest-ref.mf")
+        ret, ref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
+            ref_mf))
+        ret, oldref_fmri =  self.pkgsend(self.ref_uri, "publish {0}".format(
+            old_ref_mf))
+        ret, lint_fmri =  self.pkgsend(self.lint_uri, "publish {0}".format(
+            lint_mf))
 
-                lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                manifests = read_manifests([lint_mf], lint_logger)
-                lint_engine.setup(cache=self.cache_dir,
-                    ref_uris=[self.ref_uri], lint_uris=[self.lint_uri])
+        lint_logger = TestLogFormatter()
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        manifests = read_manifests([lint_mf], lint_logger)
+        lint_engine.setup(cache=self.cache_dir,
+            ref_uris=[self.ref_uri], lint_uris=[self.lint_uri])
 
-                # try retrieving a few names that should match our lint manifest
-                for name in ["check/parent", "pkg:/check/parent",
-                    "pkg://opensolaris.org/check/parent@0.5.10"]:
-                        mf = lint_engine.get_manifest(
-                            name, search_type=lint_engine.LATEST_SUCCESSOR)
-                        self.assertTrue(str(mf.fmri) == lint_fmri)
+        # try retrieving a few names that should match our lint manifest
+        for name in ["check/parent", "pkg:/check/parent",
+            "pkg://opensolaris.org/check/parent@0.5.10"]:
+            mf = lint_engine.get_manifest(
+                name, search_type=lint_engine.LATEST_SUCCESSOR)
+            self.assertTrue(str(mf.fmri) == lint_fmri)
 
-                # try retrieving a few names that should match our parent
-                # manifest when using LATEST_SUCCESSOR mode
-                for name in ["check/parent", "pkg:/check/parent",
-                    "pkg://opensolaris.org/check/parent@0.5.10"]:
-                        mf = lint_engine.get_manifest(
-                            name, search_type=lint_engine.LATEST_SUCCESSOR,
-                            reference=True)
-                        self.assertTrue(str(mf.fmri) == ref_fmri)
+        # try retrieving a few names that should match our parent
+        # manifest when using LATEST_SUCCESSOR mode
+        for name in ["check/parent", "pkg:/check/parent",
+            "pkg://opensolaris.org/check/parent@0.5.10"]:
+            mf = lint_engine.get_manifest(
+                name, search_type=lint_engine.LATEST_SUCCESSOR,
+                reference=True)
+            self.assertTrue(str(mf.fmri) == ref_fmri)
 
-                # try retrieving a few names that should not match when using
-                # EXACT mode.
-                for name in ["check/parent@1.0",
-                    "pkg://opensolaris.org/check/parent@0.5.10"]:
-                        mf = lint_engine.get_manifest(
-                            name, search_type=lint_engine.EXACT)
-                        self.assertTrue(mf == None)
+        # try retrieving a few names that should not match when using
+        # EXACT mode.
+        for name in ["check/parent@1.0",
+            "pkg://opensolaris.org/check/parent@0.5.10"]:
+            mf = lint_engine.get_manifest(
+                name, search_type=lint_engine.EXACT)
+            self.assertTrue(mf == None)
 
-                # try retrieving a specific version of the manifest from the
-                # reference repository.
-                mf = lint_engine.get_manifest(
-                    "pkg://opensolaris.org/check/parent@0.5.11,5.11-0.99",
-                    search_type=lint_engine.EXACT, reference=True)
-                self.assertTrue(str(mf.fmri) == oldref_fmri)
+        # try retrieving a specific version of the manifest from the
+        # reference repository.
+        mf = lint_engine.get_manifest(
+            "pkg://opensolaris.org/check/parent@0.5.11,5.11-0.99",
+            search_type=lint_engine.EXACT, reference=True)
+        self.assertTrue(str(mf.fmri) == oldref_fmri)
 
-                # test that we raise an exception when no reference repo is
-                # configured, but that searches for a non-existent package from
-                # the lint manifests do still return None.
-                shutil.rmtree(os.path.join(self.cache_dir, "ref_image"))
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
-                lint_engine.setup(cache=self.cache_dir,
-                    lint_manifests=manifests)
-                mf = lint_engine.get_manifest("example/package")
-                self.assertTrue(mf == None)
-                self.assertRaises(base.LintException, lint_engine.get_manifest,
-                    "example/package", reference=True)
+        # test that we raise an exception when no reference repo is
+        # configured, but that searches for a non-existent package from
+        # the lint manifests do still return None.
+        shutil.rmtree(os.path.join(self.cache_dir, "ref_image"))
+        lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+            config_file=rcfile)
+        lint_engine.setup(cache=self.cache_dir,
+            lint_manifests=manifests)
+        mf = lint_engine.get_manifest("example/package")
+        self.assertTrue(mf == None)
+        self.assertRaises(base.LintException, lint_engine.get_manifest,
+            "example/package", reference=True)
 
 
 class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
 
-        def test_lint_fmri_successor(self):
-            """lint_fmri_successor reports lint successors correctly.
+    def test_lint_fmri_successor(self):
+        """lint_fmri_successor reports lint successors correctly.
 
-            The lint fmri_successor check has a biase for new FMRIs  and
-            acts differently to the pkg.fmri.PkgFmri is_successor check,
-            favouring the new fmri if it is missing information not present
-            in the old fmri.
+        The lint fmri_successor check has a biase for new FMRIs  and
+        acts differently to the pkg.fmri.PkgFmri is_successor check,
+        favouring the new fmri if it is missing information not present
+        in the old fmri.
 
-            We also include some tests for the standard is_successor
-            check, which is used in the implementation of
-            lint_fmri_successor."""
+        We also include some tests for the standard is_successor
+        check, which is used in the implementation of
+        lint_fmri_successor."""
 
-            class FmriPair():
-                    def __init__(self, new, old):
-                            self.new = new
-                            self.old = old
+        class FmriPair():
+            def __init__(self, new, old):
+                self.new = new
+                self.old = old
 
-                    def __repr__(self):
-                            return "FmriPair({0}, {1}) ".format(self.new, self.old)
+            def __repr__(self):
+                return "FmriPair({0}, {1}) ".format(self.new, self.old)
 
-            def is_successor(pair):
-                    """baseline the standard fmri.is_successor check"""
-                    new = fmri.PkgFmri(pair.new)
-                    old = fmri.PkgFmri(pair.old)
-                    return new.is_successor(old)
+        def is_successor(pair):
+            """baseline the standard fmri.is_successor check"""
+            new = fmri.PkgFmri(pair.new)
+            old = fmri.PkgFmri(pair.old)
+            return new.is_successor(old)
 
-            def commutative(pair, ignore_pubs=True):
-                    """test that new succeeds old and old succeeds new."""
-                    new = fmri.PkgFmri(pair.new)
-                    old = fmri.PkgFmri(pair.old)
-                    return lint_fmri_successor(new, old,
-                        ignore_pubs=ignore_pubs) and \
-                        lint_fmri_successor(old, new, ignore_pubs=ignore_pubs)
+        def commutative(pair, ignore_pubs=True):
+            """test that new succeeds old and old succeeds new."""
+            new = fmri.PkgFmri(pair.new)
+            old = fmri.PkgFmri(pair.old)
+            return lint_fmri_successor(new, old,
+                ignore_pubs=ignore_pubs) and \
+                lint_fmri_successor(old, new, ignore_pubs=ignore_pubs)
 
-            def newer(pair, ignore_pubs=True, ignore_timestamps=True):
-                    """test that new succeeds old, but old does not succeed new"""
-                    new = fmri.PkgFmri(pair.new)
-                    old = fmri.PkgFmri(pair.old)
-                    return lint_fmri_successor(new, old,
-                        ignore_pubs=ignore_pubs,
-                        ignore_timestamps=ignore_timestamps) and \
-                        not lint_fmri_successor(old, new,
-                        ignore_pubs=ignore_pubs,
-                        ignore_timestamps=ignore_timestamps)
+        def newer(pair, ignore_pubs=True, ignore_timestamps=True):
+            """test that new succeeds old, but old does not succeed new"""
+            new = fmri.PkgFmri(pair.new)
+            old = fmri.PkgFmri(pair.old)
+            return lint_fmri_successor(new, old,
+                ignore_pubs=ignore_pubs,
+                ignore_timestamps=ignore_timestamps) and \
+                not lint_fmri_successor(old, new,
+                ignore_pubs=ignore_pubs,
+                ignore_timestamps=ignore_timestamps)
 
-            # messages used in assertions
-            fail_msg = "{0} do not pass {1} check"
-            fail_msg_pubs = "{0} do not pass {1} check, ignoring publishers"
-            fail_msg_ts = "{0} do not pass {1} check, ignoring timestamps"
+        # messages used in assertions
+        fail_msg = "{0} do not pass {1} check"
+        fail_msg_pubs = "{0} do not pass {1} check, ignoring publishers"
+        fail_msg_ts = "{0} do not pass {1} check, ignoring timestamps"
 
-            fail_comm = fail_msg.format("{0}", "commutative")
-            fail_comm_pubs = fail_msg_pubs.format("{0}", "commutative")
-            fail_newer = fail_msg.format("{0}", "newer")
-            fail_newer_pubs = fail_msg_pubs.format("{0}", "newer")
-            fail_newer_ts = fail_msg_ts.format("{0}", "newer timestamp-sensitive")
-            fail_successor = fail_msg.format("{0}", "is_successor")
+        fail_comm = fail_msg.format("{0}", "commutative")
+        fail_comm_pubs = fail_msg_pubs.format("{0}", "commutative")
+        fail_newer = fail_msg.format("{0}", "newer")
+        fail_newer_pubs = fail_msg_pubs.format("{0}", "newer")
+        fail_newer_ts = fail_msg_ts.format("{0}", "newer timestamp-sensitive")
+        fail_successor = fail_msg.format("{0}", "is_successor")
 
-            # 1 identical everything
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
-                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 1 identical everything
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+            "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # 2 identical versions
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
-                "pkg://foo.org/tst@1.0,5.11-0.120")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
-
-
-            # 3 identical names
-            pair = FmriPair("pkg://foo.org/tst",
-                "pkg://foo.org/tst")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 2 identical versions
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+            "pkg://foo.org/tst@1.0,5.11-0.120")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
 
-            # 4 differing timestamps, same version (identical, in pkglint's view)
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
-                "pkg://foo.org/tst@1.0,5.11-0.120:20311003T222559Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(not is_successor(pair), fail_successor.format(pair))
-            self.assertTrue(not newer(pair, ignore_timestamps=False),
-                fail_newer_ts.format(pair))
+        # 3 identical names
+        pair = FmriPair("pkg://foo.org/tst",
+            "pkg://foo.org/tst")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # 5 missing timestamps, same version
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
-                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
 
-            # 6 missing timestamps, different version
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
-                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
+        # 4 differing timestamps, same version (identical, in pkglint's view)
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+            "pkg://foo.org/tst@1.0,5.11-0.120:20311003T222559Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(not is_successor(pair), fail_successor.format(pair))
+        self.assertTrue(not newer(pair, ignore_timestamps=False),
+            fail_newer_ts.format(pair))
 
-            # 7 different versions
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
-                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
+        # 5 missing timestamps, same version
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+            "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
 
-            # 8 different versions (where string comparisons won't work since
-            # with string comparisons, '0.133' < '0.99' which is not desired
-            pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
-            "pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
+        # 6 missing timestamps, different version
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
+            "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
 
-            #  Now the same set of tests, this time with different publishers
-            # 1.1 identical everything
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
-                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 7 different versions
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
+            "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
 
-             # 2.1 identical versions
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
-                "pkg://bar.org/tst@1.0,5.11-0.120")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 8 different versions (where string comparisons won't work since
+        # with string comparisons, '0.133' < '0.99' which is not desired
+        pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
+        "pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
 
-            # 3.1 identical names
-            pair = FmriPair("pkg://foo.org/tst",
-                "pkg://bar.org/tst")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        #  Now the same set of tests, this time with different publishers
+        # 1.1 identical everything
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+            "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # 4.1 differing timestamps, same version (identical, in pkglint's
-            # view unless we specifically look at the timestamp)
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
-                "pkg://bar.org/tst@1.0,5.11-0.120:20311003T222559Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(not is_successor(pair), fail_successor.format(pair))
-            self.assertTrue(not newer(pair, ignore_timestamps=False),
-                fail_newer_ts.format(pair))
+        # 2.1 identical versions
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+            "pkg://bar.org/tst@1.0,5.11-0.120")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(not commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # 5.1 missing timestamps, same version
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
-                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(commutative(pair), fail_comm.format(pair))
-            self.assertTrue(not commutative(pair, ignore_pubs=False),
-                fail_comm_pubs.format(pair))
-            self.assertTrue(not is_successor(pair), fail_successor.format(pair))
+        # 3.1 identical names
+        pair = FmriPair("pkg://foo.org/tst",
+            "pkg://bar.org/tst")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(not commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # 6.1 missing timestamps, different version
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
-                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 4.1 differing timestamps, same version (identical, in pkglint's
+        # view unless we specifically look at the timestamp)
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+            "pkg://bar.org/tst@1.0,5.11-0.120:20311003T222559Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(not commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(not is_successor(pair), fail_successor.format(pair))
+        self.assertTrue(not newer(pair, ignore_timestamps=False),
+            fail_newer_ts.format(pair))
 
-            # 7.1 different versions
-            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
-                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 5.1 missing timestamps, same version
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+            "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(commutative(pair), fail_comm.format(pair))
+        self.assertTrue(not commutative(pair, ignore_pubs=False),
+            fail_comm_pubs.format(pair))
+        self.assertTrue(not is_successor(pair), fail_successor.format(pair))
 
-            # 8.1 different versions (where string comparisons won't work
-            # with string comparisons, '0.133' < '0.99' which is not desired
-            pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
-            "pkg://solaris/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
+        # 6.1 missing timestamps, different version
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
+            "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # missing publishers
-            pair = FmriPair("pkg:/tst", "pkg://foo.org/tst")
-            self.assertTrue(commutative(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 7.1 different versions
+        pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
+            "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # different publishers
-            pair = FmriPair("pkg://bar.org/tst", "pkg://foo.org/tst")
-            self.assertTrue(commutative(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # 8.1 different versions (where string comparisons won't work
+        # with string comparisons, '0.133' < '0.99' which is not desired
+        pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
+        "pkg://solaris/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
 
-            # different publishers, missing timestmap, same version
-            pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.121",
-                "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
-            self.assertTrue(commutative(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(not is_successor(pair), fail_successor.format(pair))
+        # missing publishers
+        pair = FmriPair("pkg:/tst", "pkg://foo.org/tst")
+        self.assertTrue(commutative(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-            # different publishers, missing timestmap
-            pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.122",
-                "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
-            self.assertTrue(newer(pair), fail_newer.format(pair))
-            self.assertTrue(not newer(pair, ignore_pubs=False),
-                fail_newer_pubs.format(pair))
-            self.assertTrue(is_successor(pair), fail_successor.format(pair))
+        # different publishers
+        pair = FmriPair("pkg://bar.org/tst", "pkg://foo.org/tst")
+        self.assertTrue(commutative(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
+
+        # different publishers, missing timestmap, same version
+        pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.121",
+            "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
+        self.assertTrue(commutative(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(not is_successor(pair), fail_successor.format(pair))
+
+        # different publishers, missing timestmap
+        pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.122",
+            "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
+        self.assertTrue(newer(pair), fail_newer.format(pair))
+        self.assertTrue(not newer(pair, ignore_pubs=False),
+            fail_newer_pubs.format(pair))
+        self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
 def read_manifests(names, lint_logger):
-        "Read a list of filenames, return a list of Manifest objects"
-        manifests = []
-        for filename in names:
-                data = None
-                # borrowed code from publish.py
-                lines = []      # giant string of all input lines
-                linecnts = []   # tuples of starting line no., ending line no
-                linecounter = 0 # running total
-                try:
-                        data = open(filename).read()
-                except IOError as e:
-                        lint_logger.error("Unable to read manifest file {0}".format(
-                            filename, msgid="lint.manifest001"))
-                        continue
-                lines.append(data)
-                linecnt = len(data.splitlines())
-                linecnts.append((linecounter, linecounter + linecnt))
-                linecounter += linecnt
+    "Read a list of filenames, return a list of Manifest objects"
+    manifests = []
+    for filename in names:
+        data = None
+        # borrowed code from publish.py
+        lines = []      # giant string of all input lines
+        linecnts = []   # tuples of starting line no., ending line no
+        linecounter = 0 # running total
+        try:
+            data = open(filename).read()
+        except IOError as e:
+            lint_logger.error("Unable to read manifest file {0}".format(
+                filename, msgid="lint.manifest001"))
+            continue
+        lines.append(data)
+        linecnt = len(data.splitlines())
+        linecnts.append((linecounter, linecounter + linecnt))
+        linecounter += linecnt
 
-                manifest = pkg.manifest.Manifest()
-                try:
-                        manifest.set_content("\n".join(lines))
-                except pkg.actions.ActionError as e:
-                        lineno = e.lineno
-                        for i, tup in enumerate(linecnts):
-                                if lineno > tup[0] and lineno <= tup[1]:
-                                        lineno -= tup[0]
-                                        break;
-                        else:
-                                lineno = "???"
+        manifest = pkg.manifest.Manifest()
+        try:
+            manifest.set_content("\n".join(lines))
+        except pkg.actions.ActionError as e:
+            lineno = e.lineno
+            for i, tup in enumerate(linecnts):
+                if lineno > tup[0] and lineno <= tup[1]:
+                    lineno -= tup[0]
+                    break
+            else:
+                lineno = "???"
 
-                        lint_logger.error(
-                            "Problem reading manifest {0} line: {1}: {2} ".format(
-                            filename, lineno, e), "lint.manifest002")
-                        continue
+            lint_logger.error(
+                "Problem reading manifest {0} line: {1}: {2} ".format(
+                filename, lineno, e), "lint.manifest002")
+            continue
 
-                if "pkg.fmri" in manifest:
-                        manifest.fmri = fmri.PkgFmri(
-                            manifest["pkg.fmri"])
-                        manifests.append(manifest)
-                else:
-                        lint_logger.error(
-                            "Manifest {0} does not declare fmri.".format(filename),
-                            "lint.manifest003")
-        return manifests
+        if "pkg.fmri" in manifest:
+            manifest.fmri = fmri.PkgFmri(
+                manifest["pkg.fmri"])
+            manifests.append(manifest)
+        else:
+            lint_logger.error(
+                "Manifest {0} does not declare fmri.".format(filename),
+                "lint.manifest003")
+    return manifests
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

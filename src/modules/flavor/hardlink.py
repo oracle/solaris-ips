@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 import os
@@ -29,23 +29,23 @@ import os
 import pkg.flavor.base as base
 
 class HardlinkDependency(base.PublishingDependency):
-        """Class representing the dependency by having an action that's a
-        hardlink to a path."""
-        def __init__(self, action, path, pkg_vars):
-                base_names = [os.path.basename(path)]
-                paths = [os.path.dirname(path)]
-                base.PublishingDependency.__init__(self, action,
-                    base_names, paths, pkg_vars, None, "hardlink")
+    """Class representing the dependency by having an action that's a
+    hardlink to a path."""
+    def __init__(self, action, path, pkg_vars):
+        base_names = [os.path.basename(path)]
+        paths = [os.path.dirname(path)]
+        base.PublishingDependency.__init__(self, action,
+            base_names, paths, pkg_vars, None, "hardlink")
 
-        def __repr__(self):
-                return "HLDep({0}, {1}, {2}, {3}, {4})".format(self.action,
-                    self.base_names, self.run_paths, self.pkg_vars,
-                    self.dep_vars)
+    def __repr__(self):
+        return "HLDep({0}, {1}, {2}, {3}, {4})".format(self.action,
+            self.base_names, self.run_paths, self.pkg_vars,
+            self.dep_vars)
 
 def process_hardlink_deps(action, pkg_vars):
-        """Given an action, and the variants against which the action's package
-        was published, produce a list with one HardlinkDependency object in
-        it."""
+    """Given an action, and the variants against which the action's package
+    was published, produce a list with one HardlinkDependency object in
+    it."""
 
-        target = action.get_target_path()
-        return [HardlinkDependency(action, target, pkg_vars)]
+    target = action.get_target_path()
+    return [HardlinkDependency(action, target, pkg_vars)]

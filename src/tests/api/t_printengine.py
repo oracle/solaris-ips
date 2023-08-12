@@ -20,11 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import unittest
@@ -37,63 +37,63 @@ import threading
 import pkg.client.printengine as printengine
 
 class TestPrintEngine(pkg5unittest.Pkg5TestCase):
-        def test_posix_printengine_tty(self):
-                """Test POSIX print engine tty mode."""
-                sio = six.StringIO()
-                def __drain(masterf):
-                        """Drain data from masterf and discard until eof."""
-                        while True:
-                                chunksz = 1024
-                                termdata = masterf.read(chunksz)
-                                if len(termdata) < chunksz:
-                                        # assume we hit EOF
-                                        break
-                                print(termdata, file=sio)
+    def test_posix_printengine_tty(self):
+        """Test POSIX print engine tty mode."""
+        sio = six.StringIO()
+        def __drain(masterf):
+            """Drain data from masterf and discard until eof."""
+            while True:
+                chunksz = 1024
+                termdata = masterf.read(chunksz)
+                if len(termdata) < chunksz:
+                    # assume we hit EOF
+                    break
+                print(termdata, file=sio)
 
-                #
-                # - Allocate a pty
-                # - Create a thread to drain off the master side; without
-                #   this, the slave side will block when trying to write.
-                # - Connect the printengine to the slave side
-                # - Set it running
-                #
-                (master, slave) = pty.openpty()
-                slavef = os.fdopen(slave, "w")
-                masterf = os.fdopen(master, "r")
+        #
+        # - Allocate a pty
+        # - Create a thread to drain off the master side; without
+        #   this, the slave side will block when trying to write.
+        # - Connect the printengine to the slave side
+        # - Set it running
+        #
+        (master, slave) = pty.openpty()
+        slavef = os.fdopen(slave, "w")
+        masterf = os.fdopen(master, "r")
 
-                t = threading.Thread(target=__drain, args=(masterf,))
-                t.start()
+        t = threading.Thread(target=__drain, args=(masterf,))
+        t.start()
 
-                printengine.test_posix_printengine(slavef, True)
-                slavef.close()
+        printengine.test_posix_printengine(slavef, True)
+        slavef.close()
 
-                t.join()
-                masterf.close()
-                self.assertTrue(len(sio.getvalue()) > 0)
+        t.join()
+        masterf.close()
+        self.assertTrue(len(sio.getvalue()) > 0)
 
-        def test_posix_printengine_badtty(self):
-                """Try to make ttymode POSIX print engines on non-ttys."""
-                f = six.StringIO()
-                self.assertRaises(printengine.PrintEngineException,
-                    printengine.POSIXPrintEngine, f, True)
+    def test_posix_printengine_badtty(self):
+        """Try to make ttymode POSIX print engines on non-ttys."""
+        f = six.StringIO()
+        self.assertRaises(printengine.PrintEngineException,
+            printengine.POSIXPrintEngine, f, True)
 
-                tpath = self.make_misc_files("testfile")
-                f = open(tpath[0], "w")
-                self.assertRaises(printengine.PrintEngineException,
-                    printengine.POSIXPrintEngine, f, True)
-                f.close()
+        tpath = self.make_misc_files("testfile")
+        f = open(tpath[0], "w")
+        self.assertRaises(printengine.PrintEngineException,
+            printengine.POSIXPrintEngine, f, True)
+        f.close()
 
-        def test_posix_printengine_notty(self):
-                """Smoke test POSIX print engine non-tty mode."""
-                sio = six.StringIO()
-                printengine.test_posix_printengine(sio, False)
-                self.assertTrue(len(sio.getvalue()) > 0)
+    def test_posix_printengine_notty(self):
+        """Smoke test POSIX print engine non-tty mode."""
+        sio = six.StringIO()
+        printengine.test_posix_printengine(sio, False)
+        self.assertTrue(len(sio.getvalue()) > 0)
 
-        def test_logging_printengine(self):
-                """Smoke test logging print engine."""
-                sio = six.StringIO()
-                printengine.test_logging_printengine(sio)
-                self.assertTrue(len(sio.getvalue()) > 0)
+    def test_logging_printengine(self):
+        """Smoke test logging print engine."""
+        sio = six.StringIO()
+        printengine.test_logging_printengine(sio)
+        self.assertTrue(len(sio.getvalue()) > 0)
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

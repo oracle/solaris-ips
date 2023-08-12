@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 REQUIRE = 0
@@ -29,33 +29,33 @@ OPTIONAL = 1
 INCORPORATE = 10
 
 class Dependency(object):
-        """A Dependency object is a relationship between one Package and
-        another.  It is a bidirectional expression.
+    """A Dependency object is a relationship between one Package and
+    another.  It is a bidirectional expression.
 
-        A package may require a minimum version of another package."""
+    A package may require a minimum version of another package."""
 
-        def __init__(self, host_pkg_fmri, req_pkg_fmri, type = REQUIRE):
-                self.host_pkg_fmri = host_pkg_fmri
-                self.req_pkg_fmri = req_pkg_fmri
+    def __init__(self, host_pkg_fmri, req_pkg_fmri, type = REQUIRE):
+        self.host_pkg_fmri = host_pkg_fmri
+        self.req_pkg_fmri = req_pkg_fmri
 
-                assert type == REQUIRE \
-                    or type == INCORPORATE \
-                    or type == OPTIONAL
+        assert type == REQUIRE \
+            or type == INCORPORATE \
+            or type == OPTIONAL
 
-                self.type = type
+        self.type = type
 
-        def satisfied(self, pkg_fmri):
-                # compare pkg_fmri to req_pkg_fmri
-                # compare versions
-                return False
+    def satisfied(self, pkg_fmri):
+        # compare pkg_fmri to req_pkg_fmri
+        # compare versions
+        return False
 
-        def __repr__(self):
-                if self.type == REQUIRE:
-                        return "{0} => {1}".format(
-                            self.host_pkg_fmri, self.req_pkg_fmri)
-                elif self.type == OPTIONAL:
-                        return "{0} o> {1}".format(
-                            self.host_pkg_fmri, self.req_pkg_fmri)
-                elif self.type == INCORPORATE:
-                        return "{0} >> {1}".format(
-                            self.host_pkg_fmri, self.req_pkg_fmri)
+    def __repr__(self):
+        if self.type == REQUIRE:
+            return "{0} => {1}".format(
+                self.host_pkg_fmri, self.req_pkg_fmri)
+        elif self.type == OPTIONAL:
+            return "{0} o> {1}".format(
+                self.host_pkg_fmri, self.req_pkg_fmri)
+        elif self.type == INCORPORATE:
+            return "{0} >> {1}".format(
+                self.host_pkg_fmri, self.req_pkg_fmri)

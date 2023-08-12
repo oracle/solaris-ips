@@ -21,52 +21,52 @@
 #
 
 #
-# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import pkg.client.api_errors as api_errors
 
 class TestPkgApiFix(pkg5unittest.SingleDepotTestCase):
 
-        amber10 = """
+    amber10 = """
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
             add file amber1 mode=0644 owner=root group=bin path=etc/amber1
             close """
 
-        misc_files = ["amber1"]
+    misc_files = ["amber1"]
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, self.amber10)
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
+        self.pkgsend_bulk(self.rurl, self.amber10)
 
-        def test_01_basic(self):
+    def test_01_basic(self):
 
-                api_inst = self.image_create(self.rurl)
+        api_inst = self.image_create(self.rurl)
 
-                self._api_install(api_inst, ["amber"])
-                victim = "etc/amber1"
-                # Corrupt the file
-                self.file_append(victim, "foobar")
+        self._api_install(api_inst, ["amber"])
+        victim = "etc/amber1"
+        # Corrupt the file
+        self.file_append(victim, "foobar")
 
-                self._api_fix(api_inst)
-                self.pkg("verify")
+        self._api_fix(api_inst)
+        self.pkg("verify")
 
-                self.assertRaises(api_errors.PlanCreationException,
-                    lambda *args, **kwargs: list(
-                        api_inst.gen_plan_fix(*args, **kwargs)),
-                    ["foo", "bar"])
+        self.assertRaises(api_errors.PlanCreationException,
+            lambda *args, **kwargs: list(
+                api_inst.gen_plan_fix(*args, **kwargs)),
+            ["foo", "bar"])
 
-                self.assertRaises(api_errors.PlanCreationException,
-                    lambda *args, **kwargs: list(
-                        api_inst.gen_plan_fix(*args, **kwargs)),
-                    ["amber@-1.0"])
+        self.assertRaises(api_errors.PlanCreationException,
+            lambda *args, **kwargs: list(
+                api_inst.gen_plan_fix(*args, **kwargs)),
+            ["amber@-1.0"])
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

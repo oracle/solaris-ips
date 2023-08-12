@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -53,265 +53,264 @@ groups_lastupdate = {}
 __been_here = {}
 
 def already_called():
-        callers_name = sys._getframe(1).f_code.co_name
-        if callers_name in __been_here:
-                return True
-        else:
-                __been_here[callers_name] = True
-                return False
+    callers_name = sys._getframe(1).f_code.co_name
+    if callers_name in __been_here:
+        return True
+    else:
+        __been_here[callers_name] = True
+        return False
 
 def get_isainfo():
-        return platform.uname()[5]
+    return platform.uname()[5]
 
 def get_release():
-        return os_util.get_os_release()
+    return os_util.get_os_release()
 
 def get_platform():
-        return platform.uname()[4]
+    return platform.uname()[4]
 
 def get_userid():
-        """To be used for display purposes only!"""
+    """To be used for display purposes only!"""
 
-        # If the software is being executed with pfexec, the uid or euid will
-        # likely be 0 which is of no use.  Since the os.getlogin() interface
-        # provided by Python breaks in a number of interesting ways, their
-        # recommendation is to pull the username from the environment instead.
-        user = os.getenv('USER', os.getenv('LOGNAME', os.getenv('USERNAME')))
-        if user:
-                try:
-                        return get_user_by_name(user, None, False)
-                except KeyError:
-                        # The environment username wasn't valid.
-                        pass
-        return os.getuid()
+    # If the software is being executed with pfexec, the uid or euid will
+    # likely be 0 which is of no use.  Since the os.getlogin() interface
+    # provided by Python breaks in a number of interesting ways, their
+    # recommendation is to pull the username from the environment instead.
+    user = os.getenv('USER', os.getenv('LOGNAME', os.getenv('USERNAME')))
+    if user:
+        try:
+            return get_user_by_name(user, None, False)
+        except KeyError:
+            # The environment username wasn't valid.
+            pass
+    return os.getuid()
 
 def get_username():
-        """To be used for display purposes only!"""
+    """To be used for display purposes only!"""
 
-        if not already_called():
-                get_username()
-        return pwd.getpwuid(get_userid()).pw_name
+    if not already_called():
+        get_username()
+    return pwd.getpwuid(get_userid()).pw_name
 
 def is_admin():
-        return os.getuid() == 0
+    return os.getuid() == 0
 
 def get_group_by_name(name, dirpath, use_file):
-        if not already_called():
-                get_group_by_name(name, dirpath, use_file)
+    if not already_called():
+        get_group_by_name(name, dirpath, use_file)
 
-        if not use_file:
-                return grp.getgrnam(name).gr_gid
-        try:
-                load_groups(dirpath)
-                return groups[dirpath][name].gr_gid
-        except OSError as e:
-                if e.errno != errno.ENOENT:
-                        raise
-                # If the password file doesn't exist, bootstrap
-                # ourselves from the current environment.
-                return grp.getgrnam(name).gr_gid
-        except KeyError:
-                raise KeyError("group name not found: {0}".format(name))
+    if not use_file:
+        return grp.getgrnam(name).gr_gid
+    try:
+        load_groups(dirpath)
+        return groups[dirpath][name].gr_gid
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # If the password file doesn't exist, bootstrap
+        # ourselves from the current environment.
+        return grp.getgrnam(name).gr_gid
+    except KeyError:
+        raise KeyError("group name not found: {0}".format(name))
 
 def get_user_by_name(name, dirpath, use_file):
-        if not already_called():
-                get_user_by_name(name, dirpath, use_file)
+    if not already_called():
+        get_user_by_name(name, dirpath, use_file)
 
-        if not use_file:
-                return pwd.getpwnam(name).pw_uid
-        try:
-                load_passwd(dirpath)
-                return users[dirpath][name].pw_uid
-        except OSError as e:
-                if e.errno != errno.ENOENT:
-                        raise
-                # If the password file doesn't exist, bootstrap
-                # ourselves from the current environment.
-                return pwd.getpwnam(name).pw_uid
-        except KeyError:
-                raise KeyError("user name not found: {0}".format(name))
+    if not use_file:
+        return pwd.getpwnam(name).pw_uid
+    try:
+        load_passwd(dirpath)
+        return users[dirpath][name].pw_uid
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # If the password file doesn't exist, bootstrap
+        # ourselves from the current environment.
+        return pwd.getpwnam(name).pw_uid
+    except KeyError:
+        raise KeyError("user name not found: {0}".format(name))
 
 def get_name_by_gid(gid, dirpath, use_file):
-        if not already_called():
-                get_name_by_gid(gid, dirpath, use_file)
+    if not already_called():
+        get_name_by_gid(gid, dirpath, use_file)
 
-        if not use_file:
-                return grp.getgrgid(gid).gr_name
-        try:
-                load_groups(dirpath)
-                return gids[dirpath][gid].gr_name
-        except OSError as e:
-                if e.errno != errno.ENOENT:
-                        raise
-                # If the password file doesn't exist, bootstrap
-                # ourselves from the current environment.
-                return grp.getgrgid(gid).gr_name
-        except KeyError:
-                raise KeyError("group ID not found: {0}".format(gid))
+    if not use_file:
+        return grp.getgrgid(gid).gr_name
+    try:
+        load_groups(dirpath)
+        return gids[dirpath][gid].gr_name
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # If the password file doesn't exist, bootstrap
+        # ourselves from the current environment.
+        return grp.getgrgid(gid).gr_name
+    except KeyError:
+        raise KeyError("group ID not found: {0}".format(gid))
 
 def get_name_by_uid(uid, dirpath, use_file):
-        if not already_called():
-                get_name_by_uid(uid, dirpath, use_file)
+    if not already_called():
+        get_name_by_uid(uid, dirpath, use_file)
 
-        if not use_file:
-                return pwd.getpwuid(uid).pw_name
-        try:
-                load_passwd(dirpath)
-                return uids[dirpath][uid].pw_name
-        except OSError as e:
-                if e.errno != errno.ENOENT:
-                        raise
-                # If the password file doesn't exist, bootstrap
-                # ourselves from the current environment.
-                return pwd.getpwuid(uid).pw_name
-        except KeyError:
-                raise KeyError("user ID not found: {0:d}".format(uid))
+    if not use_file:
+        return pwd.getpwuid(uid).pw_name
+    try:
+        load_passwd(dirpath)
+        return uids[dirpath][uid].pw_name
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # If the password file doesn't exist, bootstrap
+        # ourselves from the current environment.
+        return pwd.getpwuid(uid).pw_name
+    except KeyError:
+        raise KeyError("user ID not found: {0:d}".format(uid))
 
 def get_usernames_by_gid(gid, dirpath):
-        if not already_called():
-                get_usernames_by_gid(gid, dirpath)
+    if not already_called():
+        get_usernames_by_gid(gid, dirpath)
 
-        try:
-                load_passwd(dirpath)
-                return [unam
-                    for unam, pwdentry in users[dirpath].items()
-                    if str(pwdentry.pw_gid) == gid
-                ]
-        except OSError as e:
-                if e.errno != errno.ENOENT:
-                        raise
-                # If the password file doesn't exist, bootstrap
-                # ourselves from the current environment.
-                # The following call could be expensive.
-                allpwdentries = pwd.getpwall()
-                if not allpwdentries:
-                        allpwdentries = []
-                return [
-                    pwdentry.pw_name
-                    for pwdentry in allpwdentries
-                    if str(pwdentry.pw_gid) == gid
-                ]
+    try:
+        load_passwd(dirpath)
+        return [unam
+            for unam, pwdentry in users[dirpath].items()
+            if str(pwdentry.pw_gid) == gid
+        ]
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        # If the password file doesn't exist, bootstrap
+        # ourselves from the current environment.
+        # The following call could be expensive.
+        allpwdentries = pwd.getpwall()
+        if not allpwdentries:
+            allpwdentries = []
+        return [
+            pwdentry.pw_name
+            for pwdentry in allpwdentries
+            if str(pwdentry.pw_gid) == gid
+        ]
 
 def load_passwd(dirpath):
-        # check if we need to reload cache
-        passwd_file = os.path.join(dirpath, "etc/passwd")
-        passwd_stamp = os.stat(passwd_file).st_mtime
-        if passwd_stamp <= users_lastupdate.get(dirpath, -1):
-                return
-        users[dirpath] = user = {}
-        uids[dirpath] = uid = {}
-        f = open(passwd_file, 'rb')
-        for line in f.readlines():
-                try:
-                        arr = line.decode("utf-8").rstrip().split(":")
-                except UnicodeDecodeError:
-                        # Skip any line we can't make sense of.
-                        continue
-                if len(arr) != 7:
-                        # Skip any line we can't make sense of.
-                        continue
-                try:
-                        arr[2] = int(arr[2])
-                        arr[3] = int(arr[3])
-                except ValueError:
-                        # Skip any line we can't make sense of.
-                        continue
-                pw_entry = pwd.struct_passwd(arr)
+    # check if we need to reload cache
+    passwd_file = os.path.join(dirpath, "etc/passwd")
+    passwd_stamp = os.stat(passwd_file).st_mtime
+    if passwd_stamp <= users_lastupdate.get(dirpath, -1):
+        return
+    users[dirpath] = user = {}
+    uids[dirpath] = uid = {}
+    f = open(passwd_file, 'rb')
+    for line in f.readlines():
+        try:
+            arr = line.decode("utf-8").rstrip().split(":")
+        except UnicodeDecodeError:
+            # Skip any line we can't make sense of.
+            continue
+        if len(arr) != 7:
+            # Skip any line we can't make sense of.
+            continue
+        try:
+            arr[2] = int(arr[2])
+            arr[3] = int(arr[3])
+        except ValueError:
+            # Skip any line we can't make sense of.
+            continue
+        pw_entry = pwd.struct_passwd(arr)
 
-                user[pw_entry.pw_name] = pw_entry
-                # Traditional systems allow multiple users to have the same
-                # user id, so only the first one should be mapped to the
-                # current pw_entry.
-                uid.setdefault(pw_entry.pw_uid, pw_entry)
+        user[pw_entry.pw_name] = pw_entry
+        # Traditional systems allow multiple users to have the same
+        # user id, so only the first one should be mapped to the
+        # current pw_entry.
+        uid.setdefault(pw_entry.pw_uid, pw_entry)
 
-        users_lastupdate[dirpath] = passwd_stamp
-        f.close()
+    users_lastupdate[dirpath] = passwd_stamp
+    f.close()
 
 def load_groups(dirpath):
-        # check if we need to reload cache
-        group_file = os.path.join(dirpath, "etc/group")
-        group_stamp = os.stat(group_file).st_mtime
-        if group_stamp <= groups_lastupdate.get(dirpath, -1):
-                return
-        groups[dirpath] = group = {}
-        gids[dirpath] = gid = {}
-        f = open(group_file, 'rb')
-        for line in f:
-                try:
-                        arr = line.decode("utf-8").rstrip().split(":")
-                except UnicodeDecodeError:
-                        # Skip any line we can't make sense of.
-                        continue
-                if len(arr) != 4:
-                        # Skip any line we can't make sense of.
-                        continue
-                try:
-                        arr[2] = int(arr[2])
-                except ValueError:
-                        # Skip any line we can't make sense of.
-                        continue
-                gr_entry = grp.struct_group(arr)
+    # check if we need to reload cache
+    group_file = os.path.join(dirpath, "etc/group")
+    group_stamp = os.stat(group_file).st_mtime
+    if group_stamp <= groups_lastupdate.get(dirpath, -1):
+        return
+    groups[dirpath] = group = {}
+    gids[dirpath] = gid = {}
+    f = open(group_file, 'rb')
+    for line in f:
+        try:
+            arr = line.decode("utf-8").rstrip().split(":")
+        except UnicodeDecodeError:
+            # Skip any line we can't make sense of.
+            continue
+        if len(arr) != 4:
+            # Skip any line we can't make sense of.
+            continue
+        try:
+            arr[2] = int(arr[2])
+        except ValueError:
+            # Skip any line we can't make sense of.
+            continue
+        gr_entry = grp.struct_group(arr)
 
-                group[gr_entry.gr_name] = gr_entry
-                # Traditional systems allow multiple groups to have the same
-                # group id, so only the first one should be mapped to the
-                # current pw_entry.
-                gid.setdefault(gr_entry.gr_gid, gr_entry)
+        group[gr_entry.gr_name] = gr_entry
+        # Traditional systems allow multiple groups to have the same
+        # group id, so only the first one should be mapped to the
+        # current pw_entry.
+        gid.setdefault(gr_entry.gr_gid, gr_entry)
 
-        groups_lastupdate[dirpath] = group_stamp
-        f.close()
+    groups_lastupdate[dirpath] = group_stamp
+    f.close()
 
 def chown(path, owner, group):
-        return os.chown(path, owner, group)
+    return os.chown(path, owner, group)
 
 def rename(src, dst):
-        try:
-                os.rename(src, dst)
-        except OSError as e:
-                # Handle the case where we tried to rename a file across a
-                # filesystem boundary.
-                if e.errno != errno.EXDEV or not os.path.isfile(src):
-                        raise
+    try:
+        os.rename(src, dst)
+    except OSError as e:
+        # Handle the case where we tried to rename a file across a
+        # filesystem boundary.
+        if e.errno != errno.EXDEV or not os.path.isfile(src):
+            raise
 
-                # Copy the data and metadata into a temporary file in the same
-                # filesystem as the destination, rename into place, and unlink
-                # the original.
-                try:
-                        fd, tmpdst = tempfile.mkstemp(suffix=".pkg5.xdev",
-                            dir=os.path.dirname(dst))
-                except OSError as e:
-                        # If we don't have sufficient permissions to put the
-                        # file where we want it, then higher levels can deal
-                        # with that effectively, but people will want to know
-                        # the original destination filename.
-                        if e.errno == errno.EACCES:
-                                e.filename=dst
-                        raise
-                os.close(fd)
-                shutil.copy2(src, tmpdst)
-                os.rename(tmpdst, dst)
-                os.unlink(src)
+        # Copy the data and metadata into a temporary file in the same
+        # filesystem as the destination, rename into place, and unlink
+        # the original.
+        try:
+            fd, tmpdst = tempfile.mkstemp(suffix=".pkg5.xdev",
+                dir=os.path.dirname(dst))
+        except OSError as e:
+            # If we don't have sufficient permissions to put the
+            # file where we want it, then higher levels can deal
+            # with that effectively, but people will want to know
+            # the original destination filename.
+            if e.errno == errno.EACCES:
+                e.filename = dst
+            raise
+        os.close(fd)
+        shutil.copy2(src, tmpdst)
+        os.rename(tmpdst, dst)
+        os.unlink(src)
 
 def remove(path):
-        os.unlink(path)
+    os.unlink(path)
 
 def link(src, dst):
-        os.link(src, dst)
+    os.link(src, dst)
 
 def split_path(path):
-        return path.split('/')
+    return path.split('/')
 
 def get_root(path):
-        return '/'
+    return '/'
 
 def assert_mode(path, mode):
-        fmode = stat.S_IMODE(os.lstat(path).st_mode)
-        if mode != fmode:
-                ae = AssertionError("mode mismatch for {0}, has {1:o}, "
-                    "want {2:o}".format(path, fmode, mode))
-                ae.mode = fmode;
-                raise ae
+    fmode = stat.S_IMODE(os.lstat(path).st_mode)
+    if mode != fmode:
+        ae = AssertionError("mode mismatch for {0}, has {1:o}, "
+            "want {2:o}".format(path, fmode, mode))
+        ae.mode = fmode
+        raise ae
 
 def copyfile(src, dst):
-        shutil.copyfile(src, dst)
-
+    shutil.copyfile(src, dst)

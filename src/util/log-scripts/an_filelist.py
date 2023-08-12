@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import division
@@ -50,47 +50,47 @@ pkg_pat = re.compile("/filelist/(?P<mversion>\d+)/(?P<trailing>.*)")
 
 # old-division; pylint: disable=W1619
 def report_filelist_by_bytes():
-        print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024))
+    print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024))
 
-        if summary_file:
-                print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024), file=summary_file)
+    if summary_file:
+        print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024), file=summary_file)
 
 def count_filelist(mg, d):
-        try:
-                filelist_by_date[d.date().isoformat()] += 1
-        except KeyError:
-                filelist_by_date[d.date().isoformat()] = 1
+    try:
+        filelist_by_date[d.date().isoformat()] += 1
+    except KeyError:
+        filelist_by_date[d.date().isoformat()] = 1
 
-        pm = pkg_pat.search(mg["uri"])
-        if pm != None:
-                pg = pm.groupdict()
+    pm = pkg_pat.search(mg["uri"])
+    if pm != None:
+        pg = pm.groupdict()
 
-                if mg["response"] == "200":
-                        filelist_totals["bytes"] += int(mg["subcode"])
+        if mg["response"] == "200":
+            filelist_totals["bytes"] += int(mg["subcode"])
 
-                        if filelist_totals["bytes"] > 1024:
-                                filelist_totals["kilobytes"] += filelist_totals["bytes"] // 1024
-                                filelist_totals["bytes"] = filelist_totals["bytes"] % 1024
+            if filelist_totals["bytes"] > 1024:
+                filelist_totals["kilobytes"] += filelist_totals["bytes"] // 1024
+                filelist_totals["bytes"] = filelist_totals["bytes"] % 1024
 
-                # XXX should measure downtime via 503, other failure responses
+        # XXX should measure downtime via 503, other failure responses
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 
 for opt, arg in opts:
-        if opt == "-a":
-                try:
-                        after = datetime.datetime(*(time.strptime(arg, "%Y-%b-%d")[0:6]))
-                except ValueError:
-                        after = datetime.datetime(*(time.strptime(arg, "%Y-%m-%d")[0:6]))
+    if opt == "-a":
+        try:
+            after = datetime.datetime(*(time.strptime(arg, "%Y-%b-%d")[0:6]))
+        except ValueError:
+            after = datetime.datetime(*(time.strptime(arg, "%Y-%m-%d")[0:6]))
 
-        if opt == "-b":
-                before = arg
+    if opt == "-b":
+        before = arg
 
-        if opt == "-s":
-                summary_file = prefix_summary_open("filelist")
+    if opt == "-s":
+        summary_file = prefix_summary_open("filelist")
 
-        if opt == "-w":
-                active_window = arg
+    if opt == "-w":
+        active_window = arg
 
 host_cache_set_file_name()
 host_cache_load()
@@ -99,25 +99,25 @@ lastdate = None
 lastdatetime = None
 
 for l in fileinput.input(args):
-        m = comb_log_pat.search(l)
-        if not m:
-                continue
+    m = comb_log_pat.search(l)
+    if not m:
+        continue
 
-        mg = m.groupdict()
+    mg = m.groupdict()
 
-        d = None
+    d = None
 
-        if lastdatetime and mg["date"] == lastdate:
-                d = lastdatetime
-        else:
-                d = datetime.datetime(*(time.strptime(mg["date"], "%d/%b/%Y")[0:6]))
-                lastdate = mg["date"]
-                lastdatetime = d
+    if lastdatetime and mg["date"] == lastdate:
+        d = lastdatetime
+    else:
+        d = datetime.datetime(*(time.strptime(mg["date"], "%d/%b/%Y")[0:6]))
+        lastdate = mg["date"]
+        lastdatetime = d
 
-        if after and d < after:
-                continue
+    if after and d < after:
+        continue
 
-        count_filelist(mg, d)
+    count_filelist(mg, d)
 
 host_cache_save()
 

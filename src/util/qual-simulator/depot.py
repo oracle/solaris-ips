@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import division
@@ -84,132 +84,132 @@ CSPEED_FARAWAY = 3500
 
 
 class RepositoryURI(object):
-        def __init__(self, label, speed, cspeed, error_rate=ERROR_FREE,
-            error_type=ERROR_T_NET, modality=MODAL_SINGLE):
-                """Create a RepositoryURI object.  The 'speed' argument
-                gives the speed in kB/s.  The 'cspeed' argument gives the
-                connect time in milliseconds.  The 'error_rate' variable
-                defines how often errors occur.  The error_type is
-                defined by 'error_type'.  The 'modality' argument
-                defines the different speed distributions."""
+    def __init__(self, label, speed, cspeed, error_rate=ERROR_FREE,
+        error_type=ERROR_T_NET, modality=MODAL_SINGLE):
+        """Create a RepositoryURI object.  The 'speed' argument
+        gives the speed in kB/s.  The 'cspeed' argument gives the
+        connect time in milliseconds.  The 'error_rate' variable
+        defines how often errors occur.  The error_type is
+        defined by 'error_type'.  The 'modality' argument
+        defines the different speed distributions."""
 
-                # Production members
-                self.uri = "http://" + label
-                self.priority = 1
+        # Production members
+        self.uri = "http://" + label
+        self.priority = 1
 
-                # Simulator members
-                self.label = label
-                self.speed = speed * 1024
-                self.cspeed = cspeed / 1000.0
-                self.maxtx = 10000.0
-                self.warmtx = 1000.0
-                self.minspeed = .1
-                self.__tx = 0
-                self.__error_rate = error_rate / 1000.0
-                self.__error_type = error_type
-                self.__response_modality = modality
-                self.__decay = 0.9
-                self.__proxy = None
-                self.__system = None
-                self.aggregate_decay = 1
+        # Simulator members
+        self.label = label
+        self.speed = speed * 1024
+        self.cspeed = cspeed / 1000.0
+        self.maxtx = 10000.0
+        self.warmtx = 1000.0
+        self.minspeed = .1
+        self.__tx = 0
+        self.__error_rate = error_rate / 1000.0
+        self.__error_type = error_type
+        self.__response_modality = modality
+        self.__decay = 0.9
+        self.__proxy = None
+        self.__system = None
+        self.aggregate_decay = 1
 
-                self.stats = stats.RepoStats(self)
+        self.stats = stats.RepoStats(self)
 
-        def __get_proxy(self):
-                return self.__proxy
+    def __get_proxy(self):
+        return self.__proxy
 
-        def __set_proxy(self, val):
-                self.__proxy = val
+    def __set_proxy(self, val):
+        self.__proxy = val
 
-        def __get_system(self):
-                return self.__system
+    def __get_system(self):
+        return self.__system
 
-        def __set_system(self, val):
-                self.__system = val
+    def __set_system(self, val):
+        self.__system = val
 
-        proxy = property(__get_proxy, __set_proxy, None, "Proxy of the "
-            "repository URI.")
+    proxy = property(__get_proxy, __set_proxy, None, "Proxy of the "
+        "repository URI.")
 
-        system = property(__get_system, __set_system, None, "System publisher "
-            "of the repository URI.")
+    system = property(__get_system, __set_system, None, "System publisher "
+        "of the repository URI.")
 
-        def key(self):
-                """Returns a value that can be used to identify this RepoURI
-                uniquely for the transport system.  Normally, this would be done
-                using __hash__() however, TransportRepoURI objects are not
-                guaranteed to be immutable.
+    def key(self):
+        """Returns a value that can be used to identify this RepoURI
+        uniquely for the transport system.  Normally, this would be done
+        using __hash__() however, TransportRepoURI objects are not
+        guaranteed to be immutable.
 
-                The key is a (uri, proxy) tuple, where the proxy is
-                the proxy used to reach that URI.  Note that in the transport
-                system, we may choose to override the proxy value here."""
+        The key is a (uri, proxy) tuple, where the proxy is
+        the proxy used to reach that URI.  Note that in the transport
+        system, we may choose to override the proxy value here."""
 
-                u = self.uri
-                p = self.__proxy
+        u = self.uri
+        p = self.__proxy
 
-                if self.uri:
-                        u = self.uri.rstrip("/")
-                return (u, p)
+        if self.uri:
+            u = self.uri.rstrip("/")
+        return (u, p)
 
-        def speed_single(self, size):
-                """Implements a depot that runs at a single speed."""
+    def speed_single(self, size):
+        """Implements a depot that runs at a single speed."""
 
-                return size / random.gauss(self.speed, self.speed / 4)
+        return size / random.gauss(self.speed, self.speed / 4)
 
-        def speed_increasing(self, size):
-                """Depot's speed gradually increases over time."""
+    def speed_increasing(self, size):
+        """Depot's speed gradually increases over time."""
 
-                s = min(self.minspeed + (self.__tx / self.warmtx), 1) * \
-                    random.gauss(self.speed, self.speed / 4)
+        s = min(self.minspeed + (self.__tx / self.warmtx), 1) * \
+            random.gauss(self.speed, self.speed / 4)
 
-                return size / s
+        return size / s
 
-        def speed_decay(self, size):
-                """Depot gets slower as time goes on."""
+    def speed_decay(self, size):
+        """Depot gets slower as time goes on."""
 
-                if random.uniform(0., 1.) < 0.05:
-                        self.aggregate_decay *= self.__decay
+        if random.uniform(0., 1.) < 0.05:
+            self.aggregate_decay *= self.__decay
 
-                return size / (self.aggregate_decay *
-                    random.gauss(self.speed, self.speed / 4))
+        return size / (self.aggregate_decay *
+            random.gauss(self.speed, self.speed / 4))
 
-        def request(self, rc, size=None):
-                """Simulate a transport request using RepoChooser 'rc'.
-                Size is given in the 'size' argument."""
+    def request(self, rc, size=None):
+        """Simulate a transport request using RepoChooser 'rc'.
+        Size is given in the 'size' argument."""
 
-                errors = 0
+        errors = 0
 
-                if not size:
-                        size = random.randint(1, 1000) * 1024
+        if not size:
+            size = random.randint(1, 1000) * 1024
 
-                if not rc[self.key()].used:
-                        rc[self.key()].record_connection(self.cspeed)
-                else:
-                        conn_choose = (1 / self.maxtx) * \
-                            math.exp(-1 / self.maxtx)
-                        if random.random() < conn_choose:
-                                rc[self.key()].record_connection(self.cspeed)
+        if not rc[self.key()].used:
+            rc[self.key()].record_connection(self.cspeed)
+        else:
+            conn_choose = (1 / self.maxtx) * \
+                math.exp(-1 / self.maxtx)
+            if random.random() < conn_choose:
+                rc[self.key()].record_connection(self.cspeed)
 
-                rc[self.key()].record_tx()
-                self.__tx += 1
+        rc[self.key()].record_tx()
+        self.__tx += 1
 
-                if random.random() < self.__error_rate:
-                        if self.__error_type == ERROR_T_DECAYABLE:
-                                rc[self.key()].record_error(decayable=True)
-                        elif self.__error_type == ERROR_T_CONTENT:
-                                rc[self.key()].record_error(content=True)
-                        else:
-                                rc[self.key()].record_error()
-                        return (1, size, None)
+        if random.random() < self.__error_rate:
+            if self.__error_type == ERROR_T_DECAYABLE:
+                rc[self.key()].record_error(decayable=True)
+            elif self.__error_type == ERROR_T_CONTENT:
+                rc[self.key()].record_error(content=True)
+            else:
+                rc[self.key()].record_error()
+            return (1, size, None)
 
-                if self.__response_modality == MODAL_SINGLE:
-                        time = self.speed_single(size)
-                elif self.__response_modality == MODAL_DECAY:
-                        time = self.speed_decay(size)
-                elif self.__response_modality == MODAL_INCREASING:
-                        time = self.speed_increasing(size)
-                else:
-                        raise RuntimeError("no modality")
+        if self.__response_modality == MODAL_SINGLE:
+            time = self.speed_single(size)
+        elif self.__response_modality == MODAL_DECAY:
+            time = self.speed_decay(size)
+        elif self.__response_modality == MODAL_INCREASING:
+            time = self.speed_increasing(size)
+        else:
+            raise RuntimeError("no modality")
 
-                rc[self.key()].record_progress(size, time)
+        rc[self.key()].record_progress(size, time)
 
-                return (errors, size, time)
+        return (errors, size, time)

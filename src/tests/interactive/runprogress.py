@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
 #
 
 import sys
@@ -32,64 +32,64 @@ import pkg.client.progress as progress
 import pkg.misc as misc
 
 def parse_argv():
-        misc.setlocale(locale.LC_ALL, "", None)
-        gettext.install("pkg", "/usr/share/locale")
+    misc.setlocale(locale.LC_ALL, "", None)
+    gettext.install("pkg", "/usr/share/locale")
 
-        gofast = False
-        opts, argv = getopt.getopt(sys.argv[1:], "f")
-        for (opt, arg) in opts:
-                if opt == '-f':
-                        gofast = True
-                else:
-                        sys.exit(2)
-
-        trackers = {
-            "null": progress.NullProgressTracker,
-            "func": progress.FunctionProgressTracker,
-            "fancy": progress.FancyUNIXProgressTracker,
-            "cli": progress.CommandLineProgressTracker,
-            "dot": progress.DotProgressTracker,
-            "quiet": progress.QuietProgressTracker,
-            "default": progress.FancyUNIXProgressTracker,
-        }
-
-        pts = []
-
-        first = True
-        while first or len(argv) > 0:
-                first = False
-
-                outputdevname = "/dev/stdout"
-                if len(argv) >= 2 and argv[1] != "-":
-                        outputdevname = argv[1]
-
-                tname = "default"
-                if len(argv) >= 1 and argv[0] != "-":
-                        tname = argv[0]
-                outputdev = open(outputdevname, "w")
-
-                # Get a reference to the tracker class
-                try:
-                        trackerclass = trackers[tname]
-                except KeyError:
-                        print("unknown tracker {0}".format(argv[0]))
-                        sys.exit(2)
-
-                try:
-                        st = trackerclass(output_file=outputdev)
-                except TypeError:
-                        st = trackerclass()
-                pts.append(st)
-
-                print("Created {0} progress tracker on {1}".format(
-                    trackerclass.__name__, outputdevname))
-                argv = argv[2:]
-
-        if len(pts) > 1:
-                t = progress.MultiProgressTracker(pts)
+    gofast = False
+    opts, argv = getopt.getopt(sys.argv[1:], "f")
+    for (opt, arg) in opts:
+        if opt == '-f':
+            gofast = True
         else:
-                t = pts[0]
-        return (t, gofast)
+            sys.exit(2)
+
+    trackers = {
+        "null": progress.NullProgressTracker,
+        "func": progress.FunctionProgressTracker,
+        "fancy": progress.FancyUNIXProgressTracker,
+        "cli": progress.CommandLineProgressTracker,
+        "dot": progress.DotProgressTracker,
+        "quiet": progress.QuietProgressTracker,
+        "default": progress.FancyUNIXProgressTracker,
+    }
+
+    pts = []
+
+    first = True
+    while first or len(argv) > 0:
+        first = False
+
+        outputdevname = "/dev/stdout"
+        if len(argv) >= 2 and argv[1] != "-":
+            outputdevname = argv[1]
+
+        tname = "default"
+        if len(argv) >= 1 and argv[0] != "-":
+            tname = argv[0]
+        outputdev = open(outputdevname, "w")
+
+        # Get a reference to the tracker class
+        try:
+            trackerclass = trackers[tname]
+        except KeyError:
+            print("unknown tracker {0}".format(argv[0]))
+            sys.exit(2)
+
+        try:
+            st = trackerclass(output_file=outputdev)
+        except TypeError:
+            st = trackerclass()
+        pts.append(st)
+
+        print("Created {0} progress tracker on {1}".format(
+            trackerclass.__name__, outputdevname))
+        argv = argv[2:]
+
+    if len(pts) > 1:
+        t = progress.MultiProgressTracker(pts)
+    else:
+        t = pts[0]
+    return (t, gofast)
 
 
 #
@@ -105,11 +105,10 @@ def parse_argv():
 # Happy hacking.
 #
 if __name__ == "__main__":
-        try:
-                (_tracker, _gofast) = parse_argv()
-                progress.test_progress_tracker(_tracker, gofast=_gofast)
-        except progress.ProgressTrackerException as e:
-                print("Error: {0}".format(e), file=sys.stderr)
-                sys.exit(1)
-        sys.exit(0)
-
+    try:
+        (_tracker, _gofast) = parse_argv()
+        progress.test_progress_tracker(_tracker, gofast=_gofast)
+    except progress.ProgressTrackerException as e:
+        print("Error: {0}".format(e), file=sys.stderr)
+        sys.exit(1)
+    sys.exit(0)

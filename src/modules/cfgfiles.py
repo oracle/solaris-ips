@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -57,7 +57,7 @@ class CfgFile(object):
         self.default_values = dict((e[2], e[1]) for e in l)
 
         self.comment_regexp = re.compile(comment_match)
-        self.max_lengths=dict((n, 8) for n in self.column_names)
+        self.max_lengths = dict((n, 8) for n in self.column_names)
 
         if isinstance(keys, str):
             self.keys = [keys]
@@ -66,7 +66,7 @@ class CfgFile(object):
 
         self.index = {}
 
-        assert(set(self.column_names) >= set(self.keys))
+        assert set(self.column_names) >= set(self.keys)
 
     def __str__(self):
         return "CfgFile({0}):{1}:{2}:{3}".format(
@@ -84,17 +84,17 @@ class CfgFile(object):
     def getfilelines(self):
         """ given self, return list of lines to be printed.
             default impl preserves orignal + insertion order"""
-        lines = [[self.index[l][2],self.index[l][0]] for l in self.index]
+        lines = [[self.index[l][2], self.index[l][0]] for l in self.index]
         lines.sort()
         return [l[1] for l in lines]
 
 
     def readfile(self):
         if os.path.exists(self.filename):
-            file = open(self.filename, 'rb')	
+            file = open(self.filename, 'rb')
             lineno = 1
             for line in file:
-                linecnt = 1;
+                linecnt = 1
                 try:
                     line = line.decode("utf-8")
                 except UnicodeDecodeError:
@@ -178,10 +178,10 @@ class CfgFile(object):
 
     def valuetostr(self, template):
         """ print out values in file format """
-        return("{0}".format(self.separator.join(
+        return "{0}".format(self.separator.join(
             [
                 "{0}".format(template[key]) for key in self.column_names
-            ])))
+            ]))
 
     def writefile(self):
 
@@ -256,7 +256,7 @@ class PasswordFile(CfgFile):
     def updatevalue(self, template):
         copy = template.copy()
         if "password" in copy:
-            copy["password"]=""
+            copy["password"] = ""
         self.password_file.updatevalue(copy)
         self.shadow_file.updatevalue(template)
 
@@ -264,7 +264,7 @@ class PasswordFile(CfgFile):
         # ignore attempts to set passwd for passwd file
         copy = template.copy()
         if "password" in copy:
-            copy["password"]="x"
+            copy["password"] = "x"
         self.password_file.setvalue(copy)
         self.shadow_file.setvalue(template)
 
@@ -274,7 +274,7 @@ class PasswordFile(CfgFile):
 
     def getnextuid(self):
         """returns next free system (<=99) uid"""
-        uids=[]
+        uids = []
         for t in six.itervalues(self.password_file.index):
             if t[1]:
                 uids.append(t[1]["uid"])
@@ -328,7 +328,7 @@ class GroupFile(CfgFile):
 
     def getnextgid(self):
         """returns next free system (<=99) gid"""
-        gids=[]
+        gids = []
         for t in six.itervalues(self.index):
             if t[1]:
                 gids.append(t[1]["gid"])
@@ -349,7 +349,7 @@ class GroupFile(CfgFile):
                 "gid": self.__image._groupsbyname.get(groupname, ""),
                 "user-list": ""
             }
-        users = set(group["user-list"].replace(","," ").split())
+        users = set(group["user-list"].replace(",", " ").split())
         users.add(username)
         group["user-list"] = ",".join(users)
         self.setvalue(group)
@@ -359,7 +359,7 @@ class GroupFile(CfgFile):
         group = self.getvalue({"groupname": groupname})
         if not group:
             raise RuntimeError("subuser: No such group {0}".format(groupname))
-        users = set(group["user-list"].replace(","," ").split())
+        users = set(group["user-list"].replace(",", " ").split())
         if username not in users:
             raise RuntimeError("User {0} not in group {1}".format(
                 username, groupname))
@@ -452,7 +452,7 @@ class UserattrFile(CfgFile):
         if len(cols) != len(self.column_names):
             return cols
 
-        attributes=re.split("(?<=[^\\\\]);", cols[4]) # match non escaped ;
+        attributes = re.split("(?<=[^\\\\]);", cols[4]) # match non escaped ;
 
         d = {}
         for attr in attributes:
@@ -474,4 +474,3 @@ class UserattrFile(CfgFile):
                 ]))
         c["attributes"] = str
         return CfgFile.valuetostr(self, c)
-

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 import sys
@@ -29,67 +29,67 @@ import pkg.query_parser as qp
 from pkg.query_parser import BooleanQueryException, ParseError, QueryException, QueryLengthExceeded
 
 class QueryLexer(qp.QueryLexer):
-        pass
+    pass
 
 class QueryParser(qp.QueryParser):
-        """This class exists so that the classes the parent class query parser
-        uses to build the AST are the ones defined in this module and not the
-        parent class's module.  This is done so that a single query parser can
-        be shared between the client and server modules but will construct an
-        AST using the appropriate classes."""
+    """This class exists so that the classes the parent class query parser
+    uses to build the AST are the ones defined in this module and not the
+    parent class's module.  This is done so that a single query parser can
+    be shared between the client and server modules but will construct an
+    AST using the appropriate classes."""
 
-        def __init__(self, lexer):
-                qp.QueryParser.__init__(self, lexer)
-                mod = sys.modules[QueryParser.__module__]
-                tmp = {}
-                for class_name in self.query_objs.keys():
-                        assert hasattr(mod, class_name)
-                        tmp[class_name] = getattr(mod, class_name)
-                self.query_objs = tmp
+    def __init__(self, lexer):
+        qp.QueryParser.__init__(self, lexer)
+        mod = sys.modules[QueryParser.__module__]
+        tmp = {}
+        for class_name in self.query_objs.keys():
+            assert hasattr(mod, class_name)
+            tmp[class_name] = getattr(mod, class_name)
+        self.query_objs = tmp
 
 # Because many classes do not have client specific modifications, they
 # simply subclass the parent module's classes.
 class Query(qp.Query):
-        pass
+    pass
 
 class AndQuery(qp.AndQuery):
-        pass
-        
+    pass
+
 class OrQuery(qp.OrQuery):
-        pass
+    pass
 
 class PkgConversion(qp.PkgConversion):
-        pass
+    pass
 
 class PhraseQuery(qp.PhraseQuery):
-        pass
+    pass
 
 class FieldQuery(qp.FieldQuery):
-        pass
+    pass
 
 class TopQuery(qp.TopQuery):
-        pass
+    pass
 
 class TermQuery(qp.TermQuery):
-        """This class handles the client specific search logic for searching
-        for a specific query term."""
+    """This class handles the client specific search logic for searching
+    for a specific query term."""
 
-        _global_data_dict = {}
+    _global_data_dict = {}
 
-        def search(self, restriction, fmris):
-                """This function performs the specific steps needed to do
-                search on a server.
+    def search(self, restriction, fmris):
+        """This function performs the specific steps needed to do
+        search on a server.
 
-                The "restriction" parameter is a generator over results that
-                another branch of the AST has already found.  If it's not None,
-                then it's treated as the domain for search.  If it is None then
-                the actions of all known packages is the domain for search.
+        The "restriction" parameter is a generator over results that
+        another branch of the AST has already found.  If it's not None,
+        then it's treated as the domain for search.  If it is None then
+        the actions of all known packages is the domain for search.
 
-                The "fmris" parameter is a function which produces an object
-                which iterates over all known fmris."""
-                
-                if restriction:
-                        return self._restricted_search_internal(restriction)
-                base_res = self._search_internal(fmris)
-                it = self._get_results(base_res)
-                return it
+        The "fmris" parameter is a function which produces an object
+        which iterates over all known fmris."""
+
+        if restriction:
+            return self._restricted_search_internal(restriction)
+        base_res = self._search_internal(fmris)
+        it = self._get_results(base_res)
+        return it

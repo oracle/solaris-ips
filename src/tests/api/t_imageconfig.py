@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import unittest
@@ -40,7 +40,7 @@ import pkg.portable as portable
 
 class TestImageConfig(pkg5unittest.Pkg5TestCase):
 
-        misc_files = { imageconfig.CFG_FILE : """\
+    misc_files = { imageconfig.CFG_FILE : """\
 [policy]
 Display-Copyrights: False
 
@@ -65,50 +65,50 @@ repo.related_uris:
 sort_policy: priority
 """ }
 
-        def setUp(self):
-                pkg5unittest.Pkg5TestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
-                self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root)
+    def setUp(self):
+        pkg5unittest.Pkg5TestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
+        self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
+            "cfg_cache"), self.test_root)
 
-        def test_0_read(self):
-                """Verify that read works and that values are read properly."""
+    def test_0_read(self):
+        """Verify that read works and that values are read properly."""
 
-                pub = self.ic.publishers["sfbay.sun.com"]
-                self.assertEqual(pub.alias, "zruty")
-                repo = pub.repository
-                origin = repo.origins[0]
-                self.assertEqual(origin.uri, "http://zruty.sfbay:10001/")
-                self.assertEqual(origin.ssl_key, None)
-                self.assertEqual(origin.ssl_cert, None)
-                self.assertEqual(repo.collection_type, "supplemental")
-                self.assertEqual(repo.description,
-                    "Lots of development packages here.")
-                self.assertEqual([u.uri for u in repo.legal_uris],
-                    ["http://zruty.sfbay:10001/legal.html",
-                    "http://zruty.sfbay:10001/tos.html"])
-                self.assertEqual(repo.name, "zruty development repository")
-                self.assertEqual(repo.refresh_seconds, 86400)
-                self.assertEqual(repo.registered, True)
-                self.assertEqual(repo.registration_uri, "http://zruty.sfbay:10001/reg.html")
-                self.assertEqual(repo.related_uris, [])
-                self.assertEqual(repo.sort_policy, "priority")
-                # uuid should have been set even though it wasn't in the file
-                self.assertNotEqual(pub.client_uuid, None)
+        pub = self.ic.publishers["sfbay.sun.com"]
+        self.assertEqual(pub.alias, "zruty")
+        repo = pub.repository
+        origin = repo.origins[0]
+        self.assertEqual(origin.uri, "http://zruty.sfbay:10001/")
+        self.assertEqual(origin.ssl_key, None)
+        self.assertEqual(origin.ssl_cert, None)
+        self.assertEqual(repo.collection_type, "supplemental")
+        self.assertEqual(repo.description,
+            "Lots of development packages here.")
+        self.assertEqual([u.uri for u in repo.legal_uris],
+            ["http://zruty.sfbay:10001/legal.html",
+            "http://zruty.sfbay:10001/tos.html"])
+        self.assertEqual(repo.name, "zruty development repository")
+        self.assertEqual(repo.refresh_seconds, 86400)
+        self.assertEqual(repo.registered, True)
+        self.assertEqual(repo.registration_uri, "http://zruty.sfbay:10001/reg.html")
+        self.assertEqual(repo.related_uris, [])
+        self.assertEqual(repo.sort_policy, "priority")
+        # uuid should have been set even though it wasn't in the file
+        self.assertNotEqual(pub.client_uuid, None)
 
-        def test_1_reread(self):
-                """Verify that the uuid determined during the first read is the
-                same as the uuid in the second read."""
-                self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root)
-                pub = self.ic.publishers["sfbay.sun.com"]
-                uuid = pub.client_uuid
+    def test_1_reread(self):
+        """Verify that the uuid determined during the first read is the
+        same as the uuid in the second read."""
+        self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
+            "cfg_cache"), self.test_root)
+        pub = self.ic.publishers["sfbay.sun.com"]
+        uuid = pub.client_uuid
 
-                ic2 = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root)
-                pub2 = ic2.publishers["sfbay.sun.com"]
-                self.assertEqual(pub2.client_uuid, uuid)
+        ic2 = imageconfig.ImageConfig(os.path.join(self.test_root,
+            "cfg_cache"), self.test_root)
+        pub2 = ic2.publishers["sfbay.sun.com"]
+        self.assertEqual(pub2.client_uuid, uuid)
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

@@ -21,18 +21,18 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import os
 from six.moves import configparser
 
-CFGFILE="site-config"
+CFGFILE = "site-config"
 
 def get(option, default=None):
-        cfg = configparser.ConfigParser()
-        cfg.read(CFGFILE)
-        value = cfg.get("default", option)
-        if not value:
-                return default
-        return value
+    cfg = configparser.ConfigParser()
+    cfg.read(CFGFILE)
+    value = cfg.get("default", option)
+    if not value:
+        return default
+    return value

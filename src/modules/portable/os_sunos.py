@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -44,50 +44,50 @@ from pkg.sysattr import fgetattr, fsetattr
 from pkg.sysattr import get_attr_dict as get_sysattr_dict
 
 def get_isainfo():
-        return arch.get_isainfo()
+    return arch.get_isainfo()
 
 def get_release():
-        return arch.get_release()
+    return arch.get_release()
 
 def get_platform():
-        return arch.get_platform()
+    return arch.get_platform()
 
 def get_file_type(actions):
-        t_fd, t_path = tempfile.mkstemp()
-        t_fh = os.fdopen(t_fd, "w")
-        for a in actions:
-                t_fh.write(os.path.join(a.attrs[PD_LOCAL_PATH]) + "\n")
-        t_fh.close()
-        res = subprocess.Popen(["/usr/bin/file", "-f", t_path],
-            stdout=subprocess.PIPE).communicate()[0].splitlines()
-        remove(t_path)
-        assert(len(actions) == len(res))
-        for i, file_out in enumerate(res):
-                file_out = file_out.strip()
-                # ensure we can manipulate the string
-                if isinstance(file_out, bytes) and six.PY3:
-                        file_out = file_out.decode("utf-8")
-                a = actions[i]
-                proto_file = a.attrs[PD_LOCAL_PATH]
-                colon_cnt = proto_file.count(":") + 1
-                tmp = file_out.split(":", colon_cnt)
-                res_file_name = ":".join(tmp[0:colon_cnt])
-                if res_file_name != proto_file:
-                        raise RuntimeError("pf:{0} rfn:{1} file_out:{2}".format(
-                            proto_file, res_file_name, file_out))
-                file_type = tmp[colon_cnt].strip().split()
-                joined_ft = " ".join(file_type)
-                if file_type[0] == "ELF":
-                        yield ELF
-                elif file_type[0] == "executable":
-                        yield EXEC
-                elif joined_ft == "cannot open: No such file or directory":
-                        yield UNFOUND
-                elif file_type[0] == "XML":
-                        from pkg.flavor.smf_manifest import is_smf_manifest
-                        if is_smf_manifest(proto_file):
-                                yield SMF_MANIFEST
-                        else:
-                                yield joined_ft
-                else:
-                        yield joined_ft
+    t_fd, t_path = tempfile.mkstemp()
+    t_fh = os.fdopen(t_fd, "w")
+    for a in actions:
+        t_fh.write(os.path.join(a.attrs[PD_LOCAL_PATH]) + "\n")
+    t_fh.close()
+    res = subprocess.Popen(["/usr/bin/file", "-f", t_path],
+        stdout=subprocess.PIPE).communicate()[0].splitlines()
+    remove(t_path)
+    assert len(actions) == len(res)
+    for i, file_out in enumerate(res):
+        file_out = file_out.strip()
+        # ensure we can manipulate the string
+        if isinstance(file_out, bytes) and six.PY3:
+            file_out = file_out.decode("utf-8")
+        a = actions[i]
+        proto_file = a.attrs[PD_LOCAL_PATH]
+        colon_cnt = proto_file.count(":") + 1
+        tmp = file_out.split(":", colon_cnt)
+        res_file_name = ":".join(tmp[0:colon_cnt])
+        if res_file_name != proto_file:
+            raise RuntimeError("pf:{0} rfn:{1} file_out:{2}".format(
+                proto_file, res_file_name, file_out))
+        file_type = tmp[colon_cnt].strip().split()
+        joined_ft = " ".join(file_type)
+        if file_type[0] == "ELF":
+            yield ELF
+        elif file_type[0] == "executable":
+            yield EXEC
+        elif joined_ft == "cannot open: No such file or directory":
+            yield UNFOUND
+        elif file_type[0] == "XML":
+            from pkg.flavor.smf_manifest import is_smf_manifest
+            if is_smf_manifest(proto_file):
+                yield SMF_MANIFEST
+            else:
+                yield joined_ft
+        else:
+            yield joined_ft

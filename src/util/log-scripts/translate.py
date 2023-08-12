@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import GeoIP
@@ -36,65 +36,64 @@ import time
 # 1.2.3.4 - - [12/Aug/2008:19:21:28 -0700] "GET /manifest/0/SUNWkos@0.5.11%2C5.11-0.94%3A20080721T212150Z HTTP/1.1" 200 19748 "-" "pkg/d974bb176266 (sunos i86pc; 5.11 snv_86; full)"
 
 if len(sys.argv) != 3:
-        print("Usage: {0} <in file> <out file>".format(sys.argv[0]))
-        sys.exit(2)
+    print("Usage: {0} <in file> <out file>".format(sys.argv[0]))
+    sys.exit(2)
 
 infile = open(sys.argv[1], "r")
 outfile = open(sys.argv[2], "w")
 
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 
-ops = ["1p.png", "filelist", "catalog", "manifest", "search", "file"] 
+ops = ["1p.png", "filelist", "catalog", "manifest", "search", "file"]
 
 cnt = {}
 for x in ops:
-        cnt[x] = 0
+    cnt[x] = 0
 
 while True:
-        line = infile.readline()
-        if len(line) == 0: # EOF
-                break
+    line = infile.readline()
+    if len(line) == 0: # EOF
+        break
 
-        #print("line: [{0}]".format(line))
+    #print("line: [{0}]".format(line))
 
-        fields = line.split()
-        (ip, d, fullop) = (fields[0], fields[3], fields[6])
-        del fields
+    fields = line.split()
+    (ip, d, fullop) = (fields[0], fields[3], fields[6])
+    del fields
 
-        # Get country code and translate ip -> md5 of ip
-        cc = gi.country_code_by_addr(ip)
-        ip = md5.md5(ip)
-        ip = ip.hexdigest()
+    # Get country code and translate ip -> md5 of ip
+    cc = gi.country_code_by_addr(ip)
+    ip = md5.md5(ip)
+    ip = ip.hexdigest()
 
-        # Goofy date -> UTS
-        d = time.mktime(time.strptime(d[1:], "%d/%b/%Y:%H:%M:%S"))
-        d = str(d).split(".")[0]
+    # Goofy date -> UTS
+    d = time.mktime(time.strptime(d[1:], "%d/%b/%Y:%H:%M:%S"))
+    d = str(d).split(".")[0]
 
-        # Figure out op and opargs
-        opflds = fullop.split("/")
-        op = opflds[1]
-        if "1p.png" in op:
-                op = op[0:op.find("?")]
-        if op not in ops:
-                continue
-        # only interested in catalog/0 operations
-        if op == "catalog" and opflds[2] != "0":
-                continue
-        opargs = ""
-        if op == "search":
-                opargs = "/".join(opflds[3:])
-        if op == "file":
-                opargs = opflds[3]
+    # Figure out op and opargs
+    opflds = fullop.split("/")
+    op = opflds[1]
+    if "1p.png" in op:
+        op = op[0:op.find("?")]
+    if op not in ops:
+        continue
+    # only interested in catalog/0 operations
+    if op == "catalog" and opflds[2] != "0":
+        continue
+    opargs = ""
+    if op == "search":
+        opargs = "/".join(opflds[3:])
+    if op == "file":
+        opargs = opflds[3]
 
-        # TODO: also need to grab size
+    # TODO: also need to grab size
 
-        cnt[op] += 1
+    cnt[op] += 1
 
-        print("{0} {1} {2} {3} {4}".format(ip, cc, d, op, opargs), file=outfile)
+    print("{0} {1} {2} {3} {4}".format(ip, cc, d, op, opargs), file=outfile)
 
 infile.close()
 outfile.close()
 
 for x in ops:
-        print("# {0}: {1:d}".format(x, cnt[x]))
-
+    print("# {0}: {1:d}".format(x, cnt[x]))

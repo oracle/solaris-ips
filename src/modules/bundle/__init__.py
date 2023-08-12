@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 # The ordering is important -- SolarisPackageDirBundle must come before
@@ -38,74 +38,74 @@ import os
 import sys
 
 class InvalidBundleException(Exception):
-        pass
+    pass
 
 
 class InvalidOwnershipException(InvalidBundleException):
-        """Raised when gid or uid lookup fails for a file during bundle
-        generation."""
+    """Raised when gid or uid lookup fails for a file during bundle
+    generation."""
 
-        def __init__(self, fname, uid=None, gid=None):
-                InvalidBundleException.__init__(self)
-                self.fname = fname
-                msg = []
-                if uid:
-                        msg.append("UID {uid} is not associated with a user "
-                            "name (file: {fname})".format(uid=uid, fname=fname))
-                if gid:
-                        msg.append("GID {gid} is not associated with a group "
-                            "name (file: {fname})".format(gid=gid, fname=fname))
-                self.msg = '\n'.join(msg)
+    def __init__(self, fname, uid=None, gid=None):
+        InvalidBundleException.__init__(self)
+        self.fname = fname
+        msg = []
+        if uid:
+            msg.append("UID {uid} is not associated with a user "
+                "name (file: {fname})".format(uid=uid, fname=fname))
+        if gid:
+            msg.append("GID {gid} is not associated with a group "
+                "name (file: {fname})".format(gid=gid, fname=fname))
+        self.msg = '\n'.join(msg)
 
-        def __str__(self):
-                return self.msg
+    def __str__(self):
+        return self.msg
 
 
 class Bundle(object):
-        """Base bundle class."""
+    """Base bundle class."""
 
-        def get_action(self, path):
-                """Return the first action that matches the provided path or
-                None."""
-                for apath, data in self._walk_bundle():
-                        if not apath:
-                                continue
-                        npath = apath.lstrip(os.path.sep)
-                        if path == npath:
-                                if type(data) == tuple:
-                                        # Construct action on demand.
-                                        return self.action(*data)
-                                # Action was returned.
-                                return data
+    def get_action(self, path):
+        """Return the first action that matches the provided path or
+        None."""
+        for apath, data in self._walk_bundle():
+            if not apath:
+                continue
+            npath = apath.lstrip(os.path.sep)
+            if path == npath:
+                if type(data) == tuple:
+                    # Construct action on demand.
+                    return self.action(*data)
+                # Action was returned.
+                return data
 
 def make_bundle(filename, **kwargs):
-        """Determines what kind of bundle is at the given filename, and returns
-        the appropriate bundle object.
-        """
+    """Determines what kind of bundle is at the given filename, and returns
+    the appropriate bundle object.
+    """
 
-        for btype in __all__:
-                bname = "pkg.bundle.{0}".format(btype)
-                bmodule = __import__(bname)
+    for btype in __all__:
+        bname = "pkg.bundle.{0}".format(btype)
+        bmodule = __import__(bname)
 
-                bmodule = sys.modules[bname]
-                if bmodule.test(filename):
-                        bundle_create = getattr(bmodule, btype)
-                        return bundle_create(filename, **kwargs)
+        bmodule = sys.modules[bname]
+        if bmodule.test(filename):
+            bundle_create = getattr(bmodule, btype)
+            return bundle_create(filename, **kwargs)
 
-        raise TypeError("Unknown bundle type for '{0}'".format(filename))
+    raise TypeError("Unknown bundle type for '{0}'".format(filename))
 
 
 if __name__ == "__main__":
-        try:
-                b = make_bundle(sys.argv[1])
-        except TypeError as e:
-                print(e)
-                sys.exit(1)
+    try:
+        b = make_bundle(sys.argv[1])
+    except TypeError as e:
+        print(e)
+        sys.exit(1)
 
-        for file in b:
-                print(file.type, file.attrs)
-                try:
-                        print(file.attrs["file"])
-                        print(os.stat(file.attrs["file"]))
-                except:
-                        pass
+    for file in b:
+        print(file.type, file.attrs)
+        try:
+            print(file.attrs["file"])
+            print(os.stat(file.attrs["file"]))
+        except:
+            pass

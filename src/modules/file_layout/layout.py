@@ -19,8 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+#
 
 """object to map content hashes to file paths
 
@@ -61,56 +61,56 @@ to asses the scalability of the different layouts."""
 import os
 
 class Layout(object):
-        """This class is the parent class to all layouts. It defines the
-        interface which those subclasses must satisfy."""
-        
-        def lookup(self, hashval):
-                """Return the path to the file with name "hashval"."""
-                raise NotImplementedError
+    """This class is the parent class to all layouts. It defines the
+    interface which those subclasses must satisfy."""
 
-        def path_to_hash(self, path):
-                """Return the hash which would map to "path"."""
-                raise NotImplementedError
+    def lookup(self, hashval):
+        """Return the path to the file with name "hashval"."""
+        raise NotImplementedError
 
-        def contains(self, rel_path, file_name):
-                """Returns whether this layout would place a file named
-                "file_name" at "rel_path"."""
-                return self.lookup(file_name) == rel_path
+    def path_to_hash(self, path):
+        """Return the hash which would map to "path"."""
+        raise NotImplementedError
+
+    def contains(self, rel_path, file_name):
+        """Returns whether this layout would place a file named
+        "file_name" at "rel_path"."""
+        return self.lookup(file_name) == rel_path
 
 
 class V0Layout(Layout):
-        """This class implements the original layout used.  It uses a 256 way
-        split (2 hex digits) followed by a 16.7M way split (6 hex digits)."""
+    """This class implements the original layout used.  It uses a 256 way
+    split (2 hex digits) followed by a 16.7M way split (6 hex digits)."""
 
-        def lookup(self, hashval):
-                """Return the path to the file with name "hashval"."""
-                return os.path.join(hashval[0:2], hashval[2:8], hashval)
+    def lookup(self, hashval):
+        """Return the path to the file with name "hashval"."""
+        return os.path.join(hashval[0:2], hashval[2:8], hashval)
 
-        def path_to_hash(self, path):
-                """Return the hash which would map to "path"."""
-                return os.path.basename(path)
+    def path_to_hash(self, path):
+        """Return the hash which would map to "path"."""
+        return os.path.basename(path)
 
 
 class V1Layout(Layout):
-        """This class implements the new layout approach which is a single 256
-        way fanout using the first two digits of the hash."""
+    """This class implements the new layout approach which is a single 256
+    way fanout using the first two digits of the hash."""
 
-        def lookup(self, hashval):
-                """Return the path to the file with name "hashval"."""
-                return os.path.join(hashval[0:2], hashval)
+    def lookup(self, hashval):
+        """Return the path to the file with name "hashval"."""
+        return os.path.join(hashval[0:2], hashval)
 
-        def path_to_hash(self, path):
-                """Return the hash which would map to "path"."""
-                return os.path.basename(path)
+    def path_to_hash(self, path):
+        """Return the hash which would map to "path"."""
+        return os.path.basename(path)
 
 
 def get_default_layouts():
-        """This function describes the default order in which to use the
-        layouts defined above."""
+    """This function describes the default order in which to use the
+    layouts defined above."""
 
-        return [V1Layout(), V0Layout()]
+    return [V1Layout(), V0Layout()]
 
 def get_preferred_layout():
-        """This function returns the single preferred layout to use."""
+    """This function returns the single preferred layout to use."""
 
-        return V1Layout()
+    return V1Layout()

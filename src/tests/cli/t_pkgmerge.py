@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -43,33 +43,33 @@ import zlib
 import sys
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
-        persistent_setup = True
+    persistent_setup = True
 
-        scheme10 = """
+    scheme10 = """
             open scheme@1.0,5.11-0
             add file tmp/sparc-only mode=0444 owner=root group=bin path=/etc/tree
             close
         """
 
-        tree10 = """
+    tree10 = """
             open tree@1.0,5.11-0
             add file tmp/sparc-only mode=0444 owner=root group=bin path=/etc/tree
             close
         """
 
-        amber10 = """
+    amber10 = """
             open amber@1.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
             close
         """
 
-        amber20 = """
+    amber20 = """
             open amber@2.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
             close
         """
 
-        bronze10 = """
+    bronze10 = """
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
@@ -84,7 +84,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        bronze20 = """
+    bronze20 = """
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
@@ -100,7 +100,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        bronze20b = """
+    bronze20b = """
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
@@ -117,7 +117,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        bronze20c = """
+    bronze20c = """
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
@@ -136,22 +136,22 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        silverA = """
+    silverA = """
             open silver@1.0,5.11-0
             add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
             add file tmp/sh mode=0444 owner=root group=bin path=/etc/tree pkg.merge.blend=arch
             close
         """
-        silverB = """
+    silverB = """
             open silver@1.0,5.11-0
             add file tmp/bronze1 mode=0555 owner=root group=bin path=/etc/bronze1
            close
         """
 
-        # etc/tree is purposefully delivered by this package to verify that
-        # pkgmerge can have an identical file being present in multiple
-        # packages (this and scheme@1.0) with different publishers.
-        multiA = """
+    # etc/tree is purposefully delivered by this package to verify that
+    # pkgmerge can have an identical file being present in multiple
+    # packages (this and scheme@1.0) with different publishers.
+    multiA = """
             open gold@1.0,5.11-0
             add file tmp/sparc-only mode=0444 owner=root group=bin path=/etc/tree
             add file tmp/sparc1 mode=0444 owner=root group=bin path=/etc/debug-notes pkg.merge.blend=arch
@@ -161,7 +161,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        multiB = """
+    multiB = """
             open gold@1.0,5.11-0
             add file tmp/sparc4 mode=0444 owner=root group=bin path=/etc/everywhere-notes pkg.merge.blend=arch pkg.merge.blend=debug
             add file tmp/sparc4 mode=0444 owner=root group=bin path=/etc/binary
@@ -169,14 +169,14 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        multiC = """
+    multiC = """
             open gold@1.0,5.11-0
             add file tmp/i3862 mode=0444 owner=root group=bin path=/etc/binary
             add depend type=require-any fmri=foo fmri=bar
             close
         """
 
-        multiD = """
+    multiD = """
             open gold@1.0,5.11-0
             add file tmp/i3861 mode=0444 owner=root group=bin path=/etc/nondebug-notes pkg.merge.blend=variant.arch
             add file tmp/i3863 mode=0444 owner=root group=bin path=/etc/binary
@@ -184,20 +184,20 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        tinA = """
+    tinA = """
             open tin@1.0,5.11-0
             add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
             add file tmp/sh mode=0444 owner=root group=bin path=/etc/tree pkg.merge.blend=arch
             close
         """
-        tinB = """
+    tinB = """
             open tin@1.0,5.11-0
             add file tmp/bronze1 mode=0555 owner=root group=bin path=/etc/bronze1
             add file tmp/scheme mode=0444 owner=root group=bin path=/etc/tree pkg.merge.blend=arch
            close
         """
 
-        mediatorPPC = """
+    mediatorPPC = """
             open mediator@1.0,5.11-0
             add link path=wombat target=blue mediator=color mediator-implementation=blue pkg.merge.blend=arch
             add link path=wombat target=red mediator=color mediator-implementation=red pkg.merge.blend=arch
@@ -210,7 +210,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        mediatorARM = """
+    mediatorARM = """
             open mediator@1.0,5.11-0
             add link path=wombat target=teal mediator=color mediator-implementation=teal pkg.merge.blend=arch
             add link path=wombat target=pink mediator=color mediator-implementation=pink pkg.merge.blend=arch
@@ -223,7 +223,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_conds = """
+    depend_conds = """
             open dependcond1@1.0
             add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
             add depend type=conditional fmri=appdep@1.0 predicate=app-2
@@ -231,7 +231,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_condx = """
+    depend_condx = """
             open dependcond1@1.0
             add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
             add depend type=conditional fmri=appdep@1.0 predicate=app-2
@@ -239,7 +239,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_same_conds = """
+    depend_same_conds = """
             open dependcond2@1.0
             add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
             add depend type=conditional fmri=appdep@1.0 predicate=app-2
@@ -247,7 +247,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_same_condx = """
+    depend_same_condx = """
             open dependcond2@1.0
             add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
             add depend type=conditional fmri=appdep@1.0 predicate=app-2
@@ -255,7 +255,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_reqs = """
+    depend_reqs = """
             open dependreq@1.0
             add dir path=opt/dir/sparc owner=root group=bin mode=755 variant.arch=sparc
             add depend type=require fmri=appdep@1.0
@@ -263,7 +263,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        depend_reqx = """
+    depend_reqx = """
             open dependreq@1.0
             add dir path=opt/dir/amd64 owner=root group=bin mode=755 variant.arch=i386
             add depend type=require fmri=appdep@1.0
@@ -271,279 +271,279 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
-            "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
-            "tmp/sh", "tmp/scheme", "tmp/sparc-only", "tmp/sparc1", "tmp/sparc2",
-            "tmp/sparc3", "tmp/sparc4", "tmp/i3861", "tmp/i3862", "tmp/i3863"]
+    misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
+        "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
+        "tmp/sh", "tmp/scheme", "tmp/sparc-only", "tmp/sparc1", "tmp/sparc2",
+        "tmp/sparc3", "tmp/sparc4", "tmp/i3861", "tmp/i3862", "tmp/i3863"]
 
-        def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, 20 * ["os.org"])
-                self.make_misc_files(self.misc_files)
+    def setUp(self):
+        pkg5unittest.ManyDepotTestCase.setUp(self, 20 * ["os.org"])
+        self.make_misc_files(self.misc_files)
 
-                self.rurl1 = self.dcs[1].get_repo_url()
-                self.rurl2 = self.dcs[2].get_repo_url()
-                self.rurl3 = self.dcs[3].get_repo_url()
-                self.rurl4 = self.dcs[4].get_repo_url()
-                self.rurl5 = self.dcs[5].get_repo_url()
-                self.rurl6 = self.dcs[6].get_repo_url()
+        self.rurl1 = self.dcs[1].get_repo_url()
+        self.rurl2 = self.dcs[2].get_repo_url()
+        self.rurl3 = self.dcs[3].get_repo_url()
+        self.rurl4 = self.dcs[4].get_repo_url()
+        self.rurl5 = self.dcs[5].get_repo_url()
+        self.rurl6 = self.dcs[6].get_repo_url()
 
-                # Empty repository.
-                self.rurl7 = self.dcs[7].get_repo_url()
+        # Empty repository.
+        self.rurl7 = self.dcs[7].get_repo_url()
 
-                # a bunch for testing blending
-                self.rurl8 = self.dcs[8].get_repo_url()
-                self.rurl9 = self.dcs[9].get_repo_url()
-                self.rurl10 = self.dcs[10].get_repo_url()
-                self.rurl11 = self.dcs[11].get_repo_url()
-                self.rurl12 = self.dcs[12].get_repo_url()
-                self.rurl13 = self.dcs[13].get_repo_url()
+        # a bunch for testing blending
+        self.rurl8 = self.dcs[8].get_repo_url()
+        self.rurl9 = self.dcs[9].get_repo_url()
+        self.rurl10 = self.dcs[10].get_repo_url()
+        self.rurl11 = self.dcs[11].get_repo_url()
+        self.rurl12 = self.dcs[12].get_repo_url()
+        self.rurl13 = self.dcs[13].get_repo_url()
 
-                # repositories which will contain several publishers
-                self.rurl14 = self.dcs[14].get_repo_url()
-                self.rurl15 = self.dcs[15].get_repo_url()
+        # repositories which will contain several publishers
+        self.rurl14 = self.dcs[14].get_repo_url()
+        self.rurl15 = self.dcs[15].get_repo_url()
 
-                # mediator testing
-                self.rurl16 = self.dcs[16].get_repo_url()
-                self.rurl17 = self.dcs[17].get_repo_url()
+        # mediator testing
+        self.rurl16 = self.dcs[16].get_repo_url()
+        self.rurl17 = self.dcs[17].get_repo_url()
 
-                # depend action checks
-                self.rurl18 = self.dcs[18].get_repo_url()
-                self.rurl19 = self.dcs[19].get_repo_url()
+        # depend action checks
+        self.rurl18 = self.dcs[18].get_repo_url()
+        self.rurl19 = self.dcs[19].get_repo_url()
 
-                # Publish a set of packages to one repository.
-                self.published = self.pkgsend_bulk(self.rurl1, (self.amber10,
-                    self.amber20, self.bronze10, self.bronze20, self.tree10,
-                    self.scheme10))
+        # Publish a set of packages to one repository.
+        self.published = self.pkgsend_bulk(self.rurl1, (self.amber10,
+            self.amber20, self.bronze10, self.bronze20, self.tree10,
+            self.scheme10))
 
-                # Ensure timestamps of all successive publications are greater.
-                time.sleep(1)
+        # Ensure timestamps of all successive publications are greater.
+        time.sleep(1)
 
-                # Publish the same set to another repository (minus the tree
-                # and scheme packages, and with a slightly different version
-                # of the bronze20 package).
-                self.published += self.pkgsend_bulk(self.rurl2, (self.amber10,
-                    self.amber20, self.bronze10, self.bronze20b))
+        # Publish the same set to another repository (minus the tree
+        # and scheme packages, and with a slightly different version
+        # of the bronze20 package).
+        self.published += self.pkgsend_bulk(self.rurl2, (self.amber10,
+            self.amber20, self.bronze10, self.bronze20b))
 
-                # Ensure timestamps of all successive publications are greater.
-                time.sleep(1)
+        # Ensure timestamps of all successive publications are greater.
+        time.sleep(1)
 
-                # Publish the same set to another repository (with a slightly
-                # different version of the bronze20b package and with tree).
-                self.published += self.pkgsend_bulk(self.rurl3, (self.amber10,
-                    self.amber20, self.bronze10, self.bronze20c, self.tree10))
+        # Publish the same set to another repository (with a slightly
+        # different version of the bronze20b package and with tree).
+        self.published += self.pkgsend_bulk(self.rurl3, (self.amber10,
+            self.amber20, self.bronze10, self.bronze20c, self.tree10))
 
-                # Ensure timestamps of all successive publications are greater.
-                time.sleep(1)
+        # Ensure timestamps of all successive publications are greater.
+        time.sleep(1)
 
-                # Everything above again, but this time using the debug version
-                # of the misc. files and a different set of repositories.
-                dfiles = dict((f, f + ".debug") for f in self.misc_files)
+        # Everything above again, but this time using the debug version
+        # of the misc. files and a different set of repositories.
+        dfiles = dict((f, f + ".debug") for f in self.misc_files)
 
-                # For testing purposes, don't change this file for the debug
-                # variant case.
-                dfiles["tmp/libc.so.1"] = "tmp/libc.so.1"
-                self.make_misc_files(dfiles)
+        # For testing purposes, don't change this file for the debug
+        # variant case.
+        dfiles["tmp/libc.so.1"] = "tmp/libc.so.1"
+        self.make_misc_files(dfiles)
 
-                self.published_debug = self.pkgsend_bulk(self.rurl4,
-                    (self.amber10, self.amber20, self.bronze10, self.bronze20,
-                    self.tree10, self.scheme10))
-                time.sleep(1)
+        self.published_debug = self.pkgsend_bulk(self.rurl4,
+            (self.amber10, self.amber20, self.bronze10, self.bronze20,
+            self.tree10, self.scheme10))
+        time.sleep(1)
 
-                self.published_debug += self.pkgsend_bulk(self.rurl5,
-                    (self.amber10, self.amber20, self.bronze10, self.bronze20b))
-                time.sleep(1)
+        self.published_debug += self.pkgsend_bulk(self.rurl5,
+            (self.amber10, self.amber20, self.bronze10, self.bronze20b))
+        time.sleep(1)
 
-                self.published_debug += self.pkgsend_bulk(self.rurl6, (
-                    self.amber10, self.amber20, self.bronze10, self.bronze20c,
-                    self.tree10))
+        self.published_debug += self.pkgsend_bulk(self.rurl6, (
+            self.amber10, self.amber20, self.bronze10, self.bronze20c,
+            self.tree10))
 
-                self.published_blend = self.pkgsend_bulk(self.rurl8, (self.silverA,
-                    self.tinA))
-                time.sleep(1)
-                self.published_blend += self.pkgsend_bulk(self.rurl9, (self.silverB,
-                    self.tinB))
+        self.published_blend = self.pkgsend_bulk(self.rurl8, (self.silverA,
+            self.tinA))
+        time.sleep(1)
+        self.published_blend += self.pkgsend_bulk(self.rurl9, (self.silverB,
+            self.tinB))
 
-                time.sleep(1)
-                self.published_blend += self.pkgsend_bulk(self.rurl10, (self.multiA,))
-                time.sleep(1)
-                self.published_blend += self.pkgsend_bulk(self.rurl11, (self.multiB,))
-                time.sleep(1)
-                self.published_blend += self.pkgsend_bulk(self.rurl12, (self.multiC,))
-                time.sleep(1)
-                self.published_blend += self.pkgsend_bulk(self.rurl13, (self.multiD,))
+        time.sleep(1)
+        self.published_blend += self.pkgsend_bulk(self.rurl10, (self.multiA,))
+        time.sleep(1)
+        self.published_blend += self.pkgsend_bulk(self.rurl11, (self.multiB,))
+        time.sleep(1)
+        self.published_blend += self.pkgsend_bulk(self.rurl12, (self.multiC,))
+        time.sleep(1)
+        self.published_blend += self.pkgsend_bulk(self.rurl13, (self.multiD,))
 
-                # Publish to multiple repositories, maintaining lists of which
-                # FMRIs are published to which repository.
-                self.published_multi_14 = []
-                self.published_multi_15 = []
+        # Publish to multiple repositories, maintaining lists of which
+        # FMRIs are published to which repository.
+        self.published_multi_14 = []
+        self.published_multi_15 = []
 
-                for url, record in [
-                    (self.rurl14, self.published_multi_14),
-                    (self.rurl15, self.published_multi_15)]:
-                        time.sleep(1)
-                        record += self.pkgsend_bulk(url, (self.scheme10))
-                        time.sleep(1)
-                        record += self.pkgsend_bulk(url, (self.tree10))
+        for url, record in [
+            (self.rurl14, self.published_multi_14),
+            (self.rurl15, self.published_multi_15)]:
+            time.sleep(1)
+            record += self.pkgsend_bulk(url, (self.scheme10))
+            time.sleep(1)
+            record += self.pkgsend_bulk(url, (self.tree10))
 
-                        time.sleep(1)
-                        record += self.pkgsend_bulk(url,
-                            self.bronze20.replace("open ",
-                            "open pkg://altpub/"))
-                        time.sleep(1)
-                        record += self.pkgsend_bulk(url,
-                            (self.amber10.replace("open ",
-                            "open pkg://altpub/")))
-                        time.sleep(1)
-                        record += self.pkgsend_bulk(url,
-                            (self.multiA.replace("open ",
-                            "open pkg://last/")))
+            time.sleep(1)
+            record += self.pkgsend_bulk(url,
+                self.bronze20.replace("open ",
+                "open pkg://altpub/"))
+            time.sleep(1)
+            record += self.pkgsend_bulk(url,
+                (self.amber10.replace("open ",
+                "open pkg://altpub/")))
+            time.sleep(1)
+            record += self.pkgsend_bulk(url,
+                (self.multiA.replace("open ",
+                "open pkg://last/")))
 
-                # add bronze20b to one repository so that we have at least one
-                # package where more complex merging happens.
-                time.sleep(1)
-                self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
-                    self.bronze20b.replace("open ", "open pkg://altpub/"))
+        # add bronze20b to one repository so that we have at least one
+        # package where more complex merging happens.
+        time.sleep(1)
+        self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
+            self.bronze20b.replace("open ", "open pkg://altpub/"))
 
-                # one of our source repositories also contains a newer
-                # version of pkg:/gold (self.multi*)
-                time.sleep(1)
-                self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
-                    (self.multiB.replace("open ", "open pkg://last/")))
+        # one of our source repositories also contains a newer
+        # version of pkg:/gold (self.multi*)
+        time.sleep(1)
+        self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
+            (self.multiB.replace("open ", "open pkg://last/")))
 
-                # publish to our mediator repos
-                self.published_16 = self.pkgsend_bulk(self.rurl16,
-                    (self.mediatorPPC))
-                self.published_17 = self.pkgsend_bulk(self.rurl17,
-                    (self.mediatorARM))
+        # publish to our mediator repos
+        self.published_16 = self.pkgsend_bulk(self.rurl16,
+            (self.mediatorPPC))
+        self.published_17 = self.pkgsend_bulk(self.rurl17,
+            (self.mediatorARM))
 
-                # publish the depend packages
-                self.published_deps = self.pkgsend_bulk(self.rurl18,
-                    (self.depend_conds, self.depend_same_conds,
-                     self.depend_reqs))
-                self.published_depx = self.pkgsend_bulk(self.rurl19,
-                    (self.depend_condx, self.depend_same_condx,
-                     self.depend_reqx))
+        # publish the depend packages
+        self.published_deps = self.pkgsend_bulk(self.rurl18,
+            (self.depend_conds, self.depend_same_conds,
+             self.depend_reqs))
+        self.published_depx = self.pkgsend_bulk(self.rurl19,
+            (self.depend_condx, self.depend_same_condx,
+             self.depend_reqx))
 
-        def test_0_options(self):
-                """Verify that pkgmerge gracefully fails when given bad option
-                values."""
+    def test_0_options(self):
+        """Verify that pkgmerge gracefully fails when given bad option
+        values."""
 
-                # Should fail because no source was specified.
-                self.pkgmerge(" ".join([
-                    "-d {0}".format(self.rurl2),
-                ]), exit=2)
+        # Should fail because no source was specified.
+        self.pkgmerge(" ".join([
+            "-d {0}".format(self.rurl2),
+        ]), exit=2)
 
-                # Should fail because no destination was specified.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                ]), exit=2)
+        # Should fail because no destination was specified.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+        ]), exit=2)
 
-                # Should fail because variant for source was not provided.
-                self.pkgmerge(" ".join([
-                    "-s {0}".format(self.rurl1),
-                    "-d {0}".format(self.rurl2),
-                ]), exit=2)
+        # Should fail because variant for source was not provided.
+        self.pkgmerge(" ".join([
+            "-s {0}".format(self.rurl1),
+            "-d {0}".format(self.rurl2),
+        ]), exit=2)
 
-                # Should fail because only source variant was provided.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386",
-                    "-d {0}".format(self.rurl2),
-                ]), exit=2)
+        # Should fail because only source variant was provided.
+        self.pkgmerge(" ".join([
+            "-s arch=i386",
+            "-d {0}".format(self.rurl2),
+        ]), exit=2)
 
-                # Should fail because user did not specify the same variants
-                # for every source.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(self.dcs[1].get_repodir()),
-                    "-s arch=i386,debug=true,{0}".format(self.dcs[2].get_repodir()),
-                    "-d {0}".format(self.rurl7)
-                ]), exit=2)
+        # Should fail because user did not specify the same variants
+        # for every source.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(self.dcs[1].get_repodir()),
+            "-s arch=i386,debug=true,{0}".format(self.dcs[2].get_repodir()),
+            "-d {0}".format(self.rurl7)
+        ]), exit=2)
 
-                # Should fail because user did not specify a source for all
-                # variant combinations (e.g. i386 & arm debug).
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
-                    "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
-                    "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
-                    "-d {0}".format(self.rurl7)
-                ]), exit=2)
+        # Should fail because user did not specify a source for all
+        # variant combinations (e.g. i386 & arm debug).
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
+            "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
+            "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
+            "-d {0}".format(self.rurl7)
+        ]), exit=2)
 
-                # Should fail because source is not a repository.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.test_root),
-                    "-d {0}".format(self.rurl2),
-                ]), exit=1)
+        # Should fail because source is not a repository.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.test_root),
+            "-d {0}".format(self.rurl2),
+        ]), exit=1)
 
-                # Should fail because destination is not a repository.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0}".format(self.test_root),
-                ]), exit=1)
+        # Should fail because destination is not a repository.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0}".format(self.test_root),
+        ]), exit=1)
 
-                # Should fail because of no matching -p publishers.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0} -p noodles".format(self.test_root),
-                ]), exit=1)
+        # Should fail because of no matching -p publishers.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0} -p noodles".format(self.test_root),
+        ]), exit=1)
 
-                # Create the target repository.
-                repodir = os.path.join(self.test_root, "test_0_repo")
-                self.create_repo(repodir)
+        # Create the target repository.
+        repodir = os.path.join(self.test_root, "test_0_repo")
+        self.create_repo(repodir)
 
-                # Should fail because of no matching packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl1),
-                    "-d {0} nomatching".format(repodir),
-                ]), exit=1)
-                shutil.rmtree(repodir)
+        # Should fail because of no matching packages.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl1),
+            "-d {0} nomatching".format(repodir),
+        ]), exit=1)
+        shutil.rmtree(repodir)
 
-        def test_1_single_merge(self):
-                """Verify that merge functionality works as expected when
-                specifying a single source."""
+    def test_1_single_merge(self):
+        """Verify that merge functionality works as expected when
+        specifying a single source."""
 
-                #
-                # First, verify that merging all packages from a single source
-                # works as expected.
-                #
+        #
+        # First, verify that merging all packages from a single source
+        # works as expected.
+        #
 
-                # Create the target repository.
-                repodir = os.path.join(self.test_root, "1merge_repo")
-                self.create_repo(repodir)
+        # Create the target repository.
+        repodir = os.path.join(self.test_root, "1merge_repo")
+        self.create_repo(repodir)
 
-                # Perform a dry-run.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0}".format(repodir),
-                    "-n",
-                ]))
+        # Perform a dry-run.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0}".format(repodir),
+            "-n",
+        ]))
 
-                # Merge the packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0}".format(repodir),
-                ]))
+        # Merge the packages.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0}".format(repodir),
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                expected = [
-                    self.published[7], # pkg://os.org/amber@2.0-0
-                    self.published[9], # pkg://os.org/bronze@2.0-0
-                ]
-                actual = [str(f) for f in sorted(cat.fmris())]
+        # Verify the list of expected packages in the target repository.
+        expected = [
+            self.published[7], # pkg://os.org/amber@2.0-0
+            self.published[9], # pkg://os.org/bronze@2.0-0
+        ]
+        actual = [str(f) for f in sorted(cat.fmris())]
 
-                self.assertEqualDiff(expected, actual)
+        self.assertEqualDiff(expected, actual)
 
-                # Verify that each package was merged correctly.
-                merged_expected = {
-                    "amber": """\
+        # Verify that each package was merged correctly.
+        merged_expected = {
+            "amber": """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=i386\
 """.format(self.published[7]), # pkg://os.org/amber@2.0-0
-                    "bronze": """\
+            "bronze": """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require
 dir group=bin mode=0755 owner=root path=etc
@@ -559,118 +559,118 @@ link path=usr/bin/jsh target=./sh
 set name=pkg.fmri value={0}
 set name=variant.arch value=i386\
 """.format(self.published[9]) # pkg://os.org/bronze@2.0-0
-                }
+        }
 
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                #
-                # Next, verify that merging specific packages from a single
-                # source works as expected.
-                #
+        #
+        # Next, verify that merging specific packages from a single
+        # source works as expected.
+        #
 
-                # Create the target repository.
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
+        # Create the target repository.
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
 
-                # Perform a dry-run.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0}".format(repodir),
-                    "-n",
-                    "amber@latest",
-                ]))
+        # Perform a dry-run.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0}".format(repodir),
+            "-n",
+            "amber@latest",
+        ]))
 
-                # Merge the packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-d {0}".format(repodir),
-                    "amber@latest",
-                ]))
+        # Merge the packages.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-d {0}".format(repodir),
+            "amber@latest",
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                expected = [
-                    self.published[7], # pkg://os.org/amber@2.0-0
-                ]
-                actual = [str(f) for f in sorted(cat.fmris())]
-                self.assertEqualDiff(expected, actual)
+        # Verify the list of expected packages in the target repository.
+        expected = [
+            self.published[7], # pkg://os.org/amber@2.0-0
+        ]
+        actual = [str(f) for f in sorted(cat.fmris())]
+        self.assertEqualDiff(expected, actual)
 
-                # Verify that each package was merged correctly.
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        # Verify that each package was merged correctly.
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                # Next, verify that an attempt to merge using a variant that
-                # doesn't match what is already declared in a source's packages
-                # results in failure.  (e.g. packages are tagged i386, but
-                # source was claimed to be sparc.)
-                junk_repodir = os.path.join(self.test_root, "1junk_repo")
-                self.create_repo(junk_repodir)
+        # Next, verify that an attempt to merge using a variant that
+        # doesn't match what is already declared in a source's packages
+        # results in failure.  (e.g. packages are tagged i386, but
+        # source was claimed to be sparc.)
+        junk_repodir = os.path.join(self.test_root, "1junk_repo")
+        self.create_repo(junk_repodir)
 
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(repodir),
-                    "-d {0}".format(junk_repodir),
-                    "amber@latest",
-                ]), exit=1)
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(repodir),
+            "-d {0}".format(junk_repodir),
+            "amber@latest",
+        ]), exit=1)
 
-                # Cleanup.
-                shutil.rmtree(repodir)
+        # Cleanup.
+        shutil.rmtree(repodir)
 
-        def test_2_multi_merge(self):
-                """Verify that merge functionality works as expected when
-                specifying multiple sources."""
+    def test_2_multi_merge(self):
+        """Verify that merge functionality works as expected when
+        specifying multiple sources."""
 
-                #
-                # First, verify that merging all packages from multiple sources
-                # works as expected when specifying two variant values.
-                #
+        #
+        # First, verify that merging all packages from multiple sources
+        # works as expected when specifying two variant values.
+        #
 
-                # Create the target repository.
-                repodir = os.path.join(self.test_root, "2merge_repo")
-                self.create_repo(repodir)
+        # Create the target repository.
+        repodir = os.path.join(self.test_root, "2merge_repo")
+        self.create_repo(repodir)
 
-                # Merge the packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-s arch=sparc,{0}".format(self.rurl1),
-                    "-d {0}".format(repodir)
-                ]))
+        # Merge the packages.
+        self.pkgmerge(" ".join([
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-s arch=sparc,{0}".format(self.rurl1),
+            "-d {0}".format(repodir)
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                nlist = {}
-                for s in self.published[:10]:
-                        f = fmri.PkgFmri(s)
-                        if f.pkg_name not in nlist or \
-                            f.version > nlist[f.pkg_name].version:
-                                nlist[f.pkg_name] = f
-                nlist = sorted(nlist.values())
+        # Verify the list of expected packages in the target repository.
+        nlist = {}
+        for s in self.published[:10]:
+            f = fmri.PkgFmri(s)
+            if f.pkg_name not in nlist or \
+                f.version > nlist[f.pkg_name].version:
+                nlist[f.pkg_name] = f
+        nlist = sorted(nlist.values())
 
-                expected = [str(f) for f in nlist]
-                actual = [str(f) for f in sorted(cat.fmris())]
+        expected = [str(f) for f in nlist]
+        actual = [str(f) for f in sorted(cat.fmris())]
 
-                self.assertEqualDiff(expected, actual)
+        self.assertEqualDiff(expected, actual)
 
-                # Verify that each package was merged correctly.
-                merged_expected = {
-                    "amber": """\
+        # Verify that each package was merged correctly.
+        merged_expected = {
+            "amber": """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=i386 value=sparc\
 """.format(self.published[7]), # pkg://os.org/amber@2.0-0
-                    "bronze": """\
+            "bronze": """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
 dir group=bin mode=0755 owner=root path=etc
@@ -687,66 +687,66 @@ link path=usr/bin/jsh target=./sh
 set name=pkg.fmri value={0}
 set name=variant.arch value=i386 value=sparc\
 """.format(self.published[9]), # pkg://os.org/bronze@2.0-0
-                    "scheme": """\
+            "scheme": """\
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc\
 """.format(self.published[5]), # pkg://os.org/scheme@1.0-0
-                    "tree": """\
+            "tree": """\
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc\
 """.format(self.published[4]), # pkg://os.org/tree@1.0-0
-               }
+       }
 
-                for f in nlist:
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        for f in nlist:
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                #
-                # Next, verify that merging packages for three variant values
-                # works as expected.
-                #
+        #
+        # Next, verify that merging packages for three variant values
+        # works as expected.
+        #
 
-                # Create the target repository.
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
+        # Create the target repository.
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
 
-                # Merge the packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(self.rurl1),
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-s arch=arm,{0}".format(self.rurl3),
-                    "-d {0}".format(repodir)
-                ]))
+        # Merge the packages.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(self.rurl1),
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-s arch=arm,{0}".format(self.rurl3),
+            "-d {0}".format(repodir)
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                nlist = {}
-                for s in self.published:
-                        f = fmri.PkgFmri(s)
-                        if f.pkg_name not in nlist or \
-                            f.version > nlist[f.pkg_name].version:
-                                nlist[f.pkg_name] = f
-                nlist = sorted(nlist.values())
+        # Verify the list of expected packages in the target repository.
+        nlist = {}
+        for s in self.published:
+            f = fmri.PkgFmri(s)
+            if f.pkg_name not in nlist or \
+                f.version > nlist[f.pkg_name].version:
+                nlist[f.pkg_name] = f
+        nlist = sorted(nlist.values())
 
-                expected = [str(f) for f in nlist]
-                actual = [str(f) for f in sorted(cat.fmris())]
-                self.assertEqualDiff(expected, actual)
+        expected = [str(f) for f in nlist]
+        actual = [str(f) for f in sorted(cat.fmris())]
+        self.assertEqualDiff(expected, actual)
 
-                # Verify that each package was merged correctly.
-                merged_expected = {
-                    "amber": """\
+        # Verify that each package was merged correctly.
+        merged_expected = {
+            "amber": """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386 value=arm\
 """.format(self.published[11]), # pkg://os.org/amber@2.0-0
-                    "bronze": """\
+            "bronze": """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=arm
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
@@ -767,133 +767,133 @@ link path=usr/bin/jsh target=./sh
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386 value=arm\
 """.format(self.published[13]), # pkg://os.org/bronze@2.0-0
-                    "scheme": """\
+            "scheme": """\
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc\
 """.format(self.published[5]), # pkg://os.org/scheme@1.0-0
-                    "tree": """\
+            "tree": """\
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=arm\
 """.format(self.published[14]), # pkg://os.org/tree@1.0-0
-               }
+       }
 
-                for f in nlist:
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        for f in nlist:
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                #
-                # Next, verify that merging specific packages from multiple
-                # sources works as expected.
-                #
+        #
+        # Next, verify that merging specific packages from multiple
+        # sources works as expected.
+        #
 
-                # Create the target repository.
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
+        # Create the target repository.
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
 
-                # Merge the packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(self.rurl1),
-                    "-s arch=i386,{0}".format(self.rurl2),
-                    "-s arch=arm,{0}".format(self.rurl3),
-                    "-d {0}".format(repodir),
-                    "scheme amber@1.0 bronze@latest",
-                ]))
+        # Merge the packages.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(self.rurl1),
+            "-s arch=i386,{0}".format(self.rurl2),
+            "-s arch=arm,{0}".format(self.rurl3),
+            "-d {0}".format(repodir),
+            "scheme amber@1.0 bronze@latest",
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                expected = [
-                    self.published[10], # pkg://os.org/amber@1.0-0
-                    self.published[13], # pkg://os.org/bronze@2.0-0
-                    self.published[5], # pkg://os.org/scheme@1.0-0
-                ]
-                actual = [str(f) for f in sorted(cat.fmris())]
-                self.assertEqualDiff(expected, actual)
+        # Verify the list of expected packages in the target repository.
+        expected = [
+            self.published[10], # pkg://os.org/amber@1.0-0
+            self.published[13], # pkg://os.org/bronze@2.0-0
+            self.published[5], # pkg://os.org/scheme@1.0-0
+        ]
+        actual = [str(f) for f in sorted(cat.fmris())]
+        self.assertEqualDiff(expected, actual)
 
-                merged_expected["amber"] = """\
+        merged_expected["amber"] = """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386 value=arm\
 """.format(self.published[10]) # pkg://os.org/amber@1.0-0
 
-                # Verify that each package was merged correctly.
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        # Verify that each package was merged correctly.
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                # Cleanup.
-                shutil.rmtree(repodir)
+        # Cleanup.
+        shutil.rmtree(repodir)
 
-        def test_3_cross_merge(self):
-                """Verify that pkgmerge works as expected when the resulting
-                merge is a cross-product (e.g. a prior merge in steps or all at
-                once for sparc/x86 with debug/non-debug)."""
+    def test_3_cross_merge(self):
+        """Verify that pkgmerge works as expected when the resulting
+        merge is a cross-product (e.g. a prior merge in steps or all at
+        once for sparc/x86 with debug/non-debug)."""
 
-                # Create final merge repository.
-                repodir = os.path.join(self.test_root, "3merge_repo")
-                self.create_repo(repodir)
+        # Create final merge repository.
+        repodir = os.path.join(self.test_root, "3merge_repo")
+        self.create_repo(repodir)
 
-                for i, arch in enumerate(("sparc", "i386", "arm")):
-                        # For each arch, merge the debug and non-debug variants
-                        # first.
-                        rdir = os.path.join(self.test_root, "3{0}_repo".format(arch))
-                        self.create_repo(rdir)
+        for i, arch in enumerate(("sparc", "i386", "arm")):
+            # For each arch, merge the debug and non-debug variants
+            # first.
+            rdir = os.path.join(self.test_root, "3{0}_repo".format(arch))
+            self.create_repo(rdir)
 
-                        ndrepo = self.dcs[i + 1].get_repodir()
-                        drepo = self.dcs[i + 4].get_repodir()
+            ndrepo = self.dcs[i + 1].get_repodir()
+            drepo = self.dcs[i + 4].get_repodir()
 
-                        # Merge the packages.
-                        self.pkgmerge(" ".join([
-                            "-s debug=false,{0}".format(ndrepo),
-                            "-s variant.debug=true,{0}".format(drepo),
-                            "-d {0}".format(rdir)
-                        ]))
+            # Merge the packages.
+            self.pkgmerge(" ".join([
+                "-s debug=false,{0}".format(ndrepo),
+                "-s variant.debug=true,{0}".format(drepo),
+                "-d {0}".format(rdir)
+            ]))
 
-                # Now merge all of the debug/non-debug repositories.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(os.path.join(self.test_root,
-                        "3sparc_repo")),
-                    "-s arch=i386,{0}".format(os.path.join(self.test_root,
-                        "3i386_repo")),
-                    "-s arch=arm,{0}".format(os.path.join(self.test_root,
-                        "3arm_repo")),
-                    "-d {0}".format(repodir),
-                ]))
+        # Now merge all of the debug/non-debug repositories.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(os.path.join(self.test_root,
+                "3sparc_repo")),
+            "-s arch=i386,{0}".format(os.path.join(self.test_root,
+                "3i386_repo")),
+            "-s arch=arm,{0}".format(os.path.join(self.test_root,
+                "3arm_repo")),
+            "-d {0}".format(repodir),
+        ]))
 
-                # Get target repository catalog.
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
+        # Get target repository catalog.
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-                # Verify the list of expected packages in the target repository.
-                nlist = {}
-                for s in self.published + self.published_debug:
-                        f = fmri.PkgFmri(s)
-                        if f.pkg_name not in nlist or \
-                            f.version > nlist[f.pkg_name].version:
-                                nlist[f.pkg_name] = f
-                nlist = sorted(nlist.values())
+        # Verify the list of expected packages in the target repository.
+        nlist = {}
+        for s in self.published + self.published_debug:
+            f = fmri.PkgFmri(s)
+            if f.pkg_name not in nlist or \
+                f.version > nlist[f.pkg_name].version:
+                nlist[f.pkg_name] = f
+        nlist = sorted(nlist.values())
 
-                expected = [str(f) for f in nlist]
-                actual = [str(f) for f in sorted(cat.fmris())]
-                self.assertEqualDiff(expected, actual)
+        expected = [str(f) for f in nlist]
+        actual = [str(f) for f in sorted(cat.fmris())]
+        self.assertEqualDiff(expected, actual)
 
-                # Verify that each package was merged correctly.
-                merged_expected = {
-                    "amber": """\
+        # Verify that each package was merged correctly.
+        merged_expected = {
+            "amber": """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386 value=arm
 set name=variant.debug value=false value=true\
 """.format(self.published_debug[11]), # pkg://os.org/amber@2.0-0
-                    "bronze": """\
+            "bronze": """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=arm
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
@@ -923,84 +923,84 @@ set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386 value=arm
 set name=variant.debug value=false value=true\
 """.format(self.published_debug[13]), # pkg://os.org/bronze@2.0-0
-                    "scheme": """\
+            "scheme": """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.debug=true
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14 variant.debug=false
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc
 set name=variant.debug value=false value=true\
 """.format(self.published_debug[5]), # pkg://os.org/scheme@1.0-0
-                    "tree": """\
+            "tree": """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.debug=true
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14 variant.debug=false
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=arm
 set name=variant.debug value=false value=true\
 """.format(self.published_debug[14]), # pkg://os.org/tree@1.0-0
-               }
+       }
 
-                for f in nlist:
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        for f in nlist:
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                # Cleanup.
-                shutil.rmtree(repodir)
+        # Cleanup.
+        shutil.rmtree(repodir)
 
-                #
-                # Attempt to merge x86 and sparc debug/non-debug all at once.
-                #
-                self.create_repo(repodir)
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
-                    "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
-                    "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
-                    "-s arch=i386,debug=true,{0}".format(self.dcs[5].get_repodir()),
-                    "-s arch=arm,debug=true,{0}".format(self.dcs[6].get_repodir()),
-                    "-d {0}".format(repodir)
-                ]))
+        #
+        # Attempt to merge x86 and sparc debug/non-debug all at once.
+        #
+        self.create_repo(repodir)
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
+            "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
+            "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
+            "-s arch=i386,debug=true,{0}".format(self.dcs[5].get_repodir()),
+            "-s arch=arm,debug=true,{0}".format(self.dcs[6].get_repodir()),
+            "-d {0}".format(repodir)
+        ]))
 
-                repo = self.get_repo(repodir)
-                for f in nlist:
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        repo = self.get_repo(repodir)
+        for f in nlist:
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                # Cleanup.
-                shutil.rmtree(repodir)
+        # Cleanup.
+        shutil.rmtree(repodir)
 
-                #
-                # Verify that naming an empty source allows a user to perform
-                # mismatched merges (i.e. merge sparc debug/non-debug with i386
-                # and arm non-debug) if empty repositories are used to fill in
-                # the missing cases.
-                nlist = {}
-                for s in self.published + self.published_debug[:6]:
-                        f = fmri.PkgFmri(s)
-                        if f.pkg_name not in nlist or \
-                            f.version > nlist[f.pkg_name].version:
-                                nlist[f.pkg_name] = f
-                nlist = sorted(nlist.values())
+        #
+        # Verify that naming an empty source allows a user to perform
+        # mismatched merges (i.e. merge sparc debug/non-debug with i386
+        # and arm non-debug) if empty repositories are used to fill in
+        # the missing cases.
+        nlist = {}
+        for s in self.published + self.published_debug[:6]:
+            f = fmri.PkgFmri(s)
+            if f.pkg_name not in nlist or \
+                f.version > nlist[f.pkg_name].version:
+                nlist[f.pkg_name] = f
+        nlist = sorted(nlist.values())
 
-                self.create_repo(repodir)
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
-                    "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
-                    "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
-                    # Explicitly state debug packages don't exist for these
-                    # arch values by using an empty repository.
-                    "-s arch=i386,debug=true,{0}".format(self.dcs[7].get_repodir()),
-                    "-s arch=arm,debug=true,{0}".format(self.dcs[7].get_repodir()),
-                    "-d {0}".format(repodir)
-                ]))
+        self.create_repo(repodir)
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[1].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[2].get_repodir()),
+            "-s arch=arm,debug=false,{0}".format(self.dcs[3].get_repodir()),
+            "-s arch=sparc,debug=true,{0}".format(self.dcs[4].get_repodir()),
+            # Explicitly state debug packages don't exist for these
+            # arch values by using an empty repository.
+            "-s arch=i386,debug=true,{0}".format(self.dcs[7].get_repodir()),
+            "-s arch=arm,debug=true,{0}".format(self.dcs[7].get_repodir()),
+            "-d {0}".format(repodir)
+        ]))
 
-                # Verify that each package was merged correctly.
-                merged_expected = {
-                    "amber": """\
+        # Verify that each package was merged correctly.
+        merged_expected = {
+            "amber": """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={0}
 set name=variant.arch value=i386 value=arm value=sparc
@@ -1008,7 +1008,7 @@ set name=variant.debug value=false value=true variant.arch=sparc
 set name=variant.debug value=false variant.arch=arm
 set name=variant.debug value=false variant.arch=i386\
 """.format(self.published_debug[1]), # pkg://os.org/amber@2.0-0
-                    "bronze": """\
+            "bronze": """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=arm
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
@@ -1045,14 +1045,14 @@ set name=variant.debug value=false value=true variant.arch=sparc
 set name=variant.debug value=false variant.arch=arm
 set name=variant.debug value=false variant.arch=i386\
 """.format(self.published_debug[3]), # pkg://os.org/bronze@2.0-0
-                    "scheme": """\
+            "scheme": """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.debug=true
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14 variant.debug=false
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc
 set name=variant.debug value=false value=true\
 """.format(self.published_debug[5]), # pkg://os.org/scheme@1.0-0
-                    "tree": """\
+            "tree": """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.arch=sparc variant.debug=true
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14 variant.arch=arm
 file 3b7cee8797632f83a11b66d028016946b4fa47fa chash=00621927edeb8e5b96ef63a93b4c5d125f2a3298 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:6650b24e5c5ceab211c95614def1ae53905a8f415f7fcfdfcc40b778041ed974 pkg.content-hash=gzip:sha512t_256:079a76079a1c22c13f3c2bb4b6efe8b589c1061b48e893c597c74adb62cac195 pkg.csize=34 pkg.size=14 variant.arch=sparc variant.debug=false
@@ -1061,36 +1061,36 @@ set name=variant.arch value=arm value=sparc
 set name=variant.debug value=false value=true variant.arch=sparc
 set name=variant.debug value=false variant.arch=arm\
 """.format(self.published_debug[4]), # pkg://os.org/tree@1.0-0
-               }
+       }
 
-                repo = self.get_repo(repodir)
-                for f in nlist:
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                        expected = merged_expected[f.pkg_name]
-                        self.assertEqualDiff(expected, actual)
+        repo = self.get_repo(repodir)
+        for f in nlist:
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
 
-                # Cleanup.
-                shutil.rmtree(repodir)
+        # Cleanup.
+        shutil.rmtree(repodir)
 
-        def test_4_blend(self):
-                """Make sure simple blending works"""
+    def test_4_blend(self):
+        """Make sure simple blending works"""
 
-                # Create the target repository.
-                repodir = os.path.join(self.test_root, "4merge_repo")
-                self.create_repo(repodir)
+        # Create the target repository.
+        repodir = os.path.join(self.test_root, "4merge_repo")
+        self.create_repo(repodir)
 
-                # Merge the silver packages.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(self.rurl8),
-                    "-s arch=i386,{0}".format(self.rurl9),
-                    "-d {0} silver".format(repodir)
-                ]))
+        # Merge the silver packages.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(self.rurl8),
+            "-s arch=i386,{0}".format(self.rurl9),
+            "-d {0} silver".format(repodir)
+        ]))
 
-                # get target repo
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
-                expected = """\
+        # get target repo
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
+        expected = """\
 file 1abe1a7084720f501912eceb1312ddd799fb2a34 chash=ea7230676e13986491d7405c5a9298e074930575 group=bin mode=0444 owner=root path=etc/bronze1 pkg.content-hash=file:sha512t_256:f0316c9af93368a37c837317681af5d6ac5d8fa4feab284cd952906a1689d203 pkg.content-hash=gzip:sha512t_256:012f554bf1011be581f891682a7c406156bfef7be6ad6f785db586caf3a50f48 pkg.csize=37 pkg.size=17 variant.arch=sparc
 file 1abe1a7084720f501912eceb1312ddd799fb2a34 chash=ea7230676e13986491d7405c5a9298e074930575 group=bin mode=0555 owner=root path=etc/bronze1 pkg.content-hash=file:sha512t_256:f0316c9af93368a37c837317681af5d6ac5d8fa4feab284cd952906a1689d203 pkg.content-hash=gzip:sha512t_256:012f554bf1011be581f891682a7c406156bfef7be6ad6f785db586caf3a50f48 pkg.csize=37 pkg.size=17 variant.arch=i386
 file 34f88965d55d3a730fa7683bc0f370fc6e42bf95 chash=66eebb69ee0299dcb495162336db81a3188de037 group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:23589d1dbb98cc597ed74ed10e38afed113e73c30ed6dcfd98971541477f1167 pkg.content-hash=gzip:sha512t_256:5446e3eab72747cfe5e2b01fb0936a626693088d5e214dbe7af20823d76a61fb pkg.csize=32 pkg.size=12
@@ -1098,41 +1098,41 @@ set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386\
 """.format(self.published_blend[2])
 
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                self.assertEqualDiff(expected, actual)
-                shutil.rmtree(repodir)
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+        self.assertEqualDiff(expected, actual)
+        shutil.rmtree(repodir)
 
-        def test_5_blend(self):
-                """test duplicate action detection during blending"""
-                repodir = os.path.join(self.test_root, "5merge_repo")
-                self.create_repo(repodir)
+    def test_5_blend(self):
+        """test duplicate action detection during blending"""
+        repodir = os.path.join(self.test_root, "5merge_repo")
+        self.create_repo(repodir)
 
-               # Merge the tin packages - whoops
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,{0}".format(self.rurl8),
-                    "-s arch=i386,{0}".format(self.rurl9),
-                    "-d {0} tin".format(repodir)
-                ]), exit=1)
-                self.assertTrue("pkgmerge: Duplicate action(s):" in self.errout)
-                shutil.rmtree(repodir)
+       # Merge the tin packages - whoops
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,{0}".format(self.rurl8),
+            "-s arch=i386,{0}".format(self.rurl9),
+            "-d {0} tin".format(repodir)
+        ]), exit=1)
+        self.assertTrue("pkgmerge: Duplicate action(s):" in self.errout)
+        shutil.rmtree(repodir)
 
-        def test_6_blend(self):
-                """check complex blending"""
-                repodir = os.path.join(self.test_root, "6merge_repo")
-                self.create_repo(repodir)
+    def test_6_blend(self):
+        """check complex blending"""
+        repodir = os.path.join(self.test_root, "6merge_repo")
+        self.create_repo(repodir)
 
-                # merge the multi packages
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,debug=true,{0}".format(self.dcs[10].get_repodir()),
-                    "-s arch=i386,debug=true,{0}".format(self.dcs[12].get_repodir()),
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[11].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[13].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # merge the multi packages
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,debug=true,{0}".format(self.dcs[10].get_repodir()),
+            "-s arch=i386,debug=true,{0}".format(self.dcs[12].get_repodir()),
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[11].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[13].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                actual = self.get_manifest(repodir)
-                expected = """\
+        actual = self.get_manifest(repodir)
+        expected = """\
 depend fmri=foo fmri=bar type=require-any
 file 24bb3b46361cf7d180d0227beea4f75a872b6ff4 chash=b91fb7bdd4d35779bbd70c6b0367198e48290373 group=bin mode=0444 owner=root path=etc/nondebug-notes pkg.content-hash=file:sha512t_256:d34e775f60268293b5eb36a2a803cc0826c170259153859aefdd1abaa823b706 pkg.content-hash=gzip:sha512t_256:8a3f3142777f861779784a776036b3baf90fde79d12378913a5078977c81a84b pkg.csize=35 pkg.size=15 variant.debug=false
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.arch=sparc variant.debug=true
@@ -1147,84 +1147,84 @@ set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386
 set name=variant.debug value=true value=false\
 """.format(self.published_blend[-1])
-                self.assertEqualDiff(expected, actual)
-                shutil.rmtree(repodir)
+        self.assertEqualDiff(expected, actual)
+        shutil.rmtree(repodir)
 
-        def test_7_multipub_merge(self):
-                """Tests that we can merge packages from repositories with
-                several publishers."""
+    def test_7_multipub_merge(self):
+        """Tests that we can merge packages from repositories with
+        several publishers."""
 
-                repodir = os.path.join(self.test_root, "7merge_repo")
-                self.create_repo(repodir)
+        repodir = os.path.join(self.test_root, "7merge_repo")
+        self.create_repo(repodir)
 
-                # test dry run
-                self.pkgmerge(" ".join([
-                    "-n",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # test dry run
+        self.pkgmerge(" ".join([
+            "-n",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                # test dry run with selected publishers
-                self.pkgmerge(" ".join([
-                    "-p os.org",
-                    "-p altpub",
-                    "-n",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # test dry run with selected publishers
+        self.pkgmerge(" ".join([
+            "-p os.org",
+            "-p altpub",
+            "-n",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                # this should fail, as no -p noodles publisher exists in any of
-                # the source repositories
-                self.pkgmerge(" ".join([
-                    "-p os.org",
-                    "-p altpub",
-                    "-p noodles",
-                    "-n",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]), exit=1)
+        # this should fail, as no -p noodles publisher exists in any of
+        # the source repositories
+        self.pkgmerge(" ".join([
+            "-p os.org",
+            "-p altpub",
+            "-p noodles",
+            "-n",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]), exit=1)
 
-                # now we want to perform the merge operations and validate the
-                # results. This was the order we published packages to multi_15
-                # 0  = pkg://os.org/scheme@1.0,5.11-0:20120920T085857Z
-                # 1  = pkg://os.org/tree@1.0,5.11-0:20120920T085859Z
-                # 2  = pkg://altpub/bronze@2.0,5.11-0:20120920T085902Z
-                # 3  = pkg://altpub/amber@1.0,5.11-0:20120920T085904Z
-                # 4  = pkg://last/gold@1.0,5.11-0:20120920T085906Z
-                # 5  = pkg://altpub/bronze@2.0,5.11-0:20120920T085920Z
-                # 6  = pkg://last/gold@1.0,5.11-0:20120920T085923Z
+        # now we want to perform the merge operations and validate the
+        # results. This was the order we published packages to multi_15
+        # 0  = pkg://os.org/scheme@1.0,5.11-0:20120920T085857Z
+        # 1  = pkg://os.org/tree@1.0,5.11-0:20120920T085859Z
+        # 2  = pkg://altpub/bronze@2.0,5.11-0:20120920T085902Z
+        # 3  = pkg://altpub/amber@1.0,5.11-0:20120920T085904Z
+        # 4  = pkg://last/gold@1.0,5.11-0:20120920T085906Z
+        # 5  = pkg://altpub/bronze@2.0,5.11-0:20120920T085920Z
+        # 6  = pkg://last/gold@1.0,5.11-0:20120920T085923Z
 
-                # build a dictionary of the FMRIs we're interested in
-                repo15_fmris = {
-                    "osorg_scheme": self.published_multi_15[0],
-                    "osorg_tree": self.published_multi_15[1],
-                    "altpub_amber": self.published_multi_15[3],
-                    # we published two versions of bronze and gold, use the
-                    # latest FMRI
-                    "altpub_bronze": self.published_multi_15[5],
-                    "last_gold": self.published_multi_15[6]
-                }
+        # build a dictionary of the FMRIs we're interested in
+        repo15_fmris = {
+            "osorg_scheme": self.published_multi_15[0],
+            "osorg_tree": self.published_multi_15[1],
+            "altpub_amber": self.published_multi_15[3],
+            # we published two versions of bronze and gold, use the
+            # latest FMRI
+            "altpub_bronze": self.published_multi_15[5],
+            "last_gold": self.published_multi_15[6]
+        }
 
-                # the some expected manifests we should get after merging.
-                expected_osorg_scheme = """\
+        # the some expected manifests we should get after merging.
+        expected_osorg_scheme = """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20
 set name=pkg.fmri value={osorg_scheme}
 set name=variant.arch value=sparc value=i386
 set name=variant.debug value=false\
 """.format(**repo15_fmris)
-                expected_osorg_tree = """\
+        expected_osorg_tree = """\
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20
 set name=pkg.fmri value={osorg_tree}
 set name=variant.arch value=sparc value=i386
 set name=variant.debug value=false\
 """.format(**repo15_fmris)
-                expected_altpub_amber = """\
+        expected_altpub_amber = """\
 depend fmri=pkg:/tree@1.0 type=require
 set name=pkg.fmri value={altpub_amber}
 set name=variant.arch value=sparc value=i386
 set name=variant.debug value=false\
 """.format(**repo15_fmris)
-                expected_altpub_bronze = """\
+        expected_altpub_bronze = """\
 depend fmri=pkg:/amber@2.0 type=require
 depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
 dir group=bin mode=0755 owner=root path=etc
@@ -1242,7 +1242,7 @@ set name=pkg.fmri value={altpub_bronze}
 set name=variant.arch value=sparc value=i386
 set name=variant.debug value=false\
 """.format(**repo15_fmris)
-                expected_last_gold = """\
+        expected_last_gold = """\
 depend fmri=foo fmri=bar type=require-any
 file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.content-hash=file:sha512t_256:e1152d631b4c2fda4a2b739d38e4cbc3e8d7ccf2aa5be2aef6ab776a60d5a187 pkg.content-hash=gzip:sha512t_256:bfdce1dc4ab94f2321f2bae46505dd204b2df323df55efadf4f3b4c3326b204d pkg.csize=40 pkg.size=20 variant.arch=sparc
 file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/binary pkg.content-hash=file:sha512t_256:4bf36eb94a392e1b7c664835a979179050f678e34b6dc99a0136cd5ee97bc810 pkg.content-hash=gzip:sha512t_256:035274037f7db947b55535ff16137d9f91e2692cf425bdf080d79bef2fba78af pkg.csize=36 pkg.size=16 variant.arch=i386
@@ -1255,118 +1255,118 @@ set name=variant.arch value=sparc value=i386
 set name=variant.debug value=false\
 """.format(**repo15_fmris)
 
-                # A dictionary of the expected package contents, keyed by FMRI
-                expected = {
-                    repo15_fmris["altpub_bronze"]: expected_altpub_bronze,
-                    repo15_fmris["altpub_amber"]: expected_altpub_amber,
-                    repo15_fmris["osorg_tree"]: expected_osorg_tree,
-                    repo15_fmris["osorg_scheme"]: expected_osorg_scheme,
-                    repo15_fmris["last_gold"]: expected_last_gold
-                }
+        # A dictionary of the expected package contents, keyed by FMRI
+        expected = {
+            repo15_fmris["altpub_bronze"]: expected_altpub_bronze,
+            repo15_fmris["altpub_amber"]: expected_altpub_amber,
+            repo15_fmris["osorg_tree"]: expected_osorg_tree,
+            repo15_fmris["osorg_scheme"]: expected_osorg_scheme,
+            repo15_fmris["last_gold"]: expected_last_gold
+        }
 
-                def check_repo(repodir, keys, fmri_dic, expected):
-                        """Check that packages corresponding to the list of
-                        keys 'keys' to items in 'fmri_dic' are present in the
-                        repository, and match the contents from the dictionary
-                        'expected'.  We also check that the repository has no
-                        packages other than those specified by 'keys', and no
-                        more publishers than are present in those packages."""
-                        sr = self.get_repo(repodir)
-                        # check that the packages from 'keys' exist,
-                        # and their content matches what we expect.
-                        for key in keys:
-                                f = fmri_dic[key]
-                                with open(sr.manifest(f), "r") as manf:
-                                        actual = "".join(
-                                            sorted(l for l in manf)).strip()
-                                self.assertEqualDiff(expected[f], actual)
+        def check_repo(repodir, keys, fmri_dic, expected):
+            """Check that packages corresponding to the list of
+            keys 'keys' to items in 'fmri_dic' are present in the
+            repository, and match the contents from the dictionary
+            'expected'.  We also check that the repository has no
+            packages other than those specified by 'keys', and no
+            more publishers than are present in those packages."""
+            sr = self.get_repo(repodir)
+            # check that the packages from 'keys' exist,
+            # and their content matches what we expect.
+            for key in keys:
+                f = fmri_dic[key]
+                with open(sr.manifest(f), "r") as manf:
+                    actual = "".join(
+                        sorted(l for l in manf)).strip()
+                self.assertEqualDiff(expected[f], actual)
 
-                        # check that we have only the publishers used
-                        # by packages from 'keys' in the repository
-                        fmris = [fmri_dic[key] for key in keys]
-                        pubs = set([fmri.PkgFmri(entry).get_publisher()
-                            for entry in fmris])
-                        known_pubs = set(
-                            [p.prefix for p in sr.get_publishers()])
-                        self.assertTrue(pubs == known_pubs,
-                            "Repository at {0} didn't contain the "
-                            "expected set of publishers")
+            # check that we have only the publishers used
+            # by packages from 'keys' in the repository
+            fmris = [fmri_dic[key] for key in keys]
+            pubs = set([fmri.PkgFmri(entry).get_publisher()
+                for entry in fmris])
+            known_pubs = set(
+                [p.prefix for p in sr.get_publishers()])
+            self.assertTrue(pubs == known_pubs,
+                "Repository at {0} didn't contain the "
+                "expected set of publishers")
 
-                        # check that we have only the packages defined
-                        # in 'keys' in the repository by walking all
-                        # publishers, and all packages in the repository
-                        for pub in sr.get_publishers():
-                                cat = sr.get_catalog(pub=pub.prefix)
-                                for f in cat.fmris():
-                                        if f.get_fmri() not in fmris:
-                                                self.assertTrue(False,
-                                                    "{0} not in repository".format(f))
+            # check that we have only the packages defined
+            # in 'keys' in the repository by walking all
+            # publishers, and all packages in the repository
+            for pub in sr.get_publishers():
+                cat = sr.get_catalog(pub=pub.prefix)
+                for f in cat.fmris():
+                    if f.get_fmri() not in fmris:
+                        self.assertTrue(False,
+                            "{0} not in repository".format(f))
 
-                # test merging all publishers.
-                self.pkgmerge(" ".join([
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # test merging all publishers.
+        self.pkgmerge(" ".join([
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                check_repo(repodir, repo15_fmris.keys(), repo15_fmris, expected)
+        check_repo(repodir, repo15_fmris.keys(), repo15_fmris, expected)
 
-                # test merging only altpub and os.org.
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
-                self.pkgmerge(" ".join([
-                    "-p altpub",
-                    "-p os.org",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # test merging only altpub and os.org.
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
+        self.pkgmerge(" ".join([
+            "-p altpub",
+            "-p os.org",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                check_repo(repodir, ["altpub_bronze", "altpub_amber",
-                    "osorg_tree", "osorg_scheme"], repo15_fmris, expected)
+        check_repo(repodir, ["altpub_bronze", "altpub_amber",
+            "osorg_tree", "osorg_scheme"], repo15_fmris, expected)
 
-                # test merging only altpub
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
-                self.pkgmerge(" ".join([
-                    "-p altpub",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]))
+        # test merging only altpub
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
+        self.pkgmerge(" ".join([
+            "-p altpub",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]))
 
-                check_repo(repodir, ["altpub_bronze", "altpub_amber"],
-                    repo15_fmris, expected)
+        check_repo(repodir, ["altpub_bronze", "altpub_amber"],
+            repo15_fmris, expected)
 
-                # this should exit with a 1, but we should get the same results
-                # in the repository as last time.
-                shutil.rmtree(repodir)
-                self.create_repo(repodir)
-                self.pkgmerge(" ".join([
-                    "-p altpub",
-                    "-p noodles",
-                    "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
-                    "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
-                    "-d {0}".format(repodir)]), exit=1)
+        # this should exit with a 1, but we should get the same results
+        # in the repository as last time.
+        shutil.rmtree(repodir)
+        self.create_repo(repodir)
+        self.pkgmerge(" ".join([
+            "-p altpub",
+            "-p noodles",
+            "-s arch=sparc,debug=false,{0}".format(self.dcs[14].get_repodir()),
+            "-s arch=i386,debug=false,{0}".format(self.dcs[15].get_repodir()),
+            "-d {0}".format(repodir)]), exit=1)
 
-                check_repo(repodir, ["altpub_bronze", "altpub_amber"],
-                    repo15_fmris, expected)
+        check_repo(repodir, ["altpub_bronze", "altpub_amber"],
+            repo15_fmris, expected)
 
-        def test_8_mediators(self):
-                """test to make sure mediator-mediated links are not detected as collisions
-                in the same package or the merged package"""
-                # Create the target repository.
-                repodir = os.path.join(self.test_root, "8mediator_repo")
-                self.create_repo(repodir)
+    def test_8_mediators(self):
+        """test to make sure mediator-mediated links are not detected as collisions
+        in the same package or the merged package"""
+        # Create the target repository.
+        repodir = os.path.join(self.test_root, "8mediator_repo")
+        self.create_repo(repodir)
 
-                # Merge the two packages.
-                self.pkgmerge(" ".join([
-                        "-s arch=PPC,{0}".format(self.rurl16),
-                        "-s arch=ARM,{0}".format(self.rurl17),
-                    "-d {0} mediator".format(repodir)
-                ]))
+        # Merge the two packages.
+        self.pkgmerge(" ".join([
+                "-s arch=PPC,{0}".format(self.rurl16),
+                "-s arch=ARM,{0}".format(self.rurl17),
+            "-d {0} mediator".format(repodir)
+        ]))
 
-                # get target repo
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
-                expected = """\
+        # get target repo
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
+        expected = """\
 link mediator=color mediator-implementation=blue path=wombat target=blue
 link mediator=color mediator-implementation=green path=wombat target=green
 link mediator=color mediator-implementation=mauve path=wombat target=mauve
@@ -1387,45 +1387,45 @@ set name=pkg.fmri value={0}
 set name=variant.arch value=PPC value=ARM\
 """.format(self.published_17[0])
 
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "r") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                self.assertEqualDiff(expected, actual)
-                shutil.rmtree(repodir)
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+        self.assertEqualDiff(expected, actual)
+        shutil.rmtree(repodir)
 
 
-        def test_9_dependency(self):
-             """Test dependency actions duplication detection. 
-             """
-             repodir = os.path.join(self.test_root, "9dependency")
-             self.create_repo(repodir)
+    def test_9_dependency(self):
+        """Test dependency actions duplication detection. 
+        """
+        repodir = os.path.join(self.test_root, "9dependency")
+        self.create_repo(repodir)
 
-             # Test that conditional dependency with different
-             # predicates do not fail.
-             self.pkgmerge(" ".join([
-                     "-s arch=sparc,{0}".format(self.rurl18),
-                     "-s arch=i386,{0}".format(self.rurl19),
-                     "-d {0} dependcond1".format(repodir)
-             ]))
+        # Test that conditional dependency with different
+        # predicates do not fail.
+        self.pkgmerge(" ".join([
+                "-s arch=sparc,{0}".format(self.rurl18),
+                "-s arch=i386,{0}".format(self.rurl19),
+                "-d {0} dependcond1".format(repodir)
+        ]))
 
-             # The same dependencies will be collapsed
-             self.pkgmerge(" ".join([
-                     "-s arch=sparc,{0}".format(self.rurl18),
-                     "-s arch=i386,{0}".format(self.rurl19),
-                     "-d {0} dependcond2".format(repodir)
-             ]))
+        # The same dependencies will be collapsed
+        self.pkgmerge(" ".join([
+                "-s arch=sparc,{0}".format(self.rurl18),
+                "-s arch=i386,{0}".format(self.rurl19),
+                "-d {0} dependcond2".format(repodir)
+        ]))
 
-             self.pkgmerge(" ".join([
-                     "-s arch=sparc,{0}".format(self.rurl18),
-                     "-s arch=i386,{0}".format(self.rurl19),
-                     "-d {0} dependreq".format(repodir)
-             ]))
+        self.pkgmerge(" ".join([
+                "-s arch=sparc,{0}".format(self.rurl18),
+                "-s arch=i386,{0}".format(self.rurl19),
+                "-d {0} dependreq".format(repodir)
+        ]))
 
-             repo = self.get_repo(repodir)
-             cat = repo.get_catalog(pub="os.org")
+        repo = self.get_repo(repodir)
+        cat = repo.get_catalog(pub="os.org")
 
-             merged_expected = {
-                "dependcond1": """\
+        merged_expected = {
+           "dependcond1": """\
 depend fmri=appdep@1.0 predicate=app-2 type=conditional
 depend fmri=appdep@1.0 predicate=app-3 type=conditional
 dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
@@ -1433,14 +1433,14 @@ dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386\
 """.format(self.published_depx[0]), # pkg://os.org/dependcond1@1.0
-                "dependcond2": """\
+           "dependcond2": """\
 depend fmri=appdep@1.0 predicate=app-2 type=conditional
 dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
 dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386\
 """.format(self.published_depx[1]), # pkg://os.org/dependcond2@1.0
-                "dependreq": """\
+           "dependreq": """\
 depend fmri=appdep@1.0 type=incorporate
 depend fmri=appdep@1.0 type=require
 dir group=bin mode=755 owner=root path=opt/dir/amd64 variant.arch=i386
@@ -1448,29 +1448,29 @@ dir group=bin mode=755 owner=root path=opt/dir/sparc variant.arch=sparc
 set name=pkg.fmri value={0}
 set name=variant.arch value=sparc value=i386\
 """.format(self.published_depx[2]) # pkg://os.org/dependreq@1.0
-                }
+           }
 
-             # Verify the merge has worked and that real
-             # duplicate dependencies have been merged
-             # correctly (dependcond2).
-             for f in cat.fmris():
-                     with open(repo.manifest(f), "r") as m:
-                             actual = "".join(sorted(l for l in m)).strip()
-                     expected = merged_expected[f.pkg_name]
-                     self.assertEqualDiff(expected, actual)
-             shutil.rmtree(repodir)
-  
-        def get_manifest(self, repodir, pubs=["os.org"]):
-                repository = self.get_repo(repodir)
-                actual = ""
-                for pub in pubs:
-                        cat = repository.get_catalog(pub=pub)
-                        for f in cat.fmris():
-                                with open(repository.manifest(f), "r") as m:
-                                        actual += "".join(
-                                            sorted(l for l in m)).strip()
-                        actual += "\n"
-                return actual.strip()
+        # Verify the merge has worked and that real
+        # duplicate dependencies have been merged
+        # correctly (dependcond2).
+        for f in cat.fmris():
+            with open(repo.manifest(f), "r") as m:
+                actual = "".join(sorted(l for l in m)).strip()
+            expected = merged_expected[f.pkg_name]
+            self.assertEqualDiff(expected, actual)
+        shutil.rmtree(repodir)
+
+    def get_manifest(self, repodir, pubs=["os.org"]):
+        repository = self.get_repo(repodir)
+        actual = ""
+        for pub in pubs:
+            cat = repository.get_catalog(pub=pub)
+            for f in cat.fmris():
+                with open(repository.manifest(f), "r") as m:
+                    actual += "".join(
+                        sorted(l for l in m)).strip()
+            actual += "\n"
+        return actual.strip()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

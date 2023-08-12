@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 # __str__ methods defined for subclasses of IndexError should be defined
@@ -30,71 +30,71 @@
 # message.
 
 class IndexingException(Exception):
-        """The base class for all exceptions that can occur while indexing."""
+    """The base class for all exceptions that can occur while indexing."""
 
-        def __init__(self, cause):
-                self.cause = cause
+    def __init__(self, cause):
+        self.cause = cause
 
 
 class InconsistentIndexException(IndexingException):
-        """This is used when the existing index is found to have inconsistent
-        versions."""
+    """This is used when the existing index is found to have inconsistent
+    versions."""
 
-        def __str__(self):
-                return "Index corrupted, remove all files and " \
-                    "rebuild from scratch by clearing out {0} " \
-                    " and restarting the depot.".format(self.cause)
+    def __str__(self):
+        return "Index corrupted, remove all files and " \
+            "rebuild from scratch by clearing out {0} " \
+            " and restarting the depot.".format(self.cause)
 
 
 class IndexLockedException(IndexingException):
-        """This is used when an attempt to modify an index locked by another
-        thread or process is made."""
+    """This is used when an attempt to modify an index locked by another
+    thread or process is made."""
 
-        def __init__(self, hostname=None, pid=None):
-                IndexingException.__init__(self, None)
-                self.hostname = hostname
-                self.pid = pid
+    def __init__(self, hostname=None, pid=None):
+        IndexingException.__init__(self, None)
+        self.hostname = hostname
+        self.pid = pid
 
-        def __str__(self):
-                if self.pid is not None:
-                        # Used even if hostname is undefined.
-                        return _("The search index cannot be modified as it "
-                            "is currently in use by another process: "
-                            "pid {pid} on {host}.").format(
-                            pid=self.pid, host=self.hostname)
-                return _("The search index cannot be modified as it is "
-                    "currently in use by another process.")
+    def __str__(self):
+        if self.pid is not None:
+            # Used even if hostname is undefined.
+            return _("The search index cannot be modified as it "
+                "is currently in use by another process: "
+                "pid {pid} on {host}.").format(
+                pid=self.pid, host=self.hostname)
+        return _("The search index cannot be modified as it is "
+            "currently in use by another process.")
 
 
 class ProblematicPermissionsIndexException(IndexingException):
-        """This is used when the indexer is unable to create, move, or remove
-        files or directories it should be able to."""
+    """This is used when the indexer is unable to create, move, or remove
+    files or directories it should be able to."""
 
-        def __str__(self):
-                return "Could not remove or create " \
-                    "{0} because of\nincorrect " \
-                    "permissions. Please correct this issue then " \
-                    "rebuild the index.".format(self.cause)
+    def __str__(self):
+        return "Could not remove or create " \
+            "{0} because of\nincorrect " \
+            "permissions. Please correct this issue then " \
+            "rebuild the index.".format(self.cause)
 
 class NoIndexException(Exception):
-        """This is used when a search is executed while no index exists."""
+    """This is used when a search is executed while no index exists."""
 
-        def __init__(self, index_dir):
-                self.index_dir = index_dir
+    def __init__(self, index_dir):
+        self.index_dir = index_dir
 
-        def __str__(self):
-                return "Could not find index to search, looked in: " \
-                    "{0}".format(self.index_dir)
+    def __str__(self):
+        return "Could not find index to search, looked in: " \
+            "{0}".format(self.index_dir)
 
 class IncorrectIndexFileHash(Exception):
-        """This is used when the index hash value doesn't match the hash of the
-        packages installed in the image."""
+    """This is used when the index hash value doesn't match the hash of the
+    packages installed in the image."""
 
-        def __init__(self, existing_val, incoming_val):
-                Exception.__init__(self)
-                self.ev = existing_val
-                self.iv = incoming_val
+    def __init__(self, existing_val, incoming_val):
+        Exception.__init__(self)
+        self.ev = existing_val
+        self.iv = incoming_val
 
-        def __str__(self):
-                return "existing_val was:{0}\nincoming_val was:{1}".format(
-                    self.ev, self.iv)
+    def __str__(self):
+        return "existing_val was:{0}\nincoming_val was:{1}".format(
+            self.ev, self.iv)

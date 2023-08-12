@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 from pylint.interfaces import IAstroidChecker
@@ -86,7 +86,7 @@ class MultiPlatformAPIChecker(BaseChecker):
         'thread.stack_size', 'time.tzset', 'fcntl.fcntl', 'fcntl.ioctl',
         'fcntl.flock', 'fcntl.lockf',
     ]
-    
+
     # The list of package prefixes that are allowed to call VERBOTEN APIs
     ALLOWED = [
         'pkg.portable',
@@ -108,26 +108,26 @@ class MultiPlatformAPIChecker(BaseChecker):
     name = 'multiplatform'
     options = ()
 
-    imported_modules={}
-    calledfuncname=[]
-    calledfuncstack=[]
+    imported_modules = {}
+    calledfuncname = []
+    calledfuncstack = []
 
     # this is important so that your checker is executed before others
-    priority = -1 
+    priority = -1
 
     def leave_getattr(self, node):
         self.calledfuncname.append(node.attrname)
 
     def leave_name(self, node):
-        self.calledfuncname=[node.name]
+        self.calledfuncname = [node.name]
 
     def visit_callfunc(self, node):
         self.calledfuncstack.append(self.calledfuncname)
-        self.calledfuncname=[]
+        self.calledfuncname = []
 
     def leave_callfunc(self, node):
         self._check_verboten_call(node, self.calledfuncname)
-        self.calledfuncname=self.calledfuncstack.pop()
+        self.calledfuncname = self.calledfuncstack.pop()
 
     def visit_import(self, node):
         """triggered when an import statement is seen"""
@@ -151,7 +151,7 @@ class MultiPlatformAPIChecker(BaseChecker):
                     # this is checked elsewhere in pylint (F0401)
                     continue
             if alias == None:
-                alias = fullname         
+                alias = fullname
             self.imported_modules.update({alias: fullname})
 
     def _is_allowed(self, node):
@@ -167,18 +167,18 @@ class MultiPlatformAPIChecker(BaseChecker):
             self.add_message('E0900', args=(name), node=node)
 
     def _unalias(self, name):
-        for i,e in enumerate(name):
+        for i, e in enumerate(name):
             fullname = '.'.join(name[:i])
             if fullname in self.imported_modules:
                 alias = self.imported_modules.get(fullname)
                 return alias.split('.') +  name[i:]
         return name
 
-    def _check_verboten_call(self,node, name):
+    def _check_verboten_call(self, node, name):
         if self._is_allowed(node):
             return
         name = self._unalias(name)
-        for i,e in enumerate(name):
+        for i, e in enumerate(name):
             fullname = '.'.join(name[:i + 1])
             if fullname in self.VERBOTEN:
                 self.add_message('E0901', args=(fullname), node=node)
@@ -186,4 +186,3 @@ class MultiPlatformAPIChecker(BaseChecker):
 def register(linter):
     """required method to auto register this checker"""
     linter.register_checker(MultiPlatformAPIChecker(linter))
-
