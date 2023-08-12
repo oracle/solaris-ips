@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 """This program converts a directory structure from the V0layout to the
@@ -43,83 +43,83 @@ from pkg.misc import emsg, PipeError, setlocale
 logger = global_settings.logger
 
 def error(text, cmd=None):
-        """Emit an error message prefixed by the command name """
+    """Emit an error message prefixed by the command name """
 
-        if cmd:
-                text = "{0}: {1}".format(cmd, text)
-                pkg_cmd = "pkg.migrate "
-        else:
-                pkg_cmd = "pkg.migrate: "
+    if cmd:
+        text = "{0}: {1}".format(cmd, text)
+        pkg_cmd = "pkg.migrate "
+    else:
+        pkg_cmd = "pkg.migrate: "
 
-                # If we get passed something like an Exception, we can convert
-                # it down to a string.
-                text = str(text)
+        # If we get passed something like an Exception, we can convert
+        # it down to a string.
+        text = str(text)
 
-        # If the message starts with whitespace, assume that it should come
-        # *before* the command-name prefix.
-        text_nows = text.lstrip()
-        ws = text[:len(text) - len(text_nows)]
+    # If the message starts with whitespace, assume that it should come
+    # *before* the command-name prefix.
+    text_nows = text.lstrip()
+    ws = text[:len(text) - len(text_nows)]
 
-        # This has to be a constant value as we can't reliably get our actual
-        # program name on all platforms.
-        logger.error(ws + pkg_cmd + text_nows)
+    # This has to be a constant value as we can't reliably get our actual
+    # program name on all platforms.
+    logger.error(ws + pkg_cmd + text_nows)
 
 def main_func():
-        if len(sys.argv) != 2:
-                emsg(_("pkg.migrate takes a single directory as a parameter."))
-                return 2
-        
-        dir_loc = os.path.abspath(sys.argv[1])
+    if len(sys.argv) != 2:
+        emsg(_("pkg.migrate takes a single directory as a parameter."))
+        return 2
 
-        if not os.path.isdir(dir_loc):
-                emsg(_("The argument must be a directory to migrate from older "
-                    "layouts to the current\npreferred layout."))
-                return 2
+    dir_loc = os.path.abspath(sys.argv[1])
 
-        fm = file_manager.FileManager(root=dir_loc, readonly=False)
-        try:
-                for f in fm.walk():
-                        # A non-readonly FileManager will move a file under a
-                        # non-preferred layout to the preferred layout during a
-                        # lookup.
-                        fm.lookup(f)
-        except file_manager.UnrecognizedFilePaths as e:
-                emsg(e)
-                return 1
-        return 0
+    if not os.path.isdir(dir_loc):
+        emsg(_("The argument must be a directory to migrate from older "
+            "layouts to the current\npreferred layout."))
+        return 2
+
+    fm = file_manager.FileManager(root=dir_loc, readonly=False)
+    try:
+        for f in fm.walk():
+            # A non-readonly FileManager will move a file under a
+            # non-preferred layout to the preferred layout during a
+            # lookup.
+            fm.lookup(f)
+    except file_manager.UnrecognizedFilePaths as e:
+        emsg(e)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-        setlocale(locale.LC_ALL, "")
-        gettext.install("pkg", "/usr/share/locale")
+    setlocale(locale.LC_ALL, "")
+    gettext.install("pkg", "/usr/share/locale")
 
-        traceback_str = misc.get_traceback_message()
+    traceback_str = misc.get_traceback_message()
 
+    try:
+        # Out of memory errors can be raised as EnvironmentErrors with
+        # an errno of ENOMEM, so in order to handle those exceptions
+        # with other errnos, we nest this try block and have the outer
+        # one handle the other instances.
         try:
-                # Out of memory errors can be raised as EnvironmentErrors with
-                # an errno of ENOMEM, so in order to handle those exceptions
-                # with other errnos, we nest this try block and have the outer
-                # one handle the other instances.
-                try:
-                        __ret = main_func()
-                except (MemoryError, EnvironmentError) as __e:
-                        if isinstance(__e, EnvironmentError) and \
-                            __e.errno != errno.ENOMEM:
-                                raise
-                        if __img:
-                                __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
-                        error("\n" + misc.out_of_memory())
-                        __ret = 1
-        except SystemExit as __e:
+            __ret = main_func()
+        except (MemoryError, EnvironmentError) as __e:
+            if isinstance(__e, EnvironmentError) and \
+                __e.errno != errno.ENOMEM:
                 raise
-        except (PipeError, KeyboardInterrupt):
-                if __img:
-                        __img.history.abort(RESULT_CANCELED)
-                # We don't want to display any messages here to prevent
-                # possible further broken pipe (EPIPE) errors.
-                __ret = 1
-        except:
-                traceback.print_exc()
-                error(traceback_str)
-                __ret = 99
-        sys.exit(__ret)
+            if __img:
+                __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
+            error("\n" + misc.out_of_memory())
+            __ret = 1
+    except SystemExit as __e:
+        raise
+    except (PipeError, KeyboardInterrupt):
+        if __img:
+            __img.history.abort(RESULT_CANCELED)
+        # We don't want to display any messages here to prevent
+        # possible further broken pipe (EPIPE) errors.
+        __ret = 1
+    except:
+        traceback.print_exc()
+        error(traceback_str)
+        __ret = 99
+    sys.exit(__ret)

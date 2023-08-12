@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import division
@@ -34,73 +34,73 @@ from an_report import *
 ndays = 0
 
 def report_by_date(data, title, summary_file = None):
-        global ndays
+    global ndays
 
-        chart_data = ""
-        chart_min = 0
-        chart_max = 0
-        days = 0
-        total = 0
-        chart_hz = 440
-        chart_vt = 330
+    chart_data = ""
+    chart_min = 0
+    chart_max = 0
+    days = 0
+    total = 0
+    chart_hz = 440
+    chart_vt = 330
 
-        sdkeys = sorted(data.keys())
-        start_day = sdkeys[0]
-        end_day = sdkeys[-1]
+    sdkeys = sorted(data.keys())
+    start_day = sdkeys[0]
+    end_day = sdkeys[-1]
 
-        for i in sdkeys:
-                days += 1
-                total += data[i]
+    for i in sdkeys:
+        days += 1
+        total += data[i]
 
-                if chart_data == "":
-                        chart_data = "{0:d}".format(data[i])
-                else:
-                        chart_data += ",{0:d}".format(data[i])
-                if data[i] > chart_max:
-                        chart_max = data[i]
+        if chart_data == "":
+            chart_data = "{0:d}".format(data[i])
+        else:
+            chart_data += ",{0:d}".format(data[i])
+        if data[i] > chart_max:
+            chart_max = data[i]
 
-        msg = """\
+    msg = """\
 <p>
 Period: {0} - {1} ({2:d} days)<br />
 """.format(start_day, end_day, days)
 
-        ndays = days
-        sz = (chart_hz // ndays)
+    ndays = days
+    sz = (chart_hz // ndays)
 
-        url = "cht=lc&chs={0:d}x{1:d}&chg={2:d},{3:d}&chds={4:d},{5:d}&chxt=y,x&chxl=0:|0|{6:d}|1:|{7}|{8}&chd=t:{9}".format(ndays * sz, chart_vt, 7 * sz, 250 * (chart_vt // chart_max), chart_min, chart_max, chart_max, start_day, end_day, chart_data)
+    url = "cht=lc&chs={0:d}x{1:d}&chg={2:d},{3:d}&chds={4:d},{5:d}&chxt=y,x&chxl=0:|0|{6:d}|1:|{7}|{8}&chd=t:{9}".format(ndays * sz, chart_vt, 7 * sz, 250 * (chart_vt // chart_max), chart_min, chart_max, chart_max, start_day, end_day, chart_data)
 
-        fname = retrieve_chart("http://chart.apis.google.com/chart?{0}".format(url),
-            "{0}-date".format(title))
+    fname = retrieve_chart("http://chart.apis.google.com/chart?{0}".format(url),
+        "{0}-date".format(title))
 
-        msg += """\
+    msg += """\
 <!-- {0} -->
 <img src=\"{1}\" alt=\"{2}\" /><br />""".format(url, fname, "Active catalog IPs over {0:d} day window".format(ndays))
 
-        print(msg)
-        if summary_file:
-                print(msg, file=summary_file)
+    print(msg)
+    if summary_file:
+        print(msg, file=summary_file)
 
 merge_entries_by_date = {}
 
 for fn in sys.argv[1:]:
-        f = open(fn, "rb")
-        ebd = pickle.load(f)
-        f.close()
+    f = open(fn, "rb")
+    ebd = pickle.load(f)
+    f.close()
 
-        for k in ebd:
-                if k in merge_entries_by_date:
-                        for v in ebd[k]:
-                                if not v in merge_entries_by_date[k]:
-                                        merge_entries_by_date[k].append(v)
+    for k in ebd:
+        if k in merge_entries_by_date:
+            for v in ebd[k]:
+                if not v in merge_entries_by_date[k]:
+                    merge_entries_by_date[k].append(v)
 
-                else:
-                        merge_entries_by_date[k] = ebd[k]
+        else:
+            merge_entries_by_date[k] = ebd[k]
 
 dates = sorted(merge_entries_by_date.keys())
 data = {}
 
 for d in dates:
-        data[d] = len(merge_entries_by_date[d])       
+    data[d] = len(merge_entries_by_date[d])
 
 ip_counts = {}
 firstdate = dates[0]
@@ -108,41 +108,41 @@ firstn = 0
 firstdt = datetime.datetime(*(time.strptime(firstdate, "%Y-%m-%d")[0:6]))
 
 for ip in merge_entries_by_date[firstdate]:
-        ip_counts[ip] = 1
+    ip_counts[ip] = 1
 
 window = datetime.timedelta(30)
 data = {}
 
 for d in dates[1:]:
-        dt = datetime.datetime(*(time.strptime(d, "%Y-%m-%d")[0:6]))
-        ips = merge_entries_by_date[d]
+    dt = datetime.datetime(*(time.strptime(d, "%Y-%m-%d")[0:6]))
+    ips = merge_entries_by_date[d]
 
-        for ip in ips:
-                try:
-                        ip_counts[ip] += 1
-                except KeyError:
-                        ip_counts[ip] = 1
+    for ip in ips:
+        try:
+            ip_counts[ip] += 1
+        except KeyError:
+            ip_counts[ip] = 1
 
+    delta = dt - firstdt
+
+    while delta > window:
+        #   run through merge_entries_by_date[firstdate] and decrement
+        rips = merge_entries_by_date[firstdate]
+        for rip in rips:
+            ip_counts[rip] -= 1
+            if ip_counts[rip] == 0:
+                del ip_counts[rip]
+
+        #   advance firstn, set firstdate, firstdt to dates[firstn]
+        firstn += 1
+        firstdate = dates[firstn]
+        firstdt = datetime.datetime(*(time.strptime(firstdate, "%Y-%m-%d")[0:6]))
+
+        #   recalculate delta
         delta = dt - firstdt
 
-        while delta > window:
-                #   run through merge_entries_by_date[firstdate] and decrement
-                rips = merge_entries_by_date[firstdate]
-                for rip in rips:
-                        ip_counts[rip] -= 1
-                        if ip_counts[rip] == 0:
-                                del ip_counts[rip]
+    data[d] = len(ip_counts.keys())
 
-                #   advance firstn, set firstdate, firstdt to dates[firstn]
-                firstn += 1
-                firstdate = dates[firstn]
-                firstdt = datetime.datetime(*(time.strptime(firstdate, "%Y-%m-%d")[0:6]))
-
-                #   recalculate delta
-                delta = dt - firstdt
-        
-        data[d] = len(ip_counts.keys())
-        
 report_section_begin("Active IP addresses")
 print("<h3>Distinct IP addresses, by date</h3>")
 report_by_date(data, "distinct-cat-1d")

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -52,26 +52,26 @@ _modname = _module = _nvlist = _classes = _i = None
 
 # initialize p_classes and p_classes_child
 for _modname in p_types:
-        _module = __import__("{0}.{1}".format(__name__, _modname),
-            globals(), locals(), [_modname])
+    _module = __import__("{0}.{1}".format(__name__, _modname),
+        globals(), locals(), [_modname])
 
-        # Find all the classes actually defined in this module.
-        _nvlist = inspect.getmembers(_module, inspect.isclass)
-        _classes = [
-            _i[1]
-            for _i in _nvlist
-            if _i[1].__module__ == ("{0}.{1}".format(__name__, _modname))
-        ]
+    # Find all the classes actually defined in this module.
+    _nvlist = inspect.getmembers(_module, inspect.isclass)
+    _classes = [
+        _i[1]
+        for _i in _nvlist
+        if _i[1].__module__ == ("{0}.{1}".format(__name__, _modname))
+    ]
 
-        for _i in _classes:
-                if LinkedImagePlugin in inspect.getmro(_i):
-                        p_classes[_modname] = _i
-                elif LinkedImageChildPlugin in inspect.getmro(_i):
-                        p_classes_child[_modname] = _i
-                else:
-                        raise RuntimeError("""
+    for _i in _classes:
+        if LinkedImagePlugin in inspect.getmro(_i):
+            p_classes[_modname] = _i
+        elif LinkedImageChildPlugin in inspect.getmro(_i):
+            p_classes_child[_modname] = _i
+        else:
+            raise RuntimeError("""
 Invalid linked image plugin class '{0}' for plugin '{1}'""".format(
-                             _i.__name__, _modname))
+                 _i.__name__, _modname))
 
 # Clean up temporary variables
 del _modname, _module, _nvlist, _classes, _i

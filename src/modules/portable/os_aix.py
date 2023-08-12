@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -36,15 +36,12 @@ from .os_unix import \
     get_root, assert_mode, copyfile
 
 def chown(path, owner, group):
-        # The "nobody" user on AIX has uid -2, which is an invalid UID on NFS
-        # file systems mounted from non-AIX hosts.
-        # However, we don't want to fail an install because of this.
-        try:
-                return os.chown(path, owner, group)
-        except EnvironmentError as e:
-                if owner == -2 and e.errno == errno.EINVAL:
-                        return os.chown(path, -1, group)
-                raise
-
-
-
+    # The "nobody" user on AIX has uid -2, which is an invalid UID on NFS
+    # file systems mounted from non-AIX hosts.
+    # However, we don't want to fail an install because of this.
+    try:
+        return os.chown(path, owner, group)
+    except EnvironmentError as e:
+        if owner == -2 and e.errno == errno.EINVAL:
+            return os.chown(path, -1, group)
+        raise

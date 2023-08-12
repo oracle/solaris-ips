@@ -32,234 +32,234 @@ a new user."""
 
 from . import generic
 try:
-        from pkg.cfgfiles import *
-        have_cfgfiles = True
+    from pkg.cfgfiles import *
+    have_cfgfiles = True
 except ImportError:
-        have_cfgfiles = False
+    have_cfgfiles = False
 
 import pkg.client.api_errors as apx
 import pkg.actions
 
 class GroupAction(generic.Action):
-        """Class representing a group packaging object.
-        note that grouplist members are selected via the user action,
-        although they are stored in the /etc/group file.  Use of
-        group passwds is not supported."""
+    """Class representing a group packaging object.
+    note that grouplist members are selected via the user action,
+    although they are stored in the /etc/group file.  Use of
+    group passwds is not supported."""
 
-        __slots__ = []
+    __slots__ = []
 
-        name = "group"
-        key_attr = "groupname"
-        globally_identical = True
-        ordinality = generic._orderdict[name]
+    name = "group"
+    key_attr = "groupname"
+    globally_identical = True
+    ordinality = generic._orderdict[name]
 
-        def extract(self, attrlist):
-                """ return a dictionary containing attrs in attr list
-                from self.attrs; omit if no such attrs in self.attrs"""
-                return dict((a, self.attrs[a])
-                             for a in self.attrs
-                             if a in attrlist)
+    def extract(self, attrlist):
+        """ return a dictionary containing attrs in attr list
+        from self.attrs; omit if no such attrs in self.attrs"""
+        return dict((a, self.attrs[a])
+                     for a in self.attrs
+                     if a in attrlist)
 
-        def install(self, pkgplan, orig, retry=False):
-                """client-side method that adds the group
-                   use gid from disk if different"""
-                if not have_cfgfiles:
-                        # the group action is ignored if cfgfiles is not
-                        # available.
-                        return
+    def install(self, pkgplan, orig, retry=False):
+        """client-side method that adds the group
+           use gid from disk if different"""
+        if not have_cfgfiles:
+            # the group action is ignored if cfgfiles is not
+            # available.
+            return
 
-                template = self.extract(["groupname", "gid"])
+        template = self.extract(["groupname", "gid"])
 
-                root = pkgplan.image.get_root()
+        root = pkgplan.image.get_root()
+        try:
+            pw = PasswordFile(root, lock=True)
+        except EnvironmentError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            pw = None
+
+        gr = GroupFile(pkgplan.image)
+
+        cur_attrs = gr.getvalue(template)
+
+        # check for (wrong) pre-existing definition
+        # if so, rewrite entry using existing defs but new group entry
+        #        (XXX this doesn't chown any files on-disk)
+        # else, nothing to do
+        if cur_attrs:
+            if "gid" not in self.attrs:
+                self.attrs["gid"] = cur_attrs["gid"]
+            elif self.attrs["gid"] != cur_attrs["gid"]:
+                cur_gid = cur_attrs["gid"]
+                template = cur_attrs
+                template["gid"] = self.attrs["gid"]
+                # Update the user database with the new gid
+                # as well in case group is someone's primary
+                # group.
+                usernames = pkgplan.image.get_usernames_by_gid(
+                    cur_gid)
                 try:
-                        pw = PasswordFile(root, lock=True)
-                except EnvironmentError as e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        pw = None
+                    for username in usernames:
+                        user_entry = pw.getuser(
+                                username)
+                        user_entry["gid"] = self.attrs[
+                                "gid"]
+                        pw.setvalue(user_entry)
+                except Exception as e:
+                    if pw:
+                        pw.unlock()
+                        txt = _("Group cannot be installed. "
+                                "Updating related user entries "
+                                "failed.")
+                        raise apx.ActionExecutionError(self,
+                            error=e, details=txt,
+                            fmri=pkgplan.destination_fmri)
 
-                gr = GroupFile(pkgplan.image)
+            # Deal with other columns in the group row.
+            #
+            # pkg has no support for the legacy password field
+            # in the group table and thus requires it to be
+            # empty for any pkg delivered group.  So there is
+            # explicitly no support for updating
+            # template["password"] since we require it to be empty.
+            #
+            # If the admin has assigned any users to a group that is
+            # delivered as an action we preserve that list without
+            # attempting to validate it in any way.
+            if cur_attrs["user-list"]:
+                template["user-list"] = cur_attrs["user-list"]
 
-                cur_attrs = gr.getvalue(template)
+        gr.setvalue(template)
+        try:
+            gr.writefile()
+            if pw:
+                pw.writefile()
+        except EnvironmentError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            # If we're in the postinstall phase and the
+            # files *still* aren't there, bail gracefully.
+            if retry:
+                txt = _("Group cannot be installed "
+                    "without group database files "
+                    "present.")
+                raise apx.ActionExecutionError(self, error=e,
+                    details=txt, fmri=pkgplan.destination_fmri)
+            img = pkgplan.image
+            img._groups.add(self)
+            if "gid" in self.attrs:
+                img._groupsbyname[self.attrs["groupname"]] = \
+                    int(self.attrs["gid"])
+            raise pkg.actions.ActionRetry(self)
+        finally:
+            if pw:
+                pw.unlock()
 
-                # check for (wrong) pre-existing definition
-                # if so, rewrite entry using existing defs but new group entry
-                #        (XXX this doesn't chown any files on-disk)
-                # else, nothing to do
-                if cur_attrs:
-                        if "gid" not in self.attrs:
-                                self.attrs["gid"] = cur_attrs["gid"]
-                        elif self.attrs["gid"] != cur_attrs["gid"]:
-                                cur_gid = cur_attrs["gid"]
-                                template = cur_attrs
-                                template["gid"] = self.attrs["gid"]
-                                # Update the user database with the new gid
-                                # as well in case group is someone's primary
-                                # group.
-                                usernames = pkgplan.image.get_usernames_by_gid(
-                                    cur_gid)
-                                try:
-                                        for username in usernames:
-                                                user_entry = pw.getuser(
-                                                        username)
-                                                user_entry["gid"] = self.attrs[
-                                                        "gid"]
-                                                pw.setvalue(user_entry)
-                                except Exception as e:
-                                        if pw:
-                                                pw.unlock()
-                                                txt = _("Group cannot be installed. "
-                                                        "Updating related user entries "
-                                                        "failed.")
-                                                raise apx.ActionExecutionError(self,
-                                                    error=e, details=txt,
-                                                    fmri=pkgplan.destination_fmri)
+    def retry(self, pkgplan, orig):
+        groups = pkgplan.image._groups
+        if groups:
+            assert self in groups
+            self.install(pkgplan, orig, retry=True)
 
-                        # Deal with other columns in the group row.
-                        #
-                        # pkg has no support for the legacy password field
-                        # in the group table and thus requires it to be
-                        # empty for any pkg delivered group.  So there is
-                        # explicitly no support for updating
-                        # template["password"] since we require it to be empty.
-                        #
-                        # If the admin has assigned any users to a group that is
-                        # delivered as an action we preserve that list without
-                        # attempting to validate it in any way.
-                        if cur_attrs["user-list"]:
-                            template["user-list"] = cur_attrs["user-list"]
+    def verify(self, img, **args):
+        """Returns a tuple of lists of the form (errors, warnings,
+        info).  The error list will be empty if the action has been
+        correctly installed in the given image."""
 
-                gr.setvalue(template)
-                try:
-                        gr.writefile()
-                        if pw:
-                                pw.writefile()
-                except EnvironmentError as e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        # If we're in the postinstall phase and the
-                        # files *still* aren't there, bail gracefully.
-                        if retry:
-                                txt = _("Group cannot be installed "
-                                    "without group database files "
-                                    "present.")
-                                raise apx.ActionExecutionError(self, error=e,
-                                    details=txt, fmri=pkgplan.destination_fmri)
-                        img = pkgplan.image
-                        img._groups.add(self)
-                        if "gid" in self.attrs:
-                                img._groupsbyname[self.attrs["groupname"]] = \
-                                    int(self.attrs["gid"])
-                        raise pkg.actions.ActionRetry(self)
-                finally:
-                        if pw:
-                                pw.unlock()
+        errors = []
+        warnings = []
+        info = []
+        if not have_cfgfiles:
+            # The user action is ignored if cfgfiles is not
+            # available.
+            return errors, warnings, info
 
-        def retry(self, pkgplan, orig):
-                groups = pkgplan.image._groups
-                if groups:
-                        assert self in groups
-                        self.install(pkgplan, orig, retry=True)
+        gr = GroupFile(img)
 
-        def verify(self, img, **args):
-                """Returns a tuple of lists of the form (errors, warnings,
-                info).  The error list will be empty if the action has been
-                correctly installed in the given image."""
+        cur_attrs = gr.getvalue(self.attrs)
 
-                errors = []
-                warnings = []
-                info = []
-                if not have_cfgfiles:
-                        # The user action is ignored if cfgfiles is not
-                        # available.
-                        return errors, warnings, info
+        # Get the default values if they're non-empty
+        grdefval = dict((
+            (k, v)
+            for k, v in six.iteritems(gr.getdefaultvalues())
+            if v != ""
+        ))
 
-                gr = GroupFile(img)
+        # If "gid" is set dynamically, ignore what's on disk.
+        if "gid" not in self.attrs:
+            cur_attrs["gid"] = ""
 
-                cur_attrs = gr.getvalue(self.attrs)
+        should_be = grdefval.copy()
+        should_be.update(self.attrs)
 
-                # Get the default values if they're non-empty
-                grdefval = dict((
-                    (k, v)
-                    for k, v in six.iteritems(gr.getdefaultvalues())
-                    if v != ""
-                ))
+        # Ignore optional package metadata
+        skip_list = ['variant', 'facet']
 
-                # If "gid" is set dynamically, ignore what's on disk.
-                if "gid" not in self.attrs:
-                        cur_attrs["gid"] = ""
+        # Note where attributes are missing, but remove those that are
+        # in the skip list
+        for k in list(should_be):
+            if any (token in k for token in skip_list):
+                should_be.pop(k, None)
+            else:
+                cur_attrs.setdefault(k, "<missing>")
 
-                should_be = grdefval.copy()
-                should_be.update(self.attrs)
+        # Note where attributes should be empty
+        for k in cur_attrs:
+            if cur_attrs[k]:
+                should_be.setdefault(k, "<empty>")
+        # Ignore "user-list", as it is only modified by user actions
+        should_be.pop("user-list", None)
 
-                # Ignore optional package metadata
-                skip_list = ['variant', 'facet']
+        errors = [
+            _("{entry}: '{found}' should be '{expected}'").format(
+                entry=a, found=cur_attrs[a],
+                expected=should_be[a])
+            for a in should_be
+            if cur_attrs[a] != should_be[a]
+        ]
+        return errors, warnings, info
 
-                # Note where attributes are missing, but remove those that are
-                # in the skip list
-                for k in list(should_be):
-                        if any (token in k for token in skip_list):
-                                should_be.pop(k, None)
-                        else:
-                                cur_attrs.setdefault(k, "<missing>")
+    def remove(self, pkgplan):
+        """client-side method that removes this group"""
+        if not have_cfgfiles:
+            # The user action is ignored if cfgfiles is not
+            # available.
+            return
+        gr = GroupFile(pkgplan.image)
+        try:
+            gr.removevalue(self.attrs)
+        except KeyError as e:
+            # Already gone; don't care.
+            pass
+        else:
+            gr.writefile()
 
-                # Note where attributes should be empty
-                for k in cur_attrs:
-                        if cur_attrs[k]:
-                                should_be.setdefault(k, "<empty>")
-                # Ignore "user-list", as it is only modified by user actions
-                should_be.pop("user-list", None)
+    def generate_indices(self):
+        """Generates the indices needed by the search dictionary.  See
+        generic.py for a more detailed explanation."""
 
-                errors = [
-                    _("{entry}: '{found}' should be '{expected}'").format(
-                        entry=a, found=cur_attrs[a],
-                        expected=should_be[a])
-                    for a in should_be
-                    if cur_attrs[a] != should_be[a]
-                ]
-                return errors, warnings, info
+        return [("group", "name", self.attrs["groupname"], None)]
 
-        def remove(self, pkgplan):
-                """client-side method that removes this group"""
-                if not have_cfgfiles:
-                        # The user action is ignored if cfgfiles is not
-                        # available.
-                        return
-                gr = GroupFile(pkgplan.image)
-                try:
-                        gr.removevalue(self.attrs)
-                except KeyError as e:
-                        # Already gone; don't care.
-                        pass
-                else:
-                        gr.writefile()
+    def validate(self, fmri=None):
+        """Performs additional validation of action attributes that
+        for performance or other reasons cannot or should not be done
+        during Action object creation.  An ActionError exception (or
+        subclass of) will be raised if any attributes are not valid.
+        This is primarily intended for use during publication or during
+        error handling to provide additional diagonostics.
 
-        def generate_indices(self):
-                """Generates the indices needed by the search dictionary.  See
-                generic.py for a more detailed explanation."""
+        'fmri' is an optional package FMRI (object or string) indicating
+        what package contained this action.
+        """
 
-                return [("group", "name", self.attrs["groupname"], None)]
+        generic.Action._validate(self, fmri=fmri,
+            numeric_attrs=("gid",), single_attrs=("gid",))
 
-        def validate(self, fmri=None):
-                """Performs additional validation of action attributes that
-                for performance or other reasons cannot or should not be done
-                during Action object creation.  An ActionError exception (or
-                subclass of) will be raised if any attributes are not valid.
-                This is primarily intended for use during publication or during
-                error handling to provide additional diagonostics.
-
-                'fmri' is an optional package FMRI (object or string) indicating
-                what package contained this action.
-                """
-
-                generic.Action._validate(self, fmri=fmri,
-                    numeric_attrs=("gid",), single_attrs=("gid",))
-
-        def compare(self, other):
-                """Arrange for group actions to be installed in gid order.  This
-                will only hold true for actions installed at one time, but that's
-                generally what we need on initial install."""
-                # put unspecifed gids at the end
-                a = int(self.attrs.get("gid", 1024))
-                b = int(other.attrs.get("gid", 1024))
-                return (a > b) - (a < b)
+    def compare(self, other):
+        """Arrange for group actions to be installed in gid order.  This
+        will only hold true for actions installed at one time, but that's
+        generally what we need on initial install."""
+        # put unspecifed gids at the end
+        a = int(self.attrs.get("gid", 1024))
+        b = int(other.attrs.get("gid", 1024))
+        return (a > b) - (a < b)

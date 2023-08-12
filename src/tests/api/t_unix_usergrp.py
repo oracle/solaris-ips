@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import unittest
@@ -38,16 +38,16 @@ import pkg.portable as portable
 
 class TestUserGroup(pkg5unittest.Pkg5TestCase):
 
-        def setUp(self):
-                pkg5unittest.Pkg5TestCase.setUp(self)
-                os.makedirs(os.path.join(self.test_root, "etc"))
+    def setUp(self):
+        pkg5unittest.Pkg5TestCase.setUp(self)
+        os.makedirs(os.path.join(self.test_root, "etc"))
 
-        def testGroup1(self):
-                if not os.path.exists("/etc/group"):
-                        return
+    def testGroup1(self):
+        if not os.path.exists("/etc/group"):
+            return
 
-                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
-                grpfile.write( \
+        grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
+        grpfile.write( \
 """root::0:
 gk::0:
 other::1:root
@@ -57,41 +57,41 @@ adm::4:root,daemon
 uucp::5:root
 mail::6:root
 tty::7:root,adm""")
-                grpfile.close()
+        grpfile.close()
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            "ThisShouldNotExist", self.test_root, True)
 
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("gk", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("gk", self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_name_by_gid,
-                    12345, self.test_root, True)
+        self.assertRaises(KeyError, portable.get_name_by_gid,
+            12345, self.test_root, True)
 
-        def testGroup2(self):
-                """ Test with a missing group file """
-                if not os.path.exists("/etc/group"):
-                        return
+    def testGroup2(self):
+        """ Test with a missing group file """
+        if not os.path.exists("/etc/group"):
+            return
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            "ThisShouldNotExist", self.test_root, True)
 
-                # This should work on unix systems, since we'll "bootstrap"
-                # out to the OS's version.  And AFAIK all unix systems have
-                # a group with gid 0.
-                grpname = portable.get_name_by_gid(0, self.test_root, True)
-                self.assertTrue(0 == \
-                    portable.get_group_by_name(grpname, self.test_root, True))
+        # This should work on unix systems, since we'll "bootstrap"
+        # out to the OS's version.  And AFAIK all unix systems have
+        # a group with gid 0.
+        grpname = portable.get_name_by_gid(0, self.test_root, True)
+        self.assertTrue(0 == \
+            portable.get_group_by_name(grpname, self.test_root, True))
 
-        def testGroup3(self):
-                """ Test with corrupt/oddball group file """
-                if not os.path.exists("/etc/group"):
-                        return
+    def testGroup3(self):
+        """ Test with corrupt/oddball group file """
+        if not os.path.exists("/etc/group"):
+            return
 
-                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
-                grpfile.write( \
+        grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
+        grpfile.write( \
 """root::0:
 blorg
 bin::2:root,daemon
@@ -103,33 +103,33 @@ mail::6:root
 tty::7:root,adm
 gk::0:
 +""")
-                grpfile.close()
-                self.assertTrue("root" == \
-                    portable.get_name_by_gid(0, self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("gk", self.test_root, True))
-                self.assertTrue(7 == \
-                    portable.get_group_by_name("tty", self.test_root, True))
+        grpfile.close()
+        self.assertTrue("root" == \
+            portable.get_name_by_gid(0, self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("gk", self.test_root, True))
+        self.assertTrue(7 == \
+            portable.get_group_by_name("tty", self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            "ThisShouldNotExist", self.test_root, True)
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    "corrupt", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            "corrupt", self.test_root, True)
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    570, self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            570, self.test_root, True)
 
-        def testGroup4(self):
-                """ Test with a group name line in the group file that
-                starts with a "+". (See bug #4470 for more details). """
-                if not os.path.exists("/etc/group"):
-                        return
+    def testGroup4(self):
+        """ Test with a group name line in the group file that
+        starts with a "+". (See bug #4470 for more details). """
+        if not os.path.exists("/etc/group"):
+            return
 
-                grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
-                grpfile.write( \
+        grpfile = open(os.path.join(self.test_root, "etc", "group"), "w")
+        grpfile.write( \
 """root::0:
 gk::0:
 bin::2:root,daemon
@@ -139,26 +139,26 @@ uucp::5:root
 mail::6:root
 tty::7:root,adm
 +""")
-                grpfile.close()
-                self.assertTrue("root" == \
-                    portable.get_name_by_gid(0, self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_group_by_name("gk", self.test_root, True))
-                self.assertTrue(7 == \
-                    portable.get_group_by_name("tty", self.test_root, True))
+        grpfile.close()
+        self.assertTrue("root" == \
+            portable.get_name_by_gid(0, self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_group_by_name("gk", self.test_root, True))
+        self.assertTrue(7 == \
+            portable.get_group_by_name("tty", self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_group_by_name,
-                    "plusgrp", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_group_by_name,
+            "plusgrp", self.test_root, True)
 
 
-        def testUser1(self):
-                if not os.path.exists("/etc/passwd"):
-                        return
+    def testUser1(self):
+        if not os.path.exists("/etc/passwd"):
+            return
 
-                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
-                passwd.write( \
+        passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
+        passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
@@ -168,45 +168,45 @@ adm:x:4:4:Admin:/var/adm:
 lp:x:71:8:Line Printer Admin:/usr/spool/lp:
 uucp:x:5:5:uucp Admin:/usr/lib/uucp:
 moop:x:999:999:moop:/usr/moop:""")
-                passwd.close()
+        passwd.close()
 
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            "ThisShouldNotExist", self.test_root, True)
 
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("gk", self.test_root, True))
-                self.assertTrue(999 == \
-                    portable.get_user_by_name("moop", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_user_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_user_by_name("gk", self.test_root, True))
+        self.assertTrue(999 == \
+            portable.get_user_by_name("moop", self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_name_by_uid,
-                    12345, self.test_root, True)
-
-
-        def testUser2(self):
-                """ Test with a missing passwd file """
-                if not os.path.exists("/etc/passwd"):
-                        return
-
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
-
-                # This should work on unix systems, since we'll "bootstrap"
-                # out to the OS's version.
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("root", self.test_root, True))
-                self.assertTrue("root" == \
-                    portable.get_name_by_uid(0, self.test_root, True))
+        self.assertRaises(KeyError, portable.get_name_by_uid,
+            12345, self.test_root, True)
 
 
-        def testUser3(self):
-                """ Test with an oddball/corrupt passwd file """
-                if not os.path.exists("/etc/passwd"):
-                        return
+    def testUser2(self):
+        """ Test with a missing passwd file """
+        if not os.path.exists("/etc/passwd"):
+            return
 
-                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
-                passwd.write( \
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            "ThisShouldNotExist", self.test_root, True)
+
+        # This should work on unix systems, since we'll "bootstrap"
+        # out to the OS's version.
+        self.assertTrue(0 == \
+            portable.get_user_by_name("root", self.test_root, True))
+        self.assertTrue("root" == \
+            portable.get_name_by_uid(0, self.test_root, True))
+
+
+    def testUser3(self):
+        """ Test with an oddball/corrupt passwd file """
+        if not os.path.exists("/etc/passwd"):
+            return
+
+        passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
+        passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
@@ -220,31 +220,31 @@ adm:x:4:4:Admin:/var/adm:
 lp:x:71:8:Line Printer Admin:/usr/spool/lp:
 uucp:x:5:5:uucp Admin:/usr/lib/uucp:
 +""")
-                passwd.close()
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("gk", self.test_root, True))
-                self.assertTrue("uucp" == \
-                    portable.get_name_by_uid(5, self.test_root, True))
+        passwd.close()
+        self.assertTrue(0 == \
+            portable.get_user_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_user_by_name("gk", self.test_root, True))
+        self.assertTrue("uucp" == \
+            portable.get_name_by_uid(5, self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            "ThisShouldNotExist", self.test_root, True)
 
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    "corrupt", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            "corrupt", self.test_root, True)
 
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    999, self.test_root, True)
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            999, self.test_root, True)
 
-        def testUser4(self):
-                """ Test with a user name line in the passwd file that
-                starts with a "+". (See bug #4470 for more details). """
-                if not os.path.exists("/etc/passwd"):
-                        return
+    def testUser4(self):
+        """ Test with a user name line in the passwd file that
+        starts with a "+". (See bug #4470 for more details). """
+        if not os.path.exists("/etc/passwd"):
+            return
 
-                passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
-                passwd.write( \
+        passwd = open(os.path.join(self.test_root, "etc", "passwd"), "w")
+        passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
@@ -255,19 +255,19 @@ adm:x:4:4:Admin:/var/adm:
 lp:x:71:8:Line Printer Admin:/usr/spool/lp:
 uucp:x:5:5:uucp Admin:/usr/lib/uucp:
 +""")
-                passwd.close()
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("root", self.test_root, True))
-                self.assertTrue(0 == \
-                    portable.get_user_by_name("gk", self.test_root, True))
-                self.assertTrue("root" == \
-                    portable.get_name_by_uid(0, self.test_root, True))
-                self.assertTrue("uucp" == \
-                    portable.get_name_by_uid(5, self.test_root, True))
+        passwd.close()
+        self.assertTrue(0 == \
+            portable.get_user_by_name("root", self.test_root, True))
+        self.assertTrue(0 == \
+            portable.get_user_by_name("gk", self.test_root, True))
+        self.assertTrue("root" == \
+            portable.get_name_by_uid(0, self.test_root, True))
+        self.assertTrue("uucp" == \
+            portable.get_name_by_uid(5, self.test_root, True))
 
-                self.assertRaises(KeyError, portable.get_user_by_name,
-                    "plususer", self.test_root, True)
+        self.assertRaises(KeyError, portable.get_user_by_name,
+            "plususer", self.test_root, True)
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

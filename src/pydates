@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# Copyright (c) 2011, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 
 
 # NOTE: when modifying this file, especially for changes to
@@ -53,10 +53,10 @@ timestamps = {}
 # Remove the filenames from "manifest" so that we don't look for their changeset
 # timestamps in the next loop.
 for f in modadd:
-        if f in manifest:
-                timestamps[f] = \
-                    os.stat(os.path.join(repo.root, f)).st_mtime
-                manifest.remove(f)
+    if f in manifest:
+        timestamps[f] = \
+            os.stat(os.path.join(repo.root, f)).st_mtime
+        manifest.remove(f)
 
 # Now walk backwards through the changesets from the working directory parent
 # (making sure we don't look at changesets that aren't ancestors), and for each
@@ -67,26 +67,26 @@ walk_opts = logcmdutil.parseopts(ui, (), {b'rev': revswanted})
 revs, differ = logcmdutil.getrevs(repo, walk_opts)
 
 for rev in revs:
-        ctx = repo[rev]
-        for f in ctx.files():
-                if f in manifest:
-                        timestamps[f] = ctx.date()[0]
-                        manifest.remove(f)
+    ctx = repo[rev]
+    for f in ctx.files():
+        if f in manifest:
+            timestamps[f] = ctx.date()[0]
+            manifest.remove(f)
 
 for name, stamp in timestamps.items():
-        # This produces output that is consumed by setup.py, the types
-        # returned here must be expected by the setup.py otherwise
-        # the setup.py will default to the timestamp of the workspace.
-        print(stamp, name.decode())
+    # This produces output that is consumed by setup.py, the types
+    # returned here must be expected by the setup.py otherwise
+    # the setup.py will default to the timestamp of the workspace.
+    print(stamp, name.decode())
 
 # Get the timestamp of the workspace.  If it's unmodified, then use the
 # timestamp of the parent of the working directory, and the latest timestamp of
 # the modified and added files if not.  (We would do removed, but we don't know
 # when they were removed.)
 if any(modadd):
-        print(max((
-            os.stat(os.path.join(repo.root, f)).st_mtime
-            for f in modadd
-        )), ".")
+    print(max((
+        os.stat(os.path.join(repo.root, f)).st_mtime
+        for f in modadd
+    )), ".")
 else:
-        print(repo[b"."].date()[0], ".")
+    print(repo[b"."].date()[0], ".")

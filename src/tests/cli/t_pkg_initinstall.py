@@ -22,12 +22,12 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import errno
@@ -36,9 +36,9 @@ import platform
 import unittest
 
 class TestPkgInitInstall(pkg5unittest.SingleDepotTestCase):
-        persistent_setup = True
+    persistent_setup = True
 
-        core = """\
+    core = """\
         open core-os@1.0
         add set name=pkg.fmri value=pkg://solaris/system/core-os@1.0
         add set name=pkg.summary value="Core Solaris"
@@ -78,39 +78,39 @@ class TestPkgInitInstall(pkg5unittest.SingleDepotTestCase):
         add user username=webservd ftpuser=false gcos-field="WebServer Reserved UID" group=webservd home-dir=/ login-shell=/bin/sh password=*LK* uid=80
         close
 """
-        misc_files = { "etc/passwd":"", "etc/group":"", "etc/shadow":"", "etc/ftpd/ftpusers":"" }
+    misc_files = { "etc/passwd": "", "etc/group": "", "etc/shadow": "", "etc/ftpd/ftpusers": "" }
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
 
-        def file_in_image(self, path):
-                return open(os.path.join(self.get_img_path(), path))
+    def file_in_image(self, path):
+        return open(os.path.join(self.get_img_path(), path))
 
-        def file_is_sorted(self, path, column):
-                # make sure the ':' separated file is sorted in ascending order
-                # on the integer in the specified column
-                previous = None
-                for line in self.file_in_image(path):
-                        if previous is None:
-                                previous = int(line.split(":")[column])
-                        else:
-                                now = int(line.split(":")[column])
-                                self.assertTrue(now >= previous,
-                                    "{0} is not sorted by column {1}".format(
-                                    path, column))
+    def file_is_sorted(self, path, column):
+        # make sure the ':' separated file is sorted in ascending order
+        # on the integer in the specified column
+        previous = None
+        for line in self.file_in_image(path):
+            if previous is None:
+                previous = int(line.split(":")[column])
+            else:
+                now = int(line.split(":")[column])
+                self.assertTrue(now >= previous,
+                    "{0} is not sorted by column {1}".format(
+                    path, column))
 
-        def test_init_install(self):
-                """test initial install of stripped down core OS"""
+    def test_init_install(self):
+        """test initial install of stripped down core OS"""
 
-                plist = self.pkgsend_bulk(self.rurl, self.core)
-                self.image_create(self.rurl)
+        plist = self.pkgsend_bulk(self.rurl, self.core)
+        self.image_create(self.rurl)
 
-                self.pkg("install core-os")
-                self.pkg("verify")
+        self.pkg("install core-os")
+        self.pkg("verify")
 
-                # verify that /etc/passwd and /etc/group are in
-                # ascending [UG]ID order
+        # verify that /etc/passwd and /etc/group are in
+        # ascending [UG]ID order
 
-                self.file_is_sorted("etc/passwd", 2)
-                self.file_is_sorted("etc/group", 2)
+        self.file_is_sorted("etc/passwd", 2)
+        self.file_is_sorted("etc/group", 2)

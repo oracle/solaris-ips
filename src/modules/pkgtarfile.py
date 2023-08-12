@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 import os
@@ -37,75 +37,75 @@ tarfile.pwd = None
 tarfile.grp = None
 
 class PkgTarFile(tarfile.TarFile):
-        """PkgTarFile is a subclass of TarFile.  It implements
-        a small number of additional instance methods to improve
-        the functionality of the TarFile class for the packaging classes.
+    """PkgTarFile is a subclass of TarFile.  It implements
+    a small number of additional instance methods to improve
+    the functionality of the TarFile class for the packaging classes.
 
-        XXX - Push these changes upstream to Python maintainers?
+    XXX - Push these changes upstream to Python maintainers?
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("errorlevel", 2)
+        tarfile.TarFile.__init__(self, *args, **kwargs)
+
+    def extract_to(self, member, path="", filename=""):
+        """Extract a member from the TarFile archive.  This
+        method allows you to specify a new filename and path, using
+        the filename and path arguments, where the file will be
+        extracted.  This method is similar to extract().
+        Extract() only allows the caller to prepend a directory path
+        to the filename specified in the TarInfo object,
+        whereas this method allows the caller to additionally
+        specify a file name.
         """
 
-        def __init__(self, *args, **kwargs):
-                kwargs.setdefault("errorlevel", 2)
-                tarfile.TarFile.__init__(self, *args, **kwargs)
+        self._check("r")
 
-        def extract_to(self, member, path="", filename=""):
-                """Extract a member from the TarFile archive.  This
-                method allows you to specify a new filename and path, using
-                the filename and path arguments, where the file will be
-                extracted.  This method is similar to extract().
-                Extract() only allows the caller to prepend a directory path
-                to the filename specified in the TarInfo object,
-                whereas this method allows the caller to additionally
-                specify a file name.
-                """
+        if isinstance(member, tarfile.TarInfo):
+            tarinfo = member
+        else:
+            tarinfo = self.getmember(member)
 
-                self._check("r")
+        if tarinfo.islnk():
+            tarinfo._link_target = \
+                os.path.join(path, tarinfo.linkname)
 
-                if isinstance(member, tarfile.TarInfo):
-                        tarinfo = member
+        if not filename:
+            filename = tarinfo.name
+
+
+        upperdirs = os.path.dirname(os.path.join(path, filename))
+
+        if upperdirs and not os.path.exists(upperdirs):
+            # The tarfile we receive contains only files, and none
+            # of the containing directories.  The tarfile code will
+            # create the directories as necessary, but with mode
+            # 777, which is insuffficiently secure.  Thus we create
+            # these directories in advance with tighter permissions;
+            # they'll be fixed up later, when the action execute
+            # methods run.  If proper directory actions
+            # don't exist for these directories, the permissions
+            # will be wrong.
+            try:
+                os.makedirs(upperdirs, stat.S_IRWXU)
+            except EnvironmentError:
+                pass
+        try:
+            self._extract_member(tarinfo, os.path.join(
+                path, filename))
+        except EnvironmentError as e:
+            if self.errorlevel > 0:
+                raise
+            else:
+                if e.filename is None:
+                    self._dbg(1, "tarfile {0}".format(
+                        e.strerror))
                 else:
-                        tarinfo = self.getmember(member)
-
-                if tarinfo.islnk():
-                        tarinfo._link_target = \
-                            os.path.join(path, tarinfo.linkname)
-
-                if not filename:
-                        filename = tarinfo.name
-
-
-                upperdirs = os.path.dirname(os.path.join(path, filename))
-
-                if upperdirs and not os.path.exists(upperdirs):
-                        # The tarfile we receive contains only files, and none
-                        # of the containing directories.  The tarfile code will
-                        # create the directories as necessary, but with mode
-                        # 777, which is insuffficiently secure.  Thus we create
-                        # these directories in advance with tighter permissions;
-                        # they'll be fixed up later, when the action execute
-                        # methods run.  If proper directory actions
-                        # don't exist for these directories, the permissions
-                        # will be wrong.
-                        try:
-                                os.makedirs(upperdirs, stat.S_IRWXU)
-                        except EnvironmentError:
-                                pass
-                try:
-                        self._extract_member(tarinfo, os.path.join(
-                            path, filename))
-                except EnvironmentError as e:
-                        if self.errorlevel > 0:
-                                raise
-                        else:
-                                if e.filename is None:
-                                        self._dbg(1, "tarfile {0}".format(
-                                            e.strerror))
-                                else:
-                                        self._dbg(1,
-                                            "tarfile: {0} {1!r}".format(
-                                            e.strerror, e.filename))
-                except tarfile.ExtractError as e:
-                        if self.errorlevel > 1:
-                                raise
-                        else:
-                                self._dbg(1, "tarfile: {0}".format(e))
+                    self._dbg(1,
+                        "tarfile: {0} {1!r}".format(
+                        e.strerror, e.filename))
+        except tarfile.ExtractError as e:
+            if self.errorlevel > 1:
+                raise
+            else:
+                self._dbg(1, "tarfile: {0}".format(e))

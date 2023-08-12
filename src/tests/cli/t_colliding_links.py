@@ -20,11 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -32,24 +32,24 @@ import unittest
 
 
 class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
+    # Only start/stop the depot once (instead of for every test)
+    persistent_setup = True
 
-        pkg_A = """
+    pkg_A = """
         open pkg_A@1.0,5.11-0
         add file tmp/link_target_0 mode=0555 owner=root group=bin path=link_target_0
         add file tmp/link_target_1 mode=0555 owner=root group=bin path=link_target_1
         add file tmp/link_target_2 mode=0555 owner=root group=bin path=link_target_2
         close"""
 
-        pkg_B = """
+    pkg_B = """
         open pkg_B@1.0,5.11-0
         add link path=0 target=./link_target_0
         add link path=1 target=./link_target_1
         add link path=2 target=./link_target_2
         close"""
 
-        pkg_C = """
+    pkg_C = """
         open pkg_C@1.0,5.11-0
         add link path=0 target=./link_target_0
         add link path=1 target=./link_target_1
@@ -57,44 +57,44 @@ class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         close"""
 
 
-        misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
+    misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, (self.pkg_A, self.pkg_B,
-                    self.pkg_C))
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
+        self.pkgsend_bulk(self.rurl, (self.pkg_A, self.pkg_B,
+            self.pkg_C))
 
-        def test_1(self):
-                """Verify symlinks are correctly reference counted
-                during installation & removal of packages"""
-                # create an image 
-                self.image_create(self.rurl)
-                # install packages and verify
+    def test_1(self):
+        """Verify symlinks are correctly reference counted
+        during installation & removal of packages"""
+        # create an image
+        self.image_create(self.rurl)
+        # install packages and verify
 
-                self.pkg("install pkg_A pkg_B")
-                self.pkg("verify")
+        self.pkg("install pkg_A pkg_B")
+        self.pkg("verify")
 
-                # add a pkg w/ duplicate links
-                self.pkg("install pkg_C")
-                self.pkg("verify")
+        # add a pkg w/ duplicate links
+        self.pkg("install pkg_C")
+        self.pkg("verify")
 
-                # cause trouble.
-                self.pkg("uninstall pkg_C")
-                self.pkg("verify")
+        # cause trouble.
+        self.pkg("uninstall pkg_C")
+        self.pkg("verify")
 
-                # readd a pkg w/ duplicate links
-                self.pkg("install pkg_C")
-                self.pkg("verify")
+        # readd a pkg w/ duplicate links
+        self.pkg("install pkg_C")
+        self.pkg("verify")
 
-                self.pkg("uninstall pkg_B pkg_C")
-                self.pkg("verify")
+        self.pkg("uninstall pkg_B pkg_C")
+        self.pkg("verify")
 
 class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
+    # Only start/stop the depot once (instead of for every test)
+    persistent_setup = True
 
-        pkg_A = """
+    pkg_A = """
         open pkg_A@1.0,5.11-0
         add file tmp/link_target_0 mode=0555 owner=root group=bin path=link_target_0
         add file tmp/link_target_1 mode=0555 owner=root group=bin path=link_target_1
@@ -106,7 +106,7 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
         add file tmp/link_target_5 mode=0555 owner=root group=bin path=link_target_2
         close"""
 
-        pkg_B = """
+    pkg_B = """
         open pkg_B@1.0,5.11-0
         add hardlink path=0 target=./link_target_0
         add hardlink path=1 target=./link_target_1
@@ -114,7 +114,7 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
         add depend type=require fmri=pkg_A@1.0,5.11-0
         close"""
 
-        pkg_C = """
+    pkg_C = """
         open pkg_C@1.0,5.11-0
         add hardlink path=0 target=./link_target_0
         add hardlink path=1 target=./link_target_1
@@ -123,57 +123,57 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
         close"""
 
 
-        misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
+    misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
 
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, (self.pkg_A, self.pkg_B,
-                    self.pkg_C))
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
+        self.pkgsend_bulk(self.rurl, (self.pkg_A, self.pkg_B,
+            self.pkg_C))
 
-        def check_link_count(self, n):
-                """ Make sure link count is what we think it should be"""
-                for f in ("link_target_{0:d}".format(i) for i in range(3)):
-                        self.assertEqual(os.stat(os.path.join(self.get_img_path(), 
-                            f)).st_nlink, n)
- 
-        def test_1(self):
-                """Verify hardlinks are correctly reference counted
-                during installation & removal of packages"""
-                # create an image 
-                self.image_create(self.rurl)
-                # install packages and verify
+    def check_link_count(self, n):
+        """ Make sure link count is what we think it should be"""
+        for f in ("link_target_{0:d}".format(i) for i in range(3)):
+            self.assertEqual(os.stat(os.path.join(self.get_img_path(),
+                f)).st_nlink, n)
 
-                self.pkg("install pkg_A@1.0")
-                self.check_link_count(1)
+    def test_1(self):
+        """Verify hardlinks are correctly reference counted
+        during installation & removal of packages"""
+        # create an image
+        self.image_create(self.rurl)
+        # install packages and verify
 
-                self.pkg("install pkg_B")
-                self.pkg("verify")
-                self.check_link_count(2)
+        self.pkg("install pkg_A@1.0")
+        self.check_link_count(1)
 
-                # add a pkg w/ duplicate links
-                self.pkg("install pkg_C")
-                self.pkg("verify")
-                self.check_link_count(2)
+        self.pkg("install pkg_B")
+        self.pkg("verify")
+        self.check_link_count(2)
 
-                # cause trouble.
-                self.pkg("uninstall pkg_C")
-                self.pkg("verify")
-                self.check_link_count(2)
+        # add a pkg w/ duplicate links
+        self.pkg("install pkg_C")
+        self.pkg("verify")
+        self.check_link_count(2)
 
-                # readd a pkg w/ duplicate links
-                self.pkg("install pkg_C")
-                self.pkg("verify")
-                self.check_link_count(2)
+        # cause trouble.
+        self.pkg("uninstall pkg_C")
+        self.pkg("verify")
+        self.check_link_count(2)
 
-                # update the files the links all point to
-                self.pkg("install pkg_A@2.0")
-                self.pkg("verify")
+        # readd a pkg w/ duplicate links
+        self.pkg("install pkg_C")
+        self.pkg("verify")
+        self.check_link_count(2)
 
-                self.pkg("uninstall pkg_B pkg_C")
-                self.pkg("verify")
-                self.check_link_count(1)
-                
+        # update the files the links all point to
+        self.pkg("install pkg_A@2.0")
+        self.pkg("verify")
+
+        self.pkg("uninstall pkg_B pkg_C")
+        self.pkg("verify")
+        self.check_link_count(1)
+
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

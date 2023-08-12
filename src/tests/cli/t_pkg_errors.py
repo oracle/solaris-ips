@@ -22,60 +22,60 @@
 #
 
 #
-# Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 class TestPkgSolverErrors(pkg5unittest.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
+    # Only start/stop the depot once (instead of for every test)
+    persistent_setup = True
 
-        pkgs = (
-            """
+    pkgs = (
+        """
             open entire@1.0
             add depend type=incorporate fmri=perl-516@1.0
             close """,
 
-            """
+        """
             open entire@1.1
             add depend type=incorporate fmri=perl-516@1.1
             close """,
 
-            """
+        """
             open osnet@1.0
             add depend type=require fmri=perl-516
             add depend type=incorporate fmri=baz@1.0
             close """,
 
-            """
+        """
             open perl-516@1.0
             add dir mode=0755 owner=root group=bin path=/perl516_1.1
             add depend type=require fmri=entire
             close """,
 
-            """
+        """
             open perl-516@1.1
             add set name=pkg.obsolete value=true
             add set name=pkg.summary value="A test package"
             close """
-            )
+        )
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.pkgsend_bulk(self.rurl, self.pkgs)
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.pkgsend_bulk(self.rurl, self.pkgs)
 
-        def test_incorporation_mixes(self):
-            self.image_create(self.rurl, prefix="")
+    def test_incorporation_mixes(self):
+        self.image_create(self.rurl, prefix="")
 
-            # install entire, osnet and perl
+        # install entire, osnet and perl
 
-            self.pkg("install perl-516 entire@1.0 osnet")
-            self.pkg("install entire@latest", exit=1)
-            self.assertFalse("No solution" in self.errout)
-            self.assertTrue("Package 'osnet' must be uninstalled"
-                " or upgraded if the requested operation is to be performed."
-                in self.errout)
+        self.pkg("install perl-516 entire@1.0 osnet")
+        self.pkg("install entire@latest", exit=1)
+        self.assertFalse("No solution" in self.errout)
+        self.assertTrue("Package 'osnet' must be uninstalled"
+            " or upgraded if the requested operation is to be performed."
+            in self.errout)

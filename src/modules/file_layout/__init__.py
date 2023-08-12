@@ -21,10 +21,8 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 __all__ = [
 ]
-    

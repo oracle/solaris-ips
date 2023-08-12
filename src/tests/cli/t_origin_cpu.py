@@ -19,11 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 
 import os
 import pkg5unittest
@@ -34,11 +34,11 @@ import pkg.portable as portable
 
 
 class TestPkgCpuDependencies(pkg5unittest.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
-        # leverage smf test infrastructure here
-        smf_cmds = {
-            "cpu": """#!/usr/bin/python3
+    # Only start/stop the depot once (instead of for every test)
+    persistent_setup = True
+    # leverage smf test infrastructure here
+    smf_cmds = {
+        "cpu": """#!/usr/bin/python3
 import os
 import resource
 import sys
@@ -75,25 +75,25 @@ if __name__ == "__main__":
         sys.exit(main())
 """}
 
-        def setUp(self):
+    def setUp(self):
 
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+        pkg5unittest.SingleDepotTestCase.setUp(self)
 
-                self.pkg_list = []
+        self.pkg_list = []
 
-                for t in (
-                                ("1.0", "cpu", "argo"),
-                                ("1.1", "cpu", "babinda"),
-                                ("1.2", "cpu", "coolabah"),
-                                ("1.3", "cpu", "drongo"),
-                                ("2.0", "platform", "dropbear"),
-                                ("2.1", "platform", "hoopsnake"),
-                                ("2.2", "platform", "oodnadatta"),
-                                ("3.0", "iset", "absinthe"),
-                                ("3.1", "iset", "bolli"),
-                                ("3.4", "iset", "limoncello")
-                ):
-                    self.pkg_list += ["""
+        for t in (
+                        ("1.0", "cpu", "argo"),
+                        ("1.1", "cpu", "babinda"),
+                        ("1.2", "cpu", "coolabah"),
+                        ("1.3", "cpu", "drongo"),
+                        ("2.0", "platform", "dropbear"),
+                        ("2.1", "platform", "hoopsnake"),
+                        ("2.2", "platform", "oodnadatta"),
+                        ("3.0", "iset", "absinthe"),
+                        ("3.1", "iset", "bolli"),
+                        ("3.4", "iset", "limoncello")
+        ):
+            self.pkg_list += ["""
                     open A@{0},5.11-0
                     add depend type=origin root-image=true fmri=pkg:/feature/cpu check.version-type={1} check.include={2}
                     close
@@ -101,51 +101,51 @@ if __name__ == "__main__":
                     add depend type=origin root-image=true fmri=pkg:/feature/cpu check.version-type={4} check.exclude={5}
                     close """.format(*(t + t))]
 
-                self.pkg_list += ["""
+        self.pkg_list += ["""
                     open A@1.7,5.11-0
                     add depend type=origin root-image=true fmri=pkg:/feature/cpu
                     close """]
 
-                self.pkg_list += ["""
+        self.pkg_list += ["""
                     open A@1.8,5.12-0
                     add depend type=origin root-image=true fmri=pkg:/feature/cpu dump_core=1
                     close"""]
 
-                self.pkg_list += ["""
+        self.pkg_list += ["""
                     open C@1.0,5.11-0
                     add depend type=origin root-image=true fmri=pkg:/feature/cpu
                     close"""]
 
-        def test_cpu_dependency(self):
-                """test origin cpu dependency
-                cpu test simulator uses alphabetic comparison"""
+    def test_cpu_dependency(self):
+        """test origin cpu dependency
+        cpu test simulator uses alphabetic comparison"""
 
-                if portable.osname != "sunos":
-                        raise pkg5unittest.TestSkippedException(
-                            "cpu check unsupported on this platform.")
+        if portable.osname != "sunos":
+            raise pkg5unittest.TestSkippedException(
+                "cpu check unsupported on this platform.")
 
-                rurl = self.dc.get_repo_url()
-                plist = self.pkgsend_bulk(rurl, self.pkg_list)
-                self.image_create(rurl)
-                os.environ["PKG_INSTALLED_VERSION"] = "hoopsnake"
-                # trim some of the versions out; note that pkgs w/ cpu
-                # errors/problems are silently ignored.
-                self.pkg("install -v A@1.0 B@1.0")
-                self.pkg("list -v")
-                os.environ["PKG_INSTALLED_VERSION"] = "dropbear"
-                self.pkg("install A@1.4", 1)
-                # exercise general error codes
-                self.pkg("install A@1.7", 1)
-                # verify that upreving the cpu lets us install more
-                self.pkg("list")
-                os.environ["PKG_INSTALLED_VERSION"] = "coolabah"
-                self.pkg("update *@latest")
-                self.pkg("list")
-                self.pkg("verify A@1.5", 1)
-                del os.environ["PKG_INSTALLED_VERSION"]
-                self.pkg("list")
-                # this is a trick, there is no v1.6
-                self.pkg("verify A@1.6", 1)
-                # check that we ignore dependencies w/ missing enumerators
-                self.pkg("install C@1.0")
-                self.pkg("list")
+        rurl = self.dc.get_repo_url()
+        plist = self.pkgsend_bulk(rurl, self.pkg_list)
+        self.image_create(rurl)
+        os.environ["PKG_INSTALLED_VERSION"] = "hoopsnake"
+        # trim some of the versions out; note that pkgs w/ cpu
+        # errors/problems are silently ignored.
+        self.pkg("install -v A@1.0 B@1.0")
+        self.pkg("list -v")
+        os.environ["PKG_INSTALLED_VERSION"] = "dropbear"
+        self.pkg("install A@1.4", 1)
+        # exercise general error codes
+        self.pkg("install A@1.7", 1)
+        # verify that upreving the cpu lets us install more
+        self.pkg("list")
+        os.environ["PKG_INSTALLED_VERSION"] = "coolabah"
+        self.pkg("update *@latest")
+        self.pkg("list")
+        self.pkg("verify A@1.5", 1)
+        del os.environ["PKG_INSTALLED_VERSION"]
+        self.pkg("list")
+        # this is a trick, there is no v1.6
+        self.pkg("verify A@1.6", 1)
+        # check that we ignore dependencies w/ missing enumerators
+        self.pkg("install C@1.0")
+        self.pkg("list")

@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import pkg.client.api_errors as api_errors
@@ -34,7 +34,7 @@ import pkg.client.api_errors as api_errors
 
 class TestPkgApiHydrate(pkg5unittest.SingleDepotTestCase):
 
-        dev10 = """
+    dev10 = """
             open dev@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=dev
             add dir mode=0755 owner=root group=bin path=dev/cfg
@@ -45,47 +45,47 @@ class TestPkgApiHydrate(pkg5unittest.SingleDepotTestCase):
             close
             """
 
-        misc_files = ["dev/cfg/bar", "dev/cfg/bar1", "dev/cfg/bar2",
-            "dev/cfg/bar2.hlink"]
+    misc_files = ["dev/cfg/bar", "dev/cfg/bar1", "dev/cfg/bar2",
+        "dev/cfg/bar2.hlink"]
 
-        def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, self.dev10)
+    def setUp(self):
+        pkg5unittest.SingleDepotTestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
+        self.pkgsend_bulk(self.rurl, self.dev10)
 
-        def test_01_basic(self):
-                api_inst = self.image_create(self.rurl)
-                self._api_install(api_inst, ["dev"])
+    def test_01_basic(self):
+        api_inst = self.image_create(self.rurl)
+        self._api_install(api_inst, ["dev"])
 
-                self._api_dehydrate(api_inst)
+        self._api_dehydrate(api_inst)
 
-                # Verify that files are deleted or remained as expected.
-                self.file_exists("dev/cfg/bar")
-                self.file_doesnt_exist("dev/cfg/bar1")
-                self.file_exists("dev/cfg/bar2")
-                self.file_doesnt_exist("dev/cfg/bar2.hlink")
+        # Verify that files are deleted or remained as expected.
+        self.file_exists("dev/cfg/bar")
+        self.file_doesnt_exist("dev/cfg/bar1")
+        self.file_exists("dev/cfg/bar2")
+        self.file_doesnt_exist("dev/cfg/bar2.hlink")
 
-                self._api_rehydrate(api_inst)
-                self.pkg("verify")
+        self._api_rehydrate(api_inst)
+        self.pkg("verify")
 
-        def test_bad_publishers(self):
-                api_inst = self.image_create(self.rurl)
-                self._api_install(api_inst, ["dev"])
+    def test_bad_publishers(self):
+        api_inst = self.image_create(self.rurl)
+        self._api_install(api_inst, ["dev"])
 
-                # Test that dehydrate will raise a PlanCreationException when
-                # encountering bad publishers.
-                self.assertRaises(api_errors.PlanCreationException,
-                    lambda *args, **kwargs: list(
-                        api_inst.gen_plan_dehydrate(*args, **kwargs)),
-                    ["-p nosuch", "-p unknown", "-p test"])
+        # Test that dehydrate will raise a PlanCreationException when
+        # encountering bad publishers.
+        self.assertRaises(api_errors.PlanCreationException,
+            lambda *args, **kwargs: list(
+                api_inst.gen_plan_dehydrate(*args, **kwargs)),
+            ["-p nosuch", "-p unknown", "-p test"])
 
-                # Test that rehydrate will raise a PlanCreationException when
-                # encountering bad publishers.
-                self.assertRaises(api_errors.PlanCreationException,
-                    lambda *args, **kwargs: list(
-                        api_inst.gen_plan_rehydrate(*args, **kwargs)),
-                    ["-p nosuch", "-p unknown", "-p test"])
+        # Test that rehydrate will raise a PlanCreationException when
+        # encountering bad publishers.
+        self.assertRaises(api_errors.PlanCreationException,
+            lambda *args, **kwargs: list(
+                api_inst.gen_plan_rehydrate(*args, **kwargs)),
+            ["-p nosuch", "-p unknown", "-p test"])
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

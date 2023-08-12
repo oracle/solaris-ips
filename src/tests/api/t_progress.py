@@ -20,11 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -43,373 +43,373 @@ import pkg.client.printengine as printengine
 
 
 class TestTrackerItem(pkg5unittest.Pkg5TestCase):
-        def test_reset(self):
-                """Test reset of a TrackerItem."""
-                pi = progress.TrackerItem("testitem")
-                pi.items = 10
-                pi.reset()
-                self.assertTrue(pi.items == 0)
+    def test_reset(self):
+        """Test reset of a TrackerItem."""
+        pi = progress.TrackerItem("testitem")
+        pi.items = 10
+        pi.reset()
+        self.assertTrue(pi.items == 0)
 
-        def test_str(self):
-                """Test str() of a TrackerItem."""
-                pi = progress.TrackerItem("testitem")
-                pi.items = 10
-                str(pi)
+    def test_str(self):
+        """Test str() of a TrackerItem."""
+        pi = progress.TrackerItem("testitem")
+        pi.items = 10
+        str(pi)
 
-        def test_elapsed(self):
-                """Test TrackerItem elapsed() functionality."""
-                pi = progress.TrackerItem("testitem")
-                # special case before items is set
-                self.assertTrue(pi.elapsed() == 0.0)
-                pi.items = 100
-                time.sleep(0.20)
-                # should work before done()
-                self.assertTrue(pi.elapsed() >= 0.10)
-                pi.done()
-                # should work after done()
-                self.assertTrue(pi.elapsed() >= 0.10)
+    def test_elapsed(self):
+        """Test TrackerItem elapsed() functionality."""
+        pi = progress.TrackerItem("testitem")
+        # special case before items is set
+        self.assertTrue(pi.elapsed() == 0.0)
+        pi.items = 100
+        time.sleep(0.20)
+        # should work before done()
+        self.assertTrue(pi.elapsed() >= 0.10)
+        pi.done()
+        # should work after done()
+        self.assertTrue(pi.elapsed() >= 0.10)
 
 
 class TestGoalTrackerItem(pkg5unittest.Pkg5TestCase):
-        def test_item_before_goal(self):
-                """Items must not be able to be set before goal is set."""
-                def doit():
-                        pi.items = 3
-                pi = progress.GoalTrackerItem("testitem")
-                # check can't set items before goal is set
-                self.assertRaises(RuntimeError, doit)
-                pi.goalitems = 100
-                pi.items = 10
-                pi.reset()
-                self.assertRaises(RuntimeError, doit)
+    def test_item_before_goal(self):
+        """Items must not be able to be set before goal is set."""
+        def doit():
+            pi.items = 3
+        pi = progress.GoalTrackerItem("testitem")
+        # check can't set items before goal is set
+        self.assertRaises(RuntimeError, doit)
+        pi.goalitems = 100
+        pi.items = 10
+        pi.reset()
+        self.assertRaises(RuntimeError, doit)
 
-        def test_elapsed(self):
-                """Test GoalTrackerItem elapsed() functionality."""
-                pi = progress.GoalTrackerItem("testitem")
-                # special case before goal is set
-                self.assertTrue(pi.elapsed() == 0.0)
-                pi.goalitems = 100
-                self.assertTrue(pi.elapsed() == 0.0)
-                pi.items = 100
-                time.sleep(0.20)
-                # should work before done()
-                self.assertTrue(pi.elapsed() >= 0.10)
-                pi.done()
-                # should work after done()
-                self.assertTrue(pi.elapsed() >= 0.10)
+    def test_elapsed(self):
+        """Test GoalTrackerItem elapsed() functionality."""
+        pi = progress.GoalTrackerItem("testitem")
+        # special case before goal is set
+        self.assertTrue(pi.elapsed() == 0.0)
+        pi.goalitems = 100
+        self.assertTrue(pi.elapsed() == 0.0)
+        pi.items = 100
+        time.sleep(0.20)
+        # should work before done()
+        self.assertTrue(pi.elapsed() >= 0.10)
+        pi.done()
+        # should work after done()
+        self.assertTrue(pi.elapsed() >= 0.10)
 
-        def test_pair(self):
-                """Test that pair() gives proper results."""
-                pi = progress.GoalTrackerItem("testitem")
-                # special case before goal is set
-                self.assertEqual(pi.pair(), "0/0")
-                pi.goalitems = 100
-                self.assertEqual(pi.pair(), "  0/100")
-                pi.items = 100
-                self.assertEqual(pi.pair(), "100/100")
-                pi.done()
-                # should work after done()
-                self.assertEqual(pi.pair(), "100/100")
+    def test_pair(self):
+        """Test that pair() gives proper results."""
+        pi = progress.GoalTrackerItem("testitem")
+        # special case before goal is set
+        self.assertEqual(pi.pair(), "0/0")
+        pi.goalitems = 100
+        self.assertEqual(pi.pair(), "  0/100")
+        pi.items = 100
+        self.assertEqual(pi.pair(), "100/100")
+        pi.done()
+        # should work after done()
+        self.assertEqual(pi.pair(), "100/100")
 
-        def test_pairplus1(self):
-                """Test that pairplus1() gives proper results."""
-                pi = progress.GoalTrackerItem("testitem")
-                # special case before goal is set
-                self.assertEqual(pi.pairplus1(), "1/1")
-                pi.goalitems = 100
-                self.assertEqual(pi.pairplus1(), "  1/100")
-                pi.items = 100
-                self.assertEqual(pi.pairplus1(), "100/100")
-                pi.done()
-                # should work after done()
-                self.assertEqual(pi.pairplus1(), "100/100")
+    def test_pairplus1(self):
+        """Test that pairplus1() gives proper results."""
+        pi = progress.GoalTrackerItem("testitem")
+        # special case before goal is set
+        self.assertEqual(pi.pairplus1(), "1/1")
+        pi.goalitems = 100
+        self.assertEqual(pi.pairplus1(), "  1/100")
+        pi.items = 100
+        self.assertEqual(pi.pairplus1(), "100/100")
+        pi.done()
+        # should work after done()
+        self.assertEqual(pi.pairplus1(), "100/100")
 
-        def test_pctdone(self):
-                """Test that pctdone() returns correct values."""
-                pi = progress.GoalTrackerItem("testitem")
-                # special case before goal is set
-                self.assertEqual(pi.pctdone(), 0)
-                pi.goalitems = 100
-                self.assertEqual(pi.pctdone(), 0)
-                pi.items = 50
-                self.assertEqual(int(pi.pctdone()), 50)
-                pi.items = 100
-                self.assertEqual(int(pi.pctdone()), 100)
-                pi.done()
-                # should work after done()
-                self.assertEqual(int(pi.pctdone()), 100)
+    def test_pctdone(self):
+        """Test that pctdone() returns correct values."""
+        pi = progress.GoalTrackerItem("testitem")
+        # special case before goal is set
+        self.assertEqual(pi.pctdone(), 0)
+        pi.goalitems = 100
+        self.assertEqual(pi.pctdone(), 0)
+        pi.items = 50
+        self.assertEqual(int(pi.pctdone()), 50)
+        pi.items = 100
+        self.assertEqual(int(pi.pctdone()), 100)
+        pi.done()
+        # should work after done()
+        self.assertEqual(int(pi.pctdone()), 100)
 
-        def test_metgoal(self):
-                """Test that metgoal() works properly."""
-                pi = progress.GoalTrackerItem("testitem")
-                self.assertEqual(pi.metgoal(), True)
-                pi.goalitems = 1
-                self.assertEqual(pi.metgoal(), False)
-                pi.items += 1
-                self.assertEqual(pi.metgoal(), True)
-                pi.done()
-                # should work after done()
-                self.assertEqual(pi.metgoal(), True)
+    def test_metgoal(self):
+        """Test that metgoal() works properly."""
+        pi = progress.GoalTrackerItem("testitem")
+        self.assertEqual(pi.metgoal(), True)
+        pi.goalitems = 1
+        self.assertEqual(pi.metgoal(), False)
+        pi.items += 1
+        self.assertEqual(pi.metgoal(), True)
+        pi.done()
+        # should work after done()
+        self.assertEqual(pi.metgoal(), True)
 
-        def test_done(self):
-                """Test that done() works properly."""
-                pi = progress.GoalTrackerItem("testitem")
-                pi.goalitems = 1
-                self.assertRaises(AssertionError, pi.done)
-                pi.done(goalcheck=False)
+    def test_done(self):
+        """Test that done() works properly."""
+        pi = progress.GoalTrackerItem("testitem")
+        pi.goalitems = 1
+        self.assertRaises(AssertionError, pi.done)
+        pi.done(goalcheck=False)
 
 
 class TestSpeedEstimator(pkg5unittest.Pkg5TestCase):
 
-        def test_basic(self):
-                """Basic test of Speed Estimator functionality."""
+    def test_basic(self):
+        """Basic test of Speed Estimator functionality."""
 
-                # make sure that we test all of the interval handling logic
-                interval = progress.SpeedEstimator(0).INTERVAL
-                time_to_test = interval * 2.5
-                hunkspersec = 30
-                hunktime = 1.0 / hunkspersec
-                hunk = 1024
-                goalbytes = time_to_test * hunkspersec * hunk
+        # make sure that we test all of the interval handling logic
+        interval = progress.SpeedEstimator(0).INTERVAL
+        time_to_test = interval * 2.5
+        hunkspersec = 30
+        hunktime = 1.0 / hunkspersec
+        hunk = 1024
+        goalbytes = time_to_test * hunkspersec * hunk
 
-                #
-                # Test that estimator won't give out estimates when constructed
-                #
-                sp = progress.SpeedEstimator(goalbytes)
-                self.assertTrue(sp.get_speed_estimate() == None)
-                self.assertTrue(sp.elapsed() == None)
-                self.assertTrue(sp.get_final_speed() == None)
+        #
+        # Test that estimator won't give out estimates when constructed
+        #
+        sp = progress.SpeedEstimator(goalbytes)
+        self.assertTrue(sp.get_speed_estimate() == None)
+        self.assertTrue(sp.elapsed() == None)
+        self.assertTrue(sp.get_final_speed() == None)
 
-                timestamp = 1000.0
+        timestamp = 1000.0
 
-                #
-                # Test again after starting, but before adding data
-                #
-                sp.start(timestamp)
-                self.assertTrue(sp.get_speed_estimate() == None)
-                self.assertTrue(sp.elapsed() == None)
-                self.assertTrue(sp.get_final_speed() == None)
+        #
+        # Test again after starting, but before adding data
+        #
+        sp.start(timestamp)
+        self.assertTrue(sp.get_speed_estimate() == None)
+        self.assertTrue(sp.elapsed() == None)
+        self.assertTrue(sp.get_final_speed() == None)
 
-                #
-                # We record transactions of one hunk each until there
-                # are no more transactions left, and we claim that each
-                # transaction took 0.01 second.  Therefore, the final speed
-                # should be 100 * hunksize/second.
-                #
-                while goalbytes > 0:
-                        est = sp.get_speed_estimate()
-                        self.assertTrue(est is None or est > 0)
-                        sp.newdata(hunk, timestamp)
-                        goalbytes -= hunk
-                        timestamp += hunktime
+        #
+        # We record transactions of one hunk each until there
+        # are no more transactions left, and we claim that each
+        # transaction took 0.01 second.  Therefore, the final speed
+        # should be 100 * hunksize/second.
+        #
+        while goalbytes > 0:
+            est = sp.get_speed_estimate()
+            self.assertTrue(est is None or est > 0)
+            sp.newdata(hunk, timestamp)
+            goalbytes -= hunk
+            timestamp += hunktime
 
-                self.assertTrue(sp.get_final_speed() is None)
-                sp.done(timestamp)
-                self.debug("-- final speed: {0:f}".format(sp.get_final_speed()))
-                self.debug("-- expected final speed: {0:f}".format(hunk * hunkspersec))
-                self.debug(str(sp))
-                self.assertTrue(int(sp.get_final_speed()) == hunk * hunkspersec)
+        self.assertTrue(sp.get_final_speed() is None)
+        sp.done(timestamp)
+        self.debug("-- final speed: {0:f}".format(sp.get_final_speed()))
+        self.debug("-- expected final speed: {0:f}".format(hunk * hunkspersec))
+        self.debug(str(sp))
+        self.assertTrue(int(sp.get_final_speed()) == hunk * hunkspersec)
 
-        def test_stall(self):
-                """Test that the ProgressTracker correctly diagnoses a
-                "stall" in the download process."""
-                hunk = 1024
-                timestamp = 1000.0
-                goalbytes = 10 * hunk * hunk
+    def test_stall(self):
+        """Test that the ProgressTracker correctly diagnoses a
+        "stall" in the download process."""
+        hunk = 1024
+        timestamp = 1000.0
+        goalbytes = 10 * hunk * hunk
 
-                #
-                # Play records at the estimator until it starts giving out
-                # estimates.
-                #
-                sp = progress.SpeedEstimator(goalbytes)
-                sp.start(timestamp)
-                while sp.get_speed_estimate() == None:
-                        sp.newdata(hunk, timestamp)
-                        timestamp += 0.01
+        #
+        # Play records at the estimator until it starts giving out
+        # estimates.
+        #
+        sp = progress.SpeedEstimator(goalbytes)
+        sp.start(timestamp)
+        while sp.get_speed_estimate() == None:
+            sp.newdata(hunk, timestamp)
+            timestamp += 0.01
 
-                #
-                # Now jump the timestamp forward by a lot-- 1000 seconds-- much
-                # longer than the interval inside the estimator.  We should see
-                # it stop giving us estimates.
-                #
-                timestamp = 2000.0
-                sp.newdata(hunk, timestamp)
-                self.assertTrue(sp.get_speed_estimate() == None)
+        #
+        # Now jump the timestamp forward by a lot-- 1000 seconds-- much
+        # longer than the interval inside the estimator.  We should see
+        # it stop giving us estimates.
+        #
+        timestamp = 2000.0
+        sp.newdata(hunk, timestamp)
+        self.assertTrue(sp.get_speed_estimate() == None)
 
-        def test_format_speed(self):
-                """Test that format_speed works as expected."""
-                hunk = 1024
-                goalbytes = 10 * hunk * hunk
-                sp = progress.SpeedEstimator(goalbytes)
+    def test_format_speed(self):
+        """Test that format_speed works as expected."""
+        hunk = 1024
+        goalbytes = 10 * hunk * hunk
+        sp = progress.SpeedEstimator(goalbytes)
 
-                testdata = {
-                    0:           "0B/s",
-                    999:         "999B/s",
-                    1000:        "1000B/s",
-                    1024:        "1.0k/s",
-                    10 * 1024:   "10.0k/s",
-                    999 * 1024:  "999k/s",
-                    1001 * 1024: "1001k/s",
-                    1024 * 1024: "1.0M/s"
-                }
+        testdata = {
+            0:           "0B/s",
+            999:         "999B/s",
+            1000:        "1000B/s",
+            1024:        "1.0k/s",
+            10 * 1024:   "10.0k/s",
+            999 * 1024:  "999k/s",
+            1001 * 1024: "1001k/s",
+            1024 * 1024: "1.0M/s"
+        }
 
-                for (val, expected) in testdata.items():
-                        str = sp.format_speed(val)
-                        self.assertTrue(len(str) <= 7)
-                        self.assertTrue(str == expected)
+        for (val, expected) in testdata.items():
+            str = sp.format_speed(val)
+            self.assertTrue(len(str) <= 7)
+            self.assertTrue(str == expected)
 
 
 class TestFormatPair(pkg5unittest.Pkg5TestCase):
 
-        def test_format_pair(self):
-                """Test that format_pair works as expected."""
-                testdata = [
-                    ["{0:d}", 0, 0, {},                   "0/0"],
-                    ["{0:d}", 0, 1, {},                   "0/1"],
-                    ["{0:d}", 1, 100, {},                 "  1/100"],
-                    ["{0:d}", 1000, 1000, {},             "1000/1000"],
-                    ["{0:.1f}", 0, 1000, {},              "   0.0/1000.0"],
-                    ["{0:.1f}", 1000, 1000, {},           "1000.0/1000.0"],
-                    ["{0:.1f}", 1012.512, 2000.912, {},   "1012.5/2000.9"],
-                    ["{0:.1f}", 20.32, 1000.23,
-                        {"targetwidth": 6, "format2": "{0:d}"},
-                                                            "  20.3/1000.2"],
-                    ["{0:.1f}", 20.322, 1000.23,
-                        {"targetwidth": 5, "format2": "{0:d}"},
-                                                            "  20/1000"],
-                    ["{0:.1f}", 20.322, 1000.23,
-                        {"targetwidth": 4, "format2": "{0:d}"},
-                                                            "  20/1000"],
-                    ["{0:.1f}", 20.322, 99.23,
-                        {"targetwidth": 5, "format2": "{0:d}"},
-                                                            "20.3/99.2"],
-                    ["{0:.1f}", 2032, 9923,
-                        {"targetwidth": 5, "format2": "{0:d}", "scale": 100},
-                                                            "20.3/99.2"],
-                ]
-                for (formatstr, item, goal, kwargs, expresult) in testdata:
-                        result = progress.format_pair(formatstr, item,
-                            goal, **kwargs)
-                        self.assertEqual(result, expresult,
-                            "expected: {0} != result: {1}".format(expresult, result))
+    def test_format_pair(self):
+        """Test that format_pair works as expected."""
+        testdata = [
+            ["{0:d}", 0, 0, {},                   "0/0"],
+            ["{0:d}", 0, 1, {},                   "0/1"],
+            ["{0:d}", 1, 100, {},                 "  1/100"],
+            ["{0:d}", 1000, 1000, {},             "1000/1000"],
+            ["{0:.1f}", 0, 1000, {},              "   0.0/1000.0"],
+            ["{0:.1f}", 1000, 1000, {},           "1000.0/1000.0"],
+            ["{0:.1f}", 1012.512, 2000.912, {},   "1012.5/2000.9"],
+            ["{0:.1f}", 20.32, 1000.23,
+                {"targetwidth": 6, "format2": "{0:d}"},
+                                                    "  20.3/1000.2"],
+            ["{0:.1f}", 20.322, 1000.23,
+                {"targetwidth": 5, "format2": "{0:d}"},
+                                                    "  20/1000"],
+            ["{0:.1f}", 20.322, 1000.23,
+                {"targetwidth": 4, "format2": "{0:d}"},
+                                                    "  20/1000"],
+            ["{0:.1f}", 20.322, 99.23,
+                {"targetwidth": 5, "format2": "{0:d}"},
+                                                    "20.3/99.2"],
+            ["{0:.1f}", 2032, 9923,
+                {"targetwidth": 5, "format2": "{0:d}", "scale": 100},
+                                                    "20.3/99.2"],
+        ]
+        for (formatstr, item, goal, kwargs, expresult) in testdata:
+            result = progress.format_pair(formatstr, item,
+                goal, **kwargs)
+            self.assertEqual(result, expresult,
+                "expected: {0} != result: {1}".format(expresult, result))
 
 
 class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
 
-        def test_basic_trackers(self):
-                """Basic testing of all trackers; reset, and then retest."""
-                sio_c = six.StringIO()
-                sio_c2 = six.StringIO()
-                sio_f = six.StringIO()
-                sio_d = six.StringIO()
+    def test_basic_trackers(self):
+        """Basic testing of all trackers; reset, and then retest."""
+        sio_c = six.StringIO()
+        sio_c2 = six.StringIO()
+        sio_f = six.StringIO()
+        sio_d = six.StringIO()
 
-                tc = progress.CommandLineProgressTracker(output_file=sio_c)
-                tc2 = progress.CommandLineProgressTracker(output_file=sio_c2,
-                    term_delay=1)
-                tf = progress.FunctionProgressTracker(output_file=sio_f)
-                td = progress.DotProgressTracker(output_file=sio_d)
-                tq = progress.QuietProgressTracker()
+        tc = progress.CommandLineProgressTracker(output_file=sio_c)
+        tc2 = progress.CommandLineProgressTracker(output_file=sio_c2,
+            term_delay=1)
+        tf = progress.FunctionProgressTracker(output_file=sio_f)
+        td = progress.DotProgressTracker(output_file=sio_d)
+        tq = progress.QuietProgressTracker()
 
-                mt = progress.MultiProgressTracker([tc, tc2, tf, tq, td])
+        mt = progress.MultiProgressTracker([tc, tc2, tf, tq, td])
 
-                # run everything twice; this exercises that after a
-                # reset(), everything still works correctly.
-                for x in [1, 2]:
-                        progress.test_progress_tracker(mt, gofast=True)
+        # run everything twice; this exercises that after a
+        # reset(), everything still works correctly.
+        for x in [1, 2]:
+            progress.test_progress_tracker(mt, gofast=True)
 
-                        self.assertTrue(len(sio_c.getvalue()) > 100)
-                        self.assertTrue(len(sio_c2.getvalue()) > 100)
-                        self.assertTrue(len(sio_f.getvalue()) > 100)
-                        self.assertTrue(len(sio_d.getvalue()) > 1)
-                        # check that dot only printed dots
-                        self.assertTrue(
-                            len(sio_d.getvalue()) * "." == sio_d.getvalue())
+            self.assertTrue(len(sio_c.getvalue()) > 100)
+            self.assertTrue(len(sio_c2.getvalue()) > 100)
+            self.assertTrue(len(sio_f.getvalue()) > 100)
+            self.assertTrue(len(sio_d.getvalue()) > 1)
+            # check that dot only printed dots
+            self.assertTrue(
+                len(sio_d.getvalue()) * "." == sio_d.getvalue())
 
-                        for f in [sio_c, sio_c2, sio_f, sio_d]:
-                                f.seek(0)
-                                f.truncate(0)
+            for f in [sio_c, sio_c2, sio_f, sio_d]:
+                f.seek(0)
+                f.truncate(0)
 
-                        # Reset them all, and go again, as a test of reset().
-                        mt.flush()
-                        mt.reset()
+            # Reset them all, and go again, as a test of reset().
+            mt.flush()
+            mt.reset()
 
-        def __t_pty_tracker(self, trackerclass, **kwargs):
-                def __drain(masterf):
-                        while True:
-                                chunksz = 1024
-                                termdata = masterf.read(chunksz)
-                                if len(termdata) < chunksz:
-                                        # assume we hit EOF
-                                        break
+    def __t_pty_tracker(self, trackerclass, **kwargs):
+        def __drain(masterf):
+            while True:
+                chunksz = 1024
+                termdata = masterf.read(chunksz)
+                if len(termdata) < chunksz:
+                    # assume we hit EOF
+                    break
 
-                #
-                # - Allocate a pty
-                # - Create a thread to drain off the master side; without
-                #   this, the slave side will block when trying to write.
-                # - Connect the prog tracker to the slave side
-                # - Set it running
-                #
-                (master, slave) = pty.openpty()
-                slavef = os.fdopen(slave, "w")
-                masterf = os.fdopen(master, "rb")
+        #
+        # - Allocate a pty
+        # - Create a thread to drain off the master side; without
+        #   this, the slave side will block when trying to write.
+        # - Connect the prog tracker to the slave side
+        # - Set it running
+        #
+        (master, slave) = pty.openpty()
+        slavef = os.fdopen(slave, "w")
+        masterf = os.fdopen(master, "rb")
 
-                t = threading.Thread(target=__drain, args=(masterf,))
-                t.start()
+        t = threading.Thread(target=__drain, args=(masterf,))
+        t.start()
 
-                p = trackerclass(output_file=slavef, **kwargs)
-                progress.test_progress_tracker(p, gofast=True)
-                slavef.close()
+        p = trackerclass(output_file=slavef, **kwargs)
+        progress.test_progress_tracker(p, gofast=True)
+        slavef.close()
 
-                t.join()
-                masterf.close()
+        t.join()
+        masterf.close()
 
-        def test_fancy_unix_tracker(self):
-                """Test the terminal-based tracker we have on a pty."""
-                self.__t_pty_tracker(progress.FancyUNIXProgressTracker)
+    def test_fancy_unix_tracker(self):
+        """Test the terminal-based tracker we have on a pty."""
+        self.__t_pty_tracker(progress.FancyUNIXProgressTracker)
 
-        def test_fancy_unix_tracker_bad_tty(self):
-                """Try to make a terminal-based tracker on non-terminals."""
-                f = six.StringIO()
-                self.assertRaises(progress.ProgressTrackerException,
-                    progress.FancyUNIXProgressTracker, f)
+    def test_fancy_unix_tracker_bad_tty(self):
+        """Try to make a terminal-based tracker on non-terminals."""
+        f = six.StringIO()
+        self.assertRaises(progress.ProgressTrackerException,
+            progress.FancyUNIXProgressTracker, f)
 
-                tpath = self.make_misc_files("testfile")
-                f = open(tpath[0], "w")
-                self.assertRaises(progress.ProgressTrackerException,
-                    progress.FancyUNIXProgressTracker, f)
-                f.close()
+        tpath = self.make_misc_files("testfile")
+        f = open(tpath[0], "w")
+        self.assertRaises(progress.ProgressTrackerException,
+            progress.FancyUNIXProgressTracker, f)
+        f.close()
 
-        def test_fancy_unix_tracker_termdelay(self):
-                """Test the fancy tracker with term_delay customized."""
-                self.__t_pty_tracker(progress.FancyUNIXProgressTracker,
-                    term_delay=0.20)
+    def test_fancy_unix_tracker_termdelay(self):
+        """Test the fancy tracker with term_delay customized."""
+        self.__t_pty_tracker(progress.FancyUNIXProgressTracker,
+            term_delay=0.20)
 
 
 class TestMultiProgressTracker(pkg5unittest.Pkg5TestCase):
-        def test_multi(self):
-                """Test basic multi functionality."""
-                sio1 = six.StringIO()
-                sio2 = six.StringIO()
+    def test_multi(self):
+        """Test basic multi functionality."""
+        sio1 = six.StringIO()
+        sio2 = six.StringIO()
 
-                #
-                # The FunctionProgressTracker is used here because its
-                # output doesn't contain any timing information.  The
-                # output of the two Function progress trackers can thus
-                # be tested for equality.
-                #
-                t1 = progress.FunctionProgressTracker(output_file=sio1)
-                t2 = progress.FunctionProgressTracker(output_file=sio2)
-                mt = progress.MultiProgressTracker([t1, t2])
-                progress.test_progress_tracker(mt, gofast=True)
+        #
+        # The FunctionProgressTracker is used here because its
+        # output doesn't contain any timing information.  The
+        # output of the two Function progress trackers can thus
+        # be tested for equality.
+        #
+        t1 = progress.FunctionProgressTracker(output_file=sio1)
+        t2 = progress.FunctionProgressTracker(output_file=sio2)
+        mt = progress.MultiProgressTracker([t1, t2])
+        progress.test_progress_tracker(mt, gofast=True)
 
-                self.assertTrue(len(sio1.getvalue()) > 100)
-                self.assertTrue(len(sio2.getvalue()) > 100)
-                self.assertEqual(sio1.getvalue(), sio2.getvalue())
+        self.assertTrue(len(sio1.getvalue()) > 100)
+        self.assertTrue(len(sio2.getvalue()) > 100)
+        self.assertEqual(sio1.getvalue(), sio2.getvalue())
 
-        def test_multi_init(self):
-                """Can't construct a Multi with zero subsidiary trackers."""
-                self.assertRaises(progress.ProgressTrackerException,
-                    progress.MultiProgressTracker, [])
+    def test_multi_init(self):
+        """Can't construct a Multi with zero subsidiary trackers."""
+        self.assertRaises(progress.ProgressTrackerException,
+            progress.MultiProgressTracker, [])
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

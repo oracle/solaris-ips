@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -38,103 +38,103 @@ from . import common as li # Relative import; pylint: disable=W0403
 
 
 class LinkedImageSystemPlugin(li.LinkedImagePlugin):
+    """See parent class for docstring."""
+
+    # specify what functionality we support
+    support_attach = True
+    support_detach = True
+
+    # default attach property values
+    attach_props_def = {
+        li.PROP_RECURSE:        True
+    }
+
+    def __init__(self, pname, linked):
+        """See parent class for docstring."""
+        li.LinkedImagePlugin.__init__(self, pname, linked)
+
+        # globals
+        self.__img = linked.image
+        self.__pname = pname
+        self.__linked = linked
+
+    def init_root(self, root):
+        """See parent class for docstring."""
+        # nothing to do
+        return
+
+    def guess_path_transform(self, ignore_errors=False):
+        """See parent class for docstring."""
+        # nothing to do
+        return li.PATH_TRANSFORM_NONE
+
+    def get_child_list(self, nocache=False, ignore_errors=False):
         """See parent class for docstring."""
 
-        # specify what functionality we support
-        support_attach = True
-        support_detach = True
+        if not self.__img.cfg:
+            # this may be a new image that hasn't actually been
+            # created yet
+            return []
 
-        # default attach property values
-        attach_props_def = {
-            li.PROP_RECURSE:        True
-        }
+        rv = []
+        for lin in self.__img.cfg.linked_children:
+            path = self.get_child_props(lin)[li.PROP_PATH]
+            rv.append([lin, path])
 
-        def __init__(self, pname, linked):
-                """See parent class for docstring."""
-                li.LinkedImagePlugin.__init__(self, pname, linked)
+        for lin, path in rv:
+            assert lin.lin_type == self.__pname
 
-                # globals
-                self.__img = linked.image
-                self.__pname = pname
-                self.__linked = linked
+        return rv
 
-        def init_root(self, root):
-                """See parent class for docstring."""
-                # nothing to do
-                return
+    def get_child_props(self, lin):
+        """See parent class for docstring."""
 
-        def guess_path_transform(self, ignore_errors=False):
-                """See parent class for docstring."""
-                # nothing to do
-                return li.PATH_TRANSFORM_NONE
+        # return a copy of the properties
+        return self.__img.cfg.linked_children[lin].copy()
 
-        def get_child_list(self, nocache=False, ignore_errors=False):
-                """See parent class for docstring."""
+    def attach_child_inmemory(self, props, allow_relink):
+        """See parent class for docstring."""
 
-                if not self.__img.cfg:
-                        # this may be a new image that hasn't actually been
-                        # created yet
-                        return []
+        # make sure this child doesn't already exist
+        lin_list = [i[0] for i in self.get_child_list()]
+        lin = props[li.PROP_NAME]
+        assert lin not in lin_list or allow_relink
 
-                rv = []
-                for lin in self.__img.cfg.linked_children:
-                        path = self.get_child_props(lin)[li.PROP_PATH]
-                        rv.append([lin, path])
+        # make a copy of the properties
+        props = props.copy()
 
-                for lin, path in rv:
-                        assert lin.lin_type == self.__pname
+        # delete temporal properties
+        props = li.rm_dict_ent(props, li.temporal_props)
 
-                return rv
+        self.__img.cfg.linked_children[lin] = props
 
-        def get_child_props(self, lin):
-                """See parent class for docstring."""
+    def detach_child_inmemory(self, lin):
+        """See parent class for docstring."""
 
-                # return a copy of the properties
-                return self.__img.cfg.linked_children[lin].copy()
+        # make sure this child exists
+        assert lin in [i[0] for i in self.get_child_list()]
 
-        def attach_child_inmemory(self, props, allow_relink):
-                """See parent class for docstring."""
+        # Delete this linked image
+        del self.__img.cfg.linked_children[lin]
 
-                # make sure this child doesn't already exist
-                lin_list = [i[0] for i in self.get_child_list()]
-                lin = props[li.PROP_NAME]
-                assert lin not in lin_list or allow_relink
+    def sync_children_todisk(self):
+        """See parent class for docstring."""
 
-                # make a copy of the properties
-                props = props.copy()
+        self.__img.cfg.write()
 
-                # delete temporal properties
-                props = li.rm_dict_ent(props, li.temporal_props)
-
-                self.__img.cfg.linked_children[lin] = props
-
-        def detach_child_inmemory(self, lin):
-                """See parent class for docstring."""
-
-                # make sure this child exists
-                assert lin in [i[0] for i in self.get_child_list()]
-
-                # Delete this linked image
-                del self.__img.cfg.linked_children[lin]
-
-        def sync_children_todisk(self):
-                """See parent class for docstring."""
-
-                self.__img.cfg.write()
-
-                return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
+        return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
 
 
 class LinkedImageSystemChildPlugin(li.LinkedImageChildPlugin):
+    """See parent class for docstring."""
+
+    def __init__(self, lic):
         """See parent class for docstring."""
+        li.LinkedImageChildPlugin.__init__(self, lic)
 
-        def __init__(self, lic):
-                """See parent class for docstring."""
-                li.LinkedImageChildPlugin.__init__(self, lic)
+        # globals
+        self.__linked = lic.child_pimage.linked
 
-                # globals
-                self.__linked = lic.child_pimage.linked
-
-        def munge_props(self, props):
-                """See parent class for docstring."""
-                pass
+    def munge_props(self, props):
+        """See parent class for docstring."""
+        pass

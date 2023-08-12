@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 import os
@@ -33,48 +33,48 @@ from pkg.actions import *
 
 class TarBundle(pkg.bundle.Bundle):
 
-        def __init__(self, filename, **kwargs):
-                # XXX This could be more intelligent.  Or get user input.  Or
-                # extend API to take FMRI.
-                filename = os.path.normpath(filename)
-                self.tf = tarfile.open(filename)
-                self.filename = filename
-                self.pkgname = os.path.basename(filename)
-                self.pkg = None
+    def __init__(self, filename, **kwargs):
+        # XXX This could be more intelligent.  Or get user input.  Or
+        # extend API to take FMRI.
+        filename = os.path.normpath(filename)
+        self.tf = tarfile.open(filename)
+        self.filename = filename
+        self.pkgname = os.path.basename(filename)
+        self.pkg = None
 
-        def __del__(self):
-                self.tf.close()
+    def __del__(self):
+        self.tf.close()
 
-        def _walk_bundle(self):
-                for f in self.tf:
-                        yield f.name, (self.tf, f)
+    def _walk_bundle(self):
+        for f in self.tf:
+            yield f.name, (self.tf, f)
 
-        def __iter__(self):
-                for path, data in self._walk_bundle():
-                        yield self.action(*data)
+    def __iter__(self):
+        for path, data in self._walk_bundle():
+            yield self.action(*data)
 
-        def action(self, tarfile, tarinfo):
-                if tarinfo.isreg():
-                        # false positive
-                        # file-builtin; pylint: disable=W1607
-                        return file.FileAction(tarfile.extractfile(tarinfo),
-                            mode=oct(stat.S_IMODE(tarinfo.mode)),
-                            owner=tarinfo.uname, group=tarinfo.gname,
-                            path=tarinfo.name,
-                            timestamp=misc.time_to_timestamp(tarinfo.mtime))
-                elif tarinfo.isdir():
-                        return directory.DirectoryAction(
-                            mode=oct(stat.S_IMODE(tarinfo.mode)),
-                            owner=tarinfo.uname, group=tarinfo.gname,
-                            path=tarinfo.name)
-                elif tarinfo.issym():
-                        return link.LinkAction(path=tarinfo.name,
-                            target=tarinfo.linkname)
-                elif tarinfo.islnk():
-                        return hardlink.HardLinkAction(path=tarinfo.name,
-                            target=tarinfo.linkname)
-                else:
-                        return unknown.UnknownAction(path=tarinfo.name)
+    def action(self, tarfile, tarinfo):
+        if tarinfo.isreg():
+            # false positive
+            # file-builtin; pylint: disable=W1607
+            return file.FileAction(tarfile.extractfile(tarinfo),
+                mode=oct(stat.S_IMODE(tarinfo.mode)),
+                owner=tarinfo.uname, group=tarinfo.gname,
+                path=tarinfo.name,
+                timestamp=misc.time_to_timestamp(tarinfo.mtime))
+        elif tarinfo.isdir():
+            return directory.DirectoryAction(
+                mode=oct(stat.S_IMODE(tarinfo.mode)),
+                owner=tarinfo.uname, group=tarinfo.gname,
+                path=tarinfo.name)
+        elif tarinfo.issym():
+            return link.LinkAction(path=tarinfo.name,
+                target=tarinfo.linkname)
+        elif tarinfo.islnk():
+            return hardlink.HardLinkAction(path=tarinfo.name,
+                target=tarinfo.linkname)
+        else:
+            return unknown.UnknownAction(path=tarinfo.name)
 
 def test(filename):
-        return tarfile.is_tarfile(filename)
+    return tarfile.is_tarfile(filename)

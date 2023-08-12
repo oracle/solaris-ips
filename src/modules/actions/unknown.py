@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 """module describing a unknown packaging object
@@ -34,9 +34,9 @@ object it is.  No datastreams or attributes aside from a path are stored."""
 from . import generic
 
 class UnknownAction(generic.Action):
-        """Class representing a unknown type of packaging object."""
+    """Class representing a unknown type of packaging object."""
 
-        __slots__ = []
+    __slots__ = []
 
-        name = "unknown"
-        ordinality = generic._orderdict[name]
+    name = "unknown"
+    ordinality = generic._orderdict[name]

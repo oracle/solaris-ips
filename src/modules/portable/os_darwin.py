@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -37,9 +37,8 @@ from .os_unix import \
 import macostools
 
 def copyfile(src, dst):
-        """
-        Use the Mac OS X-specific version of copyfile() so that
-        Mac OS X stuff gets handled properly.
-        """
-        macostools.copy(src, dst)
-
+    """
+    Use the Mac OS X-specific version of copyfile() so that
+    Mac OS X stuff gets handled properly.
+    """
+    macostools.copy(src, dst)

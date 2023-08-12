@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import errno
@@ -46,13 +46,13 @@ from six.moves.urllib.parse import urlparse, urlunparse
 from six.moves.urllib.request import pathname2url
 
 class TestP5I(pkg5unittest.Pkg5TestCase):
-        """Class to test the functionality of the pkg.p5i module."""
+    """Class to test the functionality of the pkg.p5i module."""
 
-        #
-        # Whitespace at the ends of some lines in the below is
-        # significant.
-        #
-        p5i_bobcat = """{
+    #
+    # Whitespace at the ends of some lines in the below is
+    # significant.
+    #
+    p5i_bobcat = """{
   "packages": [
     "pkg:/bar@1.0,5.11-0",
     "baz"
@@ -87,130 +87,130 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 }
 """
 
-        misc_files = [ "libc.so.1" ]
+    misc_files = [ "libc.so.1" ]
 
-        def setUp(self):
-                pkg5unittest.Pkg5TestCase.setUp(self)
-                self.make_misc_files(self.misc_files)
+    def setUp(self):
+        pkg5unittest.Pkg5TestCase.setUp(self)
+        self.make_misc_files(self.misc_files)
 
-        def __get_bobcat_pub(self, omit_repo=False):
-                # First build a publisher object matching our expected data.
-                repo = None
-                if not omit_repo:
-                        repo = publisher.Repository(description="xkcd.net/325",
-                            legal_uris=["http://xkcd.com/license.html"],
-                            name="source", origins=["http://localhost:12001/"],
-                            refresh_seconds=43200)
-                pub = publisher.Publisher("bobcat", alias="cat",
-                    repository=repo)
+    def __get_bobcat_pub(self, omit_repo=False):
+        # First build a publisher object matching our expected data.
+        repo = None
+        if not omit_repo:
+            repo = publisher.Repository(description="xkcd.net/325",
+                legal_uris=["http://xkcd.com/license.html"],
+                name="source", origins=["http://localhost:12001/"],
+                refresh_seconds=43200)
+        pub = publisher.Publisher("bobcat", alias="cat",
+            repository=repo)
 
-                return pub
+        return pub
 
-        def test_parse_write(self):
-                """Verify that the p5i parsing and writing works as expected."""
+    def test_parse_write(self):
+        """Verify that the p5i parsing and writing works as expected."""
 
-                # Verify that p5i export and parse works as expected.
-                pub = self.__get_bobcat_pub()
+        # Verify that p5i export and parse works as expected.
+        pub = self.__get_bobcat_pub()
 
-                # First, Ensure that PkgFmri and strings are supported properly.
-                # Build a simple list of packages.
-                fmri_foo = fmri.PkgFmri("pkg:/foo@1.0,5.11-0")
-                pnames = {
-                    "bobcat": [fmri_foo],
-                    "": ["pkg:/bar@1.0,5.11-0", "baz"],
-                }
+        # First, Ensure that PkgFmri and strings are supported properly.
+        # Build a simple list of packages.
+        fmri_foo = fmri.PkgFmri("pkg:/foo@1.0,5.11-0")
+        pnames = {
+            "bobcat": [fmri_foo],
+            "": ["pkg:/bar@1.0,5.11-0", "baz"],
+        }
 
-                # Dump the p5i data.
-                fobj = cStringIO()
-                p5i.write(fobj, [pub], pkg_names=pnames)
+        # Dump the p5i data.
+        fobj = cStringIO()
+        p5i.write(fobj, [pub], pkg_names=pnames)
 
-                # Verify that the p5i data ends with a terminating newline.
-                # In Python 3, StringIO doesn't support non-zero relative seek.
-                fobj.seek(0, os.SEEK_END)
-                fobj.seek(fobj.tell() - 1)
-                self.assertEqual(fobj.read(), "\n")
+        # Verify that the p5i data ends with a terminating newline.
+        # In Python 3, StringIO doesn't support non-zero relative seek.
+        fobj.seek(0, os.SEEK_END)
+        fobj.seek(fobj.tell() - 1)
+        self.assertEqual(fobj.read(), "\n")
 
-                # Verify that output matches expected output.
-                fobj.seek(0)
-                output = fobj.read()
-                self.assertEqualJSON(self.p5i_bobcat, output)
+        # Verify that output matches expected output.
+        fobj.seek(0)
+        output = fobj.read()
+        self.assertEqualJSON(self.p5i_bobcat, output)
 
-                def validate_results(results):
-                        # First result should be 'bobcat' publisher and its
-                        # pkg_names.
-                        pub, pkg_names = results[0]
+        def validate_results(results):
+            # First result should be 'bobcat' publisher and its
+            # pkg_names.
+            pub, pkg_names = results[0]
 
-                        self.assertEqual(pub.prefix, "bobcat")
-                        self.assertEqual(pub.alias, "cat")
-                        repo = pub.repository
-                        self.assertEqual(repo.name, "source")
-                        self.assertEqual(repo.description, "xkcd.net/325")
-                        self.assertEqual(repo.legal_uris[0],
-                            "http://xkcd.com/license.html")
-                        self.assertEqual(repo.refresh_seconds, 43200)
-                        self.assertEqual(pkg_names, [str(fmri_foo)])
+            self.assertEqual(pub.prefix, "bobcat")
+            self.assertEqual(pub.alias, "cat")
+            repo = pub.repository
+            self.assertEqual(repo.name, "source")
+            self.assertEqual(repo.description, "xkcd.net/325")
+            self.assertEqual(repo.legal_uris[0],
+                "http://xkcd.com/license.html")
+            self.assertEqual(repo.refresh_seconds, 43200)
+            self.assertEqual(pkg_names, [str(fmri_foo)])
 
-                        # Last result should be no publisher and a list of
-                        # pkg_names.
-                        pub, pkg_names = results[1]
-                        self.assertEqual(pub, None)
-                        self.assertEqual(pkg_names, ["pkg:/bar@1.0,5.11-0",
-                            "baz"])
+            # Last result should be no publisher and a list of
+            # pkg_names.
+            pub, pkg_names = results[1]
+            self.assertEqual(pub, None)
+            self.assertEqual(pkg_names, ["pkg:/bar@1.0,5.11-0",
+                "baz"])
 
-                # Verify that parse returns the expected object and information
-                # when provided a fileobj.
-                fobj.seek(0)
-                validate_results(p5i.parse(fileobj=fobj))
+        # Verify that parse returns the expected object and information
+        # when provided a fileobj.
+        fobj.seek(0)
+        validate_results(p5i.parse(fileobj=fobj))
 
-                # Verify that parse returns the expected object and information
-                # when provided a file path.
-                fobj.seek(0)
-                (fd1, path1) = tempfile.mkstemp(dir=self.test_root)
-                # tempfile.mkstemp open the file in binary mode
-                os.write(fd1, misc.force_bytes(fobj.read()))
-                os.close(fd1)
-                validate_results(p5i.parse(location=path1))
+        # Verify that parse returns the expected object and information
+        # when provided a file path.
+        fobj.seek(0)
+        (fd1, path1) = tempfile.mkstemp(dir=self.test_root)
+        # tempfile.mkstemp open the file in binary mode
+        os.write(fd1, misc.force_bytes(fobj.read()))
+        os.close(fd1)
+        validate_results(p5i.parse(location=path1))
 
-                # Verify that parse returns the expected object and information
-                # when provided a file URI.
-                location = os.path.abspath(path1)
-                location = urlunparse(("file", "",
-                    pathname2url(location), "", "", ""))
-                validate_results(p5i.parse(location=location))
-                fobj.close()
-                fobj = None
+        # Verify that parse returns the expected object and information
+        # when provided a file URI.
+        location = os.path.abspath(path1)
+        location = urlunparse(("file", "",
+            pathname2url(location), "", "", ""))
+        validate_results(p5i.parse(location=location))
+        fobj.close()
+        fobj = None
 
-                # Verify that appropriate exceptions are raised for p5i
-                # information that can't be retrieved (doesn't exist).
-                nefpath = os.path.join(self.test_root, "non-existent")
-                self.assertRaises(api_errors.RetrievalError,
-                    p5i.parse, location="file://{0}".format(nefpath))
+        # Verify that appropriate exceptions are raised for p5i
+        # information that can't be retrieved (doesn't exist).
+        nefpath = os.path.join(self.test_root, "non-existent")
+        self.assertRaises(api_errors.RetrievalError,
+            p5i.parse, location="file://{0}".format(nefpath))
 
-                self.assertRaises(api_errors.RetrievalError,
-                    p5i.parse, location=nefpath)
+        self.assertRaises(api_errors.RetrievalError,
+            p5i.parse, location=nefpath)
 
-                # Verify that appropriate exceptions are raised for invalid
-                # p5i information.
-                lcpath = os.path.join(self.test_root, "libc.so.1")
-                location = os.path.abspath(lcpath)
-                location = urlunparse(("file", "",
-                    pathname2url(location), "", "", ""))
+        # Verify that appropriate exceptions are raised for invalid
+        # p5i information.
+        lcpath = os.path.join(self.test_root, "libc.so.1")
+        location = os.path.abspath(lcpath)
+        location = urlunparse(("file", "",
+            pathname2url(location), "", "", ""))
 
-                # First, test as a file:// URI.
-                self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
-                    location=location)
+        # First, test as a file:// URI.
+        self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
+            location=location)
 
-                # Last, test as a pathname.
-                self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
-                    location=location)
+        # Last, test as a pathname.
+        self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
+            location=location)
 
-        def test_parse_write_partial(self):
-                """Verify that a p5i file with various parts of a publisher's
-                repository configuration omitted will still parse and write
-                as expected."""
+    def test_parse_write_partial(self):
+        """Verify that a p5i file with various parts of a publisher's
+        repository configuration omitted will still parse and write
+        as expected."""
 
-                # First, test the no repository case.
-                expected = """{
+        # First, test the no repository case.
+        expected = """{
   "packages": [],
   "publishers": [
     {
@@ -224,24 +224,24 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 }
 """
 
-                pub = self.__get_bobcat_pub(omit_repo=True)
+        pub = self.__get_bobcat_pub(omit_repo=True)
 
-                # Dump the p5i data.
-                fobj = cStringIO()
-                p5i.write(fobj, [pub])
+        # Dump the p5i data.
+        fobj = cStringIO()
+        p5i.write(fobj, [pub])
 
-                # Verify that output matches expected output.
-                fobj.seek(0)
-                output = fobj.read()
-                self.assertEqualJSON(expected, output)
+        # Verify that output matches expected output.
+        fobj.seek(0)
+        output = fobj.read()
+        self.assertEqualJSON(expected, output)
 
-                # Now parse the result and verify no repositories are defined.
-                pub, pkg_names = p5i.parse(data=output)[0]
-                self.assertTrue(not pub.repository)
+        # Now parse the result and verify no repositories are defined.
+        pub, pkg_names = p5i.parse(data=output)[0]
+        self.assertTrue(not pub.repository)
 
-                # Next, test the partial repository configuration case.  No
-                # origin is provided, but everything else is.
-                expected = """{
+        # Next, test the partial repository configuration case.  No
+        # origin is provided, but everything else is.
+        expected = """{
   "packages": [],
   "publishers": [
     {
@@ -268,25 +268,25 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
   "version": 1
 }
 """
-                pub = self.__get_bobcat_pub()
+        pub = self.__get_bobcat_pub()
 
-                # Nuke the origin data.
-                pub.repository.reset_origins()
+        # Nuke the origin data.
+        pub.repository.reset_origins()
 
-                # Dump the p5i data.
-                fobj = cStringIO()
-                p5i.write(fobj, [pub])
+        # Dump the p5i data.
+        fobj = cStringIO()
+        p5i.write(fobj, [pub])
 
-                # Verify that output matches expected output.
-                fobj.seek(0)
-                output = fobj.read()
-                self.assertEqualJSON(expected, output)
+        # Verify that output matches expected output.
+        fobj.seek(0)
+        output = fobj.read()
+        self.assertEqualJSON(expected, output)
 
-                # Now parse the result and verify that there is a repository,
-                # but without origins information.
-                pub, pkg_names = p5i.parse(data=output)[0]
-                self.assertEqualDiff([], pub.repository.origins)
+        # Now parse the result and verify that there is a repository,
+        # but without origins information.
+        pub, pkg_names = p5i.parse(data=output)[0]
+        self.assertEqualDiff([], pub.repository.origins)
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

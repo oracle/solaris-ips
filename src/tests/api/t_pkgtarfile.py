@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
-        testutils.setup_environment("../../../proto")
+    testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import unittest
@@ -40,45 +40,45 @@ import pkg.pkgtarfile as pkgtarfile
 
 class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
 
-        def setUp(self):
-                pkg5unittest.Pkg5TestCase.setUp(self)
-                self.tpath = tempfile.mkdtemp(dir=self.test_root)
+    def setUp(self):
+        pkg5unittest.Pkg5TestCase.setUp(self)
+        self.tpath = tempfile.mkdtemp(dir=self.test_root)
 
-                cpath = tempfile.mkdtemp(dir=self.test_root)
-                filepath = os.path.join(cpath, "foo/bar")
-                filename = "baz"
-                create_path = os.path.join(filepath, filename)
-                os.makedirs(filepath)
-                wfp = open(create_path, "wb")
-                buf = os.urandom(8192)
-                wfp.write(buf)
-                wfp.close()
+        cpath = tempfile.mkdtemp(dir=self.test_root)
+        filepath = os.path.join(cpath, "foo/bar")
+        filename = "baz"
+        create_path = os.path.join(filepath, filename)
+        os.makedirs(filepath)
+        wfp = open(create_path, "wb")
+        buf = os.urandom(8192)
+        wfp.write(buf)
+        wfp.close()
 
-                self.tarfile = os.path.join(self.tpath, "test.tar")
+        self.tarfile = os.path.join(self.tpath, "test.tar")
 
-                tarfp = tarfile.open(self.tarfile, 'w')
-                tarfp.add(create_path, "foo/bar/baz")
-                tarfp.close()
-                shutil.rmtree(cpath)
+        tarfp = tarfile.open(self.tarfile, 'w')
+        tarfp.add(create_path, "foo/bar/baz")
+        tarfp.close()
+        shutil.rmtree(cpath)
 
-        def testerrorlevelIsCorrect(self):
-                p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
+    def testerrorlevelIsCorrect(self):
+        p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
 
-                # "read-only" folders on Windows are not actually read-only so
-                # the test below doesn't cause the exception to be raised
-                if portable.is_admin() or portable.util.get_canonical_os_type() == "windows":
-                        self.assertTrue(p.errorlevel == 2)
-                        p.close()
-                        return
+        # "read-only" folders on Windows are not actually read-only so
+        # the test below doesn't cause the exception to be raised
+        if portable.is_admin() or portable.util.get_canonical_os_type() == "windows":
+            self.assertTrue(p.errorlevel == 2)
+            p.close()
+            return
 
-                extractpath = os.path.join(self.tpath, "foo/bar")
-                os.makedirs(extractpath)
-                os.chmod(extractpath, 0o555)
-                self.assertRaises(IOError, p.extract, "foo/bar/baz",
-                    self.tpath)
-                p.close()
-                os.chmod(extractpath, 0o777)
+        extractpath = os.path.join(self.tpath, "foo/bar")
+        os.makedirs(extractpath)
+        os.chmod(extractpath, 0o555)
+        self.assertRaises(IOError, p.extract, "foo/bar/baz",
+            self.tpath)
+        p.close()
+        os.chmod(extractpath, 0o777)
 
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 
@@ -43,14 +43,13 @@ lastdatetime = None
 printed = False
 
 for l in fileinput.input(sys.argv[1:]):
-        m = comb_log_pat.search(l)
-        if not m:
-                continue
+    m = comb_log_pat.search(l)
+    if not m:
+        continue
 
-        mg = m.groupdict()
+    mg = m.groupdict()
 
-        d = datetime.datetime(*(time.strptime(mg["date"] + ":" + mg["time"], "%d/%b/%Y:%H:%M:%S")[0:6]))
+    d = datetime.datetime(*(time.strptime(mg["date"] + ":" + mg["time"], "%d/%b/%Y:%H:%M:%S")[0:6]))
 
-        print("{0:d}".format(time.mktime(d.timetuple())))
-        sys.exit(0)
-
+    print("{0:d}".format(time.mktime(d.timetuple())))
+    sys.exit(0)

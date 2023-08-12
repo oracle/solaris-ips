@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 #
 
 import datetime
@@ -37,12 +37,12 @@ ip_files = [ "{0}-ip.dat".format(i) for i in sys.argv[2:] ]
 ip_files = [ i for i in ip_files if os.path.exists(i) ]
 
 for l in fileinput.input(ip_files):
-        x = l.split()
+    x = l.split()
 
-        try:
-                total_by_ip[x[1]] += int(x[0])
-        except KeyError:
-                total_by_ip[x[1]] = int(x[0])
+    try:
+        total_by_ip[x[1]] += int(x[0])
+    except KeyError:
+        total_by_ip[x[1]] = int(x[0])
 
 total_by_country = ip_to_country(total_by_ip)
 

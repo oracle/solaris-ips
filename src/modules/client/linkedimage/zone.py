@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 #
 
 """
@@ -117,429 +117,429 @@ zone_installed_states = [
 
 
 class LinkedImageZonePlugin(li.LinkedImagePlugin):
+    """See parent class for docstring."""
+
+    # default attach property values
+    attach_props_def = {
+        li.PROP_RECURSE:        False
+    }
+
+    __zone_pkgs = frozenset([
+        frozenset(["system/zones"]),
+        frozenset(["SUNWzoner", "SUNWzoneu"])
+    ])
+
+    def __init__(self, pname, linked):
         """See parent class for docstring."""
+        li.LinkedImagePlugin.__init__(self, pname, linked)
 
-        # default attach property values
-        attach_props_def = {
-            li.PROP_RECURSE:        False
-        }
+        # globals
+        self.__pname = pname
+        self.__linked = linked
+        self.__img = linked.image
+        self.__in_gz_cached = None
 
-        __zone_pkgs = frozenset([
-            frozenset(["system/zones"]),
-            frozenset(["SUNWzoner", "SUNWzoneu"])
+        # keep track of our freshly attach children
+        self.__children = dict()
+
+        # cache zoneadm output
+        self.__zoneadm_list_cache = None
+
+    def __in_gz(self, ignore_errors=False):
+        """Check if we're executing in the global zone.  Note that
+        this doesn't tell us anything about the image we're
+        manipulating, just the environment that we're running in."""
+
+        if self.__in_gz_cached != None:
+            return self.__in_gz_cached
+
+        # check if we're running in the gz
+        try:
+            self.__in_gz_cached = (_zonename() == ZONE_GLOBAL)
+        except OSError as e:
+            # W0212 Access to a protected member
+            # pylint: disable=W0212
+            if ignore_errors:
+                # default to being in the global zone
+                return True
+            raise apx._convert_error(e)
+        except apx.LinkedImageException as e:
+            if ignore_errors:
+                # default to being in the global zone
+                return True
+            raise e
+
+        return self.__in_gz_cached
+
+    def __zones_supported(self):
+        """Check to see if zones are supported in the current image.
+        i.e. can the current image have zone children."""
+
+        # pylint: disable=E1120
+        if DebugValues.get_value("zones_supported"):
+            return True
+        # pylint: enable=E1120
+
+        # first check if the image variant is global
+        variant = "variant.opensolaris.zone"
+        value = self.__img.cfg.variants[variant]
+        if value != "global":
+            return False
+
+        #
+        # sanity check the path to to /etc/zones.  below we check for
+        # the zones packages, and any image that has the zones
+        # packages installed should have a /etc/zones file (since
+        # those packages deliver this file) but it's possible that the
+        # image was corrupted and the user now wants to be able to run
+        # pkg commands to fix it.  if the path doesn't exist then we
+        # don't have any zones so just report that zones are
+        # unsupported (since zoneadm may fail to run anyway).
+        #
+        path = self.__img.root
+        if not os.path.isdir(os.path.join(path, "etc")):
+            return False
+        if not os.path.isdir(os.path.join(path, "etc/zones")):
+            return False
+
+        # get a set of installed packages
+        cati = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
+        pkgs_inst = frozenset([
+                stem
+                # Unused variable 'pub'; pylint: disable=W0612
+                for pub, stem in cati.pkg_names()
+                # pylint: enable=W0612
         ])
 
-        def __init__(self, pname, linked):
-                """See parent class for docstring."""
-                li.LinkedImagePlugin.__init__(self, pname, linked)
+        # check if the zones packages are installed
+        for pkgs in self.__zone_pkgs:
+            if (pkgs & pkgs_inst) == pkgs:
+                return True
 
-                # globals
-                self.__pname = pname
-                self.__linked = linked
-                self.__img = linked.image
-                self.__in_gz_cached = None
+        return False
 
-                # keep track of our freshly attach children
-                self.__children = dict()
-
-                # cache zoneadm output
-                self.__zoneadm_list_cache = None
-
-        def __in_gz(self, ignore_errors=False):
-                """Check if we're executing in the global zone.  Note that
-                this doesn't tell us anything about the image we're
-                manipulating, just the environment that we're running in."""
-
-                if self.__in_gz_cached != None:
-                        return self.__in_gz_cached
-
-                # check if we're running in the gz
-                try:
-                        self.__in_gz_cached = (_zonename() == ZONE_GLOBAL)
-                except OSError as e:
-                        # W0212 Access to a protected member
-                        # pylint: disable=W0212
-                        if ignore_errors:
-                                # default to being in the global zone
-                                return True
-                        raise apx._convert_error(e)
-                except apx.LinkedImageException as e:
-                        if ignore_errors:
-                                # default to being in the global zone
-                                return True
-                        raise e
-
-                return self.__in_gz_cached
-
-        def __zones_supported(self):
-                """Check to see if zones are supported in the current image.
-                i.e. can the current image have zone children."""
-
-                # pylint: disable=E1120
-                if DebugValues.get_value("zones_supported"):
-                        return True
-                # pylint: enable=E1120
-
-                # first check if the image variant is global
-                variant = "variant.opensolaris.zone"
-                value = self.__img.cfg.variants[variant]
-                if value != "global":
-                        return False
-
-                #
-                # sanity check the path to to /etc/zones.  below we check for
-                # the zones packages, and any image that has the zones
-                # packages installed should have a /etc/zones file (since
-                # those packages deliver this file) but it's possible that the
-                # image was corrupted and the user now wants to be able to run
-                # pkg commands to fix it.  if the path doesn't exist then we
-                # don't have any zones so just report that zones are
-                # unsupported (since zoneadm may fail to run anyway).
-                #
-                path = self.__img.root
-                if not os.path.isdir(os.path.join(path, "etc")):
-                        return False
-                if not os.path.isdir(os.path.join(path, "etc/zones")):
-                        return False
-
-                # get a set of installed packages
-                cati = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
-                pkgs_inst = frozenset([
-                        stem
-                        # Unused variable 'pub'; pylint: disable=W0612
-                        for pub, stem in cati.pkg_names()
-                        # pylint: enable=W0612
-                ])
-
-                # check if the zones packages are installed
-                for pkgs in self.__zone_pkgs:
-                        if (pkgs & pkgs_inst) == pkgs:
-                                return True
-
-                return False
-
-        def __list_zones_cached(self, nocache=False, ignore_errors=False):
-                """List the zones associated with the current image.  Since
-                this involves forking and running zone commands, cache the
-                results."""
-
-                # if nocache is set then delete any cached children
-                if nocache:
-                        self.__zoneadm_list_cache = None
-
-                # try to return the cached children
-                if self.__zoneadm_list_cache != None:
-                        assert type(self.__zoneadm_list_cache) == list
-                        return self.__zoneadm_list_cache
-
-                # see if the target image supports zones
-                if not self.__zones_supported():
-                        self.__zoneadm_list_cache = []
-                        return self.__list_zones_cached()
-
-                # zones are only visible when running in the global zone
-                if not self.__in_gz(ignore_errors=ignore_errors):
-                        self.__zoneadm_list_cache = []
-                        return self.__list_zones_cached()
-
-                # find zones
-                try:
-                        zdict = _list_zones(self.__img.root,
-                            self.__linked.get_path_transform())
-                except OSError as e:
-                        # W0212 Access to a protected member
-                        # pylint: disable=W0212
-                        if ignore_errors:
-                                # don't cache the result
-                                return []
-                        raise apx._convert_error(e)
-                except apx.LinkedImageException as e:
-                        if ignore_errors:
-                                # don't cache the result
-                                return []
-                        raise e
-
-                # convert zone names into into LinkedImageName objects
-                zlist = []
-                # state is unused
-                # pylint: disable=W0612
-                for zone, (path, state) in six.iteritems(zdict):
-                        lin = li.LinkedImageName("{0}:{1}".format(self.__pname,
-                            zone))
-                        zlist.append([lin, path])
-
-                self.__zoneadm_list_cache = zlist
-                return self.__list_zones_cached()
-
-        def init_root(self, root):
-                """See parent class for docstring."""
-                # nuke any cached children
-                self.__zoneadm_list_cache = None
-
-        def guess_path_transform(self, ignore_errors=False):
-                """See parent class for docstring."""
-
-                zlist = self.__list_zones_cached(nocache=True,
-                    ignore_errors=ignore_errors)
-                if not zlist:
-                        return li.PATH_TRANSFORM_NONE
-
-                # only global zones can have zone children, and global zones
-                # always execute with "/" as their root.  so if the current
-                # image path is not "/", then assume we're in an alternate
-                # root.
-                root = self.__img.root.rstrip(os.sep) + os.sep
-                return (os.sep, root)
-
-        def get_child_list(self, nocache=False, ignore_errors=False):
-                """See parent class for docstring."""
-
-                inmemory = []
-                # find any newly attached zone images
-                for lin in self.__children:
-                        path = self.__children[lin][li.PROP_PATH]
-                        inmemory.append([lin, path])
-
-                ondisk = []
-                for (lin, path) in self.__list_zones_cached(nocache,
-                    ignore_errors=ignore_errors):
-                        if lin in [i[0] for i in inmemory]:
-                                # we re-attached a zone in memory.
-                                continue
-                        ondisk.append([lin, path])
-
-                rv = []
-                rv.extend(ondisk)
-                rv.extend(inmemory)
-
-                for lin, path in rv:
-                        assert lin.lin_type == self.__pname
-
-                return rv
-
-        def get_child_props(self, lin):
-                """See parent class for docstring."""
-
-                if lin in self.__children:
-                        return self.__children[lin]
-
-                props = dict()
-                props[li.PROP_NAME] = lin
-                for i_lin, i_path in self.get_child_list():
-                        if lin == i_lin:
-                                props[li.PROP_PATH] = i_path
-                                break
-                assert li.PROP_PATH in props
-
-                props[li.PROP_MODEL] = li.PV_MODEL_PUSH
-                for k, v in six.iteritems(self.attach_props_def):
-                        if k not in props:
-                                props[k] = v
-
-                return props
-
-        def attach_child_inmemory(self, props, allow_relink):
-                """See parent class for docstring."""
-
-                # make sure this child doesn't already exist
-                lin = props[li.PROP_NAME]
-                lin_list = [i[0] for i in self.get_child_list()]
-                assert lin not in lin_list or allow_relink
-
-                # cache properties (sans any temporarl ones)
-                self.__children[lin] = li.rm_dict_ent(props, li.temporal_props)
-
-        def detach_child_inmemory(self, lin):
-                """See parent class for docstring."""
-
-                # make sure this child exists
-                assert lin in [i[0] for i in self.get_child_list()]
-
-                # Delete this linked image
-                del self.__children[lin]
-
-        def sync_children_todisk(self):
-                """See parent class for docstring."""
-
-                # nothing to do
-                return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
-
-
-class LinkedImageZoneChildPlugin(li.LinkedImageChildPlugin):
-        """See parent class for docstring."""
-
-        def __init__(self, lic):
-                """See parent class for docstring."""
-                li.LinkedImageChildPlugin.__init__(self, lic)
-
-        def munge_props(self, props):
-                """See parent class for docstring."""
-
-                #
-                # For zones we always update the pushed child image path to
-                # be '/' (Since any linked children of the zone will be
-                # relative to that zone's root).
-                #
-                props[li.PROP_PATH] = "/"
-
-
-def _zonename():
-        """Get the zonname of the current system."""
-
-        cmd = DebugValues.get_value("bin_zonename") # pylint: disable=E1120
-        if cmd is not None:
-                cmd = [cmd]
-        else:
-                cmd = ["/bin/zonename"]
-
-        # if the command doesn't exist then bail.
-        if not li.path_exists(cmd[0]):
-                return
-
-        # open a temporary file in text mode for compatible string handling
-        fout = tempfile.TemporaryFile(mode="w+")
-        ferrout = tempfile.TemporaryFile(mode="w+")
-        p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
-        p.wait()
-        if p.returncode != 0:
-                cmd = " ".join(cmd)
-                ferrout.seek(0)
-                errout = "".join(ferrout.readlines())
-                ferrout.close()
-                raise apx.LinkedImageException(
-                    cmd_failed=(p.returncode, cmd, errout))
-
-        # parse the command output
-        fout.seek(0)
-        lines = fout.readlines()
-        if lines:
-                zonename = lines[0].rstrip()
-                fout.close()
-                return zonename
-     
-        # If /bin/zonename does not return the expected output,
-        # we raise an exception of LinkedImageException, which
-        # is handled by _in_gz().
-        cmd = " ".join(cmd)
-        raise apx.LinkedImageException(
-                cmd_output_invalid=(cmd, lines))
-
-
-def _zoneadm_list_parse(line, cmd, output):
-        """Parse zoneadm list -p output.  It's possible for zonepath to
-        contain a ":".  If it does it will be escaped to be "\\:".  (But note
-        that if the zonepath contains a "\" it will not be escaped, which
-        is argubaly a bug.)"""
-
-        # zoneadm list output should never contain a NUL char, so
-        # temporarily replace any escaped colons with a NUL, split the string
-        # on any remaining colons, and then switch any NULs back to colons.
-        tmp_char = "\0"
-        fields = [
-                field.replace(tmp_char, ":")
-                for field in line.replace(r"\:", tmp_char).split(":")
-        ]
-
-        try:
-                # Unused variable; pylint: disable=W0612
-                z_id, z_name, z_state, z_path, z_uuid, z_brand, z_iptype = \
-                    fields[:7]
-                # pylint: enable=W0612
-        except ValueError:
-                raise apx.LinkedImageException(
-                    cmd_output_invalid=(cmd, output))
-
-        return z_name, z_state, z_path, z_brand
-
-def _list_zones(root, path_transform):
-        """Get the zones associated with the image located at 'root'.  We
-        return a dictionary where the keys are zone names and the values are
-        tuples containing zone root path and current state. The global zone is
-        excluded from the results. Solaris10 branded zones are excluded from the
+    def __list_zones_cached(self, nocache=False, ignore_errors=False):
+        """List the zones associated with the current image.  Since
+        this involves forking and running zone commands, cache the
         results."""
 
-        rv = dict()
-        cmd = DebugValues.get_value("bin_zoneadm") # pylint: disable=E1120
-        if cmd is not None:
-                cmd = [cmd]
-        else:
-                cmd = ["/usr/sbin/zoneadm"]
+        # if nocache is set then delete any cached children
+        if nocache:
+            self.__zoneadm_list_cache = None
 
-        # if the command doesn't exist then bail.
-        if not li.path_exists(cmd[0]):
-                return rv
+        # try to return the cached children
+        if self.__zoneadm_list_cache != None:
+            assert type(self.__zoneadm_list_cache) == list
+            return self.__zoneadm_list_cache
 
-        # make sure "root" has a trailing '/'
-        root = root.rstrip(os.sep) + os.sep
+        # see if the target image supports zones
+        if not self.__zones_supported():
+            self.__zoneadm_list_cache = []
+            return self.__list_zones_cached()
 
-        # create the zoneadm command line
-        cmd.extend(["-R", str(root), "list", "-cp"])
+        # zones are only visible when running in the global zone
+        if not self.__in_gz(ignore_errors=ignore_errors):
+            self.__zoneadm_list_cache = []
+            return self.__list_zones_cached()
 
-        # execute zoneadm and save its output to a file
-        # open a temporary file in text mode for compatible string handling
-        fout = tempfile.TemporaryFile(mode="w+")
-        ferrout = tempfile.TemporaryFile(mode="w+")
-        p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
-        p.wait()
-        if p.returncode != 0:
-                cmd = " ".join(cmd)
-                ferrout.seek(0)
-                errout = "".join(ferrout.readlines())
-                ferrout.close()
-                raise apx.LinkedImageException(
-                    cmd_failed=(p.returncode, cmd, errout))
+        # find zones
+        try:
+            zdict = _list_zones(self.__img.root,
+                self.__linked.get_path_transform())
+        except OSError as e:
+            # W0212 Access to a protected member
+            # pylint: disable=W0212
+            if ignore_errors:
+                # don't cache the result
+                return []
+            raise apx._convert_error(e)
+        except apx.LinkedImageException as e:
+            if ignore_errors:
+                # don't cache the result
+                return []
+            raise e
 
-        # parse the command output
-        fout.seek(0)
-        output = fout.readlines()
-        fout.close()
-        for l in output:
-                l = l.rstrip()
+        # convert zone names into into LinkedImageName objects
+        zlist = []
+        # state is unused
+        # pylint: disable=W0612
+        for zone, (path, state) in six.iteritems(zdict):
+            lin = li.LinkedImageName("{0}:{1}".format(self.__pname,
+                zone))
+            zlist.append([lin, path])
 
-                z_name, z_state, z_path, z_brand = \
-                    _zoneadm_list_parse(l, cmd, output)
+        self.__zoneadm_list_cache = zlist
+        return self.__list_zones_cached()
 
-                # skip brands that we don't care about
-                # W0511 XXX / FIXME Comments; pylint: disable=W0511
-                # XXX: don't hard code brand names, use a brand attribute
-                # pylint: enable=W0511
-                if z_brand not in ["ipkg", "solaris", "sn1", "labeled"]:
-                        continue
+    def init_root(self, root):
+        """See parent class for docstring."""
+        # nuke any cached children
+        self.__zoneadm_list_cache = None
 
-                # we don't care about the global zone.
-                if z_name == "global":
-                        continue
+    def guess_path_transform(self, ignore_errors=False):
+        """See parent class for docstring."""
 
-                # append "/root" to zonepath
-                z_rootpath = os.path.join(z_path, "root")
-                assert z_rootpath.startswith(root), \
-                    "zone path '{0}' doesn't begin with '{1}".format(
-                    z_rootpath, root)
+        zlist = self.__list_zones_cached(nocache=True,
+            ignore_errors=ignore_errors)
+        if not zlist:
+            return li.PATH_TRANSFORM_NONE
 
-                # If there is a current path transform in effect then revert
-                # the path reported by zoneadm to the original zone path.
-                if li.path_transform_applied(z_rootpath, path_transform):
-                        z_rootpath = li.path_transform_revert(z_rootpath,
-                            path_transform)
+        # only global zones can have zone children, and global zones
+        # always execute with "/" as their root.  so if the current
+        # image path is not "/", then assume we're in an alternate
+        # root.
+        root = self.__img.root.rstrip(os.sep) + os.sep
+        return (os.sep, root)
 
-                # we only care about zones that have been installed
-                if z_state not in zone_installed_states:
-                        continue
+    def get_child_list(self, nocache=False, ignore_errors=False):
+        """See parent class for docstring."""
 
-                rv[z_name] = (z_rootpath, z_state)
+        inmemory = []
+        # find any newly attached zone images
+        for lin in self.__children:
+            path = self.__children[lin][li.PROP_PATH]
+            inmemory.append([lin, path])
+
+        ondisk = []
+        for (lin, path) in self.__list_zones_cached(nocache,
+            ignore_errors=ignore_errors):
+            if lin in [i[0] for i in inmemory]:
+                # we re-attached a zone in memory.
+                continue
+            ondisk.append([lin, path])
+
+        rv = []
+        rv.extend(ondisk)
+        rv.extend(inmemory)
+
+        for lin, path in rv:
+            assert lin.lin_type == self.__pname
 
         return rv
 
+    def get_child_props(self, lin):
+        """See parent class for docstring."""
+
+        if lin in self.__children:
+            return self.__children[lin]
+
+        props = dict()
+        props[li.PROP_NAME] = lin
+        for i_lin, i_path in self.get_child_list():
+            if lin == i_lin:
+                props[li.PROP_PATH] = i_path
+                break
+        assert li.PROP_PATH in props
+
+        props[li.PROP_MODEL] = li.PV_MODEL_PUSH
+        for k, v in six.iteritems(self.attach_props_def):
+            if k not in props:
+                props[k] = v
+
+        return props
+
+    def attach_child_inmemory(self, props, allow_relink):
+        """See parent class for docstring."""
+
+        # make sure this child doesn't already exist
+        lin = props[li.PROP_NAME]
+        lin_list = [i[0] for i in self.get_child_list()]
+        assert lin not in lin_list or allow_relink
+
+        # cache properties (sans any temporarl ones)
+        self.__children[lin] = li.rm_dict_ent(props, li.temporal_props)
+
+    def detach_child_inmemory(self, lin):
+        """See parent class for docstring."""
+
+        # make sure this child exists
+        assert lin in [i[0] for i in self.get_child_list()]
+
+        # Delete this linked image
+        del self.__children[lin]
+
+    def sync_children_todisk(self):
+        """See parent class for docstring."""
+
+        # nothing to do
+        return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
+
+
+class LinkedImageZoneChildPlugin(li.LinkedImageChildPlugin):
+    """See parent class for docstring."""
+
+    def __init__(self, lic):
+        """See parent class for docstring."""
+        li.LinkedImageChildPlugin.__init__(self, lic)
+
+    def munge_props(self, props):
+        """See parent class for docstring."""
+
+        #
+        # For zones we always update the pushed child image path to
+        # be '/' (Since any linked children of the zone will be
+        # relative to that zone's root).
+        #
+        props[li.PROP_PATH] = "/"
+
+
+def _zonename():
+    """Get the zonname of the current system."""
+
+    cmd = DebugValues.get_value("bin_zonename") # pylint: disable=E1120
+    if cmd is not None:
+        cmd = [cmd]
+    else:
+        cmd = ["/bin/zonename"]
+
+    # if the command doesn't exist then bail.
+    if not li.path_exists(cmd[0]):
+        return
+
+    # open a temporary file in text mode for compatible string handling
+    fout = tempfile.TemporaryFile(mode="w+")
+    ferrout = tempfile.TemporaryFile(mode="w+")
+    p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
+    p.wait()
+    if p.returncode != 0:
+        cmd = " ".join(cmd)
+        ferrout.seek(0)
+        errout = "".join(ferrout.readlines())
+        ferrout.close()
+        raise apx.LinkedImageException(
+            cmd_failed=(p.returncode, cmd, errout))
+
+    # parse the command output
+    fout.seek(0)
+    lines = fout.readlines()
+    if lines:
+        zonename = lines[0].rstrip()
+        fout.close()
+        return zonename
+
+    # If /bin/zonename does not return the expected output,
+    # we raise an exception of LinkedImageException, which
+    # is handled by _in_gz().
+    cmd = " ".join(cmd)
+    raise apx.LinkedImageException(
+            cmd_output_invalid=(cmd, lines))
+
+
+def _zoneadm_list_parse(line, cmd, output):
+    """Parse zoneadm list -p output.  It's possible for zonepath to
+    contain a ":".  If it does it will be escaped to be "\\:".  (But note
+    that if the zonepath contains a "\" it will not be escaped, which
+    is argubaly a bug.)"""
+
+    # zoneadm list output should never contain a NUL char, so
+    # temporarily replace any escaped colons with a NUL, split the string
+    # on any remaining colons, and then switch any NULs back to colons.
+    tmp_char = "\0"
+    fields = [
+            field.replace(tmp_char, ":")
+            for field in line.replace(r"\:", tmp_char).split(":")
+    ]
+
+    try:
+        # Unused variable; pylint: disable=W0612
+        z_id, z_name, z_state, z_path, z_uuid, z_brand, z_iptype = \
+            fields[:7]
+        # pylint: enable=W0612
+    except ValueError:
+        raise apx.LinkedImageException(
+            cmd_output_invalid=(cmd, output))
+
+    return z_name, z_state, z_path, z_brand
+
+def _list_zones(root, path_transform):
+    """Get the zones associated with the image located at 'root'.  We
+    return a dictionary where the keys are zone names and the values are
+    tuples containing zone root path and current state. The global zone is
+    excluded from the results. Solaris10 branded zones are excluded from the
+    results."""
+
+    rv = dict()
+    cmd = DebugValues.get_value("bin_zoneadm") # pylint: disable=E1120
+    if cmd is not None:
+        cmd = [cmd]
+    else:
+        cmd = ["/usr/sbin/zoneadm"]
+
+    # if the command doesn't exist then bail.
+    if not li.path_exists(cmd[0]):
+        return rv
+
+    # make sure "root" has a trailing '/'
+    root = root.rstrip(os.sep) + os.sep
+
+    # create the zoneadm command line
+    cmd.extend(["-R", str(root), "list", "-cp"])
+
+    # execute zoneadm and save its output to a file
+    # open a temporary file in text mode for compatible string handling
+    fout = tempfile.TemporaryFile(mode="w+")
+    ferrout = tempfile.TemporaryFile(mode="w+")
+    p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
+    p.wait()
+    if p.returncode != 0:
+        cmd = " ".join(cmd)
+        ferrout.seek(0)
+        errout = "".join(ferrout.readlines())
+        ferrout.close()
+        raise apx.LinkedImageException(
+            cmd_failed=(p.returncode, cmd, errout))
+
+    # parse the command output
+    fout.seek(0)
+    output = fout.readlines()
+    fout.close()
+    for l in output:
+        l = l.rstrip()
+
+        z_name, z_state, z_path, z_brand = \
+            _zoneadm_list_parse(l, cmd, output)
+
+        # skip brands that we don't care about
+        # W0511 XXX / FIXME Comments; pylint: disable=W0511
+        # XXX: don't hard code brand names, use a brand attribute
+        # pylint: enable=W0511
+        if z_brand not in ["ipkg", "solaris", "sn1", "labeled"]:
+            continue
+
+        # we don't care about the global zone.
+        if z_name == "global":
+            continue
+
+        # append "/root" to zonepath
+        z_rootpath = os.path.join(z_path, "root")
+        assert z_rootpath.startswith(root), \
+            "zone path '{0}' doesn't begin with '{1}".format(
+            z_rootpath, root)
+
+        # If there is a current path transform in effect then revert
+        # the path reported by zoneadm to the original zone path.
+        if li.path_transform_applied(z_rootpath, path_transform):
+            z_rootpath = li.path_transform_revert(z_rootpath,
+                path_transform)
+
+        # we only care about zones that have been installed
+        if z_state not in zone_installed_states:
+            continue
+
+        rv[z_name] = (z_rootpath, z_state)
+
+    return rv
+
 def list_running_zones():
-        """Return dictionary with currently running zones of the system in the
-        following form:
-                { zone_name : zone_path, ... }
-        """
+    """Return dictionary with currently running zones of the system in the
+    following form:
+            { zone_name : zone_path, ... }
+    """
 
-        zdict = _list_zones("/", li.PATH_TRANSFORM_NONE)
-        rzdict = {}
-        for z_name, (z_path, z_state) in six.iteritems(zdict):
-                if z_state == ZONE_STATE_STR_RUNNING:
-                        rzdict[z_name] = z_path
+    zdict = _list_zones("/", li.PATH_TRANSFORM_NONE)
+    rzdict = {}
+    for z_name, (z_path, z_state) in six.iteritems(zdict):
+        if z_state == ZONE_STATE_STR_RUNNING:
+            rzdict[z_name] = z_path
 
-        return rzdict
+    return rzdict
