@@ -519,7 +519,7 @@ Packaging Date: {quux10_pkg_date}
        Version: 1.0
         Branch: None
 Packaging Date: {signed10_pkg_date}
-          Size: 10.05 kB
+          Size: 10.23 kB
           FMRI: {signed10_pkg_fmri}
 """.format(**{"foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": \
 self.foo10.get_fmri(include_build=False),

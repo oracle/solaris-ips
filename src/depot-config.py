@@ -389,7 +389,7 @@ def _write_status_response(status, htdocs_path, repo_prefix):
 
 def _createCertificateKey(serial, CN, starttime, endtime,
     dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None,
-    key_type=TYPE_RSA, key_bits=1024, digest="sha256"):
+    key_type=TYPE_RSA, key_bits=2048, digest="sha256"):
     """Generate a certificate given a certificate request.
 
     'serial' is the serial number for the certificate
