@@ -141,7 +141,7 @@ class CertGenerator(object):
         if https:
             subj_str_to_use = self.https_subj_str
         cmd = ["openssl", "genrsa", "-out", "{0}/{1}_key.pem".format(
-            self.keys_dir, new_name), "1024"]
+            self.keys_dir, new_name), "2048"]
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
 

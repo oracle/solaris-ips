@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates.
  */
 
 /*
@@ -55,7 +55,7 @@ main(int argc, char **argv)
 
 	bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
 
-	mkcert(&x509, &pkey, 1024, 0, 365);
+	mkcert(&x509, &pkey, 2048, 0, 365);
 
 	RSA_print_fp(stdout, pkey->pkey.rsa, 0);
 	X509_print_fp(stdout, x509);
