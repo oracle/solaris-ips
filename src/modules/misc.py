@@ -430,11 +430,11 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
         shasum = hash_func()
     dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
 
-    def writeout(buf):
+    def writeout(buffer):
         if isinstance(outfile, StringIO):
-            outfile.write(ubuf.decode())
+            outfile.write(buffer.decode(errors='replace'))
         else:
-            outfile.write(ubuf)
+            outfile.write(buffer)
 
     while True:
         buf = gz.read(64 * 1024)
