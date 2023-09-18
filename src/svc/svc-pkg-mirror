@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
 #
 
 #
@@ -295,12 +295,16 @@ function update_repository {
 	index=0
 	while [ $i -lt ${#publishers[@]} ]; do
 		pub=${publishers[$i]}
+		# All origins for a publisher share the
+		# same TLS client key/cert, even though
+		# the pkg publisher output will show it for
+		# each of them.
 		sslkey=$($PKG -R $ref_image publisher $pub \
-		    | $GREP 'SSL Key:' \
-		    | $GREP -v None | $SED -e 's/.* //g')
+		    | $AWK -F ': ' \
+		    '/SSL Key/ && $2 !~ /None/ { print $2 ; exit}')
 		sslcert=$($PKG -R $ref_image publisher $pub \
-		    | $GREP 'SSL Cert:' \
-		    | $GREP -v None | $SED -e 's/.* //g')
+		    | $AWK -F ': ' \
+		    '/SSL Cert/ && $2 !~ /None/ { print $2 ; exit}')
 		pubtmp=$(mktemp /tmp/pkg.mirror.XXXXXX)
 		$PKG -R $ref_image publisher -F tsv > $pubtmp
 
@@ -321,9 +325,8 @@ function update_repository {
 configured for publisher $pub"
 				continue
 			fi
-			origins[$index]=$uri
-			echo $uri | $GREP -q https://
-			if [ $? -eq 0 ]; then
+			# Only https:// origins need the key/cert
+			if [ "${uri##https://}" != "$uri" ]; then
 				ssl_keys[$index]=$sslkey
 				ssl_certs[$index]=$sslcert
 			else
@@ -333,6 +336,7 @@ configured for publisher $pub"
 			if [ "$proxy" = "-" ]; then
 				proxy=''
 			fi
+			origins[$index]=$uri
 			https_proxies[$index]=$proxy
 			http_proxies[$index]=$proxy
 			clones[$index]=""
