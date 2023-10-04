@@ -34,7 +34,7 @@ ORDER             = 0
 # In the normal case the PLATNUM should be 0, however when
 # producing an SRU build from trunk it should be set to 1
 #
-PLATNUM           = 0
+PLATNUM           = 1
 PKGVERS_COMPONENT = $(MINORNUM).$(UPDATENUM)
 #
 # Generate the BUILDID based upon the tag in the gate.
