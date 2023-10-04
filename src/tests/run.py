@@ -30,8 +30,7 @@ import os
 import sys
 from functools import reduce
 
-assert (sys.version_info.major == 3 and
-       (sys.version_info.minor == 7 or sys.version_info.minor == 9))
+assert sys.version_info.major == 3 and sys.version_info.minor in (7, 9, 11)
 # We need cwd to be the same dir as our program.
 # Python 3.9 issue 44070 has __file__ always returning
 # an absolute path
@@ -425,7 +424,7 @@ if __name__ == "__main__":
         cov.stop()
         shutil.rmtree(covdir)
         cov = None
-    elif not coverage_format in ("xml", "html"):
+    elif coverage_format not in ("xml", "html"):
         print("-c <format> must be xml or html", file=sys.stderr)
         usage()
 

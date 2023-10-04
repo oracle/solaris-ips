@@ -96,8 +96,7 @@ if __name__ == "__main__":
         import gettext
         import locale
         misc.setlocale(locale.LC_ALL, "")
-        gettext.install("pkg", "/usr/share/locale",
-            codeset=locale.getpreferredencoding())
+        gettext.install("pkg", "/usr/share/locale")
     except ImportError:
         pass
 

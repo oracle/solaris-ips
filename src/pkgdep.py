@@ -264,7 +264,7 @@ def resolve(args, img_dir):
 
     provided_image_dir = True
     pkg_image_used = False
-    if img_dir == None:
+    if img_dir is None:
         orig_cwd = None
         try:
             orig_cwd = os.getcwd()
@@ -591,8 +591,7 @@ def main_func():
 #
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)
-    gettext.install("pkg", "/usr/share/locale",
-        codeset=locale.getpreferredencoding())
+    gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
     # Commented out for now while ON fixes the invalid escape

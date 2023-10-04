@@ -115,8 +115,7 @@ def main_func():
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "")
-    gettext.install("pkg", "/usr/share/locale",
-        codeset=locale.getpreferredencoding())
+    gettext.install("pkg", "/usr/share/locale")
     __init_log()
     ret_json = main_func()
     ips_logger.info(json.dumps(ret_json))

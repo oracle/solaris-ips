@@ -48,8 +48,6 @@ import pkg.pkggzip
 import pkg.pkgtarfile as ptf
 from pkg.misc import force_bytes, force_str
 
-if sys.version > '3':
-    long = int
 
 class ArchiveErrors(apx.ApiException):
     """Base exception class for archive class errors."""
@@ -189,7 +187,7 @@ class ArchiveIndex(object):
                     l = line
 
                 name, offset, ignored = l.split(b"\0", 2)
-                yield force_str(name), long(offset)
+                yield force_str(name), int(offset)
                 l = None
         except ValueError:
             raise InvalidArchiveIndex(self.__name)

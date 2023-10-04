@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
 #
 
 #
@@ -96,8 +96,8 @@ LoadModule unixd_module libexec/mod_unixd.so
 %>
 <%
         context.write("""
-LoadModule wsgi_module libexec/mod_wsgi-{0}.so
-""".format(sys.version[:3]))
+LoadModule wsgi_module libexec/mod_wsgi-{0}.{1}.so
+""".format(*sys.version_info[0:2]))
 %>
 
 #
@@ -143,9 +143,9 @@ WSGIScriptAlias ${sroot}/depot ${template_dir}/depot_index.py
         test_proto = os.environ.get("PKG5_TEST_PROTO", None)
         if test_proto:
                 context.write("""
-WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path={0}/usr/lib/python{1}
-SetEnv PKG5_TEST_PROTO {2}
-""".format(test_proto, sys.version[:3], test_proto))
+WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300 python-path={0}/usr/lib/python{1}.{2}
+SetEnv PKG5_TEST_PROTO {3}
+""".format(test_proto, *sys.version_info[0:2], test_proto))
         else:
                 context.write("""
 WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300

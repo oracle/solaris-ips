@@ -35,8 +35,6 @@
 # Imports
 #---------
 import sys
-if sys.version > '3':
-    long = int
 import os
 import stat
 import time
@@ -125,7 +123,7 @@ class _Stream:
         self.fileobj = fileobj
         self.bufsize = bufsize
         self.buf = ""
-        self.pos = long(0)
+        self.pos = 0
         self.closed = False
 
         if type == "gz":
@@ -160,7 +158,7 @@ class _Stream:
         """
         self.cmp = self.zlib.compressobj(9, self.zlib.DEFLATED,
                 -self.zlib.MAX_WBITS, self.zlib.DEF_MEM_LEVEL, 0)
-        timestamp = struct.pack("<L", long(time.time()))
+        timestamp = struct.pack("<L", int(time.time()))
         self.__write("\037\213\010\010{0}\002\377".format(timestamp))
         if self.name.endswith(".gz"):
             self.name = self.name[:-3]
@@ -200,7 +198,7 @@ class _Stream:
             if self.type == "gz":
                 self.fileobj.write(struct.pack("<l", self.crc))
                 self.fileobj.write(struct.pack("<L", self.pos &
-                    long(0xffffFFFF)))
+                    int(0xffffFFFF)))
         if not self._extfileobj:
             self.fileobj.close()
 
@@ -325,7 +323,7 @@ class ExFileObject(object):
         self.closed     = False
         self.offset     = cpioinfo.offset_data
         self.size       = cpioinfo.size
-        self.pos        = long(0)
+        self.pos        = 0
         self.linebuffer = ""
 
     def read(self, size=None):
@@ -376,7 +374,8 @@ class ExFileObject(object):
         result = []
         while True:
             line = self.readline()
-            if not line: break
+            if not line:
+                break
             result.append(line)
         return result
 
@@ -566,7 +565,7 @@ class CpioFile(object):
         self.closed     = False
         self.members    = []    # list of members as CpioInfo objects
         self._loaded    = False # flag if all members have been read
-        self.offset     = long(0)    # current position in the archive file
+        self.offset     = 0     # current position in the archive file
 
         if self._mode == "r":
             self.firstmember = None
