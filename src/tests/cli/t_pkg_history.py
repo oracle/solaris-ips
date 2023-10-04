@@ -150,7 +150,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         self.pkg("history -H")
         o = self.output
         self.assertTrue(
-            re.search("START\s+", o.splitlines()[0]) == None)
+            re.search("START\s+", o.splitlines()[0]) is None)
 
         # Only the operation is listed in short format.
         for op in operations:
@@ -187,7 +187,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         # Ensure that the first item in history output is now
         # purge-history.
         self.assertTrue(
-            re.search("purge-history", o.splitlines()[0]) != None)
+            re.search("purge-history", o.splitlines()[0]) is not None)
 
     def test_4_bug_4639(self):
         """Test that install and uninstall of non-existent packages
@@ -285,7 +285,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         self.pkg("history -H")
         o = self.output
         self.assertTrue(
-            re.search("START\s+", o.splitlines()[0]) == None)
+            re.search("START\s+", o.splitlines()[0]) is None)
 
         # Only the operation is listed in short format.
         for op in operations:
@@ -406,7 +406,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         comma_events = ""
         expected_count = 0
 
-        for ts in random.sample(keys, 3):
+        for ts in random.sample(tuple(keys), 3):
             if not comma_events:
                 comma_events = ts
             else:

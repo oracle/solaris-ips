@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -28,7 +28,7 @@ UPDATENUM         = 4
 # The SRUNUM will need to be reset once the final trunk build for
 # the delivery from trunk has been delivered.
 #
-SRUNUM            = 63
+SRUNUM            = 66
 ORDER             = 0
 #
 # In the normal case the PLATNUM should be 0, however when
@@ -97,6 +97,10 @@ PYTHON39	  = python3.9
 PY39DIR		  = usr/lib/$(PYTHON39)
 PY39DIRVP	  = $(PY39DIR)/vendor-packages
 
+PYTHON311	  = python3.11
+PY311DIR	  = usr/lib/$(PYTHON311)
+PY311DIRVP	  = $(PY311DIR)/vendor-packages
+
 PYDIR		  = usr/lib/$(PYTHON37)
 PYDIRVP		  = $(PYDIR)/vendor-packages
 PKGCMDENV         = \
@@ -141,6 +145,8 @@ PKGMOG_DEFVALS    = \
 	PY37DIRVP=$(PY37DIRVP) \
 	PY39DIR=$(PY39DIR) \
 	PY39DIRVP=$(PY39DIRVP) \
+	PY311DIR=$(PY311DIR) \
+	PY311DIRVP=$(PY311DIRVP) \
 	CHANGESET=$(CHANGESET) \
 	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)

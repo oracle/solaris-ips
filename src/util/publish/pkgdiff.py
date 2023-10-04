@@ -63,7 +63,7 @@ def error(text, exitcode=EXIT_PARTIAL):
 
     print("pkgdiff: {0}".format(text), file=sys.stderr)
 
-    if exitcode != None:
+    if exitcode is not None:
         sys.exit(exitcode)
 
 def main_func():
@@ -366,8 +366,7 @@ def main_func():
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)
-    gettext.install("pkg", "/usr/share/locale",
-        codeset=locale.getpreferredencoding())
+    gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
     if six.PY3:

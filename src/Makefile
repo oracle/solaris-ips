@@ -25,6 +25,7 @@
 
 PYTHON37 = /usr/bin/python3.7
 PYTHON39 = /usr/bin/python3.9
+PYTHON311 = /usr/bin/python3.11
 
 all := TARGET = all
 install := TARGET = install
@@ -55,15 +56,18 @@ SUBDIRS=zoneproxy util/mkcert man
 all: $(SUBDIRS)
 	$(PYTHON37) setup.py build
 	$(PYTHON39) setup.py build
+	$(PYTHON311) setup.py build
 
 clean: $(SUBDIRS)
 	$(PYTHON37) setup.py clean
 	$(PYTHON39) setup.py clean
+	$(PYTHON311) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
 	$(PYTHON37) setup.py clobber
 	$(PYTHON39) setup.py clobber
+	$(PYTHON311) setup.py clobber
 	@cd pkg; pwd; make clobber
 
 #
@@ -73,10 +77,12 @@ clobber: $(SUBDIRS)
 install: $(SUBDIRS)
 	$(PYTHON37) setup.py install
 	$(PYTHON39) setup.py install
+	$(PYTHON311) setup.py install
 
 lint:
 	$(PYTHON37) setup.py lint
 	$(PYTHON39) setup.py lint
+	$(PYTHON311) setup.py lint
 	@cd zoneproxy; pwd; make lint
 
 clint:
@@ -117,6 +123,9 @@ test-37:
 
 test-39:
 	$(PYTHON39) tests/run.py -j ${JOBS} -v
+
+test-311:
+	$(PYTHON311) tests/run.py -j ${JOBS} -v
 
 test:
 	$(MAKE) -k test-37 JOBS=${JOBS}

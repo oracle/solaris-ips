@@ -260,8 +260,7 @@ class OptionError(Exception):
 if __name__ == "__main__":
 
     setlocale(locale.LC_ALL, "")
-    gettext.install("pkg", "/usr/share/locale",
-        codeset=locale.getpreferredencoding())
+    gettext.install("pkg", "/usr/share/locale")
 
     add_content = False
     exit_ready = False

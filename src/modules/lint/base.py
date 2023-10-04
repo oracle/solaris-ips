@@ -78,26 +78,21 @@ class Checker(object):
         self.excluded_checks = []
 
         def get_pkglint_id(method):
-            """Inspects a given checker method to find the
-            'pkglint_id' keyword argument default and returns it."""
+            """Returns 'pkglint_id' keyword argument default value
+            of given method or None in case it doesn't exist."""
 
             # the short name for this checker class, Checker.name
             name = method.__self__.__class__.name
 
-            arg_spec = inspect.getargspec(method)
+            parameters = inspect.signature(method).parameters
+            if "pkglint_id" not in parameters:
+                return None
 
-            # arg_spec.args is a tuple of the method args,
-            # populating the tuple with both arg values for
-            # non-keyword arguments, and keyword arg names
-            # for keyword args
-            c = len(arg_spec.args) - 1
-            try:
-                i = arg_spec.args.index("pkglint_id")
-            except ValueError:
-                return "{0}.?".format(name)
-            # arg_spec.defaults are the default values for
-            # any keyword args, in order.
-            return "{0}{1}".format(name, arg_spec.defaults[c - i])
+            default = parameters['pkglint_id'].default
+            if default is inspect.Parameter.empty:
+                return None
+
+            return f"{name}{default}"
 
         excl = self.config.get("pkglint", "pkglint.exclude")
         if excl is None:
@@ -108,11 +103,11 @@ class Checker(object):
             method = item[1]
             # register the methods in the object that correspond
             # to lint checks
-            if "pkglint_id" in inspect.getargspec(method)[0]:
+            pkglint_id = get_pkglint_id(method)
+            if pkglint_id is not None:
                 value = "{0}.{1}.{2}".format(
                     self.__module__,
                     self.__class__.__name__, method.__name__)
-                pkglint_id = get_pkglint_id(method)
                 if value not in excl:
                     self.included_checks.append(
                         (method, pkglint_id))
@@ -190,7 +185,7 @@ class Checker(object):
             var = action.get_variant_template()
             vc = variant.VariantCombinations(var, True)
             if action.attrs["type"] in multidep_type:
-                if fmris_dict[i] == None:
+                if fmris_dict[i] is None:
                     fmris_dict[i] = get_fmri_set(action)
                 fmris = fmris_dict[i]
             for j in range(i + 1, len(action_list)):

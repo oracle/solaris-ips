@@ -71,8 +71,8 @@ LoadModule unixd_module libexec/mod_unixd.so
 %>
 <%
         context.write("""
-LoadModule wsgi_module libexec/mod_wsgi-{0}.so
-""".format(sys.version[:3]))
+LoadModule wsgi_module libexec/mod_wsgi-{0}.{1}.so
+""".format(*sys.version_info[0:2]))
 %>
 
 

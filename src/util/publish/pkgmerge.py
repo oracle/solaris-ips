@@ -147,7 +147,7 @@ def error(text, exitcode=EXIT_OOPS):
 
     emsg("pkgmerge: {0}".format(text))
 
-    if exitcode != None:
+    if exitcode is not None:
         sys.exit(exitcode)
 
 def get_tracker():
@@ -966,8 +966,7 @@ def match_user_fmris(patterns, cat):
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)
-    gettext.install("pkg", "/usr/share/locale",
-        codeset=locale.getpreferredencoding())
+    gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
     # Make all warnings be errors.
