@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.9 -Es
 #
 # CDDL HEADER START
 #
@@ -34,10 +34,7 @@ import shutil
 import sys
 import tempfile
 import traceback
-if sys.version_info[:2] >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
+from importlib import reload
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

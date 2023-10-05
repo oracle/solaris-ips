@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.9 -Es
 #
 # CDDL HEADER START
 #
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         if opt == "-s":
             size = int(arg)
 
-    assert not fname == None
+    assert fname is not None
 
     lg = open(fname)
 

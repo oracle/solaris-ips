@@ -238,8 +238,6 @@ class PipeFile(object):
     def readinto(self, b):
         """Read up to len(b) bytes into the writable buffer *b* and
         return the numbers of bytes read."""
-        # not-context-manager for py 2.7;
-        # pylint: disable=E1129
         with memoryview(b) as view:
             data = self.read(len(view))
             view[:len(data)] = force_bytes(data)

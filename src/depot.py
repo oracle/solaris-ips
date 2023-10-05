@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.9 -Es
 #
 # CDDL HEADER START
 #
@@ -77,10 +77,8 @@ import subprocess
 import sys
 import tempfile
 
-if sys.version_info[:2] >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
+from importlib import reload
+
 from six.moves.urllib.parse import urlparse, urlunparse
 
 import cherrypy

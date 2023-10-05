@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -uEs
+#!/usr/bin/python3.9 -uEs
 #
 # CDDL HEADER START
 #
@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2023, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages

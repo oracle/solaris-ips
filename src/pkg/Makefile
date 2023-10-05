@@ -101,11 +101,11 @@ PYTHON311	  = python3.11
 PY311DIR	  = usr/lib/$(PYTHON311)
 PY311DIRVP	  = $(PY311DIR)/vendor-packages
 
-PYDIR		  = usr/lib/$(PYTHON37)
+PYDIR		  = usr/lib/$(PYTHON39)
 PYDIRVP		  = $(PYDIR)/vendor-packages
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON37) $(PKGROOT)/usr/bin/
+	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON39) $(PKGROOT)/usr/bin/
 PKG               = $(PKGCMDENV)/pkg
 PKGDEPEND         = $(PKGCMDENV)/pkgdepend
 PKGDIFF           = $(PKGCMDENV)/pkgdiff

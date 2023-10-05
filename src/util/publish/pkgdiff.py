@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.9 -Es
 #
 # CDDL HEADER START
 #
