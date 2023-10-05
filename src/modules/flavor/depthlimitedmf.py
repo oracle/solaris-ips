@@ -28,8 +28,7 @@ if __name__ != "__main__":
 import modulefinder
 import os
 import sys
-if sys.version_info[0] == 3:
-    from importlib.machinery import EXTENSION_SUFFIXES
+from importlib.machinery import EXTENSION_SUFFIXES
 
 # A string used as a component of the pkg.depend.runpath value as a special
 # token to determine where to insert the runpath that pkgdepend generates itself
@@ -56,14 +55,9 @@ class ModuleInfo(object):
         self.name = name
         self.builtin = builtin
         self.patterns = [ "{0}.py", "{0}.pyc", "{0}.pyo", "{0}/__init__.py" ]
-        if sys.version_info[0] == 2:
-            self.patterns += [
-                "{0}.so", "{0}module.so", "64/{0}.so", "64/{0}module.so"
-            ]
-        else:
-            self.patterns += \
-                ["{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES] + \
-                ["64/{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES]
+        self.patterns += \
+            ["{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES] + \
+            ["64/{{0}}{0}".format(s) for s in EXTENSION_SUFFIXES]
         self.dirs = sorted(dirs)
 
     def make_package(self):
@@ -207,14 +201,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
         res = []
         code = co.co_code
-        if sys.version_info >= (2, 5) and sys.version_info < (3, 6):
-            # Python 3.6's modulefinder.py got rid of
-            # scan_opcodes_25() and renamed scan_opcodes_25()
-            # to scan_opcodes(). Previously old scan_opcodes()
-            # was for Python 2.4 and earlier.
-            scanner = self.scan_opcodes_25
-        else:
-            scanner = self.scan_opcodes
+        scanner = self.scan_opcodes
         for what, args in scanner(co):
             if what == "store":
                 name, = args

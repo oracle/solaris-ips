@@ -19,11 +19,11 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
 run: stats.py
-	python3.7 scenario.py
+	python3.9 scenario.py
 
 stats.py:
 	cp ../../modules/client/transport/stats.py .

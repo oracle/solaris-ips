@@ -23,7 +23,7 @@ The above will run all test cases in 8 parallel processes. Other options are als
 Tests running can also be done by using make:
 >       $cd src; sudo make test
 
-Make targets test-27 and test-34 are available for testing specific Python versions.
+Make targets test-37 and test-39 are available for testing specific Python versions.
 
 IPS applications and libraries can be packaged and published into an IPS repository using:
 >       $cd src; make packages;

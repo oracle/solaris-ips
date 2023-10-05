@@ -86,11 +86,11 @@ lint:
 	@cd zoneproxy; pwd; make lint
 
 clint:
-	$(PYTHON37) setup.py clint
+	$(PYTHON39) setup.py clint
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
-        PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON37) setup.py pylint_py3k
+        PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON39) setup.py pylint_py3k
 
 bandit:
 	$(PYTHON39) setup.py bandit

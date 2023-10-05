@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 # Load SMF constants and functions
@@ -51,7 +51,7 @@ case "$1" in
 
 	# adjust the PYTHONPATH to point to the current environment
 	# we need to make sure to adjust the PYTHONPATH accordingly
-	# to a Python 2.7 or 3.4 environment
+	# to a Python 3.x environment
 	python_ver=$(head -1 ${pkg_root}usr/lib/pkg.depotd 2>/dev/null |
 	    awk -F/ '{print $NF}')
 	if [[ $python_ver != *python* ]]; then

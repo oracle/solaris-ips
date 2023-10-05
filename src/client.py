@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7 -Es
+#!/usr/bin/python3.9 -Es
 #
 # CDDL HEADER START
 #
@@ -93,11 +93,7 @@ try:
     import pkg.pipeutils as pipeutils
     import pkg.portable as portable
     import pkg.version as version
-
-    if sys.version_info[:2] >= (3, 4):
-        from importlib import reload
-    else:
-        from imp import reload
+    from importlib import reload
     from pkg.client import global_settings
     from pkg.client.api import (IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL,
         IMG_TYPE_USER, RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,

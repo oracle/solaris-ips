@@ -69,10 +69,7 @@ import traceback
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-if sys.version_info[:2] >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
+from importlib import reload
 from six.moves import configparser, http_client
 from six.moves.urllib.error import HTTPError, URLError
 from six.moves.urllib.parse import urljoin
@@ -323,9 +320,7 @@ if __name__ == "__main__":
         callableObj, *args, **kwargs):
         """Perform the same logic as assertRaises, but then verify
         that the stringified version of the exception contains the
-        regexp pattern.
-
-        Introduced in in python 2.7"""
+        regexp pattern."""
 
         try:
             callableObj(*args, **kwargs)
@@ -577,7 +572,7 @@ if __name__ == "__main__":
         if not su_wrap:
             return "", ""
 
-        if su_wrap == True:
+        if su_wrap is True:
             su_user = get_su_wrap_user()
         else:
             su_user = ""
@@ -849,10 +844,14 @@ if __name__ == "__main__":
                 sout, serr = s.communicate()
                 rc = s.returncode
                 if rc != 0 and rc != 127:
-                    try: os.remove(outpath)
-                    except OSError: pass
-                    try: os.remove(c_path)
-                    except OSError: pass
+                    try:
+                        os.remove(outpath)
+                    except OSError:
+                        pass
+                    try:
+                        os.remove(c_path)
+                    except OSError:
+                        pass
                     raise RuntimeError(
                         "Compile failed: {0} --> {1:d}\n{2}".format(
                         cmd, rc, sout))
@@ -2404,7 +2403,7 @@ class CliTestCase(Pkg5TestCase):
         return self.__imgs_index
 
     def img_path(self, ii=None):
-        if ii != None:
+        if ii is not None:
             return self.__imgs_path[ii]
         return self.__imgs_path[self.__imgs_index]
 
@@ -2814,7 +2813,7 @@ class CliTestCase(Pkg5TestCase):
                 if line == "":
                     continue
                 if line.startswith("add"):
-                    self.assertTrue(current_fmri != None,
+                    self.assertTrue(current_fmri is not None,
                         "Missing open in pkgsend string")
                     accumulate.append(line[4:])
                     continue
@@ -4253,7 +4252,7 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         SingleDepotTestCase.tearDown(self)
 
     def backup_img_path(self, ii=None):
-        if ii != None:
+        if ii is not None:
             return self.__imgs_path_backup[ii]
         return self.__imgs_path_backup[self.img_index()]
 
@@ -4341,7 +4340,7 @@ def mkdir_eexist_ok(p):
             raise e
 
 def env_sanitize(pkg_cmdpath, dv_keep=None):
-    if dv_keep == None:
+    if dv_keep is None:
         dv_keep = []
 
     dv_saved = {}
@@ -4563,7 +4562,7 @@ class ApacheController(object):
                     break
                 time.sleep(check_interval)
 
-            if contact == False:
+            if contact is False:
                 self.stop()
                 raise ApacheStateException("Apache did not "
                     "respond to repeated attempts to make "
@@ -4579,7 +4578,7 @@ class ApacheController(object):
             return
         try:
             lifetime = time.time() - self.__starttime
-            if now == False and lifetime < 1.0:
+            if now is False and lifetime < 1.0:
                 time.sleep(1.0 - lifetime)
         finally:
             try:
@@ -4655,11 +4654,11 @@ class ApacheController(object):
             Then make a little HTTP request to see if the depot is
             responsive to requests """
 
-        if self.__repo_hdl == None:
+        if self.__repo_hdl is None:
             return False
 
         status = self.__repo_hdl.poll()
-        if status != None:
+        if status is not None:
             return False
         return self._network_ping()
 
@@ -4684,7 +4683,6 @@ class SysrepoController(ApacheController):
         except URLError:
             return False
         return True
-
 
 class HttpDepotController(ApacheController):
 

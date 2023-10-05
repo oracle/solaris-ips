@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
@@ -71,7 +71,7 @@ license cr_Oracle license=cr_Oracle
 depend type=conditional fmri=web/server/apache-24/module/apache-ssl-fips-140 \
     predicate=library/security/openssl/openssl-fips-140
 # force a dependency on the six package because we bypass dependency check for it
-depend type=require fmri=library/python/six-37
+depend type=require fmri=library/python/six-39
 #
 # The manual dependency on apache results from our calling apachectl from
 # our method script, and can't be detected by pkgdepend.
@@ -79,4 +79,4 @@ depend type=require fmri=library/python/six-37
 depend type=require fmri=web/server/apache-24
 depend type=require fmri=web/server/apache-24/module/apache-ssl
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-24/module/apache-wsgi-37
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-39

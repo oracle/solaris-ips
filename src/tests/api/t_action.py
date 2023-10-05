@@ -38,10 +38,7 @@ import pkg.actions.signature as signature
 import pkg.client.api_errors as api_errors
 import pkg.digest
 from pkg.client.debugvalues import DebugValues
-if sys.version_info[:2] >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
+from importlib import reload
 
 class TestActions(pkg5unittest.Pkg5TestCase):
 
