@@ -1383,7 +1383,7 @@ misc.bytes_to_str(csize), pfmri, lsummary.read())
         if not matches:
             return ""
 
-        if not "@" in pfmri or "*" in pfmri:
+        if "@" not in pfmri or "*" in pfmri:
             # When using wildcards or exact name match, trim the
             # results to only the unique package stems.
             matches = sorted(set([m.pkg_name for m in matches]))
@@ -1502,11 +1502,10 @@ def nasty_before_handler(nasty_depot, maxroll=100):
         else:
             cherrypy.log("NASTY: return bogus or empty response")
             response = cherrypy.response
-            response.body = random.choice(['',
-                'set this is a bogus action',
-                'Instead of office chair, '
-                    'package contained bobcat.',
-                '{"this is a": "fragment of json"}'])
+            response.body = random.choice([b'',
+                b'set this is a bogus action',
+                b'Instead of office chair, package contained bobcat.',
+                b'{"this is a": "fragment of json"}'])
             return True
     return False
 
@@ -1941,24 +1940,21 @@ class NastyDepotHTTP(DepotHTTP):
             # NASTY
             # Send truncated file
             cherrypy.log("NASTY serve_file: truncated file")
-            response.body = nfile.read(filesz - random.randint(1,
-                filesz - 1))
+            response.body = nfile.read(filesz - random.randint(1, filesz - 1))
             # If we're sending data, lie about the length and
             # make the client catch us.
             if content_type == "application/data":
-                response.headers["Content-Length"] = str(
-                    len(response.body))
+                response.headers["Content-Length"] = str(len(response.body))
         elif self.need_nasty_3():
             # NASTY
             # Write garbage into the response
             cherrypy.log("NASTY serve_file: prepend garbage")
-            response.body = "NASTY!"
+            response.body = b"NASTY!"
             response.body += nfile.read(filesz)
             # If we're sending data, lie about the length and
             # make the client catch us.
             if content_type == "application/data":
-                response.headers["Content-Length"] = str(
-                    len(response.body))
+                response.headers["Content-Length"] = str(len(response.body))
         elif self.need_nasty_3():
             # NASTY
             # overwrite some garbage into the response, without
@@ -1980,6 +1976,7 @@ class NastyDepotHTTP(DepotHTTP):
         else:
             response.body = nfile.read(filesz)
 
+        nfile.close()
         return response.body
 
 
