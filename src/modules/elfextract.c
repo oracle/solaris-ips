@@ -20,7 +20,7 @@
  */
 
 /*
- *  Copyright (c) 2009, 2020, Oracle and/or its affiliates
+ *  Copyright (c) 2009, 2023, Oracle and/or its affiliates.
  */
 
 #include <libelf.h>
@@ -700,8 +700,7 @@ gethashes(int fd, int doelf, int do256, int do512)
 	char		hexchars[17] = "0123456789abcdef";
 
 	if ((elf_version(EV_CURRENT) == EV_NONE) ||
-	    ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) ||
-	    (elf_kind(elf) != ELF_K_ELF)) {
+	    ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL)) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
 		return (NULL);
 	}
@@ -710,6 +709,12 @@ gethashes(int fd, int doelf, int do256, int do512)
 	 * From here until the return value structure is allocated,
 	 * all error returns should jump to hash_out.
 	 */
+
+	if (elf_kind(elf) != ELF_K_ELF) {
+		/* No error is set at this point. */
+		PyErr_SetString(ElfError, "invalid file type");
+		goto hash_out;
+	}
 
 	if ((fstat(fd, &status) == -1) ||
 	    ((hdata.base = mmap(NULL, status.st_size, PROT_READ, MAP_PRIVATE,
