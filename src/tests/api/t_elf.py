@@ -53,13 +53,21 @@ class TestElf(pkg5unittest.Pkg5TestCase):
     def test_non_elf(self):
         """Test that elf routines gracefully handle non-elf objects."""
 
-        p = "this-is-not-an-elf-file.so"
-        self.make_misc_files({p: "this is only a test"})
+        file = "this-is-not-an-elf-file.so"
+        self.make_misc_files({file: "this is only a test"})
         os.chdir(self.test_root)
-        self.assertEqual(elf.is_elf_object(p), False)
-        self.assertRaises(elf.ElfError, elf.get_dynamic, p)
-        self.assertRaises(elf.ElfError, elf.get_hashes, p)
-        self.assertRaises(elf.ElfError, elf.get_info, p)
+        self.assertEqual(elf.is_elf_object(file), False)
+        self.assertRaisesRegexp(
+            elf.ElfError, "Request error: class file/memory mismatch",
+            elf.get_dynamic, file,
+        )
+        self.assertRaisesRegexp(
+            elf.ElfError, "invalid file type", elf.get_hashes, file
+        )
+        self.assertRaisesRegexp(
+            elf.ElfError, "Request error: class file/memory mismatch",
+            elf.get_info, file,
+        )
 
     def test_non_existent(self):
         """Test that elf routines gracefully handle ENOENT."""
