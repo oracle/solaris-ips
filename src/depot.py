@@ -109,10 +109,7 @@ except ImportError:
 # to let the dispatcher to find the correct page handler, we need to skip
 # converting the hyphen symbol.
 punc = string.punctuation.replace("-", "_")
-if six.PY2:
-    translate = string.maketrans(punc, "_" * len(string.punctuation))
-else:
-    translate = str.maketrans(punc, "_" * len(string.punctuation))
+translate = str.maketrans(punc, "_" * len(string.punctuation))
 class Pkg5Dispatcher(Dispatcher):
     def __init__(self, **args):
         Dispatcher.__init__(self, translate=translate)

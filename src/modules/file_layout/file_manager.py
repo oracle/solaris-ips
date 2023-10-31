@@ -39,17 +39,14 @@ wil be moved to that location.  When a file is removed, the layouts are
 checked in turn until a file is found and removed.  The FileManager also
 provides a way to generate all hashes stored by the FileManager."""
 
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
-
 import errno
 import os
+from collections.abc import Iterable
 
 import pkg.client.api_errors as apx
-import pkg.portable as portable
 import pkg.file_layout.layout as layout
+import pkg.portable as portable
+
 
 class NeedToModifyReadOnlyFileManager(apx.ApiException):
     """This exception is raised when the caller attempts to modify a

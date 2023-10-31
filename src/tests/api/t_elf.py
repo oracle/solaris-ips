@@ -57,14 +57,14 @@ class TestElf(pkg5unittest.Pkg5TestCase):
         self.make_misc_files({file: "this is only a test"})
         os.chdir(self.test_root)
         self.assertEqual(elf.is_elf_object(file), False)
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             elf.ElfError, "Request error: class file/memory mismatch",
             elf.get_dynamic, file,
         )
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             elf.ElfError, "invalid file type", elf.get_hashes, file
         )
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             elf.ElfError, "Request error: class file/memory mismatch",
             elf.get_info, file,
         )

@@ -510,18 +510,21 @@ def setlocale(category, loc=None, printer=None):
 
     try:
         locale.setlocale(category, loc)
-        # Because of Python bug 813449, getdefaultlocale may fail
-        # with a ValueError even if setlocale succeeds. So we call
-        # it here to prevent having this error raised if it is
-        # called later by other non-pkg(7) code.
-        locale.getdefaultlocale()
-    except (locale.Error, ValueError):
-        try:
-            dl = " '{0}.{1}'".format(*locale.getdefaultlocale())
-        except ValueError:
-            dl = ""
-        printer("Unable to set locale{0}; locale package may be broken "
-            "or\nnot installed.  Reverting to C locale.".format(dl))
+    except locale.Error:
+        if loc:
+            dl = locale.normalize(loc)
+        else:
+            # Since no locale was given, try to determine what global
+            # locale setting setlocale used.
+            for variable in ('LC_ALL', 'LC_CTYPE', 'LANG', 'LANGUAGE'):
+                localename = os.environ.get(variable, None)
+                if localename:
+                    dl = locale.normalize(localename)
+                    break
+            else:
+                dl = ""
+        printer(f"Unable to set locale {dl}; locale package may be broken or\n"
+                "not installed.  Reverting to C locale.")
         locale.setlocale(category, "C")
 
 

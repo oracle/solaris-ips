@@ -32,7 +32,7 @@ import pkg5unittest
 
 import errno
 import hashlib
-import imp
+import importlib.machinery
 import os
 import os.path
 import pkg.p5p
@@ -1012,13 +1012,10 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
         mod_name = "sysrepo_p5p"
         src_name = "{0}.py".format(mod_name)
         sysrepo_p5p_file = os.path.join(self.sysrepo_template_dir, src_name)
-        if six.PY2:
-            self.sysrepo_p5p = imp.load_module(mod_name, open(sysrepo_p5p_file),
-                src_name, ("py", "r", imp.PY_SOURCE))
-        elif six.PY3:
-            import importlib.machinery
-            loader = importlib.machinery.SourceFileLoader(mod_name, sysrepo_p5p_file)
-            self.sysrepo_p5p = loader.load_module()
+        loader = importlib.machinery.SourceFileLoader(mod_name, sysrepo_p5p_file)
+        spec = importlib.util.spec_from_loader(loader.name, loader)
+        self.sysrepo_p5p = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.sysrepo_p5p)
 
 
         # now create a simple p5p file that we can use in our tests

@@ -85,21 +85,21 @@ class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
         ac = AsyncCall()
         ac.start(self.__add, 1, 2, 3)
         if six.PY2:
-            self.assertRaisesRegexp(AsyncCallException,
+            self.assertRaisesRegex(AsyncCallException,
                 "takes exactly 2 arguments",
                 ac.result)
         else:
-            self.assertRaisesRegexp(AsyncCallException,
+            self.assertRaisesRegex(AsyncCallException,
                 "takes 2 positional arguments",
                 ac.result)
         ac = AsyncCall()
         ac.start(self.__add, x=1, y=2, z=3)
-        self.assertRaisesRegexp(AsyncCallException,
+        self.assertRaisesRegex(AsyncCallException,
             "got an unexpected keyword argument",
             ac.result)
         ac = AsyncCall()
         ac.start(self.__add, y=2, z=3)
-        self.assertRaisesRegexp(AsyncCallException,
+        self.assertRaisesRegex(AsyncCallException,
             "got an unexpected keyword argument",
             ac.result)
 
@@ -108,7 +108,7 @@ class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
         DebugValues["async_thread_error"] = 1
         ac = AsyncCall()
         ac.start(self.__nop)
-        self.assertRaisesRegexp(AsyncCallException,
+        self.assertRaisesRegex(AsyncCallException,
             "async_thread_error",
             ac.result)
 
@@ -195,21 +195,21 @@ class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
         self.assertEqual(rv, 3)
 
         # test rpc call with an invalid number of arguments
-        self.assertRaisesRegexp(AsyncCallException,
+        self.assertRaisesRegex(AsyncCallException,
             "Invalid parameters.",
             self.__server_setup_and_call,
             "add", x=1, y=2, z=3,
             http_enc=http_enc, use_proc=use_proc)
 
-        # test rpc call of a non-existant method
-        self.assertRaisesRegexp(AsyncCallException,
+        # test rpc call of a non-existent method
+        self.assertRaisesRegex(AsyncCallException,
             "Method foo not supported.",
             self.__server_setup_and_call,
             "foo",
             http_enc=http_enc, use_proc=use_proc)
 
         # test rpc call of a server function that raises an exception
-        self.assertRaisesRegexp(AsyncCallException,
+        self.assertRaisesRegex(AsyncCallException,
             "Server error: .* Exception: raise_ex()",
             self.__server_setup_and_call,
             "raise_ex",
