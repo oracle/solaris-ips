@@ -316,7 +316,7 @@ if __name__ == "__main__":
         raise self.failureException(
             "\"{0}\" does not match \"{1}\"".format(regexp, text))
 
-    def assertRaisesRegexp(self, excClass, regexp,
+    def assertRaisesRegex(self, excClass, regexp,
         callableObj, *args, **kwargs):
         """Perform the same logic as assertRaises, but then verify
         that the stringified version of the exception contains the
@@ -1096,10 +1096,7 @@ if __name__ == "__main__":
 
             conf = configparser.RawConfigParser()
             with open(rcfile) as f:
-                if six.PY2:
-                    conf.readfp(f)
-                else:
-                    conf.read_file(f)
+                conf.read_file(f)
 
             for key in config:
                 conf.set(section, key, config[key])
@@ -2134,21 +2131,6 @@ class Pkg5TestSuite(unittest.TestSuite):
         except IndexError:
             # No tests; that's ok.
             return
-
-        # This is needed because the import of some modules (such as
-        # pygtk or pango) causes the default encoding for Python to be
-        # changed which can can cause tests to succeed when they should
-        # fail due to unicode issues:
-        #     https://bugzilla.gnome.org/show_bug.cgi?id=132040
-        if six.PY2:
-            default_utf8 = getattr(self._tests[0], "default_utf8",
-                False)
-            if not default_utf8:
-                # Now reset to the default a standard Python
-                # distribution uses.
-                sys.setdefaultencoding("ascii")
-            else:
-                sys.setdefaultencoding("utf-8")
 
         def setUp_donothing():
             pass

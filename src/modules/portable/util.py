@@ -47,12 +47,8 @@ def get_canonical_os_name():
     """
 
     psl = platform.system().lower()
-    if psl in ['sunos', 'darwin', 'windows', 'aix']:
+    if psl in ['sunos', 'darwin', 'windows', 'aix', 'linux']:
         return psl
-
-    if psl == 'linux':
-        # add distro information for Linux
-        return 'linux_{0}'.format(platform.dist()[0])
 
     # Workaround for python bug 1082, on Vista, platform.system()
     # returns 'Microsoft'

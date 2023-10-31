@@ -342,18 +342,6 @@ class History(object):
         # of just referencing self to avoid any of the special logic in
         # place interfering with logic here.
         if name == "operation_name":
-            # Before a new operation starts, clear exception state
-            # for the current one so that when this one ends, the
-            # last operation's exception won't be recorded to this
-            # one.  If the error hasn't been recorded by now, it
-            # doesn't matter anyway, so should be safe to clear.
-            # sys.exc_clear() isn't supported in Python 3, and
-            # couldn't find a replacement.
-            try:
-                sys.exc_clear()
-            except:
-                pass
-
             # Mark the operation as having started and record
             # other, relevant information.
             op.start_time = misc.time_to_timestamp(None)

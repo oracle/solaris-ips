@@ -292,18 +292,9 @@ class ManifestChecker(Checker):
 
         if os.path.exists(self.classification_path):
             try:
-                if six.PY2:
-                    self.classification_data = \
-                        configparser.SafeConfigParser()
-                    self.classification_data.readfp(
-                        open(self.classification_path))
-                else:
-                    # SafeConfigParser has been renamed to
-                    # ConfigParser in Python 3.2.
-                    self.classification_data = \
-                        configparser.ConfigParser()
-                    self.classification_data.read_file(
-                        open(self.classification_path))
+                self.classification_data = configparser.ConfigParser()
+                with open(self.classification_path) as ifile:
+                    self.classification_data.read_file(ifile)
             except Exception as err:
                 # any exception thrown here results in a null
                 # classification_data object.  We deal with that

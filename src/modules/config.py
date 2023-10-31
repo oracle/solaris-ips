@@ -1515,16 +1515,10 @@ class FileConfig(Config):
                 raise
         else:
             try:
-                # readfp() will be removed in futher Python
-                # versions, use read_file() instead.
-                if six.PY2:
-                    cp.readfp(efile)
-                else:
-                    cp.read_file(efile)
+                cp.read_file(efile)
             except (configparser.ParsingError,
-                configparser.MissingSectionHeaderError) as e:
-                raise api_errors.InvalidConfigFile(
-                    self._target)
+                configparser.MissingSectionHeaderError):
+                raise api_errors.InvalidConfigFile(self._target)
             # Attempt to determine version from contents.
             try:
                 version = cp.getint("CONFIGURATION", "version")

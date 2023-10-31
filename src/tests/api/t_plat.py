@@ -81,7 +81,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
         if util.get_canonical_os_type() != 'windows':
             return
         import pkg.portable.os_windows as os_windows
-        cwd = os.getcwdu()
+        cwd = os.getcwd()
         exefilesrc = 'C:\\Windows\\system32\\more.com'
         self.assertTrue(os.path.exists(exefilesrc))
 
@@ -124,7 +124,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
         if util.get_canonical_os_type() != 'windows':
             return
         import pkg.portable.os_windows as os_windows
-        cwd = os.getcwdu()
+        cwd = os.getcwd()
         exefilesrc = 'C:\\Windows\\system32\\more.com'
         self.assertTrue(os.path.exists(exefilesrc))
 

@@ -715,7 +715,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 try:
                     os.makedirs(os.path.join(pkgroot, entry), mode)
                 except OSError as err:
-                    if err.errno != os.errno.EEXIST:
+                    if err.errno != errno.EEXIST:
                         raise
 
         pkginfopath = os.path.join(pkgroot, "pkginfo")
@@ -1568,7 +1568,8 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
             # Add the directories implied by the target
             dirs.update(dirlist(os.path.dirname(target)))
-            dirs.discard(""); dirs.discard(".")
+            dirs.discard("")
+            dirs.discard(".")
             for d in dirs:
                 expected_mf += "dir path={0}\n".format(d)
 

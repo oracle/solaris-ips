@@ -27,11 +27,9 @@
 
 # aspects of pkglint configuration
 
+import configparser
 import os
-import six
 from collections import OrderedDict
-
-from six.moves import configparser
 
 defaults = {
     "log_level": "INFO",
@@ -70,23 +68,11 @@ class PkglintConfig(object):
                     _("unable to read config file: {0} ").format(
                     err))
         try:
-            if six.PY2:
-                self.config = configparser.SafeConfigParser(
-                    defaults)
-            else:
-                # SafeConfigParser has been renamed to
-                # ConfigParser in Python 3.2.
-                self.config = configparser.ConfigParser(
-                    defaults)
+            self.config = configparser.ConfigParser(defaults)
             if not config_file:
-                if six.PY2:
-                    self.config.readfp(
-                        open("/usr/share/lib/pkg/pkglintrc"))
-                else:
-                    self.config.read_file(
-                        open("/usr/share/lib/pkg/pkglintrc"))
-                self.config.read(
-                    [os.path.expanduser("~/.pkglintrc")])
+                with open("/usr/share/lib/pkg/pkglintrc") as ifile:
+                    self.config.read_file(ifile)
+                self.config.read([os.path.expanduser("~/.pkglintrc")])
             else:
                 self.config.read(config_file)
 
