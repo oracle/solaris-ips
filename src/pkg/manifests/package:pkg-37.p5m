@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2019, 2022, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2023, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-37@$(PKGVERS)
@@ -162,7 +162,7 @@ file path=$(PY37DIRVP)/pkg/flavor/elf.py
 file path=$(PY37DIRVP)/pkg/flavor/hardlink.py
 file path=$(PY37DIRVP)/pkg/flavor/python.py
 file path=$(PY37DIRVP)/pkg/flavor/script.py
-file path=$(PY37DIRVP)/pkg/flavor/smf_manifest.py
+file path=$(PY37DIRVP)/pkg/flavor/smf_manifest.py pkg.depend.bypass-generate=.*
 file path=$(PY37DIRVP)/pkg/fmri.py pkg.depend.bypass-generate=.*six.*
 file path=$(PY37DIRVP)/pkg/indexer.py pkg.depend.bypass-generate=.*six.*
 dir  path=$(PY37DIRVP)/pkg/lint
