@@ -38,6 +38,9 @@ import stat
 import tempfile
 import unittest
 
+import pkg.facet as facet
+import pkg.variant as variant
+
 from pkg.client.pkgdefs import EXIT_OOPS
 
 class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
@@ -780,6 +783,74 @@ unknown foo
         self.pkg("change-variant 'variant?=strawberry'", exit=1)
         self.pkg("change-variant 'variant?=strawberry' "
                 "'variant.unknown=strawberry'", exit=1)
+
+
+class TestPkgVarcetErrors(pkg5unittest.Pkg5TestCase):
+    """This test class verifies that errors raised while within the _varcet
+    extension are handled gracefully and won't cause segmentation faults."""
+
+    def test_01_facet_error_checking(self):
+        """Verify that _allow_facet extension function has
+        sufficient error checking."""
+
+        class Inner:
+            def __init__(self, problem):
+                self.problem = problem
+
+            def __str__(self):
+                if self.problem == 0:
+                    return "fine"
+                elif self.problem == 1:  # Exception
+                    raise ValueError
+                elif self.problem == 2:  # BaseException
+                    raise KeyboardInterrupt
+
+        class Action:
+            def __init__(self, problem, inproblem):
+                if problem == 0:
+                    self.attrs = {"facet.debug.test": Inner(inproblem)}
+                elif problem == 1:
+                    # Not an Unicode object
+                    self.attrs = {b"facet.debug.test": Inner(inproblem)}
+
+        facets = facet.Facets({"facet.debug.test": True})
+        facets.allow_action(Action(0, 0), None)
+
+        # attr encoding failure handling
+        self.assertRaises(TypeError, facets.allow_action, Action(1, 0), None)
+
+        # value encoding failure handling
+        self.assertEquals(facets.allow_action(Action(0, 1), None), False)
+        self.assertRaises(
+            KeyboardInterrupt, facets.allow_action, Action(0, 2), None
+        )
+
+    def test_02_variant_error_checking(self):
+        """Verify that _allow_variant extension function has
+        sufficient error checking."""
+
+        class Action:
+            def __init__(self, problem):
+                if problem == 0:
+                    self.attrs = {"variant.icecream": "strawberry"}
+                elif problem == 1:
+                    # Non Unicode key
+                    self.attrs = {b"variant.icecream": "strawberry"}
+                elif problem == 2:
+                    # Non Unicode value
+                    self.attrs = {"variant.icecream": b"strawberry"}
+
+        variants = variant.Variants({"variant.icecream": "strawberry"})
+        variants.allow_action(Action(0), None)
+
+        # attr and value encoding failure handling
+        self.assertRaises(TypeError, variants.allow_action, Action(1), None)
+        self.assertEquals(variants.allow_action(Action(2), None), False)
+
+        # variant value encoding failure handling
+        variants = variant.Variants({"variant.icecream": b"strawberry"})
+        self.assertRaises(TypeError, variants.allow_action, Action(0), None)
+
 
 if __name__ == "__main__":
     unittest.main()
