@@ -558,7 +558,7 @@ class TransportRepoURI(RepositoryURI):
             return self.uri == other.uri and \
                 self.proxy == other.proxy
         if isinstance(other, six.string_types):
-            return self.uri == other and self.proxy == None
+            return self.uri == other and self.proxy is None
         return False
 
     def __ne__(self, other):
@@ -566,7 +566,7 @@ class TransportRepoURI(RepositoryURI):
             return self.uri != other.uri or \
                 self.proxy != other.proxy
         if isinstance(other, six.string_types):
-            return self.uri != other or self.proxy != None
+            return self.uri != other or self.proxy is not None
         return True
 
     __hash__ = object.__hash__
@@ -1659,10 +1659,9 @@ pkg unset-publisher {0}
         osets = collections.defaultdict(list)
 
         for origin, opath in self.__gen_origin_paths():
-            cat = pkg.catalog.Catalog(meta_root=opath,
-                read_only=True)
+            cat = pkg.catalog.Catalog(meta_root=opath, read_only=True)
             if not cat.exists:
-                key = None
+                key = ("0", "0")
             else:
                 key = (str(cat.created), str(cat.last_modified))
             osets[key].append(origin)
@@ -1945,7 +1944,7 @@ pkg unset-publisher {0}
         flist = []
         if not full_refresh and v1_cat.exists:
             flist = v1_cat.get_updates_needed(tempdir)
-            if flist == None:
+            if flist is None:
                 return False, True
         else:
             attrs = pkg.catalog.CatalogAttrs(meta_root=tempdir)

@@ -359,7 +359,7 @@ class PkgDupActionChecker(base.ActionChecker):
                             continue
 
                         action_types.add(a.name)
-                        if not key in a.attrs:
+                        if key not in a.attrs:
                             continue
 
                         for val in a.attrlist(key):
@@ -1562,11 +1562,11 @@ class PkgActionChecker(base.ActionChecker):
             start_pattern  + "uninstall-on-uninstall",
         ]
 
-        if not "name" in action.attrs or \
+        if "name" not in action.attrs or \
             not action.attrs["name"].startswith(start_pattern):
             return
 
-        if not action.attrs["name"] in supported_actuators:
+        if action.attrs["name"] not in supported_actuators:
             engine.warning(
                 _("invalid package actuator name {attr} in {fmri}\n"
                 "supported values: {sact}").format(
@@ -1610,16 +1610,11 @@ class PkgActionChecker(base.ActionChecker):
         """ELF files should be delivered as 64-bit objects, other
         than libraries.
 
-        The pkglint parameter pkglint.action0014.report_type can change
-        whether this check issues errors or warnings. The value of
-        this parameter should be "error" or "warning". Any other value
-        defaults to "warning"
+        The boolean pkglint parameter pkglint.action014.report_errors can be
+        set to True to force this check to issue errors instead of warnings.
+        This is done via the pkglintrc config file:
+          pkglint.action014.report_errors = True
         """
-
-        # Note that this check is intentionally delivered as disabled
-        # by default in the pkglintrc config file. The check exists
-        # so that we can move packages toward best-practises,
-        # but this may not be appropriate in all cases.
 
         if action.name != "file":
             return
