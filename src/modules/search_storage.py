@@ -321,27 +321,25 @@ class IndexStoreMainDict(IndexStoreBase):
         "quote".  The details of the contents on entries are described
         in _write_main_dict_line in indexer.py.
         """
-        sep_chars = IndexStoreMainDict.sep_chars
-        res = "{0}".format(quote(str(token)))
-        for ati, atl in enumerate(entries):
-            action_type, atl = atl
-            res += "{0}{1}".format(sep_chars[0], action_type)
-            for sti, stl in enumerate(atl):
-                subtype, stl = stl
-                res += "{0}{1}".format(sep_chars[1], subtype)
-                for fvi, fvl in enumerate(stl):
-                    full_value, fvl = fvl
-                    res += "{0}{1}".format(sep_chars[2],
-                        quote(str(full_value)))
-                    for pfi, pfl in enumerate(fvl):
-                        pfmri_index, pfl = pfl
-                        res += "{0}{1}".format(sep_chars[3],
-                            pfmri_index)
+        res = quote(str(token))
+        for action_type, atl in entries:
+            # For performance reasons, 'sep_chars' symbols
+            # are placed directly into the code.
+            # uses sep_chars[0] == ' '
+            res += f" {action_type}"
+            for subtype, stl in atl:
+                # uses sep_chars[1] == '!'
+                res += f"!{subtype}"
+                for full_value, fvl in stl:
+                    # uses sep_chars[2] == '@'
+                    res += f"@{quote(str(full_value))}"
+                    for pfmri_index, pfl in fvl:
+                        # uses sep_chars[3] == '#'
+                        res += f"#{pfmri_index}"
                         for offset in pfl:
-                            res += "{0}{1}".format(
-                                sep_chars[4],
-                                offset)
-        return res + "\n"
+                            # uses sep_chars[4] == ','
+                            res += f",{offset}"
+        return f"{res}\n"
 
     def count_entries_removed_during_partial_indexing(self):
         """Returns the number of entries removed during a second phase
