@@ -51,9 +51,9 @@ import pkg.publish.dependencies as dependencies
 # updated. py_ver_lib is the string associated with the
 # cpython library for the version of python (can be found
 # using from importlib.machinery import EXTENSION_SUFFIXES).
-py_ver_default = "3.7"
-py_ver_lib = "37m"
-py_ver_other = "3.9"
+py_ver_default = "3.9"
+py_ver_lib = "39"
+py_ver_other = "3.11"
 py_ver_lib_list = ["{0}.abi3.so",
                    "{0}.cpython-{1}.so".format("{0}", py_ver_lib),
                    "64/{0}.abi3.so",
@@ -2692,8 +2692,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
         # finally, test a combination of the above, we have:
         # pkg.depend.bypass-generate=.*/pdtest.py \
-        # pkg.depend.bypass-generate=usr/lib/python3.7/vendor-packages/.* \
-        # pkg.depend.bypass-generate=usr/lib/python3.7/site-packages/pkgdep_runpath/pdtest.cpython-37m.so
+        # pkg.depend.bypass-generate=usr/lib/python3.9/vendor-packages/.* \
+        # pkg.depend.bypass-generate=usr/lib/python3.9/site-packages/pkgdep_runpath/pdtest.cpython-39.so
         t_path = self.make_manifest(
             self.python_wildcard_combo_bypass_manf)
 

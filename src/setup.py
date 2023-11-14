@@ -103,7 +103,7 @@ extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 cffi_dir = os.path.normpath(os.path.join(pwd, "cffi_src"))
 
 py_version = '.'.join(platform.python_version_tuple()[:2])
-assert py_version in ('3.7', '3.9', '3.11')
+assert py_version in ('3.9', '3.11')
 py_install_dir = 'usr/lib/python' + py_version + '/vendor-packages'
 
 py64_executable = None
@@ -1894,6 +1894,7 @@ setup(cmdclass = cmdclasses,
     ext_modules = ext_modules,
     classifiers = [
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.11',
     ]
 )
