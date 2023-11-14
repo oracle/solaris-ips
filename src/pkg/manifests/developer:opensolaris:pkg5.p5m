@@ -34,7 +34,6 @@ depend type=require fmri=pkg:/developer/build/onbld
 depend type=require fmri=pkg:/developer/documentation-tool/xml2roff
 depend type=require fmri=pkg:/developer/intltool
 depend type=require fmri=pkg:/developer/python/pylint
-depend type=require fmri=pkg:/developer/versioning/mercurial
 depend type=require fmri=pkg:/developer/versioning/mercurial58
 depend type=require fmri=pkg:/library/python/bandit
 depend type=require fmri=pkg:/library/python/cffi
@@ -50,7 +49,6 @@ depend type=require fmri=pkg:/library/python/rpdb
 depend type=require fmri=pkg:/library/python/six
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-311
-depend type=require fmri=pkg:/runtime/python-37
 depend type=require fmri=pkg:/runtime/python-39
 depend type=require fmri=pkg:/system/header
 depend type=require fmri=pkg:/system/linker
