@@ -25,10 +25,11 @@ from . import testutils
 if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 
+import glob
 import os
 import pkg5unittest
-import unittest
-import sys
+import re
+import subprocess
 import pkg.portable as portable
 
 
@@ -105,6 +106,40 @@ if __name__ == "__main__":
                     open C@1.0,5.11-0
                     add depend type=origin root-image=true fmri=pkg:/feature/firmware/no-such-enumerator
                     close"""]
+
+    def tearDown(self):
+        """Try to clean core files dumped by fwenum dump_core=1"""
+
+        res = subprocess.run(["coreadm"], capture_output=True)
+        if b"global core dumps: enabled" not in res.stdout:
+            # Global core dumps are not enabled, there won't be any core files.
+            return
+
+        pattern = None
+        for line in res.stdout.splitlines():
+            if b"global core file pattern:" in line:
+                pattern = line.strip().split(b" ")[-1]
+                pattern = re.sub(rb"%.", b"*", pattern)
+                break
+
+        if pattern is None:
+            # Couldn't determine the file pattern for global cores.
+            return
+
+        cores = glob.glob(pattern)
+        for core in cores:
+            res = subprocess.run(
+                [b"/bin/mdb", core], input=b"::status\n", capture_output=True
+            )
+            # Make sure that only fwenum cores with dump_core=1 are deleted.
+            if (
+                res.returncode == 0
+                and b"/usr/bin/python" in res.stdout
+                and b"smf_cmds/fwenum" in res.stdout
+                and b"dump_core=1" in res.stdout
+                and b"SIGABRT" in res.stdout
+            ):
+                portable.remove(core)
 
     def test_fw_dependency(self):
         """test origin firmware dependency"""
