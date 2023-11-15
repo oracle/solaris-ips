@@ -6,58 +6,75 @@
     pkg:/developer/documentation-tool/xml2roff
     pkg:/developer/intltool
     pkg:/developer/python/pylint
+    pkg:/developer/versioning/mercurial
     pkg:/developer/versioning/mercurial58
+    pkg:/library/python/asn1crypto-37
     pkg:/library/python/bandit
     pkg:/library/python/asn1crypto
     pkg:/library/python/asn1crypto-39
     pkg:/library/python/asn1crypto-311
     pkg:/library/python/cffi
+    pkg:/library/python/cffi-37
     pkg:/library/python/cffi-39
     pkg:/library/python/cffi-311
     pkg:/library/python/cryptography
+    pkg:/library/python/cryptography-37
     pkg:/library/python/cryptography-39
     pkg:/library/python/cryptography-311
     pkg:/library/python/cherrypy
+    pkg:/library/python/cherrypy-37
     pkg:/library/python/cherrypy-39
     pkg:/library/python/cherrypy-311
     pkg:/library/python/coverage
+    pkg:/library/python/coverage-37
     pkg:/library/python/coverage-39
     pkg:/library/python/coverage-311
     pkg:/library/python/jsonrpclib
+    pkg:/library/python/jsonrpclib-37
     pkg:/library/python/jsonrpclib-39
     pkg:/library/python/jsonrpclib-311
     pkg:/library/python/jsonschema
+    pkg:/library/python/jsonschema-37
     pkg:/library/python/jsonschema-39
     pkg:/library/python/jsonschema-311
     pkg:/library/python/mako
+    pkg:/library/python/mako-37
     pkg:/library/python/mako-39
     pkg:/library/python/mako-311
     pkg:/library/python/pycodestyle
     pkg:/library/python/ply
+    pkg:/library/python/ply-37
     pkg:/library/python/ply-39
     pkg:/library/python/ply-311
     pkg:/library/python/protend
+    pkg:/library/python/portend-37
     pkg:/library/python/portend-39
     pkg:/library/python/portend-311
     pkg:/library/python/portend
     pkg:/library/python/prettytable
+    pkg:/library/python/prettytable-37
     pkg:/library/python/prettytable-39
     pkg:/library/python/prettytable-311
     pkg:/library/python/pycurl
+    pkg:/library/python/pycurl-37
     pkg:/library/python/pycurl-39
     pkg:/library/python/pycurl-311
     pkg:/library/python/pyopenssl
+    pkg:/library/python/pyopenssl-37
     pkg:/library/python/pyopenssl-39
     pkg:/library/python/pyopenssl-311
     pkg:/library/python/six
+    pkg:/library/python/six-37
     pkg:/library/python/six-39
     pkg:/library/python/six-311
     pkg:/library/python/rapidjson
+    pkg:/library/python/rapidjson-37
     pkg:/library/python/rapidjson-39
     pkg:/library/python/rapidjson-311
     pkg:/library/python/rpdb
     pkg:/package/svr4
     pkg:/runtime/python
+    pkg:/runtime/python-37
     pkg:/runtime/python-39
     pkg:/runtime/python-311
     pkg:/service/network/dns/mdns
@@ -68,6 +85,7 @@
     pkg:/system/library
     pkg:/system/library/libc
     pkg:/system/library/math
+    pkg:/system/library/python/solaris-core-37
     pkg:/system/library/python/solaris-core-39
     pkg:/system/library/security/crypto
     pkg:/system/library/smf
@@ -82,5 +100,6 @@
     pkg:/web/server/apache-24
     pkg:/web/server/apache-24/module/apache-ssl
     pkg:/web/server/apache-24/module/apache-wsgi
+    pkg:/web/server/apache-24/module/apache-wsgi-37
     pkg:/web/server/apache-24/module/apache-wsgi-39
     pkg:/web/server/apache-24/module/apache-wsgi-311

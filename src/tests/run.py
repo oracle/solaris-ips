@@ -30,13 +30,22 @@ import os
 import sys
 from functools import reduce
 
-assert sys.version_info.major == 3 and sys.version_info.minor in (9, 11)
-
+assert sys.version_info.major == 3 and sys.version_info.minor in (7, 9, 11)
 # We need cwd to be the same dir as our program.
-cwd = os.getcwd()
-if cwd != os.path.dirname(__file__):
-    os.chdir(os.path.dirname(__file__))
-
+# Python 3.9 issue 44070 has __file__ always returning
+# an absolute path
+flag = False
+if sys.version_info.minor >= 9:
+    cwd = os.getcwd()
+    if cwd != os.path.dirname(__file__):
+        os.chdir(os.path.dirname(__file__))
+        flag = True
+elif sys.version_info.minor == 7:
+    if os.path.dirname(__file__) != "" and \
+       os.path.dirname(__file__) != ".":
+        os.chdir(os.path.dirname(__file__))
+        flag = True
+if flag:
     os.putenv('PYEXE', sys.executable)
     cmd = [sys.executable, "run.py"]
     import subprocess
