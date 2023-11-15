@@ -44,9 +44,16 @@ import pkg.publish.dependencies as dependencies
 DDP = base.Dependency.DEPEND_DEBUG_PREFIX
 
 assert sys.version_info.major == 3
-if sys.version_info.minor == 9:
+# The test suite is written such that testing is only possible between two
+# versions. With 3.11 being added, only some combinations of py_ver_default
+# and py_ver_other are being tested.
+# This will need to be fixed up during 3.7 support removal.
+if sys.version_info.minor == 7:
+    py_ver_default = "3.7"
+    py_ver_other = "3.9"
+elif sys.version_info.minor == 9:
     py_ver_default = "3.9"
-    py_ver_other = "3.11"
+    py_ver_other = "3.7"
 else:
     py_ver_default = "3.11"
     py_ver_other = "3.9"
@@ -543,7 +550,7 @@ from pkg.misc import EmptyI
 """
 
     python3_so_text = """\
-#!/usr/bin/python3.9
+#!/usr/bin/python3.7
 
 import zlib
 """
@@ -662,7 +669,9 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
         discovered.
         """
 
-        if ver == "3.9":
+        if ver == "3.7":
+            v3 = "37m"
+        elif ver == "3.9":
             v3 = "39"
         elif ver == "3.11":
             v3 = "311"
@@ -793,10 +802,14 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
         """Generate the expected results when resolving a manifest which
         contains a file with a non-default version of python."""
 
-        if sys.version_info.minor == 9:
-            v3 = "311"
-        elif sys.version_info.minor == 11:
+        # The test suite is written such that testing is only possible between
+        # two versions. With 3.11 being added, only some combinations of
+        # py_ver_default and py_ver_other are being tested.
+        # This will need to be fixed up during 3.7 support removal.
+        if sys.version_info.minor in (7, 11):
             v3 = "39"
+        elif sys.version_info.minor == 9:
+            v3 = "37m"
 
         patterns = (
             "{0}.py", "{0}.pyc", "{0}.pyo",
@@ -3134,9 +3147,9 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
 
         # Create a python 3.x file that imports a native module.
         tp = self.make_manifest(
-            self.pyver_test_manf_1.format(py_ver="3.9"))
+            self.pyver_test_manf_1.format(py_ver="3.7"))
         fp = "usr/lib/python{0}/vendor-packages/pkg/" \
-            "client/indexer.py".format("3.9")
+            "client/indexer.py".format("3.7")
         self.make_proto_text_file(fp, self.python3_so_text)
 
         # Run generate
@@ -3154,7 +3167,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 for l in self.output.strip().splitlines()
             )
             if a.attrs.get(pfx + ".reason") == fp and
-                "64/zlib.cpython-39.so" in a.attrs[pfx + ".file"]
+                "64/zlib.cpython-37m.so" in a.attrs[pfx + ".file"]
         ]
         self.assertTrue(len(acts) == 1)
 

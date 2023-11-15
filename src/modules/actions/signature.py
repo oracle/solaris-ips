@@ -183,9 +183,19 @@ class SignatureAction(generic.Action):
     def __get_hash_by_name(self, name):
         """Get the cryptography Hash() class based on the OpenSSL
         algorithm name."""
-        for h in hashes.HashAlgorithm.__subclasses__():
-            if h.name == name:
-                return h
+
+        # We deliver different version of cryptography module
+        # for Python 3.7 and different code is needed to find
+        # the requested hash algorithm
+        if version_info.minor == 7:
+            for h in abc._get_dump(hashes.HashAlgorithm)[0]:
+                ref = h()
+                if ref.name == name:
+                    return ref
+        else:
+            for h in hashes.HashAlgorithm.__subclasses__():
+                if h.name == name:
+                    return h 
 
     def get_size(self):
         res = generic.Action.get_size(self)
