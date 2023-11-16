@@ -23,7 +23,6 @@
 # Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
-PYTHON37 = /usr/bin/python3.7
 PYTHON39 = /usr/bin/python3.9
 PYTHON311 = /usr/bin/python3.11
 
@@ -54,18 +53,15 @@ JOBS = 4
 SUBDIRS=zoneproxy util/mkcert man
 
 all: $(SUBDIRS)
-	$(PYTHON37) setup.py build
 	$(PYTHON39) setup.py build
 	$(PYTHON311) setup.py build
 
 clean: $(SUBDIRS)
-	$(PYTHON37) setup.py clean
 	$(PYTHON39) setup.py clean
 	$(PYTHON311) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
-	$(PYTHON37) setup.py clobber
 	$(PYTHON39) setup.py clobber
 	$(PYTHON311) setup.py clobber
 	@cd pkg; pwd; make clobber
@@ -75,12 +71,10 @@ clobber: $(SUBDIRS)
 # it's the best way to ensure things stay pylint clean.
 #
 install: $(SUBDIRS)
-	$(PYTHON37) setup.py install
 	$(PYTHON39) setup.py install
 	$(PYTHON311) setup.py install
 
 lint:
-	$(PYTHON37) setup.py lint
 	$(PYTHON39) setup.py lint
 	$(PYTHON311) setup.py lint
 	@cd zoneproxy; pwd; make lint
@@ -118,9 +112,6 @@ justpackages: install
 dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
 
-test-37:
-	$(PYTHON37) tests/run.py -j ${JOBS} -v
-
 test-39:
 	$(PYTHON39) tests/run.py -j ${JOBS} -v
 
@@ -128,15 +119,15 @@ test-311:
 	$(PYTHON311) tests/run.py -j ${JOBS} -v
 
 test:
-	$(MAKE) -k test-37 JOBS=${JOBS}
 	$(MAKE) -k test-39 JOBS=${JOBS}
+	$(MAKE) -k test-311 JOBS=${JOBS}
 
 test-verbose:
-	$(PYTHON37) setup.py test -v
 	$(PYTHON39) setup.py test -v
+	$(PYTHON311) setup.py test -v
 
 test-generate:
-	$(PYTHON37) setup.py test -g
 	$(PYTHON39) setup.py test -g
+	$(PYTHON311) setup.py test -g
 
 FRC:
