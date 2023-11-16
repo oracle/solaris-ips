@@ -378,13 +378,14 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         # First, test readonly mode with a repo_dir that doesn't exist.
         self.dc.set_readonly()
         self.dc.stop()
-        self.dc.start_expected_fail()
+        # expect exit code 1 - "an error occurred"
+        self.dc.start_expected_fail(exit=1)
         self.assertTrue(not self.dc.is_alive())
 
         # Next, test readonly mode with a repo_dir that is empty.
         os.makedirs(dpath, misc.PKG_DIR_MODE)
         self.dc.set_readonly()
-        self.dc.start_expected_fail()
+        self.dc.start_expected_fail(exit=1)
         self.assertTrue(not self.dc.is_alive())
 
         # Next, test readwrite (publishing) mode with a non-existent
@@ -658,37 +659,38 @@ class TestDepotController(pkg5unittest.CliTestCase):
         self.__dc.set_rebuild()
         self.__dc.set_norefresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        # expect (default) exit code 2 - "invalid command line options"
+        self.__dc.start_expected_fail()
 
         self.__dc.set_readonly()
         self.__dc.set_norebuild()
         self.__dc.set_refresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        self.__dc.start_expected_fail()
 
         self.__dc.set_readonly()
         self.__dc.set_rebuild()
         self.__dc.set_refresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        self.__dc.start_expected_fail()
 
         self.__dc.set_readwrite()
         self.__dc.set_rebuild()
         self.__dc.set_refresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        self.__dc.start_expected_fail()
 
         self.__dc.set_mirror()
         self.__dc.set_rebuild()
         self.__dc.set_norefresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        self.__dc.start_expected_fail()
 
         self.__dc.set_mirror()
         self.__dc.set_norebuild()
         self.__dc.set_refresh_index()
 
-        self.assertTrue(self.__dc.start_expected_fail())
+        self.__dc.start_expected_fail()
 
     def test_disable_ops(self):
         """Verify that disable-ops works as expected."""
