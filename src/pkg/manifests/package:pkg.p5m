@@ -289,7 +289,6 @@ license lic_minisat license="MIT (MiniSAT)" com.oracle.info.baid=17890 \
     com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
 depend type=conditional fmri=package/pkg-311 predicate=runtime/python-311
-depend type=conditional fmri=package/pkg-37 predicate=runtime/python-37
 depend type=group fmri=package/pkg/zones-proxy \
     variant.opensolaris.zone=nonglobal
 # cross zone dependency on linked image metadata
