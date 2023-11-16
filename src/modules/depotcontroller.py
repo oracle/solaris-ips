@@ -471,27 +471,41 @@ class DepotController(object):
             raise
 
     def start_expected_fail(self, exit=2):
+        """Start the depot, and make sure that it responds in a reasonable time
+           and that it exits immediately with the expected exit code."""
+
         try:
             self.__initial_start()
 
             sleeptime = 0.05
-            died = False
             rc = None
             while sleeptime <= 10.0:
 
                 rc = self.__depot_handle.poll()
                 if rc is not None:
-                    died = True
                     break
                 time.sleep(sleeptime)
                 sleeptime *= 2
-
-            if died and rc == exit:
-                self.__state = self.HALTED
-                return True
             else:
+                # in case the break above wasn't executed
                 self.stop()
-                return False
+                with open(self.__logpath, "rb", buffering=0) as errf:
+                    err = errf.read()
+                raise DepotStateException(
+                    "Depot did not respond to repeated attempts "
+                    f"to make contact. Output follows:\n{err}\n"
+                )
+
+            if rc != exit:
+                self.stop()
+                with open(self.__logpath, "rb", buffering=0) as errf:
+                    err = errf.read()
+                raise DepotStateException(
+                    f"Depot exited with unexpected exit code {rc} "
+                    f"(expected {exit}). Output follows:\n{err}\n"
+                )
+
+            self.__state = self.HALTED
         except KeyboardInterrupt:
             if self.__depot_handle:
                 self.kill(now=True)
