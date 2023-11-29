@@ -488,6 +488,9 @@ _actcomm_srcs = [
 _varcet_srcs = [
         'modules/_varcet.c'
         ]
+_misc_srcs = [
+        'modules/_misc.c'
+        ]
 solver_srcs = [
         'modules/solver/solver.c',
         'modules/solver/py_solver.c'
@@ -669,6 +672,10 @@ class clint_func(Command):
                 ["{0}{1}".format("-I", k) for k in include_dirs] + \
                 ['-I' + self.escape(get_python_inc())] + \
                 _varcet_srcs
+            _misccmd = lint + lint_flags + \
+                ["{0}{1}".format("-I", k) for k in include_dirs] + \
+                ['-I' + self.escape(get_python_inc())] + \
+                _misc_srcs
             pspawncmd = lint + lint_flags + \
                 ['-D_FILE_OFFSET_BITS=64'] + \
                 ["{0}{1}".format("-I", k) for k in include_dirs] + \
@@ -702,6 +709,8 @@ class clint_func(Command):
             os.system(" ".join(_actcommcmd))
             print(" ".join(_varcetcmd))
             os.system(" ".join(_varcetcmd))
+            print(" ".join(_misccmd))
+            os.system(" ".join(_misccmd))
             print(" ".join(pspawncmd))
             os.system(" ".join(pspawncmd))
             print(" ".join(syscallatcmd))
@@ -1706,6 +1715,14 @@ ext_modules = [
         Extension(
                 '_varcet',
                 _varcet_srcs,
+                include_dirs = include_dirs,
+                extra_compile_args = compile_args,
+                extra_link_args = link_args,
+                build_64 = True
+                ),
+        Extension(
+                '_misc',
+                _misc_srcs,
                 include_dirs = include_dirs,
                 extra_compile_args = compile_args,
                 extra_link_args = link_args,
