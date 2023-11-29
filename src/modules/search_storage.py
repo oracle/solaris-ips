@@ -34,6 +34,7 @@ import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
 from pkg.misc import PKG_FILE_BUFSIZ, force_bytes
+from pkg._misc import fast_quote
 
 FAST_ADD = 'fast_add.v1'
 FAST_REMOVE = 'fast_remove.v1'
@@ -321,7 +322,7 @@ class IndexStoreMainDict(IndexStoreBase):
         "quote".  The details of the contents on entries are described
         in _write_main_dict_line in indexer.py.
         """
-        res = quote(str(token))
+        res = fast_quote(str(token))
         for action_type, atl in entries:
             # For performance reasons, 'sep_chars' symbols
             # are placed directly into the code.
@@ -332,7 +333,7 @@ class IndexStoreMainDict(IndexStoreBase):
                 res += f"!{subtype}"
                 for full_value, fvl in stl:
                     # uses sep_chars[2] == '@'
-                    res += f"@{quote(str(full_value))}"
+                    res += f"@{fast_quote(str(full_value))}"
                     for pfmri_index, pfl in fvl:
                         # uses sep_chars[3] == '#'
                         res += f"#{pfmri_index}"
