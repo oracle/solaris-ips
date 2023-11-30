@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2012, 2023, Oracle and/or its affiliates.
  */
 
 /*
@@ -40,10 +40,9 @@ set_invalid_action_error(const char *name, PyObject *action,
 	PyObject *val = NULL;
 	PyObject *pkg_actions = NULL;
 
-	/*
-	 * TODO: unknown issue: importing pkg.actions can fail in Python 3, see
-	 * one test case in api/t_action.py`test_action_errors.
-	 */
+	/* PyImport_ImportModule cannot be called with set exception. */
+	PyErr_Clear();
+
 	if ((pkg_actions = PyImport_ImportModule("pkg.actions")) == NULL) {
 		/* No exception is set */
 		PyErr_SetString(PyExc_KeyError, "pkg.actions");

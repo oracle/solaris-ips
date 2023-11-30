@@ -480,13 +480,8 @@ Incorrect attribute list.
         # Missing key attribute 'fmri'.
         self.assertInvalid("depend type=require")
 
-        # XXX Fails in Python 3.4 due to module import issue; see
-        # set_invalid_action_error in actions/_common.c.
-        if six.PY2:
-            # Multiple values not allowed for 'fmri' if 'type' is
-            # multi-valued.
-            self.assertInvalid("depend type=require "
-                "type=require-any fmri=foo fmri=bar")
+        # Multiple values not allowed for 'fmri' if 'type' is multi-valued.
+        self.assertInvalid("depend type=require type=require-any fmri=foo fmri=bar")
 
         # 'path' attribute specified multiple times
         self.assertInvalid("file 1234 path=foo path=foo mode=777 owner=root group=root")
