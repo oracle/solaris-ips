@@ -27,6 +27,7 @@ if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import importlib
 import unittest
 import os
 import sys
@@ -69,6 +70,12 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
         reasonable way to test some of the non-modifying BootEnv code.
         To that end, this test clears the relevant environment variable.
         """
+
+        # For BE related functionality, bemgmt library must be available.
+        bemgmt_spec = importlib.util.find_spec("bemgmt")
+        if bemgmt_spec is None:
+            raise pkg5unittest.TestSkippedException(
+                "bemgmt library is not available.")
 
         del os.environ["PKG_NO_LIVE_ROOT"]
         self.assertTrue(bootenv.BootEnv.libbe_exists())

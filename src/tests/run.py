@@ -306,13 +306,6 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                 # Make sure its a test method
                 if not _istestmethod(attrname, methobj):
                     continue
-                # Skip some test cases for Python 3.
-                # test_bootenv requires boot-environment-utilities
-                # Python 3.x package
-                if six.PY3 and (
-                    attrname in ["test_bootenv"]):
-                    delattr(classobj, attrname)
-                    continue
                 full = "{0}.{1}.{2}.{3}".format(testdir,
                     filename, cname, attrname)
                 # Remove this function from our class obj if

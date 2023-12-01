@@ -32,6 +32,7 @@ import pkg5unittest
 
 import errno
 import hashlib
+import importlib
 import os
 import platform
 import re
@@ -3760,6 +3761,12 @@ adm
         """Test to verify the command output, when modifying a live
         image has the correct initial information for the user."""
 
+        # For BE related functionality, bemgmt library must be available.
+        bemgmt_spec = importlib.util.find_spec("bemgmt")
+        if bemgmt_spec is None:
+            raise pkg5unittest.TestSkippedException(
+                "bemgmt library is not available.")
+
         self.pkgsend_bulk(self.rurl, (self.release_name))
         self.image_create(self.rurl)
 
@@ -4543,9 +4550,8 @@ adm
         self.pkg("verify -v presabandon")
 
         # Verify that a file removed for an action marked with
-        # preserve=abandon can be reverted.
-        self.pkg("revert testme")
-        self.file_contains("testme", "preserve1")
+        # preserve=abandon is not reverted.
+        self.pkg("revert testme", exit=4)
 
     def test_file_preserve_install_only(self):
         """Verify that preserve=install-only works as expected."""

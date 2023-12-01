@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import unicode_literals
@@ -36,12 +36,10 @@ def is_supported(attr):
     """Test if a sys attr is not in the list of ignored attributes."""
 
     ignore = [lib.F_OWNERSID, lib.F_GROUPSID, lib.F_AV_SCANSTAMP,
-              lib.F_OPAQUE, lib.F_CRTIME, lib.F_FSID, lib.F_GEN, lib.F_REPARSE]
+              lib.F_OPAQUE, lib.F_CRTIME, lib.F_FSID, lib.F_GEN, lib.F_REPARSE,
+              lib.F_RETENTIONTIME, lib.F_NORETAIN]
 
-    for i in ignore:
-        if i == attr:
-            return False
-    return True
+    return attr not in ignore
 
 
 def fgetattr(filename, compact=False):

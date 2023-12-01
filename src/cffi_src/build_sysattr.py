@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import unicode_literals
@@ -66,6 +66,8 @@ typedef enum {
     F_OFFLINE,
     F_SPARSE,
     F_SENSITIVE,
+    F_RETENTIONTIME,
+    F_NORETAIN,
     F_ATTR_ALL
 } f_attr_t;
 

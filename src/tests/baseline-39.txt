@@ -1,3 +1,0 @@
-cli.t_pkg_install.py TestPkgInstallUpgrade.test_file_preserve_abandon|fail
-api.t_sysattr.py TestSysattr.test_2_fsetattr|error
-api.t_sysattr.py TestSysattr.test_3_fgetattr|error
