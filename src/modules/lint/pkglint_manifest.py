@@ -27,8 +27,7 @@
 # Some pkg(7) specific lint manifest checks
 
 import os.path
-import six
-from six.moves import configparser
+import configparser
 
 import pkg.fmri as fmri
 import pkg.lint.base as base
@@ -77,7 +76,7 @@ class PkgManifestChecker(base.ManifestChecker):
                     continue
                 dep = action.attrs["fmri"]
                 try:
-                    if isinstance(dep, six.string_types):
+                    if isinstance(dep, str):
                         f = fmri.PkgFmri(dep)
                         dic.setdefault(
                             f.get_name(), []
@@ -421,7 +420,7 @@ class PkgManifestChecker(base.ManifestChecker):
                 continue
 
             deps = action.attrs["fmri"]
-            if isinstance(deps, six.string_types):
+            if isinstance(deps, str):
                 deps = [deps]
 
             for dep in deps:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
 #
 
 from __future__ import division, unicode_literals
@@ -71,12 +71,8 @@ class SHA512_t(object):
 
     def update(self, message):
         """Update the hash object with the string arguments."""
-        if six.PY3 and isinstance(message, str):
-            raise TypeError("Unicode-objects must be encoded before hashing")
-        if not isinstance(message, (six.string_types, bytes)):
-            raise TypeError("Message must be string or buffer.")
-        if isinstance(message, six.text_type):
-            message = message.encode("utf-8")
+        if not isinstance(message, bytes):
+            raise TypeError(f"Message must be bytes, not {type(message)}")
         lib.SHA512_t_Update(self.ctx, message, len(message))
 
     def digest(self):

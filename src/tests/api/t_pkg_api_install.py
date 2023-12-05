@@ -44,8 +44,8 @@ import stat
 import shutil
 
 from pkg.client.debugvalues import DebugValues
-from six.moves.urllib.parse import urlunparse
-from six.moves.urllib.request import pathname2url
+from urllib.parse import urlunparse
+from urllib.request import pathname2url
 
 PKG_CLIENT_NAME = "pkg"
 

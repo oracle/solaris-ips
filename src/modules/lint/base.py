@@ -24,11 +24,10 @@
 # Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
+import configparser
 import inspect
 import os.path
-import six
 import traceback
-from six.moves import configparser
 
 import pkg.variant as variant
 import pkg.fmri as fmri
@@ -391,7 +390,7 @@ def _linted_action(action, lint_id):
     for key in action.attrs.keys():
         if key.startswith("pkg.linted") and linted.startswith(key):
             val = action.attrs.get(key, "false")
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 if val.lower() == "true":
                     return True
             else:
@@ -407,7 +406,7 @@ def _linted_manifest(manifest, lint_id):
     for key in manifest.attributes.keys():
         if key.startswith("pkg.linted") and linted.startswith(key):
             val = manifest.attributes.get(key, "false")
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 if val.lower() == "true":
                     return True
             else:

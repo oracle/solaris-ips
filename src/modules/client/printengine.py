@@ -30,6 +30,7 @@ render them to a file, a terminal, or a logger."""
 
 import curses
 import errno
+import io
 import logging
 import os
 import re
@@ -220,7 +221,7 @@ class LoggingPrintEngine(PrintEngine):
         PrintEngine.__init__(self)
         self._logger = logger
         self._loglevel = loglevel
-        self._stringio = six.StringIO()
+        self._stringio = io.StringIO()
         self._pxpe = POSIXPrintEngine(self._stringio, False)
 
     def isslow(self):

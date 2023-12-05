@@ -30,7 +30,7 @@ import os
 import six
 import xml.parsers.expat as expat
 from functools import total_ordering
-from six.moves.urllib.parse import urlsplit
+from urllib.parse import urlsplit
 
 # pkg classes
 import pkg.client.pkgdefs as pkgdefs
@@ -2166,7 +2166,7 @@ class UnsupportedRepositoryURI(PublisherError):
     unsupported scheme."""
 
     def __init__(self, uris=[]):
-        if isinstance(uris, six.string_types):
+        if isinstance(uris, str):
             uris = [uris]
 
         assert isinstance(uris, (list, tuple, set))
@@ -2177,7 +2177,7 @@ class UnsupportedRepositoryURI(PublisherError):
         illegals = []
 
         for u in self.uris:
-            assert isinstance(u, six.string_types)
+            assert isinstance(u, str)
             scheme = urlsplit(u,
                 allow_fragments=0)[0]
             illegals.append((u, scheme))

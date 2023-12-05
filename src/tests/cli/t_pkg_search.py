@@ -33,11 +33,10 @@ import copy
 import hashlib
 import os
 import shutil
-import six
 import sys
 import unittest
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 import pkg.catalog as catalog
 import pkg.client.pkgdefs as pkgdefs

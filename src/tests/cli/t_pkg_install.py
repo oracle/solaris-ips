@@ -46,9 +46,8 @@ import tempfile
 import time
 import unittest
 import locale
-from six.moves import range
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen, build_opener, ProxyHandler, Request
+from urllib.parse import quote
+from urllib.request import urlopen, build_opener, ProxyHandler, Request
 
 import pkg.actions
 import pkg.digest as digest

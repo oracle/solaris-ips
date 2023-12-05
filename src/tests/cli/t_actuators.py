@@ -27,7 +27,6 @@ if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 
 import os
-import six
 import pkg5unittest
 import unittest
 import stat
@@ -430,15 +429,10 @@ stop/type astring method
         # Test with multi-valued actuators
         self.pkg("install basics@1.8")
         self.pkg("verify")
-        if six.PY2:
-            self.file_contains(svcadm_output,
-                "svcadm restart svc:/system/test_multi_svc1:default "
-                "svc:/system/test_multi_svc2:default")
-        else:
-            # output order is not stable in Python 3
-            self.file_contains(svcadm_output, ["svcadm restart",
-                "svc:/system/test_multi_svc1:default",
-                "svc:/system/test_multi_svc2:default"])
+        # output order is not stable
+        self.file_contains(svcadm_output, ["svcadm restart",
+            "svc:/system/test_multi_svc1:default",
+            "svc:/system/test_multi_svc2:default"])
 
         # Test synchronous options
         # synchronous restart
@@ -483,15 +477,10 @@ stop/type astring method
         self.pkg("install basics@1.9")
         self.pkg("verify")
         self.pkg("uninstall basics")
-        if six.PY2:
-            self.file_contains(svcadm_output,
-                "svcadm disable -s svc:/system/test_multi_svc1:default "
-                "svc:/system/test_multi_svc2:default")
-        else:
-            # output order is not stable in Python 3
-            self.file_contains(svcadm_output, ["svcadm disable -s",
-                "svc:/system/test_multi_svc1:default",
-                "svc:/system/test_multi_svc2:default"])
+        # output order is not stable
+        self.file_contains(svcadm_output, ["svcadm disable -s",
+            "svc:/system/test_multi_svc1:default",
+            "svc:/system/test_multi_svc2:default"])
         os.unlink(svcadm_output)
 
     def test_actuator_plan_display(self):

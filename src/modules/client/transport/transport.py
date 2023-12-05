@@ -27,19 +27,17 @@
 import copy
 import datetime as dt
 import errno
+import http.client
 import os
 import rapidjson as json
-import six
 import tempfile
 import zlib
 from collections import defaultdict
 from functools import cmp_to_key
 from io import BytesIO
-from six.moves import http_client, range
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from six.moves.urllib.parse import quote, urlsplit, urlparse, urlunparse, \
-    ParseResult
+from urllib.parse import quote, urlsplit, urlparse, urlunparse, ParseResult
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -173,7 +171,7 @@ class TransportCfg(object):
 
         if isinstance(pub, publisher.Publisher):
             pub = pub.prefix
-        elif not pub or not isinstance(pub, six.string_types):
+        elif not pub or not isinstance(pub, str):
             pub = None
 
         caches = [
@@ -695,12 +693,12 @@ class Transport(object):
                 failures.extend(ex.failures)
 
             except tx.TransportProtoError as e:
-                if e.code in (http_client.NOT_FOUND, errno.ENOENT):
+                if e.code in (http.client.NOT_FOUND, errno.ENOENT):
                     raise apx.UnsupportedSearchError(e.url,
                         "search/1")
-                elif e.code == http_client.NO_CONTENT:
+                elif e.code == http.client.NO_CONTENT:
                     no_result_url = e.url
-                elif e.code in (http_client.BAD_REQUEST,
+                elif e.code in (http.client.BAD_REQUEST,
                     errno.EINVAL):
                     raise apx.MalformedSearchRequest(e.url)
                 elif e.retryable:

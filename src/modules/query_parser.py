@@ -27,7 +27,6 @@
 import os
 import fnmatch
 import re
-import six
 import sys
 import threading
 import copy

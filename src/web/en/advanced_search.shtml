@@ -19,11 +19,11 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 ##
 <%!
         import pkg.query_parser as qp
-        from six.moves.urllib.parse import unquote, quote
+        from urllib.parse import unquote, quote
 %>\
 <%inherit file="search.shtml"/>\
 <%page args="g_vars"/>\

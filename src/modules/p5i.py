@@ -27,9 +27,9 @@
 import os
 import rapidjson as json
 
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.parse import urlunparse
-from six.moves.urllib.request import urlopen, pathname2url
+from urllib.error import HTTPError
+from urllib.parse import urlunparse
+from urllib.request import urlopen, pathname2url
 
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher

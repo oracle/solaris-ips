@@ -25,7 +25,6 @@
 #
 
 import os
-import six
 import rapidjson as json
 import subprocess
 import traceback
@@ -332,7 +331,7 @@ class PkgImage(object):
         return self.__mode
 
     def __set_mode(self, val):
-        if val is not None and not isinstance(val, six.string_types):
+        if val is not None and not isinstance(val, str):
             raise PkgException(ERROR, "Wrong value type")
         if val is None:
             val = "native"
@@ -345,7 +344,7 @@ class PkgImage(object):
         return self.__progress_interval
 
     def __set_interval(self, val):
-        if not isinstance(val, (six.integer_types, float)):
+        if not isinstance(val, (int, float)):
             raise PkgException(ERROR, "Wrong value type")
         self.__progress_interval = val
 
@@ -358,11 +357,9 @@ class PkgImage(object):
         try:
             args = ["/usr/share/lib/pkg/rad-invoke"]
             # If not JSON formatted string, need conversion.
-            if pargs_json and not isinstance(pargs_json,
-                six.string_types):
+            if pargs_json and not isinstance(pargs_json, str):
                 pargs_json = json.dumps(pargs_json)
-            if opts_json and not isinstance(opts_json,
-                six.string_types):
+            if opts_json and not isinstance(opts_json, str):
                 opts_json = json.dumps(opts_json)
             if self.__image_path:
                 args.extend(["-R", self.__image_path])
@@ -444,7 +441,7 @@ class PkgImage(object):
 
     def __handle_error(self, out_json):
         try:
-            if isinstance(out_json, six.string_types):
+            if isinstance(out_json, str):
                 out_json = json.loads(out_json)
         except Exception as ex:
             out_json = {"status": ERROR, "errors": [{"reason":

@@ -25,8 +25,8 @@
 #
 
 from __future__ import division
-import six.moves.cPickle as pickle
 import datetime
+import pickle
 import time
 
 from an_report import *

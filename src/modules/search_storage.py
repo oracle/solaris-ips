@@ -28,7 +28,7 @@ import os
 import errno
 import time
 import hashlib
-from six.moves.urllib.parse import quote, unquote
+from urllib.parse import quote, unquote
 
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors

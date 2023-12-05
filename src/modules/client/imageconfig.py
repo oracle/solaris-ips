@@ -31,7 +31,7 @@ import platform
 import re
 import six
 
-from six.moves.urllib.parse import quote, unquote
+from urllib.parse import quote, unquote
 
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher

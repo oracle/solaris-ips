@@ -30,7 +30,6 @@ import pkg5unittest
 import codecs
 import os
 import re
-import six
 import unittest
 from pkg.misc import force_text
 

@@ -23,9 +23,11 @@
 
 import atexit
 import cherrypy
+import http.client
 import logging
 import mako
 import os
+import queue
 import re
 import shutil
 import sys
@@ -34,9 +36,8 @@ import threading
 import time
 import traceback
 
-from six.moves import http_client, queue
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen
+from urllib.parse import quote
+from urllib.request import urlopen
 
 import pkg.misc as misc
 import pkg.p5i
@@ -78,7 +79,7 @@ class DepotException(Exception):
     def __init__(self, request, message):
         self.request = request
         self.message = message
-        self.http_status = http_client.INTERNAL_SERVER_ERROR
+        self.http_status = http.client.INTERNAL_SERVER_ERROR
 
     def __str__(self):
         return "{0}: {1}".format(self.message, self.request)
@@ -90,7 +91,7 @@ class AdminOpsDisabledException(DepotException):
 
     def __init__(self, request):
         self.request = request
-        self.http_status = http_client.FORBIDDEN
+        self.http_status = http.client.FORBIDDEN
 
     def __str__(self):
         return "admin/0 operations are disabled. " \
@@ -105,7 +106,7 @@ class AdminOpNotSupportedException(DepotException):
     def __init__(self, request, cmd):
         self.request = request
         self.cmd = cmd
-        self.http_status = http_client.NOT_IMPLEMENTED
+        self.http_status = http.client.NOT_IMPLEMENTED
 
     def __str__(self):
         return "admin/0 operations of type {type} are not " \
@@ -120,7 +121,7 @@ class IndexOpDisabledException(DepotException):
 
     def __init__(self, request):
         self.request = request
-        self.http_status = http_client.FORBIDDEN
+        self.http_status = http.client.FORBIDDEN
 
     def __str__(self):
         return "admin/0 operations to refresh indexes are not " \
@@ -655,7 +656,7 @@ class WsgiDepot(object):
                         pass
                 if not success:
                     raise cherrypy.HTTPError(
-                        status=http_client.SERVICE_UNAVAILABLE,
+                        status=http.client.SERVICE_UNAVAILABLE,
                         message="Unable to refresh the "
                         "index for {0} after repeated "
                         "retries. Try again later.".format(
@@ -694,7 +695,7 @@ class Pkg5Dispatch(object):
         self.config = {}
 
     @staticmethod
-    def default_error_page(status=http_client.NOT_FOUND, message="oops",
+    def default_error_page(status=http.client.NOT_FOUND, message="oops",
         traceback=None, version=None):
         """This function is registered as the default error page
         for CherryPy errors.  This sets the response headers to
@@ -708,14 +709,14 @@ class Pkg5Dispatch(object):
         # Server errors are interesting, so let's log them.  In the case
         # of an internal server error, we send a 404 to the client. but
         # log the full details in the server log.
-        if (status == http_client.INTERNAL_SERVER_ERROR or
+        if (status == http.client.INTERNAL_SERVER_ERROR or
             status.startswith("500 ")):
             # Convert the error to a 404 to obscure implementation
             # from the client, but log the original error to the
             # server logs.
             error = cherrypy._cperror._HTTPErrorTemplate % \
-                {"status": http_client.NOT_FOUND,
-                "message": http_client.responses[http_client.NOT_FOUND],
+                {"status": http.client.NOT_FOUND,
+                "message": http.client.responses[http.client.NOT_FOUND],
                 "traceback": "",
                 "version": cherrypy.__version__}
             print("Path that raised exception was {0}".format(
@@ -724,7 +725,7 @@ class Pkg5Dispatch(object):
             return error
         else:
             error = cherrypy._cperror._HTTPErrorTemplate % \
-                {"status": http_client.NOT_FOUND, "message": message,
+                {"status": http.client.NOT_FOUND, "message": message,
                 "traceback": "", "version": cherrypy.__version__}
             return error
 
@@ -800,7 +801,7 @@ class Pkg5Dispatch(object):
                 # converted and logged by our error handler
                 # before the client sees it.
                 raise cherrypy.HTTPError(
-                    status=http_client.INTERNAL_SERVER_ERROR,
+                    status=http.client.INTERNAL_SERVER_ERROR,
                     message="".join(traceback.format_exc(e)))
 
 wsgi_depot = WsgiDepot()

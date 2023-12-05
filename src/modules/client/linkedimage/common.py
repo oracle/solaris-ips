@@ -49,10 +49,8 @@ import os
 import select
 import rapidjson as json
 
-# Redefining built-in 'reduce', 'zip'; pylint: disable=W0622
-# Imports from package six are not grouped: pylint: disable=C0412
+# Redefining built-in 'reduce'; pylint: disable=W0622
 from functools import reduce
-from six.moves import zip
 
 import six
 

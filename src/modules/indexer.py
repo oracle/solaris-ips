@@ -28,7 +28,7 @@ import errno
 import os
 import platform
 import shutil
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 import pkg.fmri as fmri
 import pkg.misc as misc

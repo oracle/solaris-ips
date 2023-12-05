@@ -153,7 +153,7 @@ def format_update_error(e):
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
 
-    if not isinstance(text, six.string_types):
+    if not isinstance(text, str):
         # Assume it's an object that can be stringified.
         text = str(text)
 
@@ -1581,10 +1581,7 @@ def __api_execute_plan(operation, api_inst):
                 raise
 
         if exc_value or exc_tb:
-            if six.PY2:
-                six.reraise(exc_value, None, exc_tb)
-            else:
-                raise exc_value
+            raise exc_value
 
     return rval
 
@@ -4014,7 +4011,7 @@ def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                 if not properties_displayed:
                     msg(_("           Properties:"))
                     properties_displayed = True
-                if not isinstance(v, six.string_types):
+                if not isinstance(v, str):
                     v = ", ".join(sorted(v))
                 msg(property_padding, k + " =", str(v))
     return retcode
@@ -5968,9 +5965,8 @@ if __name__ == "__main__":
     # Make all warnings be errors.
     import warnings
     warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     # Attempt to handle SIGHUP/SIGTERM gracefully.
     import signal

@@ -32,15 +32,14 @@ import pkg5unittest
 
 import copy
 import os
-import six
 import time
 import unittest
 import certgenerator
 import shutil
-from six.moves import http_client
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen
+import http.client
+from urllib.error import HTTPError
+from urllib.parse import quote
+from urllib.request import urlopen
 
 from pkg.client.debugvalues import DebugValues
 import pkg.fmri
@@ -836,13 +835,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
             ret = False
             try:
                 u = urlopen(url)
-                if six.PY2:
-                    h = u.headers.get(header, "")
-                else:
-                    # HTTPMessage inherits from
-                    # email.Message in Python 3 so that it
-                    # has a different method
-                    h = u.headers.get_all(header, "")
+                h = u.headers.get_all(header, "")
                 if value in h:
                     return True
             except Exception as e:
@@ -900,7 +893,7 @@ class TestHttpDepot(_Apache, pkg5unittest.ApacheDepotTestCase):
         # verify the instance is definitely the one using our custom
         # httpd.conf
         u = urlopen("{0}/pkg5test-server-status".format(self.ac.url))
-        self.assertTrue(u.code == http_client.OK,
+        self.assertTrue(u.code == http.client.OK,
             "Error getting pkg5-server-status")
 
         self.image_create()

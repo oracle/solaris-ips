@@ -29,7 +29,7 @@ from __future__ import division
 import os
 import datetime
 import random
-from six.moves.urllib.parse import urlsplit
+from urllib.parse import urlsplit
 import pkg.misc as misc
 
 
@@ -428,7 +428,7 @@ class RepoStats(object):
         # no usage.  It started out life as a Heaviside step function,
         # but it has since been adjusted so that it scales back the
         # bonus as the host approaches the limit where the bonus
-        # is applied.  Hosts with no use recieve the largest bonus,
+        # is applied.  Hosts with no use receive the largest bonus,
         # while hosts at <= Nused transactions receive the none.
         def unused_bonus(self):
             tx = 0

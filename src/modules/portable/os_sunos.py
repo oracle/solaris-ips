@@ -29,7 +29,6 @@ implementation in the 'arch' extension module.
 """
 
 import os
-import six
 import subprocess
 import tempfile
 
@@ -65,7 +64,7 @@ def get_file_type(actions):
     for i, file_out in enumerate(res):
         file_out = file_out.strip()
         # ensure we can manipulate the string
-        if isinstance(file_out, bytes) and six.PY3:
+        if isinstance(file_out, bytes):
             file_out = file_out.decode("utf-8")
         a = actions[i]
         proto_file = a.attrs[PD_LOCAL_PATH]

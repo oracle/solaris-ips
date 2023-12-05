@@ -26,7 +26,6 @@
 
 from __future__ import unicode_literals
 import os
-import six
 from pkg._sysattr import lib, ffi
 
 F_ATTR_ALL = lib.F_ATTR_ALL
@@ -48,7 +47,7 @@ def fgetattr(filename, compact=False):
     return a string consisting of compact option identifiers."""
 
     from pkg.misc import force_text
-    if not isinstance(filename, six.string_types):
+    if not isinstance(filename, str):
         raise TypeError("filename must be string type")
 
     cattrs = ffi.new("char[F_ATTR_ALL]")
@@ -118,7 +117,7 @@ def fsetattr(filename, attr):
     """
 
     from pkg.misc import force_bytes
-    if not isinstance(filename, six.string_types):
+    if not isinstance(filename, str):
         raise TypeError("filename must be string type")
     if not attr:
         raise TypeError("{0} is not a valid system attribute".format(attr))
@@ -133,7 +132,7 @@ def fsetattr(filename, attr):
 
     # A single string indicates system attributes are passed in compact
     # form (e.g. AHi), verbose attributes are read as a list of strings.
-    if isinstance(attr, six.string_types):
+    if isinstance(attr, str):
         compact = True
 
     for c in attr:

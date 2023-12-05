@@ -27,7 +27,6 @@
 import abc
 import hashlib
 import os
-import six
 import shutil
 import tempfile
 from sys import version_info

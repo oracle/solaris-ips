@@ -25,7 +25,6 @@
 #
 
 import hashlib
-import six
 
 try:
     import pkg.sha512_t
@@ -240,7 +239,7 @@ class ContentHash(dict):
     def __init__(self, vals):
         dict.__init__(self)
 
-        if isinstance(vals, six.string_types):
+        if isinstance(vals, str):
             vals = (vals,)
 
         for v in vals:
@@ -251,7 +250,7 @@ class ContentHash(dict):
 def get_preferred_hash(action, hash_type=HASH, reversed=False):
     """Returns a tuple of the form (hash_attr, hash_val, hash_func)
     where 'hash_attr' is the preferred hash attribute name, 'hash_val'
-    is the the preferred hash value, and 'hash_func' is the function
+    is the preferred hash value, and 'hash_func' is the function
     used to compute the preferred hash based on the available
     pkg.content-hash or pkg.*hash.* attributes declared in the action."""
 

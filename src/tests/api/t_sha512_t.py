@@ -31,9 +31,7 @@ if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import six
 import unittest
-from six.moves import range
 
 try:
     import pkg.sha512_t as sha512_t
@@ -139,20 +137,8 @@ class TestPkgSha(pkg5unittest.Pkg5TestCase):
         self.assertRaises(ValueError, sha512_t.SHA512_t, t=160)
         self.assertRaises(TypeError, sha512_t.SHA512_t.update, 8)
 
-        if six.PY2:
-            # We allow unicode in Python 2 as hashlib does
-            a = sha512_t.SHA512_t(u"abc")
-            expected = "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
-            output = a.hexdigest()
-            self.assertEqualDiff(expected, output)
-            # Test special unicode character
-            a = sha512_t.SHA512_t("α♭¢")
-            a.hexdigest()
-            a.update("ρ⑂☂♄øη")
-            a.hexdigest()
-        else:
-            # We don't allow unicode in Python 3 as hashlib does
-            self.assertRaises(TypeError, sha512_t.SHA512_t, "str")
+        # Similarly to hashlib, strings are not allowed
+        self.assertRaises(TypeError, sha512_t.SHA512_t, "str")
 
 
 if __name__ == "__main__":

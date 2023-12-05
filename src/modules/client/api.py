@@ -70,7 +70,7 @@ import threading
 import time
 from functools import cmp_to_key
 
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 import six
 
@@ -367,7 +367,7 @@ explicitly set cmdpath when allocating an ImageInterface object, or
 override cmdpath when allocating an Image object by setting PKG_CMDPATH
 in the environment or by setting simulate_cmdpath in DebugValues.""")
 
-        if isinstance(img_path, six.string_types):
+        if isinstance(img_path, str):
             # Store this for reset().
             self._img_path = img_path
             self._img = image.Image(img_path,
@@ -1225,9 +1225,9 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
             # arg name              type                   nullable
             "_act_timeout":         (int,                  False),
             "_be_activate":         (bool,                 False),
-            "_be_name":             (six.string_types,     True),
+            "_be_name":             (str,                  True),
             "_backup_be":           (bool,                 True),
-            "_backup_be_name":      (six.string_types,     True),
+            "_backup_be_name":      (str,                  True),
             "_ignore_missing":      (bool,                 False),
             "_ipkg_require_latest": (bool,                 False),
             "_li_erecurse":         (iter,                 True),
@@ -3320,7 +3320,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         ret_pubs = []
         for repo_uri in repos:
-            if isinstance(repo_uri, six.string_types):
+            if isinstance(repo_uri, str):
                 repo = publisher.RepositoryURI(repo_uri)
             else:
                 # Already a RepositoryURI.

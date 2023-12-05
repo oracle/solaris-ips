@@ -31,7 +31,7 @@ though the other classes can be referred to for documentation purposes."""
 import os
 import shutil
 import six
-from six.moves.urllib.parse import quote, unquote, urlparse, urlunparse
+from urllib.parse import quote, unquote, urlparse, urlunparse
 import tempfile
 
 from pkg.misc import EmptyDict

@@ -29,8 +29,6 @@ import datetime
 import time
 import weakref
 
-from six.moves import zip
-
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
 

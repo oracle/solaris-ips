@@ -27,13 +27,13 @@
 from __future__ import division
 
 import errno
+import http.client
 import os
 import pycurl
 import six
 import time
 
-from six.moves import http_client
-from six.moves.urllib.parse import urlsplit
+from urllib.parse import urlsplit
 
 # Need to ignore SIGPIPE if using pycurl in NOSIGNAL mode.
 try:
@@ -382,7 +382,7 @@ class CurlTransportEngine(TransportEngine):
             respcode = h.getinfo(pycurl.RESPONSE_CODE)
 
             if proto not in response_protocols or \
-                respcode == http_client.OK:
+                respcode == http.client.OK:
                 h.success = True
                 repostats.clear_consecutive_errors()
                 success.append(url)
@@ -460,7 +460,7 @@ class CurlTransportEngine(TransportEngine):
                     numce)
 
     def check_status(self, urllist=None, good_reqs=False):
-        """Return information about retryable failures that occured
+        """Return information about retryable failures that occurred
         during the request.
 
         This is a list of transport exceptions.  Caller

@@ -30,10 +30,9 @@ import errno
 import os
 import re
 import shutil
-import six
 import time
 import zlib
-from six.moves.urllib.parse import quote, unquote
+from urllib.parse import quote, unquote
 
 import pkg.actions as actions
 import pkg.digest as digest
@@ -166,7 +165,7 @@ class Transaction(object):
         if pfmri is None:
             raise TransactionOperationError(pfmri=None)
 
-        if not isinstance(pfmri, six.string_types):
+        if not isinstance(pfmri, str):
             pfmri = str(pfmri)
 
         self.client_release = client_release
@@ -280,7 +279,7 @@ class Transaction(object):
         if pfmri is None:
             raise TransactionOperationError(pfmri=None)
 
-        if not isinstance(pfmri, six.string_types):
+        if not isinstance(pfmri, str):
             pfmri = str(pfmri)
 
         self.client_release = client_release
@@ -616,7 +615,7 @@ class Transaction(object):
             if not fileneeded:
                 return
 
-            if isinstance(f, six.string_types):
+            if isinstance(f, str):
                 portable.copyfile(f, dst_path)
                 return
 
@@ -665,7 +664,7 @@ class Transaction(object):
     def add_manifest(self, f):
         """Adds the manifest to the Transaction."""
 
-        if isinstance(f, six.string_types):
+        if isinstance(f, str):
             f = open(f, "rb")
             opened = True
         else:

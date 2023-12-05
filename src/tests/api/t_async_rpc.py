@@ -33,7 +33,6 @@ import multiprocessing
 import os
 import random
 import signal
-import six
 import sys
 import threading
 import time
@@ -84,14 +83,9 @@ class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
         # test async call with invalid arguments
         ac = AsyncCall()
         ac.start(self.__add, 1, 2, 3)
-        if six.PY2:
-            self.assertRaisesRegex(AsyncCallException,
-                "takes exactly 2 arguments",
-                ac.result)
-        else:
-            self.assertRaisesRegex(AsyncCallException,
-                "takes 2 positional arguments",
-                ac.result)
+        self.assertRaisesRegex(AsyncCallException,
+            "takes 2 positional arguments",
+            ac.result)
         ac = AsyncCall()
         ac.start(self.__add, x=1, y=2, z=3)
         self.assertRaisesRegex(AsyncCallException,

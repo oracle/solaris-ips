@@ -34,7 +34,6 @@ import logging
 import os
 import shutil
 import rapidjson as json
-import six
 import socket
 import stat
 import sys
@@ -42,9 +41,9 @@ import traceback
 import warnings
 
 from mako.template import Template
-from six.moves.urllib.error import URLError
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.request import build_opener, HTTPRedirectHandler
+from urllib.error import URLError
+from urllib.parse import urlparse
+from urllib.request import build_opener, HTTPRedirectHandler
 
 from pkg.client import global_settings
 from pkg.misc import msg, PipeError
@@ -294,7 +293,7 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
     if not isinstance(pub_info, dict):
         raise SysrepoException("{0} is not a dict".format(pub_info))
     for uri in pub_info:
-        if not isinstance(uri, six.string_types):
+        if not isinstance(uri, str):
             raise SysrepoException("{0} is not a basestring".format(
                 uri))
         uri_info = pub_info[uri]
@@ -306,13 +305,13 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
                 raise SysrepoException("{0} does not have 6 "
                     "items".format(props))
             # props [0] and [3] must be strings
-            if not isinstance(props[0], six.string_types) or \
-                not isinstance(props[3], six.string_types):
+            if not isinstance(props[0], str) or \
+                not isinstance(props[3], str):
                 raise SysrepoException("indices 0 and 3 of {0} "
                     "are not basestrings".format(props))
             # prop[5] must be a string, either "file" or "dir"
             # and prop[0] must start with file://
-            if not isinstance(props[5], six.string_types) or \
+            if not isinstance(props[5], str) or \
                 (props[5] not in ["file", "dir"] and
                 props[0].startswith("file://")):
                 raise SysrepoException("index 5 of {0} is not a "
@@ -322,7 +321,7 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
     if not isinstance(no_uri_pubs, list):
         raise SysrepoException("{0} is not a list".format(no_uri_pubs))
     for item in no_uri_pubs:
-        if not isinstance(item, six.string_types):
+        if not isinstance(item, str):
             raise SysrepoException(
                 "{0} is not a basestring".format(item))
 
@@ -1008,9 +1007,8 @@ if __name__ == "__main__":
 
     # Make all warnings be errors.
     warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     __retval = handle_errors(main_func)
     try:

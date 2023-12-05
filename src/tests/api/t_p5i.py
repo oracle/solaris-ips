@@ -31,6 +31,7 @@ import pkg5unittest
 
 import errno
 import unittest
+import io
 import os
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
@@ -41,9 +42,8 @@ import shutil
 import sys
 import tempfile
 
-from six.moves import cStringIO
-from six.moves.urllib.parse import urlparse, urlunparse
-from six.moves.urllib.request import pathname2url
+from urllib.parse import urlparse, urlunparse
+from urllib.request import pathname2url
 
 class TestP5I(pkg5unittest.Pkg5TestCase):
     """Class to test the functionality of the pkg.p5i module."""
@@ -121,7 +121,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
         }
 
         # Dump the p5i data.
-        fobj = cStringIO()
+        fobj = io.StringIO()
         p5i.write(fobj, [pub], pkg_names=pnames)
 
         # Verify that the p5i data ends with a terminating newline.
@@ -227,7 +227,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
         pub = self.__get_bobcat_pub(omit_repo=True)
 
         # Dump the p5i data.
-        fobj = cStringIO()
+        fobj = io.StringIO()
         p5i.write(fobj, [pub])
 
         # Verify that output matches expected output.
@@ -274,7 +274,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
         pub.repository.reset_origins()
 
         # Dump the p5i data.
-        fobj = cStringIO()
+        fobj = io.StringIO()
         p5i.write(fobj, [pub])
 
         # Verify that output matches expected output.

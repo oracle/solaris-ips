@@ -2811,7 +2811,7 @@ class ImagePlan(object):
         else:
             msg, actions = ret
 
-        if not isinstance(msg, six.string_types):
+        if not isinstance(msg, str):
             return False
 
         if msg == "nothing":
@@ -5542,16 +5542,7 @@ class ImagePlan(object):
             except:
                 # Ensure the real cause of failure is raised.
                 pass
-            if six.PY2:
-                six.reraise(api_errors.InvalidPackageErrors([
-                    exc_value]), None, exc_tb)
-            else:
-                # six.reraise requires the first argument
-                # callable if the second argument is None.
-                # Also the traceback is automatically attached,
-                # in Python 3, so we can simply raise it.
-                raise api_errors.InvalidPackageErrors([
-                    exc_value])
+            raise api_errors.InvalidPackageErrors([exc_value])
         except:
             exc_type, exc_value, exc_tb = sys.exc_info()
             self.pd.state = plandesc.EXECUTED_ERROR
@@ -5562,10 +5553,7 @@ class ImagePlan(object):
                 # This ensures that the original exception and
                 # traceback are used if exec_fail_actuators
                 # fails.
-                if six.PY2:
-                    six.reraise(exc_value, None, exc_tb)
-                else:
-                    raise exc_value
+                raise exc_value
 
         else:
             self.pd._actuators.exec_post_actuators(self.image)

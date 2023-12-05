@@ -26,7 +26,7 @@
 
 import fnmatch
 import re
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 from pkg.version import Version, VersionError
 

@@ -194,7 +194,7 @@ class PackageInfo(object):
         # of an action's modifiers?
         if isinstance(modifiers, dict):
             modifiers = tuple(
-                (k, isinstance(modifiers[k], six.string_types) and
+                (k, isinstance(modifiers[k], str) and
                     tuple([sorted(modifiers[k])]) or
                     tuple(sorted(modifiers[k])))
                 for k in sorted(six.iterkeys(modifiers))

@@ -29,7 +29,7 @@ if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-from six.moves import cStringIO
+import io
 import os
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
@@ -454,7 +454,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         }
 
         # Dump the p5i data.
-        fobj = cStringIO()
+        fobj = io.StringIO()
         api_obj.write_p5i(fobj, pkg_names=pnames, pubs=[pub])
 
         # Verify that output matches expected output.

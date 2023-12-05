@@ -29,7 +29,6 @@ import pkg5unittest
 
 import itertools
 import os
-import six
 import subprocess
 import sys
 import unittest
@@ -1163,7 +1162,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
     def check_res(self, expected, seen):
         def pick_file(act):
             fs = act.attrs[DDP + ".file"]
-            if isinstance(fs, six.string_types):
+            if isinstance(fs, str):
                 fs = [fs]
             for f in fs:
                 if f.endswith(".py") and "__init__" not in f:

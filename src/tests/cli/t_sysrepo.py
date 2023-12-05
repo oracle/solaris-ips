@@ -33,6 +33,7 @@ import pkg5unittest
 import errno
 import hashlib
 import importlib.machinery
+import io
 import os
 import os.path
 import pkg.p5p
@@ -40,13 +41,12 @@ import shutil
 import unittest
 import shutil
 import rapidjson as json
-import six
 import stat
 import sys
 import time
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.parse import urlparse, unquote
-from six.moves.urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlparse, unquote
+from urllib.request import urlopen
 
 import pkg.misc as misc
 import pkg.portable as portable
@@ -677,7 +677,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
         # will fail with some unicode characters in Python 3 because
         # os.mkdir uses the file system encoding. We don't have a way
         # to set the file system encoding in Python, so we just skip.
-        if six.PY3 and sys.getfilesystemencoding() == "ascii":
+        if sys.getfilesystemencoding() == "ascii":
             return
         unicode_str = "ΰŇﺇ⊂⏣⊅ℇ"
         unicode_dir = os.path.join(self.test_root, unicode_str)
@@ -1059,7 +1059,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                     # so to reduce console noise, we
                     # redirect that temporarily.
                     saved_stdout = sys.stdout
-                    sys.stdout = six.StringIO()
+                    sys.stdout = io.StringIO()
                     for item in self.sysrepo_p5p.application(
                         environ, start_response):
                         seen_content = item
